@@ -22,8 +22,8 @@
   --radius:14px;--radius-sm:9px;
 }
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
-html,body{height:100%;overscroll-behavior:none;}
-body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max-width:430px;margin:0 auto;padding-bottom:120px;}
+html{overscroll-behavior:none;}body{overscroll-behavior:none;min-height:100vh;}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max-width:430px;margin:0 auto;padding-bottom:140px;}
 
 /* LOADING */
 .loading-overlay{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:999;flex-direction:column;gap:12px;}
@@ -53,7 +53,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 .aerr{font-size:12px;color:var(--red);text-align:center;margin-top:6px;min-height:16px;}
 
 /* APP */
-#app-screen{display:none;}
+#app-screen{display:none;min-height:100vh;}
 
 /* HEADER */
 .hdr{padding:48px 20px 10px;display:flex;justify-content:space-between;align-items:center;}
@@ -255,7 +255,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 
 /* ─── COMPETITION TAB ─── */
 #view-competition{padding:0;}
-.setup-screen{display:none;padding:0 16px;}.setup-screen.active{display:block;padding:0 16px;}
+.setup-screen{display:none;padding:0 16px;}.setup-screen.active{display:block;padding:0 16px 20px;}
 .ss-back{display:flex;align-items:center;gap:10px;padding:12px 0 18px;}
 .ss-back-btn{background:none;border:none;color:var(--text2);font-size:20px;cursor:pointer;}
 .ss-title{font-size:16px;font-weight:600;}
