@@ -665,6 +665,15 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
   <div class="modal">
     <div class="mhandle"></div>
     <div class="mtitle" id="mm-title">식사 기록</div>
+    <div class="mfield">
+      <label class="mlabel">식사 시간</label>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;" id="mm-time-btns">
+        <button class="ftbtn" onclick="pickMealTime('아침',this)">🌅 아침</button>
+        <button class="ftbtn" onclick="pickMealTime('점심',this)">☀️ 점심</button>
+        <button class="ftbtn" onclick="pickMealTime('저녁',this)">🌙 저녁</button>
+        <button class="ftbtn" onclick="pickMealTime('간식',this)">🍎 간식</button>
+      </div>
+    </div>
     <div class="mfield"><label class="mlabel">음식 이름</label><input class="minput" id="mm-name" placeholder="예: 삼각김밥, 서브웨이…"/></div>
     <div class="mfield"><label class="mlabel">종류</label>
       <div class="food-types">
@@ -843,12 +852,12 @@ const DEFAULT_MAND=[
   {name:'🪥 양치',done:false,days:[0,1,2,3,4,5,6]},
   {name:'🧽 걸레질',done:false,days:[0,1,2,3,4,5,6]},
 ];
-function emptyLog(){return{weight:null,water_cups:0,meals:[],workouts:[],mandatory:JSON.parse(JSON.stringify(DEFAULT_MAND)),targets:[]};}
+function emptyLog(isNew=false){return{weight:null,water_cups:0,meals:[],workouts:[],mandatory:isNew?[]:JSON.parse(JSON.stringify(DEFAULT_MAND)),targets:[]};}
 let log=emptyLog();
 
 
 
-let mealIdx=null,foodType=null,photoData=null;
+let mealIdx=null,foodType=null,photoData=null,mealTime=null;
 let wom={cat:'cardio',typeIdx:null,status:'done',editIdx:null};
 let mandEditIdx=null,newMandDays=[0,1,2,3,4,5,6];
 let compDurVal=14,compSecs={diet:true,workout:true,mandatory:true,target:false};
@@ -859,7 +868,16 @@ async function init(){
   if(session)await onLogin(session.user);
   else showAuth();
 }
-function showAuth(){hide('loading');document.getElementById('auth-screen').style.display='flex';}
+function showAuth(){
+  hide('loading');
+  document.getElementById('auth-screen').style.display='flex';
+  // Reset login button in case it was left disabled
+  const lb=document.getElementById('li-btn');
+  if(lb){lb.disabled=false;lb.textContent='로그인';}
+  const sb2=document.getElementById('su-btn');
+  if(sb2){sb2.disabled=false;sb2.textContent='계정 만들기';}
+  document.getElementById('li-err').textContent='';
+}
 function showApp(){hide('loading');hide('auth-screen');show('app-screen');}
 function show(id){document.getElementById(id).style.display='block';}
 function hide(id){document.getElementById(id).style.display='none';}
@@ -895,9 +913,9 @@ async function loadLog(key){
         }
       }
     }
-    const l={weight:data.weight!==null?parseFloat(data.weight):null,water_cups:data.water_cups||0,meals,workouts:data.workouts||[],mandatory:data.mandatory&&data.mandatory.length?data.mandatory:JSON.parse(JSON.stringify(DEFAULT_MAND)),targets:data.targets||[]};
+    const l={weight:data.weight!==null?parseFloat(data.weight):null,water_cups:data.water_cups||0,meals,workouts:data.workouts||[],mandatory:data.mandatory?data.mandatory:[],targets:data.targets||[]};
     logCache[key]=l;log=l;
-  }else{const l=emptyLog();logCache[key]=l;log=l;}
+  }else{const l=emptyLog(true);logCache[key]=l;log=l;}
 }
 function scheduleSave(){clearTimeout(saveTimer);saveTimer=setTimeout(()=>saveLog(selectedKey),900);}
 async function saveLog(key){
@@ -988,7 +1006,7 @@ async function renderGogginsTab(){
   if(data)data.forEach(d=>{
     let gmeals=d.meals||[];
     if(!gmeals.length){for(let n=1;n<=4;n++){if(d['meal_'+n+'_type']||d['meal_'+n+'_name']){gmeals.push({name:d['meal_'+n+'_name']||'',type:d['meal_'+n+'_type']||null,photo:d['meal_'+n+'_photo']||null});}}}
-    const l={weight:d.weight!==null?parseFloat(d.weight):null,water_cups:d.water_cups||0,meals:gmeals,workouts:d.workouts||[],mandatory:d.mandatory&&d.mandatory.length?d.mandatory:JSON.parse(JSON.stringify(DEFAULT_MAND)),targets:d.targets||[]};
+    const l={weight:d.weight!==null?parseFloat(d.weight):null,water_cups:d.water_cups||0,meals:gmeals,workouts:d.workouts||[],mandatory:d.mandatory?d.mandatory:[],targets:d.targets||[]};
     logCache[d.log_date]=l;
   });
   if(logCache[TODAY])log=logCache[TODAY];
@@ -1113,7 +1131,7 @@ function renderMeals(){
   document.getElementById('meal-rows').innerHTML=meals.length===0
     ?`<div style="font-size:12px;color:var(--text3);padding:10px 14px;font-style:italic;">아직 식사 기록이 없습니다.</div>`
     :meals.map((m,i)=>{
-      const lbl=MEAL_NUM_LABELS[i]||('식사 '+(i+1));
+      const lbl=m.time||(i===0?'1번째':i===1?'2번째':i===2?'3번째':'추가') + (m.time?'':' 식사');
       return`<div class="meal-row" onclick="openEditMealModal(${i})">
         <div class="meal-dot ${m.type||'empty'}"></div>
         <div class="meal-row-label">${lbl}</div>
@@ -1125,10 +1143,10 @@ function renderMeals(){
 }
 
 function openAddMealModal(){
-  mealIdx=null;foodType=null;photoData=null;
+  mealIdx=null;foodType=null;photoData=null;mealTime=null;
   document.getElementById('mm-title').textContent='식사 / 간식 추가';
   document.getElementById('mm-name').value='';
-  document.querySelectorAll('.ftbtn').forEach(b=>b.className='ftbtn');
+  document.querySelectorAll('.ftbtn').forEach(b=>{b.className='ftbtn';b.style.cssText='';});
   document.getElementById('mm-photo-wrap').style.display='none';
   openModal('meal-modal');
 }
@@ -1136,11 +1154,18 @@ function openAddMealModal(){
 function openEditMealModal(i){
   mealIdx=i;
   const m=log.meals[i];
-  foodType=m.type;photoData=m.photo;
+  foodType=m.type;photoData=m.photo;mealTime=m.time||null;
   document.getElementById('mm-title').textContent='식사 수정';
   document.getElementById('mm-name').value=m.name||'';
-  document.querySelectorAll('.ftbtn').forEach(b=>b.className='ftbtn');
+  // reset all btns
+  document.querySelectorAll('.ftbtn').forEach(b=>{b.className='ftbtn';b.style.cssText='';});
   if(foodType){const mp={green:0,red:1,skipped:2};const idx=mp[foodType];if(idx!==undefined)document.querySelectorAll('.ftbtn')[idx].classList.add('sel-'+foodType);}
+  // restore time selection
+  if(mealTime){
+    document.querySelectorAll('#mm-time-btns .ftbtn').forEach(b=>{
+      if(b.textContent.includes(mealTime)){b.style.background='var(--accent-bg)';b.style.borderColor='var(--accent)';b.style.color='var(--accent)';}
+    });
+  }
   const pw=document.getElementById('mm-photo-wrap');
   if(photoData){document.getElementById('mm-photo-img').src=photoData;pw.style.display='block';}else{pw.style.display='none';}
   openModal('meal-modal');
@@ -1152,11 +1177,16 @@ function deleteMeal(i){
 }
 
 function pickFT(t,el){foodType=t;document.querySelectorAll('.ftbtn').forEach(b=>b.className='ftbtn');el.classList.add('sel-'+t);}
+function pickMealTime(t,el){
+  mealTime=t;
+  document.querySelectorAll('#mm-time-btns .ftbtn').forEach(b=>{b.className='ftbtn';});
+  el.style.background='var(--accent-bg)';el.style.borderColor='var(--accent)';el.style.color='var(--accent)';
+}
 function previewPhoto(inp){const f=inp.files[0];if(!f)return;const r=new FileReader();r.onload=e=>{photoData=e.target.result;document.getElementById('mm-photo-img').src=e.target.result;document.getElementById('mm-photo-wrap').style.display='block';};r.readAsDataURL(f);}
 function delPhoto(){photoData=null;document.getElementById('mm-photo-wrap').style.display='none';document.getElementById('mm-photo-inp').value='';}
 function saveMeal(){
   const name=document.getElementById('mm-name').value.trim();
-  const entry={name,type:foodType,photo:photoData};
+  const entry={name,type:foodType,photo:photoData,time:mealTime};
   if(mealIdx===null){log.meals.push(entry);}
   else{log.meals[mealIdx]=entry;}
   closeModal('meal-modal');renderMeals();scheduleSave();
@@ -1551,6 +1581,20 @@ async function renderCompetition(){
   document.getElementById('ca-tags').innerHTML=tags.map(t=>`<span class="g-meta-tag">${t}</span>`).join('');
 
   // Leaderboard
+  // Show filled + empty slots up to max_members
+  const maxSlots=activeComp.max_members||6;
+  const emptySlots=Math.max(0,maxSlots-memberData.length);
+  const emptyRows=Array.from({length:emptySlots},(_,i)=>`
+    <div class="lb-row" style="opacity:.35;">
+      <div class="lb-rank rn">${memberData.length+i+1}</div>
+      <div class="lb-avatar" style="background:var(--surface3);">👤</div>
+      <div class="lb-info">
+        <div class="lb-name" style="color:var(--text3);">대기 중…</div>
+        <div class="lb-tier">코드: ${activeComp.code}</div>
+      </div>
+      <div class="lb-score-wrap"><div class="lb-score" style="color:var(--text3);">—</div></div>
+    </div>`).join('');
+
   document.getElementById('ca-leaderboard').innerHTML=memberData.map((m,i)=>`
     <div class="lb-row${m.isMe?' me':''} ${i===0?' first':''}">
       <div class="lb-rank ${RANK_COLORS[i]}">${i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1}</div>
