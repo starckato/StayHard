@@ -1,0 +1,13 @@
+# Never commit these to git
+.env
+.env.local
+.env.production
+config.local.js
+
+# Vercel build output
+.vercel
+.next
+
+# OS files
+.DS_Store
+Thumbs.db
