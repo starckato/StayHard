@@ -22,8 +22,8 @@
   --radius:14px;--radius-sm:9px;
 }
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
-html{overscroll-behavior:none;}body{overscroll-behavior:none;min-height:100vh;}
-body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max-width:430px;margin:0 auto;padding-bottom:140px;}
+html,body{margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max-width:430px;margin:0 auto;padding-bottom:160px;-webkit-overflow-scrolling:touch;}
 
 /* LOADING */
 .loading-overlay{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:999;flex-direction:column;gap:12px;}
@@ -53,7 +53,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 .aerr{font-size:12px;color:var(--red);text-align:center;margin-top:6px;min-height:16px;}
 
 /* APP */
-#app-screen{display:none;min-height:100vh;}
+#app-screen{display:none;}
 
 /* HEADER */
 .hdr{padding:48px 20px 10px;display:flex;justify-content:space-between;align-items:center;}
@@ -234,7 +234,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 .wv-title{font-size:15px;font-weight:600;}
 .wv-nav-btn{background:var(--surface2);border:1px solid var(--border);color:var(--text2);border-radius:7px;padding:5px 10px;font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;}
 .wv-week-label{font-size:10px;color:var(--text3);text-align:center;padding:2px 0 8px;font-family:'DM Mono',monospace;text-transform:uppercase;letter-spacing:.05em;}
-.wv-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+.wv-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;width:100%;}
 .wv-table{border-collapse:collapse;width:max-content;min-width:100%;}
 .wv-table th,.wv-table td{border:1px solid var(--border);text-align:center;padding:0;vertical-align:middle;font-family:'DM Sans',sans-serif;}
 .wv-table .row-sub{font-size:10px;color:var(--text2);text-align:right;padding:4px 8px;background:var(--surface);width:80px;border-right:1px solid var(--border2);}
@@ -254,8 +254,8 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 .wv-table .wt-cell{font-family:'DM Mono',monospace;font-size:11px;font-weight:500;}
 
 /* ─── COMPETITION TAB ─── */
-#view-competition{padding:0;}
-.setup-screen{display:none;padding:0 16px;}.setup-screen.active{display:block;padding:0 16px 20px;}
+#view-competition{padding:0;padding-bottom:20px;}
+.setup-screen{display:none;padding:0 16px;}.setup-screen.active{display:block;padding:0 16px 40px;}
 .ss-back{display:flex;align-items:center;gap:10px;padding:12px 0 18px;}
 .ss-back-btn{background:none;border:none;color:var(--text2);font-size:20px;cursor:pointer;}
 .ss-title{font-size:16px;font-weight:600;}
@@ -1455,10 +1455,13 @@ function buildWVTable(dates){
   html+=`<tr class="section-hdr-row"><td colspan="8">🥗 식단</td></tr>`;
   html+=`<tr><td class="row-sub">체중 (kg)</td>`;
   dates.forEach(d=>{const k=dkey(d),isT=k===TODAY,iF=d>now&&!isT;const dl=wvLogs[k];const val=dl?.weight?parseFloat(dl.weight).toFixed(1):'';html+=`<td class="dc wt-cell${isT?' today-col':''} ${val?'c-green':'c-empty'}">${val||'—'}</td>`;});html+=`</tr>`;
-  const mealRowLabels=['아침','점심','저녁','간식','간식2','추가'];
-  // show up to 6 meal rows
-  for(let mi=0;mi<6;mi++){
-    html+=`<tr><td class="row-sub">${mealRowLabels[mi]}</td>`;
+  // Find max meals across the week to determine how many rows to show
+  let maxMeals=0;
+  dates.forEach(d=>{const dl=wvLogs[dkey(d)];if(dl?.meals)maxMeals=Math.max(maxMeals,(dl.meals||[]).length);});
+  maxMeals=Math.max(maxMeals,1); // at least 1 row
+  const mealRowLabels=['아침','점심','저녁','간식','간식2','추가','추가2','추가3'];
+  for(let mi=0;mi<maxMeals;mi++){
+    html+=`<tr><td class="row-sub">${mealRowLabels[mi]||('식사'+(mi+1))}</td>`;
     dates.forEach(d=>{
       const k=dkey(d),isT=k===TODAY,iF=d>now&&!isT;
       const dl=wvLogs[k];
@@ -1470,7 +1473,8 @@ function buildWVTable(dates){
         if(m.type==='green')cls='c-green';
         else if(m.type==='red')cls='c-red';
         else if(m.type==='skipped')cls='c-amber';
-        display=m.name?m.name:(m.type==='skipped'?'스킵':m.type?'—':'');
+        const lbl=m.time||'';
+        display=m.name?m.name:lbl?lbl:(m.type==='skipped'?'스킵':m.type?'—':'');
       }
       html+=`<td class="dc${isT?' today-col':''} ${cls}" title="${m?.name||''}">${display||'—'}</td>`;
     });
