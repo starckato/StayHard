@@ -1534,23 +1534,7 @@ function buildWVTable(dates){
     });
     html+=`</tr>`;
   }
-    dates.forEach(d=>{
-      const k=dkey(d),isT=k===TODAY,iF=d>now&&!isT;
-      const dl=wvLogs[k];
-      const meals=dl?.meals||[];
-      const m=meals[mi];
-      let cls='c-empty',display='';
-      if(iF){cls='c-future';}
-      else if(m){
-        if(m.type==='green')cls='c-green';
-        else if(m.type==='red')cls='c-red';
-        else if(m.type==='skipped')cls='c-amber';
-        display=m.name?m.name:(m.type==='skipped'?'스킵':m.type?'—':'');
-      }
-      html+=`<td class="dc${isT?' today-col':''} ${cls}" title="${m?.name||''}">${display||'—'}</td>`;
-    });
-    html+=`</tr>`;
-  }
+
   html+=`<tr><td class="row-sub">물 (L)</td>`;
   dates.forEach(d=>{const k=dkey(d),isT=k===TODAY,iF=d>now&&!isT;const dl=wvLogs[k];const cups=dl?.water_cups||0;const val=cups>0?(cups*.5).toFixed(1)+'L':'';const cls=iF?'c-future':cups>=6?'c-green':cups>0?'c-amber':'c-empty';html+=`<td class="dc${isT?' today-col':''} ${cls}">${val||'—'}</td>`;});html+=`</tr>`;
   html+=`<tr class="section-hdr-row"><td colspan="8">💪 운동</td></tr>`;
