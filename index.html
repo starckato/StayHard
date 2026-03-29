@@ -445,7 +445,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
       <div class="sel-day-label" id="sel-day-label" onclick="jumpToToday()" title="오늘로 돌아가기"></div>
     </div>
     <div class="s-card">
-      <div class="s-card-hdr"><div class="s-card-title">식단</div><div class="s-badge" id="diet-badge">0/4 식사</div></div>
+      <div class="s-card-hdr"><div class="s-card-title">식단</div><div class="s-badge" id="diet-badge">0끼 기록</div></div>
       <div class="s-divider"></div>
       <div class="wt-strip">
         <div style="flex:1;">
@@ -475,19 +475,19 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
       <div class="s-card-hdr"><div class="s-card-title">운동</div><div class="s-badge" id="wo-badge">0/0</div></div>
       <div class="s-divider"></div>
       <div class="workout-rows" id="workout-rows"></div>
-      <div class="add-row" onclick="openWorkoutModal()"><span style="font-size:14px;">＋</span> 운동 추가</div>
+      <div class="add-row" onclick="openWorkoutModal()" style="color:var(--accent);font-weight:500;"><span style="font-size:16px;margin-right:6px;">＋</span> 운동 추가</div>
     </div>
     <div class="s-card">
       <div class="s-card-hdr"><div class="s-card-title">필수 루틴</div><div class="s-badge" id="mand-badge">0/0</div></div>
       <div class="s-divider"></div>
       <div class="check-rows" id="check-rows"></div>
-      <div class="add-row" onclick="openAddMandatoryModal()"><span style="font-size:14px;">＋</span> 루틴 추가</div>
+      <div class="add-row" onclick="openAddMandatoryModal()" style="color:var(--accent);font-weight:500;"><span style="font-size:16px;margin-right:6px;">＋</span> 루틴 추가</div>
     </div>
     <div class="s-card">
       <div class="s-card-hdr"><div class="s-card-title">오늘의 목표</div><div class="s-badge" id="tgt-badge">0/0</div></div>
       <div class="s-divider"></div>
       <div class="check-rows" id="tgt-rows"></div>
-      <div class="add-tgt" onclick="toggleAddTgt()"><span style="font-size:14px;">＋</span> 오늘의 목표 추가</div>
+      <div class="add-tgt" onclick="toggleAddTgt()" style="color:var(--accent);font-weight:500;"><span style="font-size:16px;margin-right:6px;">＋</span> 오늘의 목표 추가</div>
       <div class="add-tgt-input" id="add-tgt-input">
         <input type="text" id="tgt-inp" placeholder="오늘 무엇을 하고 싶나요?"/>
         <button class="add-tgt-go" onclick="addTarget()">추가</button>
@@ -1193,6 +1193,31 @@ function renderWeight(){
 }
 function saveWeight(){const v=parseFloat(document.getElementById('wt-inp').value);if(isNaN(v))return;log.weight=v;closeModal('weight-modal');renderWeight();scheduleSave();}
 
+function renderMeals(){
+  const meals=log.meals||[];
+  const logged=meals.filter(m=>m.type).length;
+  const b=document.getElementById('diet-badge');
+  b.textContent=logged+'끼 기록';
+  b.className='s-badge '+(logged>=3?'green':'');
+  const timeLabels={아침:'🌅',점심:'☀️',저녁:'🌙',간식:'🍎'};
+  document.getElementById('meal-rows').innerHTML=meals.length===0
+    ?''
+    :meals.map((m,i)=>{
+      const timeIcon=timeLabels[m.time]||'🍽️';
+      const timeLabel=m.time||('식사 '+(i+1));
+      const dotCls=m.type==='green'?'green':m.type==='red'?'red':m.type==='skipped'?'skipped':'empty';
+      return`<div class="meal-row" onclick="openEditMealModal(${i})">
+        <div class="meal-dot ${dotCls}"></div>
+        <div class="meal-row-label">${timeIcon} ${timeLabel}</div>
+        ${m.name?`<div class="meal-row-name">${m.name}</div>`:`<div class="meal-row-empty">탭하여 수정</div>`}
+        ${m.photo?`<img class="meal-row-photo" src="${m.photo}">`:''}
+        <button onclick="event.stopPropagation();deleteMeal(${i})" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:13px;padding:4px;margin-left:auto;">✕</button>
+      </div>`;
+    }).join('');
+}
+
+function deleteMeal(i){log.meals.splice(i,1);renderMeals();scheduleSave();}
+
 let mealIdx=null,foodType=null,photoData=null,mealTime=null,mealCategory=null;
 
 // ── MEAL MODAL: 3-STEP FLOW ──
@@ -1429,6 +1454,9 @@ function delPhoto(){
 function saveMeal(){
   const name=document.getElementById('mm-name').value.trim();
   const entry={name,type:foodType,photo:photoData,time:mealTime,category:mealCategory};
+  // Always work on the cached log to ensure consistency
+  if(!logCache[selectedKey])logCache[selectedKey]=log;
+  log=logCache[selectedKey];
   if(mealIdx===null){log.meals.push(entry);}
   else{log.meals[mealIdx]=entry;}
   closeModal('meal-modal');renderMeals();scheduleSave();
@@ -1445,7 +1473,11 @@ function renderWater(){
 function renderWorkouts(){
   const done=log.workouts.filter(w=>w.status==='done').length;
   const b=document.getElementById('wo-badge');b.textContent=done+'/'+log.workouts.length;b.className='s-badge '+(done>0&&done===log.workouts.length?'green':'');
-  document.getElementById('workout-rows').innerHTML=log.workouts.length===0?`<div class="wo-empty">운동이 없습니다. +를 눌러 추가하세요.</div>`:
+  document.getElementById('workout-rows').innerHTML=log.workouts.length===0?`<div style="padding:16px 0;text-align:center;">
+  <div style="font-size:28px;margin-bottom:6px;">🏃</div>
+  <div style="font-size:13px;color:var(--text3);margin-bottom:4px;">오늘 운동을 기록해보세요</div>
+  <div style="font-size:11px;color:var(--text3);">달리기 · 웨이트 · 테니스 · 요가 등</div>
+</div>`:
     log.workouts.map((w,i)=>`<div class="wo-row" onclick="editWorkout(${i})" style="cursor:pointer;">
       <div class="wo-icon-box">${w.icon}</div>
       <div class="wo-info"><div class="wo-name">${w.name}</div><div class="wo-meta">${w.meta||'기록 없음'}</div></div>
@@ -1520,7 +1552,7 @@ function renderMandatory(){
   b.textContent=done+'/'+todayTasks.length;
   b.className='s-badge '+(done===todayTasks.length&&todayTasks.length>0?'green':'');
   if(todayTasks.length===0){
-    document.getElementById('check-rows').innerHTML='<div style="font-size:12px;color:var(--text3);padding:10px 0;font-style:italic;">오늘 예정된 루틴이 없습니다.</div>';
+    document.getElementById('check-rows').innerHTML='<div style="padding:16px 0;text-align:center;"><div style="font-size:28px;margin-bottom:6px;">✅</div><div style="font-size:13px;color:var(--text3);margin-bottom:4px;">매일 반복할 루틴을 추가하세요</div><div style="font-size:11px;color:var(--text3);">예: 🐱 고양이 밥 · 🪥 양치 · 🧹 집 청소</div></div>';
     return;
   }
   // Find actual index in log.mandatory for each today task
@@ -1579,7 +1611,11 @@ function renderTargets(){
   const done=log.targets.filter(t=>t.st==='done').length;
   const b=document.getElementById('tgt-badge');b.textContent=done+'/'+log.targets.length;b.className='s-badge '+(done>0&&done===log.targets.length?'green':'');
   document.getElementById('tgt-rows').innerHTML=log.targets.length===0
-    ?`<div class="tgt-empty">목표가 없습니다. +를 눌러 추가하세요.</div>`
+    ?`<div style="padding:16px 0;text-align:center;">
+  <div style="font-size:28px;margin-bottom:6px;">🎯</div>
+  <div style="font-size:13px;color:var(--text3);margin-bottom:4px;">오늘의 목표를 설정하세요</div>
+  <div style="font-size:11px;color:var(--text3);">예: 링크드인 연락 · 보고서 작성 · 병원 예약</div>
+</div>`
     :log.targets.map((t,i)=>{
       const isDone=t.st==='done';
       const isFail=t.st==='fail';
