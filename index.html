@@ -972,7 +972,20 @@ function hide(id){document.getElementById(id).style.display='none';}
 async function onLogin(user){
   CU=user;
   let{data:p}=await sb.from('profiles').select('*').eq('id',user.id).single();
-  if(!p){const un=user.email.split('@')[0].replace(/[^a-z0-9]/gi,'').toLowerCase();const{data:np}=await sb.from('profiles').insert({id:user.id,username:un,display_name:un}).select().single();p=np;}
+  if(!p){
+    const un=user.email.split('@')[0].replace(/[^a-z0-9]/gi,'').toLowerCase();
+    const{data:np}=await sb.from('profiles').upsert({id:user.id,username:un,display_name:un},{onConflict:'id'}).select().single();
+    p=np;
+  }
+  if(!p){
+    // Last fallback — read again in case of race condition
+    const{data:fp}=await sb.from('profiles').select('*').eq('id',user.id).single();
+    p=fp;
+  }
+  if(!p){
+    // Absolute fallback — use email as display name
+    p={display_name:user.email.split('@')[0],username:user.email.split('@')[0]};
+  }
   CP=p;
   document.getElementById('p-name').textContent=p.display_name||p.username;
   document.getElementById('p-email').textContent=user.email;
