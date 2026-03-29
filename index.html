@@ -780,13 +780,8 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 </div>
 
 <script>
-// Keys loaded from window.__SB_CONFIG injected by Vercel Edge Config
-// Falls back to meta tags for local dev — never commit real keys to git
-const SB_URL = (window.__SB_CONFIG && window.__SB_CONFIG.url) ||
-               document.querySelector('meta[name="sb-url"]')?.content || '';
-const SB_KEY = (window.__SB_CONFIG && window.__SB_CONFIG.key) ||
-               document.querySelector('meta[name="sb-key"]')?.content || '';
-if(!SB_URL || !SB_KEY){ document.body.innerHTML='<div style="color:#f87171;padding:40px;font-family:sans-serif;font-size:16px;">⚠️ 앱 설정 오류: 환경변수가 설정되지 않았습니다.<br>Vercel 대시보드에서 SB_URL과 SB_KEY를 설정하세요.</div>'; throw new Error('Missing Supabase config'); }
+const SB_URL='https://uvaosxhsjscigheyymus.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV2YW9zeGhzanNjaWdoZXl5bXVzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1ODExNjQsImV4cCI6MjA5MDE1NzE2NH0.aS1ZxN0ds8CUs3q_dMTFlEwjvNFgCH7JwY-tg4q0NA8';
 const sb=supabase.createClient(SB_URL,SB_KEY);
 
 // ── CATALOGUES ──
