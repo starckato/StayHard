@@ -690,37 +690,109 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 <div class="modal-overlay" id="meal-modal">
   <div class="modal">
     <div class="mhandle"></div>
-    <div class="mtitle" id="mm-title">식사 기록</div>
-    <div class="mfield">
-      <label class="mlabel">식사 시간</label>
-      <div style="display:flex;gap:6px;flex-wrap:wrap;" id="mm-time-btns">
-        <button class="ftbtn" onclick="pickMealTime('아침',this)">🌅 아침</button>
-        <button class="ftbtn" onclick="pickMealTime('점심',this)">☀️ 점심</button>
-        <button class="ftbtn" onclick="pickMealTime('저녁',this)">🌙 저녁</button>
-        <button class="ftbtn" onclick="pickMealTime('간식',this)">🍎 간식</button>
-      </div>
-    </div>
-    <div class="mfield"><label class="mlabel">음식 이름</label><input class="minput" id="mm-name" placeholder="예: 삼각김밥, 서브웨이…"/></div>
-    <div class="mfield"><label class="mlabel">종류</label>
-      <div class="food-types">
-        <div class="ftbtn" onclick="pickFT('green',this)">✅ 좋음</div>
-        <div class="ftbtn" onclick="pickFT('red',this)">🚫 금지</div>
-        <div class="ftbtn" onclick="pickFT('skipped',this)">⏭ 스킵</div>
-      </div>
-    </div>
-    <div class="mfield"><label class="mlabel">사진</label>
-      <div style="display:flex;gap:9px;align-items:center;flex-wrap:wrap;">
-        <input type="file" accept="image/*" capture="environment" id="mm-photo-camera" style="display:none;" onchange="previewPhoto(this)">
-        <input type="file" accept="image/*" id="mm-photo-gallery" style="display:none;" onchange="previewPhoto(this)">
-        <div style="display:flex;gap:8px;">
-          <button onclick="document.getElementById('mm-photo-camera').click()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text2);border-radius:8px;padding:9px 14px;font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif;flex:1;">📷 촬영</button>
-          <button onclick="document.getElementById('mm-photo-gallery').click()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text2);border-radius:8px;padding:9px 14px;font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif;flex:1;">🖼️ 갤러리</button>
+
+    <!-- Step indicator -->
+    <div style="display:flex;align-items:center;gap:6px;margin-bottom:16px;">
+      <div id="mm-step-back" onclick="mmBack()" style="background:none;border:none;color:var(--text2);font-size:18px;cursor:pointer;padding:0 6px 0 0;display:none;">←</div>
+      <div style="flex:1;">
+        <div style="display:flex;gap:4px;margin-bottom:4px;">
+          <div id="mm-dot-1" style="height:3px;flex:1;border-radius:2px;background:var(--accent);transition:all .2s;"></div>
+          <div id="mm-dot-2" style="height:3px;flex:1;border-radius:2px;background:var(--surface3);transition:all .2s;"></div>
+          <div id="mm-dot-3" style="height:3px;flex:1;border-radius:2px;background:var(--surface3);transition:all .2s;"></div>
         </div>
-        <div id="mm-photo-wrap" style="display:none;"><div class="photo-wrap"><img id="mm-photo-img" class="photo-thumb"><button class="photo-del" onclick="delPhoto()">✕</button></div></div>
+        <div class="mtitle" id="mm-title" style="margin-bottom:0;">식사 기록</div>
       </div>
     </div>
-    <button class="mbtn" onclick="saveMeal()">식사 저장</button>
-    <button class="mbtn-ghost" onclick="closeModal('meal-modal')">취소</button>
+
+    <!-- STEP 1: Photo -->
+    <div id="mm-s1">
+      <input type="file" accept="image/*" capture="environment" id="mm-photo-camera" style="display:none;" onchange="previewPhoto(this)">
+      <input type="file" accept="image/*" id="mm-photo-gallery" style="display:none;" onchange="previewPhoto(this)">
+
+      <div id="mm-photo-wrap" style="display:none;margin-bottom:12px;">
+        <div class="photo-wrap" style="position:relative;display:inline-block;">
+          <img id="mm-photo-img" class="photo-thumb" style="width:100%;height:140px;object-fit:cover;border-radius:10px;">
+          <button class="photo-del" onclick="delPhoto()" style="position:absolute;top:-6px;right:-6px;width:22px;height:22px;border-radius:50%;background:var(--red);border:none;color:#fff;font-size:11px;cursor:pointer;">✕</button>
+        </div>
+        <div id="mm-photo-time-hint" style="font-size:11px;color:var(--text2);margin-top:6px;"></div>
+      </div>
+
+      <div style="display:flex;gap:8px;margin-bottom:12px;">
+        <button onclick="document.getElementById('mm-photo-camera').click()" style="flex:1;padding:16px 8px;background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;font-family:'DM Sans',sans-serif;text-align:center;">
+          <div style="font-size:22px;margin-bottom:4px;">📷</div>
+          <div style="font-size:12px;color:var(--text2);font-weight:500;">촬영</div>
+        </button>
+        <button onclick="document.getElementById('mm-photo-gallery').click()" style="flex:1;padding:16px 8px;background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;font-family:'DM Sans',sans-serif;text-align:center;">
+          <div style="font-size:22px;margin-bottom:4px;">🖼️</div>
+          <div style="font-size:12px;color:var(--text2);font-weight:500;">갤러리</div>
+        </button>
+      </div>
+
+      <button class="mbtn" onclick="mmGoStep2()">다음 →</button>
+      <button class="mbtn-ghost" onclick="closeModal('meal-modal')">취소</button>
+    </div>
+
+    <!-- STEP 2: Meal type + slot -->
+    <div id="mm-s2" style="display:none;">
+      <!-- Photo thumb small if taken -->
+      <div id="mm-s2-thumb" style="display:none;margin-bottom:12px;"></div>
+
+      <div class="mfield">
+        <label class="mlabel">이 식사는 무엇인가요?</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;" id="mm-category-btns">
+          <button onclick="pickMealCategory('meal',this)" style="padding:10px 6px;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:var(--surface2);cursor:pointer;font-family:'DM Sans',sans-serif;text-align:center;">
+            <div style="font-size:18px;">🥗</div>
+            <div style="font-size:11px;color:var(--text2);margin-top:3px;">식사</div>
+          </button>
+          <button onclick="pickMealCategory('snack',this)" style="padding:10px 6px;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:var(--surface2);cursor:pointer;font-family:'DM Sans',sans-serif;text-align:center;">
+            <div style="font-size:18px;">🍰</div>
+            <div style="font-size:11px;color:var(--text2);margin-top:3px;">간식</div>
+          </button>
+          <button onclick="pickMealCategory('drink',this)" style="padding:10px 6px;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:var(--surface2);cursor:pointer;font-family:'DM Sans',sans-serif;text-align:center;">
+            <div style="font-size:18px;">🥤</div>
+            <div style="font-size:11px;color:var(--text2);margin-top:3px;">음료</div>
+          </button>
+        </div>
+      </div>
+
+      <div class="mfield">
+        <label class="mlabel">어떤 끼니인가요?</label>
+        <div id="mm-photo-suggest" style="font-size:11px;color:var(--accent);margin-bottom:6px;display:none;">📍 사진 시간 기준으로 추천됩니다</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;" id="mm-time-btns">
+          <button class="ftbtn" onclick="pickMealTime('아침',this)">🌅 아침</button>
+          <button class="ftbtn" onclick="pickMealTime('점심',this)">☀️ 점심</button>
+          <button class="ftbtn" onclick="pickMealTime('저녁',this)">🌙 저녁</button>
+          <button class="ftbtn" onclick="pickMealTime('간식',this)">🍎 간식</button>
+        </div>
+      </div>
+
+      <button class="mbtn" onclick="mmGoStep3()">다음 →</button>
+      <button class="mbtn-ghost" onclick="closeModal('meal-modal')">취소</button>
+    </div>
+
+    <!-- STEP 3: Name + quality rating -->
+    <div id="mm-s3" style="display:none;">
+      <!-- Context summary bar -->
+      <div id="mm-context-bar" style="display:flex;align-items:center;gap:8px;background:var(--surface2);border-radius:var(--radius-sm);padding:8px 12px;margin-bottom:14px;font-size:12px;color:var(--text2);"></div>
+
+      <div class="mfield">
+        <label class="mlabel">음식 이름</label>
+        <input class="minput" id="mm-name" placeholder="예: 삼각김밥, 서브웨이…"/>
+      </div>
+
+      <div class="mfield">
+        <label class="mlabel">이 식사를 평가하면?</label>
+        <div class="food-types" id="mm-quality-btns">
+          <div class="ftbtn" onclick="pickFT('green',this)">✅ 클린</div>
+          <div class="ftbtn" onclick="pickFT('red',this)">🚫 금지</div>
+          <div class="ftbtn" onclick="pickFT('skipped',this)">⏭ 스킵</div>
+        </div>
+      </div>
+
+      <button class="mbtn" id="mm-save-btn" onclick="saveMeal()">식사 저장</button>
+      <button class="mbtn-ghost" onclick="closeModal('meal-modal')">취소</button>
+    </div>
+
   </div>
 </div>
 <div class="modal-overlay" id="weight-modal">
@@ -882,420 +954,242 @@ let log=emptyLog();
 
 
 
-let mealIdx=null,foodType=null,photoData=null,mealTime=null;
-let wom={cat:'cardio',typeIdx:null,status:'done',editIdx:null};
-let mandEditIdx=null,newMandDays=[0,1,2,3,4,5,6];
-let compDurVal=14,compSecs={diet:true,workout:true,mandatory:true,target:false},compType='routine';
+let mealIdx=null,foodType=null,photoData=null,mealTime=null,mealCategory=null;
 
-// ── INIT ──
-async function init(){
-  const{data:{session}}=await sb.auth.getSession();
-  if(session)await onLogin(session.user);
-  else showAuth();
-}
-function showAuth(){
-  hide('loading');
-  document.getElementById('auth-screen').style.display='flex';
-  // Reset login button in case it was left disabled
-  const lb=document.getElementById('li-btn');
-  if(lb){lb.disabled=false;lb.textContent='로그인';}
-  const sb2=document.getElementById('su-btn');
-  if(sb2){sb2.disabled=false;sb2.textContent='계정 만들기';}
-  document.getElementById('li-err').textContent='';
-}
-function showApp(){hide('loading');hide('auth-screen');show('app-screen');}
-function show(id){document.getElementById(id).style.display='block';}
-function hide(id){document.getElementById(id).style.display='none';}
-
-async function onLogin(user){
-  CU=user;
-  let{data:p}=await sb.from('profiles').select('*').eq('id',user.id).single();
-  if(!p){const un=user.email.split('@')[0].replace(/[^a-z0-9]/gi,'').toLowerCase();const{data:np}=await sb.from('profiles').insert({id:user.id,username:un,display_name:un}).select().single();p=np;}
-  CP=p;
-  document.getElementById('p-name').textContent=p.display_name||p.username;
-  document.getElementById('p-email').textContent=user.email;
-  document.getElementById('p-username').textContent='@'+(p.username||'');
-  document.getElementById('hdr-sub').textContent=(p.display_name||p.username)+'의 보드';showDailyMotto();
-  await loadLog(TODAY);
-  await loadActiveCompetition();
-  showApp();
-  buildSlider();
-  renderRoutine();
-  updateGogginsHeader();
-}
-
-// ── LOAD/SAVE ──
-async function loadLog(key){
-  if(logCache[key]){log=logCache[key];return;}
-  const{data}=await sb.from('daily_logs').select('*').eq('user_id',CU.id).eq('log_date',key).maybeSingle();
-  if(data){
-    // Migrate old meal_1~4 format to new meals[] array
-    let meals=data.meals||[];
-    if(!meals.length){
-      for(let n=1;n<=4;n++){
-        if(data['meal_'+n+'_type']||data['meal_'+n+'_name']){
-          meals.push({name:data['meal_'+n+'_name']||'',type:data['meal_'+n+'_type']||null,photo:data['meal_'+n+'_photo']||null});
-        }
-      }
-    }
-    const l={weight:data.weight!==null?parseFloat(data.weight):null,water_cups:data.water_cups||0,meals,workouts:data.workouts||[],mandatory:data.mandatory?data.mandatory:[],targets:data.targets||[]};
-    logCache[key]=l;log=l;
-  }else{
-    // New day — carry over routine DEFINITIONS from most recent log
-    // but reset completion status (done=false)
-    const routineDefs=await loadRoutineDefinitions();
-    const l=emptyLog(true);
-    if(routineDefs.length>0){
-      l.mandatory=routineDefs.map(r=>({...r,done:false}));
-    }
-    logCache[key]=l;log=l;
-  }
-}
-
-// Load routine definitions from most recent log that has mandatory data
-async function loadRoutineDefinitions(){
-  // First check logCache for any day with mandatory data
-  const cachedWithMand=Object.values(logCache).filter(l=>l.mandatory&&l.mandatory.length>0);
-  if(cachedWithMand.length>0){
-    // use the one with most items (most recent user settings)
-    cachedWithMand.sort((a,b)=>b.mandatory.length-a.mandatory.length);
-    return cachedWithMand[0].mandatory.map(r=>({name:r.name,done:false,days:r.days||[0,1,2,3,4,5,6]}));
-  }
-  // Fetch from DB — get most recent log with mandatory data
-  const{data}=await sb.from('daily_logs')
-    .select('mandatory,log_date')
-    .eq('user_id',CU.id)
-    .not('mandatory','is',null)
-    .order('log_date',{ascending:false})
-    .limit(7);
-  if(data&&data.length>0){
-    const recent=data.find(d=>d.mandatory&&d.mandatory.length>0);
-    if(recent)return recent.mandatory.map(r=>({name:r.name,done:false,days:r.days||[0,1,2,3,4,5,6]}));
-  }
-  return [];
-}
-function scheduleSave(){
-  clearTimeout(saveTimer);
-  saveTimer=setTimeout(async()=>{
-    await saveLog(selectedKey);
-    // propagate routine definitions to other cached days that have no routines yet
-    if(log.mandatory&&log.mandatory.length>0){
-      Object.keys(logCache).forEach(k=>{
-        if(k!==selectedKey&&logCache[k]&&(!logCache[k].mandatory||logCache[k].mandatory.length===0)){
-          logCache[k].mandatory=log.mandatory.map(r=>({name:r.name,done:false,days:r.days||[0,1,2,3,4,5,6]}));
-        }
-      });
-    }
-  },900);
-}
-async function saveLog(key){
-  if(!CU)return;
-  const l=logCache[key];if(!l)return;
-  const p={user_id:CU.id,log_date:key,weight:l.weight,water_cups:l.water_cups,meals:l.meals||[],workouts:l.workouts,mandatory:l.mandatory,targets:l.targets};
-  await sb.from('daily_logs').upsert(p,{onConflict:'user_id,log_date'});
-  showToast('저장됨 ✓');
-  updateGogginsHeader();
-}
-function showToast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2000);}
-
-// ── AUTH ──
-function switchAuthTab(t){
-  document.querySelectorAll('.auth-tab').forEach((el,i)=>el.classList.toggle('active',(t==='login'&&i===0)||(t==='signup'&&i===1)));
-  document.getElementById('auth-login').style.display=t==='login'?'block':'none';
-  document.getElementById('auth-signup').style.display=t==='signup'?'block':'none';
-}
-async function doLogin(){
-  const email=document.getElementById('li-email').value.trim(),pw=document.getElementById('li-pw').value;
-  const btn=document.getElementById('li-btn');btn.disabled=true;btn.textContent='로그인 중…';document.getElementById('li-err').textContent='';
-  const{data,error}=await sb.auth.signInWithPassword({email,password:pw});
-  if(error){document.getElementById('li-err').textContent=error.message;btn.disabled=false;btn.textContent='로그인';return;}
-  show('loading');await onLogin(data.user);
-}
-async function doSignup(){
-  const name=document.getElementById('su-name').value.trim(),un=document.getElementById('su-user').value.trim().toLowerCase().replace(/[^a-z0-9_]/g,''),email=document.getElementById('su-email').value.trim(),pw=document.getElementById('su-pw').value;
-  const btn=document.getElementById('su-btn');
-  if(!name||!un||!email||!pw){document.getElementById('su-err').textContent='모든 항목을 입력해주세요.';return;}
-  if(pw.length<6){document.getElementById('su-err').textContent='비밀번호는 최소 6자 이상이어야 합니다.';return;}
-  btn.disabled=true;btn.textContent='생성 중…';document.getElementById('su-err').textContent='';
-  const{data:ex}=await sb.from('profiles').select('id').eq('username',un).maybeSingle();
-  if(ex){document.getElementById('su-err').textContent='이미 사용 중인 유저명입니다.';btn.disabled=false;btn.textContent='계정 만들기';return;}
-  const{data,error}=await sb.auth.signUp({email,password:pw});
-  if(error){document.getElementById('su-err').textContent=error.message;btn.disabled=false;btn.textContent='계정 만들기';return;}
-  await sb.from('profiles').insert({id:data.user.id,username:un,display_name:name});
-  show('loading');await onLogin(data.user);
-}
-async function doSignOut(){await sb.auth.signOut();CU=null;CP=null;activeComp=null;closeModal('profile-modal');hide('app-screen');showAuth();}
-
-// ── TABS ──
-function switchTab(name,idx){
-  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
-  document.querySelectorAll('.tbar-tab').forEach(t=>t.classList.remove('active'));
-  document.querySelectorAll('.bni').forEach(n=>n.classList.remove('active'));
-  document.getElementById('view-'+name).classList.add('active');
-  const tabs=document.querySelectorAll('.tbar-tab');if(tabs[idx])tabs[idx].classList.add('active');
-  const bnis=document.querySelectorAll('.bni');if(bnis[idx])bnis[idx].classList.add('active');
-  if(name==='weekly')renderWeeklyView();
-  if(name==='competition'){renderChallengeHome();if(activeComp){}}
-  if(name==='goggins')renderGogginsTab();
-}
-
-// ── GOGGINS SCORE ──
-function updateGogginsHeader(){
-  const todayLog=logCache[TODAY]||log;
-  const scores=calcGogginsScore(todayLog);
-  const streak=calcStreak();
-  const tier=getTier(scores.total);
-  document.getElementById('hdr-streak').textContent=streak+'일';
-  document.getElementById('hdr-score').textContent=scores.total+'점';
-  document.getElementById('hdr-tier').textContent=tier.name;
-}
-
-function calcStreak(){
-  // count consecutive days from today backwards that have any log
-  let streak=0;
-  const d=new Date(now);
-  for(let i=0;i<60;i++){
-    const k=dkey(d);
-    const l=logCache[k];
-    if(l){
-      const s=calcGogginsScore(l);
-      if(s.total>0){streak++;d.setDate(d.getDate()-1);}
-      else break;
-    } else break;
-  }
-  return streak;
-}
-
-async function renderGogginsTab(){
-  // load last 7 days
-  const dates=[];
-  for(let i=6;i>=0;i--){const d=new Date(now);d.setDate(d.getDate()-i);dates.push(d);}
-  const keys=dates.map(d=>dkey(d));
-  const from=keys[0],to=keys[keys.length-1];
-  const{data}=await sb.from('daily_logs').select('*').eq('user_id',CU.id).gte('log_date',from).lte('log_date',to);
-  if(data)data.forEach(d=>{
-    let gmeals=d.meals||[];
-    if(!gmeals.length){for(let n=1;n<=4;n++){if(d['meal_'+n+'_type']||d['meal_'+n+'_name']){gmeals.push({name:d['meal_'+n+'_name']||'',type:d['meal_'+n+'_type']||null,photo:d['meal_'+n+'_photo']||null});}}}
-    const l={weight:d.weight!==null?parseFloat(d.weight):null,water_cups:d.water_cups||0,meals:gmeals,workouts:d.workouts||[],mandatory:d.mandatory?d.mandatory:[],targets:d.targets||[]};
-    logCache[d.log_date]=l;
+// ── MEAL MODAL: 3-STEP FLOW ──
+function mmSetStep(step){
+  [1,2,3].forEach(s=>{
+    document.getElementById('mm-s'+s).style.display=s===step?'block':'none';
+    document.getElementById('mm-dot-'+s).style.background=s<=step?'var(--accent)':'var(--surface3)';
   });
-  if(logCache[TODAY])log=logCache[TODAY];
-
-  const todayScores=calcGogginsScore(logCache[TODAY]||log);
-  const tier=getTier(todayScores.total);
-
-  // ring
-  const circumference=314;
-  const offset=circumference-(circumference*todayScores.total/100);
-  document.getElementById('g-ring-fill').style.strokeDashoffset=offset;
-  document.getElementById('g-ring-fill').style.stroke=tier.color;
-  document.getElementById('g-score-num').textContent=todayScores.total;
-  document.getElementById('g-score-num').style.color=tier.color;
-  document.getElementById('g-tier-badge').textContent=tier.icon+' '+tier.name;
-  document.getElementById('g-tier-badge').style.background=tier.color+'22';
-  document.getElementById('g-tier-badge').style.color=tier.color;
-  document.getElementById('g-tier-badge').style.border='1px solid '+tier.color+'55';
-
-  // yesterday comparison
-  const yKey=dkey(new Date(now.getFullYear(),now.getMonth(),now.getDate()-1));
-  const yLog=logCache[yKey];
-  const yScore=yLog?calcGogginsScore(yLog).total:null;
-  const diff=yScore!==null?todayScores.total-yScore:null;
-  document.getElementById('g-score-change').textContent=diff===null?'오늘 첫 기록':diff>0?'어제보다 +'+diff+'점 상승':diff<0?'어제보다 '+diff+'점 하락':'어제와 동일';
-
-  // breakdown bars
-  [['diet',todayScores.diet,'gbr-diet','gbv-diet'],['wo',todayScores.wo,'gbr-wo','gbv-wo'],['mand',todayScores.mand,'gbr-mand','gbv-mand'],['tgt',todayScores.tgt,'gbr-tgt','gbv-tgt']].forEach(([k,v,bid,vid])=>{
-    document.getElementById(bid).style.width=v+'%';
-    document.getElementById(vid).textContent=v+'%';
-  });
-
-  // streak
-  const streak=calcStreak();
-  document.getElementById('streak-num').textContent=streak;
-  document.getElementById('streak-best').textContent='최고: '+streak+'일';
-  const barRow=document.getElementById('streak-bar-row');
-  barRow.innerHTML='';
-  dates.forEach(d=>{
-    const k=dkey(d),l=logCache[k];
-    const s=l?calcGogginsScore(l).total:0;
-    const bar=document.createElement('div');
-    bar.className='streak-bar-day';
-    bar.style.background=s>60?'#4ade80':s>30?'#fbbf24':s>0?'#f87171':'#2a2a32';
-    bar.title=WDAYS_STRIP[dates.indexOf(d)]+' '+s+'점';
-    barRow.appendChild(bar);
-  });
-
-  // tier ladder
-  const ladderEl=document.getElementById('tier-ladder');
-  ladderEl.innerHTML=TIERS.map(t=>{
-    const isCurrent=todayScores.total>=t.min&&todayScores.total<=t.max;
-    return`<div class="tier-row ${isCurrent?'current':''}">
-      <div class="tier-icon">${t.icon}</div>
-      <div class="tier-info">
-        <div class="tier-name" style="${isCurrent?'color:'+t.color:''}">${t.name}</div>
-        <div class="tier-range">${t.min} – ${t.max}점</div>
-      </div>
-      ${isCurrent?`<div class="tier-you">현재</div>`:''}
-    </div>`;
-  }).join('');
-  const nextTier=TIERS.find(t=>todayScores.total<t.min);
-  document.getElementById('next-hint').textContent=nextTier?nextTier.name+' 달성까지 '+(nextTier.min-todayScores.total)+'점 남았습니다 →':'최고 등급 달성! 고긴스처럼 매일 유지하세요 💀';
-
-  updateGogginsHeader();
+  document.getElementById('mm-step-back').style.display=step>1?'block':'none';
+  const titles={1:'사진 추가 (선택)',2:'식사 종류 선택',3:'음식 정보 입력'};
+  document.getElementById('mm-title').textContent=mealIdx!==null?'식사 수정':titles[step];
 }
 
-// ── DAY SLIDER ──
-function weekStart(offset){const d=new Date(now);d.setDate(d.getDate()-((d.getDay()+6)%7)+offset*7);d.setHours(0,0,0,0);return d;}
-function buildSlider(){
-  const strip=document.getElementById('day-strip');strip.innerHTML='';
-  const ws=weekStart(sliderOffset);
-  // Show month of the selected date, or the week start
-  const displayDate=selectedDate||ws;
-  document.getElementById('slider-month').textContent=(displayDate.getMonth()+1)+'월 '+displayDate.getFullYear();
-  for(let i=0;i<7;i++){
-    const d=new Date(ws);d.setDate(ws.getDate()+i);
-    const k=dkey(d),isT=k===TODAY,isSel=k===selectedKey,isFut=d>now&&!isT;
-    const cached=logCache[k];
-    let dotColor='transparent';
-    if(isT&&!isSel)dotColor='var(--accent)';
-    if(cached&&!isFut){
-      const hasMeals=(cached.meals||[]).filter(m=>m.type).length>0;
-      const hasWo=(cached.workouts||[]).filter(w=>w.status==='done').length>0;
-      const hasMand=(cached.mandatory||[]).filter(m=>m.done).length>0;
-      if(hasMeals||hasWo||hasMand)dotColor='var(--green)';
-    }
-    const wrap=document.createElement('div');wrap.className='day-pill-wrap';
-    // use correct day label based on date's actual day of week
-    const dayLabel=WDAYS_STRIP[(d.getDay()+6)%7]; // Mon=0
-    wrap.innerHTML=`<div class="day-pill${isSel?' active':''}${isT&&!isSel?' style="border-color:var(--accent)44;"':''}">
-      <div class="dp-name">${dayLabel}</div>
-      <div class="dp-num">${d.getDate()}</div>
-      <div class="dp-dot" style="background:${dotColor};"></div>
-    </div>`;
-    wrap.onclick=()=>selectDay(d,k);
-    strip.appendChild(wrap);
+function mmBack(){
+  const cur=[1,2,3].find(s=>document.getElementById('mm-s'+s).style.display!=='none');
+  if(cur>1)mmSetStep(cur-1);
+}
+
+function mmGoStep2(){
+  // Update small thumb in step 2
+  const thumb=document.getElementById('mm-s2-thumb');
+  if(photoData){
+    thumb.style.display='block';
+    thumb.innerHTML=`<img src="${photoData}" style="width:56px;height:56px;border-radius:8px;object-fit:cover;">`;
+  } else {
+    thumb.style.display='none';
   }
-  // scroll selected day into view
-  const pills=strip.querySelectorAll('.day-pill-wrap');
-  for(let i=0;i<7;i++){
-    const d2=new Date(ws);d2.setDate(ws.getDate()+i);
-    if(dkey(d2)===selectedKey){pills[i]?.scrollIntoView({block:'nearest',inline:'center'});break;}
-  }
-  const d=selectedDate,isT=selectedKey===TODAY;
-  const labelEl=document.getElementById('sel-day-label');
-  labelEl.textContent=(d.getMonth()+1)+'월 '+d.getDate()+'일 ('+WDAYS[d.getDay()]+')'+(isT?' — 오늘':'  ↩ 오늘로');
-  labelEl.style.color=isT?'var(--text2)':'var(--accent)';
-}
-async function selectDay(d,k){selectedDate=d;selectedKey=k;show('loading');await loadLog(k);hide('loading');buildSlider();renderRoutine();}
-
-async function jumpToDateFromWeekly(k,yr,mo,day){
-  const d=new Date(yr,mo,day);
-  // switch to 기록 tab
-  switchTab('routine',0);
-  // calculate which week offset this date is in
-  const diffDays=Math.floor((d-now)/(1000*60*60*24));
-  const diffWeeks=Math.floor(diffDays/7);
-  sliderOffset=diffWeeks;
-  selectedDate=d;
-  selectedKey=k;
-  show('loading');
-  await loadLog(k);
-  hide('loading');
-  buildSlider();
-  renderRoutine();
-}
-function shiftWeek(dir){sliderOffset+=dir;buildSlider();}
-async function jumpToToday(){
-  if(selectedKey===TODAY)return;
-  sliderOffset=0;
-  selectedDate=new Date(now);
-  selectedKey=TODAY;
-  show('loading');
-  await loadLog(TODAY);
-  hide('loading');
-  buildSlider();
-  renderRoutine();
+  // Show photo time suggestion if we have a detected time
+  const suggest=document.getElementById('mm-photo-suggest');
+  if(mealTime&&photoData){suggest.style.display='block';}else{suggest.style.display='none';}
+  mmSetStep(2);
 }
 
-// ── RENDER ROUTINE ──
-function renderRoutine(){renderWeight();renderMeals();renderWater();renderWorkouts();renderMandatory();renderTargets();}
-
-// WEIGHT
-function renderWeight(){
-  const wd=document.getElementById('wt-display'),tr=document.getElementById('wt-trend'),wu=document.getElementById('wt-unit');
-  if(log.weight!==null){wd.textContent=parseFloat(log.weight).toFixed(1);wd.style.color='var(--text)';wu.style.display='block';tr.textContent='기록됨';tr.style.color='var(--green)';}
-  else{wd.textContent='—';wd.style.color='var(--text3)';wu.style.display='none';tr.textContent='수정을 눌러 기록하세요';tr.style.color='var(--text3)';}
-}
-function saveWeight(){const v=parseFloat(document.getElementById('wt-inp').value);if(isNaN(v))return;log.weight=v;closeModal('weight-modal');renderWeight();scheduleSave();}
-
-// MEALS
-function renderMeals(){
-  const meals=log.meals||[];
-  const logged=meals.filter(m=>m.type).length;
-  const b=document.getElementById('diet-badge');
-  b.textContent=logged+'끼 기록';
-  b.className='s-badge '+(logged>=3?'green':'');
-  const MEAL_NUM_LABELS=['아침','점심','저녁','간식','간식2','추가'];
-  document.getElementById('meal-rows').innerHTML=meals.length===0
-    ?`<div style="font-size:12px;color:var(--text3);padding:10px 14px;font-style:italic;">아직 식사 기록이 없습니다.</div>`
-    :meals.map((m,i)=>{
-      const lbl=m.time||('식사 '+(i+1));
-      return`<div class="meal-row" onclick="openEditMealModal(${i})">
-        <div class="meal-dot ${m.type||'empty'}"></div>
-        <div class="meal-row-label">${lbl}</div>
-        ${m.name?`<div class="meal-row-name">${m.name}</div>`:`<div class="meal-row-empty">탭하여 수정</div>`}
-        ${m.photo?`<img class="meal-row-photo" src="${m.photo}">`:''}
-        <button onclick="event.stopPropagation();deleteMeal(${i})" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:13px;padding:4px;margin-left:auto;">✕</button>
-      </div>`;
-    }).join('');
+function mmGoStep3(){
+  // Build context bar
+  const catLabels={meal:'🥗 식사',snack:'🍰 간식',drink:'🥤 음료'};
+  const timeLabels={아침:'🌅 아침',점심:'☀️ 점심',저녁:'🌙 저녁',간식:'🍎 간식'};
+  const bar=document.getElementById('mm-context-bar');
+  const parts=[];
+  if(photoData)parts.push('📷 사진');
+  if(mealCategory)parts.push(catLabels[mealCategory]||mealCategory);
+  if(mealTime)parts.push(timeLabels[mealTime]||mealTime);
+  bar.innerHTML=parts.length>0
+    ?parts.map(p=>`<span style="background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:2px 8px;font-size:11px;">${p}</span>`).join('')
+    :'<span style="color:var(--text3);">정보를 선택하세요</span>';
+  mmSetStep(3);
 }
 
 function openAddMealModal(){
-  mealIdx=null;foodType=null;photoData=null;mealTime=null;
-  document.getElementById('mm-title').textContent='식사 / 간식 추가';
+  mealIdx=null;foodType=null;photoData=null;mealTime=null;mealCategory=null;
+  // Reset all UI
+  document.querySelectorAll('.ftbtn').forEach(b=>{b.className='ftbtn';b.style.cssText='';});
+  document.querySelectorAll('#mm-category-btns button').forEach(b=>{
+    b.style.borderColor='var(--border)';b.style.background='var(--surface2)';
+    b.querySelector('div:last-child').style.color='var(--text2)';
+  });
   document.getElementById('mm-name').value='';
-  document.querySelectorAll('.ftbtn').forEach(b=>{b.className='ftbtn';});
   document.getElementById('mm-photo-wrap').style.display='none';
+  document.getElementById('mm-photo-time-hint').textContent='';
+  document.getElementById('mm-photo-suggest').style.display='none';
+  const c=document.getElementById('mm-photo-camera');const g=document.getElementById('mm-photo-gallery');
+  if(c)c.value='';if(g)g.value='';
+  document.getElementById('mm-save-btn').textContent='식사 저장';
+  mmSetStep(1);
   openModal('meal-modal');
 }
 
 function openEditMealModal(i){
   mealIdx=i;
   const m=log.meals[i];
-  foodType=m.type;photoData=m.photo;mealTime=m.time||null;
-  document.getElementById('mm-title').textContent='식사 수정';
-  document.getElementById('mm-name').value=m.name||'';
-  // reset all btns
+  foodType=m.type;photoData=m.photo;mealTime=m.time||null;mealCategory=m.category||null;
+  // Reset buttons
   document.querySelectorAll('.ftbtn').forEach(b=>{b.className='ftbtn';b.style.cssText='';});
-  if(foodType){const mp={green:0,red:1,skipped:2};const idx=mp[foodType];if(idx!==undefined)document.querySelectorAll('.ftbtn')[idx].classList.add('sel-'+foodType);}
-  // restore time selection
+  document.querySelectorAll('#mm-category-btns button').forEach(b=>{
+    b.style.borderColor='var(--border)';b.style.background='var(--surface2)';
+    b.querySelector('div:last-child').style.color='var(--text2)';
+  });
+  document.getElementById('mm-name').value=m.name||'';
+  // Restore photo
+  const pw=document.getElementById('mm-photo-wrap');
+  if(photoData){document.getElementById('mm-photo-img').src=photoData;pw.style.display='block';}
+  else{pw.style.display='none';}
+  // Restore category
+  if(mealCategory){
+    document.querySelectorAll('#mm-category-btns button').forEach(b=>{
+      if(b.getAttribute('onclick')&&b.getAttribute('onclick').includes("'"+mealCategory+"'")){
+        b.style.borderColor='var(--accent)';b.style.background='var(--accent-bg)';
+        b.querySelector('div:last-child').style.color='var(--accent)';
+      }
+    });
+  }
+  // Restore time
   document.querySelectorAll('#mm-time-btns .ftbtn').forEach(b=>b.classList.remove('time-sel'));
   if(mealTime){
     document.querySelectorAll('#mm-time-btns .ftbtn').forEach(b=>{
       if(b.textContent.includes(mealTime))b.classList.add('time-sel');
     });
   }
-  const pw=document.getElementById('mm-photo-wrap');
-  if(photoData){document.getElementById('mm-photo-img').src=photoData;pw.style.display='block';}else{pw.style.display='none';}
+  // Restore quality
+  if(foodType){
+    const mp={green:0,red:1,skipped:2};
+    const idx=mp[foodType];
+    if(idx!==undefined)document.querySelectorAll('#mm-quality-btns .ftbtn')[idx].classList.add('sel-'+foodType);
+  }
+  document.getElementById('mm-save-btn').textContent='변경 저장';
+  // Skip to step 3 for edits
+  mmGoStep2();mmGoStep3();
   openModal('meal-modal');
 }
 
-function deleteMeal(i){
-  log.meals.splice(i,1);
-  renderMeals();scheduleSave();
+function pickMealCategory(cat,el){
+  mealCategory=cat;
+  document.querySelectorAll('#mm-category-btns button').forEach(b=>{
+    b.style.borderColor='var(--border)';b.style.background='var(--surface2)';
+    const lbl=b.querySelector('div:last-child');if(lbl)lbl.style.color='var(--text2)';
+  });
+  el.style.borderColor='var(--accent)';el.style.background='var(--accent-bg)';
+  const lbl=el.querySelector('div:last-child');if(lbl)lbl.style.color='var(--accent)';
+  // If snack or drink, auto-select 간식 slot
+  if((cat==='snack'||cat==='drink')&&!mealTime){
+    mealTime='간식';
+    document.querySelectorAll('#mm-time-btns .ftbtn').forEach(b=>{
+      b.classList.remove('time-sel');
+      if(b.textContent.includes('간식'))b.classList.add('time-sel');
+    });
+  }
 }
 
-function pickFT(t,el){foodType=t;document.querySelectorAll('.ftbtn').forEach(b=>b.className='ftbtn');el.classList.add('sel-'+t);}
 function pickMealTime(t,el){
   if(mealTime===t){mealTime=null;}else{mealTime=t;}
   document.querySelectorAll('#mm-time-btns .ftbtn').forEach(b=>b.classList.remove('time-sel'));
   if(mealTime)el.classList.add('time-sel');
+  document.getElementById('mm-photo-suggest').style.display='none';
 }
-function previewPhoto(inp){const f=inp.files[0];if(!f)return;const r=new FileReader();r.onload=e=>{photoData=e.target.result;document.getElementById('mm-photo-img').src=e.target.result;document.getElementById('mm-photo-wrap').style.display='block';};r.readAsDataURL(f);}
-function delPhoto(){photoData=null;document.getElementById('mm-photo-wrap').style.display='none';const c=document.getElementById('mm-photo-camera');const g=document.getElementById('mm-photo-gallery');if(c)c.value='';if(g)g.value='';}
+
+function pickFT(t,el){
+  foodType=t;
+  document.querySelectorAll('#mm-quality-btns .ftbtn').forEach(b=>b.className='ftbtn');
+  el.classList.add('sel-'+t);
+}
+
+function applyDetectedTime(t){
+  if(!t||mealTime)return;
+  mealTime=t;
+  document.querySelectorAll('#mm-time-btns .ftbtn').forEach(b=>{
+    b.classList.remove('time-sel');
+    if(b.textContent.includes(t))b.classList.add('time-sel');
+  });
+  const hint=document.getElementById('mm-photo-time-hint');
+  if(hint)hint.textContent='📷 '+t+' 시간대로 자동 추천됩니다 (변경 가능)';
+  const suggest=document.getElementById('mm-photo-suggest');
+  if(suggest)suggest.style.display='block';
+}
+
+function hourToMealTime(h){
+  if(h>=5&&h<=10)return'아침';
+  if(h>=11&&h<=14)return'점심';
+  if(h>=15&&h<=17)return'간식';
+  if(h>=18&&h<=22)return'저녁';
+  return'간식';
+}
+
+function readExifDateTime(arrayBuffer){
+  try{
+    const view=new DataView(arrayBuffer);
+    if(view.getUint16(0)!==0xFFD8)return null;
+    let offset=2;
+    while(offset<view.byteLength-2){
+      const marker=view.getUint16(offset);
+      if(marker===0xFFE1){
+        const exifHeader=String.fromCharCode(...new Uint8Array(arrayBuffer,offset+4,4));
+        if(exifHeader!=='Exif')break;
+        const tiffOffset=offset+10;
+        const byteOrder=view.getUint16(tiffOffset);
+        const le=byteOrder===0x4949;
+        const getU16=(o)=>le?view.getUint16(tiffOffset+o,true):view.getUint16(tiffOffset+o,false);
+        const getU32=(o)=>le?view.getUint32(tiffOffset+o,true):view.getUint32(tiffOffset+o,false);
+        if(getU16(2)!==42)break;
+        let ifdOffset=getU32(4);
+        const numEntries=getU16(ifdOffset);
+        for(let i=0;i<numEntries;i++){
+          const entryOffset=ifdOffset+2+i*12;
+          const tag=getU16(entryOffset);
+          if(tag===0x9003||tag===0x0132){
+            const valueOffset=getU32(entryOffset+8);
+            let dateStr='';
+            for(let j=0;j<19;j++){
+              const c=view.getUint8(tiffOffset+valueOffset+j);
+              if(c===0)break;
+              dateStr+=String.fromCharCode(c);
+            }
+            if(dateStr.length>=19)return dateStr;
+          }
+        }
+        break;
+      }
+      if((marker&0xFF00)!==0xFF00)break;
+      offset+=2+view.getUint16(offset+2);
+    }
+  }catch(e){}
+  return null;
+}
+
+function previewPhoto(inp){
+  const f=inp.files[0];if(!f)return;
+  const isCamera=inp.id==='mm-photo-camera';
+  if(isCamera){applyDetectedTime(hourToMealTime(new Date().getHours()));}
+  const abReader=new FileReader();
+  abReader.onload=function(e){
+    if(!isCamera){
+      const exifDate=readExifDateTime(e.target.result);
+      if(exifDate){applyDetectedTime(hourToMealTime(parseInt(exifDate.substr(11,2))));}
+      else{applyDetectedTime(hourToMealTime(new Date(f.lastModified).getHours()));}
+    }
+    const urlReader=new FileReader();
+    urlReader.onload=function(ev){
+      photoData=ev.target.result;
+      document.getElementById('mm-photo-img').src=ev.target.result;
+      document.getElementById('mm-photo-wrap').style.display='block';
+    };
+    urlReader.readAsDataURL(f);
+  };
+  abReader.readAsArrayBuffer(f);
+}
+
+function delPhoto(){
+  photoData=null;
+  document.getElementById('mm-photo-wrap').style.display='none';
+  document.getElementById('mm-photo-time-hint').textContent='';
+  const c=document.getElementById('mm-photo-camera');const g=document.getElementById('mm-photo-gallery');
+  if(c)c.value='';if(g)g.value='';
+}
+
 function saveMeal(){
   const name=document.getElementById('mm-name').value.trim();
-  const entry={name,type:foodType,photo:photoData,time:mealTime};
+  const entry={name,type:foodType,photo:photoData,time:mealTime,category:mealCategory};
   if(mealIdx===null){log.meals.push(entry);}
   else{log.meals[mealIdx]=entry;}
   closeModal('meal-modal');renderMeals();scheduleSave();
@@ -1540,17 +1434,26 @@ function buildWVTable(dates){
       const k=dkey(d),isT=k===TODAY,iF=d>now&&!isT;
       const dl=wvLogs[k];
       const meals=dl?.meals||[];
-      // find meal matching this time slot
-      const m=meals.find(meal=>(meal.time||'기타')===slotLabel);
-      let cls='c-empty',display='';
+      // find ALL meals matching this time slot
+      const slotMeals=meals.filter(meal=>(meal.time||'기타')===slotLabel);
+      let cls='c-empty',display='',title='';
       if(iF){cls='c-future';}
-      else if(m){
-        if(m.type==='green')cls='c-green';
-        else if(m.type==='red')cls='c-red';
-        else if(m.type==='skipped')cls='c-amber';
-        display=m.name?m.name:(m.type==='skipped'?'스킵':m.type?'—':'');
+      else if(slotMeals.length>0){
+        const first=slotMeals[0];
+        const extra=slotMeals.length>1?' +'+( slotMeals.length-1):'';
+        // color by first item's type
+        if(first.type==='green')cls='c-green';
+        else if(first.type==='red')cls='c-red';
+        else if(first.type==='skipped')cls='c-amber';
+        else cls='c-empty';
+        // if mixed types (e.g. good + bad), show amber as warning
+        const types=slotMeals.map(m=>m.type).filter(Boolean);
+        if(types.includes('red')&&types.includes('green'))cls='c-amber';
+        const firstName=first.name||(first.type==='skipped'?'스킵':first.type?'—':'');
+        display=firstName+extra;
+        title=slotMeals.map(m=>m.name||m.type||'?').join(', ');
       }
-      html+=`<td class="dc${isT?' today-col':''} ${cls}" title="${m?.name||''}">${display||'—'}</td>`;
+      html+=`<td class="dc${isT?' today-col':''} ${cls}" title="${title}">${display||'—'}</td>`;
     });
     html+=`</tr>`;
   }
