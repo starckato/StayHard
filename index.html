@@ -952,7 +952,233 @@ const DEFAULT_MAND=[
 function emptyLog(isNew=false){return{weight:null,water_cups:0,meals:[],workouts:[],mandatory:isNew?[]:JSON.parse(JSON.stringify(DEFAULT_MAND)),targets:[]};}
 let log=emptyLog();
 
+// ── INIT ──
+async function init(){
+  const{data:{session}}=await sb.auth.getSession();
+  if(session)await onLogin(session.user);
+  else showAuth();
+}
+function showAuth(){
+  hide('loading');
+  document.getElementById('auth-screen').style.display='flex';
+  const lb=document.getElementById('li-btn');if(lb){lb.disabled=false;lb.textContent='로그인';}
+  const sb2=document.getElementById('su-btn');if(sb2){sb2.disabled=false;sb2.textContent='계정 만들기';}
+  document.getElementById('li-err').textContent='';
+}
+function showApp(){hide('loading');hide('auth-screen');show('app-screen');}
+function show(id){document.getElementById(id).style.display='block';}
+function hide(id){document.getElementById(id).style.display='none';}
 
+async function onLogin(user){
+  CU=user;
+  let{data:p}=await sb.from('profiles').select('*').eq('id',user.id).single();
+  if(!p){const un=user.email.split('@')[0].replace(/[^a-z0-9]/gi,'').toLowerCase();const{data:np}=await sb.from('profiles').insert({id:user.id,username:un,display_name:un}).select().single();p=np;}
+  CP=p;
+  document.getElementById('p-name').textContent=p.display_name||p.username;
+  document.getElementById('p-email').textContent=user.email;
+  document.getElementById('p-username').textContent='@'+(p.username||'');
+  document.getElementById('hdr-sub').textContent=(p.display_name||p.username)+'의 보드';
+  showDailyMotto();
+  await loadLog(TODAY);
+  await loadActiveCompetition();
+  showApp();
+  buildSlider();
+  renderRoutine();
+  updateGogginsHeader();
+}
+
+// ── AUTH ACTIONS ──
+function switchAuthTab(t){
+  document.querySelectorAll('.auth-tab').forEach((el,i)=>el.classList.toggle('active',(t==='login'&&i===0)||(t==='signup'&&i===1)));
+  document.getElementById('auth-login').style.display=t==='login'?'block':'none';
+  document.getElementById('auth-signup').style.display=t==='signup'?'block':'none';
+}
+async function doLogin(){
+  const email=document.getElementById('li-email').value.trim(),pw=document.getElementById('li-pw').value;
+  const btn=document.getElementById('li-btn');btn.disabled=true;btn.textContent='로그인 중…';document.getElementById('li-err').textContent='';
+  const{data,error}=await sb.auth.signInWithPassword({email,password:pw});
+  if(error){document.getElementById('li-err').textContent=error.message;btn.disabled=false;btn.textContent='로그인';return;}
+  show('loading');await onLogin(data.user);
+}
+async function doSignup(){
+  const name=document.getElementById('su-name').value.trim(),un=document.getElementById('su-user').value.trim().toLowerCase().replace(/[^a-z0-9_]/g,''),email=document.getElementById('su-email').value.trim(),pw=document.getElementById('su-pw').value;
+  const btn=document.getElementById('su-btn');
+  if(!name||!un||!email||!pw){document.getElementById('su-err').textContent='모든 항목을 입력해주세요.';return;}
+  if(pw.length<6){document.getElementById('su-err').textContent='비밀번호는 최소 6자 이상이어야 합니다.';return;}
+  btn.disabled=true;btn.textContent='생성 중…';document.getElementById('su-err').textContent='';
+  const{data:ex}=await sb.from('profiles').select('id').eq('username',un).maybeSingle();
+  if(ex){document.getElementById('su-err').textContent='이미 사용 중인 유저명입니다.';btn.disabled=false;btn.textContent='계정 만들기';return;}
+  const{data,error}=await sb.auth.signUp({email,password:pw});
+  if(error){document.getElementById('su-err').textContent=error.message;btn.disabled=false;btn.textContent='계정 만들기';return;}
+  await sb.from('profiles').insert({id:data.user.id,username:un,display_name:name});
+  show('loading');await onLogin(data.user);
+}
+async function doSignOut(){await sb.auth.signOut();CU=null;CP=null;activeComp=null;closeModal('profile-modal');hide('app-screen');showAuth();}
+
+// ── LOAD / SAVE ──
+async function loadLog(key){
+  if(logCache[key]){log=logCache[key];return;}
+  const{data}=await sb.from('daily_logs').select('*').eq('user_id',CU.id).eq('log_date',key).maybeSingle();
+  if(data){
+    let meals=data.meals||[];
+    if(!meals.length){
+      for(let n=1;n<=4;n++){
+        if(data['meal_'+n+'_type']||data['meal_'+n+'_name']){
+          meals.push({name:data['meal_'+n+'_name']||'',type:data['meal_'+n+'_type']||null,photo:data['meal_'+n+'_photo']||null});
+        }
+      }
+    }
+    const l={weight:data.weight!==null?parseFloat(data.weight):null,water_cups:data.water_cups||0,meals,workouts:data.workouts||[],mandatory:data.mandatory?data.mandatory:[],targets:data.targets||[]};
+    logCache[key]=l;log=l;
+  }else{
+    const routineDefs=await loadRoutineDefinitions();
+    const l=emptyLog(true);
+    if(routineDefs.length>0)l.mandatory=routineDefs.map(r=>({...r,done:false}));
+    logCache[key]=l;log=l;
+  }
+}
+async function loadRoutineDefinitions(){
+  const cachedWithMand=Object.values(logCache).filter(l=>l.mandatory&&l.mandatory.length>0);
+  if(cachedWithMand.length>0){
+    cachedWithMand.sort((a,b)=>b.mandatory.length-a.mandatory.length);
+    return cachedWithMand[0].mandatory.map(r=>({name:r.name,done:false,days:r.days||[0,1,2,3,4,5,6]}));
+  }
+  const{data}=await sb.from('daily_logs').select('mandatory,log_date').eq('user_id',CU.id).not('mandatory','is',null).order('log_date',{ascending:false}).limit(7);
+  if(data&&data.length>0){const recent=data.find(d=>d.mandatory&&d.mandatory.length>0);if(recent)return recent.mandatory.map(r=>({name:r.name,done:false,days:r.days||[0,1,2,3,4,5,6]}));}
+  return[];
+}
+function scheduleSave(){
+  clearTimeout(saveTimer);
+  saveTimer=setTimeout(async()=>{
+    await saveLog(selectedKey);
+    if(log.mandatory&&log.mandatory.length>0){
+      Object.keys(logCache).forEach(k=>{
+        if(k!==selectedKey&&logCache[k]&&(!logCache[k].mandatory||logCache[k].mandatory.length===0)){
+          logCache[k].mandatory=log.mandatory.map(r=>({name:r.name,done:false,days:r.days||[0,1,2,3,4,5,6]}));
+        }
+      });
+    }
+  },900);
+}
+async function saveLog(key){
+  if(!CU)return;
+  const l=logCache[key];if(!l)return;
+  const p={user_id:CU.id,log_date:key,weight:l.weight,water_cups:l.water_cups,meals:l.meals||[],workouts:l.workouts,mandatory:l.mandatory,targets:l.targets};
+  await sb.from('daily_logs').upsert(p,{onConflict:'user_id,log_date'});
+  showToast('저장됨 ✓');
+  updateGogginsHeader();
+}
+function showToast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2000);}
+
+// ── TABS ──
+function switchTab(name,idx){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('.tbar-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.bni').forEach(n=>n.classList.remove('active'));
+  document.getElementById('view-'+name).classList.add('active');
+  const tabs=document.querySelectorAll('.tbar-tab');if(tabs[idx])tabs[idx].classList.add('active');
+  const bnis=document.querySelectorAll('.bni');if(bnis[idx])bnis[idx].classList.add('active');
+  if(name==='weekly')renderWeeklyView();
+  if(name==='competition'){renderChallengeHome();}
+  if(name==='goggins')renderGogginsTab();
+}
+
+// ── GOGGINS ──
+// mottos already declared above
+function updateGogginsHeader(){
+  const todayLog=logCache[TODAY]||log;
+  const scores=calcGogginsScore(todayLog);
+  const streak=calcStreak();
+  const tier=getTier(scores.total);
+  document.getElementById('hdr-streak').textContent=streak+'일';
+  document.getElementById('hdr-score').textContent=scores.total+'점';
+  document.getElementById('hdr-tier').textContent=tier.name;
+}
+function calcStreak(){
+  let streak=0;const d=new Date(now);
+  for(let i=0;i<60;i++){const k=dkey(d);const l=logCache[k];if(l){const s=calcGogginsScore(l);if(s.total>0){streak++;d.setDate(d.getDate()-1);}else break;}else break;}
+  return streak;
+}
+async function renderGogginsTab(){
+  const dates=[];for(let i=6;i>=0;i--){const d=new Date(now);d.setDate(d.getDate()-i);dates.push(d);}
+  const keys=dates.map(d=>dkey(d));const from=keys[0],to=keys[keys.length-1];
+  const{data}=await sb.from('daily_logs').select('*').eq('user_id',CU.id).gte('log_date',from).lte('log_date',to);
+  if(data)data.forEach(d=>{
+    let gmeals=d.meals||[];
+    if(!gmeals.length){for(let n=1;n<=4;n++){if(d['meal_'+n+'_type']||d['meal_'+n+'_name']){gmeals.push({name:d['meal_'+n+'_name']||'',type:d['meal_'+n+'_type']||null,photo:d['meal_'+n+'_photo']||null});}}}
+    const l={weight:d.weight!==null?parseFloat(d.weight):null,water_cups:d.water_cups||0,meals:gmeals,workouts:d.workouts||[],mandatory:d.mandatory?d.mandatory:[],targets:d.targets||[]};
+    logCache[d.log_date]=l;
+  });
+  if(logCache[TODAY])log=logCache[TODAY];
+  const todayScores=calcGogginsScore(logCache[TODAY]||log);
+  const tier=getTier(todayScores.total);
+  const circumference=314;
+  const offset=circumference-(circumference*todayScores.total/100);
+  document.getElementById('g-ring-fill').style.strokeDashoffset=offset;
+  document.getElementById('g-ring-fill').style.stroke=tier.color;
+  document.getElementById('g-score-num').textContent=todayScores.total;
+  document.getElementById('g-score-num').style.color=tier.color;
+  document.getElementById('g-tier-badge').textContent=tier.icon+' '+tier.name;
+  document.getElementById('g-tier-badge').style.background=tier.color+'22';
+  document.getElementById('g-tier-badge').style.color=tier.color;
+  document.getElementById('g-tier-badge').style.border='1px solid '+tier.color+'55';
+  const yKey=dkey(new Date(now.getFullYear(),now.getMonth(),now.getDate()-1));
+  const yLog=logCache[yKey];const yScore=yLog?calcGogginsScore(yLog).total:null;
+  const diff=yScore!==null?todayScores.total-yScore:null;
+  document.getElementById('g-score-change').textContent=diff===null?'오늘 첫 기록':diff>0?'어제보다 +'+diff+'점 상승':diff<0?'어제보다 '+diff+'점 하락':'어제와 동일';
+  [['diet',todayScores.diet,'gbr-diet','gbv-diet'],['wo',todayScores.wo,'gbr-wo','gbv-wo'],['mand',todayScores.mand,'gbr-mand','gbv-mand'],['tgt',todayScores.tgt,'gbr-tgt','gbv-tgt']].forEach(([k,v,bid,vid])=>{document.getElementById(bid).style.width=v+'%';document.getElementById(vid).textContent=v+'%';});
+  const streak=calcStreak();
+  document.getElementById('streak-num').textContent=streak;
+  document.getElementById('streak-best').textContent='최고: '+streak+'일';
+  const barRow=document.getElementById('streak-bar-row');barRow.innerHTML='';
+  dates.forEach(d=>{const k=dkey(d),l=logCache[k];const s=l?calcGogginsScore(l).total:0;const bar=document.createElement('div');bar.className='streak-bar-day';bar.style.background=s>60?'#4ade80':s>30?'#fbbf24':s>0?'#f87171':'#2a2a32';barRow.appendChild(bar);});
+  const ladderEl=document.getElementById('tier-ladder');
+  ladderEl.innerHTML=TIERS.map(t=>{const isCurrent=todayScores.total>=t.min&&todayScores.total<=t.max;return`<div class="tier-row ${isCurrent?'current':''}"><div class="tier-icon">${t.icon}</div><div class="tier-info"><div class="tier-name" style="${isCurrent?'color:'+t.color:''}">${t.name}</div><div class="tier-range">${t.min} – ${t.max}점</div></div>${isCurrent?`<div class="tier-you">현재</div>`:''}</div>`;}).join('');
+  const nextTier=TIERS.find(t=>todayScores.total<t.min);
+  document.getElementById('next-hint').textContent=nextTier?nextTier.name+' 달성까지 '+(nextTier.min-todayScores.total)+'점 남았습니다 →':'최고 등급 달성! 💀';
+  updateGogginsHeader();
+}
+
+// ── DAY SLIDER ──
+function weekStart(offset){const d=new Date(now);d.setDate(d.getDate()-((d.getDay()+6)%7)+offset*7);d.setHours(0,0,0,0);return d;}
+function buildSlider(){
+  const strip=document.getElementById('day-strip');strip.innerHTML='';
+  const ws=weekStart(sliderOffset);
+  const displayDate=selectedDate||ws;
+  document.getElementById('slider-month').textContent=(displayDate.getMonth()+1)+'월 '+displayDate.getFullYear();
+  for(let i=0;i<7;i++){
+    const d=new Date(ws);d.setDate(ws.getDate()+i);
+    const k=dkey(d),isT=k===TODAY,isSel=k===selectedKey,isFut=d>now&&!isT;
+    const cached=logCache[k];
+    let dotColor='transparent';
+    if(isT&&!isSel)dotColor='var(--accent)';
+    if(cached&&!isFut){const hasMeals=(cached.meals||[]).filter(m=>m.type).length>0;const hasWo=(cached.workouts||[]).filter(w=>w.status==='done').length>0;const hasMand=(cached.mandatory||[]).filter(m=>m.done).length>0;if(hasMeals||hasWo||hasMand)dotColor='var(--green)';}
+    const wrap=document.createElement('div');wrap.className='day-pill-wrap';
+    const dayLabel=['월','화','수','목','금','토','일'][(d.getDay()+6)%7];
+    wrap.innerHTML=`<div class="day-pill${isSel?' active':''}"><div class="dp-name">${dayLabel}</div><div class="dp-num">${d.getDate()}</div><div class="dp-dot" style="background:${dotColor};"></div></div>`;
+    wrap.onclick=()=>selectDay(d,k);
+    strip.appendChild(wrap);
+  }
+  const d=selectedDate,isT=selectedKey===TODAY;
+  const labelEl=document.getElementById('sel-day-label');
+  labelEl.textContent=(d.getMonth()+1)+'월 '+d.getDate()+'일 ('+['일','월','화','수','목','금','토'][d.getDay()]+')'+(isT?' — 오늘':'  ↩ 오늘로');
+  labelEl.style.color=isT?'var(--text2)':'var(--accent)';
+}
+async function selectDay(d,k){selectedDate=d;selectedKey=k;show('loading');await loadLog(k);hide('loading');buildSlider();renderRoutine();}
+async function jumpToToday(){if(selectedKey===TODAY)return;sliderOffset=0;selectedDate=new Date(now);selectedKey=TODAY;show('loading');await loadLog(TODAY);hide('loading');buildSlider();renderRoutine();}
+async function jumpToDateFromWeekly(k,yr,mo,day){const d=new Date(yr,mo,day);switchTab('routine',0);const diffDays=Math.floor((d-now)/(1000*60*60*24));sliderOffset=Math.floor(diffDays/7);selectedDate=d;selectedKey=k;show('loading');await loadLog(k);hide('loading');buildSlider();renderRoutine();}
+function shiftWeek(dir){sliderOffset+=dir;buildSlider();}
+
+// ── RENDER ROUTINE ──
+function renderRoutine(){renderWeight();renderMeals();renderWater();renderWorkouts();renderMandatory();renderTargets();}
+
+// WEIGHT
+function renderWeight(){
+  const wd=document.getElementById('wt-display'),tr=document.getElementById('wt-trend'),wu=document.getElementById('wt-unit');
+  if(log.weight!==null){wd.textContent=parseFloat(log.weight).toFixed(1);wd.style.color='var(--text)';wu.style.display='block';tr.textContent='기록됨';tr.style.color='var(--green)';}
+  else{wd.textContent='—';wd.style.color='var(--text3)';wu.style.display='none';tr.textContent='수정을 눌러 기록하세요';tr.style.color='var(--text3)';}
+}
+function saveWeight(){const v=parseFloat(document.getElementById('wt-inp').value);if(isNaN(v))return;log.weight=v;closeModal('weight-modal');renderWeight();scheduleSave();}
 
 let mealIdx=null,foodType=null,photoData=null,mealTime=null,mealCategory=null;
 
