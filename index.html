@@ -35,6 +35,10 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 .toast{position:fixed;top:16px;left:50%;transform:translateX(-50%);background:var(--surface);border:1px solid var(--border2);border-radius:20px;padding:7px 16px;font-size:12px;color:var(--text2);z-index:500;opacity:0;transition:opacity .25s;pointer-events:none;}
 .toast.show{opacity:1;}
 
+/* WATER GOAL BUTTONS */
+.wg-btn{padding:6px 10px;border-radius:8px;border:1px solid var(--border2);font-size:12px;cursor:pointer;font-weight:500;background:var(--surface3);color:var(--text2);transition:all .15s;}
+.wg-btn.active{background:var(--blue-bg);border-color:#60a5fa;color:#60a5fa;}
+
 /* AUTH */
 #auth-screen{display:none;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:32px 24px;}
 .auth-logo{font-size:36px;margin-bottom:8px;}
@@ -549,10 +553,10 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
       <div class="add-row" onclick="openAddMandatoryModal()" style="color:var(--accent);font-weight:500;"><span style="font-size:16px;margin-right:6px;">＋</span> 루틴 추가</div>
     </div>
     <div class="s-card">
-      <div class="s-card-hdr"><div class="s-card-title">오늘의 목표</div><div class="s-badge" id="tgt-badge">0/0</div></div>
+      <div class="s-card-hdr"><div class="s-card-title">오늘의 할일</div><div class="s-badge" id="tgt-badge">0/0</div></div>
       <div class="s-divider"></div>
       <div class="check-rows" id="tgt-rows"></div>
-      <div class="add-tgt" onclick="toggleAddTgt()" style="color:var(--accent);font-weight:500;"><span style="font-size:16px;margin-right:6px;">＋</span> 오늘의 목표 추가</div>
+      <div class="add-tgt" onclick="toggleAddTgt()" style="color:var(--accent);font-weight:500;"><span style="font-size:16px;margin-right:6px;">＋</span> 오늘의 할일 추가</div>
       <div class="add-tgt-input" id="add-tgt-input">
         <input type="text" id="tgt-inp" placeholder="오늘 무엇을 하고 싶나요?"/>
         <button class="add-tgt-go" onclick="addTarget()">추가</button>
@@ -998,6 +1002,20 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
     <div class="profile-row">
       <div class="pav">🧑</div>
       <div><div class="pname" id="p-name"></div><div class="pemail" id="p-email"></div><div style="font-size:10px;color:var(--text3);margin-top:1px;" id="p-username"></div></div>
+    </div>
+    <div style="margin:16px 0 8px;padding:14px;background:var(--surface2);border-radius:var(--radius-sm);border:1px solid var(--border);">
+      <div style="font-size:11px;color:var(--text2);margin-bottom:10px;font-weight:500;text-transform:uppercase;letter-spacing:.06em;">💧 하루 물 목표</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;">
+        <div id="wg-btn-1" onclick="setWaterGoal(1)" class="wg-btn">0.5L</div>
+        <div id="wg-btn-2" onclick="setWaterGoal(2)" class="wg-btn">1.0L</div>
+        <div id="wg-btn-3" onclick="setWaterGoal(3)" class="wg-btn">1.5L</div>
+        <div id="wg-btn-4" onclick="setWaterGoal(4)" class="wg-btn">2.0L</div>
+        <div id="wg-btn-5" onclick="setWaterGoal(5)" class="wg-btn">2.5L</div>
+        <div id="wg-btn-6" onclick="setWaterGoal(6)" class="wg-btn">3.0L</div>
+        <div id="wg-btn-7" onclick="setWaterGoal(7)" class="wg-btn">3.5L</div>
+        <div id="wg-btn-8" onclick="setWaterGoal(8)" class="wg-btn">4.0L</div>
+      </div>
+      <div style="font-size:10px;color:var(--text3);margin-top:8px;">목표 달성 시 💧 파란색으로 표시됩니다</div>
     </div>
     <button class="signout-btn" onclick="doSignOut()">로그아웃</button>
     <button class="mbtn-ghost" onclick="closeModal('profile-modal')">닫기</button>
@@ -1594,6 +1612,24 @@ function showApp(){hide('loading');hide('auth-screen');show('app-screen');}
 function show(id){document.getElementById(id).style.display='block';}
 function hide(id){document.getElementById(id).style.display='none';}
 
+function getWaterGoal(){return CP?.water_goal||6;}
+async function setWaterGoal(cups){
+  if(!CP)return;
+  CP.water_goal=cups;
+  await sb.from('profiles').update({water_goal:cups}).eq('id',CU.id);
+  refreshWaterGoalUI();
+  renderWater();
+  renderWeeklyView();
+  showToast('물 목표: '+(cups*.5).toFixed(1)+'L 설정됨 💧');
+}
+function refreshWaterGoalUI(){
+  const goal=CP?.water_goal||6;
+  for(let i=1;i<=8;i++){
+    const btn=document.getElementById('wg-btn-'+i);
+    if(btn){btn.classList.toggle('active',i===goal);}
+  }
+}
+
 async function onLogin(user){
   CU=user;
   let{data:p}=await sb.from('profiles').select('*').eq('id',user.id).single();
@@ -1612,6 +1648,7 @@ async function onLogin(user){
     p={display_name:user.email.split('@')[0],username:user.email.split('@')[0]};
   }
   CP=p;
+  refreshWaterGoalUI();
   document.getElementById('p-name').textContent=p.display_name||p.username;
   document.getElementById('p-email').textContent=user.email;
   document.getElementById('p-username').textContent='@'+(p.username||'');
@@ -2094,8 +2131,11 @@ function saveMeal(){
 // WATER
 function renderWater(){
   const c=document.getElementById('water-cups');c.innerHTML='';
+  const goal=CP?.water_goal||6;
   for(let i=0;i<12;i++){const d=document.createElement('div');d.className='wc'+(i<log.water_cups?' on':'');d.onclick=()=>{log.water_cups=(log.water_cups===i+1)?i:i+1;renderWater();scheduleSave();};c.appendChild(d);}
-  document.getElementById('water-val').textContent=(log.water_cups*.5).toFixed(1)+'L';
+  const val=document.getElementById('water-val');
+  val.textContent=(log.water_cups*.5).toFixed(1)+'L / '+(goal*.5).toFixed(1)+'L';
+  val.style.color=log.water_cups>=goal?'var(--blue)':'var(--text2)';
 }
 
 // ══════════════════════════════════════════════
@@ -2575,7 +2615,7 @@ function renderTargets(){
   document.getElementById('tgt-rows').innerHTML=log.targets.length===0
     ?`<div style="padding:16px 0;text-align:center;">
   <div style="font-size:28px;margin-bottom:6px;">🎯</div>
-  <div style="font-size:13px;color:var(--text3);margin-bottom:4px;">오늘의 목표를 설정하세요</div>
+  <div style="font-size:13px;color:var(--text3);margin-bottom:4px;">오늘의 할일을 설정하세요</div>
   <div style="font-size:11px;color:var(--text3);">예: 링크드인 연락 · 보고서 작성 · 병원 예약</div>
 </div>`
     :log.targets.map((t,i)=>{
@@ -2696,7 +2736,7 @@ function buildWVTable(dates){
   }
 
   html+=`<tr><td class="row-sub">물 (L)</td>`;
-  dates.forEach(d=>{const k=dkey(d),isT=k===TODAY,iF=d>now&&!isT;const dl=wvLogs[k];const cups=dl?.water_cups||0;const val=cups>0?(cups*.5).toFixed(1)+'L':'';const cls=iF?'c-future':cups>=6?'c-green':cups>0?'c-amber':'c-empty';html+=`<td class="dc${isT?' today-col':''} ${cls}" onclick="wvTapWater('${k}',this)" style="cursor:pointer" title="탭하여 0.5L 추가">${val||'—'}</td>`;});html+=`</tr>`;
+  dates.forEach(d=>{const k=dkey(d),isT=k===TODAY,iF=d>now&&!isT;const dl=wvLogs[k];const cups=dl?.water_cups||0;const val=cups>0?(cups*.5).toFixed(1)+'L':'';const wgoal=CP?.water_goal||6;const cls=iF?'c-future':cups>=wgoal?'c-green':cups>0?'c-amber':'c-empty';html+=`<td class="dc${isT?' today-col':''} ${cls}" onclick="wvTapWater('${k}',this)" style="cursor:pointer" title="탭하여 0.5L 추가">${val||'—'}</td>`;});html+=`</tr>`;
   html+=`<tr class="section-hdr-row"><td colspan="8">💪 운동</td></tr>`;
   html+=`<tr><td class="row-sub">운동</td>`;
   dates.forEach(d=>{
@@ -2748,15 +2788,15 @@ function buildWVTable(dates){
   // "+ 루틴 추가" button row
   html+=`<tr style="background:transparent;">
     <td class="row-sub" style="color:var(--accent);font-weight:500;cursor:pointer;font-size:11px;" onclick="wvAddMandRow()">＋ 추가</td>`;
-  dates.forEach(d=>{const k=dkey(d),isT=k===TODAY,iF=d>now&&!isT;if(iF){html+=`<td class="dc c-future"></td>`;}else{html+=`<td class="dc" style="color:var(--accent);opacity:.5;cursor:pointer;font-size:13px;" onclick="wvAddMandForDay('${k}',this)">＋</td>`;}});
+  dates.forEach(()=>{html+=`<td class="dc"></td>`;});
   html+=`</tr>`;
-  html+=`<tr class="section-hdr-row"><td colspan="8">🎯 오늘의 목표</td></tr>`;
-  // Find max targets across the week
+  html+=`<tr class="section-hdr-row"><td colspan="8">🎯 오늘의 할일</td></tr>`;
+  // Find max targets across the week, minimum 5 rows
   let maxTgts=0;
   dates.forEach(d=>{const dl=wvLogs[dkey(d)];if(dl?.targets)maxTgts=Math.max(maxTgts,dl.targets.length);});
-  maxTgts=Math.max(maxTgts,1);
+  maxTgts=Math.max(maxTgts,5);
   for(let ti=0;ti<maxTgts;ti++){
-    html+=`<tr><td class="row-sub">목표 ${ti+1}</td>`;
+    html+=`<tr><td class="row-sub">할일 ${ti+1}</td>`;
     dates.forEach(d=>{
       const k=dkey(d),isT=k===TODAY,iF=d>now&&!isT;
       const dl=wvLogs[k];const task=dl?.targets?.[ti];
@@ -2767,20 +2807,14 @@ function buildWVTable(dates){
         icon=task.st==='done'?'✓ ':task.st==='fail'?'✕ ':'';
         cls=task.st==='done'?'c-green':task.st==='fail'?'c-red':'c-empty';
       }
-      // Clickable — jump to that day to add/edit target
-      const clickable=!iF;
-      const shortVal=val?icon+val.slice(0,7)+(val.length>7?'…':''):'＋';
-      const emptyStyle=(!task&&!iF)?'color:var(--text3);opacity:.3;':'';
+      const clickable=true;
+      const shortVal=val?icon+val.slice(0,7)+(val.length>7?'…':''):'';
+      const emptyStyle=(!task&&!iF)?'color:var(--accent);opacity:.4;':'';
       const tgtClick=clickable?`onclick="wvTapTarget('${k}',${ti},this,${d.getTime()})"`:'' ;
       html+=`<td class="dc${isT?' today-col':''} ${cls}" title="${val||''}" style="cursor:${clickable?'pointer':'default'};${emptyStyle}" ${tgtClick}>${val?shortVal:'＋'}</td>`;
     });
     html+=`</tr>`;
   }
-  // Always show one empty row at the bottom to add new targets
-  html+=`<tr style="background:transparent;">
-    <td class="row-sub" style="color:var(--accent);font-weight:500;cursor:pointer;font-size:11px;" onclick="wvAddTgtRow()">＋ 추가</td>`;
-  dates.forEach(d=>{const k=dkey(d),isT=k===TODAY,iF=d>now&&!isT;if(iF){html+=`<td class="dc c-future"></td>`;}else{html+=`<td class="dc${isT?' today-col':''}" style="color:var(--accent);opacity:.5;cursor:pointer;font-size:13px;" onclick="wvTapTarget('${k}',999,this)">＋</td>`;}});
-  html+=`</tr>`;
   tbl.innerHTML=html;
 }
 
@@ -3203,7 +3237,7 @@ async function wvTapTarget(k,ti,el){
   const dl=wvLogs[k];
   dl.targets=dl.targets||[];
   if(ti===999||ti>=dl.targets.length||!dl.targets[ti]){
-    wvMmOpen('목표 추가','오늘 할 일을 입력하세요','',{type:'target-add',dateKey:k},el);
+    wvMmOpen('할일 추가','오늘 할 일을 입력하세요','',{type:'target-add',dateKey:k},el);
     return;
   }
   const t=dl.targets[ti];
@@ -3258,7 +3292,7 @@ function wvAddTgtRow(){
   const headers=document.querySelectorAll('.section-hdr-row td');
   const anchor=headers[headers.length-1]||document.body;
   if(!wvLogs[k])wvLogs[k]={weight:null,water_cups:0,meals:[],workouts:[],mandatory:[],targets:[]};
-  wvMmOpen('목표 추가 ('+(todayInWeek.getMonth()+1)+'월 '+todayInWeek.getDate()+'일)','오늘 할 일을 입력하세요','',{type:'target-add',dateKey:k},anchor);
+  wvMmOpen('할일 추가 ('+(todayInWeek.getMonth()+1)+'월 '+todayInWeek.getDate()+'일)','오늘 할 일을 입력하세요','',{type:'target-add',dateKey:k},anchor);
 }
 
 function wvAddMandRow(){
