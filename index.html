@@ -1128,7 +1128,7 @@ function selectExercise(name,icon,muscle,equip){
 // ── SESSION ──
 function openWorkoutSession(prefillExercises){
   currentSession=prefillExercises||[];
-  currentGymEntry=null;
+  currentGymIdx=-1;
   sessionStartedFromRoutine=false;
   document.getElementById('workout-session-overlay').classList.add('open');
   renderSession();
@@ -1187,9 +1187,7 @@ function renderSession(){
     const vol=ex.isStrength?ex.sets.filter(s=>s.done).reduce((a,s)=>a+(parseFloat(s.kg)||0)*(parseInt(s.reps)||0),0):0;
     const setsHtml=ex.sets.map((s,si)=>`
       <tr>
-        <td style="color:var(--text3);font-size:11px;cursor:pointer;" onclick="removeSet(${ei},${si})" title="탭하여 삭제">
-          <span style="opacity:.4;">${si+1}</span>
-        </td>
+        <td style="color:var(--text3);font-size:11px;min-width:24px;">${si+1}</td>
         ${ex.isStrength?`
           <td><input class="ws-num-inp${s.done?' active':''}" type="number" placeholder="0" value="${s.kg!=null&&s.kg!==''?s.kg:''}" oninput="updateSet(${ei},${si},'kg',this.value)" min="0" step="0.5" style="width:60px;"/></td>
           <td><input class="ws-num-inp${s.done?' active':''}" type="number" placeholder="0" value="${s.reps!=null&&s.reps!==''?s.reps:''}" oninput="updateSet(${ei},${si},'reps',this.value)" min="0" style="width:60px;"/></td>
@@ -1198,6 +1196,7 @@ function renderSession(){
           <td><input class="ws-num-inp" type="number" placeholder="분" value="${s.time||''}" oninput="updateSet(${ei},${si},'time',this.value)"/></td>
         `}
         <td><div class="ws-check${s.done?' done':''}" onclick="toggleSet(${ei},${si})">${s.done?'✓':''}</div></td>
+        <td><button onclick="removeSetConfirm(${ei},${si})" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:13px;padding:2px 4px;line-height:1;">✕</button></td>
       </tr>`).join('');
     return`<div class="ws-exercise">
       <div class="ws-ex-head">
@@ -1212,7 +1211,7 @@ function renderSession(){
         <tr>
           <th style="width:28px;">SET</th>
           ${ex.isStrength?'<th style="font-size:10px;">무게(kg)</th><th style="font-size:10px;">횟수</th>':'<th style="font-size:10px;">거리(km)</th><th style="font-size:10px;">시간(분)</th>'}
-          <th style="width:40px;">완료</th>
+          <th style="width:36px;">완료</th><th style="width:24px;"></th>
         </tr>
         ${setsHtml}
       </table>
@@ -1254,6 +1253,13 @@ function removeSet(ei,si){
   currentSession[ei].sets.splice(si,1);
   renderSession();
 }
+function removeSetConfirm(ei,si){
+  if(currentSession[ei].sets.length<=1){showToast('마지막 세트는 삭제할 수 없어요');return;}
+  if(confirm((si+1)+'번 세트를 삭제할까요?')){
+    currentSession[ei].sets.splice(si,1);
+    renderSession();
+  }
+}
 function fillRemainingSets(ei){
   const sets=currentSession[ei].sets;
   // Find last done set
@@ -1271,7 +1277,6 @@ function removeExercise(ei){
   renderSession();
 }
 function saveSessionToLog(){
-  // Live save during session — find existing gym session entry and update it
   if(!logCache[selectedKey])logCache[selectedKey]=log;
   log=logCache[selectedKey];
   const totalVolume=currentSession.reduce((total,ex)=>{
@@ -1286,19 +1291,15 @@ function saveSessionToLog(){
     status:currentSession.some(ex=>ex.sets.some(s=>s.done))?'done':'planned',
     _expanded:false
   };
-  // Update existing gym session or add new one
-  const existingIdx=editingSessionIdx!==null?editingSessionIdx:log.workouts.findIndex(w=>w.type==='gym'&&w===currentGymEntry);
-  if(existingIdx>=0){
-    log.workouts[existingIdx]=sessionEntry;
+  // Use stored index — never search by reference
+  if(editingSessionIdx>=0){
+    log.workouts[editingSessionIdx]=sessionEntry;
+  } else if(currentGymIdx>=0&&currentGymIdx<log.workouts.length){
+    log.workouts[currentGymIdx]=sessionEntry;
   } else {
-    if(!currentGymEntry){
-      currentGymEntry=sessionEntry;
-      log.workouts.push(sessionEntry);
-    } else {
-      const idx=log.workouts.indexOf(currentGymEntry);
-      if(idx>=0){log.workouts[idx]=sessionEntry;currentGymEntry=sessionEntry;}
-      else{log.workouts.push(sessionEntry);currentGymEntry=sessionEntry;}
-    }
+    // First save — push and record index
+    currentGymIdx=log.workouts.length;
+    log.workouts.push(sessionEntry);
   }
   renderWorkouts();
   scheduleSave();
@@ -2161,7 +2162,12 @@ function toggleGymExpand(i){
   renderWorkouts();
 }
 
-function delWO(i){log.workouts.splice(i,1);renderWorkouts();scheduleSave();}
+function delWO(i){
+  const w=log.workouts[i];
+  const name=w?.type==='gym'?(w.sessionName||'헬스 세션'):w?.name||'운동';
+  if(!confirm('"'+name+'"을 삭제할까요?'))return;
+  log.workouts.splice(i,1);renderWorkouts();scheduleSave();
+}
 
 // ── GYM SESSION ──
 function startGymSession(){
@@ -2278,7 +2284,7 @@ function editActivity(i){
 // ── SESSION STATE ──
 let editingSessionIdx=null;
 let sessionStartedFromRoutine=false;
-let currentGymEntry=null;
+let currentGymIdx=-1; // index into log.workouts for the active gym session
 
 // Update finishSession to save as gym type
 const _origFinishSession=window.finishSession;
