@@ -1128,6 +1128,8 @@ function selectExercise(name,icon,muscle,equip){
 // ── SESSION ──
 function openWorkoutSession(prefillExercises){
   currentSession=prefillExercises||[];
+  currentGymEntry=null;
+  sessionStartedFromRoutine=false;
   document.getElementById('workout-session-overlay').classList.add('open');
   renderSession();
 }
@@ -1185,7 +1187,9 @@ function renderSession(){
     const vol=ex.isStrength?ex.sets.filter(s=>s.done).reduce((a,s)=>a+(parseFloat(s.kg)||0)*(parseInt(s.reps)||0),0):0;
     const setsHtml=ex.sets.map((s,si)=>`
       <tr>
-        <td style="color:var(--text3);font-size:11px;">${si+1}</td>
+        <td style="color:var(--text3);font-size:11px;cursor:pointer;" onclick="removeSet(${ei},${si})" title="탭하여 삭제">
+          <span style="opacity:.4;">${si+1}</span>
+        </td>
         ${ex.isStrength?`
           <td><input class="ws-num-inp${s.done?' active':''}" type="number" placeholder="0" value="${s.kg!=null&&s.kg!==''?s.kg:''}" oninput="updateSet(${ei},${si},'kg',this.value)" min="0" step="0.5" style="width:60px;"/></td>
           <td><input class="ws-num-inp${s.done?' active':''}" type="number" placeholder="0" value="${s.reps!=null&&s.reps!==''?s.reps:''}" oninput="updateSet(${ei},${si},'reps',this.value)" min="0" style="width:60px;"/></td>
@@ -1212,7 +1216,10 @@ function renderSession(){
         </tr>
         ${setsHtml}
       </table>
-      ${ex.isStrength?'<button class="ws-add-set" onclick="addSet('+ei+')">+ 세트 추가</button>':''}
+      ${ex.isStrength?`<div style="display:flex;border-top:1px solid var(--border);">
+        <button class="ws-add-set" style="border-top:none;flex:1;" onclick="addSet(${ei})">+ 세트 추가</button>
+        ${ex.sets.some(s=>s.done)&&ex.sets.some(s=>!s.done)?`<button class="ws-add-set" style="border-top:none;border-left:1px solid var(--border);flex:1;color:var(--text3);" onclick="fillRemainingSets(${ei})">나머지 채우기 ↓</button>`:''}
+      </div>`:''}
     </div>`;
   }).join('');
 }
@@ -1242,40 +1249,61 @@ function addSet(ei){
   sets.push(isStr?{kg:last?.kg||'',reps:last?.reps||'',done:false}:{dist:last?.dist||'',time:last?.time||'',done:false});
   renderSession();
 }
+function removeSet(ei,si){
+  if(currentSession[ei].sets.length<=1){showToast('마지막 세트는 삭제할 수 없어요');return;}
+  currentSession[ei].sets.splice(si,1);
+  renderSession();
+}
+function fillRemainingSets(ei){
+  const sets=currentSession[ei].sets;
+  // Find last done set
+  let lastDone=null;
+  for(let i=sets.length-1;i>=0;i--){if(sets[i].done){lastDone=sets[i];break;}}
+  if(!lastDone)return;
+  // Fill all undone sets with last done's weight+reps
+  sets.forEach(s=>{
+    if(!s.done){s.kg=lastDone.kg;s.reps=lastDone.reps;}
+  });
+  renderSession();
+}
 function removeExercise(ei){
   currentSession.splice(ei,1);
   renderSession();
 }
 function saveSessionToLog(){
-  // Convert session to workouts array format
-  const workouts=currentSession.map(ex=>({
-    icon:ex.icon,name:ex.name,cat:ex.isStrength?'strength':'cardio',
-    muscle:ex.muscle,equip:ex.equip,
-    sets:ex.sets,
-    meta:ex.isStrength
-      ?ex.sets.filter(s=>s.done).length+'세트 완료'
-      :(ex.sets[0]?.dist||0)+' km · '+(ex.sets[0]?.time||0)+' 분',
-    status:ex.sets.some(s=>s.done)?'done':'planned'
-  }));
+  // Live save during session — find existing gym session entry and update it
   if(!logCache[selectedKey])logCache[selectedKey]=log;
-  logCache[selectedKey].workouts=workouts;
-  log.workouts=workouts;
+  log=logCache[selectedKey];
+  const totalVolume=currentSession.reduce((total,ex)=>{
+    if(!ex.isStrength)return total;
+    return total+ex.sets.filter(s=>s.done).reduce((a,s)=>a+(parseFloat(s.kg)||0)*(parseInt(s.reps)||0),0);
+  },0);
+  const sessionEntry={
+    type:'gym',
+    sessionName:'헬스 세션',
+    exercises:currentSession.map(ex=>({name:ex.name,icon:ex.icon,muscle:ex.muscle,equip:ex.equip,sets:ex.sets,isStrength:ex.isStrength})),
+    totalVolume,
+    status:currentSession.some(ex=>ex.sets.some(s=>s.done))?'done':'planned',
+    _expanded:false
+  };
+  // Update existing gym session or add new one
+  const existingIdx=editingSessionIdx!==null?editingSessionIdx:log.workouts.findIndex(w=>w.type==='gym'&&w===currentGymEntry);
+  if(existingIdx>=0){
+    log.workouts[existingIdx]=sessionEntry;
+  } else {
+    if(!currentGymEntry){
+      currentGymEntry=sessionEntry;
+      log.workouts.push(sessionEntry);
+    } else {
+      const idx=log.workouts.indexOf(currentGymEntry);
+      if(idx>=0){log.workouts[idx]=sessionEntry;currentGymEntry=sessionEntry;}
+      else{log.workouts.push(sessionEntry);currentGymEntry=sessionEntry;}
+    }
+  }
   renderWorkouts();
   scheduleSave();
 }
-async function finishSession(){
-  saveSessionToLog();
-  document.getElementById('workout-session-overlay').classList.remove('open');
-  // Check if user has no routine — offer to save
-  if(currentSession.length>0&&userRoutines.length===0){
-    offerSaveRoutine();
-  } else if(currentSession.length>0){
-    if(confirm('이 운동을 새 루틴으로 저장할까요?')){
-      offerSaveRoutine();
-    }
-  }
-  currentSession=[];
-}
+// finishSession is defined below in the redesigned workout system
 function offerSaveRoutine(){
   // Pre-fill routine create with current session exercises
   document.getElementById('routine-modal-overlay').classList.add('open');
@@ -2250,6 +2278,7 @@ function editActivity(i){
 // ── SESSION STATE ──
 let editingSessionIdx=null;
 let sessionStartedFromRoutine=false;
+let currentGymEntry=null;
 
 // Update finishSession to save as gym type
 const _origFinishSession=window.finishSession;
