@@ -858,44 +858,52 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
     <button class="mbtn-ghost" onclick="closeModal('weight-modal')">취소</button>
   </div>
 </div>
-<!-- WORKOUT ENTRY MODAL: category picker for non-strength -->
+<!-- WORKOUT TYPE PICKER MODAL -->
 <div class="modal-overlay" id="workout-modal">
   <div class="modal">
     <div class="mhandle"></div>
-    <div class="mtitle" id="wm-modal-title">운동 추가</div>
-    <div id="wm-s1">
-      <div class="mfield"><label class="mlabel">카테고리</label>
-        <div class="cat-tabs" id="wm-cats">
-          <div class="ctab active" onclick="wmCat('cardio',this)">🏃 유산소</div>
-          <div class="ctab" onclick="wmCat('strength',this)">🏋️ 근력</div>
-          <div class="ctab" onclick="wmCat('sports',this)">🎾 스포츠</div>
-          <div class="ctab" onclick="wmCat('mindfulness',this)">🧘 마음챙김</div>
-        </div>
-        <div class="wt-type-grid" id="wm-types"></div>
+    <div class="mtitle">무슨 운동을 했나요?</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+      <div onclick="startGymSession()" style="padding:18px 12px;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:var(--surface2);cursor:pointer;text-align:center;transition:all .15s;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+        <div style="font-size:28px;margin-bottom:8px;">🏋️</div>
+        <div style="font-size:13px;font-weight:600;margin-bottom:3px;">헬스 / 근력</div>
+        <div style="font-size:11px;color:var(--text3);">세트별 운동 기록</div>
       </div>
-      <button class="mbtn" id="wm-next" onclick="wmStep2()" disabled>다음 →</button>
-      <button class="mbtn-ghost" onclick="closeModal('workout-modal')">취소</button>
+      <div onclick="openActivityModal()" style="padding:18px 12px;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:var(--surface2);cursor:pointer;text-align:center;transition:all .15s;" onmouseover="this.style.borderColor='var(--green)'" onmouseout="this.style.borderColor='var(--border)'">
+        <div style="font-size:28px;margin-bottom:8px;">🏃</div>
+        <div style="font-size:13px;font-weight:600;margin-bottom:3px;">유산소 / 스포츠</div>
+        <div style="font-size:11px;color:var(--text3);">단일 활동 기록</div>
+      </div>
     </div>
-    <div id="wm-s2" style="display:none;">
-      <div style="display:flex;align-items:center;gap:9px;margin-bottom:14px;">
-        <button onclick="wmBack()" style="background:none;border:none;color:var(--text2);font-size:17px;cursor:pointer;">←</button>
-        <div id="wm-sel-lbl" style="font-size:14px;font-weight:600;"></div>
-      </div>
-      <div class="mfield"><label class="mlabel" id="wm-lbl1">거리 (km)</label>
-        <div class="mrow"><input class="mnuminput" id="wm-v1" type="number" step="0.1" placeholder="0"/><div class="munit" id="wm-u1">km</div></div>
-      </div>
-      <div class="mfield" id="wm-f2"><label class="mlabel" id="wm-lbl2">시간 (분)</label>
-        <div class="mrow"><input class="mnuminput" id="wm-v2" type="number" placeholder="0"/><div class="munit" id="wm-u2">분</div></div>
-      </div>
-      <div class="mfield"><label class="mlabel">상태</label>
-        <div class="status-row">
-          <button class="st-btn s-done" id="sb-done" onclick="pickSt('done')">✓ 완료</button>
-          <button class="st-btn" id="sb-plan" onclick="pickSt('planned')">📅 계획</button>
-        </div>
-      </div>
-      <button class="mbtn" id="wm-save-btn" onclick="saveWorkout()">운동 저장</button>
-      <button class="mbtn-ghost" onclick="closeModal('workout-modal')">취소</button>
+    <button class="mbtn-ghost" onclick="closeModal('workout-modal')">취소</button>
+  </div>
+</div>
+
+<!-- ACTIVITY MODAL (cardio/sports/mindfulness) -->
+<div class="modal-overlay" id="activity-modal">
+  <div class="modal">
+    <div class="mhandle"></div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
+      <button onclick="closeModal('activity-modal');openModal('workout-modal')" style="background:none;border:none;color:var(--text2);font-size:18px;cursor:pointer;">←</button>
+      <div class="mtitle" style="margin:0;" id="act-title">유산소 / 스포츠</div>
     </div>
+    <div class="mfield"><label class="mlabel">종류</label>
+      <div class="wt-type-grid" id="act-types"></div>
+    </div>
+    <div id="act-fields" style="display:none;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+        <span id="act-sel-icon" style="font-size:20px;"></span>
+        <span id="act-sel-name" style="font-size:14px;font-weight:600;"></span>
+      </div>
+      <div class="mfield"><label class="mlabel" id="act-lbl1"></label>
+        <div class="mrow"><input class="mnuminput" id="act-v1" type="number" step="0.1" placeholder="0"/><div class="munit" id="act-u1"></div></div>
+      </div>
+      <div class="mfield" id="act-f2"><label class="mlabel" id="act-lbl2"></label>
+        <div class="mrow"><input class="mnuminput" id="act-v2" type="number" placeholder="0"/><div class="munit" id="act-u2"></div></div>
+      </div>
+    </div>
+    <button class="mbtn" id="act-save-btn" onclick="saveActivity()" style="display:none;">저장</button>
+    <button class="mbtn-ghost" onclick="closeModal('activity-modal')">취소</button>
   </div>
 </div>
 
@@ -1960,73 +1968,282 @@ function renderWater(){
   document.getElementById('water-val').textContent=(log.water_cups*.5).toFixed(1)+'L';
 }
 
-// WORKOUTS
+// ══════════════════════════════════════════════
+// WORKOUT SYSTEM — REDESIGNED
+// Two types: GYM SESSION (sets) vs ACTIVITY (single)
+// log.workouts = [
+//   {type:'gym', sessionName, exercises:[{name,icon,muscle,equip,sets:[{kg,reps,done}]}], totalVolume, status:'done'|'planned'},
+//   {type:'activity', icon, name, cat, meta, status:'done'|'planned'}
+// ]
+// ══════════════════════════════════════════════
+
+// ── RENDER WORKOUTS (기록 tab card) ──
 function renderWorkouts(){
-  const done=log.workouts.filter(w=>w.status==='done').length;
-  const b=document.getElementById('wo-badge');b.textContent=done+'/'+log.workouts.length;b.className='s-badge '+(done>0&&done===log.workouts.length?'green':'');
-  document.getElementById('workout-rows').innerHTML=log.workouts.length===0?`<div style="padding:16px 0;text-align:center;">
-  <div style="font-size:28px;margin-bottom:6px;">🏃</div>
-  <div style="font-size:13px;color:var(--text3);margin-bottom:4px;">오늘 운동을 기록해보세요</div>
-  <div style="font-size:11px;color:var(--text3);">달리기 · 웨이트 · 테니스 · 요가 등</div>
-</div>`:
-    log.workouts.map((w,i)=>`<div class="wo-row" onclick="editWorkout(${i})" style="cursor:pointer;">
-      <div class="wo-icon-box">${w.icon}</div>
-      <div class="wo-info"><div class="wo-name">${w.name}</div><div class="wo-meta">${w.meta||'기록 없음'}</div></div>
-      <div class="wo-status ${w.status}">${w.status==='done'?'✓ 완료':w.status==='planned'?'📅 계획':'✕ 스킵'}</div>
-      <button class="wo-del" onclick="event.stopPropagation();delWO(${i})">✕</button>
-    </div>`).join('');
-}
-function delWO(i){log.workouts.splice(i,1);renderWorkouts();scheduleSave();}
-function openWorkoutModal(){
-  // Open session overlay directly — library inside session handles everything
-  openWorkoutSession([]);
-}
-function editWorkout(i){
-  const w=log.workouts[i];wom={cat:w.cat||'cardio',typeIdx:w.typeIdx??null,status:w.status==='skip'?'done':w.status,editIdx:i};
-  document.getElementById('wm-modal-title').textContent='운동 수정';
-  document.getElementById('wm-s1').style.display='none';document.getElementById('wm-s2').style.display='block';
-  document.getElementById('wm-save-btn').textContent='운동 업데이트';
-  document.getElementById('wm-sel-lbl').textContent=w.icon+' '+w.name;
-  const parts=(w.meta||'').split(' · ');const v1=parts[0]?parts[0].split(' ')[0]:'';const v2=parts[1]?parts[1].split(' ')[0]:'';
-  const catArr=CATS[w.cat||'cardio']||CATS.cardio;
-  const typeData=catArr.find(t=>t.n===w.name)||catArr[0];
-  document.getElementById('wm-lbl1').textContent=typeData.l1+' ('+typeData.u1+')';document.getElementById('wm-u1').textContent=typeData.u1;document.getElementById('wm-v1').value=v1;
-  const f2=document.getElementById('wm-f2');
-  if(typeData.u2){f2.style.display='block';document.getElementById('wm-lbl2').textContent=typeData.l2+' ('+typeData.u2+')';document.getElementById('wm-u2').textContent=typeData.u2;document.getElementById('wm-v2').value=v2;}
-  else{f2.style.display='none';}
-  pickSt(w.status==='skip'?'skip':w.status==='planned'?'planned':'done');
-  openModal('workout-modal');
-}
-function wmCat(cat,el){wom.cat=cat;wom.typeIdx=null;document.querySelectorAll('#wm-cats .ctab').forEach(t=>t.classList.remove('active'));el.classList.add('active');renderWMTypes(cat);document.getElementById('wm-next').disabled=true;}
-function renderWMTypes(cat){document.getElementById('wm-types').innerHTML=CATS[cat].map((t,i)=>`<div class="wt-type-btn" onclick="wmType(${i},this)"><div class="wtb-icon">${t.i}</div><div class="wtb-name">${t.n}</div><div class="wtb-unit">${t.u1}${t.u2?'+'+t.u2:''}</div></div>`).join('');}
-function wmType(i,el){wom.typeIdx=i;document.querySelectorAll('#wm-types .wt-type-btn').forEach(b=>b.classList.remove('selected'));el.classList.add('selected');document.getElementById('wm-next').disabled=false;}
-function wmStep2(){
-  if(wom.typeIdx===null)return;const t=CATS[wom.cat][wom.typeIdx];
-  document.getElementById('wm-s1').style.display='none';document.getElementById('wm-s2').style.display='block';
-  document.getElementById('wm-sel-lbl').textContent=t.i+' '+t.n;
-  document.getElementById('wm-lbl1').textContent=t.l1+' ('+t.u1+')';document.getElementById('wm-u1').textContent=t.u1;document.getElementById('wm-v1').value='';
-  const f2=document.getElementById('wm-f2');if(t.u2){f2.style.display='block';document.getElementById('wm-lbl2').textContent=t.l2+' ('+t.u2+')';document.getElementById('wm-u2').textContent=t.u2;document.getElementById('wm-v2').value='';}else{f2.style.display='none';}
-  pickSt('done');
-}
-function wmBack(){document.getElementById('wm-s1').style.display='block';document.getElementById('wm-s2').style.display='none';}
-function pickSt(s){
-  wom.status=s;
-  const map={done:'sb-done',planned:'sb-plan',skip:'sb-skip'};
-  const sm={done:'s-done',planned:'s-plan',skip:'s-skip'};
-  Object.keys(map).forEach(k=>{const el=document.getElementById(map[k]);if(el)el.className='st-btn'+(s===k?' '+sm[k]:'');});
-}
-function saveWorkout(){
-  const isEdit=wom.editIdx!==null&&wom.editIdx!==undefined;
-  let icon,name,typeData;
-  if(isEdit){const ex=log.workouts[wom.editIdx];icon=ex.icon;name=ex.name;typeData=CATS[ex.cat||'cardio'].find(t=>t.n===name)||CATS['cardio'][0];}
-  else{const t=CATS[wom.cat][wom.typeIdx];icon=t.i;name=t.n;typeData=t;}
-  const v1=document.getElementById('wm-v1').value,v2=document.getElementById('wm-v2').value;
-  let meta=v1?v1+' '+typeData.u1:'';if(typeData.u2&&v2)meta+=(meta?' · ':'')+v2+' '+typeData.u2;if(!meta)meta='기록됨';
-  const entry={icon,name,meta,status:wom.status,cat:wom.cat,typeIdx:wom.typeIdx};
-  if(isEdit)log.workouts[wom.editIdx]=entry;else log.workouts.push(entry);
-  closeModal('workout-modal');renderWorkouts();scheduleSave();
+  const workouts=log.workouts||[];
+  // Badge: total volume (kg) for gym, total duration (min) for activities
+  const gymSessions=workouts.filter(w=>w.type==='gym'&&w.status==='done');
+  const activities=workouts.filter(w=>w.type==='activity'&&w.status==='done');
+  const totalVol=gymSessions.reduce((a,w)=>a+(w.totalVolume||0),0);
+  const totalDur=activities.reduce((a,w)=>{const m=parseInt((w.meta||'').match(/(\d+)\s*분/)?.[1]||0);return a+m;},0);
+  const b=document.getElementById('wo-badge');
+  let badgeParts=[];
+  if(gymSessions.length>0)badgeParts.push(totalVol>0?(totalVol/1000).toFixed(1)+'t':'헬스 '+gymSessions.length+'회');
+  if(activities.length>0)badgeParts.push(totalDur>0?totalDur+'분':activities.length+'개 활동');
+  b.textContent=badgeParts.join(' · ')||'0';
+  b.className='s-badge '+(workouts.length>0&&workouts.every(w=>w.status==='done')?'green':'');
+
+  if(workouts.length===0){
+    document.getElementById('workout-rows').innerHTML=`<div style="padding:16px 0;text-align:center;">
+      <div style="font-size:28px;margin-bottom:6px;">🏋️</div>
+      <div style="font-size:13px;color:var(--text3);margin-bottom:4px;">오늘 운동을 기록해보세요</div>
+      <div style="font-size:11px;color:var(--text3);">헬스 세션 · 달리기 · 테니스 · 요가 등</div>
+    </div>`;
+    return;
+  }
+
+  document.getElementById('workout-rows').innerHTML=workouts.map((w,i)=>{
+    if(w.type==='gym'){
+      // Collapsed gym session card
+      const exNames=(w.exercises||[]).map(e=>e.name);
+      const preview=exNames.slice(0,3).join(' · ')+(exNames.length>3?' 외 '+(exNames.length-3)+'개':'');
+      const vol=w.totalVolume||0;
+      const volStr=vol>=1000?(vol/1000).toFixed(1)+'t':vol>0?vol.toLocaleString()+'kg':'';
+      const expanded=w._expanded;
+      return`<div class="wo-row" style="flex-direction:column;align-items:stretch;padding:0;cursor:default;">
+        <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;" onclick="toggleGymExpand(${i})">
+          <div class="wo-icon-box">🏋️</div>
+          <div class="wo-info" style="flex:1;">
+            <div class="wo-name">${w.sessionName||'헬스 세션'}</div>
+            <div class="wo-meta">${preview}${volStr?' · 총 '+volStr:''}</div>
+          </div>
+          <div class="wo-status ${w.status==='done'?'done':'planned'}">${w.status==='done'?'✓ 완료':'📅 계획'}</div>
+          <button onclick="event.stopPropagation();delWO(${i})" class="wo-del">✕</button>
+          <span style="color:var(--text3);font-size:12px;margin-left:2px;">${expanded?'▲':'▼'}</span>
+        </div>
+        ${expanded?`<div style="border-top:1px solid var(--border);padding:8px 14px 12px;">
+          ${(w.exercises||[]).map(ex=>{
+            const doneSets=ex.sets.filter(s=>s.done);
+            const exVol=doneSets.reduce((a,s)=>a+(parseFloat(s.kg)||0)*(parseInt(s.reps)||0),0);
+            return`<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border);">
+              <span style="font-size:16px;">${ex.icon}</span>
+              <div style="flex:1;">
+                <div style="font-size:12px;font-weight:500;">${ex.name}</div>
+                <div style="font-size:10px;color:var(--text3);">${doneSets.length}세트 완료${exVol>0?' · '+exVol.toLocaleString()+'kg':''}</div>
+              </div>
+            </div>`;
+          }).join('')}
+          <button onclick="editGymSession(${i})" style="width:100%;margin-top:8px;padding:8px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;color:var(--text2);">✎ 세션 수정</button>
+        </div>`:''}
+      </div>`;
+    } else {
+      // Single activity row
+      return`<div class="wo-row" onclick="editActivity(${i})" style="cursor:pointer;">
+        <div class="wo-icon-box">${w.icon||'🏃'}</div>
+        <div class="wo-info"><div class="wo-name">${w.name}</div><div class="wo-meta">${w.meta||'기록됨'}</div></div>
+        <div class="wo-status ${w.status==='done'?'done':'planned'}">${w.status==='done'?'✓ 완료':'📅 계획'}</div>
+        <button class="wo-del" onclick="event.stopPropagation();delWO(${i})">✕</button>
+      </div>`;
+    }
+  }).join('');
 }
 
+function toggleGymExpand(i){
+  log.workouts[i]._expanded=!log.workouts[i]._expanded;
+  renderWorkouts();
+}
+
+function delWO(i){log.workouts.splice(i,1);renderWorkouts();scheduleSave();}
+
+// ── GYM SESSION ──
+function startGymSession(){
+  closeModal('workout-modal');
+  openWorkoutSession([]);
+}
+
+function editGymSession(i){
+  const w=log.workouts[i];
+  if(w.type!=='gym')return;
+  // Rebuild currentSession from stored data
+  currentSession=(w.exercises||[]).map(ex=>({
+    name:ex.name,icon:ex.icon,muscle:ex.muscle||'근력',equip:ex.equip||'바벨',
+    isStrength:true,
+    sets:ex.sets||[{kg:'',reps:'',done:false}],
+    status:'done'
+  }));
+  editingSessionIdx=i;
+  document.getElementById('workout-session-overlay').classList.add('open');
+  renderSession();
+}
+
+function openWorkoutModal(){
+  openModal('workout-modal');
+}
+
+// ── ACTIVITY (cardio/sports/mindfulness) ──
+const ACTIVITY_TYPES=[
+  {i:'🏃',n:'달리기',l1:'거리',u1:'km',l2:'시간',u2:'분',cat:'cardio'},
+  {i:'🚴',n:'사이클',l1:'거리',u1:'km',l2:'시간',u2:'분',cat:'cardio'},
+  {i:'🏊',n:'수영',l1:'거리',u1:'km',l2:'시간',u2:'분',cat:'cardio'},
+  {i:'🚶',n:'걷기',l1:'거리',u1:'km',l2:'시간',u2:'분',cat:'cardio'},
+  {i:'🪢',n:'줄넘기',l1:'시간',u1:'분',l2:null,u2:null,cat:'cardio'},
+  {i:'🎾',n:'테니스',l1:'시간',u1:'분',l2:null,u2:null,cat:'sports'},
+  {i:'⛳',n:'골프',l1:'홀',u1:'holes',l2:null,u2:null,cat:'sports'},
+  {i:'🏀',n:'농구',l1:'시간',u1:'분',l2:null,u2:null,cat:'sports'},
+  {i:'⚽',n:'축구',l1:'시간',u1:'분',l2:null,u2:null,cat:'sports'},
+  {i:'🏸',n:'배드민턴',l1:'시간',u1:'분',l2:null,u2:null,cat:'sports'},
+  {i:'🥊',n:'복싱',l1:'시간',u1:'분',l2:null,u2:null,cat:'sports'},
+  {i:'🧘',n:'요가',l1:'시간',u1:'분',l2:null,u2:null,cat:'mindfulness'},
+  {i:'🤸',n:'스트레칭',l1:'시간',u1:'분',l2:null,u2:null,cat:'mindfulness'},
+  {i:'🧠',n:'명상',l1:'시간',u1:'분',l2:null,u2:null,cat:'mindfulness'},
+];
+let actTypeIdx=null,editingActivityIdx=null;
+
+function openActivityModal(){
+  closeModal('workout-modal');
+  actTypeIdx=null;editingActivityIdx=null;
+  document.getElementById('act-title').textContent='유산소 / 스포츠';
+  document.getElementById('act-fields').style.display='none';
+  document.getElementById('act-save-btn').style.display='none';
+  document.getElementById('act-v1').value='';
+  document.getElementById('act-v2').value='';
+  document.getElementById('act-types').innerHTML=ACTIVITY_TYPES.map((t,i)=>
+    `<div class="wt-type-btn" onclick="pickActivity(${i},this)">
+      <div class="wtb-icon">${t.i}</div>
+      <div class="wtb-name">${t.n}</div>
+      <div class="wtb-unit">${t.u1}${t.u2?'+'+t.u2:''}</div>
+    </div>`).join('');
+  openModal('activity-modal');
+}
+
+function pickActivity(i,el){
+  actTypeIdx=i;
+  const t=ACTIVITY_TYPES[i];
+  document.querySelectorAll('#act-types .wt-type-btn').forEach(b=>b.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById('act-sel-icon').textContent=t.i;
+  document.getElementById('act-sel-name').textContent=t.n;
+  document.getElementById('act-lbl1').textContent=t.l1+' ('+t.u1+')';
+  document.getElementById('act-u1').textContent=t.u1;
+  const f2=document.getElementById('act-f2');
+  if(t.u2){f2.style.display='block';document.getElementById('act-lbl2').textContent=t.l2+' ('+t.u2+')';document.getElementById('act-u2').textContent=t.u2;}
+  else{f2.style.display='none';}
+  document.getElementById('act-fields').style.display='block';
+  document.getElementById('act-save-btn').style.display='block';
+}
+
+function saveActivity(){
+  if(actTypeIdx===null)return;
+  const t=ACTIVITY_TYPES[actTypeIdx];
+  const v1=document.getElementById('act-v1').value;
+  const v2=document.getElementById('act-v2').value;
+  let meta=v1?v1+' '+t.u1:'';if(t.u2&&v2)meta+=(meta?' · ':'')+v2+' '+t.u2;if(!meta)meta='기록됨';
+  const entry={type:'activity',icon:t.i,name:t.n,cat:t.cat,meta,status:'done',actTypeIdx};
+  if(!logCache[selectedKey])logCache[selectedKey]=log;
+  log=logCache[selectedKey];
+  if(editingActivityIdx!==null){log.workouts[editingActivityIdx]=entry;}
+  else{log.workouts.push(entry);}
+  closeModal('activity-modal');renderWorkouts();scheduleSave();
+}
+
+function editActivity(i){
+  const w=log.workouts[i];
+  if(w.type!=='activity')return;
+  editingActivityIdx=i;
+  openActivityModal();
+  // After modal opens, pre-select the type
+  const idx=w.actTypeIdx??ACTIVITY_TYPES.findIndex(t=>t.n===w.name);
+  if(idx>=0){
+    setTimeout(()=>{
+      const btn=document.querySelectorAll('#act-types .wt-type-btn')[idx];
+      if(btn)pickActivity(idx,btn);
+      // Pre-fill values
+      const parts=(w.meta||'').split(' · ');
+      const v1=parts[0]?parseFloat(parts[0]):'';
+      const v2=parts[1]?parseFloat(parts[1]):'';
+      document.getElementById('act-v1').value=v1||'';
+      document.getElementById('act-v2').value=v2||'';
+    },50);
+  }
+}
+
+// ── SESSION STATE ──
+let editingSessionIdx=null;
+
+// Update finishSession to save as gym type
+const _origFinishSession=window.finishSession;
+
+// Override finishSession to use new data model
+function finishSession(){
+  if(currentSession.length===0){
+    document.getElementById('workout-session-overlay').classList.remove('open');
+    return;
+  }
+  // Calculate total volume
+  const totalVolume=currentSession.reduce((total,ex)=>{
+    if(!ex.isStrength)return total;
+    return total+ex.sets.filter(s=>s.done).reduce((a,s)=>a+(parseFloat(s.kg)||0)*(parseInt(s.reps)||0),0);
+  },0);
+
+  const sessionEntry={
+    type:'gym',
+    sessionName:'헬스 세션',
+    exercises:currentSession.map(ex=>({
+      name:ex.name,icon:ex.icon,muscle:ex.muscle,equip:ex.equip,
+      sets:ex.sets,
+      isStrength:ex.isStrength
+    })),
+    totalVolume,
+    status:currentSession.some(ex=>ex.sets.some(s=>s.done))?'done':'planned',
+    _expanded:false
+  };
+
+  if(!logCache[selectedKey])logCache[selectedKey]=log;
+  log=logCache[selectedKey];
+
+  if(editingSessionIdx!==null){
+    log.workouts[editingSessionIdx]=sessionEntry;
+    editingSessionIdx=null;
+  } else {
+    log.workouts.push(sessionEntry);
+  }
+
+  renderWorkouts();
+  scheduleSave();
+  document.getElementById('workout-session-overlay').classList.remove('open');
+
+  // Offer to save as routine if no routines exist or always prompt
+  if(currentSession.length>0){
+    setTimeout(()=>{
+      if(confirm('이 운동을 루틴으로 저장할까요?')){
+        openRoutineModal();
+        showRoutineCreate();
+        renderRoutineExList(currentSession.map(ex=>({
+          name:ex.name,icon:ex.icon,muscle:ex.muscle,equip:ex.equip,targetSets:ex.sets.length
+        })));
+      }
+    },300);
+  }
+  currentSession=[];
+}
+
+// Backward compat stubs
+function wmCat(){}
+function renderWMTypes(){}
+function wmType(){}
+function wmStep2(){}
+function wmBack(){}
+function pickSt(){}
+function saveWorkout(){}
+function editWorkout(i){
+  const w=log.workouts[i];
+  if(!w)return;
+  if(w.type==='gym')editGymSession(i);
+  else editActivity(i);
+}
+
+// ══════════════════════════════════════════════
+// MANDATORY
+// ══════════════════════════════════════════════
 // MANDATORY
 let mandEditIdx2=null;
 function renderMandatory(){
