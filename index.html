@@ -436,6 +436,8 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 .wv-mm-btns{display:flex;gap:6px;}
 .wv-mm-save{flex:1;background:var(--accent);border:none;border-radius:6px;color:#fff;font-size:11px;font-weight:500;padding:6px;cursor:pointer;font-family:'DM Sans',sans-serif;}
 .wv-mm-cancel{background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text2);font-size:11px;padding:6px 8px;cursor:pointer;font-family:'DM Sans',sans-serif;}
+.wv-day-pill{width:22px;height:22px;border-radius:50%;border:1px solid var(--border);font-size:10px;font-weight:500;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text3);background:var(--surface2);}
+.wv-day-pill.on{background:var(--accent);border-color:var(--accent);color:#fff;}
 </style>
 </head>
 <body>
@@ -2666,10 +2668,7 @@ function buildWVTable(dates){
   }
   html+=`<td class="dc${isT?' today-col':''} ${cls}" onclick="wvTapWorkout('${k}',${d.getFullYear()},${d.getMonth()},${d.getDate()})" style="cursor:pointer" title="${ttl||display}">${display||'—'}</td>`;
 });html+=`</tr>`;
-  html+=`<tr class="section-hdr-row"><td colspan="8" style="display:flex;align-items:center;justify-content:space-between;">
-    <span>✅ 필수 루틴</span>
-    <button onclick="wvAddMandRow()" style="background:none;border:none;color:var(--accent);font-size:10px;cursor:pointer;font-family:'DM Sans',sans-serif;padding:0 4px;font-weight:500;">+ 추가</button>
-  </td></tr>`;
+  html+=`<tr class="section-hdr-row"><td colspan="8">✅ 필수 루틴</td></tr>`;
   // collect all mand names, deduplicate by emoji prefix keeping longest (Korean)
   const mandNamesAll=new Set();
   dates.forEach(d=>{const dl=wvLogs[dkey(d)];if(dl?.mandatory)dl.mandatory.forEach(m=>mandNamesAll.add(m.name));});
@@ -2687,10 +2686,11 @@ function buildWVTable(dates){
     html+=`<tr><td class="row-sub" title="${mname}">${mname.length>9?mname.slice(0,8)+'…':mname}</td>`;
     dates.forEach(d=>{const k=dkey(d),isT=k===TODAY,iF=d>now&&!isT;const dl=wvLogs[k];const task=dl?.mandatory?.find(m=>m.name===mname);let cls='c-empty',val='—';if(iF){cls='c-future';val='';}else if(task){val=task.done?'✓':'✕';cls=task.done?'c-green':'c-red';}html+=`<td class="dc${isT?' today-col':''} ${cls}" onclick="wvTapMand('${k}','${mname.replace(/'/g,"\\'")}',this)" style="font-weight:600;cursor:pointer">${val}</td>`;});html+=`</tr>`;
   });
-  html+=`<tr class="section-hdr-row"><td colspan="8" style="display:flex;align-items:center;justify-content:space-between;">
-    <span>🎯 오늘의 목표</span>
-    <button onclick="wvAddTgtRow()" style="background:none;border:none;color:var(--accent);font-size:10px;cursor:pointer;font-family:'DM Sans',sans-serif;padding:0 4px;font-weight:500;">+ 추가</button>
-  </td></tr>`;
+  // "+ 루틴 추가" row below mandatory items
+  html+=`<tr><td class="row-sub" style="color:var(--accent);cursor:pointer;" onclick="wvAddMandRow()" colspan="1">+ 추가</td>`;
+  dates.forEach(d=>{html+=`<td class="dc" style="cursor:pointer;color:var(--text3);opacity:.25;" onclick="wvAddMandForDay('${dkey(d)}',this)">＋</td>`;});
+  html+=`</tr>`;
+  html+=`<tr class="section-hdr-row"><td colspan="8">🎯 오늘의 목표</td></tr>`;
   // Find max targets across the week
   let maxTgts=0;
   dates.forEach(d=>{const dl=wvLogs[dkey(d)];if(dl?.targets)maxTgts=Math.max(maxTgts,dl.targets.length);});
@@ -3066,6 +3066,15 @@ function wvMmOpen(label,placeholder,currentVal,context,anchorEl){
   inp.placeholder=placeholder;
   inp.value=currentVal||'';
   inp.type=context.inputType||'text';
+  // Show day pills for routine add
+  const daysDiv=document.getElementById('wv-mm-days');
+  if(context.type==='mand-add'){
+    daysDiv.style.display='block';
+    // Reset all to on
+    document.querySelectorAll('.wv-day-pill').forEach(p=>p.classList.add('on'));
+  } else {
+    daysDiv.style.display='none';
+  }
   const modal=document.getElementById('wv-mini-modal');
   modal.classList.add('open');
   const rect=anchorEl.getBoundingClientRect?anchorEl.getBoundingClientRect():{left:100,bottom:200};
@@ -3084,6 +3093,15 @@ function wvMmClose(){
   wvMmContext=null;
 }
 
+function wvToggleDay(el,idx){el.classList.toggle('on');}
+
+function wvGetSelectedDays(){
+  const pills=document.querySelectorAll('.wv-day-pill');
+  const days=[];
+  pills.forEach((p,i)=>{if(p.classList.contains('on'))days.push(i);});
+  return days.length>0?days:[0,1,2,3,4,5,6];
+}
+
 async function wvMmSave(){
   if(!wvMmContext)return;
   const val=document.getElementById('wv-mm-inp').value.trim();
@@ -3098,7 +3116,28 @@ async function wvMmSave(){
     dl.weight=parseFloat(val)||null;
   } else if(wvMmContext.type==='mand-add'){
     dl.mandatory=dl.mandatory||[];
-    dl.mandatory.push({name:val,done:false,days:[0,1,2,3,4,5,6]});
+    const days=wvGetSelectedDays();
+    const newTask={name:val,done:false,days};
+    dl.mandatory.push(newTask);
+    // Also propagate to ALL days in cache so it appears everywhere
+    const allKeys=Object.keys(logCache);
+    allKeys.forEach(key=>{
+      if(key===k)return;
+      if(logCache[key]){
+        logCache[key].mandatory=logCache[key].mandatory||[];
+        // Only add if not already there
+        if(!logCache[key].mandatory.find(m=>m.name===val)){
+          logCache[key].mandatory.push({name:val,done:false,days});
+        }
+      }
+    });
+    // Update current log if different from k
+    if(selectedKey!==k&&logCache[selectedKey]){
+      if(!logCache[selectedKey].mandatory.find(m=>m.name===val)){
+        logCache[selectedKey].mandatory.push({name:val,done:false,days});
+        log=logCache[selectedKey];
+      }
+    }
   }
   await saveWvDayLog(k,dl);
   wvMmClose();
@@ -3184,7 +3223,11 @@ function wvAddMandRow(){
   const headers=document.querySelectorAll('.section-hdr-row td');
   const anchor=headers[Math.max(0,headers.length-3)]||document.body;
   if(!wvLogs[k])wvLogs[k]={weight:null,water_cups:0,meals:[],workouts:[],mandatory:[],targets:[]};
-  wvMmOpen('루틴 추가 ('+(todayInWeek.getMonth()+1)+'월 '+todayInWeek.getDate()+'일)','매일 할 루틴을 입력하세요','',{type:'mand-add',dateKey:k},anchor);
+  wvMmOpen('루틴 추가','루틴 이름을 입력하세요','',{type:'mand-add',dateKey:k},anchor);
+}
+function wvAddMandForDay(k,el){
+  if(!wvLogs[k])wvLogs[k]={weight:null,water_cups:0,meals:[],workouts:[],mandatory:[],targets:[]};
+  wvMmOpen('루틴 추가','루틴 이름을 입력하세요','',{type:'mand-add',dateKey:k},el);
 }
 
 // Close mini-modal on outside click
@@ -3200,6 +3243,18 @@ document.addEventListener('mousedown',function(e){
 <div id="wv-mini-modal">
   <div class="wv-mm-label" id="wv-mm-label">목표 추가</div>
   <input class="wv-mm-inp" id="wv-mm-inp" placeholder="입력하세요..." onkeydown="if(event.key==='Enter')wvMmSave();if(event.key==='Escape')wvMmClose();"/>
+  <div id="wv-mm-days" style="display:none;margin-bottom:6px;">
+    <div style="font-size:10px;color:var(--text2);margin-bottom:4px;">반복 요일</div>
+    <div style="display:flex;gap:4px;">
+      <div class="wv-day-pill on" onclick="wvToggleDay(this,0)">월</div>
+      <div class="wv-day-pill on" onclick="wvToggleDay(this,1)">화</div>
+      <div class="wv-day-pill on" onclick="wvToggleDay(this,2)">수</div>
+      <div class="wv-day-pill on" onclick="wvToggleDay(this,3)">목</div>
+      <div class="wv-day-pill on" onclick="wvToggleDay(this,4)">금</div>
+      <div class="wv-day-pill on" onclick="wvToggleDay(this,5)">토</div>
+      <div class="wv-day-pill on" onclick="wvToggleDay(this,6)">일</div>
+    </div>
+  </div>
   <div class="wv-mm-btns">
     <button class="wv-mm-save" onclick="wvMmSave()">저장</button>
     <button class="wv-mm-cancel" onclick="wvMmClose()">취소</button>
