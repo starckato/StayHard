@@ -2590,7 +2590,7 @@ function buildWVTable(dates){
   html+=`</tr>`;
   html+=`<tr class="section-hdr-row"><td colspan="8">🥗 식단</td></tr>`;
   html+=`<tr><td class="row-sub">체중 (kg)</td>`;
-  dates.forEach(d=>{const k=dkey(d),isT=k===TODAY,iF=d>now&&!isT;const dl=wvLogs[k];const val=dl?.weight?parseFloat(dl.weight).toFixed(1):'';const click=iF?'':`onclick="wvTapWeight('${k}','${val||''}',this)"`;html+=`<td class="dc wt-cell${isT?' today-col':''} ${val?'c-green':'c-empty'}" ${click} style="cursor:${iF?'default':'pointer'}">${val||'—'}</td>`;});html+=`</tr>`;
+  dates.forEach(d=>{const k=dkey(d),isT=k===TODAY,iF=d>now&&!isT;const dl=wvLogs[k];const val=dl?.weight?parseFloat(dl.weight).toFixed(1):'';html+=`<td class="dc wt-cell${isT?' today-col':''} ${val?'c-green':'c-empty'}" onclick="wvTapWeight('${k}','${val||''}',this)" style="cursor:pointer">${val||'—'}</td>`;});html+=`</tr>`;
   // Find max meals across the week to determine how many rows to show
   let maxMeals=0;
   dates.forEach(d=>{const dl=wvLogs[dkey(d)];if(dl?.meals)maxMeals=Math.max(maxMeals,(dl.meals||[]).length);});
@@ -2629,14 +2629,13 @@ function buildWVTable(dates){
         display=firstName+extra;
         title=slotMeals.map(m=>m.name||m.type||'?').join(', ');
       }
-      const mClick=iF?'':`onclick="wvTapMeal('${k}',${d.getFullYear()},${d.getMonth()},${d.getDate()})"`;
-      html+=`<td class="dc${isT?' today-col':''} ${cls}" ${mClick} style="cursor:${iF?'default':'pointer'}" title="${title}">${display||'—'}</td>`;
+      html+=`<td class="dc${isT?' today-col':''} ${cls}" onclick="wvTapMeal('${k}',${d.getFullYear()},${d.getMonth()},${d.getDate()})" style="cursor:pointer" title="${title}">${display||'—'}</td>`;
     });
     html+=`</tr>`;
   }
 
   html+=`<tr><td class="row-sub">물 (L)</td>`;
-  dates.forEach(d=>{const k=dkey(d),isT=k===TODAY,iF=d>now&&!isT;const dl=wvLogs[k];const cups=dl?.water_cups||0;const val=cups>0?(cups*.5).toFixed(1)+'L':'';const cls=iF?'c-future':cups>=6?'c-green':cups>0?'c-amber':'c-empty';const click=iF?'':`onclick="wvTapWater('${k}',this)"`;html+=`<td class="dc${isT?' today-col':''} ${cls}" ${click} style="cursor:${iF?'default':'pointer'}" title="탭하여 0.5L 추가">${val||'—'}</td>`;});html+=`</tr>`;
+  dates.forEach(d=>{const k=dkey(d),isT=k===TODAY,iF=d>now&&!isT;const dl=wvLogs[k];const cups=dl?.water_cups||0;const val=cups>0?(cups*.5).toFixed(1)+'L':'';const cls=iF?'c-future':cups>=6?'c-green':cups>0?'c-amber':'c-empty';html+=`<td class="dc${isT?' today-col':''} ${cls}" onclick="wvTapWater('${k}',this)" style="cursor:pointer" title="탭하여 0.5L 추가">${val||'—'}</td>`;});html+=`</tr>`;
   html+=`<tr class="section-hdr-row"><td colspan="8">💪 운동</td></tr>`;
   html+=`<tr><td class="row-sub">운동</td>`;
   dates.forEach(d=>{
@@ -2665,10 +2664,12 @@ function buildWVTable(dates){
     }
     ttl=wos.map(w=>w.type==='gym'?(w.sessionName||'헬스'):(w.name||'')).join(', ');
   }
-  const woClick=(!iF)?`onclick="wvTapWorkout('${k}',${d.getFullYear()},${d.getMonth()},${d.getDate()})"`:'';
-  html+=`<td class="dc${isT?' today-col':''} ${cls}" ${woClick} style="cursor:${iF?'default':'pointer'}" title="${ttl||display}">${display||'—'}</td>`;
+  html+=`<td class="dc${isT?' today-col':''} ${cls}" onclick="wvTapWorkout('${k}',${d.getFullYear()},${d.getMonth()},${d.getDate()})" style="cursor:pointer" title="${ttl||display}">${display||'—'}</td>`;
 });html+=`</tr>`;
-  html+=`<tr class="section-hdr-row"><td colspan="8">✅ 필수 루틴</td></tr>`;
+  html+=`<tr class="section-hdr-row"><td colspan="8" style="display:flex;align-items:center;justify-content:space-between;">
+    <span>✅ 필수 루틴</span>
+    <button onclick="wvAddMandRow()" style="background:none;border:none;color:var(--accent);font-size:10px;cursor:pointer;font-family:'DM Sans',sans-serif;padding:0 4px;font-weight:500;">+ 추가</button>
+  </td></tr>`;
   // collect all mand names, deduplicate by emoji prefix keeping longest (Korean)
   const mandNamesAll=new Set();
   dates.forEach(d=>{const dl=wvLogs[dkey(d)];if(dl?.mandatory)dl.mandatory.forEach(m=>mandNamesAll.add(m.name));});
@@ -2684,9 +2685,12 @@ function buildWVTable(dates){
   const mandNames=dedupedMand.slice(0,10);
   mandNames.forEach(mname=>{
     html+=`<tr><td class="row-sub" title="${mname}">${mname.length>9?mname.slice(0,8)+'…':mname}</td>`;
-    dates.forEach(d=>{const k=dkey(d),isT=k===TODAY,iF=d>now&&!isT;const dl=wvLogs[k];const task=dl?.mandatory?.find(m=>m.name===mname);let cls='c-empty',val='—';if(iF){cls='c-future';val='';}else if(task){val=task.done?'✓':'✕';cls=task.done?'c-green':'c-red';}const click=iF?'':`onclick="wvTapMand('${k}','${mname.replace(/'/g,"\\'")}',this,${d.getTime()})"`;html+=`<td class="dc${isT?' today-col':''} ${cls}" ${click} style="font-weight:600;cursor:${iF?'default':'pointer'}">${val}</td>`;});html+=`</tr>`;
+    dates.forEach(d=>{const k=dkey(d),isT=k===TODAY,iF=d>now&&!isT;const dl=wvLogs[k];const task=dl?.mandatory?.find(m=>m.name===mname);let cls='c-empty',val='—';if(iF){cls='c-future';val='';}else if(task){val=task.done?'✓':'✕';cls=task.done?'c-green':'c-red';}html+=`<td class="dc${isT?' today-col':''} ${cls}" onclick="wvTapMand('${k}','${mname.replace(/'/g,"\\'")}',this)" style="font-weight:600;cursor:pointer">${val}</td>`;});html+=`</tr>`;
   });
-  html+=`<tr class="section-hdr-row"><td colspan="8">🎯 오늘의 목표</td></tr>`;
+  html+=`<tr class="section-hdr-row"><td colspan="8" style="display:flex;align-items:center;justify-content:space-between;">
+    <span>🎯 오늘의 목표</span>
+    <button onclick="wvAddTgtRow()" style="background:none;border:none;color:var(--accent);font-size:10px;cursor:pointer;font-family:'DM Sans',sans-serif;padding:0 4px;font-weight:500;">+ 추가</button>
+  </td></tr>`;
   // Find max targets across the week
   let maxTgts=0;
   dates.forEach(d=>{const dl=wvLogs[dkey(d)];if(dl?.targets)maxTgts=Math.max(maxTgts,dl.targets.length);});
@@ -2716,8 +2720,7 @@ function buildWVTable(dates){
   html+=`<tr><td class="row-sub" style="color:var(--text3);">+ 추가</td>`;
   dates.forEach(d=>{
     const k=dkey(d),isT=k===TODAY,iF=d>now&&!isT;
-    if(iF){html+=`<td class="dc c-future"></td>`;return;}
-    html+=`<td class="dc" style="cursor:pointer;color:var(--text3);opacity:.3;" onclick="wvTapTarget('${k}',999,this,${d.getTime()})">＋</td>`;
+    html+=`<td class="dc" style="cursor:pointer;color:var(--text3);opacity:.3;" onclick="wvTapTarget('${k}',999,this)">＋</td>`;
   });
   html+=`</tr>`;
   tbl.innerHTML=html;
@@ -3050,6 +3053,147 @@ function closeModal(id){document.getElementById(id).classList.remove('open');}
 document.querySelectorAll('.modal-overlay').forEach(m=>{m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open');});});
 
 init();
+
+// ══════════════════════════════════════════
+// WEEKLY VIEW INTERACTIONS
+// ══════════════════════════════════════════
+let wvMmContext=null;
+
+function wvMmOpen(label,placeholder,currentVal,context,anchorEl){
+  wvMmContext=context;
+  document.getElementById('wv-mm-label').textContent=label;
+  const inp=document.getElementById('wv-mm-inp');
+  inp.placeholder=placeholder;
+  inp.value=currentVal||'';
+  inp.type=context.inputType||'text';
+  const modal=document.getElementById('wv-mini-modal');
+  modal.classList.add('open');
+  const rect=anchorEl.getBoundingClientRect?anchorEl.getBoundingClientRect():{left:100,bottom:200};
+  let left=rect.left+window.scrollX;
+  let top=rect.bottom+window.scrollY+4;
+  if(left+200>window.innerWidth)left=window.innerWidth-208;
+  if(left<4)left=4;
+  modal.style.left=left+'px';
+  modal.style.top=top+'px';
+  setTimeout(()=>inp.focus(),50);
+}
+
+function wvMmClose(){
+  const modal=document.getElementById('wv-mini-modal');
+  if(modal)modal.classList.remove('open');
+  wvMmContext=null;
+}
+
+async function wvMmSave(){
+  if(!wvMmContext)return;
+  const val=document.getElementById('wv-mm-inp').value.trim();
+  if(!val){wvMmClose();return;}
+  const k=wvMmContext.dateKey;
+  if(!wvLogs[k])wvLogs[k]={weight:null,water_cups:0,meals:[],workouts:[],mandatory:[],targets:[]};
+  const dl=wvLogs[k];
+  if(wvMmContext.type==='target-add'){
+    dl.targets=dl.targets||[];
+    dl.targets.push({text:val,st:''});
+  } else if(wvMmContext.type==='weight'){
+    dl.weight=parseFloat(val)||null;
+  } else if(wvMmContext.type==='mand-add'){
+    dl.mandatory=dl.mandatory||[];
+    dl.mandatory.push({name:val,done:false,days:[0,1,2,3,4,5,6]});
+  }
+  await saveWvDayLog(k,dl);
+  wvMmClose();
+  renderWeeklyView();
+}
+
+async function saveWvDayLog(key,dl){
+  if(!CU)return;
+  const p={user_id:CU.id,log_date:key,weight:dl.weight,water_cups:dl.water_cups||0,
+    meals:dl.meals||[],workouts:dl.workouts||[],mandatory:dl.mandatory||[],targets:dl.targets||[]};
+  await sb.from('daily_logs').upsert(p,{onConflict:'user_id,log_date'});
+  logCache[key]=dl;
+  if(key===selectedKey)log=dl;
+}
+
+async function wvTapTarget(k,ti,el){
+  if(!wvLogs[k])wvLogs[k]={weight:null,water_cups:0,meals:[],workouts:[],mandatory:[],targets:[]};
+  const dl=wvLogs[k];
+  dl.targets=dl.targets||[];
+  if(ti===999||ti>=dl.targets.length||!dl.targets[ti]){
+    wvMmOpen('목표 추가','오늘 할 일을 입력하세요','',{type:'target-add',dateKey:k},el);
+    return;
+  }
+  const t=dl.targets[ti];
+  const cycle={'':'done','done':'fail','fail':''};
+  t.st=cycle[t.st]||'';
+  await saveWvDayLog(k,dl);
+  renderWeeklyView();
+}
+
+async function wvTapMand(k,mname,el){
+  if(!wvLogs[k])wvLogs[k]={weight:null,water_cups:0,meals:[],workouts:[],mandatory:[],targets:[]};
+  const dl=wvLogs[k];
+  dl.mandatory=dl.mandatory||[];
+  const task=dl.mandatory.find(m=>m.name===mname);
+  if(!task){
+    wvMmOpen('루틴 추가','매일 할 루틴을 입력하세요','',{type:'mand-add',dateKey:k},el);
+    return;
+  }
+  task.done=!task.done;
+  await saveWvDayLog(k,dl);
+  renderWeeklyView();
+}
+
+function wvTapWeight(k,currentVal,el){
+  wvMmOpen('체중 기록 (kg)','예: 97.2',currentVal||'',{type:'weight',dateKey:k,inputType:'number'},el);
+}
+
+async function wvTapWater(k,el){
+  if(!wvLogs[k])wvLogs[k]={weight:null,water_cups:0,meals:[],workouts:[],mandatory:[],targets:[]};
+  const dl=wvLogs[k];
+  dl.water_cups=((dl.water_cups||0)+1)%13;
+  await saveWvDayLog(k,dl);
+  renderWeeklyView();
+}
+
+function wvTapMeal(k,yr,mo,day){
+  if(confirm('기록 탭으로 이동해서 식단을 기록할까요?')){
+    jumpToDateFromWeekly(k,yr,mo,day);
+  }
+}
+
+function wvTapWorkout(k,yr,mo,day){
+  if(confirm('기록 탭으로 이동해서 운동을 기록할까요?')){
+    jumpToDateFromWeekly(k,yr,mo,day);
+  }
+}
+
+function wvAddTgtRow(){
+  const dates=wvWeekDates(wvOffset);
+  const todayInWeek=dates.find(d=>dkey(d)===TODAY)||dates[0];
+  const k=dkey(todayInWeek);
+  const headers=document.querySelectorAll('.section-hdr-row td');
+  const anchor=headers[headers.length-1]||document.body;
+  if(!wvLogs[k])wvLogs[k]={weight:null,water_cups:0,meals:[],workouts:[],mandatory:[],targets:[]};
+  wvMmOpen('목표 추가 ('+(todayInWeek.getMonth()+1)+'월 '+todayInWeek.getDate()+'일)','오늘 할 일을 입력하세요','',{type:'target-add',dateKey:k},anchor);
+}
+
+function wvAddMandRow(){
+  const dates=wvWeekDates(wvOffset);
+  const todayInWeek=dates.find(d=>dkey(d)===TODAY)||dates[0];
+  const k=dkey(todayInWeek);
+  const headers=document.querySelectorAll('.section-hdr-row td');
+  const anchor=headers[Math.max(0,headers.length-3)]||document.body;
+  if(!wvLogs[k])wvLogs[k]={weight:null,water_cups:0,meals:[],workouts:[],mandatory:[],targets:[]};
+  wvMmOpen('루틴 추가 ('+(todayInWeek.getMonth()+1)+'월 '+todayInWeek.getDate()+'일)','매일 할 루틴을 입력하세요','',{type:'mand-add',dateKey:k},anchor);
+}
+
+// Close mini-modal on outside click
+document.addEventListener('mousedown',function(e){
+  const modal=document.getElementById('wv-mini-modal');
+  if(modal&&modal.classList.contains('open')&&!modal.contains(e.target)){
+    wvMmClose();
+  }
+});
 </script>
 
 <!-- WEEKLY VIEW MINI MODAL -->
