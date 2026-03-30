@@ -736,7 +736,10 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
       <div class="ss-back"><button class="ss-back-btn" onclick="showCS('cs-none')">←</button><div class="ss-title">챌린지 참여하기</div></div>
       <div class="setup-step">
         <div class="ss-step-title">초대 코드 입력</div><div class="ss-step-sub">챌린지 방장에게 코드를 받아 입력하세요.</div>
-        <input class="minput" id="join-code" placeholder="RB-XXXX" style="text-transform:uppercase;letter-spacing:.12em;font-family:'DM Mono',monospace;font-size:18px;text-align:center;"/>
+        <div style="display:flex;align-items:center;gap:0;background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius-sm);overflow:hidden;">
+          <span style="padding:13px 12px 13px 14px;font-family:'DM Mono',monospace;font-size:18px;font-weight:600;color:var(--accent);border-right:1px solid var(--border2);letter-spacing:.12em;background:var(--surface2);">RB-</span>
+          <input class="minput" id="join-code" placeholder="XXXX" maxlength="4" style="text-transform:uppercase;letter-spacing:.18em;font-family:'DM Mono',monospace;font-size:18px;text-align:center;border:none;border-radius:0;flex:1;" oninput="this.value=this.value.replace(/[^a-zA-Z0-9]/g,'').toUpperCase()"/>
+        </div>
         <div class="aerr" id="join-err" style="margin-top:6px;"></div>
       </div>
       <div class="setup-step">
@@ -890,7 +893,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
   <div class="modal">
     <div class="mhandle"></div>
     <div class="mtitle">공복 체중 기록</div>
-    <div class="mfield"><label class="mlabel">체중 (kg)</label><input class="minput" id="wt-inp" type="number" step="0.1" placeholder="예: 97.2"/></div>
+    <div class="mfield"><label class="mlabel">체중 (kg)</label><input class="minput" id="wt-inp" type="number" step="0.1" placeholder="예: 74.0"/></div>
     <button class="mbtn" onclick="saveWeight()">저장</button>
     <button class="mbtn-ghost" onclick="closeModal('weight-modal')">취소</button>
   </div>
@@ -2324,7 +2327,7 @@ function renderWorkouts(){
             <div class="wo-name">${w.sessionName||'헬스 세션'}</div>
             <div class="wo-meta">${preview}${volStr?' · 총 '+volStr:''}</div>
           </div>
-          <div class="wo-status ${w.status==='done'?'done':'planned'}">${w.status==='done'?'✓ 완료':'📅 계획'}</div>
+          <div class="wo-status ${w.status==='done'?'done':'planned'}" onclick="event.stopPropagation();${w.status!=='done'?'editGymSession('+i+')':''}" style="cursor:${w.status!=='done'?'pointer':'default'}">${w.status==='done'?'✓ 완료':'예정'}</div>
           <button onclick="event.stopPropagation();delWO(${i})" class="wo-del">✕</button>
           <span style="color:var(--text3);font-size:11px;">${expanded?'▲':'▼'}</span>
         </div>
@@ -2348,7 +2351,7 @@ function renderWorkouts(){
       return`<div class="wo-row" onclick="editActivity(${i})" style="cursor:pointer;">
         <div class="wo-icon-box">${w.icon||'🏃'}</div>
         <div class="wo-info"><div class="wo-name">${w.name}</div><div class="wo-meta">${w.meta||'기록됨'}</div></div>
-        <div class="wo-status ${w.status==='done'?'done':'planned'}">${w.status==='done'?'✓ 완료':'📅 계획'}</div>
+        <div class="wo-status ${w.status==='done'?'done':'planned'}" onclick="event.stopPropagation();${w.status!=='done'?'editActivity('+i+')':''}" style="cursor:${w.status!=='done'?'pointer':'default'}">${w.status==='done'?'✓ 완료':'예정'}</div>
         <button class="wo-del" onclick="event.stopPropagation();delWO(${i})">✕</button>
       </div>`;
     }
@@ -2768,7 +2771,7 @@ function renderTargets(){
           title="탭: 완료 · 길게 누르기: 실패">
           ${checkContent}
         </button>
-        <div class="tgt-text ${isDone?'done':isFail?'fail':''}" onclick="togTgt(${i})" style="cursor:pointer;flex:1;">${t.text}</div>
+        <div class="tgt-text ${isDone?'done':isFail?'fail':''}" onclick="togTgt(${i})" ontouchstart="tgtTouchStart(${i})" ontouchend="event.preventDefault();tgtTouchEnd(${i})" style="cursor:pointer;flex:1;-webkit-user-select:none;user-select:none;">${t.text}</div>
         <button onclick="delTgt(${i})" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:12px;padding:3px 5px;">✕</button>
       </div>`;
     }).join('');
@@ -3087,8 +3090,9 @@ async function createComp(){
 function copyCode(){const c=document.getElementById('ci-code').textContent;if(navigator.clipboard)navigator.clipboard.writeText(c);const b=document.getElementById('ci-copy-btn');b.textContent='✓ 복사됨!';setTimeout(()=>b.textContent='코드 복사',2000);}
 
 async function joinComp(){
-  const code=document.getElementById('join-code').value.trim().toUpperCase();
-  if(!code){document.getElementById('join-err').textContent='코드를 입력하세요.';return;}
+  const rawCode=document.getElementById('join-code').value.trim().toUpperCase();
+  const code=rawCode.startsWith('RB-')?rawCode:'RB-'+rawCode;
+  if(!rawCode){document.getElementById('join-err').textContent='코드를 입력하세요.';return;}
   const jbtn=document.getElementById('join-btn');
   jbtn.disabled=true;jbtn.textContent='확인 중…';
   document.getElementById('join-err').textContent='';
@@ -3275,7 +3279,7 @@ async function renderCompetition(){
         const curr=parseFloat(m.l.weight).toFixed(1);
         const myGoal=memberWgoals[m.uid];
         let changeHtml='';
-        if(myGoal){const diff=(myGoal-curr).toFixed(1);const isPos=diff>0;changeHtml=`<div class="wt-row-change ${isPos?'neg':'pos'}">${isPos?diff+'kg 남음':Math.abs(diff)+'kg 달성!'}</div>`;}
+        if(myGoal){const remaining=(parseFloat(curr)-myGoal);const achieved=remaining<=0;changeHtml=`<div class="wt-row-change ${achieved?'pos':'neg'}">${achieved?Math.abs(remaining).toFixed(1)+'kg 초과 달성! 🎉':remaining.toFixed(1)+'kg 남음'}</div>`;}
         else{changeHtml=`<div class="wt-row-change" style="color:var(--text3);">목표 미설정</div>`;}
         return`<div class="wt-row">
           <div class="wt-row-name">${m.name}${m.isMe?' (나)':''}</div>
@@ -3423,7 +3427,7 @@ async function wvTapMand(k,mname,el){
 }
 
 function wvTapWeight(k,currentVal,el){
-  wvMmOpen('체중 기록 (kg)','예: 97.2',currentVal||'',{type:'weight',dateKey:k,inputType:'number'},el);
+  wvMmOpen('체중 기록 (kg)','예: 74.0',currentVal||'',{type:'weight',dateKey:k,inputType:'number'},el);
 }
 
 async function wvTapWater(k,el){
