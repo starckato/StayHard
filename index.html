@@ -79,7 +79,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 .avatar-btn{width:32px;height:32px;border-radius:50%;background:var(--accent-bg);border:1px solid var(--accent-bd);display:flex;align-items:center;justify-content:center;font-size:14px;cursor:pointer;margin-left:8px;}
 
 /* TAB BAR */
-.tab-bar{display:flex;gap:6px;padding:4px 16px 12px;overflow-x:auto;scrollbar-width:none;}
+.tab-bar{display:flex;gap:6px;padding:6px 16px 10px;overflow-x:auto;scrollbar-width:none;position:sticky;top:0;z-index:100;background:rgba(15,15,17,.92);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid var(--border);}
 .tab-bar::-webkit-scrollbar{display:none;}
 .tbar-tab{padding:7px 14px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;white-space:nowrap;border:1px solid var(--border);color:var(--text2);background:transparent;transition:all .2s;flex-shrink:0;}
 .tbar-tab.active{background:var(--accent);border-color:var(--accent);color:#fff;}
@@ -1309,6 +1309,8 @@ function addExerciseToSession(name,icon,muscle,equip){
   }
   currentSession.push({name,icon,muscle,equip,isStrength,sets,status:'done'});
   renderSession();
+  // Auto-scroll to bottom so newly added exercise is visible
+  setTimeout(()=>{const b=document.getElementById('ws-body');if(b)b.scrollTop=b.scrollHeight;},50);
 }
 function renderSession(){
   const body=document.getElementById('ws-body');
@@ -1687,6 +1689,9 @@ function calcGogginsScore(l){
 
 // ── STATE ──
 let CU=null,CP=null,activeComp=null,saveTimer=null;
+// Challenge setup state — defaults match the UI pre-selected values
+let compDurVal=14,compType='routine';
+let compSecs={diet:true,workout:true,mandatory:true,target:false};
 const now=new Date();
 function dkey(d){return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();}
 // Normalize a Supabase log_date string (YYYY-MM-DD) to dkey format (YYYY-M-D)
@@ -2757,7 +2762,8 @@ function renderTargets(){
       return`<div class="tgt-row">
         <button class="tgt-btn ${t.st||''}"
           onclick="togTgt(${i})"
-          oncontextmenu="event.preventDefault();markFail(${i})" ontouchstart="tgtTouchStart(${i})" ontouchend="tgtTouchEnd()"
+          oncontextmenu="event.preventDefault();markFail(${i})"
+          ontouchstart="tgtTouchStart(${i})" ontouchend="event.preventDefault();tgtTouchEnd(${i})"
           title="탭: 완료 · 길게 누르기: 실패">
           ${checkContent}
         </button>
@@ -2781,9 +2787,9 @@ function markFail(i){
 }
 
 // Long press support for mobile
-let tgtPressTimer=null;
-function tgtTouchStart(i){tgtPressTimer=setTimeout(()=>{markFail(i);},500);}
-function tgtTouchEnd(){clearTimeout(tgtPressTimer);}
+let tgtPressTimer=null,tgtTouchMoved=false;
+function tgtTouchStart(i){tgtTouchMoved=false;tgtPressTimer=setTimeout(()=>{markFail(i);tgtPressTimer=null;},500);}
+function tgtTouchEnd(i){if(tgtPressTimer){clearTimeout(tgtPressTimer);tgtPressTimer=null;togTgt(i);}}
 
 function delTgt(i){log.targets.splice(i,1);renderTargets();scheduleSave();}
 function toggleAddTgt(){const x=document.getElementById('add-tgt-input');x.classList.toggle('open');if(x.classList.contains('open'))document.getElementById('tgt-inp').focus();}
@@ -3017,7 +3023,24 @@ async function loadActiveCompetition(){
     }
   } else {activeComp=data;}
 }
-function showCS(id){document.querySelectorAll('.setup-screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
+function showCS(id){
+  document.querySelectorAll('.setup-screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  // Reset comp state when opening setup screen fresh
+  if(id==='cs-setup'){
+    compDurVal=14;compType='routine';
+    compSecs={diet:true,workout:true,mandatory:true,target:false};
+    // Reset UI: dur buttons
+    document.querySelectorAll('.dur-btn').forEach(b=>b.classList.remove('selected'));
+    const btn14=Array.from(document.querySelectorAll('.dur-btn')).find(b=>b.textContent==='14일');
+    if(btn14)btn14.classList.add('selected');
+    // Reset section toggles
+    document.querySelectorAll('.sec-tog').forEach(el=>{
+      const k=el.getAttribute('onclick')?.match(/'(\w+)'\)/)?.[1];
+      if(k)el.classList.toggle('on',!!compSecs[k]);
+    });
+  }
+}
 function pickDur(d,el){compDurVal=d;document.querySelectorAll('.dur-btn').forEach(b=>b.classList.remove('selected'));el.classList.add('selected');}
 function toggleSec(el,k){compSecs[k]=!compSecs[k];el.classList.toggle('on',compSecs[k]);}
 
