@@ -2672,10 +2672,8 @@ async function renderWeeklyView(){
   document.getElementById('wv-week-label').textContent=(s.getMonth()+1)+'월 '+s.getDate()+'일 – '+(e.getMonth()+1)+'월 '+e.getDate()+'일, '+e.getFullYear();
   const{data}=await sb.from('daily_logs').select('*').eq('user_id',CU.id).gte('log_date',from).lte('log_date',to);
   wvLogs={};if(data)data.forEach(d=>{wvLogs[d.log_date]=d;});
-  // Sync live in-memory log for selected date and today
-if(logCache[TODAY])wvLogs[TODAY]=logCache[TODAY];
-// Also sync any other cached days
-Object.keys(logCache).forEach(k=>{if(logCache[k])wvLogs[k]=logCache[k];});
+  // Sync live in-memory log — deep clone so wvLogs mutations don't affect logCache/log
+  Object.keys(logCache).forEach(k=>{if(logCache[k])wvLogs[k]=JSON.parse(JSON.stringify(logCache[k]));});
   buildWVTable(dates);
 }
 function shiftWVWeek(dir){wvOffset+=dir;renderWeeklyView();}
@@ -3228,8 +3226,15 @@ async function saveWvDayLog(key,dl){
   const p={user_id:CU.id,log_date:key,weight:dl.weight,water_cups:dl.water_cups||0,
     meals:dl.meals||[],workouts:dl.workouts||[],mandatory:dl.mandatory||[],targets:dl.targets||[]};
   await sb.from('daily_logs').upsert(p,{onConflict:'user_id,log_date'});
-  logCache[key]=dl;
-  if(key===selectedKey)log=dl;
+  // Store a deep clone in logCache so wvLogs mutations don't affect 기록 tab state
+  const clone=JSON.parse(JSON.stringify(dl));
+  logCache[key]=clone;
+  if(key===selectedKey){
+    log=clone;
+    renderTargets();
+    renderMandatory();
+    renderWater();
+  }
 }
 
 async function wvTapTarget(k,ti,el){
