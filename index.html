@@ -10,6 +10,7 @@
 <link rel="manifest" href="/manifest.json">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <title>Stay Hard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -38,6 +39,20 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 /* TOAST */
 .toast{position:fixed;top:16px;left:50%;transform:translateX(-50%);background:var(--surface);border:1px solid var(--border2);border-radius:20px;padding:7px 16px;font-size:12px;color:var(--text2);z-index:500;opacity:0;transition:opacity .25s;pointer-events:none;}
 .toast.show{opacity:1;}
+
+/* STATS GRAPHS */
+.stats-period-btn{padding:4px 10px;border-radius:8px;border:1px solid var(--border2);background:transparent;color:var(--text3);font-size:11px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;}
+.stats-period-btn.active{background:var(--accent);border-color:var(--accent);color:#fff;}
+.stats-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:10px;}
+.stats-card-title{font-size:12px;font-weight:600;color:var(--text2);margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em;}
+.stats-meta{font-size:11px;color:var(--text3);margin-bottom:10px;min-height:14px;}
+.stats-empty{text-align:center;padding:24px 0;font-size:12px;color:var(--text3);}
+/* HEATMAP */
+.hm-cell{width:12px;height:12px;border-radius:2px;flex-shrink:0;}
+.hm-0{background:var(--surface2);}
+.hm-1{background:#14532d;}
+.hm-2{background:#16a34a;}
+.hm-3{background:#4ade80;}
 
 /* WATER GOAL BUTTONS */
 .wg-btn{padding:6px 10px;border-radius:8px;border:1px solid var(--border2);font-size:12px;cursor:pointer;font-weight:500;background:var(--surface3);color:var(--text2);transition:all .15s;}
@@ -655,6 +670,50 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
     </div>
     <div class="wv-week-label" id="wv-week-label"></div>
     <div class="wv-scroll"><table class="wv-table" id="wv-table"></table></div>
+
+    <!-- ── STATS GRAPHS ── -->
+    <div style="padding:16px 16px 8px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <div style="font-size:14px;font-weight:700;">📈 나의 기록</div>
+        <div style="display:flex;gap:4px;" id="stats-period-btns">
+          <button class="stats-period-btn active" onclick="setStatsPeriod(30,this)">30일</button>
+          <button class="stats-period-btn" onclick="setStatsPeriod(60,this)">60일</button>
+          <button class="stats-period-btn" onclick="setStatsPeriod(90,this)">90일</button>
+        </div>
+      </div>
+      <div id="stats-loading" style="text-align:center;padding:32px 0;color:var(--text3);font-size:13px;display:none;">데이터 불러오는 중…</div>
+
+      <!-- Weight chart -->
+      <div class="stats-card">
+        <div class="stats-card-title">⚖️ 체중 추세</div>
+        <div class="stats-meta" id="weight-meta"></div>
+        <canvas id="chart-weight" height="160"></canvas>
+        <div id="weight-empty" class="stats-empty" style="display:none;">체중 기록이 없어요</div>
+      </div>
+
+      <!-- Volume chart -->
+      <div class="stats-card">
+        <div class="stats-card-title">🏋️ 운동 볼륨</div>
+        <div class="stats-meta" id="vol-meta"></div>
+        <canvas id="chart-vol" height="160"></canvas>
+        <div id="vol-empty" class="stats-empty" style="display:none;">운동 기록이 없어요</div>
+      </div>
+
+      <!-- Routine rate chart -->
+      <div class="stats-card">
+        <div class="stats-card-title">✅ 필수 루틴 달성률</div>
+        <div class="stats-meta" id="mand-meta"></div>
+        <canvas id="chart-mand" height="160"></canvas>
+        <div id="mand-empty" class="stats-empty" style="display:none;">루틴 기록이 없어요</div>
+      </div>
+
+      <!-- Heatmap -->
+      <div class="stats-card">
+        <div class="stats-card-title">🌿 운동 히트맵</div>
+        <div class="stats-meta" id="heatmap-meta"></div>
+        <div id="heatmap-grid" style="overflow-x:auto;padding-bottom:4px;"></div>
+      </div>
+    </div>
   </div>
 
   <!-- ══ COMPETITION ══ -->
@@ -1941,7 +2000,7 @@ function switchTab(name,idx){
   document.getElementById('view-'+name).classList.add('active');
   const tabs=document.querySelectorAll('.tbar-tab');if(tabs[idx])tabs[idx].classList.add('active');
   const bnis=document.querySelectorAll('.bni');if(bnis[idx])bnis[idx].classList.add('active');
-  if(name==='weekly')renderWeeklyView();
+  if(name==='weekly'){renderWeeklyView();loadAndRenderStats();}
   if(name==='competition'){renderChallengeHome();}
   if(name==='goggins')renderGogginsTab();
 }
@@ -3606,6 +3665,242 @@ if('serviceWorker' in navigator){
       .catch(err => console.warn('[SW] failed', err));
   });
 }
+// ══════════════════════════════════════════════
+// STATS / GRAPHS
+// ══════════════════════════════════════════════
+let statsPeriod=30;
+let statsCharts={weight:null,vol:null,mand:null};
+
+function setStatsPeriod(days,btn){
+  statsPeriod=days;
+  document.querySelectorAll('.stats-period-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  loadAndRenderStats();
+}
+
+async function loadAndRenderStats(){
+  if(!CU)return;
+  document.getElementById('stats-loading').style.display='block';
+  const from=new Date(now);
+  from.setDate(from.getDate()-(statsPeriod-1));
+  const fromKey=dkey(from);
+  const{data,error}=await sb.from('daily_logs')
+    .select('log_date,weight,water_cups,workouts,mandatory')
+    .eq('user_id',CU.id)
+    .gte('log_date',fromKey)
+    .order('log_date',{ascending:true});
+  document.getElementById('stats-loading').style.display='none';
+  if(error||!data)return;
+  // Normalize keys
+  const rows=data.map(d=>({...d,_key:normKey(d.log_date)}));
+  renderWeightChart(rows);
+  renderVolChart(rows);
+  renderMandChart(rows);
+  renderHeatmap(rows);
+}
+
+function getChartColors(){
+  return{
+    grid:'rgba(255,255,255,0.05)',
+    text:'#666',
+    accent:'#7c6af7',
+    green:'#4ade80',
+    amber:'#fbbf24',
+    red:'#f87171',
+    blue:'#60a5fa',
+  };
+}
+
+function destroyChart(key){
+  if(statsCharts[key]){statsCharts[key].destroy();statsCharts[key]=null;}
+}
+
+function renderWeightChart(rows){
+  const pts=rows.filter(r=>r.weight!=null).map(r=>({x:r._key,y:parseFloat(r.weight)}));
+  const emptyEl=document.getElementById('weight-empty');
+  const canvas=document.getElementById('chart-weight');
+  if(pts.length===0){emptyEl.style.display='block';canvas.style.display='none';document.getElementById('weight-meta').textContent='';return;}
+  emptyEl.style.display='none';canvas.style.display='block';
+  const vals=pts.map(p=>p.y);
+  const min=Math.min(...vals),max=Math.max(...vals);
+  const diff=(max-min).toFixed(1);
+  const trend=vals[vals.length-1]-vals[0];
+  const trendStr=(trend>0?'+':'')+trend.toFixed(1)+'kg ('+statsPeriod+'일)';
+  document.getElementById('weight-meta').textContent=
+    '최소 '+min.toFixed(1)+'kg · 최대 '+max.toFixed(1)+'kg · 변화 '+trendStr;
+  const c=getChartColors();
+  destroyChart('weight');
+  statsCharts.weight=new Chart(canvas,{
+    type:'line',
+    data:{
+      labels:pts.map(p=>p.x.split('-').slice(1).join('/')),
+      datasets:[{
+        data:pts.map(p=>p.y),
+        borderColor:c.blue,
+        backgroundColor:'rgba(96,165,250,0.1)',
+        borderWidth:2,
+        pointRadius:pts.length>30?0:3,
+        pointBackgroundColor:c.blue,
+        fill:true,
+        tension:0.3,
+      }]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>ctx.parsed.y.toFixed(1)+'kg'}}},
+      scales:{
+        x:{ticks:{color:c.text,font:{size:9},maxTicksLimit:8},grid:{color:c.grid}},
+        y:{ticks:{color:c.text,font:{size:9},callback:v=>v+'kg'},grid:{color:c.grid},
+          min:Math.floor(min-1),max:Math.ceil(max+1)}
+      }
+    }
+  });
+}
+
+function renderVolChart(rows){
+  // Group by week
+  const weekMap={};
+  rows.forEach(r=>{
+    const d=new Date(now);
+    const rDate=new Date(...r._key.split('-').map((v,i)=>i===1?parseInt(v)-1:parseInt(v)));
+    const mon=new Date(rDate);mon.setDate(rDate.getDate()-((rDate.getDay()+6)%7));
+    const wk=(mon.getMonth()+1)+'/'+mon.getDate();
+    const wos=r.workouts||[];
+    const vol=wos.filter(w=>w.type==='gym'&&w.status==='done').reduce((a,w)=>a+(w.totalVolume||0),0);
+    if(!weekMap[wk])weekMap[wk]=0;
+    weekMap[wk]+=vol;
+  });
+  const labels=Object.keys(weekMap);
+  const vals=Object.values(weekMap);
+  const emptyEl=document.getElementById('vol-empty');
+  const canvas=document.getElementById('chart-vol');
+  const hasData=vals.some(v=>v>0);
+  if(!hasData){emptyEl.style.display='block';canvas.style.display='none';document.getElementById('vol-meta').textContent='';return;}
+  emptyEl.style.display='none';canvas.style.display='block';
+  const totalVol=vals.reduce((a,v)=>a+v,0);
+  const avgVol=totalVol/vals.filter(v=>v>0).length;
+  document.getElementById('vol-meta').textContent=
+    '총 '+(totalVol>=1000?(totalVol/1000).toFixed(1)+'t':totalVol.toLocaleString()+'kg')+
+    ' · 주평균 '+(avgVol>=1000?(avgVol/1000).toFixed(1)+'t':Math.round(avgVol).toLocaleString()+'kg');
+  const c=getChartColors();
+  destroyChart('vol');
+  statsCharts.vol=new Chart(document.getElementById('chart-vol'),{
+    type:'bar',
+    data:{
+      labels,
+      datasets:[{
+        data:vals.map(v=>v>=1000?parseFloat((v/1000).toFixed(2)):v),
+        backgroundColor:vals.map(v=>v>0?'rgba(124,106,247,0.7)':'rgba(124,106,247,0.15)'),
+        borderRadius:4,
+      }]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>{const v=ctx.parsed.y;return v>=1?(v.toFixed(1)+'t'):(v*1000).toLocaleString()+'kg';}}}},
+      scales:{
+        x:{ticks:{color:c.text,font:{size:9}},grid:{display:false}},
+        y:{ticks:{color:c.text,font:{size:9},callback:v=>v>=1?v+'t':v*1000+'kg'},grid:{color:c.grid}}
+      }
+    }
+  });
+}
+
+function renderMandChart(rows){
+  const pts=rows.filter(r=>r.mandatory&&r.mandatory.length>0).map(r=>{
+    const ms=r.mandatory;
+    const rate=Math.round(ms.filter(m=>m.done).length/ms.length*100);
+    return{x:r._key.split('-').slice(1).join('/'),y:rate};
+  });
+  const emptyEl=document.getElementById('mand-empty');
+  const canvas=document.getElementById('chart-mand');
+  if(pts.length===0){emptyEl.style.display='block';canvas.style.display='none';document.getElementById('mand-meta').textContent='';return;}
+  emptyEl.style.display='none';canvas.style.display='block';
+  const avg=Math.round(pts.reduce((a,p)=>a+p.y,0)/pts.length);
+  const perfect=pts.filter(p=>p.y===100).length;
+  document.getElementById('mand-meta').textContent=
+    '평균 달성률 '+avg+'% · 100% 달성 '+perfect+'일';
+  const c=getChartColors();
+  destroyChart('mand');
+  statsCharts.mand=new Chart(canvas,{
+    type:'line',
+    data:{
+      labels:pts.map(p=>p.x),
+      datasets:[{
+        data:pts.map(p=>p.y),
+        borderColor:c.green,
+        backgroundColor:'rgba(74,222,128,0.1)',
+        borderWidth:2,
+        pointRadius:pts.length>30?0:3,
+        pointBackgroundColor:pts.map(p=>p.y===100?c.green:c.amber),
+        fill:true,
+        tension:0.3,
+      }]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>ctx.parsed.y+'%'}}},
+      scales:{
+        x:{ticks:{color:c.text,font:{size:9},maxTicksLimit:10},grid:{color:c.grid}},
+        y:{ticks:{color:c.text,font:{size:9},callback:v=>v+'%'},grid:{color:c.grid},min:0,max:100}
+      }
+    }
+  });
+}
+
+function renderHeatmap(rows){
+  // Build a map of dateKey → workout done
+  const dayMap={};
+  rows.forEach(r=>{
+    const wos=r.workouts||[];
+    const hasWo=wos.some(w=>w.status==='done');
+    const hasMand=(r.mandatory||[]).some(m=>m.done);
+    const intensity=hasWo?3:hasMand?1:0;
+    dayMap[r._key]=intensity;
+  });
+  // Build grid: week columns, day rows (Mon-Sun)
+  const totalDays=statsPeriod;
+  const startDate=new Date(now);
+  startDate.setDate(startDate.getDate()-(totalDays-1));
+  // Align to Monday
+  const startMon=new Date(startDate);
+  startMon.setDate(startDate.getDate()-((startDate.getDay()+6)%7));
+  const weeks=[];
+  let cur=new Date(startMon);
+  while(cur<=now){
+    const week=[];
+    for(let d=0;d<7;d++){
+      const k=dkey(cur);
+      const isFuture=cur>now;
+      const val=isFuture?-1:(dayMap[k]||0);
+      week.push({k,val,day:cur.getDate(),mon:cur.getMonth()+1});
+      cur.setDate(cur.getDate()+1);
+    }
+    weeks.push(week);
+  }
+  const daysKo=['월','화','수','목','금','토','일'];
+  const workedDays=Object.values(dayMap).filter(v=>v>=2).length;
+  document.getElementById('heatmap-meta').textContent=
+    '운동한 날 '+workedDays+'일 / '+totalDays+'일';
+  let html=`<div style="display:flex;gap:6px;align-items:flex-start;">`;
+  // Day labels
+  html+=`<div style="display:flex;flex-direction:column;gap:3px;padding-top:18px;">`;
+  daysKo.forEach(d=>html+=`<div style="width:12px;height:12px;font-size:8px;color:var(--text3);display:flex;align-items:center;justify-content:center;">${d}</div>`);
+  html+=`</div>`;
+  // Week columns
+  weeks.forEach((week,wi)=>{
+    const showLabel=wi===0||week[0].day<=7;
+    html+=`<div style="display:flex;flex-direction:column;gap:3px;">`;
+    html+=`<div style="height:14px;font-size:8px;color:var(--text3);text-align:center;line-height:14px;">${showLabel?week[0].mon+'/'+week[0].day:''}</div>`;
+    week.forEach(cell=>{
+      const cls=cell.val<0?'hm-cell':(cell.val===0?'hm-cell hm-0':cell.val===1?'hm-cell hm-1':cell.val===2?'hm-cell hm-2':'hm-cell hm-3');
+      html+=`<div class="${cls}" title="${cell.k}"></div>`;
+    });
+    html+=`</div>`;
+  });
+  html+=`</div>`;
+  document.getElementById('heatmap-grid').innerHTML=html;
+}
+
 </script>
 </body>
 </html>
