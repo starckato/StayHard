@@ -804,6 +804,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
     <button class="mbtn-ghost" onclick="closeModal('weight-modal')">취소</button>
   </div>
 </div>
+<!-- WORKOUT ENTRY MODAL: category picker for non-strength -->
 <div class="modal-overlay" id="workout-modal">
   <div class="modal">
     <div class="mhandle"></div>
@@ -836,11 +837,70 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
         <div class="status-row">
           <button class="st-btn s-done" id="sb-done" onclick="pickSt('done')">✓ 완료</button>
           <button class="st-btn" id="sb-plan" onclick="pickSt('planned')">📅 계획</button>
-          <button class="st-btn" id="sb-skip" onclick="pickSt('skip')">✕ 스킵</button>
         </div>
       </div>
       <button class="mbtn" id="wm-save-btn" onclick="saveWorkout()">운동 저장</button>
       <button class="mbtn-ghost" onclick="closeModal('workout-modal')">취소</button>
+    </div>
+  </div>
+</div>
+
+<!-- EXERCISE LIBRARY OVERLAY -->
+<div id="ex-library-overlay">
+  <div class="lib-header">
+    <button onclick="closeLibrary()" class="lib-close">←</button>
+    <input class="lib-search" id="lib-search" placeholder="🔍  운동 검색 (예: 스쿼트, 벤치…)" oninput="filterLibrary()"/>
+  </div>
+  <div class="lib-chips" id="lib-chips">
+    <div class="lib-chip sel" onclick="filterMuscle('전체',this)">전체</div>
+    <div class="lib-chip" onclick="filterMuscle('가슴',this)">가슴</div>
+    <div class="lib-chip" onclick="filterMuscle('등',this)">등</div>
+    <div class="lib-chip" onclick="filterMuscle('하체',this)">하체</div>
+    <div class="lib-chip" onclick="filterMuscle('어깨',this)">어깨</div>
+    <div class="lib-chip" onclick="filterMuscle('팔',this)">팔</div>
+    <div class="lib-chip" onclick="filterMuscle('코어',this)">코어</div>
+    <div class="lib-chip" onclick="filterMuscle('맨몸',this)">맨몸</div>
+    <div class="lib-chip" onclick="filterMuscle('유산소',this)">유산소</div>
+  </div>
+  <div class="lib-body" id="lib-body"></div>
+</div>
+
+<!-- WORKOUT SESSION OVERLAY -->
+<div id="workout-session-overlay">
+  <div class="ws-header">
+    <button class="ws-close" onclick="closeSession()">✕</button>
+    <div class="ws-title" id="ws-title">오늘의 운동</div>
+    <button onclick="openLibraryForSession()" style="background:var(--accent);border:none;color:#fff;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">+ 운동</button>
+  </div>
+  <div class="ws-body" id="ws-body"></div>
+  <div class="ws-footer">
+    <button class="ws-add-ex-btn" onclick="openRoutineModal()">📋 나의 루틴</button>
+    <button class="ws-done-btn" onclick="finishSession()">세션 완료 ✓</button>
+  </div>
+</div>
+
+<!-- ROUTINE MANAGEMENT OVERLAY -->
+<div id="routine-modal-overlay">
+  <div class="rt-header">
+    <button onclick="closeRoutineModal()" style="background:none;border:none;color:var(--text2);font-size:20px;cursor:pointer;">←</button>
+    <div class="rt-title">나의 루틴</div>
+    <button onclick="startNewRoutineCreate()" style="background:var(--accent);border:none;color:#fff;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">+ 새 루틴</button>
+  </div>
+  <div style="flex:1;overflow-y:auto;padding:12px 16px;">
+    <div id="routine-list"></div>
+    <div id="routine-create" style="display:none;">
+      <div style="margin-bottom:12px;">
+        <label class="mlabel">루틴 이름</label>
+        <input class="minput" id="routine-name-inp" placeholder="예: 하체 데이, 상체 루틴…"/>
+      </div>
+      <div style="margin-bottom:8px;font-size:12px;font-weight:500;color:var(--text2);">운동 목록</div>
+      <div id="routine-ex-list" style="margin-bottom:10px;"></div>
+      <div onclick="openLibraryForRoutine()" style="padding:10px 14px;background:var(--surface2);border:1.5px dashed var(--border2);border-radius:10px;display:flex;align-items:center;gap:8px;cursor:pointer;margin-bottom:12px;">
+        <span style="font-size:16px;color:var(--accent);">＋</span>
+        <span style="font-size:13px;font-weight:500;color:var(--accent);">운동 추가</span>
+      </div>
+      <button class="mbtn" onclick="saveRoutine()">루틴 저장</button>
+      <button class="mbtn-ghost" onclick="cancelRoutineCreate()">취소</button>
     </div>
   </div>
 </div>
@@ -884,7 +944,370 @@ const CATS={
   mindfulness:[{i:'🧘',n:'요가',l1:'시간',u1:'분',l2:null,u2:null},{i:'🤸',n:'스트레칭',l1:'시간',u1:'분',l2:null,u2:null},{i:'🔫',n:'드라이 파이어',l1:'시간',u1:'분',l2:null,u2:null},{i:'🧠',n:'명상',l1:'시간',u1:'분',l2:null,u2:null}],
 };
 
+// ── EXERCISE LIBRARY DATA ──
+const EXERCISE_LIBRARY = [
+  // 가슴
+  {i:'🏋️',n:'바벨 벤치프레스',m:'가슴',e:'바벨'},{i:'🏋️',n:'인클라인 바벨 벤치프레스',m:'가슴',e:'바벨'},
+  {i:'🏋️',n:'디클라인 바벨 벤치프레스',m:'가슴',e:'바벨'},{i:'💪',n:'덤벨 벤치프레스',m:'가슴',e:'덤벨'},
+  {i:'💪',n:'인클라인 덤벨 벤치프레스',m:'가슴',e:'덤벨'},{i:'💪',n:'덤벨 플라이',m:'가슴',e:'덤벨'},
+  {i:'🔩',n:'케이블 크로스오버',m:'가슴',e:'케이블'},{i:'🔩',n:'케이블 플라이',m:'가슴',e:'케이블'},
+  {i:'🤸',n:'푸시업',m:'가슴',e:'맨몸'},{i:'🤸',n:'딥스',m:'가슴',e:'맨몸'},
+  {i:'🖥️',n:'체스트 프레스 머신',m:'가슴',e:'머신'},{i:'🖥️',n:'펙덱 플라이',m:'가슴',e:'머신'},
+  // 등
+  {i:'🏋️',n:'바벨 데드리프트',m:'등',e:'바벨'},{i:'🏋️',n:'바벨 로우',m:'등',e:'바벨'},
+  {i:'🏋️',n:'티바 로우',m:'등',e:'바벨'},{i:'💪',n:'덤벨 로우',m:'등',e:'덤벨'},
+  {i:'🤸',n:'풀업',m:'등',e:'맨몸'},{i:'🤸',n:'친업',m:'등',e:'맨몸'},
+  {i:'🔩',n:'케이블 로우',m:'등',e:'케이블'},{i:'🔩',n:'랫풀다운',m:'등',e:'케이블'},
+  {i:'🖥️',n:'시티드 로우 머신',m:'등',e:'머신'},{i:'🖥️',n:'등 익스텐션 머신',m:'등',e:'머신'},
+  // 하체
+  {i:'🏋️',n:'바벨 스쿼트',m:'하체',e:'바벨'},{i:'🏋️',n:'프론트 스쿼트',m:'하체',e:'바벨'},
+  {i:'🏋️',n:'바벨 런지',m:'하체',e:'바벨'},{i:'🏋️',n:'루마니안 데드리프트',m:'하체',e:'바벨'},
+  {i:'💪',n:'덤벨 스쿼트',m:'하체',e:'덤벨'},{i:'💪',n:'덤벨 런지',m:'하체',e:'덤벨'},
+  {i:'💪',n:'덤벨 스텝업',m:'하체',e:'덤벨'},{i:'🖥️',n:'레그 프레스',m:'하체',e:'머신'},
+  {i:'🖥️',n:'레그 익스텐션',m:'하체',e:'머신'},{i:'🖥️',n:'레그 컬',m:'하체',e:'머신'},
+  {i:'🖥️',n:'힙 어브덕션',m:'하체',e:'머신'},{i:'🤸',n:'스쿼트 점프',m:'하체',e:'맨몸'},
+  {i:'🤸',n:'글루트 브릿지',m:'하체',e:'맨몸'},{i:'🔩',n:'케이블 킥백',m:'하체',e:'케이블'},
+  // 어깨
+  {i:'🏋️',n:'바벨 오버헤드 프레스',m:'어깨',e:'바벨'},{i:'💪',n:'덤벨 숄더 프레스',m:'어깨',e:'덤벨'},
+  {i:'💪',n:'덤벨 래터럴 레이즈',m:'어깨',e:'덤벨'},{i:'💪',n:'덤벨 프론트 레이즈',m:'어깨',e:'덤벨'},
+  {i:'💪',n:'덤벨 리어 레이즈',m:'어깨',e:'덤벨'},{i:'🔩',n:'케이블 래터럴 레이즈',m:'어깨',e:'케이블'},
+  {i:'🖥️',n:'숄더 프레스 머신',m:'어깨',e:'머신'},{i:'🖥️',n:'리버스 펙덱',m:'어깨',e:'머신'},
+  // 팔
+  {i:'💪',n:'바벨 바이셉 컬',m:'팔',e:'바벨'},{i:'💪',n:'덤벨 바이셉 컬',m:'팔',e:'덤벨'},
+  {i:'💪',n:'해머 컬',m:'팔',e:'덤벨'},{i:'💪',n:'덤벨 트라이셉 익스텐션',m:'팔',e:'덤벨'},
+  {i:'🔩',n:'케이블 트라이셉 푸시다운',m:'팔',e:'케이블'},{i:'🔩',n:'케이블 바이셉 컬',m:'팔',e:'케이블'},
+  {i:'🤸',n:'트라이셉 딥스',m:'팔',e:'맨몸'},{i:'🖥️',n:'프리처 컬 머신',m:'팔',e:'머신'},
+  // 코어
+  {i:'🤸',n:'플랭크',m:'코어',e:'맨몸'},{i:'🤸',n:'크런치',m:'코어',e:'맨몸'},
+  {i:'🤸',n:'레그레이즈',m:'코어',e:'맨몸'},{i:'🤸',n:'러시안 트위스트',m:'코어',e:'맨몸'},
+  {i:'🔩',n:'케이블 우드찹',m:'코어',e:'케이블'},{i:'🖥️',n:'AB 머신',m:'코어',e:'머신'},
+  // 맨몸/유산소
+  {i:'🏃',n:'달리기',m:'유산소',e:'유산소'},{i:'🚴',n:'사이클',m:'유산소',e:'유산소'},
+  {i:'🏊',n:'수영',m:'유산소',e:'유산소'},{i:'🚶',n:'걷기',m:'유산소',e:'유산소'},
+  {i:'🪢',n:'줄넘기',m:'유산소',e:'맨몸'},
+];
+
+// ── LIBRARY STATE ──
+let libMuscleFilter='전체', libContext='session', libRoutineEditIdx=null;
+let currentSession=[]; // [{exercise, sets:[{kg,reps,done}]}]
+let userRoutines=[]; // loaded from Supabase
+let editingRoutineId=null;
+
+// ── LOAD ROUTINES FROM SUPABASE ──
+async function loadRoutines(){
+  if(!CU)return;
+  const{data}=await sb.from('user_routines').select('*').eq('user_id',CU.id).order('created_at',{ascending:false});
+  userRoutines=data||[];
+}
+
+// ── LIBRARY OPEN/CLOSE ──
+function openLibraryForSession(){
+  libContext='session';
+  document.getElementById('ex-library-overlay').classList.add('open');
+  document.getElementById('lib-search').value='';
+  filterLibrary();
+}
+function openLibraryForRoutine(){
+  libContext='routine';
+  document.getElementById('ex-library-overlay').classList.add('open');
+  document.getElementById('lib-search').value='';
+  filterLibrary();
+}
+function closeLibrary(){
+  document.getElementById('ex-library-overlay').classList.remove('open');
+}
+function filterMuscle(m,el){
+  libMuscleFilter=m;
+  document.querySelectorAll('.lib-chip').forEach(c=>c.classList.remove('sel'));
+  el.classList.add('sel');
+  filterLibrary();
+}
+function filterLibrary(){
+  const q=document.getElementById('lib-search').value.trim().toLowerCase();
+  const list=EXERCISE_LIBRARY.filter(ex=>{
+    const matchMuscle=libMuscleFilter==='전체'||ex.m===libMuscleFilter;
+    const matchQ=!q||ex.n.toLowerCase().includes(q)||ex.m.includes(q)||ex.e.includes(q);
+    return matchMuscle&&matchQ;
+  });
+  document.getElementById('lib-body').innerHTML=list.length===0
+    ?'<div style="padding:32px 16px;text-align:center;font-size:13px;color:var(--text3);">검색 결과가 없습니다</div>'
+    :list.map(ex=>`
+      <div class="lib-row" onclick="selectExercise('${ex.n}','${ex.i}','${ex.m}','${ex.e}')">
+        <div class="lib-icon">${ex.i}</div>
+        <div style="flex:1;min-width:0;">
+          <div class="lib-name">${ex.n}</div>
+          <div class="lib-tags">${ex.e} · ${ex.m}</div>
+        </div>
+        <div class="lib-muscle">${ex.m}</div>
+      </div>`).join('');
+}
+function selectExercise(name,icon,muscle,equip){
+  closeLibrary();
+  if(libContext==='session'){
+    addExerciseToSession(name,icon,muscle,equip);
+  } else {
+    addExerciseToRoutineCreate(name,icon,muscle,equip);
+  }
+}
+
+// ── SESSION ──
+function openWorkoutSession(prefillExercises){
+  currentSession=prefillExercises||[];
+  document.getElementById('workout-session-overlay').classList.add('open');
+  renderSession();
+}
+function closeSession(){
+  if(currentSession.length===0){
+    document.getElementById('workout-session-overlay').classList.remove('open');
+    return;
+  }
+  if(confirm('세션을 종료하시겠어요? 완료된 세트는 저장됩니다.')){
+    document.getElementById('workout-session-overlay').classList.remove('open');
+  }
+}
+function addExerciseToSession(name,icon,muscle,equip){
+  // Check if strength (use sets) or cardio (use distance/time)
+  const isStrength=!['유산소'].includes(muscle);
+  currentSession.push({
+    name,icon,muscle,equip,
+    isStrength,
+    sets:isStrength?[{kg:'',reps:'',done:false}]:[{dist:'',time:'',done:false}],
+    status:'done'
+  });
+  renderSession();
+}
+function renderSession(){
+  const body=document.getElementById('ws-body');
+  if(currentSession.length===0){
+    body.innerHTML=`<div style="text-align:center;padding:48px 0;">
+      <div style="font-size:32px;margin-bottom:12px;">🏋️</div>
+      <div style="font-size:14px;color:var(--text2);">+ 운동 버튼으로 운동을 추가하세요</div>
+      <div style="font-size:12px;color:var(--text3);margin-top:6px;">또는 나의 루틴으로 시작하세요</div>
+    </div>`;
+    return;
+  }
+  body.innerHTML=currentSession.map((ex,ei)=>{
+    const vol=ex.isStrength?ex.sets.filter(s=>s.done).reduce((a,s)=>a+(parseFloat(s.kg)||0)*(parseInt(s.reps)||0),0):0;
+    const setsHtml=ex.sets.map((s,si)=>`
+      <tr>
+        <td style="color:var(--text3);font-size:11px;">${si+1}</td>
+        ${ex.isStrength?`
+          <td><input class="ws-num-inp${s.done?' active':''}" type="number" placeholder="0" value="${s.kg}" oninput="updateSet(${ei},${si},'kg',this.value)" min="0" step="0.5"/></td>
+          <td><input class="ws-num-inp${s.done?' active':''}" type="number" placeholder="0" value="${s.reps}" oninput="updateSet(${ei},${si},'reps',this.value)" min="0"/></td>
+        `:`
+          <td><input class="ws-num-inp" type="number" placeholder="0" value="${s.dist}" oninput="updateSet(${ei},${si},'dist',this.value)" step="0.1"/></td>
+          <td><input class="ws-num-inp" type="number" placeholder="0" value="${s.time}" oninput="updateSet(${ei},${si},'time',this.value)"/></td>
+        `}
+        <td><div class="ws-check${s.done?' done':''}" onclick="toggleSet(${ei},${si})">${s.done?'✓':''}</div></td>
+      </tr>`).join('');
+    return`<div class="ws-exercise">
+      <div class="ws-ex-head">
+        <div class="ws-ex-icon">${ex.icon}</div>
+        <div style="flex:1;min-width:0;">
+          <div class="ws-ex-name">${ex.name}</div>
+          <div class="ws-ex-vol">${ex.isStrength&&vol>0?'총 볼륨: '+vol.toLocaleString()+' kg':ex.muscle+' · '+ex.equip}</div>
+        </div>
+        <button onclick="removeExercise(${ei})" style="background:none;border:none;color:var(--text3);font-size:14px;cursor:pointer;">✕</button>
+      </div>
+      <table class="ws-set-table" style="width:100%;">
+        <tr>
+          <th style="width:28px;">SET</th>
+          ${ex.isStrength?'<th>무게(kg)</th><th>횟수</th>':'<th>거리(km)</th><th>시간(분)</th>'}
+          <th style="width:40px;">완료</th>
+        </tr>
+        ${setsHtml}
+      </table>
+      <button class="ws-add-set" onclick="addSet(${ei})">+ 세트 추가</button>
+    </div>`;
+  }).join('');
+}
+function updateSet(ei,si,field,val){
+  currentSession[ei].sets[si][field]=val;
+  // Auto-save to log if set is done
+  if(currentSession[ei].sets[si].done)saveSessionToLog();
+}
+function toggleSet(ei,si){
+  const s=currentSession[ei].sets[si];
+  s.done=!s.done;
+  if(s.done){
+    // auto-copy to next set if it exists
+    const nextSet=currentSession[ei].sets[si+1];
+    if(nextSet&&!nextSet.done){
+      if(s.kg)nextSet.kg=s.kg;
+      if(s.reps)nextSet.reps=s.reps;
+    }
+    saveSessionToLog();
+  }
+  renderSession();
+}
+function addSet(ei){
+  const sets=currentSession[ei].sets;
+  const last=sets[sets.length-1];
+  const isStr=currentSession[ei].isStrength;
+  sets.push(isStr?{kg:last?.kg||'',reps:last?.reps||'',done:false}:{dist:last?.dist||'',time:last?.time||'',done:false});
+  renderSession();
+}
+function removeExercise(ei){
+  currentSession.splice(ei,1);
+  renderSession();
+}
+function saveSessionToLog(){
+  // Convert session to workouts array format
+  const workouts=currentSession.map(ex=>({
+    icon:ex.icon,name:ex.name,cat:ex.isStrength?'strength':'cardio',
+    muscle:ex.muscle,equip:ex.equip,
+    sets:ex.sets,
+    meta:ex.isStrength
+      ?ex.sets.filter(s=>s.done).length+'세트 완료'
+      :(ex.sets[0]?.dist||0)+' km · '+(ex.sets[0]?.time||0)+' 분',
+    status:ex.sets.some(s=>s.done)?'done':'planned'
+  }));
+  if(!logCache[selectedKey])logCache[selectedKey]=log;
+  logCache[selectedKey].workouts=workouts;
+  log.workouts=workouts;
+  renderWorkouts();
+  scheduleSave();
+}
+async function finishSession(){
+  saveSessionToLog();
+  document.getElementById('workout-session-overlay').classList.remove('open');
+  // Check if user has no routine — offer to save
+  if(currentSession.length>0&&userRoutines.length===0){
+    offerSaveRoutine();
+  } else if(currentSession.length>0){
+    if(confirm('이 운동을 새 루틴으로 저장할까요?')){
+      offerSaveRoutine();
+    }
+  }
+  currentSession=[];
+}
+function offerSaveRoutine(){
+  // Pre-fill routine create with current session exercises
+  document.getElementById('routine-modal-overlay').classList.add('open');
+  showRoutineCreate();
+  const preExercises=currentSession.map(ex=>({name:ex.name,icon:ex.icon,muscle:ex.muscle,equip:ex.equip,targetSets:ex.sets.length}));
+  renderRoutineExList(preExercises);
+}
+
+// ── ROUTINES ──
+function openRoutineModal(){
+  document.getElementById('routine-modal-overlay').classList.add('open');
+  showRoutineList();
+}
+function closeRoutineModal(){
+  document.getElementById('routine-modal-overlay').classList.remove('open');
+}
+function showRoutineList(){
+  document.getElementById('routine-list').style.display='block';
+  document.getElementById('routine-create').style.display='none';
+  renderRoutineList();
+}
+function showRoutineCreate(){
+  document.getElementById('routine-list').style.display='none';
+  document.getElementById('routine-create').style.display='block';
+  document.getElementById('routine-name-inp').value='';
+  renderRoutineExList([]);
+}
+function startNewRoutineCreate(){
+  editingRoutineId=null;
+  showRoutineCreate();
+}
+function cancelRoutineCreate(){
+  showRoutineList();
+}
+let routineExercises=[];
+function renderRoutineList(){
+  const el=document.getElementById('routine-list');
+  if(userRoutines.length===0){
+    el.innerHTML=`<div style="text-align:center;padding:40px 0;">
+      <div style="font-size:32px;margin-bottom:10px;">📋</div>
+      <div style="font-size:14px;color:var(--text2);margin-bottom:4px;">저장된 루틴이 없어요</div>
+      <div style="font-size:12px;color:var(--text3);">+ 새 루틴으로 나만의 루틴을 만들어보세요</div>
+    </div>`;
+    return;
+  }
+  el.innerHTML=userRoutines.map((r,i)=>{
+    const exList=(r.exercises||[]).map(e=>e.icon+' '+e.name).join(' · ');
+    return`<div class="rt-card">
+      <div class="rt-card-name">${r.name}</div>
+      <div class="rt-card-meta">${(r.exercises||[]).length}개 운동</div>
+      <div style="font-size:11px;color:var(--text3);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${exList}</div>
+      <div class="rt-card-actions">
+        <button onclick="startSessionFromRoutine('${r.id}')" style="flex:1;padding:9px;background:var(--accent);border:none;border-radius:8px;color:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">▶ 시작</button>
+        <button onclick="editRoutine('${r.id}')" style="padding:9px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;">수정</button>
+        <button onclick="deleteRoutine('${r.id}')" style="padding:9px 12px;background:var(--red-bg);border:1px solid var(--red-bd);border-radius:8px;font-size:12px;color:var(--red);cursor:pointer;font-family:'DM Sans',sans-serif;">삭제</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+function renderRoutineExList(exList){
+  routineExercises=exList||[];
+  document.getElementById('routine-ex-list').innerHTML=routineExercises.map((ex,i)=>`
+    <div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);">
+      <div style="font-size:18px;">${ex.icon}</div>
+      <div style="flex:1;">
+        <div style="font-size:13px;font-weight:500;">${ex.name}</div>
+        <div style="font-size:10px;color:var(--text3);">${ex.muscle} · ${ex.equip}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:4px;">
+        <input type="number" value="${ex.targetSets||3}" min="1" max="10"
+          style="width:36px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:4px;font-size:12px;text-align:center;"
+          oninput="routineExercises[${i}].targetSets=parseInt(this.value)||3" placeholder="세트"/>
+        <span style="font-size:10px;color:var(--text3);">세트</span>
+      </div>
+      <button onclick="removeRoutineEx(${i})" style="background:none;border:none;color:var(--text3);font-size:14px;cursor:pointer;">✕</button>
+    </div>`).join('');
+}
+function addExerciseToRoutineCreate(name,icon,muscle,equip){
+  routineExercises.push({name,icon,muscle,equip,targetSets:3});
+  renderRoutineExList(routineExercises);
+}
+function removeRoutineEx(i){
+  routineExercises.splice(i,1);
+  renderRoutineExList(routineExercises);
+}
+async function saveRoutine(){
+  const name=document.getElementById('routine-name-inp').value.trim();
+  if(!name){showToast('루틴 이름을 입력하세요');return;}
+  if(routineExercises.length===0){showToast('운동을 1개 이상 추가하세요');return;}
+  if(editingRoutineId){
+    await sb.from('user_routines').update({name,exercises:routineExercises}).eq('id',editingRoutineId);
+  } else {
+    await sb.from('user_routines').insert({user_id:CU.id,name,exercises:routineExercises});
+  }
+  await loadRoutines();
+  showRoutineList();
+  showToast('루틴 저장됨 ✓');
+}
+async function deleteRoutine(id){
+  if(!confirm('이 루틴을 삭제할까요?'))return;
+  await sb.from('user_routines').delete().eq('id',id);
+  await loadRoutines();
+  renderRoutineList();
+}
+function editRoutine(id){
+  const r=userRoutines.find(r=>r.id===id);if(!r)return;
+  editingRoutineId=id;
+  showRoutineCreate();
+  document.getElementById('routine-name-inp').value=r.name;
+  renderRoutineExList(r.exercises||[]);
+}
+function startSessionFromRoutine(id){
+  const r=userRoutines.find(r=>r.id===id);if(!r)return;
+  closeRoutineModal();
+  const prefill=(r.exercises||[]).map(ex=>({
+    name:ex.name,icon:ex.icon,muscle:ex.muscle,equip:ex.equip,
+    isStrength:ex.muscle!=='유산소',
+    sets:Array.from({length:ex.targetSets||3},()=>({kg:'',reps:'',done:false})),
+    status:'planned'
+  }));
+  currentSession=prefill;
+  document.getElementById('workout-session-overlay').classList.add('open');
+  renderSession();
+}
+
 const MONTHS=['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
+
 const WDAYS=['일','월','화','수','목','금','토'];
 const WDAYS_STRIP=['월','화','수','목','금','토','일'];
 
@@ -994,6 +1417,7 @@ async function onLogin(user){
   showDailyMotto();
   await loadLog(TODAY);
   await loadActiveCompetition();
+  await loadRoutines();
   showApp();
   buildSlider();
   renderRoutine();
@@ -1487,16 +1911,11 @@ function renderWorkouts(){
 }
 function delWO(i){log.workouts.splice(i,1);renderWorkouts();scheduleSave();}
 function openWorkoutModal(){
-  wom={cat:'cardio',typeIdx:null,status:'done',editIdx:null};
-  document.getElementById('wm-s1').style.display='block';document.getElementById('wm-s2').style.display='none';
-  document.getElementById('wm-modal-title').textContent='운동 추가';
-  document.getElementById('wm-save-btn').textContent='운동 저장';
-  document.querySelectorAll('#wm-cats .ctab').forEach((t,i)=>t.classList.toggle('active',i===0));
-  renderWMTypes('cardio');document.getElementById('wm-next').disabled=true;
-  openModal('workout-modal');
+  // Open session overlay directly — library inside session handles everything
+  openWorkoutSession([]);
 }
 function editWorkout(i){
-  const w=log.workouts[i];wom={cat:w.cat||'cardio',typeIdx:w.typeIdx??null,status:w.status,editIdx:i};
+  const w=log.workouts[i];wom={cat:w.cat||'cardio',typeIdx:w.typeIdx??null,status:w.status==='skip'?'done':w.status,editIdx:i};
   document.getElementById('wm-modal-title').textContent='운동 수정';
   document.getElementById('wm-s1').style.display='none';document.getElementById('wm-s2').style.display='block';
   document.getElementById('wm-save-btn').textContent='운동 업데이트';
