@@ -110,7 +110,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 .day-pill.active{background:var(--accent);border-color:var(--accent);}
 .dp-name{font-size:9px;font-weight:500;text-transform:uppercase;letter-spacing:.04em;color:var(--text3);}
 .dp-num{font-size:15px;font-weight:600;color:var(--text);}
-.day-pill.active .dp-name,.day-pill.active .dp-num{color:#fff;}
+.day-pill.active .dp-name,.day-pill.active .dp-num{color:#fff;}.day-pill.active.month-change .dp-name{color:rgba(255,255,255,0.75);}
 .dp-dot{width:5px;height:5px;border-radius:50%;}
 .sel-day-label{text-align:center;font-size:12px;color:var(--text2);padding:6px 0 10px;font-family:'DM Mono',monospace;cursor:pointer;transition:color .15s;}.sel-day-label:hover{color:var(--accent);}
 
@@ -535,9 +535,27 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
       </div>
       <div class="s-divider"></div>
       <div class="water-strip">
-        <div style="font-size:12px;color:var(--text2);">💧</div>
+        <div style="font-size:12px;color:var(--blue);">💧</div>
         <div class="water-cups" id="water-cups"></div>
-        <div class="water-val" id="water-val">0L</div>
+        <div class="water-val" id="water-val"></div>
+        <button onclick="toggleWaterGoalPanel()" id="water-gear-btn" style="background:none;border:none;cursor:pointer;font-size:13px;color:var(--text3);padding:2px 4px;line-height:1;transition:color .15s;" title="물 목표 설정">⚙️</button>
+      </div>
+      <div id="water-goal-panel" style="display:none;padding:10px 14px 14px;border-top:1px solid var(--border);animation:fadeIn .15s ease;">
+        <div style="font-size:10px;color:var(--text3);margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em;">하루 물 목표</div>
+        <div style="display:flex;gap:5px;flex-wrap:wrap;">
+          <div id="wg-btn-1" onclick="setWaterGoal(1)" class="wg-btn">0.5L</div>
+          <div id="wg-btn-2" onclick="setWaterGoal(2)" class="wg-btn">1.0L</div>
+          <div id="wg-btn-3" onclick="setWaterGoal(3)" class="wg-btn">1.5L</div>
+          <div id="wg-btn-4" onclick="setWaterGoal(4)" class="wg-btn">2.0L</div>
+          <div id="wg-btn-5" onclick="setWaterGoal(5)" class="wg-btn">2.5L</div>
+          <div id="wg-btn-6" onclick="setWaterGoal(6)" class="wg-btn">3.0L</div>
+          <div id="wg-btn-7" onclick="setWaterGoal(7)" class="wg-btn">3.5L</div>
+          <div id="wg-btn-8" onclick="setWaterGoal(8)" class="wg-btn">4.0L</div>
+          <div id="wg-btn-9" onclick="setWaterGoal(9)" class="wg-btn">4.5L</div>
+          <div id="wg-btn-10" onclick="setWaterGoal(10)" class="wg-btn">5.0L</div>
+          <div id="wg-btn-11" onclick="setWaterGoal(11)" class="wg-btn">5.5L</div>
+          <div id="wg-btn-12" onclick="setWaterGoal(12)" class="wg-btn">6.0L</div>
+        </div>
       </div>
     </div>
     <div class="s-card">
@@ -1002,20 +1020,6 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
     <div class="profile-row">
       <div class="pav">🧑</div>
       <div><div class="pname" id="p-name"></div><div class="pemail" id="p-email"></div><div style="font-size:10px;color:var(--text3);margin-top:1px;" id="p-username"></div></div>
-    </div>
-    <div style="margin:16px 0 8px;padding:14px;background:var(--surface2);border-radius:var(--radius-sm);border:1px solid var(--border);">
-      <div style="font-size:11px;color:var(--text2);margin-bottom:10px;font-weight:500;text-transform:uppercase;letter-spacing:.06em;">💧 하루 물 목표</div>
-      <div style="display:flex;gap:6px;flex-wrap:wrap;">
-        <div id="wg-btn-1" onclick="setWaterGoal(1)" class="wg-btn">0.5L</div>
-        <div id="wg-btn-2" onclick="setWaterGoal(2)" class="wg-btn">1.0L</div>
-        <div id="wg-btn-3" onclick="setWaterGoal(3)" class="wg-btn">1.5L</div>
-        <div id="wg-btn-4" onclick="setWaterGoal(4)" class="wg-btn">2.0L</div>
-        <div id="wg-btn-5" onclick="setWaterGoal(5)" class="wg-btn">2.5L</div>
-        <div id="wg-btn-6" onclick="setWaterGoal(6)" class="wg-btn">3.0L</div>
-        <div id="wg-btn-7" onclick="setWaterGoal(7)" class="wg-btn">3.5L</div>
-        <div id="wg-btn-8" onclick="setWaterGoal(8)" class="wg-btn">4.0L</div>
-      </div>
-      <div style="font-size:10px;color:var(--text3);margin-top:8px;">목표 달성 시 💧 파란색으로 표시됩니다</div>
     </div>
     <button class="signout-btn" onclick="doSignOut()">로그아웃</button>
     <button class="mbtn-ghost" onclick="closeModal('profile-modal')">닫기</button>
@@ -1543,22 +1547,27 @@ function getTier(score){return TIERS.find(t=>score>=t.min&&score<=t.max)||TIERS[
 
 // ── DAILY GOGGINS MOTTOS (10개, 하루씩 순환) ──
 const GOGGINS_MOTTOS=[
-  "고통은 일시적이다. 포기하면 영원히 남는다.",
-  "변명은 없다. 오늘도 해내라.",
-  "당신이 가장 힘들 때가 진짜 시작이다.",
-  "불편함 속에서만 성장한다.",
-  "어제의 나를 오늘 넘어서라.",
-  "힘들어서 못 하는 게 아니라, 안 해서 힘든 것이다.",
-  "작은 승리가 쌓여 위대함이 된다.",
-  "아무도 보지 않을 때도 해내는 것이 진짜다.",
-  "지금 이 순간, 포기하지 마라.",
-  "Stay Hard. 매일, 예외 없이.",
+  // Real David Goggins quotes — Korean translation
+  {ko:"우리가 능력의 40%에 도달하면, 우리의 뇌는 멈추라고 말한다. 하지만 그건 시작에 불과하다.", en:"When your mind is telling you that you're done, that you're exhausted, that you cannot possibly go any further, you're only actually 40% done."},
+  {ko:"당신을 편안하게 만드는 것들이 당신을 약하게 만든다.", en:"The things that we decide to run from are the truth. When you make excuses, you're running from the truth."},
+  {ko:"나는 고통을 즐기지 않는다. 다만 고통이 나를 막을 수 없다는 걸 안다.", en:"I don't stop when I'm tired. I stop when I'm done."},
+  {ko:"우리 대부분은 우리 삶의 관중이다. 선수가 되어라.", en:"Most of us are motivated by the wrong things. We seek comfort instead of character."},
+  {ko:"변명은 변명일 뿐이다. 결과만이 현실이다.", en:"Excuses are everywhere. Success is rare. The difference? Accountability."},
+  {ko:"어제의 너를 오늘 죽여라. 더 강한 네가 태어난다.", en:"You are in danger of living a life so comfortable and soft that you will die without ever realizing your true potential."},
+  {ko:"두려움이 있는 곳으로 달려가라. 그곳에 성장이 있다.", en:"Face everything that makes you uncomfortable. There is no growth in the comfort zone."},
+  {ko:"아무도 당신을 구하러 오지 않는다. 일어나서 직접 해결하라.", en:"Nobody is going to come and save you. You've got to save yourself."},
+  {ko:"모든 위대한 것은 고통으로부터 태어난다.", en:"All growth depends upon activity. There is no development physically or intellectually without effort, and effort means work and work means pain."},
+  {ko:"삶은 최선을 다한 자에게만 의미를 드러낸다.", en:"Life is one big tug of war between mediocrity and trying to find your best self."},
 ];
+let _mottoIdx=-1;
 function showDailyMotto(){
   const el=document.getElementById('daily-motto');
   if(!el)return;
-  const dayIdx=new Date().getDate()%GOGGINS_MOTTOS.length;
-  el.textContent='"'+GOGGINS_MOTTOS[dayIdx]+'"';
+  // Pick a new random quote each session (different from last shown)
+  let idx;
+  do{idx=Math.floor(Math.random()*GOGGINS_MOTTOS.length);}while(idx===_mottoIdx&&GOGGINS_MOTTOS.length>1);
+  _mottoIdx=idx;
+  el.textContent='"'+GOGGINS_MOTTOS[idx].ko+'"';
 }
 
 function calcGogginsScore(l){
@@ -1615,18 +1624,31 @@ function show(id){document.getElementById(id).style.display='block';}
 function hide(id){document.getElementById(id).style.display='none';}
 
 function getWaterGoal(){return CP?.water_goal||6;}
+function toggleWaterGoalPanel(){
+  const panel=document.getElementById('water-goal-panel');
+  if(!panel)return;
+  const open=panel.style.display==='none';
+  panel.style.display=open?'block':'none';
+  const btn=document.getElementById('water-gear-btn');
+  if(btn)btn.style.color=open?'var(--accent)':'var(--text3)';
+  if(open)refreshWaterGoalUI();
+}
 async function setWaterGoal(cups){
   if(!CP)return;
   CP.water_goal=cups;
   await sb.from('profiles').update({water_goal:cups}).eq('id',CU.id);
   refreshWaterGoalUI();
   renderWater();
-  renderWeeklyView();
+  // Close panel after selection
+  const panel=document.getElementById('water-goal-panel');
+  if(panel)panel.style.display='none';
+  const gearBtn=document.getElementById('water-gear-btn');
+  if(gearBtn)gearBtn.style.color='var(--text3)';
   showToast('물 목표: '+(cups*.5).toFixed(1)+'L 설정됨 💧');
 }
 function refreshWaterGoalUI(){
   const goal=CP?.water_goal||6;
-  for(let i=1;i<=8;i++){
+  for(let i=1;i<=12;i++){
     const btn=document.getElementById('wg-btn-'+i);
     if(btn){btn.classList.toggle('active',i===goal);}
   }
@@ -1835,8 +1857,12 @@ function buildSlider(){
     const dayLabel=['월','화','수','목','금','토','일'][(d.getDay()+6)%7];
     // Show month prefix if this date is in a different month than week start
     const showMonth=d.getMonth()!==ws.getMonth();
-    const numLabel=showMonth?`<div style="font-size:8px;color:var(--accent);line-height:1;">${d.getMonth()+1}월</div>${d.getDate()}`:d.getDate();
-    wrap.innerHTML=`<div class="day-pill${isSel?' active':''}"><div class="dp-name">${dayLabel}</div><div class="dp-num" style="line-height:1.1;">${numLabel}</div><div class="dp-dot" style="background:${dotColor};"></div></div>`;
+    const topLabel=showMonth?`<div class="dp-name" style="color:var(--accent);">${d.getMonth()+1}월</div>`:`<div class="dp-name">${dayLabel}</div>`;
+    wrap.innerHTML=`<div class="day-pill${isSel?' active':''}${showMonth?' month-change':''}">
+      ${topLabel}
+      <div class="dp-num">${d.getDate()}</div>
+      <div class="dp-dot" style="background:${dotColor};"></div>
+    </div>`;
     wrap.onclick=()=>selectDay(d,k);
     strip.appendChild(wrap);
   }
@@ -2136,8 +2162,13 @@ function renderWater(){
   const goal=CP?.water_goal||6;
   for(let i=0;i<12;i++){const d=document.createElement('div');d.className='wc'+(i<log.water_cups?' on':'');d.onclick=()=>{log.water_cups=(log.water_cups===i+1)?i:i+1;renderWater();scheduleSave();};c.appendChild(d);}
   const val=document.getElementById('water-val');
-  val.textContent=(log.water_cups*.5).toFixed(1)+'L / '+(goal*.5).toFixed(1)+'L';
-  val.style.color=log.water_cups>=goal?'var(--blue)':'var(--text2)';
+  const goal=CP?.water_goal||6;
+  const met=log.water_cups>=goal;
+  val.textContent=log.water_cups>0?(log.water_cups*.5).toFixed(1)+'L'+(met?' ✓':''):'';
+  val.style.color=met?'var(--blue)':'var(--text2)';
+  // Tint the gear button when goal is met
+  const gear=document.getElementById('water-gear-btn');
+  if(gear)gear.style.color=met?'var(--blue)':'var(--text3)';
 }
 
 // ══════════════════════════════════════════════
