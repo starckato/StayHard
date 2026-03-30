@@ -545,7 +545,10 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
       </div>
       <div class="s-divider"></div>
       <div class="water-strip">
-        <div style="font-size:12px;color:var(--blue);">💧</div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:2px;flex-shrink:0;">
+          <div style="font-size:12px;color:var(--blue);">💧</div>
+          <div style="font-size:8px;color:var(--text3);letter-spacing:.04em;">물</div>
+        </div>
         <div class="water-cups" id="water-cups"></div>
         <div class="water-val" id="water-val"></div>
         <button onclick="toggleWaterGoalPanel()" id="water-gear-btn" style="background:none;border:none;cursor:pointer;font-size:13px;color:var(--text3);padding:2px 4px;line-height:1;transition:color .15s;" title="물 목표 설정">⚙️</button>
@@ -1245,7 +1248,19 @@ function renderSession(){
         <div class="ws-ex-icon">${ex.icon}</div>
         <div style="flex:1;min-width:0;">
           <div class="ws-ex-name">${ex.name}</div>
-          <div class="ws-ex-vol">${ex.isStrength&&vol>0?'총 볼륨: '+vol.toLocaleString()+' kg':ex.muscle+' · '+ex.equip}</div>
+          <div class="ws-ex-vol">${(()=>{
+            if(!ex.isStrength)return ex.muscle+' · '+ex.equip;
+            const prevSets=findPrevSets(ex.name);
+            const prevVol=prevSets?prevSets.reduce((a,s)=>a+(parseFloat(s.kg)||0)*(parseInt(s.reps)||0),0):0;
+            let txt=vol>0?'볼륨 '+vol.toLocaleString()+'kg':ex.muscle+' · '+ex.equip;
+            if(vol>0&&prevVol>0){
+              const delta=vol-prevVol;
+              const sign=delta>0?'+':'';
+              const color=delta>0?'var(--green)':delta<0?'var(--red)':'var(--text3)';
+              txt+=\` <span style="color:\${color};font-size:10px;font-weight:600;">\${sign}\${delta.toLocaleString()}kg</span>\`;
+            }
+            return txt;
+          })()}</div>
         </div>
         <button onclick="removeExercise(${ei})" style="background:none;border:none;color:var(--text3);font-size:14px;cursor:pointer;">✕</button>
       </div>
@@ -2221,7 +2236,7 @@ function renderWorkouts(){
   const totalDur=activities.reduce((a,w)=>{const m=parseInt((w.meta||'').match(/(\d+)\s*분/)?.[1]||0);return a+m;},0);
   const b=document.getElementById('wo-badge');
   let badgeParts=[];
-  if(gymSessions.length>0)badgeParts.push(totalVol>0?(totalVol/1000).toFixed(1)+'t':'헬스 '+gymSessions.length+'회');
+  if(gymSessions.length>0)badgeParts.push(totalVol>0?'총 볼륨 '+(totalVol>=1000?(totalVol/1000).toFixed(1)+'t':totalVol.toLocaleString()+'kg'):'헬스 '+gymSessions.length+'회');
   if(activities.length>0)badgeParts.push(totalDur>0?totalDur+'분':activities.length+'개 활동');
   b.textContent=badgeParts.join(' · ')||'0';
   b.className='s-badge '+(workouts.length>0&&workouts.every(w=>w.status==='done')?'green':'');
