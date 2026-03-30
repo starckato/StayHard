@@ -1130,6 +1130,8 @@ function openWorkoutSession(prefillExercises){
   currentSession=prefillExercises||[];
   currentGymIdx=-1;
   sessionStartedFromRoutine=false;
+  sessionSourceRoutineId=null;
+  sessionOriginalExCount=0;
   document.getElementById('workout-session-overlay').classList.add('open');
   renderSession();
 }
@@ -1466,11 +1468,14 @@ function startSessionFromRoutine(id){
     const numSets=ex.targetSets||3;
     let sets;
     if(isStr&&prev&&prev.length>0){
-      // Pre-fill sets with previous weights — pad or trim to target set count
+      // Pre-fill with previous session weights
       sets=Array.from({length:numSets},(_,i)=>{
         const src=prev[Math.min(i,prev.length-1)];
         return{kg:src.kg||'',reps:src.reps||'',done:false};
       });
+    } else if(isStr&&(ex.lastKg||ex.lastReps)){
+      // Policy 4: use weights saved in routine definition
+      sets=Array.from({length:numSets},()=>({kg:ex.lastKg||'',reps:ex.lastReps||'',done:false}));
     } else if(isStr){
       sets=Array.from({length:numSets},()=>({kg:'',reps:'',done:false}));
     } else {
@@ -1482,6 +1487,8 @@ function startSessionFromRoutine(id){
   currentSession=prefill;
   editingSessionIdx=null;
   sessionStartedFromRoutine=true;
+  sessionSourceRoutineId=id;
+  sessionOriginalExCount=prefill.length;
   document.getElementById('workout-session-overlay').classList.add('open');
   renderSession();
 }
@@ -2282,6 +2289,8 @@ function editActivity(i){
 // ── SESSION STATE ──
 let editingSessionIdx=null;
 let sessionStartedFromRoutine=false;
+let sessionSourceRoutineId=null;    // id of routine used to start session
+let sessionOriginalExCount=0;       // exercise count at session start (from routine)
 let currentGymIdx=-1; // index into log.workouts for the active gym session
 
 // Update finishSession to save as gym type
@@ -2326,23 +2335,73 @@ function finishSession(){
   scheduleSave();
   document.getElementById('workout-session-overlay').classList.remove('open');
 
-  // Only offer to save as routine on NEW sessions (not edits)
+  // ── Routine prompt policies ──
   const sessionExercises=currentSession.slice();
   const wasEditing=editingSessionIdx!==null;
   const wasFromRoutine=sessionStartedFromRoutine;
+  const sourceRoutineId=sessionSourceRoutineId;
+  const origExCount=sessionOriginalExCount;
   sessionStartedFromRoutine=false;
+  sessionSourceRoutineId=null;
+  sessionOriginalExCount=0;
   currentSession=[];
-  if(!wasEditing&&!wasFromRoutine&&sessionExercises.length>0){
-    setTimeout(()=>{
+
+  setTimeout(async()=>{
+    const exForRoutine=sessionExercises.map(ex=>({
+      name:ex.name,icon:ex.icon,muscle:ex.muscle,equip:ex.equip,
+      targetSets:ex.sets.filter(s=>s.done).length||ex.sets.length,
+      // Policy 4: save last done weight+reps into routine
+      lastKg:ex.sets.filter(s=>s.done).slice(-1)[0]?.kg||'',
+      lastReps:ex.sets.filter(s=>s.done).slice(-1)[0]?.reps||''
+    }));
+
+    if(wasEditing){
+      // Editing existing session — no prompt
+      return;
+    }
+
+    if(!wasFromRoutine&&sessionExercises.length>0){
+      // Policy 1: brand new session → ask to save as routine
       if(confirm('이 운동을 루틴으로 저장할까요?')){
         openRoutineModal();
         showRoutineCreate();
-        renderRoutineExList(sessionExercises.map(ex=>({
-          name:ex.name,icon:ex.icon,muscle:ex.muscle,equip:ex.equip,targetSets:ex.sets.filter(s=>s.done).length||ex.sets.length
-        })));
+        renderRoutineExList(exForRoutine);
       }
-    },400);
-  }
+      return;
+    }
+
+    if(wasFromRoutine&&sourceRoutineId){
+      const addedCount=sessionExercises.length-origExCount;
+      if(addedCount===0){
+        // Policy 2: no changes → update weights in routine silently
+        await updateRoutineWeights(sourceRoutineId,exForRoutine);
+        return;
+      } else {
+        // Policy 3: exercises added → ask to update routine
+        if(confirm('루틴에 없는 운동을 추가했어요. 루틴을 업데이트할까요?')){
+          await updateRoutineWeights(sourceRoutineId,exForRoutine);
+          showToast('루틴 업데이트됨 ✓');
+        }
+        return;
+      }
+    }
+  },400);
+}
+
+// Policy 4: update routine with latest weights silently
+async function updateRoutineWeights(routineId,exForRoutine){
+  const r=userRoutines.find(r=>r.id===routineId);
+  if(!r)return;
+  // Merge weights back into routine exercises
+  const updated=(r.exercises||[]).map(re=>{
+    const match=exForRoutine.find(e=>e.name===re.name);
+    if(match&&(match.lastKg||match.lastReps)){
+      return{...re,lastKg:match.lastKg,lastReps:match.lastReps};
+    }
+    return re;
+  });
+  await sb.from('user_routines').update({exercises:updated}).eq('id',routineId);
+  await loadRoutines();
 }
 
 // Backward compat stubs
