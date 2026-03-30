@@ -48,12 +48,6 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 .stats-meta{font-size:11px;color:var(--text3);margin-bottom:10px;min-height:14px;}
 .stats-empty{text-align:center;padding:24px 0;font-size:12px;color:var(--text3);}
 .stats-card canvas{display:block;max-height:160px;}
-/* HEATMAP */
-.hm-cell{width:12px;height:12px;border-radius:2px;flex-shrink:0;}
-.hm-0{background:var(--surface2);}
-.hm-1{background:#14532d;}
-.hm-2{background:#16a34a;}
-.hm-3{background:#4ade80;}
 
 /* WATER GOAL BUTTONS */
 .wg-btn{padding:6px 10px;border-radius:8px;border:1px solid var(--border2);font-size:12px;cursor:pointer;font-weight:500;background:var(--surface3);color:var(--text2);transition:all .15s;}
@@ -700,20 +694,6 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
         <div id="vol-empty" class="stats-empty" style="display:none;">운동 기록이 없어요</div>
       </div>
 
-      <!-- Routine rate chart -->
-      <div class="stats-card">
-        <div class="stats-card-title">✅ 필수 루틴 달성률</div>
-        <div class="stats-meta" id="mand-meta"></div>
-        <div style="position:relative;height:160px;width:100%;"><canvas id="chart-mand"></canvas></div>
-        <div id="mand-empty" class="stats-empty" style="display:none;">루틴 기록이 없어요</div>
-      </div>
-
-      <!-- Heatmap -->
-      <div class="stats-card">
-        <div class="stats-card-title">🌿 운동 히트맵</div>
-        <div class="stats-meta" id="heatmap-meta"></div>
-        <div id="heatmap-grid" style="overflow-x:auto;padding-bottom:4px;"></div>
-      </div>
     </div>
   </div>
 
@@ -3670,7 +3650,7 @@ if('serviceWorker' in navigator){
 // STATS / GRAPHS
 // ══════════════════════════════════════════════
 let statsPeriod=30;
-let statsCharts={weight:null,vol:null,mand:null};
+let statsCharts={weight:null,vol:null};
 
 function setStatsPeriod(days,btn){
   statsPeriod=days;
@@ -3696,8 +3676,6 @@ async function loadAndRenderStats(){
   const rows=data.map(d=>({...d,_key:normKey(d.log_date)}));
   renderWeightChart(rows);
   renderVolChart(rows);
-  renderMandChart(rows);
-  renderHeatmap(rows);
 }
 
 function getChartColors(){
@@ -3806,101 +3784,6 @@ function renderVolChart(rows){
   });
 }
 
-function renderMandChart(rows){
-  const pts=rows.filter(r=>r.mandatory&&r.mandatory.length>0).map(r=>{
-    const ms=r.mandatory;
-    const rate=Math.round(ms.filter(m=>m.done).length/ms.length*100);
-    return{x:r._key.split('-').slice(1).join('/'),y:rate};
-  });
-  const emptyEl=document.getElementById('mand-empty');
-  const canvas=document.getElementById('chart-mand');
-  if(pts.length===0){emptyEl.style.display='block';canvas.style.display='none';document.getElementById('mand-meta').textContent='';return;}
-  emptyEl.style.display='none';canvas.style.display='block';
-  const avg=Math.round(pts.reduce((a,p)=>a+p.y,0)/pts.length);
-  const perfect=pts.filter(p=>p.y===100).length;
-  document.getElementById('mand-meta').textContent=
-    '평균 달성률 '+avg+'% · 100% 달성 '+perfect+'일';
-  const c=getChartColors();
-  destroyChart('mand');
-  statsCharts.mand=new Chart(canvas,{
-    type:'line',
-    data:{
-      labels:pts.map(p=>p.x),
-      datasets:[{
-        data:pts.map(p=>p.y),
-        borderColor:c.green,
-        backgroundColor:'rgba(74,222,128,0.1)',
-        borderWidth:2,
-        pointRadius:pts.length>30?0:3,
-        pointBackgroundColor:pts.map(p=>p.y===100?c.green:c.amber),
-        fill:true,
-        tension:0.3,
-      }]
-    },
-    options:{
-      responsive:true,maintainAspectRatio:false,animation:{duration:400},
-      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>ctx.parsed.y+'%'}}},
-      scales:{
-        x:{ticks:{color:c.text,font:{size:9},maxTicksLimit:10},grid:{color:c.grid}},
-        y:{ticks:{color:c.text,font:{size:9},callback:v=>v+'%'},grid:{color:c.grid},min:0,max:100}
-      }
-    }
-  });
-}
-
-function renderHeatmap(rows){
-  // Build a map of dateKey → workout done
-  const dayMap={};
-  rows.forEach(r=>{
-    const wos=r.workouts||[];
-    const hasWo=wos.some(w=>w.status==='done');
-    const hasMand=(r.mandatory||[]).some(m=>m.done);
-    const intensity=hasWo?3:hasMand?1:0;
-    dayMap[r._key]=intensity;
-  });
-  // Build grid: week columns, day rows (Mon-Sun)
-  const totalDays=statsPeriod;
-  const startDate=new Date(now);
-  startDate.setDate(startDate.getDate()-(totalDays-1));
-  // Align to Monday
-  const startMon=new Date(startDate);
-  startMon.setDate(startDate.getDate()-((startDate.getDay()+6)%7));
-  const weeks=[];
-  let cur=new Date(startMon);
-  while(cur<=now){
-    const week=[];
-    for(let d=0;d<7;d++){
-      const k=dkey(cur);
-      const isFuture=cur>now;
-      const val=isFuture?-1:(dayMap[k]||0);
-      week.push({k,val,day:cur.getDate(),mon:cur.getMonth()+1});
-      cur.setDate(cur.getDate()+1);
-    }
-    weeks.push(week);
-  }
-  const daysKo=['월','화','수','목','금','토','일'];
-  const workedDays=Object.values(dayMap).filter(v=>v>=2).length;
-  document.getElementById('heatmap-meta').textContent=
-    '운동한 날 '+workedDays+'일 / '+totalDays+'일';
-  let html=`<div style="display:flex;gap:6px;align-items:flex-start;">`;
-  // Day labels
-  html+=`<div style="display:flex;flex-direction:column;gap:3px;padding-top:18px;">`;
-  daysKo.forEach(d=>html+=`<div style="width:12px;height:12px;font-size:8px;color:var(--text3);display:flex;align-items:center;justify-content:center;">${d}</div>`);
-  html+=`</div>`;
-  // Week columns
-  weeks.forEach((week,wi)=>{
-    const showLabel=wi===0||week[0].day<=7;
-    html+=`<div style="display:flex;flex-direction:column;gap:3px;">`;
-    html+=`<div style="height:14px;font-size:8px;color:var(--text3);text-align:center;line-height:14px;">${showLabel?week[0].mon+'/'+week[0].day:''}</div>`;
-    week.forEach(cell=>{
-      const cls=cell.val<0?'hm-cell':(cell.val===0?'hm-cell hm-0':cell.val===1?'hm-cell hm-1':cell.val===2?'hm-cell hm-2':'hm-cell hm-3');
-      html+=`<div class="${cls}" title="${cell.k}"></div>`;
-    });
-    html+=`</div>`;
-  });
-  html+=`</div>`;
-  document.getElementById('heatmap-grid').innerHTML=html;
-}
 
 </script>
 </body>
