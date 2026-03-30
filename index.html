@@ -2748,10 +2748,7 @@ function buildWVTable(dates){
   // "+ 루틴 추가" button row
   html+=`<tr style="background:transparent;">
     <td class="row-sub" style="color:var(--accent);font-weight:500;cursor:pointer;font-size:11px;" onclick="wvAddMandRow()">＋ 추가</td>`;
-  dates.forEach(d=>{
-    const k2=dkey(d);
-    html+=`<td class="dc" style="cursor:pointer;" onclick="wvAddMandForDay('${k2}',this)"><span style="color:var(--accent);opacity:.5;font-size:13px;">＋</span></td>`;
-  });
+  dates.forEach(()=>{ html+=`<td class="dc"></td>`; });
   html+=`</tr>`;
   html+=`<tr class="section-hdr-row"><td colspan="8">🎯 오늘의 목표</td></tr>`;
   // Find max targets across the week
@@ -2782,10 +2779,7 @@ function buildWVTable(dates){
   // Always show one empty row at the bottom to add new targets
   html+=`<tr style="background:transparent;">
     <td class="row-sub" style="color:var(--accent);font-weight:500;cursor:pointer;font-size:11px;" onclick="wvAddTgtRow()">＋ 추가</td>`;
-  dates.forEach(d=>{
-    const k=dkey(d);
-    html+=`<td class="dc" style="cursor:pointer;" onclick="wvTapTarget('${k}',999,this)"><span style="color:var(--accent);opacity:.5;font-size:13px;">＋</span></td>`;
-  });
+  dates.forEach(()=>{ html+=`<td class="dc"></td>`; });
   html+=`</tr>`;
   tbl.innerHTML=html;
 }
