@@ -438,7 +438,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 <div id="auth-screen">
   <div class="auth-logo">📋</div>
   <div class="auth-title" style="color:#f87171;letter-spacing:.5px;">Stay Hard</div>
-  <div class="auth-sub" style="color:#f87171;font-weight:500;">Stay Hard.</div><div class="auth-sub">루틴을 기록하고, 함께 성장하세요.</div>
+  <div class="auth-sub">루틴을 기록하고, 함께 성장하세요.</div>
   <div class="auth-tabs">
     <div class="auth-tab active" onclick="switchAuthTab('login')">로그인</div>
     <div class="auth-tab" onclick="switchAuthTab('signup')">회원가입</div>
@@ -1187,8 +1187,8 @@ function renderSession(){
       <tr>
         <td style="color:var(--text3);font-size:11px;">${si+1}</td>
         ${ex.isStrength?`
-          <td><input class="ws-num-inp${s.done?' active':''}" type="number" placeholder="0" value="${s.kg||''}" oninput="updateSet(${ei},${si},'kg',this.value)" min="0" step="0.5"/></td>
-          <td><input class="ws-num-inp${s.done?' active':''}" type="number" placeholder="0" value="${s.reps||''}" oninput="updateSet(${ei},${si},'reps',this.value)" min="0"/></td>
+          <td><input class="ws-num-inp${s.done?' active':''}" type="number" placeholder="0" value="${s.kg!=null&&s.kg!==''?s.kg:''}" oninput="updateSet(${ei},${si},'kg',this.value)" min="0" step="0.5" style="width:60px;"/></td>
+          <td><input class="ws-num-inp${s.done?' active':''}" type="number" placeholder="0" value="${s.reps!=null&&s.reps!==''?s.reps:''}" oninput="updateSet(${ei},${si},'reps',this.value)" min="0" style="width:60px;"/></td>
         `:`
           <td><input class="ws-num-inp" type="number" placeholder="km" value="${s.dist||''}" oninput="updateSet(${ei},${si},'dist',this.value)" step="0.1"/></td>
           <td><input class="ws-num-inp" type="number" placeholder="분" value="${s.time||''}" oninput="updateSet(${ei},${si},'time',this.value)"/></td>
@@ -1454,6 +1454,7 @@ function startSessionFromRoutine(id){
 
   currentSession=prefill;
   editingSessionIdx=null;
+  sessionStartedFromRoutine=true;
   document.getElementById('workout-session-overlay').classList.add('open');
   renderSession();
 }
@@ -1733,8 +1734,8 @@ function weekStart(offset){const d=new Date(now);d.setDate(d.getDate()-((d.getDa
 function buildSlider(){
   const strip=document.getElementById('day-strip');strip.innerHTML='';
   const ws=weekStart(sliderOffset);
-  const displayDate=selectedDate||ws;
-  document.getElementById('slider-month').textContent=(displayDate.getMonth()+1)+'월 '+displayDate.getFullYear();
+  // Show month of the leftmost (first) date in the current week view
+  document.getElementById('slider-month').textContent=(ws.getMonth()+1)+'월 '+ws.getFullYear();
   for(let i=0;i<7;i++){
     const d=new Date(ws);d.setDate(ws.getDate()+i);
     const k=dkey(d),isT=k===TODAY,isSel=k===selectedKey,isFut=d>now&&!isT;
@@ -1744,7 +1745,10 @@ function buildSlider(){
     if(cached&&!isFut){const hasMeals=(cached.meals||[]).filter(m=>m.type).length>0;const hasWo=(cached.workouts||[]).filter(w=>w.status==='done').length>0;const hasMand=(cached.mandatory||[]).filter(m=>m.done).length>0;if(hasMeals||hasWo||hasMand)dotColor='var(--green)';}
     const wrap=document.createElement('div');wrap.className='day-pill-wrap';
     const dayLabel=['월','화','수','목','금','토','일'][(d.getDay()+6)%7];
-    wrap.innerHTML=`<div class="day-pill${isSel?' active':''}"><div class="dp-name">${dayLabel}</div><div class="dp-num">${d.getDate()}</div><div class="dp-dot" style="background:${dotColor};"></div></div>`;
+    // Show month prefix if this date is in a different month than week start
+    const showMonth=d.getMonth()!==ws.getMonth();
+    const numLabel=showMonth?`<div style="font-size:8px;color:var(--accent);line-height:1;">${d.getMonth()+1}월</div>${d.getDate()}`:d.getDate();
+    wrap.innerHTML=`<div class="day-pill${isSel?' active':''}"><div class="dp-name">${dayLabel}</div><div class="dp-num" style="line-height:1.1;">${numLabel}</div><div class="dp-dot" style="background:${dotColor};"></div></div>`;
     wrap.onclick=()=>selectDay(d,k);
     strip.appendChild(wrap);
   }
@@ -2086,16 +2090,16 @@ function renderWorkouts(){
       const vol=w.totalVolume||0;
       const volStr=vol>=1000?(vol/1000).toFixed(1)+'t':vol>0?vol.toLocaleString()+'kg':'';
       const expanded=w._expanded;
-      return`<div class="wo-row" style="flex-direction:column;align-items:stretch;padding:0;cursor:default;">
-        <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;" onclick="toggleGymExpand(${i})">
+      return`<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:6px;overflow:hidden;">
+        <div class="wo-row" style="cursor:pointer;padding:10px 14px;" onclick="toggleGymExpand(${i})">
           <div class="wo-icon-box">🏋️</div>
-          <div class="wo-info" style="flex:1;">
+          <div class="wo-info">
             <div class="wo-name">${w.sessionName||'헬스 세션'}</div>
             <div class="wo-meta">${preview}${volStr?' · 총 '+volStr:''}</div>
           </div>
           <div class="wo-status ${w.status==='done'?'done':'planned'}">${w.status==='done'?'✓ 완료':'📅 계획'}</div>
           <button onclick="event.stopPropagation();delWO(${i})" class="wo-del">✕</button>
-          <span style="color:var(--text3);font-size:12px;margin-left:2px;">${expanded?'▲':'▼'}</span>
+          <span style="color:var(--text3);font-size:11px;">${expanded?'▲':'▼'}</span>
         </div>
         ${expanded?`<div style="border-top:1px solid var(--border);padding:8px 14px 12px;">
           ${(w.exercises||[]).map(ex=>{
@@ -2245,6 +2249,7 @@ function editActivity(i){
 
 // ── SESSION STATE ──
 let editingSessionIdx=null;
+let sessionStartedFromRoutine=false;
 
 // Update finishSession to save as gym type
 const _origFinishSession=window.finishSession;
@@ -2291,8 +2296,10 @@ function finishSession(){
   // Only offer to save as routine on NEW sessions (not edits)
   const sessionExercises=currentSession.slice();
   const wasEditing=editingSessionIdx!==null;
+  const wasFromRoutine=sessionStartedFromRoutine;
+  sessionStartedFromRoutine=false;
   currentSession=[];
-  if(!wasEditing&&sessionExercises.length>0){
+  if(!wasEditing&&!wasFromRoutine&&sessionExercises.length>0){
     setTimeout(()=>{
       if(confirm('이 운동을 루틴으로 저장할까요?')){
         openRoutineModal();
@@ -2548,7 +2555,6 @@ function buildWVTable(dates){
   // collect all mand names, deduplicate by emoji prefix keeping longest (Korean)
   const mandNamesAll=new Set();
   dates.forEach(d=>{const dl=wvLogs[dkey(d)];if(dl?.mandatory)dl.mandatory.forEach(m=>mandNamesAll.add(m.name));});
-  DEFAULT_MAND.forEach(m=>mandNamesAll.add(m.name));
   const dedupedMand=[];
   [...mandNamesAll].forEach(name=>{
     // get the leading emoji characters (everything before first space or letter)
