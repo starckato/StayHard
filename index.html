@@ -59,6 +59,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 .abtn{width:100%;padding:14px;border-radius:var(--radius-sm);border:none;background:var(--accent);color:#fff;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;margin-top:6px;}
 .abtn:disabled{opacity:.5;cursor:not-allowed;}
 .aerr{font-size:12px;color:var(--red);text-align:center;margin-top:6px;min-height:16px;}
+@keyframes suShake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
 
 /* APP */
 #app-screen{display:none;}
@@ -469,12 +470,17 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
     <div class="aerr" id="li-err"></div>
   </div>
   <div class="aform" id="auth-signup" style="display:none;">
-    <div class="afield"><label class="alabel">표시 이름</label><input class="ainput" id="su-name" type="text" placeholder="예: 지연"/></div>
-    <div class="afield"><label class="alabel">유저명</label><input class="ainput" id="su-user" type="text" placeholder="예: jiyeon123"/></div>
-    <div class="afield"><label class="alabel">이메일</label><input class="ainput" id="su-email" type="email" placeholder="이메일 주소"/></div>
-    <div class="afield"><label class="alabel">비밀번호</label><input class="ainput" id="su-pw" type="password" placeholder="최소 6자 이상"/></div>
+    <div class="afield"><label class="alabel">이름</label><input class="ainput" id="su-name" type="text" placeholder="예: 지연" oninput="suClearErr()"/></div>
+    <div class="afield"><label class="alabel">이메일</label><input class="ainput" id="su-email" type="email" placeholder="이메일 주소" oninput="suClearErr()"/></div>
+    <div class="afield">
+      <label class="alabel">비밀번호</label>
+      <div style="position:relative;">
+        <input class="ainput" id="su-pw" type="password" placeholder="최소 6자 이상" oninput="suClearErr()" style="padding-right:44px;"/>
+        <button type="button" onclick="suTogglePw()" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text3);font-size:16px;" id="su-pw-eye">👁</button>
+      </div>
+    </div>
     <button class="abtn" id="su-btn" onclick="doSignup()">계정 만들기</button>
-    <div class="aerr" id="su-err"></div>
+    <div class="aerr" id="su-err" style="min-height:18px;"></div>
   </div>
 </div>
 
@@ -1703,16 +1709,39 @@ async function doLogin(){
   if(error){document.getElementById('li-err').textContent=error.message;btn.disabled=false;btn.textContent='로그인';return;}
   show('loading');await onLogin(data.user);
 }
+function suClearErr(){document.getElementById('su-err').textContent='';}
+function suTogglePw(){const inp=document.getElementById('su-pw');const eye=document.getElementById('su-pw-eye');inp.type=inp.type==='password'?'text':'password';eye.textContent=inp.type==='password'?'👁':'🙈';}
+function suErr(msg){
+  const el=document.getElementById('su-err');
+  el.textContent=msg;
+  el.style.color='var(--red)';
+  // Shake animation
+  el.style.animation='none';setTimeout(()=>el.style.animation='suShake .3s ease',10);
+}
 async function doSignup(){
-  const name=document.getElementById('su-name').value.trim(),un=document.getElementById('su-user').value.trim().toLowerCase().replace(/[^a-z0-9_]/g,''),email=document.getElementById('su-email').value.trim(),pw=document.getElementById('su-pw').value;
+  const name=document.getElementById('su-name').value.trim();
+  const email=document.getElementById('su-email').value.trim();
+  const pw=document.getElementById('su-pw').value;
   const btn=document.getElementById('su-btn');
-  if(!name||!un||!email||!pw){document.getElementById('su-err').textContent='모든 항목을 입력해주세요.';return;}
-  if(pw.length<6){document.getElementById('su-err').textContent='비밀번호는 최소 6자 이상이어야 합니다.';return;}
-  btn.disabled=true;btn.textContent='생성 중…';document.getElementById('su-err').textContent='';
-  const{data:ex}=await sb.from('profiles').select('id').eq('username',un).maybeSingle();
-  if(ex){document.getElementById('su-err').textContent='이미 사용 중인 유저명입니다.';btn.disabled=false;btn.textContent='계정 만들기';return;}
+  // Validation with specific hints
+  if(!name){suErr('이름을 입력해주세요.');document.getElementById('su-name').focus();return;}
+  if(name.length<2){suErr('이름은 2자 이상이어야 합니다.');return;}
+  if(!email){suErr('이메일 주소를 입력해주세요.');document.getElementById('su-email').focus();return;}
+  if(!/^[^@]+@[^@]+\.[^@]+$/.test(email)){suErr('올바른 이메일 형식이 아닙니다. (예: name@email.com)');return;}
+  if(!pw){suErr('비밀번호를 입력해주세요.');document.getElementById('su-pw').focus();return;}
+  if(pw.length<6){suErr('비밀번호는 최소 6자 이상이어야 합니다.');return;}
+  // Auto-generate username from name + random suffix
+  const base=name.toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,10)||'user';
+  const un=base+Math.floor(100+Math.random()*900);
+  btn.disabled=true;btn.textContent='생성 중…';suClearErr();
   const{data,error}=await sb.auth.signUp({email,password:pw});
-  if(error){document.getElementById('su-err').textContent=error.message;btn.disabled=false;btn.textContent='계정 만들기';return;}
+  if(error){
+    let msg=error.message;
+    if(msg.includes('already registered')||msg.includes('already been registered')||msg.includes('User already'))msg='이미 가입된 이메일입니다. 로그인을 시도해보세요.';
+    else if(msg.includes('invalid'))msg='올바른 이메일 형식이 아닙니다.';
+    else if(msg.includes('weak')||msg.includes('password'))msg='비밀번호가 너무 단순합니다. 영문+숫자 조합을 사용해주세요.';
+    suErr(msg);btn.disabled=false;btn.textContent='계정 만들기';return;
+  }
   await sb.from('profiles').insert({id:data.user.id,username:un,display_name:name});
   show('loading');await onLogin(data.user);
 }
