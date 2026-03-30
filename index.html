@@ -1419,8 +1419,10 @@ async function saveRoutine(){
     }
     editingRoutineId=null;
     await loadRoutines();
-    showRoutineList();
+    closeRoutineModal();
     showToast('루틴 저장됨 ✓');
+    // Return to 기록 tab so user sees the workout recorded
+    switchTab('routine',0);
   }catch(e){
     showToast('저장 실패: '+e.message);
     console.error('saveRoutine error:',e);
@@ -2324,6 +2326,9 @@ function finishSession(){
   if(!logCache[selectedKey])logCache[selectedKey]=log;
   log=logCache[selectedKey];
 
+  // Capture wasEditing BEFORE resetting editingSessionIdx
+  const wasEditing=editingSessionIdx!==null;
+
   if(editingSessionIdx!==null){
     log.workouts[editingSessionIdx]=sessionEntry;
     editingSessionIdx=null;
@@ -2337,7 +2342,6 @@ function finishSession(){
 
   // ── Routine prompt policies ──
   const sessionExercises=currentSession.slice();
-  const wasEditing=editingSessionIdx!==null;
   const wasFromRoutine=sessionStartedFromRoutine;
   const sourceRoutineId=sessionSourceRoutineId;
   const origExCount=sessionOriginalExCount;
@@ -2375,12 +2379,13 @@ function finishSession(){
       if(addedCount===0){
         // Policy 2: no changes → update weights in routine silently
         await updateRoutineWeights(sourceRoutineId,exForRoutine);
+        // No toast — silent update, user already on 기록 page
         return;
       } else {
         // Policy 3: exercises added → ask to update routine
         if(confirm('루틴에 없는 운동을 추가했어요. 루틴을 업데이트할까요?')){
           await updateRoutineWeights(sourceRoutineId,exForRoutine);
-          showToast('루틴 업데이트됨 ✓');
+          showToast('✓ 루틴이 업데이트됐어요');
         }
         return;
       }
