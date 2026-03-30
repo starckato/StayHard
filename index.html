@@ -2632,26 +2632,29 @@ function buildWVTable(dates){
   dates.forEach(d=>{
   const k=dkey(d),isT=k===TODAY,iF=d>now&&!isT;
   const dl=wvLogs[k];const wos=dl?.workouts||[];
-  const done=wos.filter(w=>w.status==='done');
-  const planned=wos.filter(w=>w.status==='planned');
   let display='',cls='c-empty',ttl='';
   if(iF){cls='c-future';}
-  else if(done.length>0){
-    const first=done[0];
-    const metaParts=(first.meta&&first.meta!=='기록됨')?first.meta.split(' ').slice(0,2).join(' '):'';
-    const extra=done.length>1?' +'+(done.length-1):'';
-    display=first.icon+(metaParts?' '+metaParts:'')+extra;
-    ttl=done.map(w=>w.icon+' '+w.name).join(', ');
-    cls='c-green';
+  else if(wos.length>0){
+    const gymSessions=wos.filter(w=>w.type==='gym'&&w.status==='done');
+    const activities=wos.filter(w=>w.type==='activity'&&w.status==='done');
+    const parts=[];
+    if(gymSessions.length>0){
+      const vol=gymSessions.reduce((a,s)=>a+(s.totalVolume||0),0);
+      parts.push(vol>=1000?(vol/1000).toFixed(1)+'t':vol>0?vol+'kg':'🏋️');
+    }
+    if(activities.length>0){
+      activities.forEach(a=>{
+        const dur=(a.meta||'').match(/(\d+)\s*분/)?.[1];
+        parts.push((a.icon||'🏃')+(dur?' '+dur+'분':''));
+      });
+    }
+    if(parts.length>0){display=parts.join(' ');cls='c-green';}
+    else{
+      const planned=wos.filter(w=>w.status==='planned');
+      if(planned.length>0){display='📅 계획';cls='c-purple';}
+    }
+    ttl=wos.map(w=>w.type==='gym'?(w.sessionName||'헬스'):(w.name||'')).join(', ');
   }
-  else if(planned.length>0){
-    const first=planned[0];
-    const extra=planned.length>1?' +'+(planned.length-1):'';
-    display=first.icon+' 계획'+extra;
-    ttl=planned.map(w=>w.icon+' '+w.name).join(', ');
-    cls='c-purple';
-  }
-  else if(wos.length>0){display='스킵';cls='c-red';}
   html+=`<td class="dc${isT?' today-col':''} ${cls}" title="${ttl||display}">${display||'—'}</td>`;
 });html+=`</tr>`;
   html+=`<tr class="section-hdr-row"><td colspan="8">✅ 필수 루틴</td></tr>`;
@@ -2673,10 +2676,38 @@ function buildWVTable(dates){
     dates.forEach(d=>{const k=dkey(d),isT=k===TODAY,iF=d>now&&!isT;const dl=wvLogs[k];const task=dl?.mandatory?.find(m=>m.name===mname);let cls='c-empty',val='—';if(iF){cls='c-future';val='';}else if(task){val=task.done?'✓':'✕';cls=task.done?'c-green':'c-red';}html+=`<td class="dc${isT?' today-col':''} ${cls}" style="font-weight:600;">${val}</td>`;});html+=`</tr>`;
   });
   html+=`<tr class="section-hdr-row"><td colspan="8">🎯 오늘의 목표</td></tr>`;
-  for(let ti=0;ti<5;ti++){
+  // Find max targets across the week
+  let maxTgts=0;
+  dates.forEach(d=>{const dl=wvLogs[dkey(d)];if(dl?.targets)maxTgts=Math.max(maxTgts,dl.targets.length);});
+  maxTgts=Math.max(maxTgts,1);
+  for(let ti=0;ti<maxTgts;ti++){
     html+=`<tr><td class="row-sub">목표 ${ti+1}</td>`;
-    dates.forEach(d=>{const k=dkey(d),isT=k===TODAY,iF=d>now&&!isT;const dl=wvLogs[k];const task=dl?.targets?.[ti];let cls='c-empty',val='';if(iF){cls='c-future';}else if(task){val=task.text;cls=task.st==='done'?'c-green':task.st==='fail'?'c-red':'c-empty';}html+=`<td class="dc${isT?' today-col':''} ${cls}" title="${val}">${val?val.slice(0,8)+(val.length>8?'…':''):'—'}</td>`;});html+=`</tr>`;
+    dates.forEach(d=>{
+      const k=dkey(d),isT=k===TODAY,iF=d>now&&!isT;
+      const dl=wvLogs[k];const task=dl?.targets?.[ti];
+      let cls='c-empty',val='',icon='';
+      if(iF){cls='c-future';}
+      else if(task){
+        val=task.text;
+        icon=task.st==='done'?'✓ ':task.st==='fail'?'✕ ':'';
+        cls=task.st==='done'?'c-green':task.st==='fail'?'c-red':'c-empty';
+      }
+      // Clickable — jump to that day to add/edit target
+      const clickable=!iF;
+      const shortVal=val?icon+val.slice(0,7)+(val.length>7?'…':''):'＋';
+      const emptyStyle=(!task&&!iF)?'color:var(--text3);opacity:.3;':'';
+      html+=`<td class="dc${isT?' today-col':''} ${cls}" title="${val}" style="cursor:${clickable?'pointer':'default'};${emptyStyle}" ${clickable?`onclick="jumpToDateFromWeekly('${k}',${d.getFullYear()},${d.getMonth()},${d.getDate()})"`:''}>${val?shortVal:'＋'}</td>`;
+    });
+    html+=`</tr>`;
   }
+  // Always show one empty row at the bottom to add new targets
+  html+=`<tr><td class="row-sub" style="color:var(--text3);">+ 추가</td>`;
+  dates.forEach(d=>{
+    const k=dkey(d),isT=k===TODAY,iF=d>now&&!isT;
+    if(iF){html+=`<td class="dc c-future"></td>`;return;}
+    html+=`<td class="dc" style="cursor:pointer;color:var(--text3);opacity:.3;" onclick="jumpToDateFromWeekly('${k}',${d.getFullYear()},${d.getMonth()},${d.getDate()})">＋</td>`;
+  });
+  html+=`</tr>`;
   tbl.innerHTML=html;
 }
 
