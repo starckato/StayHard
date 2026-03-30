@@ -2477,7 +2477,12 @@ function renderMandatory(){
   }).join('');
 }
 function togMand(i){log.mandatory[i].done=!log.mandatory[i].done;renderMandatory();scheduleSave();}
-function delMand(i){log.mandatory.splice(i,1);renderMandatory();scheduleSave();}
+function delMand(i){
+  const removed=log.mandatory[i];
+  log.mandatory.splice(i,1);
+  renderMandatory();
+  saveLog(selectedKey).then(()=>propagateMandatoryDefs(log.mandatory));
+}
 function openAddMandatoryModal(){
   mandEditIdx2=null;newMandDays=[0,1,2,3,4,5,6];
   document.getElementById('mand-inp').value='';
@@ -2502,7 +2507,61 @@ function saveMandatory(){
     if(log.mandatory.length>=10){showToast('필수 루틴은 최대 10개까지 추가할 수 있어요.');closeModal('mand-modal');return;}
     log.mandatory.push({name,done:false,days:[...newMandDays]});
   }
-  closeModal('mand-modal');renderMandatory();scheduleSave();
+  closeModal('mand-modal');renderMandatory();
+  // Save current day first, then propagate defs to all other days
+  saveLog(selectedKey).then(()=>propagateMandatoryDefs(log.mandatory));
+}
+
+// Propagate routine DEFINITIONS to all cached + nearby days
+// Each day gets the definition with done=false (preserving existing done status)
+async function propagateMandatoryDefs(defs){
+  if(!defs||!defs.length||!CU)return;
+  const defsList=defs.map(d=>({name:d.name,days:d.days||[0,1,2,3,4,5,6]}));
+  
+  // 1. Update all logCache days
+  Object.keys(logCache).forEach(k=>{
+    if(k===selectedKey)return; // already saved
+    const existing=logCache[k];
+    if(!existing)return;
+    // Merge: keep existing done status, add new defs
+    const merged=defsList.map(def=>{
+      const existing_task=existing.mandatory?.find(m=>m.name===def.name);
+      return{name:def.name,done:existing_task?.done||false,days:def.days};
+    });
+    // Keep tasks that exist in this day but not in defs (don't delete old ones from other days)
+    existing.mandatory=merged;
+    logCache[k]=existing;
+  });
+  
+  // 2. Upsert all 7 days of current week to DB
+  const now2=new Date();
+  const weekStart=new Date(now2);
+  weekStart.setDate(now2.getDate()-((now2.getDay()+6)%7));
+  weekStart.setHours(0,0,0,0);
+  const upsertPromises=[];
+  for(let i=0;i<7;i++){
+    const d=new Date(weekStart);
+    d.setDate(weekStart.getDate()+i);
+    const k=dkey(d);
+    if(k===selectedKey)continue; // already saved
+    const existing=logCache[k]||{weight:null,water_cups:0,meals:[],workouts:[],targets:[]};
+    const merged=defsList.map(def=>{
+      const et=existing.mandatory?.find(m=>m.name===def.name);
+      return{name:def.name,done:et?.done||false,days:def.days};
+    });
+    const updated={...existing,mandatory:merged};
+    logCache[k]=updated;
+    upsertPromises.push(
+      sb.from('daily_logs').upsert(
+        {user_id:CU.id,log_date:k,weight:updated.weight,water_cups:updated.water_cups||0,
+         meals:updated.meals||[],workouts:updated.workouts||[],
+         mandatory:updated.mandatory,targets:updated.targets||[]},
+        {onConflict:'user_id,log_date'}
+      )
+    );
+  }
+  await Promise.all(upsertPromises);
+  showToast('루틴이 모든 날짜에 적용됐어요 ✓');
 }
 function toggleDay(el,idx){
   if(newMandDays.includes(idx)){newMandDays=newMandDays.filter(d=>d!==idx);el.classList.remove('on');}
@@ -2686,9 +2745,13 @@ function buildWVTable(dates){
     html+=`<tr><td class="row-sub" title="${mname}">${mname.length>9?mname.slice(0,8)+'…':mname}</td>`;
     dates.forEach(d=>{const k=dkey(d),isT=k===TODAY,iF=d>now&&!isT;const dl=wvLogs[k];const task=dl?.mandatory?.find(m=>m.name===mname);let cls='c-empty',val='—';if(iF){cls='c-future';val='';}else if(task){val=task.done?'✓':'✕';cls=task.done?'c-green':'c-red';}html+=`<td class="dc${isT?' today-col':''} ${cls}" onclick="wvTapMand('${k}','${mname.replace(/'/g,"\\'")}',this)" style="font-weight:600;cursor:pointer">${val}</td>`;});html+=`</tr>`;
   });
-  // "+ 루틴 추가" row below mandatory items
-  html+=`<tr><td class="row-sub" style="color:var(--accent);cursor:pointer;" onclick="wvAddMandRow()" colspan="1">+ 추가</td>`;
-  dates.forEach(d=>{html+=`<td class="dc" style="cursor:pointer;color:var(--text3);opacity:.25;" onclick="wvAddMandForDay('${dkey(d)}',this)">＋</td>`;});
+  // "+ 루틴 추가" button row
+  html+=`<tr style="background:transparent;">
+    <td class="row-sub" style="color:var(--accent);font-weight:500;cursor:pointer;font-size:11px;" onclick="wvAddMandRow()">＋ 추가</td>`;
+  dates.forEach(d=>{
+    const k2=dkey(d);
+    html+=`<td class="dc" style="cursor:pointer;" onclick="wvAddMandForDay('${k2}',this)"><span style="color:var(--accent);opacity:.5;font-size:13px;">＋</span></td>`;
+  });
   html+=`</tr>`;
   html+=`<tr class="section-hdr-row"><td colspan="8">🎯 오늘의 목표</td></tr>`;
   // Find max targets across the week
@@ -2717,10 +2780,11 @@ function buildWVTable(dates){
     html+=`</tr>`;
   }
   // Always show one empty row at the bottom to add new targets
-  html+=`<tr><td class="row-sub" style="color:var(--text3);">+ 추가</td>`;
+  html+=`<tr style="background:transparent;">
+    <td class="row-sub" style="color:var(--accent);font-weight:500;cursor:pointer;font-size:11px;" onclick="wvAddTgtRow()">＋ 추가</td>`;
   dates.forEach(d=>{
-    const k=dkey(d),isT=k===TODAY,iF=d>now&&!isT;
-    html+=`<td class="dc" style="cursor:pointer;color:var(--text3);opacity:.3;" onclick="wvTapTarget('${k}',999,this)">＋</td>`;
+    const k=dkey(d);
+    html+=`<td class="dc" style="cursor:pointer;" onclick="wvTapTarget('${k}',999,this)"><span style="color:var(--accent);opacity:.5;font-size:13px;">＋</span></td>`;
   });
   html+=`</tr>`;
   tbl.innerHTML=html;
@@ -3118,28 +3182,15 @@ async function wvMmSave(){
     dl.mandatory=dl.mandatory||[];
     const days=wvGetSelectedDays();
     const newTask={name:val,done:false,days};
-    dl.mandatory.push(newTask);
-    // Also propagate to ALL days in cache so it appears everywhere
-    const allKeys=Object.keys(logCache);
-    allKeys.forEach(key=>{
-      if(key===k)return;
-      if(logCache[key]){
-        logCache[key].mandatory=logCache[key].mandatory||[];
-        // Only add if not already there
-        if(!logCache[key].mandatory.find(m=>m.name===val)){
-          logCache[key].mandatory.push({name:val,done:false,days});
-        }
-      }
-    });
-    // Update current log if different from k
-    if(selectedKey!==k&&logCache[selectedKey]){
-      if(!logCache[selectedKey].mandatory.find(m=>m.name===val)){
-        logCache[selectedKey].mandatory.push({name:val,done:false,days});
-        log=logCache[selectedKey];
-      }
+    if(!dl.mandatory.find(m=>m.name===val)){
+      dl.mandatory.push(newTask);
     }
   }
   await saveWvDayLog(k,dl);
+  // For routine additions, propagate to all days
+  if(wvMmContext.type==='mand-add'&&dl.mandatory){
+    await propagateMandatoryDefs(dl.mandatory);
+  }
   wvMmClose();
   renderWeeklyView();
 }
