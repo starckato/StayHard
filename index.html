@@ -1140,15 +1140,35 @@ function closeSession(){
     document.getElementById('workout-session-overlay').classList.remove('open');
   }
 }
+function findPrevSets(exName){
+  const keys=Object.keys(logCache).sort((a,b)=>b.localeCompare(a));
+  for(const k of keys){
+    const dayLog=logCache[k];
+    for(const w of(dayLog.workouts||[])){
+      if(w.type==='gym'){
+        for(const ex of(w.exercises||[])){
+          if(ex.name===exName){
+            const doneSets=(ex.sets||[]).filter(s=>s.done&&s.kg);
+            if(doneSets.length>0)return doneSets;
+          }
+        }
+      }
+    }
+  }
+  return null;
+}
 function addExerciseToSession(name,icon,muscle,equip){
-  // Check if strength (use sets) or cardio (use distance/time)
-  const isStrength=!['유산소'].includes(muscle);
-  currentSession.push({
-    name,icon,muscle,equip,
-    isStrength,
-    sets:isStrength?[{kg:'',reps:'',done:false}]:[{dist:'',time:'',done:false}],
-    status:'done'
-  });
+  const isStrength=!['유산소'].includes(muscle)&&!['유산소'].includes(equip);
+  let sets;
+  if(isStrength){
+    const prev=findPrevSets(name);
+    sets=prev&&prev.length>0
+      ?[{kg:prev[0].kg||'',reps:prev[0].reps||'',done:false}]
+      :[{kg:'',reps:'',done:false}];
+  } else {
+    sets=[{dist:'',time:'',done:false}];
+  }
+  currentSession.push({name,icon,muscle,equip,isStrength,sets,status:'done'});
   renderSession();
 }
 function renderSession(){
@@ -1345,14 +1365,37 @@ async function saveRoutine(){
   const name=document.getElementById('routine-name-inp').value.trim();
   if(!name){showToast('루틴 이름을 입력하세요');return;}
   if(routineExercises.length===0){showToast('운동을 1개 이상 추가하세요');return;}
-  if(editingRoutineId){
-    await sb.from('user_routines').update({name,exercises:routineExercises}).eq('id',editingRoutineId);
-  } else {
-    await sb.from('user_routines').insert({user_id:CU.id,name,exercises:routineExercises});
+  // Duplicate name check (only for new routines)
+  if(!editingRoutineId){
+    const exists=userRoutines.find(r=>r.name.trim()===name);
+    if(exists){
+      const overwrite=confirm('"'+name+'" 루틴이 이미 있어요. 덮어쓸까요?');
+      if(!overwrite)return;
+      // Overwrite the existing one
+      await sb.from('user_routines').update({exercises:routineExercises}).eq('id',exists.id);
+      editingRoutineId=null;
+      await loadRoutines();
+      showRoutineList();
+      showToast('루틴 업데이트됨 ✓');
+      return;
+    }
   }
-  await loadRoutines();
-  showRoutineList();
-  showToast('루틴 저장됨 ✓');
+  try{
+    if(editingRoutineId){
+      const{error}=await sb.from('user_routines').update({name,exercises:routineExercises}).eq('id',editingRoutineId);
+      if(error)throw error;
+    } else {
+      const{error}=await sb.from('user_routines').insert({user_id:CU.id,name,exercises:routineExercises});
+      if(error)throw error;
+    }
+    editingRoutineId=null;
+    await loadRoutines();
+    showRoutineList();
+    showToast('루틴 저장됨 ✓');
+  }catch(e){
+    showToast('저장 실패: '+e.message);
+    console.error('saveRoutine error:',e);
+  }
 }
 async function deleteRoutine(id){
   if(!confirm('이 루틴을 삭제할까요?'))return;
@@ -1370,13 +1413,47 @@ function editRoutine(id){
 function startSessionFromRoutine(id){
   const r=userRoutines.find(r=>r.id===id);if(!r)return;
   closeRoutineModal();
-  const prefill=(r.exercises||[]).map(ex=>({
-    name:ex.name,icon:ex.icon,muscle:ex.muscle,equip:ex.equip,
-    isStrength:ex.muscle!=='유산소'&&ex.equip!=='유산소',
-    sets:Array.from({length:ex.targetSets||3},()=>({kg:'',reps:'',done:false})),
-    status:'planned'
-  }));
+
+  // Find previous weights for each exercise from recent logs
+  // Search logCache for the most recent completed sets per exercise name
+  const prevWeights={};
+  Object.values(logCache).forEach(dayLog=>{
+    (dayLog.workouts||[]).forEach(w=>{
+      if(w.type==='gym'){
+        (w.exercises||[]).forEach(ex=>{
+          if(!prevWeights[ex.name]){
+            const doneSets=(ex.sets||[]).filter(s=>s.done&&s.kg);
+            if(doneSets.length>0){
+              // Store the most recent done sets
+              prevWeights[ex.name]=doneSets.map(s=>({kg:s.kg,reps:s.reps}));
+            }
+          }
+        });
+      }
+    });
+  });
+
+  const prefill=(r.exercises||[]).map(ex=>{
+    const isStr=ex.muscle!=='유산소'&&ex.equip!=='유산소';
+    const prev=prevWeights[ex.name];
+    const numSets=ex.targetSets||3;
+    let sets;
+    if(isStr&&prev&&prev.length>0){
+      // Pre-fill sets with previous weights — pad or trim to target set count
+      sets=Array.from({length:numSets},(_,i)=>{
+        const src=prev[Math.min(i,prev.length-1)];
+        return{kg:src.kg||'',reps:src.reps||'',done:false};
+      });
+    } else if(isStr){
+      sets=Array.from({length:numSets},()=>({kg:'',reps:'',done:false}));
+    } else {
+      sets=[{dist:'',time:'',done:false}];
+    }
+    return{name:ex.name,icon:ex.icon,muscle:ex.muscle,equip:ex.equip,isStrength:isStr,sets,status:'planned'};
+  });
+
   currentSession=prefill;
+  editingSessionIdx=null;
   document.getElementById('workout-session-overlay').classList.add('open');
   renderSession();
 }
@@ -2211,19 +2288,21 @@ function finishSession(){
   scheduleSave();
   document.getElementById('workout-session-overlay').classList.remove('open');
 
-  // Offer to save as routine if no routines exist or always prompt
-  if(currentSession.length>0){
+  // Only offer to save as routine on NEW sessions (not edits)
+  const sessionExercises=currentSession.slice();
+  const wasEditing=editingSessionIdx!==null;
+  currentSession=[];
+  if(!wasEditing&&sessionExercises.length>0){
     setTimeout(()=>{
       if(confirm('이 운동을 루틴으로 저장할까요?')){
         openRoutineModal();
         showRoutineCreate();
-        renderRoutineExList(currentSession.map(ex=>({
-          name:ex.name,icon:ex.icon,muscle:ex.muscle,equip:ex.equip,targetSets:ex.sets.length
+        renderRoutineExList(sessionExercises.map(ex=>({
+          name:ex.name,icon:ex.icon,muscle:ex.muscle,equip:ex.equip,targetSets:ex.sets.filter(s=>s.done).length||ex.sets.length
         })));
       }
-    },300);
+    },400);
   }
-  currentSession=[];
 }
 
 // Backward compat stubs
