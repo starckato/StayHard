@@ -1386,6 +1386,7 @@ function addSet(ei){
   const isStr=currentSession[ei].isStrength;
   sets.push(isStr?{kg:last?.kg||'',reps:last?.reps||'',done:false}:{dist:last?.dist||'',time:last?.time||'',done:false});
   renderSession();
+  setTimeout(()=>{const b=document.getElementById('ws-body');if(b)b.scrollTop=b.scrollHeight;},50);
 }
 function removeSet(ei,si){
   if(currentSession[ei].sets.length<=1){showToast('마지막 세트는 삭제할 수 없어요');return;}
