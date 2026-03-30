@@ -650,128 +650,22 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 
   <!-- ══ COMPETITION ══ -->
   <div class="view" id="view-competition">
-    <div class="setup-screen active" id="cs-none">
-      <div style="text-align:center;padding:48px 0 24px;">
-        <div style="font-size:48px;margin-bottom:12px;">🏆</div>
-        <div style="font-size:19px;font-weight:600;margin-bottom:7px;">🔥 고긴스 챌린지</div>
-        <div style="font-size:13px;color:var(--text2);line-height:1.7;margin-bottom:28px;">최대 6명이 함께 도전할 수 있어요.<br>코드 1개를 공유하면 바로 시작됩니다.</div>
-        <button class="mbtn" style="max-width:240px;margin:0 auto;" onclick="showCS('cs-setup')">챌린지 만들기</button>
-        <div style="margin-top:12px;"><button onclick="showCS('cs-join')" style="background:none;border:none;color:var(--accent);font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;">코드가 있나요? 참여하기 →</button></div>
-      </div>
-    </div>
-    <div class="setup-screen" id="cs-setup">
-      <div class="ss-back"><button class="ss-back-btn" onclick="showCS('cs-none')">←</button><div class="ss-title">챌린지 설정</div></div>
-      <div class="setup-step">
-        <div class="ss-step-title">챌린지 유형</div>
-        <div class="ss-step-sub">어떤 방식으로 경쟁할까요?</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px;">
-          <div id="ctype-routine" onclick="pickCompType('routine')" style="background:var(--accent-bg);border:2px solid var(--accent);border-radius:var(--radius-sm);padding:14px 12px;cursor:pointer;text-align:center;">
-            <div style="font-size:22px;margin-bottom:6px;">🔥</div>
-            <div style="font-size:13px;font-weight:600;color:var(--accent);">루틴 챌린지</div>
-            <div style="font-size:11px;color:var(--text2);margin-top:4px;line-height:1.4;">식단·운동·루틴<br>점수로 경쟁</div>
-          </div>
-          <div id="ctype-weight" onclick="pickCompType('weight')" style="background:var(--surface2);border:2px solid var(--border);border-radius:var(--radius-sm);padding:14px 12px;cursor:pointer;text-align:center;">
-            <div style="font-size:22px;margin-bottom:6px;">⚖️</div>
-            <div style="font-size:13px;font-weight:600;color:var(--text2);">체중 감량 챌린지</div>
-            <div style="font-size:11px;color:var(--text3);margin-top:4px;line-height:1.4;">목표 체중까지<br>누가 더 빨리?</div>
-          </div>
+    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:64px 32px 48px;text-align:center;min-height:60vh;">
+      <div style="font-size:56px;margin-bottom:20px;filter:grayscale(.3);">🏆</div>
+      <div style="font-size:18px;font-weight:700;margin-bottom:10px;letter-spacing:-.3px;">챌린지 기능 준비 중</div>
+      <div style="font-size:13px;color:var(--text2);line-height:1.8;margin-bottom:32px;">최대 6명이 함께 루틴을 기록하고<br>실시간으로 경쟁하는 기능이에요.<br>곧 업데이트될 예정입니다. 🔥</div>
+      <div style="background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius);padding:16px 20px;width:100%;max-width:280px;">
+        <div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-bottom:12px;font-weight:500;">업데이트 예정 기능</div>
+        <div style="display:flex;flex-direction:column;gap:8px;text-align:left;">
+          <div style="display:flex;align-items:center;gap:10px;font-size:12px;color:var(--text2);"><span>👥</span> 최대 6인 그룹 챌린지</div>
+          <div style="display:flex;align-items:center;gap:10px;font-size:12px;color:var(--text2);"><span>📊</span> 실시간 점수 리더보드</div>
+          <div style="display:flex;align-items:center;gap:10px;font-size:12px;color:var(--text2);"><span>🔑</span> 코드 1개로 바로 참여</div>
+          <div style="display:flex;align-items:center;gap:10px;font-size:12px;color:var(--text2);"><span>⚖️</span> 체중 감량 챌린지</div>
         </div>
       </div>
-      <div class="setup-step">
-        <div class="ss-step-title">기간</div><div class="ss-step-sub">몇 일간 도전할까요?</div>
-        <div class="dur-grid">
-          <button class="dur-btn" onclick="pickDur(7,this)">7일</button><button class="dur-btn selected" onclick="pickDur(14,this)">14일</button><button class="dur-btn" onclick="pickDur(21,this)">21일</button>
-          <button class="dur-btn" onclick="pickDur(30,this)">30일</button><button class="dur-btn" onclick="pickDur(60,this)">60일</button><button class="dur-btn" onclick="pickDur(90,this)">90일</button>
-        </div>
-      </div>
-      <div id="routine-sections-step" class="setup-step">
-        <div class="ss-step-title">점수에 반영할 항목</div><div class="ss-step-sub">모두 선택하면 고긴스 스코어와 동일하게 계산됩니다.</div>
-        <div class="sec-toggle-row">
-          <div class="sec-tog on" onclick="toggleSec(this,'diet')">🥗 식단</div>
-          <div class="sec-tog on" onclick="toggleSec(this,'workout')">💪 운동</div>
-          <div class="sec-tog on" onclick="toggleSec(this,'mandatory')">✅ 필수 루틴</div>
-          <div class="sec-tog" onclick="toggleSec(this,'target')">🎯 목표</div>
-        </div>
-      </div>
-      <div id="weight-only-step" class="setup-step" style="display:none;">
-        <div class="ss-step-title">체중 감량 챌린지</div>
-        <div class="ss-step-sub">각 멤버가 시작 체중에서 목표 체중까지 얼마나 줄였는지로 순위를 매깁니다.</div>
-        <div style="display:flex;align-items:center;gap:8px;padding:8px 0;background:var(--amber-bg);border-radius:9px;padding:10px 12px;margin-top:4px;">
-          <span style="font-size:16px;">⚖️</span>
-          <span style="font-size:12px;color:var(--amber);line-height:1.5;">매일 공복 체중을 기록하면 자동으로 감량량이 계산됩니다. 목표 체중은 참여 시 각자 설정합니다.</span>
-        </div>
-      </div>
-      <div class="setup-step">
-        <div class="ss-step-title">내 체중 목표 <span style="font-size:10px;color:var(--text3);font-weight:400;">(선택)</span></div>
-        <div class="ss-step-sub">본인의 목표 체중을 입력하세요. 멤버도 각자 설정합니다.</div>
-        <div style="display:flex;align-items:center;gap:9px;">
-          <input class="minput" id="comp-wgoal" type="number" step="0.1" placeholder="예: 90.0" style="max-width:130px;"/>
-          <span style="font-size:12px;color:var(--text2);">kg 목표</span>
-        </div>
-      </div>
-      <div class="setup-step">
-        <div class="ss-step-title">챌린지 이름</div><div class="ss-step-sub">멤버들에게 보여질 이름이에요.</div>
-        <input class="minput" id="comp-name-inp" placeholder="예: 여름 감량 챌린지 🔥"/>
-      </div>
-      <button class="mbtn" onclick="createComp()">챌린지 만들고 코드 받기</button>
-      <button class="mbtn-ghost" onclick="showCS('cs-none')">취소</button>
-    </div>
-    <div class="setup-screen" id="cs-invite">
-      <div style="display:flex;align-items:center;gap:10px;padding:8px 0 18px;">
-        <button onclick="cancelNewChallenge()" style="background:none;border:none;color:var(--text2);font-size:20px;cursor:pointer;">←</button>
-        <div style="font-size:15px;font-weight:600;">챌린지 초대 코드</div>
-      </div>
-      <div style="text-align:center;padding:8px 0 20px;">
-        <div style="font-size:36px;margin-bottom:11px;">🎉</div>
-        <div style="font-size:17px;font-weight:600;margin-bottom:5px;" id="ci-name"></div>
-        <div style="font-size:12px;color:var(--text2);margin-bottom:20px;">이 코드를 멤버들에게 공유하세요</div>
-        <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px;margin-bottom:14px;display:inline-block;min-width:160px;"><div class="invite-code-big" id="ci-code"></div></div><br>
-        <button id="ci-copy-btn" onclick="copyCode()" style="background:var(--accent);border:none;color:#fff;border-radius:9px;padding:9px 22px;font-size:12px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;margin-bottom:18px;">코드 복사</button>
-        <div id="ci-tags" style="margin-bottom:14px;"></div>
-        <div style="font-size:11px;color:var(--text3);">최대 6명 참여 가능 · 멤버를 기다리는 중…</div>
-      </div>
-      <button onclick="cancelNewChallenge()" style="width:100%;padding:11px;border:1px solid var(--red-bd);background:transparent;color:var(--red);font-family:'DM Sans',sans-serif;font-size:13px;border-radius:var(--radius-sm);cursor:pointer;margin-top:4px;">챌린지 취소 및 삭제</button>
-    </div>
-    <div class="setup-screen" id="cs-join">
-      <div class="ss-back"><button class="ss-back-btn" onclick="showCS('cs-none')">←</button><div class="ss-title">챌린지 참여하기</div></div>
-      <div class="setup-step">
-        <div class="ss-step-title">초대 코드 입력</div><div class="ss-step-sub">챌린지 방장에게 코드를 받아 입력하세요.</div>
-        <div style="display:flex;align-items:center;gap:0;background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius-sm);overflow:hidden;">
-          <span style="padding:13px 12px 13px 14px;font-family:'DM Mono',monospace;font-size:18px;font-weight:600;color:var(--accent);border-right:1px solid var(--border2);letter-spacing:.12em;background:var(--surface2);">RB-</span>
-          <input class="minput" id="join-code" placeholder="XXXX" maxlength="4" style="text-transform:uppercase;letter-spacing:.18em;font-family:'DM Mono',monospace;font-size:18px;text-align:center;border:none;border-radius:0;flex:1;" oninput="this.value=this.value.replace(/[^a-zA-Z0-9]/g,'').toUpperCase()"/>
-        </div>
-        <div class="aerr" id="join-err" style="margin-top:6px;"></div>
-      </div>
-      <div class="setup-step">
-        <div class="ss-step-title">내 체중 목표 <span style="font-size:10px;color:var(--text3);font-weight:400;">(선택)</span></div>
-        <div class="ss-step-sub">챌린지 기간 동안 달성하고 싶은 목표 체중이에요.</div>
-        <div style="display:flex;align-items:center;gap:9px;">
-          <input class="minput" id="join-wgoal" type="number" step="0.1" placeholder="예: 90.0" style="max-width:130px;"/>
-          <span style="font-size:12px;color:var(--text2);">kg 목표</span>
-        </div>
-      </div>
-      <button class="mbtn" id="join-btn" onclick="joinComp()">챌린지 참여</button>
-      <button class="mbtn-ghost" onclick="showCS('cs-none')">취소</button>
-    </div>
-    <div class="setup-screen" id="cs-active">
-      <div style="display:flex;align-items:center;gap:10px;padding:8px 0 14px;">
-        <button onclick="showCS('cs-none');renderChallengeHome()" style="background:none;border:none;color:var(--text2);font-size:20px;cursor:pointer;">←</button>
-        <div style="flex:1;">
-          <div class="group-name" id="ca-name" style="font-size:16px;"></div>
-          <div class="group-sub" id="ca-sub" style="font-size:11px;margin-top:2px;"></div>
-        </div>
-      </div>
-      <div class="group-meta" id="ca-tags" style="margin-bottom:12px;"></div>
-      <!-- Leaderboard -->
-      <div class="group-leaderboard" id="ca-leaderboard"></div>
-      <!-- Section breakdown -->
-      <div class="group-breakdown" id="ca-breakdown"></div>
-      <!-- Weight change -->
-      <div class="weight-table" id="ca-weights" style="display:none;"></div>
-      <button onclick="leaveComp()" style="margin-top:8px;background:none;border:none;color:var(--text3);font-family:'DM Sans',sans-serif;font-size:12px;cursor:pointer;width:100%;padding:8px 0;">챌린지 나가기</button>
+      <div style="margin-top:24px;padding:10px 18px;background:var(--red-bg);border:1px solid var(--red-bd);border-radius:20px;font-size:11px;color:var(--red);font-weight:500;">Stay Hard · Coming Soon</div>
     </div>
   </div>
-
   <div class="bnav">
     <div class="bni active" onclick="switchTab('routine',0)"><div class="bni-icon">📋</div><div>기록</div></div>
     <!-- goggins bnav hidden phase2 -->
