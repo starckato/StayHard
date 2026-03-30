@@ -1217,7 +1217,7 @@ function renderSession(){
       </table>
       ${ex.isStrength?`<div style="display:flex;border-top:1px solid var(--border);">
         <button class="ws-add-set" style="border-top:none;flex:1;" onclick="addSet(${ei})">+ 세트 추가</button>
-        ${ex.sets.some(s=>s.done)&&ex.sets.some(s=>!s.done)?`<button class="ws-add-set" style="border-top:none;border-left:1px solid var(--border);flex:1;color:var(--text3);" onclick="fillRemainingSets(${ei})">나머지 채우기 ↓</button>`:''}
+        ${ex.sets.length>1&&(ex.sets[0].kg||ex.sets[0].reps)?`<button class="ws-add-set" style="border-top:none;border-left:1px solid var(--border);flex:1;color:var(--accent);font-weight:500;" onclick="fillRemainingSets(${ei})">나머지 채우기 ↓</button>`:''}
       </div>`:''}
     </div>`;
   }).join('');
@@ -1255,20 +1255,18 @@ function removeSet(ei,si){
 }
 function removeSetConfirm(ei,si){
   if(currentSession[ei].sets.length<=1){showToast('마지막 세트는 삭제할 수 없어요');return;}
-  if(confirm((si+1)+'번 세트를 삭제할까요?')){
-    currentSession[ei].sets.splice(si,1);
-    renderSession();
-  }
+  currentSession[ei].sets.splice(si,1);
+  renderSession();
 }
 function fillRemainingSets(ei){
   const sets=currentSession[ei].sets;
-  // Find last done set
-  let lastDone=null;
-  for(let i=sets.length-1;i>=0;i--){if(sets[i].done){lastDone=sets[i];break;}}
-  if(!lastDone)return;
-  // Fill all undone sets with last done's weight+reps
-  sets.forEach(s=>{
-    if(!s.done){s.kg=lastDone.kg;s.reps=lastDone.reps;}
+  // Use first row as the source
+  const src=sets[0];
+  if(!src||(!src.kg&&!src.reps))return;
+  // Fill all rows from index 1 onwards that are empty
+  sets.forEach((s,i)=>{
+    if(i===0)return;
+    if(!s.kg&&!s.reps){s.kg=src.kg;s.reps=src.reps;}
   });
   renderSession();
 }
