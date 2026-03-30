@@ -427,6 +427,15 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 .rt-card-name{font-size:14px;font-weight:600;margin-bottom:4px;color:var(--text);}
 .rt-card-meta{font-size:11px;color:var(--text2);}
 .rt-card-actions{display:flex;gap:6px;margin-top:10px;}
+
+/* ── WEEKLY MINI MODAL ── */
+#wv-mini-modal{position:fixed;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:10px;z-index:800;box-shadow:0 4px 20px rgba(0,0,0,.4);min-width:180px;display:none;}
+#wv-mini-modal.open{display:block;}
+.wv-mm-label{font-size:11px;color:var(--text2);margin-bottom:6px;}
+.wv-mm-inp{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:7px 10px;font-size:12px;color:var(--text);font-family:'DM Sans',sans-serif;outline:none;margin-bottom:6px;}
+.wv-mm-btns{display:flex;gap:6px;}
+.wv-mm-save{flex:1;background:var(--accent);border:none;border-radius:6px;color:#fff;font-size:11px;font-weight:500;padding:6px;cursor:pointer;font-family:'DM Sans',sans-serif;}
+.wv-mm-cancel{background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text2);font-size:11px;padding:6px 8px;cursor:pointer;font-family:'DM Sans',sans-serif;}
 </style>
 </head>
 <body>
@@ -2581,7 +2590,7 @@ function buildWVTable(dates){
   html+=`</tr>`;
   html+=`<tr class="section-hdr-row"><td colspan="8">🥗 식단</td></tr>`;
   html+=`<tr><td class="row-sub">체중 (kg)</td>`;
-  dates.forEach(d=>{const k=dkey(d),isT=k===TODAY,iF=d>now&&!isT;const dl=wvLogs[k];const val=dl?.weight?parseFloat(dl.weight).toFixed(1):'';html+=`<td class="dc wt-cell${isT?' today-col':''} ${val?'c-green':'c-empty'}">${val||'—'}</td>`;});html+=`</tr>`;
+  dates.forEach(d=>{const k=dkey(d),isT=k===TODAY,iF=d>now&&!isT;const dl=wvLogs[k];const val=dl?.weight?parseFloat(dl.weight).toFixed(1):'';const click=iF?'':`onclick="wvTapWeight('${k}','${val||''}',this)"`;html+=`<td class="dc wt-cell${isT?' today-col':''} ${val?'c-green':'c-empty'}" ${click} style="cursor:${iF?'default':'pointer'}">${val||'—'}</td>`;});html+=`</tr>`;
   // Find max meals across the week to determine how many rows to show
   let maxMeals=0;
   dates.forEach(d=>{const dl=wvLogs[dkey(d)];if(dl?.meals)maxMeals=Math.max(maxMeals,(dl.meals||[]).length);});
@@ -2620,13 +2629,14 @@ function buildWVTable(dates){
         display=firstName+extra;
         title=slotMeals.map(m=>m.name||m.type||'?').join(', ');
       }
-      html+=`<td class="dc${isT?' today-col':''} ${cls}" title="${title}">${display||'—'}</td>`;
+      const mClick=iF?'':`onclick="wvTapMeal('${k}',${d.getFullYear()},${d.getMonth()},${d.getDate()})"`;
+      html+=`<td class="dc${isT?' today-col':''} ${cls}" ${mClick} style="cursor:${iF?'default':'pointer'}" title="${title}">${display||'—'}</td>`;
     });
     html+=`</tr>`;
   }
 
   html+=`<tr><td class="row-sub">물 (L)</td>`;
-  dates.forEach(d=>{const k=dkey(d),isT=k===TODAY,iF=d>now&&!isT;const dl=wvLogs[k];const cups=dl?.water_cups||0;const val=cups>0?(cups*.5).toFixed(1)+'L':'';const cls=iF?'c-future':cups>=6?'c-green':cups>0?'c-amber':'c-empty';html+=`<td class="dc${isT?' today-col':''} ${cls}">${val||'—'}</td>`;});html+=`</tr>`;
+  dates.forEach(d=>{const k=dkey(d),isT=k===TODAY,iF=d>now&&!isT;const dl=wvLogs[k];const cups=dl?.water_cups||0;const val=cups>0?(cups*.5).toFixed(1)+'L':'';const cls=iF?'c-future':cups>=6?'c-green':cups>0?'c-amber':'c-empty';const click=iF?'':`onclick="wvTapWater('${k}',this)"`;html+=`<td class="dc${isT?' today-col':''} ${cls}" ${click} style="cursor:${iF?'default':'pointer'}" title="탭하여 0.5L 추가">${val||'—'}</td>`;});html+=`</tr>`;
   html+=`<tr class="section-hdr-row"><td colspan="8">💪 운동</td></tr>`;
   html+=`<tr><td class="row-sub">운동</td>`;
   dates.forEach(d=>{
@@ -2655,7 +2665,8 @@ function buildWVTable(dates){
     }
     ttl=wos.map(w=>w.type==='gym'?(w.sessionName||'헬스'):(w.name||'')).join(', ');
   }
-  html+=`<td class="dc${isT?' today-col':''} ${cls}" title="${ttl||display}">${display||'—'}</td>`;
+  const woClick=(!iF)?`onclick="wvTapWorkout('${k}',${d.getFullYear()},${d.getMonth()},${d.getDate()})"`:'';
+  html+=`<td class="dc${isT?' today-col':''} ${cls}" ${woClick} style="cursor:${iF?'default':'pointer'}" title="${ttl||display}">${display||'—'}</td>`;
 });html+=`</tr>`;
   html+=`<tr class="section-hdr-row"><td colspan="8">✅ 필수 루틴</td></tr>`;
   // collect all mand names, deduplicate by emoji prefix keeping longest (Korean)
@@ -2673,7 +2684,7 @@ function buildWVTable(dates){
   const mandNames=dedupedMand.slice(0,10);
   mandNames.forEach(mname=>{
     html+=`<tr><td class="row-sub" title="${mname}">${mname.length>9?mname.slice(0,8)+'…':mname}</td>`;
-    dates.forEach(d=>{const k=dkey(d),isT=k===TODAY,iF=d>now&&!isT;const dl=wvLogs[k];const task=dl?.mandatory?.find(m=>m.name===mname);let cls='c-empty',val='—';if(iF){cls='c-future';val='';}else if(task){val=task.done?'✓':'✕';cls=task.done?'c-green':'c-red';}html+=`<td class="dc${isT?' today-col':''} ${cls}" style="font-weight:600;">${val}</td>`;});html+=`</tr>`;
+    dates.forEach(d=>{const k=dkey(d),isT=k===TODAY,iF=d>now&&!isT;const dl=wvLogs[k];const task=dl?.mandatory?.find(m=>m.name===mname);let cls='c-empty',val='—';if(iF){cls='c-future';val='';}else if(task){val=task.done?'✓':'✕';cls=task.done?'c-green':'c-red';}const click=iF?'':`onclick="wvTapMand('${k}','${mname.replace(/'/g,"\\'")}',this,${d.getTime()})"`;html+=`<td class="dc${isT?' today-col':''} ${cls}" ${click} style="font-weight:600;cursor:${iF?'default':'pointer'}">${val}</td>`;});html+=`</tr>`;
   });
   html+=`<tr class="section-hdr-row"><td colspan="8">🎯 오늘의 목표</td></tr>`;
   // Find max targets across the week
@@ -2696,7 +2707,8 @@ function buildWVTable(dates){
       const clickable=!iF;
       const shortVal=val?icon+val.slice(0,7)+(val.length>7?'…':''):'＋';
       const emptyStyle=(!task&&!iF)?'color:var(--text3);opacity:.3;':'';
-      html+=`<td class="dc${isT?' today-col':''} ${cls}" title="${val}" style="cursor:${clickable?'pointer':'default'};${emptyStyle}" ${clickable?`onclick="jumpToDateFromWeekly('${k}',${d.getFullYear()},${d.getMonth()},${d.getDate()})"`:''}>${val?shortVal:'＋'}</td>`;
+      const tgtClick=clickable?`onclick="wvTapTarget('${k}',${ti},this,${d.getTime()})"`:'' ;
+      html+=`<td class="dc${isT?' today-col':''} ${cls}" title="${val||''}" style="cursor:${clickable?'pointer':'default'};${emptyStyle}" ${tgtClick}>${val?shortVal:'＋'}</td>`;
     });
     html+=`</tr>`;
   }
@@ -2705,7 +2717,7 @@ function buildWVTable(dates){
   dates.forEach(d=>{
     const k=dkey(d),isT=k===TODAY,iF=d>now&&!isT;
     if(iF){html+=`<td class="dc c-future"></td>`;return;}
-    html+=`<td class="dc" style="cursor:pointer;color:var(--text3);opacity:.3;" onclick="jumpToDateFromWeekly('${k}',${d.getFullYear()},${d.getMonth()},${d.getDate()})">＋</td>`;
+    html+=`<td class="dc" style="cursor:pointer;color:var(--text3);opacity:.3;" onclick="wvTapTarget('${k}',999,this,${d.getTime()})">＋</td>`;
   });
   html+=`</tr>`;
   tbl.innerHTML=html;
@@ -3039,5 +3051,15 @@ document.querySelectorAll('.modal-overlay').forEach(m=>{m.addEventListener('clic
 
 init();
 </script>
+
+<!-- WEEKLY VIEW MINI MODAL -->
+<div id="wv-mini-modal">
+  <div class="wv-mm-label" id="wv-mm-label">목표 추가</div>
+  <input class="wv-mm-inp" id="wv-mm-inp" placeholder="입력하세요..." onkeydown="if(event.key==='Enter')wvMmSave();if(event.key==='Escape')wvMmClose();"/>
+  <div class="wv-mm-btns">
+    <button class="wv-mm-save" onclick="wvMmSave()">저장</button>
+    <button class="wv-mm-cancel" onclick="wvMmClose()">취소</button>
+  </div>
+</div>
 </body>
 </html>
