@@ -2136,8 +2136,8 @@ function renderWater(){
   const goal=CP?.water_goal||6;
   for(let i=0;i<12;i++){const d=document.createElement('div');d.className='wc'+(i<log.water_cups?' on':'');d.onclick=()=>{log.water_cups=(log.water_cups===i+1)?i:i+1;renderWater();scheduleSave();};c.appendChild(d);}
   const val=document.getElementById('water-val');
-  val.textContent=(log.water_cups*.5).toFixed(1)+'L / '+(goal*.5).toFixed(1)+'L';
-  val.style.color=log.water_cups>=goal?'var(--blue)':'var(--text2)';
+  val.textContent=log.water_cups>0?(log.water_cups*.5).toFixed(1)+'L':'';
+  val.style.color='var(--blue)';
 }
 
 // ══════════════════════════════════════════════
@@ -2736,7 +2736,7 @@ function buildWVTable(dates){
   }
 
   html+=`<tr><td class="row-sub">물 (L)</td>`;
-  dates.forEach(d=>{const k=dkey(d),isT=k===TODAY,iF=d>now&&!isT;const dl=wvLogs[k];const cups=dl?.water_cups||0;const val=cups>0?(cups*.5).toFixed(1)+'L':'';const wgoal=CP?.water_goal||6;const cls=iF?'c-future':cups>=wgoal?'c-green':cups>0?'c-amber':'c-empty';html+=`<td class="dc${isT?' today-col':''} ${cls}" onclick="wvTapWater('${k}',this)" style="cursor:pointer" title="탭하여 0.5L 추가">${val||'—'}</td>`;});html+=`</tr>`;
+  dates.forEach(d=>{const k=dkey(d),isT=k===TODAY,iF=d>now&&!isT;const dl=wvLogs[k];const cups=dl?.water_cups||0;const val=cups>0?(cups*.5).toFixed(1)+'L':'';const cls=iF?'c-future':cups>0?'c-green':'c-empty';html+=`<td class="dc${isT?' today-col':''} ${cls}" onclick="wvTapWater('${k}',this)" style="cursor:pointer" title="탭하여 0.5L 추가">${val||'—'}</td>`;});html+=`</tr>`;
   html+=`<tr class="section-hdr-row"><td colspan="8">💪 운동</td></tr>`;
   html+=`<tr><td class="row-sub">운동</td>`;
   dates.forEach(d=>{
