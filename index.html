@@ -3195,14 +3195,15 @@ async function renderCompetition(){
     const isMe=uid===CU.id;
     return{uid,name:prof?.display_name||prof?.username||'멤버',scores,tier,l,isMe,avatar:AVATARS[mi%AVATARS.length]};
   });
+  const memberWgoals=activeComp.member_wgoals||{};
   const isWeightChallenge=activeComp.challenge_type==='weight';
   if(isWeightChallenge){
     // Sort by weight loss (start_weight - current_weight), most loss wins
     memberData.sort((a,b)=>{
       const aW=a.l?.weight?parseFloat(a.l.weight):999;
       const bW=b.l?.weight?parseFloat(b.l.weight):999;
-      const aGoal=memberWgoals_ref[a.uid]||0;
-      const bGoal=memberWgoals_ref[b.uid]||0;
+      const aGoal=memberWgoals[a.uid]||0;
+      const bGoal=memberWgoals[b.uid]||0;
       const aLoss=aGoal>0?Math.max(0,aW-aGoal):999;
       const bLoss=bGoal>0?Math.max(0,bW-bGoal):999;
       return aLoss-bLoss; // closest to goal wins
@@ -3269,8 +3270,6 @@ async function renderCompetition(){
     </div>`).join('');
 
   // Weight change
-  const wtData=memberData.filter(m=>m.l?.weight);
-  const memberWgoals=activeComp.member_wgoals||{};const memberWgoals_ref=memberWgoals;
   const wtShowData=memberData.filter(m=>m.l?.weight);
   if(wtShowData.length>0){
     const wtEl=document.getElementById('ca-weights');wtEl.style.display='block';
