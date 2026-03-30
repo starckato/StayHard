@@ -1580,6 +1580,8 @@ function calcGogginsScore(l){
 let CU=null,CP=null,activeComp=null,saveTimer=null;
 const now=new Date();
 function dkey(d){return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();}
+// Normalize a Supabase log_date string (YYYY-MM-DD) to dkey format (YYYY-M-D)
+function normKey(s){if(!s)return s;const p=s.split('-');return p[0]+'-'+parseInt(p[1])+'-'+parseInt(p[2]);}
 const TODAY=dkey(now);
 let sliderOffset=0,selectedDate=new Date(now),selectedKey=TODAY;
 let wvOffset=0,wvLogs={};
@@ -1783,7 +1785,7 @@ async function renderGogginsTab(){
     let gmeals=d.meals||[];
     if(!gmeals.length){for(let n=1;n<=4;n++){if(d['meal_'+n+'_type']||d['meal_'+n+'_name']){gmeals.push({name:d['meal_'+n+'_name']||'',type:d['meal_'+n+'_type']||null,photo:d['meal_'+n+'_photo']||null});}}}
     const l={weight:d.weight!==null?parseFloat(d.weight):null,water_cups:d.water_cups||0,meals:gmeals,workouts:d.workouts||[],mandatory:d.mandatory?d.mandatory:[],targets:d.targets||[]};
-    logCache[d.log_date]=l;
+    logCache[normKey(d.log_date)]=l;
   });
   if(logCache[TODAY])log=logCache[TODAY];
   const todayScores=calcGogginsScore(logCache[TODAY]||log);
@@ -2671,7 +2673,7 @@ async function renderWeeklyView(){
   const s=dates[0],e=dates[6];
   document.getElementById('wv-week-label').textContent=(s.getMonth()+1)+'월 '+s.getDate()+'일 – '+(e.getMonth()+1)+'월 '+e.getDate()+'일, '+e.getFullYear();
   const{data}=await sb.from('daily_logs').select('*').eq('user_id',CU.id).gte('log_date',from).lte('log_date',to);
-  wvLogs={};if(data)data.forEach(d=>{wvLogs[d.log_date]=d;});
+  wvLogs={};if(data)data.forEach(d=>{const nk=normKey(d.log_date);const parsed={...d,targets:d.targets||[],mandatory:d.mandatory||[],workouts:d.workouts||[],meals:d.meals||[]};wvLogs[nk]=parsed;});
   // Sync live in-memory log — deep clone so wvLogs mutations don't affect logCache/log
   Object.keys(logCache).forEach(k=>{if(logCache[k])wvLogs[k]=JSON.parse(JSON.stringify(logCache[k]));});
   buildWVTable(dates);
