@@ -39,12 +39,6 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 .toast{position:fixed;top:16px;left:50%;transform:translateX(-50%);background:var(--surface);border:1px solid var(--border2);border-radius:20px;padding:7px 16px;font-size:12px;color:var(--text2);z-index:500;opacity:0;transition:opacity .25s;pointer-events:none;}
 .toast.show{opacity:1;}
 
-/* SUMMARY STRIP */
-.sum-stat{flex:1;min-width:52px;text-align:center;padding:4px 2px;}
-.sum-stat+.sum-stat{border-left:1px solid var(--border);}
-.sum-val{font-size:15px;font-weight:700;color:var(--text);font-family:'DM Mono',monospace;}
-.sum-lbl{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.04em;margin-top:3px;}
-
 /* WATER GOAL BUTTONS */
 .wg-btn{padding:6px 10px;border-radius:8px;border:1px solid var(--border2);font-size:12px;cursor:pointer;font-weight:500;background:var(--surface3);color:var(--text2);transition:all .15s;}
 .wg-btn.active{background:var(--blue-bg);border-color:#60a5fa;color:#60a5fa;}
@@ -518,17 +512,6 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 
   <!-- ══ DAILY ROUTINE ══ -->
   <div class="view active" id="view-routine">
-    <!-- TODAY SUMMARY STRIP -->
-    <div id="today-summary" style="margin:0 16px 10px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;display:none;">
-      <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;font-weight:500;">오늘의 요약</div>
-      <div style="display:flex;gap:0;overflow-x:auto;scrollbar-width:none;">
-        <div class="sum-stat" id="sum-score"><div class="sum-val">—</div><div class="sum-lbl">점수</div></div>
-        <div class="sum-stat" id="sum-weight"><div class="sum-val">—</div><div class="sum-lbl">체중</div></div>
-        <div class="sum-stat" id="sum-water"><div class="sum-val">—</div><div class="sum-lbl">수분</div></div>
-        <div class="sum-stat" id="sum-vol"><div class="sum-val">—</div><div class="sum-lbl">볼륨</div></div>
-        <div class="sum-stat" id="sum-mand"><div class="sum-val">—</div><div class="sum-lbl">루틴</div></div>
-      </div>
-    </div>
     <div class="day-slider-wrap">
       <div class="month-row">
         <div class="month-label" id="slider-month"></div>
@@ -2057,29 +2040,7 @@ async function jumpToDateFromWeekly(k,yr,mo,day){const d=new Date(yr,mo,day);swi
 function shiftWeek(dir){sliderOffset+=dir;buildSlider();}
 
 // ── RENDER ROUTINE ──
-function renderRoutine(){renderWeight();renderMeals();renderWater();renderWorkouts();renderMandatory();renderTargets();updateTodaySummary();}
-function updateTodaySummary(){
-  const el=document.getElementById('today-summary');if(!el)return;
-  const scores=calcGogginsScore(log);
-  const hasAny=log.weight||log.water_cups>0||(log.workouts&&log.workouts.length>0)||(log.mandatory&&log.mandatory.some(m=>m.done))||(log.meals&&log.meals.some(m=>m.type));
-  if(!hasAny){el.style.display='none';return;}
-  el.style.display='block';
-  // Score
-  const sc=document.getElementById('sum-score');
-  if(sc){sc.querySelector('.sum-val').textContent=scores.total+'점';sc.querySelector('.sum-val').style.color=scores.total>=70?'var(--green)':scores.total>=40?'var(--amber)':'var(--red)';}
-  // Weight
-  const sw=document.getElementById('sum-weight');
-  if(sw)sw.querySelector('.sum-val').textContent=log.weight?parseFloat(log.weight).toFixed(1)+'kg':'—';
-  // Water
-  const sh=document.getElementById('sum-water');
-  if(sh){const goal=CP?.water_goal||6;const met=log.water_cups>=goal;sh.querySelector('.sum-val').textContent=log.water_cups>0?(log.water_cups*.5).toFixed(1)+'L':'—';sh.querySelector('.sum-val').style.color=met?'var(--blue)':'var(--text)';}
-  // Volume
-  const sv=document.getElementById('sum-vol');
-  if(sv){const vol=((log.workouts||[]).filter(w=>w.type==='gym'&&w.status==='done').reduce((a,w)=>a+(w.totalVolume||0),0));sv.querySelector('.sum-val').textContent=vol>0?(vol>=1000?(vol/1000).toFixed(1)+'t':vol+'kg'):'—';}
-  // Mandatory
-  const sm=document.getElementById('sum-mand');
-  if(sm){const ms=log.mandatory||[];const done=ms.filter(m=>m.done).length;sm.querySelector('.sum-val').textContent=ms.length>0?done+'/'+ms.length:'—';sm.querySelector('.sum-val').style.color=ms.length>0&&done===ms.length?'var(--green)':'var(--text)';}
-}
+function renderRoutine(){renderWeight();renderMeals();renderWater();renderWorkouts();renderMandatory();renderTargets();}
 
 // WEIGHT
 function renderWeight(){
