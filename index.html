@@ -39,6 +39,12 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 .toast{position:fixed;top:16px;left:50%;transform:translateX(-50%);background:var(--surface);border:1px solid var(--border2);border-radius:20px;padding:7px 16px;font-size:12px;color:var(--text2);z-index:500;opacity:0;transition:opacity .25s;pointer-events:none;}
 .toast.show{opacity:1;}
 
+/* SUMMARY STRIP */
+.sum-stat{flex:1;min-width:52px;text-align:center;padding:4px 2px;}
+.sum-stat+.sum-stat{border-left:1px solid var(--border);}
+.sum-val{font-size:15px;font-weight:700;color:var(--text);font-family:'DM Mono',monospace;}
+.sum-lbl{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.04em;margin-top:3px;}
+
 /* WATER GOAL BUTTONS */
 .wg-btn{padding:6px 10px;border-radius:8px;border:1px solid var(--border2);font-size:12px;cursor:pointer;font-weight:500;background:var(--surface3);color:var(--text2);transition:all .15s;}
 .wg-btn.active{background:var(--blue-bg);border-color:#60a5fa;color:#60a5fa;}
@@ -470,12 +476,12 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
     <div class="aerr" id="li-err"></div>
   </div>
   <div class="aform" id="auth-signup" style="display:none;">
-    <div class="afield"><label class="alabel">이름</label><input class="ainput" id="su-name" type="text" placeholder="예: 지연" oninput="suClearErr()"/></div>
-    <div class="afield"><label class="alabel">이메일</label><input class="ainput" id="su-email" type="email" placeholder="이메일 주소" oninput="suClearErr()"/></div>
+    <div class="afield"><label class="alabel">이름</label><input class="ainput" id="su-name" type="text" placeholder="예: 지연"/></div>
+    <div class="afield"><label class="alabel">이메일</label><input class="ainput" id="su-email" type="email" placeholder="이메일 주소"/></div>
     <div class="afield">
       <label class="alabel">비밀번호</label>
       <div style="position:relative;">
-        <input class="ainput" id="su-pw" type="password" placeholder="최소 6자 이상" oninput="suClearErr()" style="padding-right:44px;"/>
+        <input class="ainput" id="su-pw" type="password" placeholder="최소 6자 이상" style="padding-right:44px;"/>
         <button type="button" onclick="suTogglePw()" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text3);font-size:16px;" id="su-pw-eye">👁</button>
       </div>
     </div>
@@ -512,6 +518,17 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 
   <!-- ══ DAILY ROUTINE ══ -->
   <div class="view active" id="view-routine">
+    <!-- TODAY SUMMARY STRIP -->
+    <div id="today-summary" style="margin:0 16px 10px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;display:none;">
+      <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;font-weight:500;">오늘의 요약</div>
+      <div style="display:flex;gap:0;overflow-x:auto;scrollbar-width:none;">
+        <div class="sum-stat" id="sum-score"><div class="sum-val">—</div><div class="sum-lbl">점수</div></div>
+        <div class="sum-stat" id="sum-weight"><div class="sum-val">—</div><div class="sum-lbl">체중</div></div>
+        <div class="sum-stat" id="sum-water"><div class="sum-val">—</div><div class="sum-lbl">수분</div></div>
+        <div class="sum-stat" id="sum-vol"><div class="sum-val">—</div><div class="sum-lbl">볼륨</div></div>
+        <div class="sum-stat" id="sum-mand"><div class="sum-val">—</div><div class="sum-lbl">루틴</div></div>
+      </div>
+    </div>
     <div class="day-slider-wrap">
       <div class="month-row">
         <div class="month-label" id="slider-month"></div>
@@ -675,6 +692,44 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
       <div style="margin-top:24px;padding:10px 18px;background:var(--red-bg);border:1px solid var(--red-bd);border-radius:20px;font-size:11px;color:var(--red);font-weight:500;">Stay Hard · Coming Soon</div>
     </div>
   </div>
+  <!-- SHARE CARD MODAL -->
+  <div id="share-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:600;align-items:center;justify-content:center;padding:24px;">
+    <div style="width:100%;max-width:380px;">
+      <div id="share-card" style="background:linear-gradient(135deg,#0f0f11 0%,#1a1a2e 100%);border:1px solid rgba(124,106,247,.3);border-radius:20px;padding:28px 24px;font-family:'DM Sans',sans-serif;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+          <div>
+            <div style="font-size:18px;font-weight:700;color:#f87171;letter-spacing:.5px;">Stay Hard 🔥</div>
+            <div style="font-size:11px;color:#888;margin-top:2px;" id="sc-date"></div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size:11px;color:#888;" id="sc-user"></div>
+            <div style="font-size:10px;color:#7c6af7;margin-top:2px;" id="sc-streak"></div>
+          </div>
+        </div>
+        <div id="sc-exercises" style="margin-bottom:20px;"></div>
+        <div style="display:flex;gap:12px;padding-top:16px;border-top:1px solid rgba(255,255,255,.07);">
+          <div style="flex:1;text-align:center;">
+            <div style="font-size:20px;font-weight:700;color:#7c6af7;" id="sc-vol"></div>
+            <div style="font-size:9px;color:#888;text-transform:uppercase;letter-spacing:.06em;margin-top:2px;">총 볼륨</div>
+          </div>
+          <div style="flex:1;text-align:center;">
+            <div style="font-size:20px;font-weight:700;color:#4ade80;" id="sc-sets"></div>
+            <div style="font-size:9px;color:#888;text-transform:uppercase;letter-spacing:.06em;margin-top:2px;">완료 세트</div>
+          </div>
+          <div style="flex:1;text-align:center;">
+            <div style="font-size:20px;font-weight:700;color:#fbbf24;" id="sc-excount"></div>
+            <div style="font-size:9px;color:#888;text-transform:uppercase;letter-spacing:.06em;margin-top:2px;">운동 종목</div>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:16px;">
+        <button onclick="closeShareModal()" style="flex:1;padding:13px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1);border-radius:12px;color:#888;font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;">닫기</button>
+        <button onclick="captureShareCard()" style="flex:2;padding:13px;background:var(--accent);border:none;border-radius:12px;color:#fff;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;">📸 캡쳐하기</button>
+      </div>
+      <div style="text-align:center;margin-top:10px;font-size:10px;color:#444;">스크린샷을 찍거나 캡쳐 버튼을 눌러 공유하세요</div>
+    </div>
+  </div>
+
   <div class="bnav">
     <div class="bni active" onclick="switchTab('routine',0)"><div class="bni-icon">📋</div><div>기록</div></div>
     <!-- goggins bnav hidden phase2 -->
@@ -880,6 +935,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
   <div class="ws-body" id="ws-body"></div>
   <div class="ws-footer">
     <button class="ws-add-ex-btn" onclick="openRoutineModal()">📋 나의 루틴</button>
+    <button class="ws-add-ex-btn" onclick="openShareModal()" style="background:var(--surface2);color:var(--text2);">📸</button>
     <button class="ws-done-btn" id="ws-done-btn" onclick="finishSession()">세션 완료 ✓</button>
   </div>
 </div>
@@ -1218,6 +1274,19 @@ function addExerciseToSession(name,icon,muscle,equip){
   // Auto-scroll to bottom so newly added exercise is visible
   setTimeout(()=>{const b=document.getElementById('ws-body');if(b)b.scrollTop=b.scrollHeight;},50);
 }
+function wsExVolLabel(ex,vol){
+  if(!ex.isStrength)return ex.muscle+' · '+ex.equip;
+  const prevSets=findPrevSets(ex.name);
+  const prevVol=prevSets?prevSets.reduce((a,s)=>a+(parseFloat(s.kg)||0)*(parseInt(s.reps)||0),0):0;
+  let txt=vol>0?'볼륨 '+vol.toLocaleString()+'kg':ex.muscle+' · '+ex.equip;
+  if(vol>0&&prevVol>0){
+    const delta=vol-prevVol;
+    const sign=delta>0?'+':'';
+    const color=delta>0?'var(--green)':delta<0?'var(--red)':'var(--text3)';
+    txt+=' <span style="color:'+color+';font-size:10px;font-weight:600;">'+sign+delta.toLocaleString()+'kg</span>';
+  }
+  return txt;
+}
 function renderSession(){
   const body=document.getElementById('ws-body');
   if(currentSession.length===0){
@@ -1248,19 +1317,7 @@ function renderSession(){
         <div class="ws-ex-icon">${ex.icon}</div>
         <div style="flex:1;min-width:0;">
           <div class="ws-ex-name">${ex.name}</div>
-          <div class="ws-ex-vol">${(()=>{
-            if(!ex.isStrength)return ex.muscle+' · '+ex.equip;
-            const prevSets=findPrevSets(ex.name);
-            const prevVol=prevSets?prevSets.reduce((a,s)=>a+(parseFloat(s.kg)||0)*(parseInt(s.reps)||0),0):0;
-            let txt=vol>0?'볼륨 '+vol.toLocaleString()+'kg':ex.muscle+' · '+ex.equip;
-            if(vol>0&&prevVol>0){
-              const delta=vol-prevVol;
-              const sign=delta>0?'+':'';
-              const color=delta>0?'var(--green)':delta<0?'var(--red)':'var(--text3)';
-              txt+=\` <span style="color:\${color};font-size:10px;font-weight:600;">\${sign}\${delta.toLocaleString()}kg</span>\`;
-            }
-            return txt;
-          })()}</div>
+          <div class="ws-ex-vol">${wsExVolLabel(ex,vol)}</div>
         </div>
         <button onclick="removeExercise(${ei})" style="background:none;border:none;color:var(--text3);font-size:14px;cursor:pointer;">✕</button>
       </div>
@@ -1815,6 +1872,50 @@ async function saveLog(key){
   showToast('저장됨 ✓');
   updateGogginsHeader();
 }
+function openShareModal(){
+  const session=currentSession.length>0?currentSession:(()=>{
+    const ws=log.workouts||[];
+    const gym=ws.filter(w=>w.type==='gym');
+    if(gym.length>0){
+      const last=gym[gym.length-1];
+      return(last.exercises||[]).map(ex=>({...ex,isStrength:true}));
+    }
+    return[];
+  })();
+  if(session.length===0&&(log.workouts||[]).length===0){showToast('기록된 운동이 없어요');return;}
+  const d=new Date();
+  document.getElementById('sc-date').textContent=d.getFullYear()+'년 '+(d.getMonth()+1)+'월 '+d.getDate()+'일 '+['일','월','화','수','목','금','토'][d.getDay()]+'요일';
+  document.getElementById('sc-user').textContent=(CP?.display_name||CP?.username||'')+'의 운동';
+  document.getElementById('sc-streak').textContent='🔥 '+calcStreak()+'일 연속';
+  // Exercises list
+  const exList=session.length>0?session:(log.workouts||[]).filter(w=>w.type==='gym').flatMap(w=>w.exercises||[]);
+  document.getElementById('sc-exercises').innerHTML=exList.slice(0,5).map(ex=>{
+    const sets=(ex.sets||[]).filter(s=>s.done);
+    const vol=sets.reduce((a,s)=>a+(parseFloat(s.kg)||0)*(parseInt(s.reps)||0),0);
+    return`<div style="display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.05);">
+      <span style="font-size:18px;">${ex.icon||'🏋️'}</span>
+      <div style="flex:1;"><div style="font-size:12px;font-weight:600;color:#f0f0f0;">${ex.name}</div>
+      <div style="font-size:10px;color:#888;">${sets.length}세트${vol>0?' · '+vol.toLocaleString()+'kg':''}</div></div>
+    </div>`;
+  }).join('')+(exList.length>5?`<div style="font-size:11px;color:#888;text-align:center;padding-top:6px;">외 ${exList.length-5}개 운동</div>`:'');
+  // Stats
+  const allSets=(log.workouts||[]).filter(w=>w.type==='gym').flatMap(w=>(w.exercises||[]).flatMap(e=>(e.sets||[]).filter(s=>s.done)));
+  const totalVol=(log.workouts||[]).filter(w=>w.type==='gym'&&w.status==='done').reduce((a,w)=>a+(w.totalVolume||0),0);
+  document.getElementById('sc-vol').textContent=totalVol>=1000?(totalVol/1000).toFixed(1)+'t':totalVol>0?totalVol+'kg':'—';
+  document.getElementById('sc-sets').textContent=allSets.length||'—';
+  document.getElementById('sc-excount').textContent=exList.length||'—';
+  const m=document.getElementById('share-modal');m.style.display='flex';
+}
+function closeShareModal(){document.getElementById('share-modal').style.display='none';}
+async function captureShareCard(){
+  const card=document.getElementById('share-card');
+  try{
+    if(navigator.share){
+      showToast('공유 기능은 스크린샷을 이용해주세요 📸');
+    }
+    showToast('스크린샷으로 저장해주세요 📱');
+  }catch(e){showToast('스크린샷으로 저장해주세요 📱');}
+}
 function showToast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2000);}
 
 // ── TABS ──
@@ -1924,7 +2025,29 @@ async function jumpToDateFromWeekly(k,yr,mo,day){const d=new Date(yr,mo,day);swi
 function shiftWeek(dir){sliderOffset+=dir;buildSlider();}
 
 // ── RENDER ROUTINE ──
-function renderRoutine(){renderWeight();renderMeals();renderWater();renderWorkouts();renderMandatory();renderTargets();}
+function renderRoutine(){renderWeight();renderMeals();renderWater();renderWorkouts();renderMandatory();renderTargets();updateTodaySummary();}
+function updateTodaySummary(){
+  const el=document.getElementById('today-summary');if(!el)return;
+  const scores=calcGogginsScore(log);
+  const hasAny=log.weight||log.water_cups>0||(log.workouts&&log.workouts.length>0)||(log.mandatory&&log.mandatory.some(m=>m.done))||(log.meals&&log.meals.some(m=>m.type));
+  if(!hasAny){el.style.display='none';return;}
+  el.style.display='block';
+  // Score
+  const sc=document.getElementById('sum-score');
+  if(sc){sc.querySelector('.sum-val').textContent=scores.total+'점';sc.querySelector('.sum-val').style.color=scores.total>=70?'var(--green)':scores.total>=40?'var(--amber)':'var(--red)';}
+  // Weight
+  const sw=document.getElementById('sum-weight');
+  if(sw)sw.querySelector('.sum-val').textContent=log.weight?parseFloat(log.weight).toFixed(1)+'kg':'—';
+  // Water
+  const sh=document.getElementById('sum-water');
+  if(sh){const goal=CP?.water_goal||6;const met=log.water_cups>=goal;sh.querySelector('.sum-val').textContent=log.water_cups>0?(log.water_cups*.5).toFixed(1)+'L':'—';sh.querySelector('.sum-val').style.color=met?'var(--blue)':'var(--text)';}
+  // Volume
+  const sv=document.getElementById('sum-vol');
+  if(sv){const vol=((log.workouts||[]).filter(w=>w.type==='gym'&&w.status==='done').reduce((a,w)=>a+(w.totalVolume||0),0));sv.querySelector('.sum-val').textContent=vol>0?(vol>=1000?(vol/1000).toFixed(1)+'t':vol+'kg'):'—';}
+  // Mandatory
+  const sm=document.getElementById('sum-mand');
+  if(sm){const ms=log.mandatory||[];const done=ms.filter(m=>m.done).length;sm.querySelector('.sum-val').textContent=ms.length>0?done+'/'+ms.length:'—';sm.querySelector('.sum-val').style.color=ms.length>0&&done===ms.length?'var(--green)':'var(--text)';}
+}
 
 // WEIGHT
 function renderWeight(){
@@ -2474,7 +2597,8 @@ function finishSession(){
   renderWorkouts();
   scheduleSave();
   document.getElementById('workout-session-overlay').classList.remove('open');
-  if(wasEditing)showToast('✓ 세션이 수정됐어요');
+  if(wasEditing){showToast('✓ 세션이 수정됐어요');}
+  else{setTimeout(openShareModal,300);}
 
   // ── Routine prompt policies ──
   const sessionExercises=currentSession.slice();
