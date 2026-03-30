@@ -937,7 +937,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
   <div class="ws-body" id="ws-body"></div>
   <div class="ws-footer">
     <button class="ws-add-ex-btn" onclick="openRoutineModal()">📋 나의 루틴</button>
-    <button class="ws-done-btn" onclick="finishSession()">세션 완료 ✓</button>
+    <button class="ws-done-btn" id="ws-done-btn" onclick="finishSession()">세션 완료 ✓</button>
   </div>
 </div>
 
@@ -1132,6 +1132,8 @@ function openWorkoutSession(prefillExercises){
   sessionStartedFromRoutine=false;
   sessionSourceRoutineId=null;
   sessionOriginalExCount=0;
+  const btn=document.getElementById('ws-done-btn');
+  if(btn)btn.textContent='세션 완료 ✓';
   document.getElementById('workout-session-overlay').classList.add('open');
   renderSession();
 }
@@ -2195,6 +2197,9 @@ function editGymSession(i){
   editingSessionIdx=i;
   document.getElementById('workout-session-overlay').classList.add('open');
   renderSession();
+  // Update button label to signal edit mode
+  const btn=document.getElementById('ws-done-btn');
+  if(btn)btn.textContent='수정 완료 ✓';
 }
 
 function openWorkoutModal(){
@@ -2339,6 +2344,7 @@ function finishSession(){
   renderWorkouts();
   scheduleSave();
   document.getElementById('workout-session-overlay').classList.remove('open');
+  if(wasEditing)showToast('✓ 세션이 수정됐어요');
 
   // ── Routine prompt policies ──
   const sessionExercises=currentSession.slice();
