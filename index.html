@@ -2159,7 +2159,6 @@ function saveMeal(){
 // WATER
 function renderWater(){
   const c=document.getElementById('water-cups');c.innerHTML='';
-  const goal=CP?.water_goal||6;
   for(let i=0;i<12;i++){const d=document.createElement('div');d.className='wc'+(i<log.water_cups?' on':'');d.onclick=()=>{log.water_cups=(log.water_cups===i+1)?i:i+1;renderWater();scheduleSave();};c.appendChild(d);}
   const val=document.getElementById('water-val');
   const goal=CP?.water_goal||6;
