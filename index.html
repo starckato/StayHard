@@ -3021,7 +3021,7 @@ function renderTargets(){
           oncontextmenu="event.preventDefault();markFail(${i})"
           ontouchstart="tgtTouchStart(${i})"
           ontouchend="tgtTouchEnd(${i},event)"
-          style="cursor:pointer;-webkit-user-select:none;user-select:none;min-width:28px;min-height:44px;display:flex;align-items:center;justify-content:center;">
+          style="cursor:pointer;-webkit-user-select:none;user-select:none;flex-shrink:0;">
           ${checkContent}
         </div>
         <div class="tgt-text ${isDone?'done':isFail?'fail':''}"
