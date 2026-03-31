@@ -754,6 +754,42 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
     </div>
   </div>
 
+  <!-- ONBOARDING MODAL -->
+  <div id="onboarding-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:800;align-items:center;justify-content:center;padding:24px;">
+    <div style="width:100%;max-width:380px;background:var(--surface);border-radius:20px;overflow:hidden;">
+      <!-- Steps container -->
+      <div id="ob-steps">
+        <!-- Step 1 -->
+        <div id="ob-s1" style="padding:32px 24px 24px;text-align:center;">
+          <div style="font-size:56px;margin-bottom:16px;">🔥</div>
+          <div style="font-size:22px;font-weight:800;color:var(--red);margin-bottom:8px;">Stay Hard</div>
+          <div style="font-size:14px;color:var(--text2);line-height:1.7;margin-bottom:8px;">안녕하세요, <span id="ob-name" style="color:var(--text);font-weight:600;"></span>님!<br>매일의 루틴을 기록하고 성장하세요.</div>
+          <div style="font-size:12px;color:var(--red);font-style:italic;margin-bottom:28px;">"고통은 일시적이다. 포기하면 영원히 남는다."</div>
+          <div style="display:flex;flex-direction:column;gap:10px;text-align:left;background:var(--surface2);border-radius:12px;padding:16px;margin-bottom:24px;">
+            <div style="display:flex;align-items:center;gap:12px;font-size:13px;color:var(--text2);"><span style="font-size:20px;">🥗</span> 식단을 기록하세요</div>
+            <div style="display:flex;align-items:center;gap:12px;font-size:13px;color:var(--text2);"><span style="font-size:20px;">🏋️</span> 운동을 추적하세요</div>
+            <div style="display:flex;align-items:center;gap:12px;font-size:13px;color:var(--text2);"><span style="font-size:20px;">✅</span> 매일 루틴을 완료하세요</div>
+            <div style="display:flex;align-items:center;gap:12px;font-size:13px;color:var(--text2);"><span style="font-size:20px;">🎯</span> 오늘의 할일을 정복하세요</div>
+          </div>
+          <button onclick="obNext(2)" style="width:100%;padding:15px;background:var(--red);border:none;border-radius:12px;color:#fff;font-size:15px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">시작하기 →</button>
+        </div>
+        <!-- Step 2 -->
+        <div id="ob-s2" style="display:none;padding:32px 24px 24px;text-align:center;">
+          <div style="font-size:48px;margin-bottom:16px;">✅</div>
+          <div style="font-size:18px;font-weight:700;margin-bottom:8px;">필수 루틴 설정</div>
+          <div style="font-size:13px;color:var(--text2);line-height:1.7;margin-bottom:20px;">매일 반복할 루틴을 추가하세요.<br>나중에 언제든 수정할 수 있어요.</div>
+          <div style="text-align:left;margin-bottom:16px;">
+            <div style="font-size:11px;color:var(--text3);margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em;">추천 루틴 (탭해서 추가)</div>
+            <div id="ob-routine-chips" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
+          </div>
+          <div id="ob-selected-routines" style="min-height:48px;margin-bottom:16px;display:flex;flex-direction:column;gap:4px;"></div>
+          <button onclick="obFinish()" style="width:100%;padding:15px;background:var(--accent);border:none;border-radius:12px;color:#fff;font-size:15px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">완료 — 시작! 🔥</button>
+          <button onclick="obFinish()" style="width:100%;padding:10px;background:none;border:none;color:var(--text3);font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;margin-top:6px;">건너뛰기</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- SHARE CARD MODAL -->
   <div id="share-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:600;align-items:center;justify-content:center;padding:24px;">
     <div style="width:100%;max-width:380px;">
@@ -832,79 +868,59 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
       </div>
 
       <div style="display:flex;gap:8px;margin-bottom:12px;">
-        <button onclick="document.getElementById('mm-photo-camera').click()" style="flex:1;padding:16px 8px;background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;font-family:'DM Sans',sans-serif;text-align:center;">
+        <button onclick="document.getElementById('mm-photo-camera').click()" style="flex:1;padding:16px 8px;background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;font-family:'DM Sans',sans-serif;text-align:center;touch-action:manipulation;">
           <div style="font-size:22px;margin-bottom:4px;">📷</div>
           <div style="font-size:12px;color:var(--text2);font-weight:500;">촬영</div>
         </button>
-        <button onclick="document.getElementById('mm-photo-gallery').click()" style="flex:1;padding:16px 8px;background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;font-family:'DM Sans',sans-serif;text-align:center;">
+        <button onclick="document.getElementById('mm-photo-gallery').click()" style="flex:1;padding:16px 8px;background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;font-family:'DM Sans',sans-serif;text-align:center;touch-action:manipulation;">
           <div style="font-size:22px;margin-bottom:4px;">🖼️</div>
           <div style="font-size:12px;color:var(--text2);font-weight:500;">갤러리</div>
         </button>
       </div>
 
-      <button class="mbtn" onclick="mmGoStep2()">다음 →</button>
-      <button class="mbtn-ghost" onclick="closeModal('meal-modal')">취소</button>
+      <button class="mbtn" onclick="mmGoStep2()" style="touch-action:manipulation;">다음 →</button>
+      <button class="mbtn-ghost" onclick="closeModal('meal-modal')" style="touch-action:manipulation;">취소</button>
     </div>
 
     <!-- STEP 2: Meal type + slot -->
     <div id="mm-s2" style="display:none;">
-      <!-- Photo thumb small if taken -->
       <div id="mm-s2-thumb" style="display:none;margin-bottom:12px;"></div>
-
-      <div class="mfield">
-        <label class="mlabel">이 식사는 무엇인가요?</label>
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;" id="mm-category-btns">
-          <button onclick="pickMealCategory('meal',this)" style="padding:10px 6px;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:var(--surface2);cursor:pointer;font-family:'DM Sans',sans-serif;text-align:center;">
-            <div style="font-size:18px;">🥗</div>
-            <div style="font-size:11px;color:var(--text2);margin-top:3px;">식사</div>
-          </button>
-          <button onclick="pickMealCategory('snack',this)" style="padding:10px 6px;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:var(--surface2);cursor:pointer;font-family:'DM Sans',sans-serif;text-align:center;">
-            <div style="font-size:18px;">🍰</div>
-            <div style="font-size:11px;color:var(--text2);margin-top:3px;">간식</div>
-          </button>
-          <button onclick="pickMealCategory('drink',this)" style="padding:10px 6px;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:var(--surface2);cursor:pointer;font-family:'DM Sans',sans-serif;text-align:center;">
-            <div style="font-size:18px;">🥤</div>
-            <div style="font-size:11px;color:var(--text2);margin-top:3px;">음료</div>
-          </button>
-        </div>
-      </div>
 
       <div class="mfield">
         <label class="mlabel">어떤 끼니인가요?</label>
         <div id="mm-photo-suggest" style="font-size:11px;color:var(--accent);margin-bottom:6px;display:none;">📍 사진 시간 기준으로 추천됩니다</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;" id="mm-time-btns">
-          <button class="ftbtn" onclick="pickMealTime('아침',this)">🌅 아침</button>
-          <button class="ftbtn" onclick="pickMealTime('점심',this)">☀️ 점심</button>
-          <button class="ftbtn" onclick="pickMealTime('저녁',this)">🌙 저녁</button>
-          <button class="ftbtn" onclick="pickMealTime('간식',this)">🍎 간식</button>
+          <button class="ftbtn" onclick="pickMealTime('아침',this)" style="touch-action:manipulation;">🌅 아침</button>
+          <button class="ftbtn" onclick="pickMealTime('점심',this)" style="touch-action:manipulation;">☀️ 점심</button>
+          <button class="ftbtn" onclick="pickMealTime('저녁',this)" style="touch-action:manipulation;">🌙 저녁</button>
+          <button class="ftbtn" onclick="pickMealTime('간식',this)" style="touch-action:manipulation;">🍎 간식</button>
         </div>
       </div>
 
-      <button class="mbtn" onclick="mmGoStep3()">다음 →</button>
-      <button class="mbtn-ghost" onclick="closeModal('meal-modal')">취소</button>
+      <button class="mbtn" onclick="mmGoStep3()" style="touch-action:manipulation;">다음 →</button>
+      <button class="mbtn-ghost" onclick="closeModal('meal-modal')" style="touch-action:manipulation;">취소</button>
     </div>
 
     <!-- STEP 3: Name + quality rating -->
     <div id="mm-s3" style="display:none;">
-      <!-- Context summary bar -->
       <div id="mm-context-bar" style="display:flex;align-items:center;gap:8px;background:var(--surface2);border-radius:var(--radius-sm);padding:8px 12px;margin-bottom:14px;font-size:12px;color:var(--text2);"></div>
 
       <div class="mfield">
-        <label class="mlabel">음식 이름</label>
-        <input class="minput" id="mm-name" placeholder="예: 삼각김밥, 서브웨이…"/>
+        <label class="mlabel">음식 이름 <span style="color:var(--text3);font-weight:400;">(선택)</span></label>
+        <input class="minput" id="mm-name" placeholder="예: 닭가슴살 샐러드, 서브웨이…"/>
       </div>
 
       <div class="mfield">
         <label class="mlabel">이 식사를 평가하면?</label>
         <div class="food-types" id="mm-quality-btns">
-          <div class="ftbtn" onclick="pickFT('green',this)">✅ 클린</div>
-          <div class="ftbtn" onclick="pickFT('red',this)">🚫 금지</div>
-          <div class="ftbtn" onclick="pickFT('skipped',this)">⏭ 스킵</div>
+          <div class="ftbtn" onclick="pickFT('green',this)" style="touch-action:manipulation;">✅ 클린</div>
+          <div class="ftbtn" onclick="pickFT('red',this)" style="touch-action:manipulation;">🚫 금지</div>
+          <div class="ftbtn" onclick="pickFT('skipped',this)" style="touch-action:manipulation;">⏭ 스킵</div>
         </div>
       </div>
 
-      <button class="mbtn" id="mm-save-btn" onclick="saveMeal()">식사 저장</button>
-      <button class="mbtn-ghost" onclick="closeModal('meal-modal')">취소</button>
+      <button class="mbtn" id="mm-save-btn" onclick="saveMeal()" style="touch-action:manipulation;">식사 저장</button>
+      <button class="mbtn-ghost" onclick="closeModal('meal-modal')" style="touch-action:manipulation;">취소</button>
     </div>
 
   </div>
@@ -1857,6 +1873,10 @@ async function onLogin(user){
   buildSlider();
   renderRoutine();
   updateGogginsHeader();
+  // Show onboarding for new users
+  if(!p.onboarded){
+    setTimeout(()=>showOnboarding(p.display_name||p.username||''),500);
+  }
 }
 
 // ── AUTH ACTIONS ──
@@ -2012,6 +2032,56 @@ async function captureShareCard(){
     showToast('스크린샷으로 저장해주세요 📱');
   }catch(e){showToast('스크린샷으로 저장해주세요 📱');}
 }
+// ── ONBOARDING ──
+const OB_ROUTINES=['🪥 양치','💊 영양제','📖 독서 30분','🧊 냉수 샤워','🧹 집 청소','💪 운동','🌅 아침 루틴','🧘 명상 10분','😴 11시 취침','🚶 산책 30분'];
+let obSelectedRoutines=[];
+
+function showOnboarding(name){
+  document.getElementById('ob-name').textContent=name;
+  obSelectedRoutines=[];
+  // Build routine chips
+  document.getElementById('ob-routine-chips').innerHTML=OB_ROUTINES.map(r=>
+    `<div onclick="obToggleRoutine(this,'${r}')" style="padding:6px 12px;border-radius:20px;border:1px solid var(--border2);background:var(--surface2);font-size:12px;cursor:pointer;color:var(--text2);touch-action:manipulation;">${r}</div>`
+  ).join('');
+  document.getElementById('ob-selected-routines').innerHTML='';
+  const m=document.getElementById('onboarding-modal');
+  m.style.display='flex';
+}
+function obNext(step){
+  document.getElementById('ob-s1').style.display='none';
+  document.getElementById('ob-s2').style.display='block';
+}
+function obToggleRoutine(el,name){
+  const idx=obSelectedRoutines.indexOf(name);
+  if(idx>=0){
+    obSelectedRoutines.splice(idx,1);
+    el.style.background='var(--surface2)';
+    el.style.color='var(--text2)';
+    el.style.borderColor='var(--border2)';
+  } else {
+    obSelectedRoutines.push(name);
+    el.style.background='var(--accent)';
+    el.style.color='#fff';
+    el.style.borderColor='var(--accent)';
+  }
+  document.getElementById('ob-selected-routines').innerHTML=obSelectedRoutines.length>0
+    ?`<div style="font-size:11px;color:var(--text3);margin-bottom:4px;">선택된 루틴 ${obSelectedRoutines.length}개</div>`
+    +obSelectedRoutines.map(r=>`<div style="font-size:12px;color:var(--text2);padding:4px 0;">✓ ${r}</div>`).join('')
+    :'';
+}
+async function obFinish(){
+  document.getElementById('onboarding-modal').style.display='none';
+  if(obSelectedRoutines.length>0){
+    const mand=obSelectedRoutines.map(name=>({name,done:false,days:[0,1,2,3,4,5,6]}));
+    log.mandatory=mand;
+    await propagateMandatoryDefs(mand);
+    renderMandatory();
+  }
+  // Mark onboarding done in profile
+  await sb.from('profiles').update({onboarded:true}).eq('id',CU.id);
+  CP.onboarded=true;
+}
+
 function showToast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2000);}
 
 // ── TABS ──
@@ -2206,12 +2276,7 @@ function mmGoStep3(){
 
 function openAddMealModal(){
   mealIdx=null;foodType=null;photoData=null;mealTime=null;mealCategory=null;
-  // Reset all UI
   document.querySelectorAll('.ftbtn').forEach(b=>{b.className='ftbtn';b.style.cssText='';});
-  document.querySelectorAll('#mm-category-btns button').forEach(b=>{
-    b.style.borderColor='var(--border)';b.style.background='var(--surface2)';
-    b.querySelector('div:last-child').style.color='var(--text2)';
-  });
   document.getElementById('mm-name').value='';
   document.getElementById('mm-photo-wrap').style.display='none';
   document.getElementById('mm-photo-time-hint').textContent='';
@@ -3023,6 +3088,20 @@ async function renderWeeklyView(){
   // Sync live in-memory log — deep clone so wvLogs mutations don't affect logCache/log
   Object.keys(logCache).forEach(k=>{if(logCache[k])wvLogs[k]=JSON.parse(JSON.stringify(logCache[k]));});
   buildWVTable(dates);
+  // Show empty state hint if no data this week
+  const hasAnyData=Object.values(wvLogs).some(l=>l.weight||l.water_cups>0||(l.meals||[]).length>0||(l.workouts||[]).length>0||(l.mandatory||[]).some(m=>m.done));
+  let emptyEl=document.getElementById('wv-empty-hint');
+  if(!emptyEl){emptyEl=document.createElement('div');emptyEl.id='wv-empty-hint';document.getElementById('view-weekly').insertBefore(emptyEl,document.getElementById('view-weekly').querySelector('div[style*="padding:16px"]'));}
+  if(!hasAnyData){
+    emptyEl.innerHTML=`<div style="text-align:center;padding:32px 24px;color:var(--text3);">
+      <div style="font-size:36px;margin-bottom:12px;">📊</div>
+      <div style="font-size:14px;font-weight:600;color:var(--text2);margin-bottom:6px;">이번 주 기록이 없어요</div>
+      <div style="font-size:12px;line-height:1.7;">기록 탭에서 오늘의 식단, 운동,<br>루틴을 기록하면 여기에 표시돼요.</div>
+    </div>`;
+    emptyEl.style.display='block';
+  } else {
+    emptyEl.style.display='none';
+  }
 }
 function shiftWVWeek(dir){wvOffset+=dir;renderWeeklyView();}
 function buildWVTable(dates){
@@ -3625,10 +3704,7 @@ async function wvTapMand(k,mname,el){
   const dl=wvLogs[k];
   dl.mandatory=dl.mandatory||[];
   const task=dl.mandatory.find(m=>m.name===mname);
-  if(!task){
-    wvMmOpen('루틴 추가','매일 할 루틴을 입력하세요','',{type:'mand-add',dateKey:k},el);
-    return;
-  }
+  if(!task){return;} // task not scheduled for this day — do nothing
   task.done=!task.done;
   await saveWvDayLog(k,dl);
   renderWeeklyView();
