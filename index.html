@@ -18,7 +18,7 @@
   --bg:#0f0f11;--surface:#1a1a1f;--surface2:#222228;--surface3:#2a2a32;
   --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.13);
   --text:#f0f0f0;--text2:#888;--text3:#444;
-  --green:#4ade80;--green-bg:rgba(74,222,128,0.13);--green-bd:rgba(74,222,128,0.3);
+  --green:#4ade80;--green-bg:rgba(74,222,128,0.13);--green-bd:rgba(7W4,222,128,0.3);
   --red:#f87171;--red-bg:rgba(248,113,113,0.13);--red-bd:rgba(248,113,113,0.3);
   --amber:#fbbf24;--amber-bg:rgba(251,191,36,0.13);--amber-bd:rgba(251,191,36,0.35);
   --blue:#60a5fa;--blue-bg:rgba(96,165,250,0.15);
@@ -992,11 +992,11 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
   <div class="ws-header">
     <button class="ws-close" onclick="closeSession()">✕</button>
     <div class="ws-title" id="ws-title">오늘의 운동</div>
+    <button onclick="openRoutineModal()" style="background:var(--surface2);border:1px solid var(--border2);color:var(--text2);border-radius:8px;padding:6px 11px;font-size:12px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;touch-action:manipulation;">📋 저장된 루틴</button>
   </div>
   <div class="ws-body" id="ws-body"></div>
   <div class="ws-footer">
-    <button class="ws-add-ex-btn" onclick="openRoutineModal()">📋 나의 루틴</button>
-    <button class="ws-done-btn" id="ws-done-btn" onclick="finishSession()">운동 종료 ✓</button>
+    <button class="ws-done-btn" id="ws-done-btn" onclick="finishSession()" style="width:100%;">운동 종료 ✓</button>
   </div>
 </div>
 
@@ -1408,8 +1408,11 @@ function renderSession(){
         ${ex.sets.length>1&&(ex.sets[0].kg||ex.sets[0].reps)?`<button class="ws-add-set" style="border-top:none;border-left:1px solid var(--border);flex:1;color:var(--accent);font-weight:500;" onclick="fillRemainingSets(${ei})">나머지 채우기 ↓</button>`:''}
       </div>`:''}
     </div>`;
-  }).join('')+`<button onclick="openLibraryForSession()" style="width:100%;margin:12px 0 8px;padding:14px;background:var(--surface2);border:2px dashed var(--border2);border-radius:var(--radius);font-size:14px;font-weight:600;color:var(--accent);cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;touch-action:manipulation;">
+  }).join('')+`<button onclick="openLibraryForSession()" style="width:100%;margin:12px 0 0;padding:14px;background:var(--surface2);border:2px dashed var(--border2);border-radius:var(--radius);font-size:14px;font-weight:600;color:var(--accent);cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;touch-action:manipulation;">
     <span style="font-size:18px;">＋</span> 다음 운동 추가
+  </button>
+  <button onclick="saveSessionAsRoutine()" style="width:100%;margin:8px 0 8px;padding:12px;background:transparent;border:1px solid var(--border2);border-radius:var(--radius);font-size:13px;font-weight:500;color:var(--text3);cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:6px;touch-action:manipulation;">
+    💾 현재 세션을 루틴으로 저장
   </button>`;
 }
 function updateSet(ei,si,field,val){
@@ -1522,6 +1525,20 @@ function showRoutineCreate(){
   document.getElementById('routine-create').style.display='block';
   document.getElementById('routine-name-inp').value='';
   renderRoutineExList([]);
+}
+async function saveSessionAsRoutine(){
+  if(currentSession.length===0){showToast('저장할 운동이 없어요');return;}
+  const name=prompt('루틴 이름을 입력하세요
+(예: 등 데이, 상체 루틴)');
+  if(!name||!name.trim())return;
+  const exercises=currentSession.map(ex=>({
+    name:ex.name,icon:ex.icon,muscle:ex.muscle,equip:ex.equip,
+    targetSets:ex.sets.length||3,lastKg:ex.sets.filter(s=>s.done).slice(-1)[0]?.kg||'',lastReps:ex.sets.filter(s=>s.done).slice(-1)[0]?.reps||''
+  }));
+  const{error}=await sb.from('user_routines').insert({user_id:CU.id,name:name.trim(),exercises});
+  if(error){showToast('저장 실패: '+error.message);return;}
+  await loadRoutines();
+  showToast('✓ "'+name.trim()+'" 루틴으로 저장됐어요!');
 }
 function startNewRoutineCreate(){
   editingRoutineId=null;
@@ -3701,26 +3718,21 @@ if('serviceWorker' in navigator){
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js').then(reg => {
       console.log('[SW] registered', reg.scope);
-      // Check for updates every time the page loads
-      reg.update();
-      // When a new SW is waiting, reload automatically
-      reg.addEventListener('updatefound', () => {
-        const newWorker = reg.installing;
-        if(!newWorker) return;
-        newWorker.addEventListener('statechange', () => {
-          if(newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-            // New version available — show toast and reload after 2s
-            showToast('🔄 새 버전이 있어요. 잠시 후 새로고침됩니다…');
-            setTimeout(() => { window.location.reload(); }, 2500);
-          }
-        });
-      });
+      reg.update(); // check for new version on every load
     }).catch(err => console.warn('[SW] failed', err));
 
-    // Also handle the case where SW controller changes (after skipWaiting)
+    // Listen for NEW_VERSION message from the new SW
+    navigator.serviceWorker.addEventListener('message', e => {
+      if(e.data?.type === 'NEW_VERSION'){
+        showToast('🔄 업데이트됐어요! 새로고침합니다…');
+        setTimeout(() => window.location.reload(true), 1500);
+      }
+    });
+
+    // Fallback: reload when SW controller changes
     let refreshing = false;
     navigator.serviceWorker.addEventListener('controllerchange', () => {
-      if(!refreshing){ refreshing = true; window.location.reload(); }
+      if(!refreshing){ refreshing = true; window.location.reload(true); }
     });
   });
 }
