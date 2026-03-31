@@ -1016,12 +1016,12 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
       </div>
       <div style="margin-bottom:8px;font-size:12px;font-weight:500;color:var(--text2);">운동 목록</div>
       <div id="routine-ex-list" style="margin-bottom:10px;"></div>
-      <div onclick="openLibraryForRoutine()" style="padding:10px 14px;background:var(--surface2);border:1.5px dashed var(--border2);border-radius:10px;display:flex;align-items:center;gap:8px;cursor:pointer;margin-bottom:12px;touch-action:manipulation;">
+      <div onclick="openLibraryForRoutine()" ontouchend="event.preventDefault();openLibraryForRoutine()" style="padding:10px 14px;background:var(--surface2);border:1.5px dashed var(--border2);border-radius:10px;display:flex;align-items:center;gap:8px;cursor:pointer;margin-bottom:12px;touch-action:manipulation;">
         <span style="font-size:16px;color:var(--accent);">＋</span>
         <span style="font-size:13px;font-weight:500;color:var(--accent);">운동 추가</span>
       </div>
-      <button class="mbtn" onclick="saveRoutine()">루틴 저장</button>
-      <button class="mbtn-ghost" onclick="cancelRoutineCreate()">취소</button>
+      <button class="mbtn" onclick="saveRoutine()" ontouchend="event.preventDefault();saveRoutine()">루틴 저장</button>
+      <button class="mbtn-ghost" onclick="cancelRoutineCreate()" ontouchend="event.preventDefault();cancelRoutineCreate()">취소</button>
     </div>
   </div>
 </div>
@@ -3715,31 +3715,10 @@ document.addEventListener('mousedown',function(e){
 <script>
 // ── AUTO UPDATE: check sw.js for changes every 60s ──
 // If sw.js content changes (new deploy), reload the page automatically
-(function checkForUpdates(){
-  const BUILD_KEY='sh_sw_etag';
-  async function check(){
-    try{
-      const r=await fetch('/sw.js',{cache:'no-store'});
-      const etag=r.headers.get('etag')||r.headers.get('last-modified')||await r.text().then(t=>t.slice(0,80));
-      const stored=sessionStorage.getItem(BUILD_KEY);
-      if(stored&&stored!==etag){
-        showToast('🔄 새 버전이 있어요! 새로고침합니다…');
-        setTimeout(()=>window.location.reload(true),1500);
-      }else{
-        sessionStorage.setItem(BUILD_KEY,etag);
-      }
-    }catch(e){}
-  }
-  window.addEventListener('load',()=>{
-    check();
-    setInterval(check,60000); // check every 60s while app is open
-  });
-
-  // Still register SW for offline support (but don't rely on it for updates)
-  if('serviceWorker' in navigator){
-    navigator.serviceWorker.register('/sw.js').catch(()=>{});
-  }
-})();
+// Auto-update disabled (manual refresh for now)
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('/sw.js').catch(()=>{});
+}
 // ══════════════════════════════════════════════
 // STATS / GRAPHS
 // ══════════════════════════════════════════════
