@@ -1970,20 +1970,11 @@ function refreshWaterGoalUI(){
 
 async function onLogin(user){
   CU=user;
-  let{data:p}=await sb.from('profiles').select('*').eq('id',user.id).single();
+  let{data:p}=await sb.from('profiles').select('*').eq('id',user.id).maybeSingle();
   if(!p){
     const un=user.email.split('@')[0].replace(/[^a-z0-9]/gi,'').toLowerCase();
     const{data:np}=await sb.from('profiles').upsert({id:user.id,username:un,display_name:un},{onConflict:'id'}).select().single();
-    p=np;
-  }
-  if(!p){
-    // Last fallback — read again in case of race condition
-    const{data:fp}=await sb.from('profiles').select('*').eq('id',user.id).single();
-    p=fp;
-  }
-  if(!p){
-    // Absolute fallback — use email as display name
-    p={display_name:user.email.split('@')[0],username:user.email.split('@')[0]};
+    p=np||{display_name:user.email.split('@')[0],username:user.email.split('@')[0]};
   }
   CP=p;
   refreshWaterGoalUI();
@@ -2075,7 +2066,9 @@ async function doSignOut(){await sb.auth.signOut();CU=null;CP=null;activeComp=nu
 // ── LOAD / SAVE ──
 async function loadLog(key){
   if(logCache[key]){log=logCache[key];return;}
-  const{data}=await sb.from('daily_logs').select('*').eq('user_id',CU.id).eq('log_date',key).maybeSingle();
+  // Timeout after 8s to prevent infinite loading
+  const timeout=new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),8000));
+  let data=null;try{const res=await Promise.race([sb.from('daily_logs').select('*').eq('user_id',CU.id).eq('log_date',key).maybeSingle(),timeout]);data=res.data;}catch(e){console.warn('loadLog timeout/error:',e);log=logCache[key]||{weight:null,water_cups:0,meals:[],workouts:[],mandatory:[],targets:[]};logCache[key]=log;return;}
   if(data){
     let meals=data.meals||[];
     if(!meals.length){
@@ -2657,13 +2650,17 @@ function calcStreak(){
 async function renderGogginsTab(){
   const dates=[];for(let i=6;i>=0;i--){const d=new Date(now);d.setDate(d.getDate()-i);dates.push(d);}
   const keys=dates.map(d=>dkey(d));const from=keys[0],to=keys[keys.length-1];
-  const{data}=await sb.from('daily_logs').select('*').eq('user_id',CU.id).gte('log_date',from).lte('log_date',to);
-  if(data)data.forEach(d=>{
-    let gmeals=d.meals||[];
-    if(!gmeals.length){for(let n=1;n<=4;n++){if(d['meal_'+n+'_type']||d['meal_'+n+'_name']){gmeals.push({name:d['meal_'+n+'_name']||'',type:d['meal_'+n+'_type']||null,photo:d['meal_'+n+'_photo']||null});}}}
-    const l={weight:d.weight!==null?parseFloat(d.weight):null,water_cups:d.water_cups||0,meals:gmeals,workouts:d.workouts||[],mandatory:d.mandatory?d.mandatory:[],targets:d.targets||[]};
-    logCache[normKey(d.log_date)]=l;
-  });
+  // Only fetch days not already in cache
+  const missingKeys=keys.filter(k=>!logCache[k]);
+  if(missingKeys.length>0){
+    const{data}=await sb.from('daily_logs').select('*').eq('user_id',CU.id).gte('log_date',missingKeys[0]).lte('log_date',missingKeys[missingKeys.length-1]);
+    if(data)data.forEach(d=>{
+      let gmeals=d.meals||[];
+      if(!gmeals.length){for(let n=1;n<=4;n++){if(d['meal_'+n+'_type']||d['meal_'+n+'_name']){gmeals.push({name:d['meal_'+n+'_name']||'',type:d['meal_'+n+'_type']||null,photo:d['meal_'+n+'_photo']||null});}}}
+      const l={weight:d.weight!==null?parseFloat(d.weight):null,water_cups:d.water_cups||0,meals:gmeals,workouts:d.workouts||[],mandatory:d.mandatory?d.mandatory:[],targets:d.targets||[]};
+      logCache[normKey(d.log_date)]=l;
+    });
+  }
   if(logCache[TODAY])log=logCache[TODAY];
   const todayScores=calcGogginsScore(logCache[TODAY]||log);
   const tier=getTier(todayScores.total);
@@ -2726,9 +2723,25 @@ function buildSlider(){
   labelEl.textContent=(d.getMonth()+1)+'월 '+d.getDate()+'일 ('+['일','월','화','수','목','금','토'][d.getDay()]+')'+(isT?' — 오늘':'  ↩ 오늘로');
   labelEl.style.color=isT?'var(--text2)':'var(--accent)';
 }
-async function selectDay(d,k){selectedDate=d;selectedKey=k;show('loading');await loadLog(k);hide('loading');buildSlider();renderRoutine();}
-async function jumpToToday(){const alreadyToday=selectedKey===TODAY;sliderOffset=0;if(alreadyToday){buildSlider();return;}selectedDate=new Date(now);selectedKey=TODAY;show('loading');await loadLog(TODAY);hide('loading');buildSlider();renderRoutine();}
-async function jumpToDateFromWeekly(k,yr,mo,day){const d=new Date(yr,mo,day);switchTab('routine',0);const diffDays=Math.floor((d-now)/(1000*60*60*24));sliderOffset=Math.floor(diffDays/7);selectedDate=d;selectedKey=k;show('loading');await loadLog(k);hide('loading');buildSlider();renderRoutine();}
+async function selectDay(d,k){
+  selectedDate=d;selectedKey=k;show('loading');
+  try{await loadLog(k);}catch(e){console.warn('loadLog failed',e);}
+  finally{hide('loading');buildSlider();renderRoutine();}
+}
+async function jumpToToday(){
+  const alreadyToday=selectedKey===TODAY;sliderOffset=0;
+  if(alreadyToday){buildSlider();return;}
+  selectedDate=new Date(now);selectedKey=TODAY;show('loading');
+  try{await loadLog(TODAY);}catch(e){console.warn('loadLog failed',e);}
+  finally{hide('loading');buildSlider();renderRoutine();}
+}
+async function jumpToDateFromWeekly(k,yr,mo,day){
+  const d=new Date(yr,mo,day);switchTab('routine',0);
+  const diffDays=Math.floor((d-now)/(1000*60*60*24));
+  sliderOffset=Math.floor(diffDays/7);selectedDate=d;selectedKey=k;show('loading');
+  try{await loadLog(k);}catch(e){console.warn('loadLog failed',e);}
+  finally{hide('loading');buildSlider();renderRoutine();}
+}
 function shiftWeek(dir){sliderOffset+=dir;buildSlider();}
 
 // ── RENDER ROUTINE ──
@@ -3522,51 +3535,44 @@ function saveMandatory(){
 async function propagateMandatoryDefs(defs){
   if(!defs||!defs.length||!CU)return;
   const defsList=defs.map(d=>({name:d.name,days:d.days||[0,1,2,3,4,5,6]}));
-  
-  // 1. Update all logCache days
+
+  // Update logCache in memory only (safe, no DB write)
   Object.keys(logCache).forEach(k=>{
-    if(k===selectedKey)return; // already saved
+    if(k===selectedKey)return;
     const existing=logCache[k];
     if(!existing)return;
-    // Merge: keep existing done status, add new defs
-    const merged=defsList.map(def=>{
-      const existing_task=existing.mandatory?.find(m=>m.name===def.name);
-      return{name:def.name,done:existing_task?.done||false,days:def.days};
-    });
-    // Keep tasks that exist in this day but not in defs (don't delete old ones from other days)
-    existing.mandatory=merged;
-    logCache[k]=existing;
-  });
-  
-  // 2. Upsert all 7 days of current week to DB
-  const now2=new Date();
-  const weekStart=new Date(now2);
-  weekStart.setDate(now2.getDate()-((now2.getDay()+6)%7));
-  weekStart.setHours(0,0,0,0);
-  const upsertPromises=[];
-  for(let i=0;i<7;i++){
-    const d=new Date(weekStart);
-    d.setDate(weekStart.getDate()+i);
-    const k=dkey(d);
-    if(k===selectedKey)continue; // already saved
-    const existing=logCache[k]||{weight:null,water_cups:0,meals:[],workouts:[],targets:[]};
     const merged=defsList.map(def=>{
       const et=existing.mandatory?.find(m=>m.name===def.name);
       return{name:def.name,done:et?.done||false,days:def.days};
     });
-    const updated={...existing,mandatory:merged};
-    logCache[k]=updated;
-    upsertPromises.push(
-      sb.from('daily_logs').upsert(
-        {user_id:CU.id,log_date:k,weight:updated.weight,water_cups:updated.water_cups||0,
-         meals:updated.meals||[],workouts:updated.workouts||[],
-         mandatory:updated.mandatory,targets:updated.targets||[]},
-        {onConflict:'user_id,log_date'}
-      )
-    );
-  }
-  await Promise.all(upsertPromises);
-  showToast('루틴이 모든 날짜에 적용됐어요 ✓');
+    existing.mandatory=merged;
+  });
+
+  // SAFE DB UPDATE: Only update the mandatory column, never touch workouts/meals
+  const now2=new Date();
+  const keys=[];
+  for(let i=-3;i<=3;i++){const d=new Date(now2);d.setDate(now2.getDate()+i);keys.push(dkey(d));}
+
+  const{data:existingRows}=await sb.from('daily_logs')
+    .select('id,log_date,mandatory')
+    .eq('user_id',CU.id)
+    .in('log_date',keys);
+
+  if(!existingRows||!existingRows.length){showToast('루틴이 적용됐어요 ✓');return;}
+
+  const updatePromises=existingRows.map(row=>{
+    const k=normKey(row.log_date);
+    if(k===selectedKey)return null;
+    const merged=defsList.map(def=>{
+      const et=(row.mandatory||[]).find(m=>m.name===def.name);
+      return{name:def.name,done:et?.done||false,days:def.days};
+    });
+    if(JSON.stringify(merged)===JSON.stringify(row.mandatory||[]))return null;
+    return sb.from('daily_logs').update({mandatory:merged}).eq('id',row.id);
+  }).filter(Boolean);
+
+  if(updatePromises.length>0)await Promise.all(updatePromises);
+  showToast('루틴이 적용됐어요 ✓');
 }
 function toggleDay(el,idx){
   if(newMandDays.includes(idx)){newMandDays=newMandDays.filter(d=>d!==idx);el.classList.remove('on');}
@@ -3663,10 +3669,20 @@ async function renderWeeklyView(){
   const from=dkey(dates[0]),to=dkey(dates[6]);
   const s=dates[0],e=dates[6];
   document.getElementById('wv-week-label').textContent=(s.getMonth()+1)+'월 '+s.getDate()+'일 – '+(e.getMonth()+1)+'월 '+e.getDate()+'일, '+e.getFullYear();
-  const{data}=await sb.from('daily_logs').select('*').eq('user_id',CU.id).gte('log_date',from).lte('log_date',to);
-  wvLogs={};if(data)data.forEach(d=>{const nk=normKey(d.log_date);const parsed={...d,targets:d.targets||[],mandatory:d.mandatory||[],workouts:d.workouts||[],meals:d.meals||[]};wvLogs[nk]=parsed;});
-  // Sync live in-memory log — deep clone so wvLogs mutations don't affect logCache/log
-  Object.keys(logCache).forEach(k=>{if(logCache[k])wvLogs[k]=JSON.parse(JSON.stringify(logCache[k]));});
+  // Check which days are missing from cache
+  const wvDates2=dates.map(d=>dkey(d));
+  const wvMissing=wvDates2.filter(k=>!logCache[k]);
+  wvLogs={};
+  if(wvMissing.length>0){
+    const{data}=await sb.from('daily_logs').select('*').eq('user_id',CU.id).gte('log_date',from).lte('log_date',to);
+    if(data)data.forEach(d=>{
+      const nk=normKey(d.log_date);
+      const parsed={...d,targets:d.targets||[],mandatory:d.mandatory||[],workouts:d.workouts||[],meals:d.meals||[]};
+      logCache[nk]=parsed;
+    });
+  }
+  // Build wvLogs from cache — deep clone
+  wvDates2.forEach(k=>{if(logCache[k])wvLogs[k]=JSON.parse(JSON.stringify(logCache[k]));});
   buildWVTable(dates);
   // Show empty state hint if no data this week
   const hasAnyData=Object.values(wvLogs).some(l=>l.weight||l.water_cups>0||(l.meals||[]).length>0||(l.workouts||[]).length>0||(l.mandatory||[]).some(m=>m.done));
