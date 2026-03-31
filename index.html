@@ -1016,9 +1016,9 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
       </div>
       <div style="margin-bottom:8px;font-size:12px;font-weight:500;color:var(--text2);">운동 목록</div>
       <div id="routine-ex-list" style="margin-bottom:10px;"></div>
-      <button id="rt-add-ex-btn" class="mbtn" style="background:var(--surface2);border:2px dashed var(--border2);color:var(--accent);margin-bottom:8px;">＋ 운동 추가</button>
-      <button id="rt-save-btn" class="mbtn">루틴 저장</button>
-      <button id="rt-cancel-btn" class="mbtn-ghost">취소</button>
+      <button onclick="openLibraryForRoutine()" class="mbtn" style="background:var(--surface2);border:2px dashed var(--border2);color:var(--accent);margin-bottom:8px;touch-action:manipulation;">＋ 운동 추가</button>
+      <button onclick="saveRoutine()" class="mbtn" style="touch-action:manipulation;">루틴 저장</button>
+      <button onclick="cancelRoutineCreate()" class="mbtn-ghost" style="touch-action:manipulation;">취소</button>
     </div>
   </div>
 </div>
@@ -3508,24 +3508,7 @@ function closeModal(id){document.getElementById(id).classList.remove('open');}
 document.querySelectorAll('.modal-overlay').forEach(m=>{m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open');});});
 
 // ── Routine modal button listeners (avoid inline handler issues on iOS) ──
-function attachRoutineListeners(){
-  const addBtn=document.getElementById('rt-add-ex-btn');
-  const saveBtn=document.getElementById('rt-save-btn');
-  const cancelBtn=document.getElementById('rt-cancel-btn');
-  if(addBtn){
-    addBtn.addEventListener('click',()=>openLibraryForRoutine());
-    addBtn.addEventListener('touchend',e=>{e.preventDefault();openLibraryForRoutine();});
-  }
-  if(saveBtn){
-    saveBtn.addEventListener('click',()=>saveRoutine());
-    saveBtn.addEventListener('touchend',e=>{e.preventDefault();saveRoutine();});
-  }
-  if(cancelBtn){
-    cancelBtn.addEventListener('click',()=>cancelRoutineCreate());
-    cancelBtn.addEventListener('touchend',e=>{e.preventDefault();cancelRoutineCreate();});
-  }
-}
-window.addEventListener('DOMContentLoaded',attachRoutineListeners);
+
 
 init();
 
