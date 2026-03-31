@@ -1,5 +1,5 @@
 // Stay Hard — Service Worker
-// Build: 20260331-1324
+// Build: 20260331-1400
 ← changes every deploy so browser detects update
 const CACHE_NAME = 'stayhard-20260331-034553';
 
