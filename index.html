@@ -1338,22 +1338,36 @@ function wsExVolLabel(ex,vol){
   if(!ex.isStrength)return ex.muscle+' · '+ex.equip;
   const prevSets=findPrevSets(ex.name);
   const prevVol=prevSets?prevSets.reduce((a,s)=>a+(parseFloat(s.kg)||0)*(parseInt(s.reps)||0),0):0;
+  // Always show current vol (or muscle info if nothing done yet)
   let txt=vol>0?'볼륨 '+vol.toLocaleString()+'kg':ex.muscle+' · '+ex.equip;
-  if(vol>0&&prevVol>0){
-    const delta=vol-prevVol;
-    const sign=delta>0?'+':'';
-    const color=delta>0?'var(--green)':delta<0?'var(--red)':'var(--text3)';
-    txt+=' <span style="color:'+color+';font-size:10px;font-weight:600;">'+sign+delta.toLocaleString()+'kg</span>';
+  if(prevVol>0){
+    if(vol>0){
+      // Real-time delta vs previous
+      const delta=vol-prevVol;
+      const sign=delta>0?'+':'';
+      const color=delta>0?'var(--green)':delta<0?'var(--red)':'var(--text3)';
+      const arrow=delta>0?'↑':delta<0?'↓':'→';
+      txt+=' <span style="color:'+color+';font-size:10px;font-weight:700;">'+arrow+sign+Math.abs(delta).toLocaleString()+'kg</span>';
+    } else {
+      // Show previous record as reference before any sets are done
+      txt+=' <span style="color:var(--text3);font-size:10px;">이전 '+prevVol.toLocaleString()+'kg</span>';
+    }
   }
   return txt;
 }
 function renderSession(){
   const body=document.getElementById('ws-body');
   if(currentSession.length===0){
-    body.innerHTML=`<div style="text-align:center;padding:48px 0;">
-      <div style="font-size:32px;margin-bottom:12px;">🏋️</div>
-      <div style="font-size:14px;color:var(--text2);">+ 운동 버튼으로 운동을 추가하세요</div>
-      <div style="font-size:12px;color:var(--text3);margin-top:6px;">또는 나의 루틴으로 시작하세요</div>
+    body.innerHTML=`<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:48px 24px;gap:16px;">
+      <div style="font-size:48px;">🏋️</div>
+      <div style="font-size:15px;font-weight:600;color:var(--text);">어떤 운동을 했나요?</div>
+      <div style="font-size:12px;color:var(--text3);text-align:center;line-height:1.6;">헬스 세션, 달리기, 요가 등<br>오늘의 운동을 기록해보세요</div>
+      <button onclick="openLibraryForSession()" style="margin-top:8px;padding:16px 32px;background:var(--accent);border:none;border-radius:var(--radius);color:#fff;font-size:15px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;max-width:280px;touch-action:manipulation;">
+        ＋ 운동 추가
+      </button>
+      <button onclick="openRoutineModal()" style="padding:13px 32px;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius);color:var(--text2);font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;max-width:280px;touch-action:manipulation;">
+        📋 나의 루틴으로 시작
+      </button>
     </div>`;
     return;
   }
@@ -1379,7 +1393,7 @@ function renderSession(){
           <div class="ws-ex-name">${ex.name}</div>
           <div class="ws-ex-vol">${wsExVolLabel(ex,vol)}</div>
         </div>
-        <button onclick="removeExercise(${ei})" style="background:none;border:none;color:var(--text3);font-size:14px;cursor:pointer;">✕</button>
+        <button onclick="removeExercise(${ei})" style="background:var(--red-bg);border:1px solid var(--red-bd);border-radius:6px;color:var(--red);font-size:11px;font-weight:600;cursor:pointer;padding:4px 8px;touch-action:manipulation;">삭제</button>
       </div>
       <table class="ws-set-table" style="width:100%;">
         <tr>
@@ -1448,6 +1462,8 @@ function fillRemainingSets(ei){
   renderSession();
 }
 function removeExercise(ei){
+  const name=currentSession[ei]?.name||'이 운동';
+  if(!confirm('"'+name+'"을 삭제할까요?'))return;
   currentSession.splice(ei,1);
   renderSession();
 }
