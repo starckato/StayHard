@@ -1,5 +1,5 @@
 // Stay Hard — Service Worker
-// Build: 20260331-1254  ← changes every deploy so browser detects update
+// Build: 20260331-1258  ← changes every deploy so browser detects update
 const CACHE_NAME = 'stayhard-20260331-034553';
 
 // ── INSTALL: skip waiting immediately so new SW takes over fast ──
