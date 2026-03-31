@@ -28,7 +28,7 @@
 }
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 html,body{margin:0;padding:0;}
-body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max-width:430px;margin:0 auto;padding-bottom:160px;-webkit-overflow-scrolling:touch;}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max-width:430px;margin:0 auto;padding-bottom:160px;-webkit-overflow-scrolling:touch;touch-action:manipulation;}
 
 /* LOADING */
 .loading-overlay{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:999;flex-direction:column;gap:12px;}
@@ -114,7 +114,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 .s-divider{height:1px;background:var(--border);}
 
 /* DAY SLIDER */
-.day-slider-wrap{padding:8px 20px 12px;position:sticky;top:0;background:var(--bg);z-index:100;}
+.day-slider-wrap{padding:8px 20px 12px;background:var(--bg);}
 .month-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
 .month-label{font-size:13px;font-weight:500;color:var(--text2);}
 .mnav-btn{background:none;border:none;color:var(--text2);font-size:18px;cursor:pointer;padding:0 4px;}
@@ -187,7 +187,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 /* TARGETS */
 .tgt-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);}
 .tgt-row:last-child{border-bottom:none;}
-.tgt-btn{width:22px;height:22px;border-radius:6px;border:1.5px solid var(--border2);background:transparent;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:13px;transition:all .15s;-webkit-user-select:none;user-select:none;}
+.tgt-btn{width:22px;height:22px;border-radius:6px;border:1.5px solid var(--border2);background:transparent;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:13px;transition:all .15s;-webkit-user-select:none;user-select:none;touch-action:manipulation;}
 .tgt-btn.done{background:var(--green-bg);border-color:var(--green);}
 .tgt-btn.fail{background:var(--red-bg);border-color:var(--red);}
 .tgt-text.fail{text-decoration:line-through;color:var(--text3);}
@@ -667,7 +667,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
     <div class="wv-scroll"><table class="wv-table" id="wv-table"></table></div>
 
     <!-- ── STATS GRAPHS ── -->
-    <div style="padding:16px 16px 8px;">
+    <div id="stats-section" style="padding:16px 16px 8px;opacity:0;transition:opacity .3s;">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
         <div style="font-size:14px;font-weight:700;">📈 나의 기록</div>
         <div style="display:flex;gap:4px;" id="stats-period-btns">
@@ -985,13 +985,11 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
   <div class="ws-header">
     <button class="ws-close" onclick="closeSession()">✕</button>
     <div class="ws-title" id="ws-title">오늘의 운동</div>
-    <button onclick="openLibraryForSession()" style="background:var(--accent);border:none;color:#fff;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">+ 운동</button>
   </div>
   <div class="ws-body" id="ws-body"></div>
   <div class="ws-footer">
     <button class="ws-add-ex-btn" onclick="openRoutineModal()">📋 나의 루틴</button>
-    <button class="ws-add-ex-btn" onclick="openShareModal()" style="background:var(--surface2);color:var(--text2);">📸</button>
-    <button class="ws-done-btn" id="ws-done-btn" onclick="finishSession()">세션 완료 ✓</button>
+    <button class="ws-done-btn" id="ws-done-btn" onclick="finishSession()">운동 종료 ✓</button>
   </div>
 </div>
 
@@ -1283,7 +1281,7 @@ function openWorkoutSession(prefillExercises){
   sessionSourceRoutineId=null;
   sessionOriginalExCount=0;
   const btn=document.getElementById('ws-done-btn');
-  if(btn)btn.textContent='세션 완료 ✓';
+  if(btn)btn.textContent='운동 종료 ✓';
   document.getElementById('workout-session-overlay').classList.add('open');
   renderSession();
 }
@@ -1389,7 +1387,9 @@ function renderSession(){
         ${ex.sets.length>1&&(ex.sets[0].kg||ex.sets[0].reps)?`<button class="ws-add-set" style="border-top:none;border-left:1px solid var(--border);flex:1;color:var(--accent);font-weight:500;" onclick="fillRemainingSets(${ei})">나머지 채우기 ↓</button>`:''}
       </div>`:''}
     </div>`;
-  }).join('');
+  }).join('')+`<button onclick="openLibraryForSession()" style="width:100%;margin:12px 0 8px;padding:14px;background:var(--surface2);border:2px dashed var(--border2);border-radius:var(--radius);font-size:14px;font-weight:600;color:var(--accent);cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;touch-action:manipulation;">
+    <span style="font-size:18px;">＋</span> 다음 운동 추가
+  </button>`;
 }
 function updateSet(ei,si,field,val){
   currentSession[ei].sets[si][field]=val;
@@ -1981,7 +1981,7 @@ function switchTab(name,idx){
   document.getElementById('view-'+name).classList.add('active');
   const tabs=document.querySelectorAll('.tbar-tab');if(tabs[idx])tabs[idx].classList.add('active');
   const bnis=document.querySelectorAll('.bni');if(bnis[idx])bnis[idx].classList.add('active');
-  if(name==='weekly'){renderWeeklyView();loadAndRenderStats();}
+  if(name==='weekly'){renderWeeklyView().then(()=>requestAnimationFrame(loadAndRenderStats));}
   if(name==='competition'){renderChallengeHome();}
   if(name==='goggins')renderGogginsTab();
 }
@@ -2782,8 +2782,13 @@ function renderMandatory(){
     if(todayIdx>=10)return'';
     const daysLabel=t.days&&t.days.length<7?['월','화','수','목','금','토','일'].filter((_,di)=>t.days.includes(di)).join(''):'매일';
     return`<div class="ck-row">
-      <div class="ck-box ${t.done?'done':''}" onclick="togMand(${i})"></div>
-      <div style="flex:1;cursor:pointer;" onclick="togMand(${i})">
+      <div class="ck-box ${t.done?'done':''}"
+        onclick="togMand(${i})"
+        ontouchend="event.preventDefault();togMand(${i})"
+        style="min-width:28px;min-height:44px;display:flex;align-items:center;justify-content:center;cursor:pointer;"></div>
+      <div style="flex:1;cursor:pointer;padding:12px 0;"
+        onclick="togMand(${i})"
+        ontouchend="event.preventDefault();togMand(${i})">
         <div class="ck-name ${t.done?'done':''}">${t.name}</div>
         <div style="font-size:10px;color:var(--text3);margin-top:1px;">${daysLabel}</div>
       </div>
@@ -2899,14 +2904,19 @@ function renderTargets(){
       const isFail=t.st==='fail';
       const checkContent=isDone?'<span style="color:var(--green);font-size:14px;">✓</span>':isFail?'<span style="color:var(--red);font-size:12px;">✕</span>':'';
       return`<div class="tgt-row">
-        <button class="tgt-btn ${t.st||''}"
+        <div class="tgt-btn ${t.st||''}"
           onclick="togTgt(${i})"
           oncontextmenu="event.preventDefault();markFail(${i})"
-          ontouchstart="tgtTouchStart(${i})" ontouchend="event.preventDefault();tgtTouchEnd(${i})"
-          title="탭: 완료 · 길게 누르기: 실패">
+          ontouchstart="tgtTouchStart(${i})"
+          ontouchend="tgtTouchEnd(${i},event)"
+          style="cursor:pointer;-webkit-user-select:none;user-select:none;min-width:28px;min-height:44px;display:flex;align-items:center;justify-content:center;">
           ${checkContent}
-        </button>
-        <div class="tgt-text ${isDone?'done':isFail?'fail':''}" onclick="togTgt(${i})" ontouchstart="tgtTouchStart(${i})" ontouchend="event.preventDefault();tgtTouchEnd(${i})" style="cursor:pointer;flex:1;-webkit-user-select:none;user-select:none;">${t.text}</div>
+        </div>
+        <div class="tgt-text ${isDone?'done':isFail?'fail':''}"
+          onclick="togTgt(${i})"
+          ontouchstart="tgtTouchStart(${i})"
+          ontouchend="tgtTouchEnd(${i},event)"
+          style="cursor:pointer;flex:1;padding:12px 4px;-webkit-user-select:none;user-select:none;">${t.text}</div>
         <button onclick="delTgt(${i})" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:12px;padding:3px 5px;">✕</button>
       </div>`;
     }).join('');
@@ -2926,9 +2936,24 @@ function markFail(i){
 }
 
 // Long press support for mobile
-let tgtPressTimer=null,tgtTouchMoved=false;
-function tgtTouchStart(i){tgtTouchMoved=false;tgtPressTimer=setTimeout(()=>{markFail(i);tgtPressTimer=null;},500);}
-function tgtTouchEnd(i){if(tgtPressTimer){clearTimeout(tgtPressTimer);tgtPressTimer=null;togTgt(i);}}
+// Touch handling for 오늘의 할일
+let tgtPressTimer=null,tgtTouchFired=false;
+function tgtTouchStart(i){
+  tgtTouchFired=false;
+  tgtPressTimer=setTimeout(()=>{
+    tgtTouchFired=true;
+    tgtPressTimer=null;
+    markFail(i);
+  },450);
+}
+function tgtTouchEnd(i,e){
+  if(e){e.preventDefault();e.stopPropagation();}
+  if(tgtPressTimer){
+    clearTimeout(tgtPressTimer);
+    tgtPressTimer=null;
+    if(!tgtTouchFired){togTgt(i);}
+  }
+}
 
 function delTgt(i){log.targets.splice(i,1);renderTargets();scheduleSave();}
 function toggleAddTgt(){const x=document.getElementById('add-tgt-input');x.classList.toggle('open');if(x.classList.contains('open'))document.getElementById('tgt-inp').focus();}
@@ -3671,6 +3696,7 @@ async function loadAndRenderStats(){
     .gte('log_date',fromKey)
     .order('log_date',{ascending:true});
   document.getElementById('stats-loading').style.display='none';
+  const ss=document.getElementById('stats-section');if(ss)ss.style.opacity='1';
   if(error||!data)return;
   // Normalize keys
   const rows=data.map(d=>({...d,_key:normKey(d.log_date)}));
