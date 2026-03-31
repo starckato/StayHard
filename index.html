@@ -173,6 +173,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 .meal-dot.green{background:var(--green);}
 .meal-dot.red{background:var(--red);}
 .meal-dot.skipped{background:var(--amber);}
+.meal-dot.normal{background:var(--text3);}
 .meal-dot.empty{background:var(--surface3);border:1px solid var(--border2);}
 .meal-row-label{font-size:11px;color:var(--text2);width:60px;flex-shrink:0;}
 .meal-row-name{font-size:13px;font-weight:500;flex:1;}
@@ -392,6 +393,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 .ftbtn.sel-green{background:var(--green-bg);border-color:var(--green);color:var(--green);}
 .ftbtn.sel-red{background:var(--red-bg);border-color:var(--red);color:var(--red);}
 .ftbtn.sel-skipped{background:var(--amber-bg);border-color:var(--amber);color:var(--amber);}
+.ftbtn.sel-normal{background:var(--surface3);border-color:var(--text3);color:var(--text2);}
 .photo-wrap{position:relative;display:inline-block;}
 .photo-thumb{width:56px;height:56px;border-radius:8px;object-fit:cover;display:block;}
 .photo-del{position:absolute;top:-6px;right:-6px;width:18px;height:18px;border-radius:50%;background:var(--red);border:none;color:#fff;font-size:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
@@ -956,10 +958,11 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 
       <div class="mfield">
         <label class="mlabel">이 식사를 평가하면?</label>
+        <div style="font-size:10px;color:var(--text3);margin-bottom:4px;">클린: 샐러드·닭가슴살·포케 &nbsp;|&nbsp; 일반: 된장찌개·파스타 &nbsp;|&nbsp; 금지: 피자·치킨·술</div>
         <div class="food-types" id="mm-quality-btns">
-          <div class="ftbtn" onclick="pickFT('green',this)" style="touch-action:manipulation;">✅ 클린</div>
-          <div class="ftbtn" onclick="pickFT('red',this)" style="touch-action:manipulation;">🚫 금지</div>
-          <div class="ftbtn" onclick="pickFT('skipped',this)" style="touch-action:manipulation;">⏭ 스킵</div>
+          <div class="ftbtn" onclick="pickFT('green',this)" style="touch-action:manipulation;">✅ 클린식</div>
+          <div class="ftbtn" onclick="pickFT('normal',this)" style="touch-action:manipulation;">🍚 일반식</div>
+          <div class="ftbtn" onclick="pickFT('red',this)" style="touch-action:manipulation;">🚫 금지식</div>
         </div>
       </div>
 
@@ -2644,7 +2647,7 @@ function renderMeals(){
     :meals.map((m,i)=>{
       const timeIcon=timeLabels[m.time]||'🍽️';
       const timeLabel=m.time||('식사 '+(i+1));
-      const dotCls=m.type==='green'?'green':m.type==='red'?'red':m.type==='skipped'?'skipped':'empty';
+      const dotCls=m.type==='green'?'green':m.type==='red'?'red':m.type==='normal'?'normal':m.type==='skipped'?'normal':'empty';
       return`<div class="meal-row" onclick="openEditMealModal(${i})">
         <div class="meal-dot ${dotCls}"></div>
         <div class="meal-row-label">${timeIcon} ${timeLabel}</div>
@@ -2752,7 +2755,7 @@ function openEditMealModal(i){
   }
   // Restore quality
   if(foodType){
-    const mp={green:0,red:1,skipped:2};
+    const mp={green:0,normal:1,red:2,skipped:1};
     const idx=mp[foodType];
     if(idx!==undefined)document.querySelectorAll('#mm-quality-btns .ftbtn')[idx].classList.add('sel-'+foodType);
   }
@@ -3609,12 +3612,12 @@ function buildWVTable(dates){
         // color by first item's type
         if(first.type==='green')cls='c-green';
         else if(first.type==='red')cls='c-red';
-        else if(first.type==='skipped')cls='c-amber';
+        else if(first.type==='normal'||first.type==='skipped')cls='c-text3';
         else cls='c-empty';
         // if mixed types (e.g. good + bad), show amber as warning
         const types=slotMeals.map(m=>m.type).filter(Boolean);
         if(types.includes('red')&&types.includes('green'))cls='c-amber';
-        const firstName=first.name||(first.type==='skipped'?'스킵':first.type?'—':'');
+        const firstName=first.name||(first.type?'—':'');
         display=firstName+extra;
         title=slotMeals.map(m=>m.name||m.type||'?').join(', ');
       }
