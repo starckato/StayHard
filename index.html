@@ -174,9 +174,9 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 
 /* CHECKLIST */
 .check-rows{padding:4px 14px 4px;}
-.ck-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);}
+.ck-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);touch-action:manipulation;-webkit-tap-highlight-color:transparent;}
 .ck-row:last-child{border-bottom:none;}
-.ck-box{width:24px;height:24px;border-radius:50%;border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:12px;cursor:pointer;flex-shrink:0;transition:all .15s;background:transparent;touch-action:manipulation;}
+.ck-box{width:24px;height:24px;border-radius:50%;border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:12px;cursor:pointer;flex-shrink:0;transition:all .15s;background:transparent;touch-action:manipulation;-webkit-user-select:none;user-select:none;}
 .ck-box.done{background:var(--green);border-color:var(--green);}
 .ck-box.done::after{content:'✓';color:#fff;font-weight:700;font-size:12px;}
 .ck-name{font-size:13px;flex:1;cursor:pointer;}
@@ -185,7 +185,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 .ck-del{background:none;border:none;color:var(--text3);cursor:pointer;font-size:12px;padding:3px;}
 
 /* TARGETS */
-.tgt-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);}
+.tgt-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);touch-action:manipulation;-webkit-tap-highlight-color:transparent;}
 .tgt-row:last-child{border-bottom:none;}
 .tgt-btn{width:22px;height:22px;border-radius:6px;border:1.5px solid var(--border2);background:transparent;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:13px;transition:all .15s;-webkit-user-select:none;user-select:none;touch-action:manipulation;}
 .tgt-btn.done{background:var(--green-bg);border-color:var(--green);}
@@ -1985,7 +1985,6 @@ async function saveLog(key){
   const l=logCache[key];if(!l)return;
   const p={user_id:CU.id,log_date:key,weight:l.weight,water_cups:l.water_cups,meals:l.meals||[],workouts:l.workouts,mandatory:l.mandatory,targets:l.targets};
   await sb.from('daily_logs').upsert(p,{onConflict:'user_id,log_date'});
-  showToast('저장됨 ✓');
   updateGogginsHeader();
 }
 function openShareModal(){
@@ -3076,9 +3075,6 @@ const MKEYS=['weight','breakfast','lunch','dinner','workout','mandatory'];
 const MLABELS=['체중 (kg)','아침','점심','저녁','운동','필수'];
 function wvWeekDates(offset){const d=new Date(now);d.setDate(d.getDate()-((d.getDay()+6)%7)+offset*7);d.setHours(0,0,0,0);return Array.from({length:7},(_,i)=>{const x=new Date(d);x.setDate(d.getDate()+i);return x;});}
 async function renderWeeklyView(){
-  // flush any pending saves so weekly view shows latest data
-  clearTimeout(saveTimer);
-  await saveLog(selectedKey);
   const dates=wvWeekDates(wvOffset);
   const from=dkey(dates[0]),to=dkey(dates[6]);
   const s=dates[0],e=dates[6];
@@ -3103,7 +3099,13 @@ async function renderWeeklyView(){
     emptyEl.style.display='none';
   }
 }
-function shiftWVWeek(dir){wvOffset+=dir;renderWeeklyView();}
+function shiftWVWeek(dir){
+  wvOffset+=dir;
+  // Show brief loading state on table
+  const tbl=document.getElementById('wv-table');
+  if(tbl)tbl.style.opacity='0.4';
+  renderWeeklyView().then(()=>{if(tbl)tbl.style.opacity='1';});
+}
 function buildWVTable(dates){
   const tbl=document.getElementById('wv-table');
   const DAY_NAMES=['월','화','수','목','금','토','일'];
@@ -3208,7 +3210,7 @@ function buildWVTable(dates){
   const mandNames=dedupedMand.slice(0,10);
   mandNames.forEach(mname=>{
     html+=`<tr><td class="row-sub" title="${mname}">${mname.length>9?mname.slice(0,8)+'…':mname}</td>`;
-    dates.forEach(d=>{const k=dkey(d),isT=k===TODAY,iF=d>now&&!isT;const dl=wvLogs[k];const task=dl?.mandatory?.find(m=>m.name===mname);let cls='c-empty',val='—';if(iF){cls='c-future';val='';}else if(task){val=task.done?'✓':'✕';cls=task.done?'c-green':'c-red';}html+=`<td class="dc${isT?' today-col':''} ${cls}" onclick="wvTapMand('${k}','${mname.replace(/'/g,"\\'")}',this)" style="font-weight:600;cursor:pointer">${val}</td>`;});html+=`</tr>`;
+    dates.forEach(d=>{const k=dkey(d),isT=k===TODAY,iF=d>now&&!isT;const dl=wvLogs[k];const task=dl?.mandatory?.find(m=>m.name===mname);let cls='c-empty',val='—';if(iF){cls='c-future';val='';}else if(task){val=task.done?'✓':'✕';cls=task.done?'c-green':'c-red';}html+=`<td class="dc${isT?' today-col':''} ${cls}" onclick="wvTapMand('${k}','${mname.replace(/'/g,"\\'")}',this)" style="font-weight:600;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;">${val}</td>`;});html+=`</tr>`;
   });
   // "+ 루틴 추가" button row
   html+=`<tr style="background:transparent;">
@@ -3236,7 +3238,7 @@ function buildWVTable(dates){
       const shortVal=val?icon+val.slice(0,7)+(val.length>7?'…':''):'';
       const emptyStyle=(!task&&!iF)?'color:var(--accent);opacity:.4;':'';
       const tgtClick=clickable?`onclick="wvTapTarget('${k}',${ti},this,${d.getTime()})"`:'' ;
-      html+=`<td class="dc${isT?' today-col':''} ${cls}" title="${val||''}" style="cursor:${clickable?'pointer':'default'};${emptyStyle}" ${tgtClick}>${val?shortVal:'＋'}</td>`;
+      html+=`<td class="dc${isT?' today-col':''} ${cls}" title="${val||''}" style="cursor:${clickable?'pointer':'default'};touch-action:manipulation;-webkit-tap-highlight-color:transparent;${emptyStyle}" ${tgtClick}>${val?shortVal:'＋'}</td>`;
     });
     html+=`</tr>`;
   }
