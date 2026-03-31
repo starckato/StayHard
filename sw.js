@@ -1,5 +1,5 @@
 // Stay Hard — Service Worker v1.0
-const CACHE_NAME = 'stayhard-v1';
+const CACHE_NAME = 'stayhard-v2';
 
 // Assets to cache on install (app shell)
 const PRECACHE = [
