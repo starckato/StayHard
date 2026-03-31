@@ -1016,12 +1016,9 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
       </div>
       <div style="margin-bottom:8px;font-size:12px;font-weight:500;color:var(--text2);">운동 목록</div>
       <div id="routine-ex-list" style="margin-bottom:10px;"></div>
-      <div ontouchend="event.preventDefault();btnGuard(openLibraryForRoutine)" onclick="btnGuard(openLibraryForRoutine)" style="padding:10px 14px;background:var(--surface2);border:1.5px dashed var(--border2);border-radius:10px;display:flex;align-items:center;gap:8px;cursor:pointer;margin-bottom:12px;touch-action:manipulation;">
-        <span style="font-size:16px;color:var(--accent);">＋</span>
-        <span style="font-size:13px;font-weight:500;color:var(--accent);">운동 추가</span>
-      </div>
-      <button class="mbtn" ontouchend="event.preventDefault();btnGuard(saveRoutine)" onclick="btnGuard(saveRoutine)">루틴 저장</button>
-      <button class="mbtn-ghost" ontouchend="event.preventDefault();btnGuard(cancelRoutineCreate)" onclick="btnGuard(cancelRoutineCreate)">취소</button>
+      <button id="rt-add-ex-btn" class="mbtn" style="background:var(--surface2);border:2px dashed var(--border2);color:var(--accent);margin-bottom:8px;">＋ 운동 추가</button>
+      <button id="rt-save-btn" class="mbtn">루틴 저장</button>
+      <button id="rt-cancel-btn" class="mbtn-ghost">취소</button>
     </div>
   </div>
 </div>
@@ -1596,13 +1593,6 @@ function addExerciseToRoutineCreate(name,icon,muscle,equip){
 function removeRoutineEx(i){
   routineExercises.splice(i,1);
   renderRoutineExList(routineExercises);
-}
-let _btnLock=false;
-function btnGuard(fn){
-  if(_btnLock)return;
-  _btnLock=true;
-  setTimeout(()=>_btnLock=false,800);
-  fn();
 }
 async function saveRoutine(){
   const name=document.getElementById('routine-name-inp').value.trim();
@@ -3516,6 +3506,26 @@ function calcStreakForLog(l){
 function openModal(id){document.getElementById(id).classList.add('open');}
 function closeModal(id){document.getElementById(id).classList.remove('open');}
 document.querySelectorAll('.modal-overlay').forEach(m=>{m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open');});});
+
+// ── Routine modal button listeners (avoid inline handler issues on iOS) ──
+function attachRoutineListeners(){
+  const addBtn=document.getElementById('rt-add-ex-btn');
+  const saveBtn=document.getElementById('rt-save-btn');
+  const cancelBtn=document.getElementById('rt-cancel-btn');
+  if(addBtn){
+    addBtn.addEventListener('click',()=>openLibraryForRoutine());
+    addBtn.addEventListener('touchend',e=>{e.preventDefault();openLibraryForRoutine();});
+  }
+  if(saveBtn){
+    saveBtn.addEventListener('click',()=>saveRoutine());
+    saveBtn.addEventListener('touchend',e=>{e.preventDefault();saveRoutine();});
+  }
+  if(cancelBtn){
+    cancelBtn.addEventListener('click',()=>cancelRoutineCreate());
+    cancelBtn.addEventListener('touchend',e=>{e.preventDefault();cancelRoutineCreate();});
+  }
+}
+window.addEventListener('DOMContentLoaded',attachRoutineListeners);
 
 init();
 
