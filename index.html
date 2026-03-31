@@ -802,6 +802,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
             <div style="display:flex;align-items:center;gap:12px;font-size:13px;color:var(--text2);"><span style="font-size:20px;">🎯</span> 오늘의 할일을 정복하세요</div>
           </div>
           <button onclick="obNext(2)" style="width:100%;padding:15px;background:var(--red);border:none;border-radius:12px;color:#fff;font-size:15px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">시작하기 →</button>
+          <button onclick="obDismissForever()" style="width:100%;padding:10px;background:none;border:none;color:var(--text3);font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;margin-top:6px;touch-action:manipulation;">다시 보지 않기</button>
         </div>
         <!-- Step 2 -->
         <div id="ob-s2" style="display:none;padding:32px 24px 24px;text-align:center;">
@@ -2079,6 +2080,11 @@ async function captureShareCard(){
 const OB_ROUTINES=['🪥 양치','💊 영양제','📖 독서 30분','🧊 냉수 샤워','🧹 집 청소','💪 운동','🌅 아침 루틴','🧘 명상 10분','😴 11시 취침','🚶 산책 30분'];
 let obSelectedRoutines=[];
 
+function obDismissForever(){
+  document.getElementById('onboarding-modal').style.display='none';
+  sb.from('profiles').update({onboarded:true}).eq('id',CU.id);
+  if(CP)CP.onboarded=true;
+}
 function showOnboarding(name){
   document.getElementById('ob-name').textContent=name;
   obSelectedRoutines=[];
