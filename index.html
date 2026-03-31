@@ -624,7 +624,10 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
       <div class="s-card-hdr"><div class="s-card-title">운동</div><div class="s-badge" id="wo-badge">0/0</div></div>
       <div class="s-divider"></div>
       <div class="workout-rows" id="workout-rows"></div>
-      <div class="add-row" onclick="openWorkoutModal()" style="color:var(--accent);font-weight:500;"><span style="font-size:16px;margin-right:6px;">＋</span> 운동 추가</div>
+      <div class="add-row" onclick="openWorkoutModal()" style="color:var(--accent);font-weight:500;touch-action:manipulation;">
+        <span style="font-size:16px;margin-right:6px;">＋</span> 운동 추가
+        <span style="font-size:10px;color:var(--text3);margin-left:6px;font-weight:400;">한 세션에 여러 종목 추가 가능</span>
+      </div>
     </div>
     <div class="s-card">
       <div class="s-card-hdr"><div class="s-card-title">필수 루틴</div><div class="s-badge" id="mand-badge">0/0</div></div>
@@ -1468,8 +1471,9 @@ function renderSession(){
         ${ex.sets.length>1&&(ex.sets[0].kg||ex.sets[0].reps)?`<button class="ws-add-set" style="border-top:none;border-left:1px solid var(--border);flex:1;color:var(--accent);font-weight:500;" onclick="fillRemainingSets(${ei})">나머지 채우기 ↓</button>`:''}
       </div>`:''}
     </div>`;
-  }).join('')+`<button onclick="openLibraryForSession()" style="width:100%;margin:12px 0 0;padding:14px;background:var(--surface2);border:2px dashed var(--border2);border-radius:var(--radius);font-size:14px;font-weight:600;color:var(--accent);cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;touch-action:manipulation;">
-    <span style="font-size:18px;">＋</span> 다음 운동 추가
+  }).join('')+`<button onclick="openLibraryForSession()" style="width:100%;margin:12px 0 0;padding:16px;background:var(--accent-bg);border:2px solid var(--accent-bd);border-radius:var(--radius);font-size:14px;font-weight:700;color:var(--accent);cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;touch-action:manipulation;">
+    <span style="font-size:20px;">＋</span> 같은 세션에 운동 추가
+    <span style="font-size:11px;font-weight:400;opacity:.7;margin-left:2px;">· 한 운동 더!</span>
   </button>
   <button onclick="saveSessionAsRoutine()" style="width:100%;margin:8px 0 8px;padding:12px;background:transparent;border:1px solid var(--border2);border-radius:var(--radius);font-size:13px;font-weight:500;color:var(--text3);cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:6px;touch-action:manipulation;">
     💾 현재 세션을 루틴으로 저장
@@ -1855,6 +1859,78 @@ function showAuth(){
   document.getElementById('li-err').textContent='';
 }
 function showApp(){hide('loading');hide('auth-screen');show('app-screen');}
+
+async function checkYesterdayReminder(){
+  // Get yesterday's key
+  const yest=new Date(now);yest.setDate(yest.getDate()-1);
+  const yk=dkey(yest);
+
+  // Skip if already dismissed today
+  const dismissed=localStorage.getItem('reminder_dismissed');
+  if(dismissed===TODAY)return;
+
+  // Load yesterday's log
+  let yl=logCache[yk];
+  if(!yl){
+    const{data}=await sb.from('daily_logs').select('*').eq('user_id',CU.id).eq('log_date',yk).maybeSingle();
+    if(data){yl=data;}
+  }
+
+  const missing=[];
+
+  // Check mandatory routines
+  if(!yl||!(yl.mandatory||[]).some(m=>m.done)){
+    missing.push('필수 루틴');
+  } else {
+    const total=(yl.mandatory||[]).length;
+    const done=(yl.mandatory||[]).filter(m=>m.done).length;
+    if(done<total)missing.push(`필수 루틴 ${done}/${total}`);
+  }
+
+  // Check workout
+  if(!yl||(yl.workouts||[]).length===0){
+    missing.push('운동');
+  }
+
+  // Check meals
+  if(!yl||(yl.meals||[]).length===0){
+    missing.push('식단');
+  }
+
+  if(missing.length===0)return; // everything done yesterday 
+
+  // Pick a rage message
+  const msgs=[
+    '어제 다 못 끝냈어. 오늘은 변명 없이 해.',
+    '어제 진 거야. 오늘 만회해.',
+    '어제 놓친 게 있어. 오늘은 완벽하게.',
+    '매일이 싸움이야. 어제 졌어. 오늘 이겨.',
+    '어제의 너는 약했어. 오늘의 너는 달라.',
+  ];
+  const icons=['😤','🤬','💀','😡','🔥'];
+  const idx=Math.floor(Math.random()*msgs.length);
+
+  document.getElementById('reminder-icon').textContent=icons[idx];
+  document.getElementById('reminder-title').textContent='어제 못 끝낸 게 있어 — '+missing.join(', ');
+  document.getElementById('reminder-body').textContent=msgs[idx];
+
+  const banner=document.getElementById('reminder-banner');
+  banner.style.display='block';
+  // Animate in
+  banner.style.opacity='0';banner.style.transform='translateY(-8px)';
+  requestAnimationFrame(()=>{
+    banner.style.transition='opacity .3s,transform .3s';
+    banner.style.opacity='1';banner.style.transform='translateY(0)';
+  });
+}
+
+function dismissReminder(){
+  const banner=document.getElementById('reminder-banner');
+  banner.style.transition='opacity .2s';
+  banner.style.opacity='0';
+  setTimeout(()=>banner.style.display='none',200);
+  localStorage.setItem('reminder_dismissed',TODAY);
+}
 function show(id){document.getElementById(id).style.display='block';}
 function hide(id){document.getElementById(id).style.display='none';}
 
@@ -1923,6 +1999,9 @@ async function onLogin(user){
   // Show onboarding for new users
   if(!p.onboarded){
     setTimeout(()=>showOnboarding(p.display_name||p.username||''),500);
+  } else {
+    // Check yesterday's completion and show reminder banner
+    setTimeout(checkYesterdayReminder, 800);
   }
 }
 
@@ -2458,13 +2537,30 @@ const WIN_MSGS = {
   ],
 };
 
+const RAGE_HEAVY = [
+  {face:'💀',msg:'개가 똥을 끊지 짖어봐!'},
+  {face:'🤬',msg:'WTF 너 방금 하루 종일 노력한 거 다 날렸어.'},
+  {face:'😤',msg:'뭐해? 쳐먹었으면 움직여!'},
+  {face:'💀',msg:"Don't you see that?\n너 우습게 보는 새끼들 지금 좋아 죽는다."},
+  {face:'🤬',msg:'Fuck you!\n네 인생에서 고작 3-4개월 참는 것도 못해?'},
+  {face:'😡',msg:'Shit!\n옆집 누렁이, 할머니, 할아버지, 네가 이 새끼보다 낫지 하는 그 새끼도 한다.\nStay hard.'},
+  {face:'💀',msg:'어려워? 독립운동하냐?\n아무것도 아닌 것처럼 생각해.\nIt\'s fucking easy.'},
+  {face:'🤬',msg:'어플 지워라.\n너한테 한마디 하는 것도 아깝다.\nLittle loser.'},
+  {face:'😡',msg:'아빠도 이제 한계다.\n집 나가서 네 인생 살아라.'},
+];
+
 function showRage(){
-  const r=RAGE_MSGS[Math.floor(Math.random()*RAGE_MSGS.length)];
+  // 20% 기존, 80% 강력 메시지
+  let r;
+  if(Math.random()<0.8){
+    r=RAGE_HEAVY[Math.floor(Math.random()*RAGE_HEAVY.length)];
+  } else {
+    r=RAGE_MSGS[Math.floor(Math.random()*RAGE_MSGS.length)];
+  }
   document.getElementById('rage-face').textContent=r.face;
   document.getElementById('rage-msg').textContent=r.msg;
   const el=document.getElementById('goggins-rage');
   el.style.display='flex';
-  // vibrate if supported
   if(navigator.vibrate)navigator.vibrate([100,50,100,50,200]);
 }
 function closeRage(){
@@ -2479,12 +2575,12 @@ function showWin(type){
   document.getElementById('win-msg').textContent=msg;
   el.style.display='flex';
   if(navigator.vibrate)navigator.vibrate(50);
-  setTimeout(()=>el.style.display='none', type==='perfect'?3000:1500);
+  setTimeout(()=>el.style.display='none', type==='perfect'?5000:3000);
 }
 
 function launchConfetti(){
   const colors=['#f87171','#4ade80','#fbbf24','#60a5fa','#7c6af7','#f0f0f0'];
-  for(let i=0;i<60;i++){
+  for(let i=0;i<90;i++){
     const p=document.createElement('div');
     p.className='confetti-particle';
     p.style.left=Math.random()*100+'vw';
@@ -2492,10 +2588,10 @@ function launchConfetti(){
     p.style.background=colors[Math.floor(Math.random()*colors.length)];
     p.style.width=(Math.random()*8+4)+'px';
     p.style.height=(Math.random()*8+4)+'px';
-    p.style.animationDuration=(Math.random()*2+1.5)+'s';
+    p.style.animationDuration=(Math.random()*2+2.5)+'s';
     p.style.animationDelay=(Math.random()*.8)+'s';
     document.body.appendChild(p);
-    setTimeout(()=>p.remove(),4000);
+    setTimeout(()=>p.remove(),6000);
   }
 }
 
@@ -3072,6 +3168,19 @@ function editGymSession(i){
 }
 
 function openWorkoutModal(){
+  // If there are already workouts today, offer to continue session
+  const existing=log.workouts||[];
+  const hasSession=existing.some(w=>w.type==='session'&&w.exercises?.length>0);
+  if(hasSession){
+    const lastSession=existing.filter(w=>w.type==='session').slice(-1)[0];
+    const exNames=(lastSession.exercises||[]).map(e=>e.name).join(', ');
+    if(confirm('오늘 이미 세션이 있어요.\n\n'+exNames+'\n\n이 세션에 운동을 추가할까요?\n(취소 → 새 세션 시작)')){
+      // Reopen existing session
+      const idx=existing.lastIndexOf(lastSession);
+      openWorkoutSession(null,idx);
+      return;
+    }
+  }
   openModal('workout-modal');
 }
 
