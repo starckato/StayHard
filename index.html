@@ -510,6 +510,9 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
     <div class="afield"><label class="alabel">비밀번호</label><input class="ainput" id="li-pw" type="password" placeholder="비밀번호" autocomplete="current-password"/></div>
     <button class="abtn" id="li-btn" onclick="doLogin()">로그인</button>
     <div class="aerr" id="li-err"></div>
+    <div style="text-align:center;margin-top:8px;">
+      <span onclick="showForgotPassword()" style="font-size:12px;color:var(--text3);cursor:pointer;text-decoration:underline;touch-action:manipulation;">비밀번호를 잊으셨나요?</span>
+    </div>
   </div>
   <div class="aform" id="auth-signup" style="display:none;">
     <div class="afield"><label class="alabel">닉네임</label><input class="ainput" id="su-name" type="text" placeholder="예: 새벽4시기상"/></div>
@@ -2010,6 +2013,14 @@ function switchAuthTab(t){
   document.querySelectorAll('.auth-tab').forEach((el,i)=>el.classList.toggle('active',(t==='login'&&i===0)||(t==='signup'&&i===1)));
   document.getElementById('auth-login').style.display=t==='login'?'block':'none';
   document.getElementById('auth-signup').style.display=t==='signup'?'block':'none';
+}
+async function showForgotPassword(){
+  const email=document.getElementById('li-email').value.trim();
+  const input=email||prompt('가입한 이메일 주소를 입력하세요');
+  if(!input)return;
+  const{error}=await sb.auth.resetPasswordForEmail(input,{redirectTo:'https://stay-hard-rouge.vercel.app'});
+  if(error){alert('오류: '+error.message);return;}
+  alert('✅ 비밀번호 재설정 이메일을 보냈어요!\n메일함을 확인해주세요.');
 }
 async function doLogin(){
   const email=document.getElementById('li-email').value.trim(),pw=document.getElementById('li-pw').value;
