@@ -1970,7 +1970,8 @@ async function loadRoutineDefinitions(){
 function scheduleSave(){
   clearTimeout(saveTimer);
   saveTimer=setTimeout(async()=>{
-    await saveLog(selectedKey);
+    await saveLog(selectedKey,true);
+    showToast('저장됨 ✓');
     if(log.mandatory&&log.mandatory.length>0){
       Object.keys(logCache).forEach(k=>{
         if(k!==selectedKey&&logCache[k]&&(!logCache[k].mandatory||logCache[k].mandatory.length===0)){
@@ -1980,12 +1981,12 @@ function scheduleSave(){
     }
   },900);
 }
-async function saveLog(key){
+async function saveLog(key,silent=false){
   if(!CU)return;
   const l=logCache[key];if(!l)return;
   const p={user_id:CU.id,log_date:key,weight:l.weight,water_cups:l.water_cups,meals:l.meals||[],workouts:l.workouts,mandatory:l.mandatory,targets:l.targets};
   await sb.from('daily_logs').upsert(p,{onConflict:'user_id,log_date'});
-  updateGogginsHeader();
+  if(!silent)updateGogginsHeader();
 }
 function openShareModal(){
   const session=currentSession.length>0?currentSession:(()=>{
@@ -3075,6 +3076,8 @@ const MKEYS=['weight','breakfast','lunch','dinner','workout','mandatory'];
 const MLABELS=['체중 (kg)','아침','점심','저녁','운동','필수'];
 function wvWeekDates(offset){const d=new Date(now);d.setDate(d.getDate()-((d.getDay()+6)%7)+offset*7);d.setHours(0,0,0,0);return Array.from({length:7},(_,i)=>{const x=new Date(d);x.setDate(d.getDate()+i);return x;});}
 async function renderWeeklyView(){
+  // Flush pending saves silently so table shows latest data
+  if(saveTimer){clearTimeout(saveTimer);saveTimer=null;await saveLog(selectedKey,true);}
   const dates=wvWeekDates(wvOffset);
   const from=dkey(dates[0]),to=dkey(dates[6]);
   const s=dates[0],e=dates[6];
