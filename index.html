@@ -1277,8 +1277,9 @@ let userRoutines=[]; // loaded from Supabase
 let editingRoutineId=null;
 
 // ── LOAD ROUTINES FROM SUPABASE ──
-async function loadRoutines(){
+async function loadRoutines(force=false){
   if(!CU)return;
+  if(!force&&userRoutines.length>0)return; // 캐시 있으면 skip
   const{data}=await sb.from('user_routines').select('*').eq('user_id',CU.id).order('created_at',{ascending:false});
   userRoutines=data||[];
 }
@@ -1705,7 +1706,7 @@ async function saveRoutine(){
 async function deleteRoutine(id){
   if(!confirm('이 루틴을 삭제할까요?'))return;
   await sb.from('user_routines').delete().eq('id',id);
-  await loadRoutines();
+  await loadRoutines(true);
   renderRoutineList();
 }
 function editRoutine(id){
@@ -1970,7 +1971,7 @@ function refreshWaterGoalUI(){
 
 async function onLogin(user){
   CU=user;
-  let{data:p}=await sb.from('profiles').select('*').eq('id',user.id).maybeSingle();
+  let{data:p}=await sb.from('profiles').select('id,username,display_name,water_goal,onboarded').eq('id',user.id).maybeSingle();
   if(!p){
     const un=user.email.split('@')[0].replace(/[^a-z0-9]/gi,'').toLowerCase();
     const{data:np}=await sb.from('profiles').upsert({id:user.id,username:un,display_name:un},{onConflict:'id'}).select().single();
@@ -1983,9 +1984,8 @@ async function onLogin(user){
   document.getElementById('p-username').textContent='@'+(p.username||'');
   document.getElementById('hdr-sub').textContent=(p.display_name||p.username)+'의 보드';
   showDailyMotto();
-  await loadLog(TODAY);
-  await loadActiveCompetition();
-  await loadRoutines();
+  // 병렬 로딩 — 3개 동시에 (순차 대비 ~60% 빠름)
+  await Promise.all([loadLog(TODAY), loadRoutines(), loadActiveCompetition()]);
   showApp();
   buildSlider();
   renderRoutine();
@@ -3671,7 +3671,7 @@ async function renderWeeklyView(){
   document.getElementById('wv-week-label').textContent=(s.getMonth()+1)+'월 '+s.getDate()+'일 – '+(e.getMonth()+1)+'월 '+e.getDate()+'일, '+e.getFullYear();
   // Check which days are missing from cache
   const wvDates2=dates.map(d=>dkey(d));
-  const wvMissing=wvDates2.filter(k=>!logCache[k]);
+  const wvMissing=wvDates2.filter(k=>!logCache[k]&&k<=TODAY); // 미래 날짜는 fetch 안 함
   wvLogs={};
   if(wvMissing.length>0){
     const{data}=await sb.from('daily_logs').select('*').eq('user_id',CU.id).gte('log_date',from).lte('log_date',to);
@@ -3903,7 +3903,11 @@ async function enterChallenge(compId){
   renderCompetition();
 }
 
-async function loadActiveCompetition(){
+let _compLastFetch=0;
+async function loadActiveCompetition(force=false){
+  const now_ms=Date.now();
+  if(!force&&activeComp!==null&&(now_ms-_compLastFetch)<120000)return; // 2분 캐시
+  _compLastFetch=now_ms;
   if(!CU)return;
   const{data}=await sb.from('competitions').select('*').or('creator_id.eq.'+CU.id).eq('status','active').maybeSingle();
   // also check member
