@@ -837,7 +837,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
   </div>
 
   <!-- CHALLENGE ROOM OVERLAY -->
-  <div id="challenge-room" style="display:none;flex-direction:column;width:100%;min-height:100vh;background:var(--bg);overflow-y:auto;-webkit-overflow-scrolling:touch;">
+  <div id="challenge-room" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;width:100%;background:var(--bg);z-index:700;flex-direction:column;overflow-y:auto;-webkit-overflow-scrolling:touch;">
     <!-- Room Header -->
     <div style="display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--border);flex-shrink:0;background:var(--surface);">
       <button onclick="closeChallengeRoom()" style="background:none;border:none;color:var(--text2);font-size:20px;cursor:pointer;padding:0;touch-action:manipulation;">←</button>
@@ -885,7 +885,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
     </div>
   </div>
   <!-- CHALLENGE CREATE OVERLAY -->
-  <div id="ch-create-overlay" style="display:none;flex-direction:column;width:100%;min-height:100vh;background:var(--bg);overflow-y:auto;-webkit-overflow-scrolling:touch;">
+  <div id="ch-create-overlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;width:100%;background:var(--bg);z-index:700;flex-direction:column;overflow-y:auto;-webkit-overflow-scrolling:touch;">
     <div style="display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--border);flex-shrink:0;">
       <button onclick="hideChallengeCreate()" style="background:none;border:none;color:var(--text2);font-size:20px;cursor:pointer;touch-action:manipulation;">←</button>
       <div style="font-size:15px;font-weight:700;">다이어트 챌린지 만들기</div>
@@ -996,7 +996,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
   </div>
 
   <!-- CHALLENGE JOIN OVERLAY -->
-  <div id="ch-join-overlay" style="display:none;flex-direction:column;width:100%;min-height:100vh;background:var(--bg);overflow-y:auto;-webkit-overflow-scrolling:touch;">
+  <div id="ch-join-overlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;width:100%;background:var(--bg);z-index:700;flex-direction:column;overflow-y:auto;-webkit-overflow-scrolling:touch;">
     <div style="display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--border);flex-shrink:0;">
       <button onclick="hideChallengeJoin()" style="background:none;border:none;color:var(--text2);font-size:20px;cursor:pointer;touch-action:manipulation;">←</button>
       <div style="font-size:15px;font-weight:700;">코드로 참여</div>
@@ -4281,30 +4281,26 @@ function showChallengeCreate(){
     const chk=el.querySelector('.sec-check');
     if(chk)chk.style.opacity=on?'1':'0.2';
   });
-  hide('app-screen');
-  document.getElementById('challenge-room').style.display='none';
+  document.body.style.overflow='hidden';
   const overlay=document.getElementById('ch-create-overlay');
   overlay.style.display='flex';
-  window.scrollTo(0,0);
+  overlay.scrollTop=0;
 }
 function hideChallengeCreate(){
   document.getElementById('ch-create-overlay').style.display='none';
-  show('app-screen');
-  window.scrollTo(0,0);
+  document.body.style.overflow='';
 }
 function showChallengeJoin(){
   const inp=document.getElementById('join-code');
   if(inp)inp.value='';
   const err=document.getElementById('ch-join-err');
   if(err)err.textContent='';
-  hide('app-screen');
+  document.body.style.overflow='hidden';
   document.getElementById('ch-join-overlay').style.display='flex';
-  window.scrollTo(0,0);
 }
 function hideChallengeJoin(){
   document.getElementById('ch-join-overlay').style.display='none';
-  show('app-screen');
-  window.scrollTo(0,0);
+  document.body.style.overflow='';
 }
 
 async function enterChallenge(compId){
@@ -4316,17 +4312,16 @@ async function enterChallenge(compId){
 
 function openChallengeRoom(){
   if(!activeComp)return;
-  hide('app-screen');
+  document.body.style.overflow='hidden';
   const room=document.getElementById('challenge-room');
   room.style.display='flex';
-  window.scrollTo(0,0);
+  room.scrollTop=0;
   renderChallengeRoom();
 }
 
 function closeChallengeRoom(){
   document.getElementById('challenge-room').style.display='none';
-  show('app-screen');
-  window.scrollTo(0,0);
+  document.body.style.overflow='';
   renderChallengeHome();
 }
 
