@@ -837,7 +837,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
   </div>
 
   <!-- CHALLENGE ROOM OVERLAY -->
-  <div id="challenge-room" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;width:100%;background:var(--bg);z-index:600;flex-direction:column;">
+  <div id="challenge-room" style="display:none;flex-direction:column;width:100%;min-height:100vh;background:var(--bg);overflow-y:auto;-webkit-overflow-scrolling:touch;">
     <!-- Room Header -->
     <div style="display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--border);flex-shrink:0;background:var(--surface);">
       <button onclick="closeChallengeRoom()" style="background:none;border:none;color:var(--text2);font-size:20px;cursor:pointer;padding:0;touch-action:manipulation;">←</button>
@@ -885,7 +885,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
     </div>
   </div>
   <!-- CHALLENGE CREATE OVERLAY -->
-  <div id="ch-create-overlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:var(--bg);z-index:650;flex-direction:column;overflow-y:auto;">
+  <div id="ch-create-overlay" style="display:none;flex-direction:column;width:100%;min-height:100vh;background:var(--bg);overflow-y:auto;-webkit-overflow-scrolling:touch;">
     <div style="display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--border);flex-shrink:0;">
       <button onclick="hideChallengeCreate()" style="background:none;border:none;color:var(--text2);font-size:20px;cursor:pointer;touch-action:manipulation;">←</button>
       <div style="font-size:15px;font-weight:700;">다이어트 챌린지 만들기</div>
@@ -922,12 +922,12 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
           <div style="display:flex;flex-direction:column;gap:8px;">
             <div>
               <label class="mlabel">시작일</label>
-              <input type="date" id="dur-start" class="minput" style="font-size:14px;width:100%;box-sizing:border-box;" onchange="calcCustomDur()"/>
+              <input type="date" id="dur-start" style="width:100%;box-sizing:border-box;background:var(--surface);border:1.5px solid var(--border2);border-radius:var(--radius-sm);color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;padding:12px 14px;outline:none;appearance:none;-webkit-appearance:none;" onchange="calcCustomDur()"/>
             </div>
             <div style="text-align:center;color:var(--text3);font-size:13px;">↓</div>
             <div>
               <label class="mlabel">종료일</label>
-              <input type="date" id="dur-end" class="minput" style="font-size:14px;width:100%;box-sizing:border-box;" onchange="calcCustomDur()"/>
+              <input type="date" id="dur-end" style="width:100%;box-sizing:border-box;background:var(--surface);border:1.5px solid var(--border2);border-radius:var(--radius-sm);color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;padding:12px 14px;outline:none;appearance:none;-webkit-appearance:none;" onchange="calcCustomDur()"/>
             </div>
           </div>
           <div id="dur-custom-result" style="font-size:13px;color:var(--accent);margin-top:8px;text-align:center;"></div>
@@ -996,7 +996,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
   </div>
 
   <!-- CHALLENGE JOIN OVERLAY -->
-  <div id="ch-join-overlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:var(--bg);z-index:650;flex-direction:column;overflow-y:auto;">
+  <div id="ch-join-overlay" style="display:none;flex-direction:column;width:100%;min-height:100vh;background:var(--bg);overflow-y:auto;-webkit-overflow-scrolling:touch;">
     <div style="display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--border);flex-shrink:0;">
       <button onclick="hideChallengeJoin()" style="background:none;border:none;color:var(--text2);font-size:20px;cursor:pointer;touch-action:manipulation;">←</button>
       <div style="font-size:15px;font-weight:700;">코드로 참여</div>
@@ -4281,20 +4281,30 @@ function showChallengeCreate(){
     const chk=el.querySelector('.sec-check');
     if(chk)chk.style.opacity=on?'1':'0.2';
   });
-  document.getElementById('ch-create-overlay').style.display='flex';
+  hide('app-screen');
+  document.getElementById('challenge-room').style.display='none';
+  const overlay=document.getElementById('ch-create-overlay');
+  overlay.style.display='flex';
+  window.scrollTo(0,0);
 }
 function hideChallengeCreate(){
   document.getElementById('ch-create-overlay').style.display='none';
+  show('app-screen');
+  window.scrollTo(0,0);
 }
 function showChallengeJoin(){
   const inp=document.getElementById('join-code');
   if(inp)inp.value='';
   const err=document.getElementById('ch-join-err');
   if(err)err.textContent='';
+  hide('app-screen');
   document.getElementById('ch-join-overlay').style.display='flex';
+  window.scrollTo(0,0);
 }
 function hideChallengeJoin(){
   document.getElementById('ch-join-overlay').style.display='none';
+  show('app-screen');
+  window.scrollTo(0,0);
 }
 
 async function enterChallenge(compId){
@@ -4306,14 +4316,17 @@ async function enterChallenge(compId){
 
 function openChallengeRoom(){
   if(!activeComp)return;
+  hide('app-screen');
   const room=document.getElementById('challenge-room');
   room.style.display='flex';
+  window.scrollTo(0,0);
   renderChallengeRoom();
 }
 
 function closeChallengeRoom(){
   document.getElementById('challenge-room').style.display='none';
-  // Re-render home to reflect any changes
+  show('app-screen');
+  window.scrollTo(0,0);
   renderChallengeHome();
 }
 
@@ -4578,10 +4591,21 @@ async function createCompetition(){
   await createComp();
 }
 async function createComp(){
-  const name=document.getElementById('comp-name-inp').value.trim()||'다이어트 챌린지';
+  const name=document.getElementById('comp-name-inp').value.trim();
   const errEl=document.getElementById('ch-create-err');
-  if(!name){errEl.textContent='챌린지 이름을 입력하세요.';return;}
+  errEl.textContent='';
+  if(!name){
+    errEl.textContent='⚠️ 챌린지 이름을 입력해주세요.';
+    document.getElementById('comp-name-inp').focus();
+    document.getElementById('ch-create-overlay').scrollTop=0;
+    return;
+  }
   const wgoal=parseFloat(document.getElementById('comp-wgoal').value)||null;
+  if(!wgoal){
+    errEl.textContent='⚠️ 내 목표 체중을 입력해주세요.';
+    document.getElementById('comp-wgoal').focus();
+    return;
+  }
   const code='RB-'+Math.floor(1000+Math.random()*9000);
   const members=[CU.id];
   const memberWgoals={};if(wgoal)memberWgoals[CU.id]=wgoal;
@@ -4599,6 +4623,7 @@ async function createComp(){
   if(error){errEl.textContent='오류: '+error.message;return;}
   activeComp=data;
   hideChallengeCreate();
+  switchTab('competition',2);
   showToast('✅ 챌린지가 만들어졌어요! 코드: '+code);
   // Show invite code
   setTimeout(()=>showInviteCode(code,name),400);
@@ -4657,6 +4682,7 @@ async function joinComp(){
   }
   activeComp=upd;
   hideChallengeJoin();
+  switchTab('competition',2);
   jbtn.disabled=false;jbtn.textContent='참여하기';
   showCS('cs-active');
   await renderCompetition();
