@@ -791,11 +791,14 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
       </button>
     </div>
 
-    <!-- 추천 챌린지 -->
-    <div id="ch-recommended" style="margin-top:24px;">
+    <!-- 추천 챌린지 — Coming Soon -->
+    <div style="margin-top:24px;">
       <div style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;">추천 챌린지</div>
-      <div style="display:flex;flex-direction:column;gap:8px;" id="ch-rec-list"></div>
+      <div style="padding:16px;background:var(--surface2);border:1px solid var(--border);border-radius:12px;text-align:center;color:var(--text3);font-size:12px;">
+        🔜 Coming Soon
+      </div>
     </div>
+    <div id="ch-rec-list" style="display:none;"></div>
 
     <!-- 내 챌린지 목록 (여러 개일 때) -->
     <div id="ch-list-section" style="display:none;margin-top:20px;">
@@ -814,12 +817,14 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
         <div style="font-size:15px;font-weight:700;" id="room-title">챌린지</div>
         <div style="font-size:11px;color:var(--text3);" id="room-subtitle"></div>
       </div>
+      <button onclick="shareRoomCode()" style="background:var(--surface2);border:1px solid var(--border2);color:var(--text2);border-radius:8px;padding:5px 10px;font-size:11px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;margin-right:6px;">🔑 코드</button>
       <button onclick="showQuitConfirm()" style="background:var(--red-bg);border:1px solid var(--red-bd);color:var(--red);border-radius:8px;padding:5px 10px;font-size:11px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">포기</button>
     </div>
 
     <!-- Room Body -->
     <div style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;" id="room-body">
-      <!-- D-Day + Grade Header -->
+
+      <!-- D-Day + Grade + Progress -->
       <div style="padding:16px;background:linear-gradient(135deg,var(--surface),var(--surface2));border-bottom:1px solid var(--border);">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
           <div>
@@ -831,7 +836,6 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
             <div style="font-size:10px;color:var(--text3);">현재 등급</div>
           </div>
         </div>
-        <!-- Progress bar -->
         <div style="background:var(--border);border-radius:4px;height:8px;">
           <div id="room-progress-bar" style="height:8px;background:var(--accent);border-radius:4px;transition:width .5s;width:0%;"></div>
         </div>
@@ -841,23 +845,22 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
         </div>
       </div>
 
-      <!-- Today's Hardness Tracker -->
+      <!-- 오늘의 기록 현황 (기록 탭 바로가기) -->
       <div style="padding:16px;border-bottom:1px solid var(--border);">
-        <div style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:12px;text-transform:uppercase;letter-spacing:.06em;">💥 오늘의 Hardness</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+          <div style="font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;">📋 오늘의 기록 현황</div>
+          <button onclick="closeChallengeRoom();switchTab('routine',0);" style="font-size:11px;color:var(--accent);background:none;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">기록하러 가기 →</button>
+        </div>
         <div id="room-today-checks" style="display:flex;flex-direction:column;gap:8px;"></div>
       </div>
 
-      <!-- Members Status -->
-      <div style="padding:16px;border-bottom:1px solid var(--border);">
+      <!-- 멤버 현황 -->
+      <div style="padding:16px;">
         <div style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:12px;text-transform:uppercase;letter-spacing:.06em;">👥 멤버 현황</div>
         <div id="room-members" style="display:flex;flex-direction:column;gap:10px;"></div>
+        <div id="room-rage-feed" style="display:none;"></div>
       </div>
 
-      <!-- Rage Feed -->
-      <div style="padding:16px;">
-        <div style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:12px;text-transform:uppercase;letter-spacing:.06em;">🔥 Rage Feed</div>
-        <div id="room-rage-feed" style="display:flex;flex-direction:column;gap:8px;"></div>
-      </div>
     </div>
   </div>
   <!-- CHALLENGE CREATE OVERLAY -->
@@ -4189,6 +4192,18 @@ function closeChallengeRoom(){
   renderChallengeHome();
 }
 
+function shareRoomCode(){
+  if(!activeComp)return;
+  const code=activeComp.code||'—';
+  const name=activeComp.name||'챌린지';
+  const msg='"'+name+'" 참여 코드: '+code;
+  if(navigator.share){
+    navigator.share({title:'Stay Hard 챌린지',text:msg}).catch(()=>{});
+  } else {
+    if(navigator.clipboard)navigator.clipboard.writeText(code);
+    showToast('코드 복사됨: '+code);
+  }
+}
 function showQuitConfirm(){
   if(!activeComp)return;
   if(!confirm('"'+activeComp.name+'" 챌린지를 포기할까요?\n\n포기하면 고긴스 점수가 대폭 감점되고\n챌린지는 실패로 기록돼요.\n\nLittle Loser가 되는 거야. 진짜로 포기할 거야?'))return;
@@ -4303,11 +4318,7 @@ async function renderChallengeRoom(){
     </div>`;
   }).join('');
 
-  // Rage Feed
-  const rageMsgs=WIN_MSGS.routine.slice(0,3).concat(RAGE_HEAVY.slice(0,2));
-  document.getElementById('room-rage-feed').innerHTML=rageMsgs.map(m=>`
-    <div style="padding:10px 12px;background:var(--surface2);border-left:3px solid var(--accent);border-radius:0 8px 8px 0;font-size:12px;color:var(--text2);line-height:1.5;">${m}</div>
-  `).join('');
+  // Rage Feed removed — was showing random messages without real data
 }
 
 let _compLastFetch=0;
