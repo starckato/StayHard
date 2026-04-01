@@ -743,21 +743,121 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
   </div>
 
   <!-- ══ COMPETITION ══ -->
-  <div class="view" id="view-competition">
-    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:64px 32px 48px;text-align:center;min-height:60vh;">
-      <div style="font-size:56px;margin-bottom:20px;filter:grayscale(.3);">🏆</div>
-      <div style="font-size:18px;font-weight:700;margin-bottom:10px;letter-spacing:-.3px;">챌린지 기능 준비 중</div>
-      <div style="font-size:13px;color:var(--text2);line-height:1.8;margin-bottom:32px;">최대 6명이 함께 루틴을 기록하고<br>실시간으로 경쟁하는 기능이에요.<br>곧 업데이트될 예정입니다. 🔥</div>
-      <div style="background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius);padding:16px 20px;width:100%;max-width:280px;">
-        <div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-bottom:12px;font-weight:500;">업데이트 예정 기능</div>
-        <div style="display:flex;flex-direction:column;gap:8px;text-align:left;">
-          <div style="display:flex;align-items:center;gap:10px;font-size:12px;color:var(--text2);"><span>👥</span> 최대 6인 그룹 챌린지</div>
-          <div style="display:flex;align-items:center;gap:10px;font-size:12px;color:var(--text2);"><span>📊</span> 실시간 점수 리더보드</div>
-          <div style="display:flex;align-items:center;gap:10px;font-size:12px;color:var(--text2);"><span>🔑</span> 코드 1개로 바로 참여</div>
-          <div style="display:flex;align-items:center;gap:10px;font-size:12px;color:var(--text2);"><span>⚖️</span> 체중 감량 챌린지</div>
+  <div class="view" id="view-competition" style="padding:0 16px 80px;">
+
+    <!-- ACTIVE MODE: 진행 중인 챌린지 카드 -->
+    <div id="ch-active-card" style="display:none;margin-top:16px;">
+      <div style="font-size:10px;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;">⚡ 현재 진행 중</div>
+      <div onclick="openChallengeRoom()" style="background:linear-gradient(135deg,var(--accent),#4f46e5);border-radius:16px;padding:20px;cursor:pointer;touch-action:manipulation;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;">
+          <div>
+            <div style="font-size:17px;font-weight:800;color:#fff;margin-bottom:4px;" id="ch-card-name">챌린지</div>
+            <div style="font-size:11px;color:rgba(255,255,255,.7);" id="ch-card-meta"></div>
+          </div>
+          <div style="background:rgba(255,255,255,.2);border-radius:10px;padding:6px 12px;text-align:center;">
+            <div style="font-size:18px;font-weight:800;color:#fff;" id="ch-card-day">-</div>
+            <div style="font-size:9px;color:rgba(255,255,255,.7);">일차</div>
+          </div>
+        </div>
+        <!-- Progress bar -->
+        <div style="background:rgba(255,255,255,.2);border-radius:4px;height:6px;margin-bottom:8px;">
+          <div id="ch-card-progress" style="height:6px;background:#fff;border-radius:4px;transition:width .5s;width:0%;"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div style="font-size:10px;color:rgba(255,255,255,.7);" id="ch-card-days-left"></div>
+          <div style="font-size:12px;font-weight:600;color:#fff;">입장하기 →</div>
         </div>
       </div>
-      <div style="margin-top:24px;padding:10px 18px;background:var(--red-bg);border:1px solid var(--red-bd);border-radius:20px;font-size:11px;color:var(--red);font-weight:500;">Stay Hard · Coming Soon</div>
+    </div>
+
+    <!-- DISCOVERY MODE: 빈 상태 -->
+    <div id="ch-empty" style="display:none;text-align:center;padding:48px 0 24px;">
+      <div style="font-size:48px;margin-bottom:12px;">💀</div>
+      <div style="font-size:17px;font-weight:700;margin-bottom:6px;">도전 중인 챌린지가 없어</div>
+      <div style="font-size:12px;color:var(--text3);line-height:1.7;">아직 도전 중인 챌린지가 없습니다.<br>Stay Hard!</div>
+    </div>
+
+    <!-- + 새로운 챌린지 만들기 버튼 -->
+    <div id="ch-create-btn" style="margin-top:20px;">
+      <button onclick="showChallengeCreate()" style="width:100%;padding:18px;background:var(--accent);border:none;border-radius:var(--radius);color:#fff;font-size:15px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;display:flex;align-items:center;justify-content:center;gap:8px;">
+        <span style="font-size:20px;">＋</span> 새로운 챌린지 만들기
+      </button>
+    </div>
+
+    <!-- 코드로 참여하기 -->
+    <div style="margin-top:10px;">
+      <button onclick="showChallengeJoin()" style="width:100%;padding:14px;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius);color:var(--text2);font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">
+        🔑 코드로 챌린지 참여
+      </button>
+    </div>
+
+    <!-- 추천 챌린지 -->
+    <div id="ch-recommended" style="margin-top:24px;">
+      <div style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;">추천 챌린지</div>
+      <div style="display:flex;flex-direction:column;gap:8px;" id="ch-rec-list"></div>
+    </div>
+
+    <!-- 내 챌린지 목록 (여러 개일 때) -->
+    <div id="ch-list-section" style="display:none;margin-top:20px;">
+      <div style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;">내 챌린지</div>
+      <div id="ch-list"></div>
+    </div>
+
+  </div>
+
+  <!-- CHALLENGE ROOM OVERLAY -->
+  <div id="challenge-room" style="display:none;position:fixed;inset:0;background:var(--bg);z-index:600;flex-direction:column;max-width:430px;left:50%;transform:translateX(-50%);">
+    <!-- Room Header -->
+    <div style="display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--border);flex-shrink:0;background:var(--surface);">
+      <button onclick="closeChallengeRoom()" style="background:none;border:none;color:var(--text2);font-size:20px;cursor:pointer;padding:0;touch-action:manipulation;">←</button>
+      <div style="flex:1;">
+        <div style="font-size:15px;font-weight:700;" id="room-title">챌린지</div>
+        <div style="font-size:11px;color:var(--text3);" id="room-subtitle"></div>
+      </div>
+      <button onclick="showQuitConfirm()" style="background:var(--red-bg);border:1px solid var(--red-bd);color:var(--red);border-radius:8px;padding:5px 10px;font-size:11px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">포기</button>
+    </div>
+
+    <!-- Room Body -->
+    <div style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;" id="room-body">
+      <!-- D-Day + Grade Header -->
+      <div style="padding:16px;background:linear-gradient(135deg,var(--surface),var(--surface2));border-bottom:1px solid var(--border);">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+          <div>
+            <div style="font-size:28px;font-weight:800;color:var(--accent);" id="room-dday">D-1</div>
+            <div style="font-size:11px;color:var(--text3);" id="room-period"></div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size:22px;font-weight:800;" id="room-grade">—</div>
+            <div style="font-size:10px;color:var(--text3);">현재 등급</div>
+          </div>
+        </div>
+        <!-- Progress bar -->
+        <div style="background:var(--border);border-radius:4px;height:8px;">
+          <div id="room-progress-bar" style="height:8px;background:var(--accent);border-radius:4px;transition:width .5s;width:0%;"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-top:6px;font-size:10px;color:var(--text3);">
+          <span id="room-progress-label">0일 / 0일</span>
+          <span id="room-progress-pct">0%</span>
+        </div>
+      </div>
+
+      <!-- Today's Hardness Tracker -->
+      <div style="padding:16px;border-bottom:1px solid var(--border);">
+        <div style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:12px;text-transform:uppercase;letter-spacing:.06em;">💥 오늘의 Hardness</div>
+        <div id="room-today-checks" style="display:flex;flex-direction:column;gap:8px;"></div>
+      </div>
+
+      <!-- Members Status -->
+      <div style="padding:16px;border-bottom:1px solid var(--border);">
+        <div style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:12px;text-transform:uppercase;letter-spacing:.06em;">👥 멤버 현황</div>
+        <div id="room-members" style="display:flex;flex-direction:column;gap:10px;"></div>
+      </div>
+
+      <!-- Rage Feed -->
+      <div style="padding:16px;">
+        <div style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:12px;text-transform:uppercase;letter-spacing:.06em;">🔥 Rage Feed</div>
+        <div id="room-rage-feed" style="display:flex;flex-direction:column;gap:8px;"></div>
+      </div>
     </div>
   </div>
   <!-- SESSION SUMMARY MODAL -->
@@ -3847,60 +3947,233 @@ function buildWVTable(dates){
 
 // ── COMPETITION ──
 // ── CHALLENGE HOME ──
+const RECOMMENDED_CHALLENGES = [
+  {icon:'🌊',name:'찬물 샤워 30일',desc:'매일 아침 냉수 샤워. 의지력의 시작.', days:30},
+  {icon:'📚',name:'독서 100일 챌린지',desc:'하루 30분. 100일 후 달라진 너.', days:100},
+  {icon:'💪',name:'운동 30일 연속',desc:'단 하루도 빠지지 마. 예외 없어.', days:30},
+  {icon:'🥗',name:'클린 식단 21일',desc:'21일이면 습관이 된다. 해봐.', days:21},
+  {icon:'🌅',name:'새벽 기상 챌린지',desc:'매일 5시 기상. 세상이 달라 보인다.', days:30},
+];
+
 async function renderChallengeHome(){
   if(!CU)return;
-  // Load all competitions user is part of
-  // Load all comps — as creator
-  // Load ALL competitions (waiting + active) so we can filter client-side
-  const{data:allComps_raw}=await sb.from('competitions').select('*').in('status',['waiting','active']);
-  const allComps=(allComps_raw||[]).filter(c=>{
-    // include if creator
+
+  // Fetch user's challenges
+  const{data:allComps_raw}=await sb.from('competitions').select('*').in('status',['waiting','active','failed']);
+  const myComps=(allComps_raw||[]).filter(c=>{
     if(c.creator_id===CU.id)return true;
-    // include if in members array
-    try{
-      const mbs=Array.isArray(c.members)?c.members:JSON.parse(c.members||'[]');
-      return mbs.includes(CU.id);
-    }catch(e){return false;}
+    try{const mbs=Array.isArray(c.members)?c.members:JSON.parse(c.members||'[]');return mbs.includes(CU.id);}
+    catch(e){return false;}
   });
 
-  const listEl=document.getElementById('ch-list');
-  const emptyEl=document.getElementById('ch-empty');
-  if(!listEl||!emptyEl)return;
+  const activeComps=myComps.filter(c=>c.status==='active');
+  const waitingComps=myComps.filter(c=>c.status==='waiting');
+  const hasActive=activeComps.length>0;
 
-  if(allComps.length===0){
-    listEl.innerHTML='';emptyEl.style.display='block';return;
+  // ── ACTIVE CARD ──
+  const activeCard=document.getElementById('ch-active-card');
+  if(hasActive){
+    const c=activeComps[0];
+    activeComp=c;
+    const startDate=c.start_date?new Date(c.start_date):new Date();
+    const dayNum=Math.max(1,Math.floor((new Date()-startDate)/(1000*60*60*24))+1);
+    const pct=Math.min(100,Math.round((dayNum/c.duration_days)*100));
+    const daysLeft=Math.max(0,c.duration_days-dayNum+1);
+    const mbs=Array.isArray(c.members)?c.members:JSON.parse(c.members||'[]');
+    document.getElementById('ch-card-name').textContent=c.name||'챌린지';
+    document.getElementById('ch-card-meta').textContent=`👥 ${mbs.length}명 · ${c.duration_days}일 챌린지`;
+    document.getElementById('ch-card-day').textContent=dayNum;
+    document.getElementById('ch-card-progress').style.width=pct+'%';
+    document.getElementById('ch-card-days-left').textContent=`${pct}% 달성 · ${daysLeft}일 남음`;
+    activeCard.style.display='block';
+  } else {
+    activeCard.style.display='none';
   }
-  emptyEl.style.display='none';
 
-  listEl.innerHTML=allComps.map(c=>{
-    const mbs=Array.isArray(c.members)?c.members:(typeof c.members==='string'?JSON.parse(c.members||'[]'):[]);
-    const isCreator=c.creator_id===CU.id;
-    const statusLabel=c.status==='active'?'진행 중':'대기 중';
-    const statusColor=c.status==='active'?'var(--green)':'var(--amber)';
-    const startDate=c.start_date?new Date(c.start_date):null;
-    const dayNum=startDate?Math.max(1,Math.floor((new Date()-startDate)/(1000*60*60*24))+1):0;
-    return`<div onclick="enterChallenge('${c.id}')" style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:9px;cursor:pointer;transition:border-color .15s;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
-        <div style="font-size:14px;font-weight:600;">${c.name||'챌린지'}</div>
-        <span style="font-size:10px;font-weight:500;padding:2px 8px;border-radius:10px;background:${c.status==='active'?'var(--green-bg)':'var(--amber-bg)'};color:${statusColor};border:1px solid ${c.status==='active'?'var(--green-bd)':'var(--amber-bd)'};">${statusLabel}</span>
-      </div>
-      <div style="display:flex;gap:10px;font-size:11px;color:var(--text2);">
-        <span>👥 ${mbs.length}명</span>
-        <span>⏱ ${c.duration_days}일</span>
-        ${c.status==='active'?`<span>📅 ${dayNum}일차</span>`:`<span>🔑 코드: ${c.code}</span>`}
-        <span style="margin-left:auto;color:${isCreator?'var(--accent)':'var(--text3)'};">${isCreator?'방장':'참여자'}</span>
-      </div>
-    </div>`;
-  }).join('');
+  // ── EMPTY / DISCOVERY ──
+  const emptyEl=document.getElementById('ch-empty');
+  emptyEl.style.display=hasActive?'none':'block';
+
+  // ── MY LIST (waiting comps) ──
+  const listSection=document.getElementById('ch-list-section');
+  const listEl=document.getElementById('ch-list');
+  if(waitingComps.length>0){
+    listSection.style.display='block';
+    listEl.innerHTML=waitingComps.map(c=>{
+      const mbs=Array.isArray(c.members)?c.members:JSON.parse(c.members||'[]');
+      return`<div onclick="enterChallenge('${c.id}')" style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px;cursor:pointer;touch-action:manipulation;">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div style="font-size:13px;font-weight:600;">${c.name||'챌린지'}</div>
+          <span style="font-size:10px;background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-bd);border-radius:10px;padding:2px 8px;">대기 중</span>
+        </div>
+        <div style="font-size:11px;color:var(--text3);margin-top:4px;">👥 ${mbs.length}명 · 🔑 ${c.code}</div>
+      </div>`;
+    }).join('');
+  } else {
+    listSection.style.display='none';
+  }
+
+  // ── RECOMMENDED ──
+  const recList=document.getElementById('ch-rec-list');
+  if(recList){
+    recList.innerHTML=RECOMMENDED_CHALLENGES.map(r=>`
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px;display:flex;align-items:center;gap:12px;cursor:pointer;touch-action:manipulation;" onclick="prefillChallenge('${r.name}',${r.days})">
+        <div style="font-size:24px;">${r.icon}</div>
+        <div style="flex:1;">
+          <div style="font-size:13px;font-weight:600;">${r.name}</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:2px;">${r.desc}</div>
+        </div>
+        <div style="font-size:11px;color:var(--accent);font-weight:500;">${r.days}일 →</div>
+      </div>`).join('');
+  }
+}
+
+function prefillChallenge(name, days){
+  showChallengeCreate();
+  setTimeout(()=>{
+    const nameInp=document.getElementById('comp-name-inp');
+    if(nameInp)nameInp.value=name;
+    // Set duration
+    compDurVal=days;
+    document.querySelectorAll('.dur-btn').forEach(b=>{
+      b.classList.toggle('selected',parseInt(b.textContent)===days||b.textContent===days+'일');
+    });
+  },100);
+}
+
+function showChallengeCreate(){
+  showCS('cs-setup');
+}
+function showChallengeJoin(){
+  showCS('cs-join');
 }
 
 async function enterChallenge(compId){
-  // Load the specific competition
   const{data:comp}=await sb.from('competitions').select('*').eq('id',compId).single();
   if(!comp)return;
   activeComp=comp;
-  showCS('cs-active');
-  renderCompetition();
+  openChallengeRoom();
+}
+
+function openChallengeRoom(){
+  if(!activeComp)return;
+  const room=document.getElementById('challenge-room');
+  room.style.display='flex';
+  renderChallengeRoom();
+}
+
+function closeChallengeRoom(){
+  document.getElementById('challenge-room').style.display='none';
+  // Re-render home to reflect any changes
+  renderChallengeHome();
+}
+
+function showQuitConfirm(){
+  if(!activeComp)return;
+  if(!confirm('"'+activeComp.name+'" 챌린지를 포기할까요?\n\n포기하면 고긴스 점수가 대폭 감점되고\n챌린지는 실패로 기록돼요.\n\nLittle Loser가 되는 거야. 진짜로 포기할 거야?'))return;
+  quitChallenge();
+}
+
+async function quitChallenge(){
+  if(!activeComp||!CU)return;
+  // Mark as failed in DB
+  await sb.from('competitions').update({status:'failed'}).eq('id',activeComp.id);
+  // Goggins score penalty — add a "quit" record
+  log.workouts=log.workouts||[];
+  log.workouts.push({type:'quit_penalty',name:'챌린지 포기',penalty:-20,timestamp:new Date().toISOString()});
+  scheduleSave();
+  activeComp=null;
+  document.getElementById('challenge-room').style.display='none';
+  // Show rage
+  const el=document.getElementById('goggins-rage');
+  document.getElementById('rage-face').textContent='💀';
+  document.getElementById('rage-msg').textContent='Little Loser.\n챌린지를 포기했어.\n네 고긴스 점수에 기록됐어. 영원히.';
+  el.style.display='flex';
+  if(navigator.vibrate)navigator.vibrate([200,100,200,100,400]);
+  renderChallengeHome();
+}
+
+const GRADE_MAP=[
+  {min:90,grade:'S',color:'#fbbf24',icon:'👑'},
+  {min:75,grade:'A',color:'#4ade80',icon:'💪'},
+  {min:60,grade:'B',color:'#60a5fa',icon:'✅'},
+  {min:40,grade:'C',color:'#fb923c',icon:'😐'},
+  {min:0, grade:'F',color:'#f87171',icon:'💀'},
+];
+function getGrade(pct){return GRADE_MAP.find(g=>pct>=g.min)||GRADE_MAP[GRADE_MAP.length-1];}
+
+async function renderChallengeRoom(){
+  const c=activeComp;
+  if(!c)return;
+
+  // Header
+  document.getElementById('room-title').textContent=c.name||'챌린지';
+
+  // D-Day & progress
+  const startDate=c.start_date?new Date(c.start_date):new Date();
+  const dayNum=Math.max(1,Math.floor((new Date()-startDate)/(1000*60*60*24))+1);
+  const daysLeft=Math.max(0,c.duration_days-dayNum+1);
+  const pct=Math.min(100,Math.round((dayNum/c.duration_days)*100));
+  const grade=getGrade(pct);
+
+  document.getElementById('room-subtitle').textContent=`${dayNum}일차 · ${daysLeft}일 남음`;
+  document.getElementById('room-dday').textContent='D+'+dayNum;
+  document.getElementById('room-period').textContent=`${startDate.getMonth()+1}/${startDate.getDate()} 시작 · ${c.duration_days}일 챌린지`;
+  document.getElementById('room-grade').textContent=grade.icon+' '+grade.grade;
+  document.getElementById('room-grade').style.color=grade.color;
+  document.getElementById('room-progress-bar').style.width=pct+'%';
+  document.getElementById('room-progress-bar').style.background=grade.color;
+  document.getElementById('room-progress-label').textContent=`${dayNum}일 / ${c.duration_days}일`;
+  document.getElementById('room-progress-pct').textContent=pct+'%';
+
+  // Today's checks — based on challenge sections
+  const secs=c.sections||{diet:true,workout:true,mandatory:true};
+  const todayChecks=[];
+  if(secs.diet){const done=(log.meals||[]).some(m=>m.type==='green');todayChecks.push({label:'🥗 클린 식단',done});}
+  if(secs.workout){const done=(log.workouts||[]).some(w=>w.type==='session'&&w.status==='done');todayChecks.push({label:'💪 운동 완료',done});}
+  if(secs.mandatory){const total=(log.mandatory||[]).length;const done_count=(log.mandatory||[]).filter(m=>m.done).length;const done=total>0&&done_count===total;todayChecks.push({label:`✅ 필수 루틴 (${done_count}/${total})`,done});}
+
+  document.getElementById('room-today-checks').innerHTML=todayChecks.map(t=>`
+    <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:${t.done?'var(--green-bg)':'var(--surface2)'};border:1px solid ${t.done?'var(--green-bd)':'var(--border)'};border-radius:10px;">
+      <div style="font-size:20px;">${t.done?'✅':'⬜'}</div>
+      <div style="font-size:13px;font-weight:${t.done?'600':'400'};color:${t.done?'var(--green)':'var(--text2)'};">${t.label}</div>
+      ${t.done?'<div style="margin-left:auto;font-size:11px;color:var(--green);font-weight:600;">완료!</div>':''}
+    </div>`).join('');
+
+  // Members
+  const mbs=Array.isArray(c.members)?c.members:JSON.parse(c.members||'[]');
+  const{data:profiles}=await sb.from('profiles').select('id,display_name,username').in('id',mbs);
+  const{data:todayLogs}=await sb.from('daily_logs').select('user_id,meals,workouts,mandatory').in('user_id',mbs).eq('log_date',TODAY);
+
+  document.getElementById('room-members').innerHTML=(profiles||[]).map(p=>{
+    const pLog=todayLogs?.find(l=>l.user_id===p.id)||{};
+    const isMe=p.id===CU.id;
+    const mealDone=(pLog.meals||[]).some(m=>m.type==='green');
+    const workoutDone=(pLog.workouts||[]).some(w=>w.type==='session'&&w.status==='done');
+    const mandTotal=(pLog.mandatory||[]).length;
+    const mandDone=(pLog.mandatory||[]).filter(m=>m.done).length;
+    const score=Math.round(((mealDone?1:0)+(workoutDone?1:0)+(mandTotal>0&&mandDone===mandTotal?1:0))/3*100);
+    const g=getGrade(score);
+    return`<div style="display:flex;align-items:center;gap:12px;padding:10px;background:${isMe?'var(--accent-bg)':'var(--surface2)'};border:1px solid ${isMe?'var(--accent-bd)':'var(--border)'};border-radius:10px;">
+      <div style="width:36px;height:36px;border-radius:50%;background:var(--surface3);display:flex;align-items:center;justify-content:center;font-size:16px;">${isMe?'😎':'👤'}</div>
+      <div style="flex:1;">
+        <div style="font-size:13px;font-weight:600;">${p.display_name||p.username}${isMe?' (나)':''}</div>
+        <div style="font-size:10px;color:var(--text3);margin-top:2px;">
+          ${mealDone?'🥗':'⬜'} ${workoutDone?'💪':'⬜'} ${mandTotal>0?`✅${mandDone}/${mandTotal}`:''}
+        </div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-size:16px;font-weight:800;color:${g.color};">${g.icon} ${g.grade}</div>
+        <div style="font-size:10px;color:var(--text3);">${score}점</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  // Rage Feed
+  const rageMsgs=WIN_MSGS.routine.slice(0,3).concat(RAGE_HEAVY.slice(0,2));
+  document.getElementById('room-rage-feed').innerHTML=rageMsgs.map(m=>`
+    <div style="padding:10px 12px;background:var(--surface2);border-left:3px solid var(--accent);border-radius:0 8px 8px 0;font-size:12px;color:var(--text2);line-height:1.5;">${m}</div>
+  `).join('');
 }
 
 let _compLastFetch=0;
