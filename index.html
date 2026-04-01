@@ -4318,19 +4318,9 @@ function closeChallengeRoom(){
 function shareRoomCode(){
   if(!activeComp)return;
   const code=activeComp.code||'—';
-  const name=activeComp.name||'챌린지';
-  // Show code in alert and copy to clipboard
-  try{
-    if(navigator.clipboard&&navigator.clipboard.writeText){
-      navigator.clipboard.writeText(code).then(()=>showToast('📋 코드 복사됨: '+code)).catch(()=>{});
-    }
-  }catch(e){}
-  alert('🔑 참여 코드
-
-'+code+'
-
-친구에게 이 코드를 공유하세요.
-(클립보드에 복사됐어요)');
+  try{if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(code).catch(()=>{});}catch(e){}
+  showToast('🔑 코드: '+code+' (복사됨)');
+  setTimeout(()=>alert('참여 코드: '+code+'\n\n친구에게 공유하세요!'),100);
 }
 function showQuitConfirm(){
   if(!activeComp)return;
