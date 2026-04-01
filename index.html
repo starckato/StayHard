@@ -62,7 +62,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 /* Win Confetti Overlay */
 #goggins-win{position:fixed;inset:0;z-index:1000;display:none;flex-direction:column;align-items:center;justify-content:center;padding:32px;text-align:center;pointer-events:none;}
 #goggins-win .win-emoji{font-size:64px;animation:winPop .5s cubic-bezier(.17,.67,.35,1.3);}
-#goggins-win .win-msg{font-size:17px;font-weight:700;color:#4ade80;margin-top:12px;animation:winSlide .4s ease;}
+#goggins-win .win-msg{font-size:17px;font-weight:700;color:#4ade80;margin-top:16px;animation:winSlide .4s ease;background:rgba(0,0,0,0.55);border:1px solid rgba(74,222,128,0.3);border-radius:14px;padding:12px 20px;max-width:300px;text-align:center;line-height:1.5;}
 @keyframes winPop{0%{transform:scale(0);}100%{transform:scale(1);}}
 @keyframes winSlide{0%{opacity:0;transform:translateY(10px);}100%{opacity:1;transform:translateY(0);}}
 
@@ -603,20 +603,27 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
       <div class="day-strip" id="day-strip"></div>
       <div class="sel-day-label" id="sel-day-label" onclick="jumpToToday()" title="오늘로 돌아가기"></div>
     </div>
-    <div class="s-card">
-      <div class="s-card-hdr"><div class="s-card-title">식단</div><div class="s-badge" id="diet-badge">0끼 기록</div></div>
-      <div class="s-divider"></div>
-      <div class="wt-strip">
-        <div style="flex:1;">
-          <div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;">공복 체중</div>
-          <div style="display:flex;align-items:flex-end;gap:4px;">
-            <div class="wt-num" id="wt-display">—</div>
-            <div class="wt-unit" id="wt-unit">kg</div>
-          </div>
-          <div style="font-size:10px;color:var(--text3);margin-top:2px;" id="wt-trend">Edit을 눌러 기록하세요</div>
-        </div>
-        <button class="wt-edit" onclick="openModal('weight-modal')">수정</button>
+    <!-- 공복 체중 카드 (독립) -->
+    <div class="s-card" style="margin-bottom:10px;">
+      <div class="s-card-hdr">
+        <div class="s-card-title">⚖️ 공복 체중</div>
+        <button class="wt-edit" onclick="openModal('weight-modal')" style="font-size:13px;padding:7px 14px;min-height:36px;">수정</button>
       </div>
+      <div class="s-divider"></div>
+      <div style="padding:14px 16px 16px;display:flex;align-items:center;gap:12px;">
+        <div style="flex:1;">
+          <div style="display:flex;align-items:flex-end;gap:6px;">
+            <div class="wt-num" id="wt-display" style="font-size:36px;">—</div>
+            <div class="wt-unit" id="wt-unit" style="font-size:16px;color:var(--text3);padding-bottom:4px;">kg</div>
+          </div>
+          <div style="font-size:12px;color:var(--text3);margin-top:4px;" id="wt-trend">수정을 눌러 기록하세요</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 식단 카드 -->
+    <div class="s-card">
+      <div class="s-card-hdr"><div class="s-card-title">🥗 식단</div><div class="s-badge" id="diet-badge">0끼 기록</div></div>
       <div class="s-divider"></div>
       <div class="meal-rows" id="meal-rows"></div>
       <div onclick="openAddMealModal()" style="margin:8px 14px;padding:14px 16px;background:var(--accent-bg);border:1.5px dashed var(--accent-bd);border-radius:12px;display:flex;align-items:center;gap:10px;cursor:pointer;touch-action:manipulation;">
@@ -624,14 +631,14 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
         <span style="font-size:15px;font-weight:600;color:var(--accent);">식사 / 간식 추가</span>
       </div>
       <div class="s-divider"></div>
-      <div class="water-strip">
-        <div style="display:flex;flex-direction:column;align-items:center;gap:2px;flex-shrink:0;">
-          <div style="font-size:12px;color:var(--blue);">💧</div>
-          <div style="font-size:8px;color:var(--text3);letter-spacing:.04em;">물</div>
+      <div style="padding:12px 16px 14px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+          <div style="font-size:16px;">💧</div>
+          <div style="font-size:14px;font-weight:600;color:var(--text);">물</div>
+          <div class="water-val" id="water-val" style="font-size:13px;color:var(--blue);margin-left:auto;"></div>
+          <button onclick="toggleWaterGoalPanel()" id="water-gear-btn" style="background:none;border:none;cursor:pointer;font-size:16px;color:var(--text3);padding:4px;touch-action:manipulation;" title="물 목표 설정">⚙️</button>
         </div>
-        <div class="water-cups" id="water-cups"></div>
-        <div class="water-val" id="water-val"></div>
-        <button onclick="toggleWaterGoalPanel()" id="water-gear-btn" style="background:none;border:none;cursor:pointer;font-size:13px;color:var(--text3);padding:2px 4px;line-height:1;transition:color .15s;" title="물 목표 설정">⚙️</button>
+        <div class="water-cups" id="water-cups" style="display:flex;gap:5px;flex-wrap:wrap;"></div>
       </div>
       <div id="water-goal-panel" style="display:none;padding:10px 14px 14px;border-top:1px solid var(--border);animation:fadeIn .15s ease;">
         <div style="font-size:10px;color:var(--text3);margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em;">하루 물 목표</div>
@@ -845,8 +852,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
         <div style="font-size:15px;font-weight:700;" id="room-title">챌린지</div>
         <div style="font-size:11px;color:var(--text3);" id="room-subtitle"></div>
       </div>
-      <button onclick="shareRoomCode()" style="background:var(--surface2);border:1px solid var(--border2);color:var(--text2);border-radius:8px;padding:5px 10px;font-size:11px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;margin-right:6px;">🔑 코드</button>
-      <button onclick="showQuitConfirm()" style="background:var(--red-bg);border:1px solid var(--red-bd);color:var(--red);border-radius:8px;padding:5px 10px;font-size:11px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">포기</button>
+      <button onclick="shareRoomCode()" style="background:var(--surface2);border:1px solid var(--border2);color:var(--text2);border-radius:8px;padding:7px 14px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">🔑 코드 공유</button>
     </div>
 
     <!-- Room Body -->
@@ -1023,34 +1029,35 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
   </div>
 
   <!-- SESSION SUMMARY MODAL -->
-  <div id="session-summary-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:550;align-items:flex-end;justify-content:center;">
-    <div style="width:100%;max-width:430px;background:var(--surface);border-radius:20px 20px 0 0;max-height:85vh;display:flex;flex-direction:column;overflow:hidden;">
-      <div style="padding:14px 18px 10px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);flex-shrink:0;">
-        <div>
-          <div style="font-size:15px;font-weight:700;">🏋️ 헬스 세션</div>
-          <div style="font-size:11px;color:var(--text3);margin-top:2px;" id="ssm-date"></div>
-        </div>
-        <button onclick="closeSessionSummary()" style="background:none;border:none;color:var(--text3);font-size:20px;cursor:pointer;padding:4px;">✕</button>
+  <div id="session-summary-modal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:var(--bg);z-index:550;flex-direction:column;">
+    <!-- Header -->
+    <div style="display:flex;align-items:center;gap:10px;padding:52px 18px 14px;border-bottom:1px solid var(--border);flex-shrink:0;">
+      <button onclick="closeSessionSummary()" style="background:none;border:none;color:var(--text2);font-size:22px;cursor:pointer;padding:0;touch-action:manipulation;">←</button>
+      <div style="flex:1;">
+        <div style="font-size:17px;font-weight:700;">🏋️ 헬스 세션</div>
+        <div style="font-size:12px;color:var(--text3);margin-top:2px;" id="ssm-date"></div>
       </div>
-      <div style="display:flex;border-bottom:1px solid var(--border);flex-shrink:0;">
-        <div style="flex:1;text-align:center;padding:12px 0;">
-          <div style="font-size:18px;font-weight:800;color:var(--accent);" id="ssm-vol">—</div>
-          <div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-top:2px;">총 볼륨</div>
-        </div>
-        <div style="flex:1;text-align:center;padding:12px 0;border-left:1px solid var(--border);">
-          <div style="font-size:18px;font-weight:800;color:var(--green);" id="ssm-sets">—</div>
-          <div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-top:2px;">완료 세트</div>
-        </div>
-        <div style="flex:1;text-align:center;padding:12px 0;border-left:1px solid var(--border);">
-          <div style="font-size:18px;font-weight:800;color:var(--text);" id="ssm-excount">—</div>
-          <div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-top:2px;">종목 수</div>
-        </div>
+    </div>
+    <!-- Stats -->
+    <div style="display:flex;border-bottom:1px solid var(--border);flex-shrink:0;">
+      <div style="flex:1;text-align:center;padding:16px 0;">
+        <div style="font-size:22px;font-weight:800;color:var(--accent);" id="ssm-vol">—</div>
+        <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-top:3px;">총 볼륨</div>
       </div>
-      <div id="ssm-exercises" style="flex:1;overflow-y:auto;padding:0 18px;"></div>
-      <div style="display:flex;gap:10px;padding:14px 18px 28px;border-top:1px solid var(--border);flex-shrink:0;">
-        <button id="ssm-edit-btn" style="flex:1;padding:13px;background:var(--surface2);border:1px solid var(--border2);border-radius:12px;color:var(--text2);font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;">✎ 세션 수정</button>
-        <button id="ssm-share-btn" style="flex:1;padding:13px;background:var(--accent);border:none;border-radius:12px;color:#fff;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;">📤 공유하기</button>
+      <div style="flex:1;text-align:center;padding:16px 0;border-left:1px solid var(--border);">
+        <div style="font-size:22px;font-weight:800;color:var(--green);" id="ssm-sets">—</div>
+        <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-top:3px;">완료 세트</div>
       </div>
+      <div style="flex:1;text-align:center;padding:16px 0;border-left:1px solid var(--border);">
+        <div style="font-size:22px;font-weight:800;color:var(--text);" id="ssm-excount">—</div>
+        <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-top:3px;">종목 수</div>
+      </div>
+    </div>
+    <!-- Exercise list -->
+    <div id="ssm-exercises" style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 18px;"></div>
+    <!-- Bottom button -->
+    <div style="padding:14px 18px 40px;border-top:1px solid var(--border);flex-shrink:0;">
+      <button id="ssm-edit-btn" style="width:100%;padding:16px;background:var(--accent);border:none;border-radius:14px;color:#fff;font-family:'DM Sans',sans-serif;font-size:17px;font-weight:700;cursor:pointer;touch-action:manipulation;">✎ 세션 수정</button>
     </div>
   </div>
 
@@ -2442,9 +2449,28 @@ function scheduleSave(){
 async function saveLog(key,silent=false){
   if(!CU)return;
   const l=logCache[key];if(!l)return;
-  const p={user_id:CU.id,log_date:key,weight:l.weight,water_cups:l.water_cups,meals:l.meals||[],workouts:l.workouts,mandatory:l.mandatory,targets:l.targets};
-  await sb.from('daily_logs').upsert(p,{onConflict:'user_id,log_date'});
-  if(!silent)updateGogginsHeader();
+  const p={
+    user_id:CU.id,log_date:key,
+    weight:l.weight,water_cups:l.water_cups,
+    meals:l.meals||[],workouts:l.workouts||[],
+    mandatory:l.mandatory||[],targets:l.targets||[]
+  };
+  // Retry up to 3 times on failure
+  let lastErr=null;
+  for(let attempt=0;attempt<3;attempt++){
+    const{error}=await sb.from('daily_logs').upsert(p,{onConflict:'user_id,log_date'});
+    if(!error){
+      if(!silent)updateGogginsHeader();
+      return;
+    }
+    lastErr=error;
+    if(attempt<2)await new Promise(r=>setTimeout(r,1000*(attempt+1)));
+  }
+  // All retries failed — show warning but keep data in memory
+  console.error('saveLog failed after 3 attempts:',lastErr?.message);
+  if(!silent)showToast('⚠️ 저장 실패 — 잠시 후 재시도됩니다');
+  // Queue retry in 10s
+  setTimeout(()=>saveLog(key,true),10000);
 }
 function openShareModal(){
   const session=currentSession.length>0?currentSession:(()=>{
@@ -2478,7 +2504,7 @@ function openShareModal(){
   document.getElementById('sc-vol').textContent=totalVol>=1000?(totalVol/1000).toFixed(1)+'t':totalVol>0?totalVol+'kg':'—';
   document.getElementById('sc-sets').textContent=allSets.length||'—';
   document.getElementById('sc-excount').textContent=exList.length||'—';
-  const m=document.getElementById('share-modal');m.style.display='flex';
+  // share modal removed
 }
 function closeShareModal(){document.getElementById('share-modal').style.display='none';}
 async function captureShareCard(){
@@ -3480,12 +3506,13 @@ function openSessionSummary(i){
   document.getElementById('ssm-excount').textContent=totalEx+'종목';
   document.getElementById('ssm-exercises').innerHTML=exHtml;
   document.getElementById('ssm-edit-btn').onclick=()=>{closeSessionSummary();editGymSession(i);};
-  document.getElementById('ssm-share-btn').onclick=()=>{closeSessionSummary();openShareModal();};
+  document.body.style.overflow='hidden';
   modal.style.display='flex';
 }
 function closeSessionSummary(){
   const m=document.getElementById('session-summary-modal');
   if(m)m.style.display='none';
+  document.body.style.overflow='';
 }
 
 function delWO(i){
@@ -3634,7 +3661,7 @@ let currentGymIdx=-1; // index into log.workouts for the active gym session
 const _origFinishSession=window.finishSession;
 
 // Override finishSession to use new data model
-function finishSession(){
+async function finishSession(){
   if(currentSession.length===0){
     document.getElementById('workout-session-overlay').classList.remove('open');
     return;
@@ -3672,7 +3699,9 @@ function finishSession(){
   }
 
   renderWorkouts();
-  scheduleSave();
+  // Save immediately on session finish — too important to debounce
+  await saveLog(selectedKey,true);
+  showToast('💾 운동 저장됨');
   document.getElementById('workout-session-overlay').classList.remove('open');
   if(wasEditing){showToast('✓ 세션이 수정됐어요');}
   else{
