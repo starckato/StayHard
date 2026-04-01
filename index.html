@@ -845,14 +845,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
         </div>
       </div>
 
-      <!-- 오늘의 기록 현황 (기록 탭 바로가기) -->
-      <div style="padding:16px;border-bottom:1px solid var(--border);">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-          <div style="font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;">📋 오늘의 기록 현황</div>
-          <button onclick="closeChallengeRoom();switchTab('routine',0);" style="font-size:11px;color:var(--accent);background:none;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">기록하러 가기 →</button>
-        </div>
-        <div id="room-today-checks" style="display:flex;flex-direction:column;gap:8px;"></div>
-      </div>
+      <div id="room-today-checks" style="display:none;"></div>
 
       <!-- 멤버 현황 -->
       <div style="padding:16px;">
@@ -4262,63 +4255,86 @@ async function renderChallengeRoom(){
   document.getElementById('room-progress-label').textContent=`${dayNum}일 / ${c.duration_days}일`;
   document.getElementById('room-progress-pct').textContent=pct+'%';
 
-  // Today's checks — based on challenge sections
-  const secs=c.sections||{diet:true,workout:true,mandatory:true};
-  const todayChecks=[];
-  if(secs.diet){const done=(log.meals||[]).some(m=>m.type==='green');todayChecks.push({label:'🥗 클린 식단',done});}
-  if(secs.workout){const done=(log.workouts||[]).some(w=>w.type==='session'&&w.status==='done');todayChecks.push({label:'💪 운동 완료',done});}
-  if(secs.mandatory){const total=(log.mandatory||[]).length;const done_count=(log.mandatory||[]).filter(m=>m.done).length;const done=total>0&&done_count===total;todayChecks.push({label:`✅ 필수 루틴 (${done_count}/${total})`,done});}
-
-  document.getElementById('room-today-checks').innerHTML=todayChecks.map(t=>`
-    <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:${t.done?'var(--green-bg)':'var(--surface2)'};border:1px solid ${t.done?'var(--green-bd)':'var(--border)'};border-radius:10px;">
-      <div style="font-size:20px;">${t.done?'✅':'⬜'}</div>
-      <div style="font-size:13px;font-weight:${t.done?'600':'400'};color:${t.done?'var(--green)':'var(--text2)'};">${t.label}</div>
-      ${t.done?'<div style="margin-left:auto;font-size:11px;color:var(--green);font-weight:600;">완료!</div>':''}
-    </div>`).join('');
-
-  // Members
+  // Members — fetch today's full log
   const mbs=Array.isArray(c.members)?c.members:JSON.parse(c.members||'[]');
   const{data:profiles}=await sb.from('profiles').select('id,display_name,username').in('id',mbs);
-  const{data:todayLogs}=await sb.from('daily_logs').select('user_id,meals,workouts,mandatory').in('user_id',mbs).eq('log_date',TODAY);
+  const{data:todayLogs}=await sb.from('daily_logs').select('user_id,weight,meals,workouts,mandatory').in('user_id',mbs).eq('log_date',TODAY);
+  const memberWgoals=c.member_wgoals||{};
 
   document.getElementById('room-members').innerHTML=(profiles||[]).map(p=>{
     const pLog=todayLogs?.find(l=>l.user_id===p.id)||{};
     const isMe=p.id===CU.id;
+
+    // ── 식단 ──
     const meals=pLog.meals||[];
-    const cleanMeals=meals.filter(m=>m.type==='green').length;
-    const totalMeals=meals.length;
-    const mealScore=totalMeals>0?Math.round((cleanMeals/totalMeals)*100):0;
-    const workoutDone=(pLog.workouts||[]).some(w=>w.type==='session'&&w.status==='done');
-    const workoutScore=workoutDone?100:0;
+    const mealRows=meals.length>0
+      ? meals.map(m=>{
+          const dot=m.type==='green'?'🟢':m.type==='red'?'🔴':'⚪';
+          const timeIcon=m.time==='아침'?'🌅':m.time==='점심'?'☀️':m.time==='저녁'?'🌙':'🍎';
+          return`<div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text2);">${dot} ${timeIcon} ${m.name||m.time||'식사'}</div>`;
+        }).join('')
+      : '<div style="font-size:11px;color:var(--text3);">아직 기록 없음</div>';
+
+    // ── 운동 ──
+    const sessions=(pLog.workouts||[]).filter(w=>w.type==='session');
+    const workoutRows=sessions.length>0
+      ? sessions.map(s=>{
+          const vol=s.totalVolume>=1000?(s.totalVolume/1000).toFixed(1)+'t':s.totalVolume>0?s.totalVolume+'kg':'';
+          const exNames=(s.exercises||[]).map(e=>e.name).slice(0,2).join(', ')+(s.exercises?.length>2?'…':'');
+          return`<div style="font-size:11px;color:var(--text2);">💪 ${exNames||'운동'}${vol?' · '+vol:''}</div>`;
+        }).join('')
+      : '<div style="font-size:11px;color:var(--text3);">아직 기록 없음</div>';
+
+    // ── 루틴 ──
     const mandTotal=(pLog.mandatory||[]).length;
     const mandDone=(pLog.mandatory||[]).filter(m=>m.done).length;
-    // Weighted routine score — 5/5=100, 2/5=40, 1/1=100, 0/5=0
-    const mandScore=mandTotal>0?Math.round((mandDone/mandTotal)*100):0;
-    // Weight goal check
-    const comp=activeComp;
-    const memberWgoals=comp?.member_wgoals||{};
+    const mandRow=mandTotal>0
+      ? `<div style="font-size:11px;color:var(--text2);">✅ 루틴 ${mandDone}/${mandTotal} 완료</div>`
+      : '<div style="font-size:11px;color:var(--text3);">루틴 없음</div>';
+
+    // ── 체중 & 목표 ──
     const wgoal=memberWgoals[p.id];
-    const latestWeight=pLog.weight;
-    const weightBonus=(wgoal&&latestWeight&&latestWeight<=wgoal)?15:0;
-    const score=Math.min(100,Math.round((mealScore*0.35+workoutScore*0.30+mandScore*0.35))+weightBonus);
-    const g=getGrade(score);
-    return`<div style="display:flex;align-items:center;gap:12px;padding:10px;background:${isMe?'var(--accent-bg)':'var(--surface2)'};border:1px solid ${isMe?'var(--accent-bd)':'var(--border)'};border-radius:10px;">
-      <div style="width:36px;height:36px;border-radius:50%;background:var(--surface3);display:flex;align-items:center;justify-content:center;font-size:16px;">${isMe?'😎':'👤'}</div>
-      <div style="flex:1;">
-        <div style="font-size:13px;font-weight:600;">${p.display_name||p.username}${isMe?' (나)':''}</div>
-        <div style="font-size:10px;color:var(--text3);margin-top:2px;">
-          ${totalMeals>0?`🥗${mealScore}%`:'🥗—'} ${workoutDone?'💪✓':'💪—'} ${mandTotal>0?`✅${mandDone}/${mandTotal}`:''}
-          ${wgoal?`<span style="color:${latestWeight&&latestWeight<=wgoal?'var(--green)':'var(--text3)'};">⚖️${latestWeight||'?'}→${wgoal}kg</span>`:''}
-        </div>
+    const currentW=pLog.weight;
+    let weightRow='';
+    if(wgoal){
+      if(currentW){
+        const diff=(currentW-wgoal).toFixed(1);
+        const reached=currentW<=wgoal;
+        const color=reached?'var(--green)':parseFloat(diff)<=2?'var(--amber)':'var(--text2)';
+        const icon=reached?'🎉':'⚖️';
+        weightRow=`<div style="font-size:11px;color:${color};font-weight:${reached?'700':'400'};">${icon} ${currentW}kg → 목표 ${wgoal}kg (${reached?'달성!':diff+'kg 남음'})</div>`;
+      } else {
+        weightRow=`<div style="font-size:11px;color:var(--text3);">⚖️ 목표 ${wgoal}kg · 오늘 체중 미기록</div>`;
+      }
+    }
+
+    return`<div style="background:${isMe?'var(--accent-bg)':'var(--surface2)'};border:1px solid ${isMe?'var(--accent-bd)':'var(--border)'};border-radius:14px;overflow:hidden;margin-bottom:4px;">
+      <!-- 멤버 헤더 -->
+      <div style="display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid ${isMe?'var(--accent-bd)':'var(--border)'};">
+        <div style="width:32px;height:32px;border-radius:50%;background:var(--surface3);display:flex;align-items:center;justify-content:center;font-size:14px;">${isMe?'😎':'👤'}</div>
+        <div style="font-size:13px;font-weight:700;">${p.display_name||p.username}${isMe?' (나)':''}</div>
+        ${weightRow?`<div style="margin-left:auto;font-size:11px;">${currentW&&wgoal&&currentW<=wgoal?'🎉 달성':wgoal?`⚖️ ${wgoal}kg`:''}
+        </div>`:''}
       </div>
-      <div style="text-align:right;">
-        <div style="font-size:16px;font-weight:800;color:${g.color};">${g.icon} ${g.grade}</div>
-        <div style="font-size:10px;color:var(--text3);">${score}점</div>
+      <!-- 체중 목표 -->
+      ${weightRow?`<div style="padding:8px 14px;border-bottom:1px solid ${isMe?'var(--accent-bd)':'var(--border)'};">${weightRow}</div>`:''}
+      <!-- 식단 -->
+      <div style="padding:10px 14px;border-bottom:1px solid ${isMe?'var(--accent-bd)':'var(--border)'};">
+        <div style="font-size:10px;font-weight:600;color:var(--text3);margin-bottom:5px;text-transform:uppercase;letter-spacing:.05em;">식단</div>
+        ${mealRows}
+      </div>
+      <!-- 운동 -->
+      <div style="padding:10px 14px;border-bottom:1px solid ${isMe?'var(--accent-bd)':'var(--border)'};">
+        <div style="font-size:10px;font-weight:600;color:var(--text3);margin-bottom:5px;text-transform:uppercase;letter-spacing:.05em;">운동</div>
+        ${workoutRows}
+      </div>
+      <!-- 루틴 -->
+      <div style="padding:10px 14px;">
+        <div style="font-size:10px;font-weight:600;color:var(--text3);margin-bottom:5px;text-transform:uppercase;letter-spacing:.05em;">루틴</div>
+        ${mandRow}
       </div>
     </div>`;
   }).join('');
-
-  // Rage Feed removed — was showing random messages without real data
 }
 
 let _compLastFetch=0;
