@@ -4561,21 +4561,21 @@ async function renderChallengeRoom(){
         <div style="font-size:10px;font-weight:600;color:var(--text3);margin-bottom:8px;text-transform:uppercase;letter-spacing:.05em;">📊 ${dayNum}일간 달성률</div>
         <div style="display:flex;flex-direction:column;gap:6px;">
           <div style="display:flex;align-items:center;gap:8px;">
-            <div style="font-size:12px;width:36px;color:var(--text2);">🥗 식단</div>
+            <div style="font-size:11px;width:44px;white-space:nowrap;color:var(--text2);">🥗 식단</div>
             <div style="flex:1;height:6px;background:var(--border);border-radius:3px;">
               <div style="height:6px;border-radius:3px;background:${dietPct!==null?'var(--green)':'var(--border2)'};width:${dietPct!==null?dietPct:0}%;transition:width .5s;"></div>
             </div>
             <div style="font-size:11px;color:var(--text2);min-width:32px;text-align:right;">${dietPct!==null?dietPct+'%':'—'}</div>
           </div>
           <div style="display:flex;align-items:center;gap:8px;">
-            <div style="font-size:12px;width:36px;color:var(--text2);">💪 운동</div>
+            <div style="font-size:11px;width:44px;white-space:nowrap;color:var(--text2);">💪 운동</div>
             <div style="flex:1;height:6px;background:var(--border);border-radius:3px;">
               <div style="height:6px;border-radius:3px;background:var(--accent);width:${workoutPct}%;transition:width .5s;"></div>
             </div>
             <div style="font-size:11px;color:var(--text2);min-width:32px;text-align:right;">${workoutPct}%</div>
           </div>
           <div style="display:flex;align-items:center;gap:8px;">
-            <div style="font-size:12px;width:36px;color:var(--text2);">✅ 루틴</div>
+            <div style="font-size:11px;width:44px;white-space:nowrap;color:var(--text2);">✅ 루틴</div>
             <div style="flex:1;height:6px;background:var(--border);border-radius:3px;">
               <div style="height:6px;border-radius:3px;background:var(--amber);width:${routinePct!==null?routinePct:0}%;transition:width .5s;"></div>
             </div>
