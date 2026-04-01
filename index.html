@@ -4418,7 +4418,7 @@ async function renderChallengeRoom(){
   const{data:allLogs}=await sb.from('daily_logs')
     .select('user_id,log_date,weight,meals,workouts,mandatory')
     .in('user_id',mbs).gte('log_date',chStart).lte('log_date',TODAY);
-  const todayLogs=allLogs?.filter(l=>l.log_date===TODAY||l.log_date===TODAY.replace(/-0(\d)/g,'-$1'))||[];
+  const todayLogs=(allLogs||[]).filter(l=>l.user_id&&l.log_date&&l.log_date.slice(0,10)===TODAY.slice(0,10));
   const memberWgoals=c.member_wgoals||{};
 
   // Check if challenge is completed
