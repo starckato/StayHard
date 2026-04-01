@@ -4390,11 +4390,49 @@ async function renderChallengeRoom(){
   document.getElementById('room-progress-label').textContent=`${dayNum}일째 진행 중`;
   document.getElementById('room-progress-pct').textContent=`${daysLeft}일 남음`;
 
-  // Members — fetch today's full log
+  // Members — fetch logs for ENTIRE challenge period
   const mbs=Array.isArray(c.members)?c.members:JSON.parse(c.members||'[]');
   const{data:profiles}=await sb.from('profiles').select('id,display_name,username').in('id',mbs);
-  const{data:todayLogs}=await sb.from('daily_logs').select('user_id,weight,meals,workouts,mandatory').in('user_id',mbs).eq('log_date',TODAY);
+  const chStart=startDate.toISOString().slice(0,10);
+  const chEnd=new Date(startDate.getTime()+c.duration_days*86400000).toISOString().slice(0,10);
+  const{data:allLogs}=await sb.from('daily_logs')
+    .select('user_id,log_date,weight,meals,workouts,mandatory')
+    .in('user_id',mbs).gte('log_date',chStart).lte('log_date',TODAY);
+  const todayLogs=allLogs?.filter(l=>l.log_date===TODAY||l.log_date===TODAY.replace(/-0(\d)/g,'-$1'))||[];
   const memberWgoals=c.member_wgoals||{};
+
+  // Check if challenge is completed
+  const isCompleted=dayNum>c.duration_days;
+
+  // Show completion screen if challenge is over
+  if(isCompleted){
+    document.getElementById('room-members').innerHTML=`
+      <div style="text-align:center;padding:32px 16px;">
+        <div style="font-size:56px;margin-bottom:16px;">🏆</div>
+        <div style="font-size:20px;font-weight:800;margin-bottom:8px;">챌린지 완료!</div>
+        <div style="font-size:14px;color:var(--text2);margin-bottom:24px;">${c.duration_days}일 챌린지가 끝났어요</div>
+        <div style="background:var(--surface2);border-radius:14px;padding:16px;margin-bottom:16px;text-align:left;">
+          <div style="font-size:12px;color:var(--text3);margin-bottom:10px;text-transform:uppercase;letter-spacing:.06em;">최종 결과</div>
+          ${(profiles||[]).map(p2=>{
+            const p2Logs=(allLogs||[]).filter(l=>l.user_id===p2.id);
+            const d2=p2Logs.filter(l=>(l.meals||[]).some(m=>m.type==='green')).length;
+            const w2=p2Logs.filter(l=>(l.workouts||[]).some(w=>w.type==='session'&&w.status==='done')).length;
+            const wg2=(memberWgoals||{})[p2.id];
+            const lastW=p2Logs.slice(-1)[0]?.weight;
+            const name2=p2.display_name&&p2.display_name.trim()?p2.display_name:p2.username;
+            return`<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);">
+              <div style="font-size:16px;">${p2.id===CU.id?'😎':'👤'}</div>
+              <div style="flex:1;">
+                <div style="font-size:13px;font-weight:600;">${name2}</div>
+                <div style="font-size:11px;color:var(--text3);">식단 ${d2}일 · 운동 ${w2}일${wg2?` · 목표 ${wg2}kg${lastW&&lastW<=wg2?' 달성🎉':''}`:''}</div>
+              </div>
+            </div>`;
+          }).join('')}
+        </div>
+        <button onclick="closeChallengeRoom()" style="width:100%;padding:15px;background:var(--accent);border:none;border-radius:12px;color:#fff;font-size:15px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">확인</button>
+      </div>`;
+    return;
+  }
 
   document.getElementById('room-members').innerHTML=(profiles||[]).map(p=>{
     const pLog=todayLogs?.find(l=>l.user_id===p.id)||{};
@@ -4443,12 +4481,33 @@ async function renderChallengeRoom(){
       }
     }
 
-    // Individual score for this member
+    // Period-wide stats
+    const pLogs=(allLogs||[]).filter(l=>l.user_id===p.id);
+    const totalDays=Math.max(1,dayNum);
+
+    // Diet: days with any clean meal / total logged days
+    const dietDays=pLogs.filter(l=>(l.meals||[]).some(m=>m.type==='green')).length;
+    const dietPct=pLogs.length>0?Math.round((dietDays/totalDays)*100):null;
+
+    // Workout: days with completed session
+    const workoutDays=pLogs.filter(l=>(l.workouts||[]).some(w=>w.type==='session'&&w.status==='done')).length;
+    const workoutPct=Math.round((workoutDays/totalDays)*100);
+
+    // Routine: avg completion rate across all days
+    const routineDays=pLogs.filter(l=>(l.mandatory||[]).length>0);
+    const routinePct=routineDays.length>0
+      ?Math.round(routineDays.reduce((a,l)=>{const t=(l.mandatory||[]).length;const d=(l.mandatory||[]).filter(m=>m.done).length;return a+(t>0?d/t:0);},0)/routineDays.length*100)
+      :null;
+
+    // Today's log for detail
     const cleanMeals=meals.filter(m=>m.type==='green').length;
     const mealScore=meals.length>0?Math.round((cleanMeals/meals.length)*100):null;
     const workoutDone=(pLog.workouts||[]).some(w=>w.type==='session'&&w.status==='done');
     const mandScore=mandTotal>0?Math.round((mandDone/mandTotal)*100):null;
     const wgoalReached=wgoal&&currentW&&currentW<=wgoal;
+
+    // Display name — prefer display_name, fallback to username (never show email-derived)
+    const displayName=p.display_name&&p.display_name.trim()?p.display_name:p.username||'유저';
 
     // Update room-grade with MY score when rendering me
     if(isMe){
@@ -4467,7 +4526,7 @@ async function renderChallengeRoom(){
       <div style="display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid ${border};">
         <div style="width:34px;height:34px;border-radius:50%;background:var(--surface3);display:flex;align-items:center;justify-content:center;font-size:16px;">${isMe?'😎':'👤'}</div>
         <div style="flex:1;">
-          <div style="font-size:14px;font-weight:700;">${p.display_name||p.username}${isMe?' <span style="font-size:11px;color:var(--accent);font-weight:500;">(나)</span>':''}</div>
+          <div style="font-size:14px;font-weight:700;">${displayName}${isMe?' <span style="font-size:11px;color:var(--accent);font-weight:500;">(나)</span>':''}</div>
           ${isMe?'<div style="font-size:11px;color:var(--text3);">내 개인 점수</div>':'<div style="font-size:11px;color:var(--text3);">팀원 현황</div>'}
         </div>
         ${wgoalReached?'<div style="font-size:12px;font-weight:700;color:var(--green);">🎉 목표달성!</div>':
@@ -4475,27 +4534,37 @@ async function renderChallengeRoom(){
       </div>
       <!-- 체중 목표 진행 -->
       ${weightRow?`<div style="padding:10px 14px;background:${wgoalReached?'var(--green-bg)':'transparent'};border-bottom:1px solid ${border};">${weightRow}</div>`:''}
-      <!-- 오늘 기록 3가지 -->
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;border-bottom:1px solid ${border};">
-        <div style="padding:10px 8px;text-align:center;border-right:1px solid ${border};">
-          <div style="font-size:10px;color:var(--text3);margin-bottom:4px;">식단</div>
-          <div style="font-size:14px;">${mealScore!==null?(mealScore===100?'🟢':mealScore>=50?'🟡':'🔴'):'—'}</div>
-          <div style="font-size:10px;color:var(--text2);">${mealScore!==null?mealScore+'%':'미기록'}</div>
+      <!-- 챌린지 기간 달성률 -->
+      <div style="padding:12px 14px;border-bottom:1px solid ${border};">
+        <div style="font-size:10px;font-weight:600;color:var(--text3);margin-bottom:8px;text-transform:uppercase;letter-spacing:.05em;">📊 ${dayNum}일간 달성률</div>
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div style="font-size:12px;width:36px;color:var(--text2);">🥗 식단</div>
+            <div style="flex:1;height:6px;background:var(--border);border-radius:3px;">
+              <div style="height:6px;border-radius:3px;background:${dietPct!==null?'var(--green)':'var(--border2)'};width:${dietPct!==null?dietPct:0}%;transition:width .5s;"></div>
+            </div>
+            <div style="font-size:11px;color:var(--text2);min-width:32px;text-align:right;">${dietPct!==null?dietPct+'%':'—'}</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div style="font-size:12px;width:36px;color:var(--text2);">💪 운동</div>
+            <div style="flex:1;height:6px;background:var(--border);border-radius:3px;">
+              <div style="height:6px;border-radius:3px;background:var(--accent);width:${workoutPct}%;transition:width .5s;"></div>
+            </div>
+            <div style="font-size:11px;color:var(--text2);min-width:32px;text-align:right;">${workoutPct}%</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div style="font-size:12px;width:36px;color:var(--text2);">✅ 루틴</div>
+            <div style="flex:1;height:6px;background:var(--border);border-radius:3px;">
+              <div style="height:6px;border-radius:3px;background:var(--amber);width:${routinePct!==null?routinePct:0}%;transition:width .5s;"></div>
+            </div>
+            <div style="font-size:11px;color:var(--text2);min-width:32px;text-align:right;">${routinePct!==null?routinePct+'%':'—'}</div>
+          </div>
         </div>
-        <div style="padding:10px 8px;text-align:center;border-right:1px solid ${border};">
-          <div style="font-size:10px;color:var(--text3);margin-bottom:4px;">운동</div>
-          <div style="font-size:14px;">${workoutDone?'💪':'—'}</div>
-          <div style="font-size:10px;color:var(--text2);">${workoutDone?'완료':'미기록'}</div>
-        </div>
-        <div style="padding:10px 8px;text-align:center;">
-          <div style="font-size:10px;color:var(--text3);margin-bottom:4px;">루틴</div>
-          <div style="font-size:14px;">${mandTotal>0?(mandDone===mandTotal?'✅':mandDone>0?'⬜':'—'):'—'}</div>
-          <div style="font-size:10px;color:var(--text2);">${mandTotal>0?mandDone+'/'+mandTotal:'없음'}</div>
-        </div>
+        <div style="font-size:10px;color:var(--text3);margin-top:6px;">${dietDays}일 클린식단 · ${workoutDays}일 운동 완료</div>
       </div>
-      <!-- 식단 상세 -->
+      <!-- 오늘 요약 -->
       <div style="padding:10px 14px;">
-        <div style="font-size:10px;font-weight:600;color:var(--text3);margin-bottom:5px;">오늘 식단</div>
+        <div style="font-size:10px;font-weight:600;color:var(--text3);margin-bottom:6px;text-transform:uppercase;letter-spacing:.05em;">오늘</div>
         ${mealRows}
       </div>
     </div>`;
