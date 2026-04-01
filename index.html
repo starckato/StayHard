@@ -864,15 +864,26 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
   <div id="ch-create-overlay" style="display:none;position:fixed;inset:0;background:var(--bg);z-index:650;flex-direction:column;max-width:430px;left:50%;transform:translateX(-50%);">
     <div style="display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--border);flex-shrink:0;">
       <button onclick="hideChallengeCreate()" style="background:none;border:none;color:var(--text2);font-size:20px;cursor:pointer;touch-action:manipulation;">←</button>
-      <div style="font-size:15px;font-weight:700;">새 챌린지 만들기</div>
+      <div style="font-size:15px;font-weight:700;">다이어트 챌린지 만들기</div>
     </div>
-    <div style="flex:1;overflow-y:auto;padding:16px;">
+    <div style="flex:1;overflow-y:auto;padding:16px 16px 40px;">
+
+      <!-- Header badge -->
+      <div style="background:linear-gradient(135deg,var(--accent),#4f46e5);border-radius:14px;padding:16px;margin-bottom:20px;text-align:center;">
+        <div style="font-size:32px;margin-bottom:6px;">⚖️</div>
+        <div style="font-size:14px;font-weight:700;color:#fff;">다이어트 챌린지</div>
+        <div style="font-size:11px;color:rgba(255,255,255,.75);margin-top:2px;">식단 · 운동 · 루틴으로 목표 체중 달성</div>
+      </div>
+
+      <!-- 챌린지 이름 -->
       <div class="mfield">
         <label class="mlabel">챌린지 이름</label>
-        <input class="minput" id="comp-name-inp" placeholder="예: 우리의 30일 도전"/>
+        <input class="minput" id="comp-name-inp" placeholder="예: 우리 같이 10kg 빼자"/>
       </div>
+
+      <!-- 기간 -->
       <div class="mfield">
-        <label class="mlabel">기간</label>
+        <label class="mlabel">도전 기간</label>
         <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;">
           <div class="dur-btn" onclick="pickDur(7,this)">7일</div>
           <div class="dur-btn selected" onclick="pickDur(14,this)">14일</div>
@@ -880,21 +891,41 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
           <div class="dur-btn" onclick="pickDur(100,this)">100일</div>
         </div>
       </div>
+
+      <!-- 내 목표 체중 -->
       <div class="mfield">
-        <label class="mlabel">추적 항목</label>
+        <label class="mlabel">내 목표 체중 (kg)</label>
+        <div style="position:relative;">
+          <input class="minput" id="comp-wgoal" type="number" placeholder="예: 68.0" step="0.1" style="padding-right:40px;"/>
+          <span style="position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:13px;color:var(--text3);">kg</span>
+        </div>
+        <div style="font-size:11px;color:var(--text3);margin-top:4px;">참여자마다 목표 체중을 개별로 설정해요</div>
+      </div>
+
+      <!-- 점수 기준 안내 -->
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:16px;">
+        <div style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:10px;text-transform:uppercase;letter-spacing:.06em;">📊 점수 산정 방식</div>
         <div style="display:flex;flex-direction:column;gap:8px;">
-          <div class="sec-toggle on" onclick="toggleSec(this,'diet')" data-key="diet" style="display:flex;align-items:center;justify-content:space-between;padding:12px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;cursor:pointer;touch-action:manipulation;">
-            <span>🥗 식단</span><span class="sec-check">✓</span>
+          <div style="display:flex;align-items:center;gap:10px;font-size:12px;color:var(--text2);">
+            <span style="font-size:16px;">🥗</span>
+            <div><span style="font-weight:600;">클린 식단 완료율</span> — 기간 내 클린식 비율</div>
           </div>
-          <div class="sec-toggle on" onclick="toggleSec(this,'workout')" data-key="workout" style="display:flex;align-items:center;justify-content:space-between;padding:12px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;cursor:pointer;touch-action:manipulation;">
-            <span>💪 운동</span><span class="sec-check">✓</span>
+          <div style="display:flex;align-items:center;gap:10px;font-size:12px;color:var(--text2);">
+            <span style="font-size:16px;">💪</span>
+            <div><span style="font-weight:600;">운동 완료율</span> — 기간 내 운동 기록 일수</div>
           </div>
-          <div class="sec-toggle on" onclick="toggleSec(this,'mandatory')" data-key="mandatory" style="display:flex;align-items:center;justify-content:space-between;padding:12px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;cursor:pointer;touch-action:manipulation;">
-            <span>✅ 필수 루틴</span><span class="sec-check">✓</span>
+          <div style="display:flex;align-items:center;gap:10px;font-size:12px;color:var(--text2);">
+            <span style="font-size:16px;">✅</span>
+            <div><span style="font-weight:600;">루틴 달성률</span> — 완료 루틴 수 ÷ 총 루틴 수 (차등 적용)</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;font-size:12px;color:var(--text2);">
+            <span style="font-size:16px;">⚖️</span>
+            <div><span style="font-weight:600;">목표 체중 달성</span> — 목표 달성 시 보너스 점수</div>
           </div>
         </div>
       </div>
-      <button onclick="createCompetition()" class="mbtn" style="margin-top:16px;touch-action:manipulation;">챌린지 만들기 🔥</button>
+
+      <button onclick="createCompetition()" class="mbtn" style="touch-action:manipulation;">챌린지 만들기 🔥</button>
       <div id="ch-create-err" style="color:var(--red);font-size:12px;margin-top:8px;text-align:center;"></div>
     </div>
   </div>
@@ -912,7 +943,14 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
       </div>
       <div class="mfield">
         <label class="mlabel">참여 코드</label>
-        <input class="minput" id="comp-code-inp" placeholder="예: ABC123" style="text-transform:uppercase;letter-spacing:4px;font-size:20px;font-weight:700;text-align:center;"/>
+        <input class="minput" id="join-code" placeholder="예: 1234" style="text-transform:uppercase;letter-spacing:4px;font-size:20px;font-weight:700;text-align:center;"/>
+      </div>
+      <div class="mfield">
+        <label class="mlabel">내 목표 체중 (kg)</label>
+        <div style="position:relative;">
+          <input class="minput" id="join-wgoal" type="number" placeholder="예: 68.0" step="0.1" style="padding-right:40px;"/>
+          <span style="position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:13px;color:var(--text3);">kg</span>
+        </div>
       </div>
       <button onclick="joinCompetition()" class="mbtn" style="margin-top:16px;touch-action:manipulation;" id="ch-join-btn">참여하기</button>
       <div id="ch-join-err" style="color:var(--red);font-size:12px;margin-top:8px;text-align:center;"></div>
@@ -4231,18 +4269,31 @@ async function renderChallengeRoom(){
   document.getElementById('room-members').innerHTML=(profiles||[]).map(p=>{
     const pLog=todayLogs?.find(l=>l.user_id===p.id)||{};
     const isMe=p.id===CU.id;
-    const mealDone=(pLog.meals||[]).some(m=>m.type==='green');
+    const meals=pLog.meals||[];
+    const cleanMeals=meals.filter(m=>m.type==='green').length;
+    const totalMeals=meals.length;
+    const mealScore=totalMeals>0?Math.round((cleanMeals/totalMeals)*100):0;
     const workoutDone=(pLog.workouts||[]).some(w=>w.type==='session'&&w.status==='done');
+    const workoutScore=workoutDone?100:0;
     const mandTotal=(pLog.mandatory||[]).length;
     const mandDone=(pLog.mandatory||[]).filter(m=>m.done).length;
-    const score=Math.round(((mealDone?1:0)+(workoutDone?1:0)+(mandTotal>0&&mandDone===mandTotal?1:0))/3*100);
+    // Weighted routine score — 5/5=100, 2/5=40, 1/1=100, 0/5=0
+    const mandScore=mandTotal>0?Math.round((mandDone/mandTotal)*100):0;
+    // Weight goal check
+    const comp=activeComp;
+    const memberWgoals=comp?.member_wgoals||{};
+    const wgoal=memberWgoals[p.id];
+    const latestWeight=pLog.weight;
+    const weightBonus=(wgoal&&latestWeight&&latestWeight<=wgoal)?15:0;
+    const score=Math.min(100,Math.round((mealScore*0.35+workoutScore*0.30+mandScore*0.35))+weightBonus);
     const g=getGrade(score);
     return`<div style="display:flex;align-items:center;gap:12px;padding:10px;background:${isMe?'var(--accent-bg)':'var(--surface2)'};border:1px solid ${isMe?'var(--accent-bd)':'var(--border)'};border-radius:10px;">
       <div style="width:36px;height:36px;border-radius:50%;background:var(--surface3);display:flex;align-items:center;justify-content:center;font-size:16px;">${isMe?'😎':'👤'}</div>
       <div style="flex:1;">
         <div style="font-size:13px;font-weight:600;">${p.display_name||p.username}${isMe?' (나)':''}</div>
         <div style="font-size:10px;color:var(--text3);margin-top:2px;">
-          ${mealDone?'🥗':'⬜'} ${workoutDone?'💪':'⬜'} ${mandTotal>0?`✅${mandDone}/${mandTotal}`:''}
+          ${totalMeals>0?`🥗${mealScore}%`:'🥗—'} ${workoutDone?'💪✓':'💪—'} ${mandTotal>0?`✅${mandDone}/${mandTotal}`:''}
+          ${wgoal?`<span style="color:${latestWeight&&latestWeight<=wgoal?'var(--green)':'var(--text3)'};">⚖️${latestWeight||'?'}→${wgoal}kg</span>`:''}
         </div>
       </div>
       <div style="text-align:right;">
@@ -4323,24 +4374,43 @@ function pickCompType(type){
   }
 }
 
+async function createCompetition(){
+  await createComp();
+}
 async function createComp(){
-  const name=document.getElementById('comp-name-inp').value.trim()||'내 챌린지';
+  const name=document.getElementById('comp-name-inp').value.trim()||'다이어트 챌린지';
+  const errEl=document.getElementById('ch-create-err');
+  if(!name){errEl.textContent='챌린지 이름을 입력하세요.';return;}
   const wgoal=parseFloat(document.getElementById('comp-wgoal').value)||null;
   const code='RB-'+Math.floor(1000+Math.random()*9000);
   const members=[CU.id];
   const memberWgoals={};if(wgoal)memberWgoals[CU.id]=wgoal;
-  const{data,error}=await sb.from('competitions').insert({code,name,creator_id:CU.id,duration_days:compDurVal,sections:compSecs,challenge_type:compType,weight_goal:null,member_wgoals:memberWgoals,status:'waiting',max_members:6,members}).select().single();
-  if(error){alert('오류: '+error.message);return;}
+  // Diet challenge — all sections on
+  const sections={diet:true,workout:true,mandatory:true,target:false};
+  const{data,error}=await sb.from('competitions').insert({
+    code,name,creator_id:CU.id,duration_days:compDurVal,
+    sections,challenge_type:'diet',weight_goal:wgoal,
+    member_wgoals:memberWgoals,status:'waiting',max_members:6,members
+  }).select().single();
+  if(error){errEl.textContent='오류: '+error.message;return;}
   activeComp=data;
-  document.getElementById('ci-name').textContent=name;
-  document.getElementById('ci-code').textContent=code;
-  const tags=[];tags.push('⏱ '+compDurVal+'일');if(compSecs.diet)tags.push('🥗 식단');if(compSecs.workout)tags.push('💪 운동');if(compSecs.mandatory)tags.push('✅ 필수 루틴');if(wgoal)tags.push('⚖️ '+wgoal+'kg');
-  document.getElementById('ci-tags').innerHTML=tags.map(t=>`<span class="comp-tag">${t}</span>`).join('');
-  showCS('cs-invite');
+  hideChallengeCreate();
+  showToast('✅ 챌린지가 만들어졌어요! 코드: '+code);
+  // Show invite code
+  setTimeout(()=>showInviteCode(code,name),400);
+  await renderChallengeHome();
 }
 
+function showInviteCode(code,name){
+  const msg='챌린지 "'+name+'"이 만들어졌어요!\n\n참여 코드: '+code+'\n\n친구에게 이 코드를 알려주세요.';
+  if(confirm(msg+'\n\n[코드 복사]를 누르면 클립보드에 복사돼요. 복사할까요?')){
+    if(navigator.clipboard)navigator.clipboard.writeText(code);
+    showToast('코드 복사됨: '+code);
+  }
+}
 function copyCode(){const c=document.getElementById('ci-code').textContent;if(navigator.clipboard)navigator.clipboard.writeText(c);const b=document.getElementById('ci-copy-btn');b.textContent='✓ 복사됨!';setTimeout(()=>b.textContent='코드 복사',2000);}
 
+async function joinCompetition(){await joinComp();}
 async function joinComp(){
   const rawCode=document.getElementById('join-code').value.trim().toUpperCase();
   const code=rawCode.startsWith('RB-')?rawCode:'RB-'+rawCode;
@@ -4369,7 +4439,7 @@ async function joinComp(){
     document.getElementById('join-err').textContent='최대 인원에 도달했습니다.';
     jbtn.disabled=false;jbtn.textContent='참여하기';return;
   }
-  const joinWgoal=parseFloat(document.getElementById('join-wgoal')?.value)||null;
+  const joinWgoal=parseFloat(document.getElementById('join-wgoal')?.value||document.getElementById('comp-wgoal-join')?.value)||null;
   const memberWgoals=comp.member_wgoals||{};
   if(joinWgoal)memberWgoals[CU.id]=joinWgoal;
   const newMembers=[...members,CU.id];
