@@ -619,9 +619,9 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
       </div>
       <div class="s-divider"></div>
       <div class="meal-rows" id="meal-rows"></div>
-      <div onclick="openAddMealModal()" style="margin:8px 14px;padding:11px 14px;background:var(--accent-bg);border:1.5px dashed var(--accent-bd);border-radius:10px;display:flex;align-items:center;gap:8px;cursor:pointer;transition:all .15s;" onmouseover="this.style.background='var(--accent)';this.style.color='#fff'" onmouseout="this.style.background='var(--accent-bg)';this.style.color=''">
-        <span style="font-size:16px;color:var(--accent);">＋</span>
-        <span style="font-size:13px;font-weight:500;color:var(--accent);">식사 / 간식 추가</span>
+      <div onclick="openAddMealModal()" style="margin:8px 14px;padding:14px 16px;background:var(--accent-bg);border:1.5px dashed var(--accent-bd);border-radius:12px;display:flex;align-items:center;gap:10px;cursor:pointer;touch-action:manipulation;">
+        <span style="font-size:18px;color:var(--accent);">＋</span>
+        <span style="font-size:15px;font-weight:600;color:var(--accent);">식사 / 간식 추가</span>
       </div>
       <div class="s-divider"></div>
       <div class="water-strip">
@@ -837,7 +837,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
   </div>
 
   <!-- CHALLENGE ROOM OVERLAY -->
-  <div id="challenge-room" style="display:none;position:fixed;inset:0;background:var(--bg);z-index:600;flex-direction:column;max-width:430px;left:50%;transform:translateX(-50%);">
+  <div id="challenge-room" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;width:100%;background:var(--bg);z-index:600;flex-direction:column;">
     <!-- Room Header -->
     <div style="display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--border);flex-shrink:0;background:var(--surface);">
       <button onclick="closeChallengeRoom()" style="background:none;border:none;color:var(--text2);font-size:20px;cursor:pointer;padding:0;touch-action:manipulation;">←</button>
@@ -919,15 +919,15 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
         </div>
         <div id="dur-custom-panel" style="display:none;margin-top:10px;background:var(--surface2);border-radius:12px;padding:14px;">
           <div style="font-size:13px;color:var(--text2);margin-bottom:10px;">시작일 ~ 종료일 선택</div>
-          <div style="display:flex;gap:8px;align-items:center;">
-            <div style="flex:1;">
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <div>
               <label class="mlabel">시작일</label>
-              <input type="date" id="dur-start" class="minput" style="font-size:14px;" onchange="calcCustomDur()"/>
+              <input type="date" id="dur-start" class="minput" style="font-size:14px;width:100%;box-sizing:border-box;" onchange="calcCustomDur()"/>
             </div>
-            <div style="color:var(--text3);padding-top:20px;">→</div>
-            <div style="flex:1;">
+            <div style="text-align:center;color:var(--text3);font-size:13px;">↓</div>
+            <div>
               <label class="mlabel">종료일</label>
-              <input type="date" id="dur-end" class="minput" style="font-size:14px;" onchange="calcCustomDur()"/>
+              <input type="date" id="dur-end" class="minput" style="font-size:14px;width:100%;box-sizing:border-box;" onchange="calcCustomDur()"/>
             </div>
           </div>
           <div id="dur-custom-result" style="font-size:13px;color:var(--accent);margin-top:8px;text-align:center;"></div>
