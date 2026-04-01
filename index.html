@@ -4287,8 +4287,10 @@ function hideChallengeCreate(){
   document.getElementById('ch-create-overlay').style.display='none';
 }
 function showChallengeJoin(){
-  document.getElementById('comp-code-inp').value='';
-  document.getElementById('ch-join-err').textContent='';
+  const inp=document.getElementById('join-code');
+  if(inp)inp.value='';
+  const err=document.getElementById('ch-join-err');
+  if(err)err.textContent='';
   document.getElementById('ch-join-overlay').style.display='flex';
 }
 function hideChallengeJoin(){
