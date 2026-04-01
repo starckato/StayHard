@@ -885,7 +885,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
     </div>
   </div>
   <!-- CHALLENGE CREATE OVERLAY -->
-  <div id="ch-create-overlay" style="display:none;position:fixed;inset:0;background:var(--bg);z-index:650;flex-direction:column;max-width:430px;left:50%;transform:translateX(-50%);">
+  <div id="ch-create-overlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:var(--bg);z-index:650;flex-direction:column;overflow-y:auto;">
     <div style="display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--border);flex-shrink:0;">
       <button onclick="hideChallengeCreate()" style="background:none;border:none;color:var(--text2);font-size:20px;cursor:pointer;touch-action:manipulation;">←</button>
       <div style="font-size:15px;font-weight:700;">다이어트 챌린지 만들기</div>
@@ -996,7 +996,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
   </div>
 
   <!-- CHALLENGE JOIN OVERLAY -->
-  <div id="ch-join-overlay" style="display:none;position:fixed;inset:0;background:var(--bg);z-index:650;flex-direction:column;max-width:430px;left:50%;transform:translateX(-50%);">
+  <div id="ch-join-overlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:var(--bg);z-index:650;flex-direction:column;overflow-y:auto;">
     <div style="display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--border);flex-shrink:0;">
       <button onclick="hideChallengeJoin()" style="background:none;border:none;color:var(--text2);font-size:20px;cursor:pointer;touch-action:manipulation;">←</button>
       <div style="font-size:15px;font-weight:700;">코드로 참여</div>
