@@ -2643,7 +2643,8 @@ async function _prefetchWeekLogs(){
     if(data){
       data.forEach(d=>{
         const k=normKey(d.log_date);
-        // 실제 데이터 있으면 무조건 덮어쓰기
+        // 실제 데이터 있으면 덮어쓰기 (단, 이미 캐시에 _ptsLog가 있으면 유지)
+        const existing=logCache[k];
         logCache[k]={
           weight:d.weight!==null?parseFloat(d.weight):null,
           water_cups:d.water_cups||0,
@@ -2651,7 +2652,7 @@ async function _prefetchWeekLogs(){
           workouts:d.workouts||[],
           mandatory:d.mandatory||[],
           targets:d.targets||[],
-          _ptsLog:d.points_log||[]
+          _ptsLog:existing?._ptsLog||d.points_log||[]
         };
       });
       // 오늘 날짜면 현재 log도 동기화
@@ -2857,18 +2858,26 @@ async function saveLog(key,silent=false){
   };
   // points_log 컬럼이 있을 때만 포함 (없으면 저장 실패 방지)
   if(l._ptsLog&&l._ptsLog.length>0)p.points_log=l._ptsLog;
-  const{error}=await sb.from('daily_logs').upsert(p,{onConflict:'user_id,log_date'});
-  if(!error){
-    if(!silent)updateGogginsHeader();
-    return;
+  // 5초 타임아웃으로 빠르게 실패 처리
+  const _upsertWithTimeout=()=>Promise.race([
+    sb.from('daily_logs').upsert(p,{onConflict:'user_id,log_date'}),
+    new Promise((_,rej)=>setTimeout(()=>rej(new Error('client timeout')),5000))
+  ]);
+  try{
+    const{error}=await _upsertWithTimeout();
+    if(!error){if(!silent)updateGogginsHeader();return;}
+    throw new Error(error.message);
+  }catch(e){
+    console.warn('saveLog failed, retrying:',e.message);
+    await new Promise(r=>setTimeout(r,2000));
+    try{
+      const{error:err2}=await _upsertWithTimeout();
+      if(!err2){if(!silent)updateGogginsHeader();return;}
+      throw new Error(err2.message);
+    }catch(e2){
+      console.error('saveLog failed:',e2.message);
+    }
   }
-  // 1회 재시도 (3초 후)
-  console.warn('saveLog failed, retrying:',error?.message);
-  await new Promise(r=>setTimeout(r,3000));
-  const{error:err2}=await sb.from('daily_logs').upsert(p,{onConflict:'user_id,log_date'});
-  if(!err2){if(!silent)updateGogginsHeader();return;}
-  console.error('saveLog failed:',err2?.message);
-  if(!silent)showToast('⚠️ 저장 실패');
 }
 function openShareModal(){
   const session=currentSession.length>0?currentSession:(()=>{
@@ -4193,20 +4202,18 @@ async function finishSession(){
   }
 
   renderWorkouts();
-  // UI 먼저 닫기
+  // UI 즉시 닫기 + 팡파레 즉시 (저장 기다리지 않음)
   document.getElementById('workout-session-overlay').classList.remove('open');
-  // DB 저장 성공 후에만 점수 부여 + 수정이면 점수 없음
-  saveLog(selectedKey,true).then(()=>{
-    if(!wasEditing){
-      // 오늘 이미 workout_done 점수 받았는지 확인 (중복 방지)
-      const l=logCache[selectedKey]||log;
-      const alreadyScored=(l._ptsLog||[]).filter(e=>e.type==='workout_done').length>1;
-      if(!alreadyScored)addScore('workout_done');
-      setTimeout(()=>{showWin('workout',5);launchConfetti();checkPerfectDay();},300);
-    } else {
-      showToast('✓ 세션이 수정됐어요');
-    }
-  }).catch(e=>console.warn('workout save failed:',e));
+  if(!wasEditing){
+    const l=logCache[selectedKey]||log;
+    const alreadyScored=(l._ptsLog||[]).filter(e=>e.type==='workout_done').length>=1;
+    if(!alreadyScored)addScore('workout_done');
+    setTimeout(()=>{showWin('workout',5);launchConfetti();checkPerfectDay();},300);
+  } else {
+    showToast('✓ 세션이 수정됐어요');
+  }
+  // 저장은 완전 백그라운드 (UI에 영향 없음)
+  queueSave();
 
   // ── Routine prompt policies ──
   const sessionExercises=currentSession.slice();
@@ -4432,32 +4439,32 @@ function saveMandatory(){
     log.mandatory.push(entry);
   }
   closeModal('mand-modal');renderMandatory();
-  // Save current day first, then propagate defs to all other days
-  saveLog(selectedKey).then(()=>propagateMandatoryDefs(log.mandatory));
+  queueSave();
+  // 루틴 정의 전파는 메모리만 (DB 쓰기 제거)
+  propagateMandatoryDefs(log.mandatory);
 }
 
 // Propagate routine DEFINITIONS to all cached + nearby days
 // Each day gets the definition with done=false (preserving existing done status)
-async function propagateMandatoryDefs(defs){
-  if(!defs||!defs.length||!CU)return;
-  const defsList=defs.map(d=>({name:d.name,days:d.days||[0,1,2,3,4,5,6]}));
-
-  // Update logCache in memory only (safe, no DB write)
+function propagateMandatoryDefs(defs){
+  // 메모리 캐시만 업데이트 — DB는 절대 건드리지 않음
+  // 각 날짜는 해당 날짜 접근 시 자신의 데이터를 유지
+  if(!defs||!defs.length)return;
+  const defsList=defs.map(d=>({name:d.name,days:d.days||[0,1,2,3,4,5,6],_scoreType:d._scoreType}));
+  // 오늘 이후 날짜(미래)의 캐시만 업데이트 — 과거 기록 보존
+  const today=dkey(new Date());
   Object.keys(logCache).forEach(k=>{
-    if(k===selectedKey)return;
+    if(k===selectedKey)return; // 현재 날짜는 이미 저장됨
+    if(k<today)return; // 과거 날짜 건드리지 않음
     const existing=logCache[k];
     if(!existing)return;
+    // 기존 루틴의 done 상태 보존하면서 정의만 업데이트
     const merged=defsList.map(def=>{
       const et=existing.mandatory?.find(m=>m.name===def.name);
-      return{name:def.name,done:et?.done||false,days:def.days};
+      return{name:def.name,done:et?.done||false,fail:et?.fail||false,days:def.days,_scoreType:def._scoreType};
     });
     existing.mandatory=merged;
   });
-
-  // DB: 오늘 날짜 기준 -3~+3일 중 변경이 필요한 row만 순차 업데이트
-  // parallel update 대신 오늘 날짜만 즉시, 나머지는 logCache 메모리만
-  // (나머지 날짜는 해당 날짜 접근 시 자동으로 renderRoutine에서 처리됨)
-  showToast('루틴이 적용됐어요 ✓');
 }
 function toggleDay(el,idx){
   if(newMandDays.includes(idx)){newMandDays=newMandDays.filter(d=>d!==idx);el.classList.remove('on');}
