@@ -2604,24 +2604,24 @@ async function onLogin(user){
 
 // ── SLIDER DOT PREFETCH ──
 async function _prefetchWeekLogs(){
-  // 이번주 월~일 날짜 계산
-  const ws=new Date(now);
-  ws.setDate(now.getDate()-((now.getDay()+6)%7));
-  ws.setHours(0,0,0,0);
+  // 이번주 + 지난주 (최근 14일) 커버
   const keys=[];
-  for(let i=0;i<7;i++){
-    const d=new Date(ws);d.setDate(ws.getDate()+i);
+  for(let i=13;i>=0;i--){
+    const d=new Date(now);d.setDate(now.getDate()-i);
     const k=dkey(d);
     if(!logCache[k]&&k<=TODAY)keys.push(k);
   }
   if(!keys.length)return;
   try{
-    const from=keys[0],to=keys[keys.length-1];
-    const{data}=await sb.from('daily_logs')
+    // YYYY-M-D → YYYY-MM-DD 변환 (Supabase는 ISO 형식 필요)
+    function toISO(k){const p=k.split('-');return p[0]+'-'+p[1].padStart(2,'0')+'-'+p[2].padStart(2,'0');}
+    const from=toISO(keys[0]),to=toISO(keys[keys.length-1]);
+    const{data,error}=await sb.from('daily_logs')
       .select('log_date,weight,water_cups,meals,workouts,mandatory,targets,points_log')
       .eq('user_id',CU.id)
-      .gte('log_date',from.replace(/-(\d)(?=-|$)/g,'-0$1')) // YYYY-M-D → YYYY-MM-DD
-      .lte('log_date',to.replace(/-(\d)(?=-|$)/g,'-0$1'));
+      .gte('log_date',from)
+      .lte('log_date',to);
+    if(error)throw error;
     if(data){
       data.forEach(d=>{
         const k=normKey(d.log_date);
@@ -2637,9 +2637,13 @@ async function _prefetchWeekLogs(){
           };
         }
       });
-      buildSlider(); // dot 업데이트
+      buildSlider();
     }
-  }catch(e){console.warn('prefetch failed:',e);}
+  }catch(e){
+    console.warn('prefetch failed:',e);
+    // 실패해도 30초 후 재시도
+    setTimeout(_prefetchWeekLogs,30000);
+  }
 }
 
 // ── AUTH ACTIONS ──
