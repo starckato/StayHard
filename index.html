@@ -2292,12 +2292,8 @@ const SCORE_EVENTS={
 // 대신 간단하게 logCache에 _ptsLog 추가해서 saveLog에 포함
 
 function getAccumulatedScore(){
-  // 모든 logCache에서 점수 합산
-  let total=0;
-  Object.values(logCache).forEach(l=>{
-    if(l._ptsLog)l._ptsLog.forEach(e=>total+=e.pts);
-  });
-  return total;
+  // profiles.total_score 사용 (logCache 합산 방식 폐기)
+  return CP?.total_score||0;
 }
 
 function getTodayScore(){
@@ -2309,13 +2305,32 @@ function getTodayScore(){
 function addScore(type, note='', ptsOverride=null){
   const ev=SCORE_EVENTS[type];if(!ev)return;
   const pts=ptsOverride!==null?ptsOverride:ev.pts;
+  // 1. 오늘 로그에 기록 (내역용)
   const l=logCache[TODAY]||log;
   if(!l._ptsLog)l._ptsLog=[];
   l._ptsLog.push({type,pts,label:ev.label,icon:ev.icon,ts:new Date().toISOString(),note});
   logCache[TODAY]=l;
+  // 2. CP.total_score에 즉시 반영
+  if(!CP)return;
+  CP.total_score=(CP.total_score||0)+pts;
+  if(CP.total_score<0)CP.total_score=0; // 최소 0점
+  // 3. profiles DB 업데이트 (디바운스 — 연속 addScore 시 1번만)
+  _flushScoreUpdate();
   updateGogginsHeader();
   if(pts>0)showToast(ev.icon+' +'+pts+'점 — '+ev.label);
   else if(pts<0)showToast(ev.icon+' '+pts+'점 — '+ev.label);
+}
+
+// 점수 DB 저장 디바운스 (300ms)
+let _scoreFlushTimer=null;
+function _flushScoreUpdate(){
+  clearTimeout(_scoreFlushTimer);
+  _scoreFlushTimer=setTimeout(async()=>{
+    if(!CU||!CP)return;
+    await sb.from('profiles')
+      .update({total_score:CP.total_score, score_updated_at:new Date().toISOString()})
+      .eq('id',CU.id);
+  },300);
 }
 
 // ── DAILY GOGGINS MOTTOS (10개, 하루씩 순환) ──
@@ -2580,7 +2595,7 @@ async function onLogin(user){
     _compLastFetch=0;
   }
   CU=user;
-  let{data:p}=await sb.from('profiles').select('id,username,display_name,water_goal,onboarded').eq('id',user.id).maybeSingle();
+  let{data:p}=await sb.from('profiles').select('id,username,display_name,water_goal,onboarded,total_score').eq('id',user.id).maybeSingle();
   if(!p){
     const un=user.email.split('@')[0].replace(/[^a-z0-9]/gi,'').toLowerCase();
     const{data:np}=await sb.from('profiles').upsert({id:user.id,username:un,display_name:un},{onConflict:'id'}).select().single();
@@ -2591,6 +2606,7 @@ async function onLogin(user){
     p.display_name=p.username;
     sb.from('profiles').update({display_name:p.username}).eq('id',user.id).then(()=>{});
   }
+  if(p&&p.total_score===null)p.total_score=0;
   CP=p;
   refreshWaterGoalUI();
   document.getElementById('p-name').textContent=p.display_name||p.username;
