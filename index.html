@@ -2144,6 +2144,7 @@ const SCORE_EVENTS={
   diet_clean:       {pts:5,  label:'클린 식단',            icon:'🟢'},
   diet_junk:        {pts:-10,label:'금지 식단',            icon:'🔴'},
   workout_done:     {pts:5,  label:'운동 완료',            icon:'💪'},
+  workout_delete:   {pts:-5, label:'운동 삭제',            icon:'🗑️'},
   workout_delete:   {pts:-5, label:'운동 취소',            icon:'🗑️'},
   routine_done:     {pts:1,  label:'필수 루틴 완료',       icon:'✅'},
   routine_fail:     {pts:-5, label:'필수 루틴 실패',       icon:'❌'},
@@ -2177,16 +2178,16 @@ function getTodayScore(){
   return l._ptsLog.reduce((a,e)=>a+e.pts,0);
 }
 
-function addScore(type, note=''){
+function addScore(type, note='', ptsOverride=null){
   const ev=SCORE_EVENTS[type];if(!ev)return;
+  const pts=ptsOverride!==null?ptsOverride:ev.pts;
   const l=logCache[TODAY]||log;
   if(!l._ptsLog)l._ptsLog=[];
-  l._ptsLog.push({type,pts:ev.pts,label:ev.label,icon:ev.icon,ts:new Date().toISOString(),note});
+  l._ptsLog.push({type,pts,label:ev.label,icon:ev.icon,ts:new Date().toISOString(),note});
   logCache[TODAY]=l;
   updateGogginsHeader();
-  // Toast for positive points
-  if(ev.pts>0)showToast(ev.icon+' +'+ev.pts+'점 — '+ev.label);
-  else if(ev.pts<0)showToast(ev.icon+' '+ev.pts+'점 — '+ev.label);
+  if(pts>0)showToast(ev.icon+' +'+pts+'점 — '+ev.label);
+  else if(pts<0)showToast(ev.icon+' '+pts+'점 — '+ev.label);
 }
 
 // ── DAILY GOGGINS MOTTOS (10개, 하루씩 순환) ──
@@ -2545,7 +2546,12 @@ async function loadLog(key){
   if(logCache[key]){log=logCache[key];return;}
   // Timeout after 8s to prevent infinite loading
   const timeout=new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),8000));
-  let data=null;try{const res=await Promise.race([sb.from('daily_logs').select('*').eq('user_id',CU.id).eq('log_date',key).maybeSingle(),timeout]);data=res.data;}catch(e){console.warn('loadLog timeout/error:',e);log=logCache[key]||{weight:null,water_cups:0,meals:[],workouts:[],mandatory:[],targets:[]};logCache[key]=log;return;}
+  let data=null;try{const res=await Promise.race([sb.from('daily_logs').select('*').eq('user_id',CU.id).eq('log_date',key).maybeSingle(),timeout]);data=res.data;}catch(e){
+    console.warn('loadLog timeout/error:',e);
+    // 에러 시 캐시에 빈 로그 저장하지 않음 — 재시도 가능하게
+    if(logCache[key])log=logCache[key]; // 이미 캐시가 있으면 사용
+    return;
+  }
   if(data){
     let meals=data.meals||[];
     if(!meals.length){
@@ -3238,7 +3244,10 @@ function buildSlider(){
 }
 async function selectDay(d,k){
   selectedDate=d;selectedKey=k;show('loading');
-  try{await loadLog(k);}catch(e){console.warn('loadLog failed',e);}
+  try{await loadLog(k);}catch(e){
+    console.warn('loadLog failed',e);
+    showToast('⚠️ 데이터 불러오기 실패 — 다시 탭해주세요');
+  }
   finally{hide('loading');buildSlider();renderRoutine();}
 }
 async function jumpToToday(){
@@ -3746,6 +3755,10 @@ function delWO(i){
   const w=log.workouts[i];
   const name=w?.type==='gym'?(w.sessionName||'헬스 세션'):w?.name||'운동';
   if(!confirm('"'+name+'"을 삭제할까요?'))return;
+  const delWo=log.workouts[i];
+  if(delWo&&delWo.type==='gym'&&delWo.status==='done'){
+    addScore('workout_delete','',-5); // 운동 완료 점수 반환
+  }
   log.workouts.splice(i,1);renderWorkouts();saveNow();
 }
 
@@ -4084,8 +4097,12 @@ function togMand(i){
       checkPerfectDay();
     },50);
   }
-  // 완료→미완료로 되돌리면 점수 취소
-  if(wasDone) addScore('routine_done_cancel');
+  // 완료→미완료로 되돌리면 받은 점수 정확히 반환
+  if(wasDone){
+    const specialType=log.mandatory[i]._scoreType;
+    const earnedPts=specialType?(SCORE_EVENTS[specialType]?.pts||1):1;
+    addScore('routine_done_cancel','',-(earnedPts)); // 받은만큼 정확히 차감
+  }
 }
 function delMand(i){
   const removed=log.mandatory[i];
@@ -4100,8 +4117,7 @@ function markMandFail(i){
   if(!wasFail){
     addScore('routine_fail'); // -5점
   } else {
-    // 취소 → -5점 되돌리기 (+5)
-    addScore('routine_fail_cancel');
+    addScore('routine_fail_cancel','',5); // -5점 정확히 복구
   }
   renderMandatory();saveNow();
 }
@@ -4226,7 +4242,7 @@ function togTgt(i){
       checkPerfectDay();
     },50);
   } else {
-    addScore('target_done_cancel'); // 완료→미완료 되돌리기
+    addScore('target_done_cancel','',-1); // +1 정확히 반환
   }
 }
 
@@ -4237,7 +4253,7 @@ function markFail(i){
   if(!wasFail){
     addScore('target_fail'); // -3점
   } else {
-    addScore('target_fail_cancel'); // 취소 → +3점 복구
+    addScore('target_fail_cancel','',3); // -3점 정확히 복구
   }
   renderTargets();saveNow();
 }
