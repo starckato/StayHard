@@ -2443,6 +2443,14 @@ function refreshWaterGoalUI(){
 }
 
 async function onLogin(user){
+  // 이전 유저 데이터 완전 초기화 (계정 전환 시 혼재 방지)
+  if(CU && CU.id !== user.id){
+    Object.keys(logCache).forEach(k=>delete logCache[k]);
+    log=emptyLog();
+    userRoutines=[];
+    activeComp=null;
+    _compLastFetch=0;
+  }
   CU=user;
   let{data:p}=await sb.from('profiles').select('id,username,display_name,water_goal,onboarded').eq('id',user.id).maybeSingle();
   if(!p){
@@ -2539,7 +2547,21 @@ async function doSignup(){
   await sb.from('profiles').insert({id:data.user.id,username:un,display_name:name});
   show('loading');await onLogin(data.user);
 }
-async function doSignOut(){await sb.auth.signOut();CU=null;CP=null;activeComp=null;closeModal('profile-modal');hide('app-screen');showAuth();}
+async function doSignOut(){
+  await sb.auth.signOut();
+  // 반드시 모든 상태 초기화 — 다른 계정 로그인 시 데이터 혼재 방지
+  CU=null;CP=null;activeComp=null;
+  // logCache 완전 초기화
+  Object.keys(logCache).forEach(k=>delete logCache[k]);
+  log=emptyLog();
+  selectedDate=new Date();selectedKey=TODAY;
+  sliderOffset=0;
+  userRoutines=[];
+  _compLastFetch=0;
+  closeModal('profile-modal');
+  hide('app-screen');
+  showAuth();
+}
 
 // ── LOAD / SAVE ──
 async function loadLog(key){
