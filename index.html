@@ -877,25 +877,61 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
       <div style="margin-bottom:20px;">
         <div style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;">✅ 점수 획득</div>
         <div style="display:flex;flex-direction:column;gap:4px;">
-          ${[
-            ['⚖️','공복 체중 기록','+1'],
-            ['⬇️','체중 감량 (전날 대비)','+2'],
-            ['🎯','목표 체중 달성','+10'],
-            ['🥗','식단 등록','+1'],
-            ['🟢','클린 식단','+5'],
-            ['💪','운동 완료','+5'],
-            ['✅','필수 루틴 완료','+1'],
-            ['🚿','찬물 샤워','+10'],
-            ['🌅','새벽 6시 기상','+10'],
-            ['📋','오늘의 할일 완료','+1'],
-            ['💀','4x4x48 챌린지','+100'],
-          ].map(([icon,label,pts])=>
-            `<div style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--surface2);border-radius:10px;">
-              <span style="font-size:16px;width:24px;text-align:center;">${icon}</span>
-              <span style="flex:1;font-size:14px;color:var(--text);">${label}</span>
-              <span style="font-size:14px;font-weight:700;color:var(--green);">${pts}</span>
-            </div>`
-          ).join('')}
+          <div style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--surface2);border-radius:10px;">
+            <span style="font-size:16px;width:24px;text-align:center;">⚖️</span>
+            <span style="flex:1;font-size:14px;color:var(--text);">공복 체중 기록</span>
+            <span style="font-size:14px;font-weight:700;color:var(--green);">+1</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--surface2);border-radius:10px;">
+            <span style="font-size:16px;width:24px;text-align:center;">⬇️</span>
+            <span style="flex:1;font-size:14px;color:var(--text);">체중 감량 (전날 대비)</span>
+            <span style="font-size:14px;font-weight:700;color:var(--green);">+2</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--surface2);border-radius:10px;">
+            <span style="font-size:16px;width:24px;text-align:center;">🎯</span>
+            <span style="flex:1;font-size:14px;color:var(--text);">목표 체중 달성</span>
+            <span style="font-size:14px;font-weight:700;color:var(--green);">+10</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--surface2);border-radius:10px;">
+            <span style="font-size:16px;width:24px;text-align:center;">🥗</span>
+            <span style="flex:1;font-size:14px;color:var(--text);">식단 등록</span>
+            <span style="font-size:14px;font-weight:700;color:var(--green);">+1</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--surface2);border-radius:10px;">
+            <span style="font-size:16px;width:24px;text-align:center;">🟢</span>
+            <span style="flex:1;font-size:14px;color:var(--text);">클린 식단</span>
+            <span style="font-size:14px;font-weight:700;color:var(--green);">+5</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--surface2);border-radius:10px;">
+            <span style="font-size:16px;width:24px;text-align:center;">💪</span>
+            <span style="flex:1;font-size:14px;color:var(--text);">운동 완료</span>
+            <span style="font-size:14px;font-weight:700;color:var(--green);">+5</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--surface2);border-radius:10px;">
+            <span style="font-size:16px;width:24px;text-align:center;">✅</span>
+            <span style="flex:1;font-size:14px;color:var(--text);">필수 루틴 완료</span>
+            <span style="font-size:14px;font-weight:700;color:var(--green);">+1</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--surface2);border-radius:10px;">
+            <span style="font-size:16px;width:24px;text-align:center;">🚿</span>
+            <span style="flex:1;font-size:14px;color:var(--text);">찬물 샤워</span>
+            <span style="font-size:14px;font-weight:700;color:var(--green);">+10</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--surface2);border-radius:10px;">
+            <span style="font-size:16px;width:24px;text-align:center;">🌅</span>
+            <span style="flex:1;font-size:14px;color:var(--text);">새벽 6시 기상</span>
+            <span style="font-size:14px;font-weight:700;color:var(--green);">+10</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--surface2);border-radius:10px;">
+            <span style="font-size:16px;width:24px;text-align:center;">📋</span>
+            <span style="flex:1;font-size:14px;color:var(--text);">오늘의 할일 완료</span>
+            <span style="font-size:14px;font-weight:700;color:var(--green);">+1</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--surface2);border-radius:10px;">
+            <span style="font-size:16px;width:24px;text-align:center;">💀</span>
+            <span style="flex:1;font-size:14px;color:var(--text);">4x4x48 챌린지</span>
+            <span style="font-size:14px;font-weight:700;color:var(--green);">+100</span>
+          </div>
         </div>
       </div>
 
@@ -903,18 +939,26 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
       <div style="margin-bottom:20px;">
         <div style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;">❌ 점수 차감</div>
         <div style="display:flex;flex-direction:column;gap:4px;">
-          ${[
-            ['🔴','금지 식단','-10'],
-            ['❌','필수 루틴 실패','-5'],
-            ['💢','오늘의 할일 실패','-3'],
-            ['🗑️','등록한 운동 삭제','-5'],
-          ].map(([icon,label,pts])=>
-            `<div style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--surface2);border-radius:10px;">
-              <span style="font-size:16px;width:24px;text-align:center;">${icon}</span>
-              <span style="flex:1;font-size:14px;color:var(--text);">${label}</span>
-              <span style="font-size:14px;font-weight:700;color:var(--red);">${pts}</span>
-            </div>`
-          ).join('')}
+          <div style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--surface2);border-radius:10px;">
+            <span style="font-size:16px;width:24px;text-align:center;">🔴</span>
+            <span style="flex:1;font-size:14px;color:var(--text);">금지 식단</span>
+            <span style="font-size:14px;font-weight:700;color:var(--red);">-10</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--surface2);border-radius:10px;">
+            <span style="font-size:16px;width:24px;text-align:center;">❌</span>
+            <span style="flex:1;font-size:14px;color:var(--text);">필수 루틴 실패</span>
+            <span style="font-size:14px;font-weight:700;color:var(--red);">-5</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--surface2);border-radius:10px;">
+            <span style="font-size:16px;width:24px;text-align:center;">💢</span>
+            <span style="flex:1;font-size:14px;color:var(--text);">오늘의 할일 실패</span>
+            <span style="font-size:14px;font-weight:700;color:var(--red);">-3</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--surface2);border-radius:10px;">
+            <span style="font-size:16px;width:24px;text-align:center;">🗑️</span>
+            <span style="flex:1;font-size:14px;color:var(--text);">등록한 운동 삭제</span>
+            <span style="font-size:14px;font-weight:700;color:var(--red);">-5</span>
+          </div>
         </div>
       </div>
 
@@ -2574,7 +2618,7 @@ async function _prefetchWeekLogs(){
   try{
     const from=keys[0],to=keys[keys.length-1];
     const{data}=await sb.from('daily_logs')
-      .select('log_date,weight,meals,workouts,mandatory,targets,points_log')
+      .select('log_date,weight,water_cups,meals,workouts,mandatory,targets,points_log')
       .eq('user_id',CU.id)
       .gte('log_date',from.replace(/-(\d)(?=-|$)/g,'-0$1')) // YYYY-M-D → YYYY-MM-DD
       .lte('log_date',to.replace(/-(\d)(?=-|$)/g,'-0$1'));
@@ -2584,7 +2628,7 @@ async function _prefetchWeekLogs(){
         if(!logCache[k]){
           logCache[k]={
             weight:d.weight?parseFloat(d.weight):null,
-            water_cups:0,
+            water_cups:d.water_cups||0,
             meals:d.meals||[],
             workouts:d.workouts||[],
             mandatory:d.mandatory||[],
@@ -2721,28 +2765,33 @@ function scheduleSave(){
   saveTimer=setTimeout(async()=>{ await saveLog(selectedKey,true); },2000);
 }
 let _saving=false;
-let _pendingSave=false;
+let _pendingSaveKey=null; // 저장 중 변경된 key 기록
 async function saveNow(msg){
   clearTimeout(saveTimer);
+  const currentKey=selectedKey;
   if(_saving){
-    _pendingSave=true;
+    _pendingSaveKey=currentKey; // 나중에 재저장할 key 기록
     return;
   }
   _saving=true;
+  _pendingSaveKey=null;
   try{
-    await saveLog(selectedKey,true);
+    await saveLog(currentKey,true);
     if(msg)showToast(msg);
   }catch(e){
     console.warn('saveNow failed:',e);
-    // 실패해도 500ms 후 재시도
-    setTimeout(()=>{_saving=false;saveNow();},500);
+    // 실패 시 500ms 후 재시도
+    _saving=false;
+    setTimeout(()=>saveNow(),500);
     return;
   }finally{
     _saving=false;
   }
-  if(_pendingSave){
-    _pendingSave=false;
-    setTimeout(()=>saveNow(),50);
+  // 저장 중 변경이 있었으면 즉시 재저장
+  if(_pendingSaveKey){
+    const k=_pendingSaveKey;
+    _pendingSaveKey=null;
+    setTimeout(()=>saveLog(k,true),30);
   }
 }
 async function saveLog(key,silent=false){
