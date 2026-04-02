@@ -2241,9 +2241,19 @@ let log=emptyLog();
 
 // ── INIT ──
 async function init(){
-  const{data:{session}}=await sb.auth.getSession();
-  if(session)await onLogin(session.user);
-  else showAuth();
+  try{
+    const timeout=new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),8000));
+    const sessionP=sb.auth.getSession();
+    const{data:{session}}=await Promise.race([sessionP,timeout]);
+    if(session)await onLogin(session.user);
+    else showAuth();
+  }catch(e){
+    console.warn('init error:',e.message);
+    // Supabase timeout — show auth screen anyway
+    hide('loading');
+    showAuth();
+    showToast('⚠️ 서버 연결 지연 — 잠시 후 다시 시도해주세요');
+  }
 }
 function showAuth(){
   hide('loading');
