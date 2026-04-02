@@ -106,7 +106,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 #app-screen{display:none;}
 
 /* HEADER */
-.hdr{padding:52px 20px 12px;display:flex;justify-content:space-between;align-items:center;}
+.hdr{padding:52px 20px 10px;display:flex;flex-direction:column;gap:0;}
 .hdr-left{flex:1;}
 .hdr-title{font-size:22px;font-weight:700;letter-spacing:-.4px;}
 .hdr-sub{font-size:11px;color:var(--text2);margin-top:2px;font-family:'DM Mono',monospace;}
@@ -542,20 +542,25 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 <!-- ══ APP ══ -->
 <div id="app-screen">
   <div class="hdr">
-    <div class="hdr-left">
-      <div class="hdr-title" style="font-size:19px;letter-spacing:.8px;color:#f87171;font-weight:600;">Stay Hard</div>
-      <div class="hdr-sub" id="hdr-sub">로딩 중…</div>
-<div id="daily-motto" style="font-size:10px;color:#f87171;margin-top:3px;font-weight:500;letter-spacing:.02em;font-family:'DM Sans',sans-serif;"></div>
+    <!-- 1행: 타이틀 + 점수배지 + 아바타 -->
+    <div style="display:flex;align-items:center;justify-content:space-between;width:100%;">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div class="hdr-title" style="font-size:19px;letter-spacing:.8px;color:#f87171;font-weight:600;">Stay Hard</div>
+        <div class="goggins-badge" id="goggins-badge" style="cursor:default;">
+          <span class="goggins-flame streak-fire">🔥</span>
+          <span class="goggins-streak" id="hdr-streak">0</span>
+          <span class="goggins-dot"></span>
+          <span class="goggins-score" id="hdr-score">0점</span>
+          <span class="goggins-dot"></span>
+          <span class="goggins-tier" id="hdr-tier">일반인</span>
+        </div>
+      </div>
+      <div class="avatar-btn" onclick="openModal('profile-modal')">👤</div>
     </div>
-    <div class="goggins-badge" id="goggins-badge" style="cursor:default;">
-      <span class="goggins-flame streak-fire">🔥</span>
-      <span class="goggins-streak" id="hdr-streak">0</span>
-      <span class="goggins-dot"></span>
-      <span class="goggins-score" id="hdr-score">0점</span>
-      <span class="goggins-dot"></span>
-      <span class="goggins-tier" id="hdr-tier">일반인</span>
-    </div>
-    <div class="avatar-btn" onclick="openModal('profile-modal')">👤</div>
+    <!-- 2행: 유저명 -->
+    <div class="hdr-sub" id="hdr-sub" style="margin-top:2px;">로딩 중…</div>
+    <!-- 3행: 모토 (전체 너비, 줄바꿈 허용) -->
+    <div id="daily-motto" style="font-size:10px;color:#f87171;margin-top:3px;font-weight:500;letter-spacing:.02em;font-family:'DM Sans',sans-serif;line-height:1.5;"></div>
   </div>
 
   <div class="tab-bar">
@@ -1113,6 +1118,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
   <div id="goggins-win">
     <div class="win-emoji" id="win-emoji">🔥</div>
     <div class="win-msg" id="win-msg"></div>
+    <div id="win-pts" style="display:none;font-size:22px;font-weight:800;color:#4ade80;margin-top:8px;animation:winSlide .4s ease;"></div>
   </div>
 
   <!-- SHARE CARD MODAL -->
@@ -2078,6 +2084,8 @@ const SCORE_EVENTS={
   goggins_4x4x48:   {pts:100,label:'4x4x48 챌린지',       icon:'🏃'},
   routine_done_cancel:{pts:-1, label:'루틴 완료 취소',        icon:'↩️'},
   target_done_cancel: {pts:-1, label:'할일 완료 취소',        icon:'↩️'},
+  routine_fail_cancel:{pts:5,  label:'루틴 실패 취소 (복구)',  icon:'↩️'},
+  target_fail_cancel: {pts:3,  label:'할일 실패 취소 (복구)', icon:'↩️'},
 };
 
 // 점수 로그는 daily_logs.targets에 특수 항목으로 저장 (별도 컬럼 불필요)
@@ -2976,12 +2984,14 @@ function closeRage(){
   document.getElementById('goggins-rage').style.display='none';
 }
 
-function showWin(type){
+function showWin(type, pts=null){
   const msgs=WIN_MSGS[type]||WIN_MSGS.routine;
   const msg=msgs[Math.floor(Math.random()*msgs.length)];
   const el=document.getElementById('goggins-win');
   document.getElementById('win-emoji').textContent=type==='workout'?'💥':type==='task'?'🎯':type==='perfect'?'🏆':'✅';
   document.getElementById('win-msg').textContent=msg;
+  const ptsEl=document.getElementById('win-pts');
+  if(ptsEl){ptsEl.textContent=pts?'+'+pts+'점':'';ptsEl.style.display=pts?'block':'none';}
   el.style.display='flex';
   if(navigator.vibrate)navigator.vibrate(50);
   setTimeout(()=>el.style.display='none', type==='perfect'?5000:3000);
@@ -3008,7 +3018,7 @@ function checkPerfectDay(){
   const scores=calcGogginsScore(log);
   if(scores.total===100){
     setTimeout(()=>{
-      showWin('perfect');
+      showWin('perfect',10);
       launchConfetti();
     },300);
   }
@@ -3438,7 +3448,7 @@ function saveMeal(){
   // Score events
   addScore('diet_log');
   if(foodType==='red'){addScore('diet_junk');setTimeout(showRage,300);}
-  else if(foodType==='green'){addScore('diet_clean');showWin('routine');}
+  else if(foodType==='green'){addScore('diet_clean');showWin('routine',1);}
   saveNow();
   checkPerfectDay();
 }
@@ -3823,7 +3833,7 @@ async function finishSession(){
   document.getElementById('workout-session-overlay').classList.remove('open');
   if(wasEditing){showToast('✓ 세션이 수정됐어요');}
   else{
-    setTimeout(()=>{showWin('workout');launchConfetti();checkPerfectDay();},300);
+    setTimeout(()=>{showWin('workout',5);launchConfetti();checkPerfectDay();},300);
   }
 
   // ── Routine prompt policies ──
@@ -3969,7 +3979,7 @@ function togMand(i){
     setTimeout(()=>{
       const boxes=document.querySelectorAll('.ck-box.done');
       if(boxes[boxes.length-1])bounceEl(boxes[boxes.length-1]);
-      showWin('routine');
+      showWin('routine',1);
       checkPerfectDay();
     },50);
   }
@@ -3985,10 +3995,14 @@ function delMand(i){
 function markMandFail(i){
   const wasFail=log.mandatory[i].fail;
   log.mandatory[i].fail=!wasFail;
-  if(log.mandatory[i].done&&!wasFail){log.mandatory[i].done=false;} // 완료→실패 시 완료 해제
-  if(!wasFail) addScore('routine_fail'); // 실패 처리 → -5
+  if(log.mandatory[i].done&&!wasFail){log.mandatory[i].done=false;}
+  if(!wasFail){
+    addScore('routine_fail'); // -5점
+  } else {
+    // 취소 → -5점 되돌리기 (+5)
+    addScore('routine_fail_cancel');
+  }
   renderMandatory();saveNow();
-  if(!wasFail) showToast('❌ -5점 — 루틴 실패 기록됨');
 }
 function openAddMandatoryModal(){
   mandEditIdx2=null;newMandDays=[0,1,2,3,4,5,6];
@@ -4108,7 +4122,7 @@ function togTgt(i){
     setTimeout(()=>{
       const btns=document.querySelectorAll('.tgt-btn.done');
       if(btns[btns.length-1])bounceEl(btns[btns.length-1]);
-      showWin('task');
+      showWin('task',1);
       checkPerfectDay();
     },50);
   } else {
@@ -4120,7 +4134,11 @@ function togTgt(i){
 function markFail(i){
   const wasFail=log.targets[i].st==='fail';
   log.targets[i].st=wasFail?'':'fail';
-  if(!wasFail) addScore('target_fail'); // 실패 처리 → -3
+  if(!wasFail){
+    addScore('target_fail'); // -3점
+  } else {
+    addScore('target_fail_cancel'); // 취소 → +3점 복구
+  }
   renderTargets();saveNow();
 }
 
