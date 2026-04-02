@@ -544,8 +544,8 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
   <div class="hdr">
     <!-- 1행: 타이틀 + 점수배지 + 아바타 -->
     <div style="display:flex;align-items:center;justify-content:space-between;width:100%;">
-      <div style="display:flex;align-items:center;gap:10px;">
-        <div class="hdr-title" style="font-size:19px;letter-spacing:.8px;color:#f87171;font-weight:600;">Stay Hard</div>
+      <div class="hdr-title" style="font-size:19px;letter-spacing:.8px;color:#f87171;font-weight:600;">Stay Hard</div>
+      <div style="display:flex;align-items:center;gap:8px;">
         <div class="goggins-badge" id="goggins-badge" style="cursor:default;">
           <span class="goggins-flame streak-fire">🔥</span>
           <span class="goggins-streak" id="hdr-streak">0</span>
@@ -554,8 +554,8 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
           <span class="goggins-dot"></span>
           <span class="goggins-tier" id="hdr-tier">일반인</span>
         </div>
+        <div class="avatar-btn" onclick="openModal('profile-modal')">👤</div>
       </div>
-      <div class="avatar-btn" onclick="openModal('profile-modal')">👤</div>
     </div>
     <!-- 2행: 유저명 -->
     <div class="hdr-sub" id="hdr-sub" style="margin-top:2px;">로딩 중…</div>
@@ -2511,9 +2511,10 @@ async function saveLog(key,silent=false){
     user_id:CU.id,log_date:key,
     weight:l.weight,water_cups:l.water_cups,
     meals:l.meals||[],workouts:l.workouts||[],
-    mandatory:l.mandatory||[],targets:l.targets||[],
-    points_log:l._ptsLog||[]
+    mandatory:l.mandatory||[],targets:l.targets||[]
   };
+  // points_log 컬럼이 있을 때만 포함 (없으면 저장 실패 방지)
+  if(l._ptsLog&&l._ptsLog.length>0)p.points_log=l._ptsLog;
   // Retry up to 3 times on failure
   let lastErr=null;
   for(let attempt=0;attempt<3;attempt++){
