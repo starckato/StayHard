@@ -2470,11 +2470,13 @@ async function onLogin(user){
   document.getElementById('p-username').textContent='@'+(p.username||'');
   document.getElementById('hdr-sub').textContent=(p.display_name||p.username)+'의 보드';
   showDailyMotto();
-  // 병렬 로딩 — 3개 동시에 (순차 대비 ~60% 빠름)
+  // 병렬 로딩 — 오늘 + 루틴 + 챌린지 동시
   await Promise.all([loadLog(TODAY), loadRoutines(), loadActiveCompetition()]);
   showApp();
   buildSlider();
   renderRoutine();
+  // 슬라이더 dot 표시를 위해 이번주 날짜 백그라운드 fetch
+  _prefetchWeekLogs();
   updateGogginsHeader();
   // Show onboarding for new users
   if(!p.onboarded){
@@ -2483,6 +2485,46 @@ async function onLogin(user){
     // Check yesterday's completion and show reminder banner
     setTimeout(checkYesterdayReminder, 800);
   }
+}
+
+// ── SLIDER DOT PREFETCH ──
+async function _prefetchWeekLogs(){
+  // 이번주 월~일 날짜 계산
+  const ws=new Date(now);
+  ws.setDate(now.getDate()-((now.getDay()+6)%7));
+  ws.setHours(0,0,0,0);
+  const keys=[];
+  for(let i=0;i<7;i++){
+    const d=new Date(ws);d.setDate(ws.getDate()+i);
+    const k=dkey(d);
+    if(!logCache[k]&&k<=TODAY)keys.push(k);
+  }
+  if(!keys.length)return;
+  try{
+    const from=keys[0],to=keys[keys.length-1];
+    const{data}=await sb.from('daily_logs')
+      .select('log_date,weight,meals,workouts,mandatory,targets,points_log')
+      .eq('user_id',CU.id)
+      .gte('log_date',from.replace(/-(\d)(?=-|$)/g,'-0$1')) // YYYY-M-D → YYYY-MM-DD
+      .lte('log_date',to.replace(/-(\d)(?=-|$)/g,'-0$1'));
+    if(data){
+      data.forEach(d=>{
+        const k=normKey(d.log_date);
+        if(!logCache[k]){
+          logCache[k]={
+            weight:d.weight?parseFloat(d.weight):null,
+            water_cups:0,
+            meals:d.meals||[],
+            workouts:d.workouts||[],
+            mandatory:d.mandatory||[],
+            targets:d.targets||[],
+            _ptsLog:d.points_log||[]
+          };
+        }
+      });
+      buildSlider(); // dot 업데이트
+    }
+  }catch(e){console.warn('prefetch failed:',e);}
 }
 
 // ── AUTH ACTIONS ──
