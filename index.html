@@ -2586,15 +2586,28 @@ function scheduleSave(){
   saveTimer=setTimeout(async()=>{ await saveLog(selectedKey,true); },2000);
 }
 let _saving=false;
+let _pendingSave=false;
 async function saveNow(msg){
   clearTimeout(saveTimer);
-  if(_saving)return; // 저장 중이면 중복 방지
+  if(_saving){
+    _pendingSave=true;
+    return;
+  }
   _saving=true;
   try{
     await saveLog(selectedKey,true);
     if(msg)showToast(msg);
+  }catch(e){
+    console.warn('saveNow failed:',e);
+    // 실패해도 500ms 후 재시도
+    setTimeout(()=>{_saving=false;saveNow();},500);
+    return;
   }finally{
     _saving=false;
+  }
+  if(_pendingSave){
+    _pendingSave=false;
+    setTimeout(()=>saveNow(),50);
   }
 }
 async function saveLog(key,silent=false){
