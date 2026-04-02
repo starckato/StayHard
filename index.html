@@ -1371,9 +1371,68 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
   </div>
 </div>
 <div class="modal-overlay" id="mand-modal">
-  <div class="modal">
+  <div class="modal" style="max-height:88vh;overflow-y:auto;">
     <div class="mhandle"></div>
     <div class="mtitle" id="mand-modal-title">필수 루틴 추가</div>
+
+    <!-- 추천 루틴 -->
+    <div id="mand-recommend-section">
+      <div style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;">⚡ 추천 루틴</div>
+      <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:16px;">
+
+        <div onclick="pickRecommendedRoutine('🚿 찬물 샤워','cold_shower')" style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:12px;cursor:pointer;touch-action:manipulation;">
+          <div style="font-size:22px;">🚿</div>
+          <div style="flex:1;">
+            <div style="font-size:14px;font-weight:600;">찬물 샤워</div>
+            <div style="font-size:11px;color:var(--text3);">매일 아침 냉수 샤워. 의지력의 시작.</div>
+          </div>
+          <div style="font-size:11px;font-weight:700;color:#fbbf24;background:rgba(251,191,36,.12);border:1px solid rgba(251,191,36,.3);border-radius:8px;padding:3px 8px;">+10점</div>
+        </div>
+
+        <div onclick="pickRecommendedRoutine('🌅 새벽 6시 기상','early_rise')" style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:12px;cursor:pointer;touch-action:manipulation;">
+          <div style="font-size:22px;">🌅</div>
+          <div style="flex:1;">
+            <div style="font-size:14px;font-weight:600;">새벽 6시 기상</div>
+            <div style="font-size:11px;color:var(--text3);">새벽 6시 전 기상. 세상이 달라 보인다.</div>
+          </div>
+          <div style="font-size:11px;font-weight:700;color:#fbbf24;background:rgba(251,191,36,.12);border:1px solid rgba(251,191,36,.3);border-radius:8px;padding:3px 8px;">+10점</div>
+        </div>
+
+        <div onclick="pickRecommendedRoutine('🏃 4x4x48 챌린지','goggins_4x4x48')" style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:rgba(168,85,247,.08);border:1px solid rgba(168,85,247,.3);border-radius:12px;cursor:pointer;touch-action:manipulation;">
+          <div style="font-size:22px;">💀</div>
+          <div style="flex:1;">
+            <div style="font-size:14px;font-weight:700;color:#a855f7;">고긴스 4x4x48 챌린지</div>
+            <div style="font-size:11px;color:var(--text3);">48시간 동안 4시간마다 6.4km. 총 77km.</div>
+          </div>
+          <div style="font-size:11px;font-weight:700;color:#a855f7;background:rgba(168,85,247,.12);border:1px solid rgba(168,85,247,.3);border-radius:8px;padding:3px 8px;">+100점</div>
+        </div>
+
+        <div onclick="pickRecommendedRoutine('📚 독서 30분',null)" style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:12px;cursor:pointer;touch-action:manipulation;">
+          <div style="font-size:22px;">📚</div>
+          <div style="flex:1;">
+            <div style="font-size:14px;font-weight:600;">독서 30분</div>
+            <div style="font-size:11px;color:var(--text3);">하루 30분 독서. 생각이 넓어진다.</div>
+          </div>
+          <div style="font-size:11px;color:var(--text3);">+1점</div>
+        </div>
+
+        <div onclick="pickRecommendedRoutine('🧘 명상 10분',null)" style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:12px;cursor:pointer;touch-action:manipulation;">
+          <div style="font-size:22px;">🧘</div>
+          <div style="flex:1;">
+            <div style="font-size:14px;font-weight:600;">명상 10분</div>
+            <div style="font-size:11px;color:var(--text3);">하루 10분 마음 비우기.</div>
+          </div>
+          <div style="font-size:11px;color:var(--text3);">+1점</div>
+        </div>
+
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+        <div style="flex:1;height:1px;background:var(--border);"></div>
+        <div style="font-size:11px;color:var(--text3);">직접 입력</div>
+        <div style="flex:1;height:1px;background:var(--border);"></div>
+      </div>
+    </div>
+
     <div class="mfield"><label class="mlabel">루틴 이름</label><input class="minput" id="mand-inp" placeholder="예: 🐱 고양이 화장실"/></div>
     <div class="mfield"><label class="mlabel">반복 요일</label>
       <div class="days-row" id="days-row">
@@ -3976,11 +4035,14 @@ function togMand(i){
   if(wasFail&&!wasDone){log.mandatory[i].fail=false;} // 실패→완료 시 실패 해제
   renderMandatory();saveNow();
   if(!wasDone){
-    addScore('routine_done');
+    const specialType=log.mandatory[i]._scoreType;
+    if(specialType){addScore(specialType);}
+    else{addScore('routine_done');}
+    const earnedPts=specialType?(SCORE_EVENTS[specialType]?.pts||1):1;
     setTimeout(()=>{
       const boxes=document.querySelectorAll('.ck-box.done');
       if(boxes[boxes.length-1])bounceEl(boxes[boxes.length-1]);
-      showWin('routine',1);
+      showWin('routine',earnedPts);
       checkPerfectDay();
     },50);
   }
@@ -4010,13 +4072,30 @@ function openAddMandatoryModal(){
   document.getElementById('mand-inp').value='';
   document.getElementById('mand-modal-title').textContent='필수 루틴 추가';
   document.getElementById('mand-save-btn').textContent='루틴 추가';
+  // 추천 섹션 보이기 (수정 모드일 땐 숨김)
+  const recSec=document.getElementById('mand-recommend-section');
+  if(recSec)recSec.style.display='block';
   refreshDayPills();openModal('mand-modal');
+}
+
+// 추천 루틴 선택 → 이름 자동 입력 후 커서 이동
+let _pendingScoreType=null;
+function pickRecommendedRoutine(name, scoreType){
+  document.getElementById('mand-inp').value=name;
+  document.getElementById('mand-inp').focus();
+  _pendingScoreType=scoreType; // 저장 시 특별 점수 부여
+  // 추천 섹션 접기
+  const recSec=document.getElementById('mand-recommend-section');
+  if(recSec)recSec.style.display='none';
 }
 function editMandatory(i){
   mandEditIdx2=i;const t=log.mandatory[i];newMandDays=[...(t.days||[0,1,2,3,4,5,6])];
   document.getElementById('mand-inp').value=t.name;
   document.getElementById('mand-modal-title').textContent='루틴 수정';
   document.getElementById('mand-save-btn').textContent='변경 저장';
+  const recSec=document.getElementById('mand-recommend-section');
+  if(recSec)recSec.style.display='none'; // 수정 모드엔 추천 숨김
+  _pendingScoreType=null;
   refreshDayPills();openModal('mand-modal');
 }
 function refreshDayPills(){document.querySelectorAll('#days-row .dpill').forEach((el,idx)=>el.classList.toggle('on',newMandDays.includes(idx)));}
