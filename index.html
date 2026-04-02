@@ -2213,7 +2213,7 @@ async function carryOverTasks(){
     await saveLog(yk,true);
   }
   
-  scheduleSave();
+  await saveLog(selectedKey,true);
   renderTargets();
   dismissCarryOver();
   showToast(`✅ ${_yesterdayUndoneTasks.length}개 할일을 오늘로 옮겼어요`);
@@ -2435,18 +2435,14 @@ async function loadRoutineDefinitions(){
   return[];
 }
 function scheduleSave(){
+  // Only for water (minor, frequent taps). All critical actions use saveNow().
   clearTimeout(saveTimer);
-  saveTimer=setTimeout(async()=>{
-    await saveLog(selectedKey,true);
-    showToast('저장됨 ✓');
-    if(log.mandatory&&log.mandatory.length>0){
-      Object.keys(logCache).forEach(k=>{
-        if(k!==selectedKey&&logCache[k]&&(!logCache[k].mandatory||logCache[k].mandatory.length===0)){
-          logCache[k].mandatory=log.mandatory.map(r=>({name:r.name,done:false,days:r.days||[0,1,2,3,4,5,6]}));
-        }
-      });
-    }
-  },900);
+  saveTimer=setTimeout(async()=>{ await saveLog(selectedKey,true); },2000);
+}
+async function saveNow(msg){
+  clearTimeout(saveTimer);
+  await saveLog(selectedKey,true);
+  if(msg)showToast(msg);
 }
 async function saveLog(key,silent=false){
   if(!CU)return;
@@ -3109,7 +3105,7 @@ function renderWeight(){
   if(log.weight!==null){wd.textContent=parseFloat(log.weight).toFixed(1);wd.style.color='var(--text)';wu.style.display='block';tr.textContent='기록됨';tr.style.color='var(--green)';}
   else{wd.textContent='—';wd.style.color='var(--text3)';wu.style.display='none';tr.textContent='수정을 눌러 기록하세요';tr.style.color='var(--text3)';}
 }
-function saveWeight(){const v=parseFloat(document.getElementById('wt-inp').value);if(isNaN(v))return;log.weight=v;closeModal('weight-modal');renderWeight();scheduleSave();}
+function saveWeight(){const v=parseFloat(document.getElementById('wt-inp').value);if(isNaN(v))return;log.weight=v;closeModal('weight-modal');renderWeight();saveNow('⚖️ 체중 저장됨');}
 
 function renderMeals(){
   const meals=log.meals||[];
@@ -3134,7 +3130,7 @@ function renderMeals(){
     }).join('');
 }
 
-function deleteMeal(i){log.meals.splice(i,1);renderMeals();scheduleSave();}
+function deleteMeal(i){log.meals.splice(i,1);renderMeals();saveNow();}
 
 let mealIdx=null,foodType=null,photoData=null,mealTime=null,mealCategory=null;
 
@@ -3372,7 +3368,7 @@ function saveMeal(){
   log=logCache[selectedKey];
   if(mealIdx===null){log.meals.push(entry);}
   else{log.meals[mealIdx]=entry;}
-  closeModal('meal-modal');renderMeals();scheduleSave();
+  closeModal('meal-modal');renderMeals();saveNow('🥗 식단 저장됨');
   if(foodType==='red'){setTimeout(showRage,300);}
   else if(foodType==='green'){showWin('routine');}
   checkPerfectDay();
@@ -3573,7 +3569,7 @@ function delWO(i){
   const w=log.workouts[i];
   const name=w?.type==='gym'?(w.sessionName||'헬스 세션'):w?.name||'운동';
   if(!confirm('"'+name+'"을 삭제할까요?'))return;
-  log.workouts.splice(i,1);renderWorkouts();scheduleSave();
+  log.workouts.splice(i,1);renderWorkouts();saveNow();
 }
 
 // ── GYM SESSION ──
@@ -3680,7 +3676,7 @@ function saveActivity(){
   log=logCache[selectedKey];
   if(editingActivityIdx!==null){log.workouts[editingActivityIdx]=entry;}
   else{log.workouts.push(entry);}
-  closeModal('activity-modal');renderWorkouts();scheduleSave();
+  closeModal('activity-modal');renderWorkouts();saveNow('💪 운동 저장됨');
 }
 
 function editActivity(i){
@@ -3895,7 +3891,7 @@ function mandTouchEnd(i){if(!_mandMoved)togMand(i);}
 function togMand(i){
   const wasDone=log.mandatory[i].done;
   log.mandatory[i].done=!wasDone;
-  renderMandatory();scheduleSave();
+  renderMandatory();saveNow();
   if(!wasDone){
     // Just completed
     setTimeout(()=>{
@@ -4042,7 +4038,7 @@ function togTgt(i){
 // Long press / right click = mark as failed
 function markFail(i){
   log.targets[i].st=log.targets[i].st==='fail'?'':'fail';
-  renderTargets();scheduleSave();
+  renderTargets();saveNow();
 }
 
 // Long press support for mobile
@@ -4064,9 +4060,9 @@ function tgtTouchEnd(i,e){
 }
 document.addEventListener('touchmove',()=>{tgtScrolled=true;_mandMoved=true;},{passive:true});
 
-function delTgt(i){log.targets.splice(i,1);renderTargets();scheduleSave();}
+function delTgt(i){log.targets.splice(i,1);renderTargets();saveNow();}
 function toggleAddTgt(){const x=document.getElementById('add-tgt-input');x.classList.toggle('open');if(x.classList.contains('open'))document.getElementById('tgt-inp').focus();}
-function addTarget(){const inp=document.getElementById('tgt-inp');const t=inp.value.trim();if(!t)return;log.targets.push({text:t,st:''});inp.value='';document.getElementById('add-tgt-input').classList.remove('open');renderTargets();scheduleSave();}
+function addTarget(){const inp=document.getElementById('tgt-inp');const t=inp.value.trim();if(!t)return;log.targets.push({text:t,st:''});inp.value='';document.getElementById('add-tgt-input').classList.remove('open');renderTargets();saveNow();}
 document.getElementById('tgt-inp').addEventListener('keydown',e=>{if(e.key==='Enter')addTarget();});
 
 // ── WEEKLY VIEW ──
