@@ -1115,10 +1115,21 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
   </div>
 
   <!-- GOGGINS WIN OVERLAY -->
-  <div id="goggins-win">
+  <!-- GOGGINS 100점 특별 팡파레 -->
+<div id="goggins-100" style="display:none;position:fixed;inset:0;z-index:1000;flex-direction:column;align-items:center;justify-content:center;padding:32px;text-align:center;background:rgba(0,0,0,.92);" onclick="document.getElementById('goggins-100').style.display='none';document.body.style.overflow='';">
+  <div id="g100-icon" style="font-size:80px;margin-bottom:16px;animation:rageBounce .4s ease infinite alternate;">💀</div>
+  <div style="font-size:36px;font-weight:900;color:#a855f7;margin-bottom:8px;letter-spacing:-1px;">+100점</div>
+  <div style="font-size:20px;font-weight:800;color:#fff;margin-bottom:12px;">고긴스 챌린지 달성!</div>
+  <div style="font-size:14px;color:rgba(255,255,255,.7);line-height:1.7;margin-bottom:24px;max-width:280px;white-space:pre-line;">48시간 동안 4시간마다 6.4km.
+총 77km를 완주했어.
+넌 이제 진짜야.</div>
+  <div style="font-size:12px;color:rgba(255,255,255,.4);">탭해서 닫기</div>
+</div>
+
+<div id="goggins-win">
     <div class="win-emoji" id="win-emoji">🔥</div>
     <div class="win-msg" id="win-msg"></div>
-    <div id="win-pts" style="display:none;font-size:22px;font-weight:800;color:#4ade80;margin-top:8px;animation:winSlide .4s ease;"></div>
+    <div id="win-pts" style="display:none;font-weight:800;color:#4ade80;margin-top:8px;animation:winSlide .4s ease;"></div>
   </div>
 
   <!-- SHARE CARD MODAL -->
@@ -3058,13 +3069,27 @@ function closeRage(){
 }
 
 function showWin(type, pts=null){
+  // 100점 특별 팡파레
+  if(pts===100){
+    const el=document.getElementById('goggins-100');
+    el.style.display='flex';
+    document.body.style.overflow='hidden';
+    if(navigator.vibrate)navigator.vibrate([100,50,100,50,500]);
+    // 별도 폭죽
+    for(let i=0;i<120;i++)setTimeout(()=>spawnConfetti(),Math.random()*3000);
+    return;
+  }
   const msgs=WIN_MSGS[type]||WIN_MSGS.routine;
   const msg=msgs[Math.floor(Math.random()*msgs.length)];
   const el=document.getElementById('goggins-win');
   document.getElementById('win-emoji').textContent=type==='workout'?'💥':type==='task'?'🎯':type==='perfect'?'🏆':'✅';
   document.getElementById('win-msg').textContent=msg;
   const ptsEl=document.getElementById('win-pts');
-  if(ptsEl){ptsEl.textContent=pts?'+'+pts+'점':'';ptsEl.style.display=pts?'block':'none';}
+  if(ptsEl&&pts){
+    ptsEl.textContent='+'+pts+'점';
+    ptsEl.style.fontSize=pts>=10?'32px':pts>=5?'26px':'20px';
+    ptsEl.style.display='block';
+  } else if(ptsEl){ptsEl.style.display='none';}
   el.style.display='flex';
   if(navigator.vibrate)navigator.vibrate(50);
   setTimeout(()=>el.style.display='none', type==='perfect'?5000:3000);
@@ -4119,7 +4144,10 @@ function saveMandatory(){
     log.mandatory[mandEditIdx2].days=[...newMandDays];
   } else {
     if(log.mandatory.length>=10){showToast('필수 루틴은 최대 10개까지 추가할 수 있어요.');closeModal('mand-modal');return;}
-    log.mandatory.push({name,done:false,days:[...newMandDays]});
+    const entry={name,done:false,days:[...newMandDays]};
+    if(_pendingScoreType)entry._scoreType=_pendingScoreType;
+    _pendingScoreType=null;
+    log.mandatory.push(entry);
   }
   closeModal('mand-modal');renderMandatory();
   // Save current day first, then propagate defs to all other days
