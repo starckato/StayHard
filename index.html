@@ -2658,10 +2658,21 @@ async function showForgotPassword(){
 }
 async function doLogin(){
   const email=document.getElementById('li-email').value.trim(),pw=document.getElementById('li-pw').value;
-  const btn=document.getElementById('li-btn');btn.disabled=true;btn.textContent='로그인 중…';document.getElementById('li-err').textContent='';
-  const{data,error}=await sb.auth.signInWithPassword({email,password:pw});
-  if(error){document.getElementById('li-err').textContent=error.message;btn.disabled=false;btn.textContent='로그인';return;}
-  show('loading');await onLogin(data.user);
+  if(!email||!pw){document.getElementById('li-err').textContent='이메일과 비밀번호를 입력하세요.';return;}
+  const btn=document.getElementById('li-btn');
+  btn.disabled=true;btn.textContent='로그인 중…';
+  document.getElementById('li-err').textContent='';
+  try{
+    const timeout=new Promise((_,rej)=>setTimeout(()=>rej(new Error('서버 응답 지연 — 잠시 후 다시 시도해주세요')),10000));
+    const loginP=sb.auth.signInWithPassword({email,password:pw});
+    const{data,error}=await Promise.race([loginP,timeout]);
+    if(error)throw new Error(error.message);
+    show('loading');
+    await onLogin(data.user);
+  }catch(e){
+    document.getElementById('li-err').textContent=e.message||'로그인 실패';
+    btn.disabled=false;btn.textContent='로그인';
+  }
 }
 function suClearErr(){document.getElementById('su-err').textContent='';}
 function suTogglePw(){const inp=document.getElementById('su-pw');const eye=document.getElementById('su-pw-eye');inp.type=inp.type==='password'?'text':'password';eye.textContent=inp.type==='password'?'👁':'🙈';}
