@@ -12,6 +12,7 @@
 <title>Stay Hard</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -1056,8 +1057,9 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
     <!-- Exercise list -->
     <div id="ssm-exercises" style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 18px;"></div>
     <!-- Bottom button -->
-    <div style="padding:14px 18px 40px;border-top:1px solid var(--border);flex-shrink:0;">
-      <button id="ssm-edit-btn" style="width:100%;padding:16px;background:var(--accent);border:none;border-radius:14px;color:#fff;font-family:'DM Sans',sans-serif;font-size:17px;font-weight:700;cursor:pointer;touch-action:manipulation;">✎ 세션 수정</button>
+    <div style="padding:14px 18px 40px;border-top:1px solid var(--border);flex-shrink:0;display:flex;gap:10px;">
+      <button id="ssm-edit-btn" style="flex:1;padding:16px;background:var(--surface2);border:1px solid var(--border2);border-radius:14px;color:var(--text2);font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;cursor:pointer;touch-action:manipulation;">✎ 세션 수정</button>
+      <button onclick="captureSessionSummary()" style="flex:1;padding:16px;background:var(--accent);border:none;border-radius:14px;color:#fff;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;cursor:pointer;touch-action:manipulation;">📸 공유하기</button>
     </div>
   </div>
 
@@ -3513,6 +3515,58 @@ function closeSessionSummary(){
   const m=document.getElementById('session-summary-modal');
   if(m)m.style.display='none';
   document.body.style.overflow='';
+}
+
+async function captureSessionSummary(){
+  const el=document.getElementById('session-summary-modal');
+  if(!el||typeof html2canvas==='undefined'){
+    showToast('캡쳐 기능을 불러오는 중이에요. 잠시 후 다시 시도해주세요.');
+    return;
+  }
+  const btn=event.currentTarget;
+  const origText=btn.textContent;
+  btn.textContent='캡쳐 중...';btn.disabled=true;
+
+  try{
+    const canvas=await html2canvas(el,{
+      backgroundColor:'#0f0f11',
+      scale:2,
+      useCORS:true,
+      logging:false,
+      // Only capture visible content area (exclude bottom buttons)
+      height:el.scrollHeight,
+      windowHeight:el.scrollHeight
+    });
+
+    canvas.toBlob(async(blob)=>{
+      if(!blob){showToast('캡쳐 실패');return;}
+      const file=new File([blob],'stayhard_workout.png',{type:'image/png'});
+
+      // Try native share (iOS/Android)
+      if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){
+        try{
+          await navigator.share({files:[file],title:'Stay Hard 운동 기록'});
+        }catch(e){
+          if(e.name!=='AbortError')downloadImage(canvas);
+        }
+      } else {
+        // Fallback: download
+        downloadImage(canvas);
+      }
+      btn.textContent=origText;btn.disabled=false;
+    },'image/png');
+  }catch(e){
+    showToast('캡쳐 중 오류: '+e.message);
+    btn.textContent=origText;btn.disabled=false;
+  }
+}
+
+function downloadImage(canvas){
+  const a=document.createElement('a');
+  a.download='stayhard_workout_'+TODAY+'.png';
+  a.href=canvas.toDataURL('image/png');
+  a.click();
+  showToast('📸 이미지 저장됨!');
 }
 
 function delWO(i){
