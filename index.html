@@ -1585,7 +1585,16 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 <script>
 const SB_URL='https://uvaosxhsjscigheyymus.supabase.co';
 const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV2YW9zeGhzanNjaWdoZXl5bXVzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1ODExNjQsImV4cCI6MjA5MDE1NzE2NH0.aS1ZxN0ds8CUs3q_dMTFlEwjvNFgCH7JwY-tg4q0NA8';
-const sb=supabase.createClient(SB_URL,SB_KEY);
+let sb=null;
+function ensureSupabaseClient(){
+  if(sb) return sb;
+  if(!window.supabase || !window.supabase.createClient){
+    throw new Error('Supabase 라이브러리를 불러오지 못했습니다. 네트워크를 확인한 뒤 새로고침해주세요.');
+  }
+  sb=window.supabase.createClient(SB_URL,SB_KEY);
+  return sb;
+}
+
 
 // ── CATALOGUES ──
 const CATS={
@@ -2382,17 +2391,20 @@ let log=emptyLog();
 // ── INIT ──
 async function init(){
   try{
-    const timeout=new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),15000));
+    ensureSupabaseClient();
+    const timeout=new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),12000));
     const sessionP=sb.auth.getSession();
     const{data:{session}}=await Promise.race([sessionP,timeout]);
-    if(session)await onLogin(session.user);
+    if(session) await onLogin(session.user);
     else showAuth();
   }catch(e){
-    console.warn('init error:',e.message);
-    // Supabase timeout — show auth screen anyway
+    console.warn('init error:',e?.message||e);
     hide('loading');
     showAuth();
-    showToast('⚠️ 서버 연결 지연 — 잠시 후 다시 시도해주세요');
+    document.getElementById('li-err').textContent = e?.message==='timeout'
+      ? '서버 응답이 지연되고 있어요. 잠시 후 다시 시도해주세요.'
+      : (e?.message || '앱 초기화에 실패했습니다.');
+    showToast('⚠️ '+(e?.message==='timeout' ? '서버 연결 지연' : '초기화 실패'));
   }
 }
 function showAuth(){
@@ -2599,7 +2611,17 @@ async function onLogin(user){
   document.getElementById('hdr-sub').textContent=(p.display_name||p.username)+'의 보드';
   showDailyMotto();
   // 병렬 로딩 — 오늘 + 루틴 + 챌린지 동시
-  await Promise.all([loadLog(TODAY), loadRoutines(), loadActiveCompetition()]);
+  const withTimeout=(promise, ms, label)=>Promise.race([
+    promise,
+    new Promise((_,rej)=>setTimeout(()=>rej(new Error(label+' timeout')), ms))
+  ]);
+  const bootResults=await Promise.allSettled([
+    withTimeout(loadLog(TODAY), 8000, 'loadLog'),
+    withTimeout(loadRoutines(), 8000, 'loadRoutines'),
+    withTimeout(loadActiveCompetition(), 8000, 'loadActiveCompetition')
+  ]);
+  const bootErrors=bootResults.filter(r=>r.status==='rejected');
+  if(bootErrors.length) console.warn('boot partial failures:', bootErrors.map(r=>r.reason?.message||String(r.reason)));
   showApp();
   buildSlider();
   renderRoutine();
@@ -2675,6 +2697,7 @@ async function showForgotPassword(){
   const email=document.getElementById('li-email').value.trim();
   const input=email||prompt('가입한 이메일 주소를 입력하세요');
   if(!input)return;
+  ensureSupabaseClient();
   const{error}=await sb.auth.resetPasswordForEmail(input,{redirectTo:'https://stay-hard-rouge.vercel.app'});
   if(error){alert('오류: '+error.message);return;}
   alert('✅ 비밀번호 재설정 이메일을 보냈어요!\n메일함을 확인해주세요.');
@@ -2687,6 +2710,7 @@ async function doLogin(){
   document.getElementById('li-err').textContent='';
   try{
     const timeout=new Promise((_,rej)=>setTimeout(()=>rej(new Error('서버 응답 지연 — 잠시 후 다시 시도해주세요')),20000));
+    ensureSupabaseClient();
     const loginP=sb.auth.signInWithPassword({email,password:pw});
     const{data,error}=await Promise.race([loginP,timeout]);
     if(error)throw new Error(error.message);
@@ -5680,6 +5704,17 @@ document.querySelectorAll('.modal-overlay').forEach(m=>{m.addEventListener('clic
 
 // ── Routine modal button listeners (avoid inline handler issues on iOS) ──
 
+
+setTimeout(()=>{
+  const loadingEl=document.getElementById('loading');
+  const authEl=document.getElementById('auth-screen');
+  const appEl=document.getElementById('app-screen');
+  if(loadingEl && getComputedStyle(loadingEl).display!=='none' && authEl && getComputedStyle(authEl).display==='none' && appEl && getComputedStyle(appEl).display==='none'){
+    hide('loading');
+    showAuth();
+    document.getElementById('li-err').textContent='초기 로딩이 오래 걸리고 있어요. 네트워크 상태를 확인한 뒤 다시 로그인해주세요.';
+  }
+}, 10000);
 
 init();
 
