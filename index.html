@@ -3154,6 +3154,8 @@ function launchConfetti(){
 }
 
 function checkPerfectDay(){
+  // 100점 오버레이가 떠있으면 skip
+  if(document.getElementById('goggins-100').style.display==='flex')return;
   const scores=calcGogginsScore(log);
   if(scores.total===100){
     setTimeout(()=>{
@@ -4125,10 +4127,13 @@ function togMand(i){
     if(specialType){addScore(specialType);}
     else{addScore('routine_done');}
     const earnedPts=specialType?(SCORE_EVENTS[specialType]?.pts||1):1;
+    const _bounceIdx=i;
     setTimeout(()=>{
-      const boxes=document.querySelectorAll('.ck-box.done');
-      if(boxes[boxes.length-1])bounceEl(boxes[boxes.length-1]);
-      showWin('routine',earnedPts);
+      // 방금 완료한 항목만 bounce (인덱스로 직접 찾기)
+      const rows=document.querySelectorAll('#check-rows .ck-row');
+      if(rows[_bounceIdx]){const box=rows[_bounceIdx].querySelector('.ck-box');if(box)bounceEl(box);}
+      if(earnedPts<100)showWin('routine',earnedPts);
+      else showWin('routine',100);
       checkPerfectDay();
     },50);
   }
