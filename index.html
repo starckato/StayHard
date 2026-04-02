@@ -55,7 +55,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 /* Goggins Rage Overlay */
 #goggins-rage{position:fixed;inset:0;z-index:1000;display:none;flex-direction:column;align-items:center;justify-content:center;padding:32px;text-align:center;background:rgba(248,113,113,0.97);}
 #goggins-rage .rage-face{font-size:72px;margin-bottom:16px;animation:rageBounce .4s ease infinite alternate;}
-#goggins-rage .rage-msg{font-size:18px;font-weight:800;color:#fff;line-height:1.4;margin-bottom:24px;letter-spacing:-.3px;}
+#goggins-rage .rage-msg{font-size:18px;font-weight:800;color:#fff;line-height:1.6;margin-bottom:24px;letter-spacing:-.3px;max-width:280px;word-break:keep-all;white-space:pre-line;}
 #goggins-rage .rage-close{padding:14px 40px;background:#fff;border:none;border-radius:30px;font-size:15px;font-weight:700;color:#f87171;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;}
 @keyframes rageBounce{0%{transform:scale(1) rotate(-5deg);}100%{transform:scale(1.15) rotate(5deg);}}
 @keyframes rageFlash{0%,100%{opacity:1;}50%{opacity:.6;}}
@@ -63,7 +63,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 /* Win Confetti Overlay */
 #goggins-win{position:fixed;inset:0;z-index:1000;display:none;flex-direction:column;align-items:center;justify-content:center;padding:32px;text-align:center;pointer-events:none;}
 #goggins-win .win-emoji{font-size:64px;animation:winPop .5s cubic-bezier(.17,.67,.35,1.3);}
-#goggins-win .win-msg{font-size:17px;font-weight:700;color:#4ade80;margin-top:16px;animation:winSlide .4s ease;background:rgba(0,0,0,0.55);border:1px solid rgba(74,222,128,0.3);border-radius:14px;padding:12px 20px;max-width:300px;text-align:center;line-height:1.5;}
+#goggins-win .win-msg{font-size:17px;font-weight:700;color:#4ade80;margin-top:16px;animation:winSlide .4s ease;background:rgba(0,0,0,0.55);border:1px solid rgba(74,222,128,0.3);border-radius:14px;padding:12px 20px;max-width:280px;text-align:center;line-height:1.6;white-space:pre-line;word-break:keep-all;}
 @keyframes winPop{0%{transform:scale(0);}100%{transform:scale(1);}}
 @keyframes winSlide{0%{opacity:0;transform:translateY(10px);}100%{opacity:1;transform:translateY(0);}}
 
@@ -210,6 +210,8 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 .ck-row:last-child{border-bottom:none;}
 .ck-box{width:28px;height:28px;border-radius:50%;border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:14px;cursor:pointer;flex-shrink:0;transition:all .15s;background:transparent;touch-action:manipulation;-webkit-user-select:none;user-select:none;}
 .ck-box.done{background:var(--green);border-color:var(--green);}
+.ck-box.fail{background:var(--red-bg);border-color:var(--red);}
+.ck-name.fail{text-decoration:line-through;color:var(--text3);}
 .ck-box.done::after{content:'✓';color:#fff;font-weight:700;font-size:12px;}
 .ck-name{font-size:16px;flex:1;cursor:pointer;}
 .ck-name.done{text-decoration:line-through;color:var(--text2);}
@@ -2046,15 +2048,68 @@ const MONTHS=['1월','2월','3월','4월','5월','6월','7월','8월','9월','10
 const WDAYS=['일','월','화','수','목','금','토'];
 const WDAYS_STRIP=['월','화','수','목','금','토','일'];
 
-// ── GOGGINS TIERS ──
+// ── GOGGINS TIERS (누적 점수 기반) ──
 const TIERS=[
-  {min:0,max:20,icon:'😴',name:'일반인',color:'#888'},
-  {min:21,max:40,icon:'💪',name:'훈련병',color:'#60a5fa'},
-  {min:41,max:60,icon:'⚔️',name:'전사',color:'#fbbf24'},
-  {min:61,max:80,icon:'🦁',name:'엘리트',color:'#4ade80'},
-  {min:81,max:100,icon:'💀',name:'고긴스',color:'#f87171'},
+  {min:0,   max:49,  icon:'🥉',name:'Rookie',  color:'#888'},
+  {min:50,  max:149, icon:'⚔️',name:'Warrior', color:'#60a5fa'},
+  {min:150, max:349, icon:'🔩',name:'Iron',    color:'#fbbf24'},
+  {min:350, max:699, icon:'💎',name:'Elite',   color:'#4ade80'},
+  {min:700, max:1499,icon:'🔥',name:'Hard',    color:'#f87171'},
+  {min:1500,max:99999,icon:'💀',name:'Goggins',color:'#a855f7'},
 ];
-function getTier(score){return TIERS.find(t=>score>=t.min&&score<=t.max)||TIERS[0];}
+function getTier(score){return [...TIERS].reverse().find(t=>score>=t.min)||TIERS[0];}
+
+// ── 점수 이벤트 타입 ──
+const SCORE_EVENTS={
+  weight_record:    {pts:1,  label:'공복체중 기록',        icon:'⚖️'},
+  weight_loss:      {pts:2,  label:'체중 감량',            icon:'⬇️'},
+  weight_goal:      {pts:10, label:'목표 체중 달성',       icon:'🎯'},
+  diet_log:         {pts:1,  label:'식단 등록',            icon:'🥗'},
+  diet_clean:       {pts:5,  label:'클린 식단',            icon:'🟢'},
+  diet_junk:        {pts:-10,label:'금지 식단',            icon:'🔴'},
+  workout_done:     {pts:5,  label:'운동 완료',            icon:'💪'},
+  workout_delete:   {pts:-5, label:'운동 취소',            icon:'🗑️'},
+  routine_done:     {pts:1,  label:'필수 루틴 완료',       icon:'✅'},
+  routine_fail:     {pts:-5, label:'필수 루틴 실패',       icon:'❌'},
+  target_done:      {pts:1,  label:'할일 완료',            icon:'📋'},
+  target_fail:      {pts:-3, label:'할일 실패',            icon:'💢'},
+  cold_shower:      {pts:10, label:'찬물 샤워',            icon:'🚿'},
+  early_rise:       {pts:10, label:'새벽 기상',            icon:'🌅'},
+  goggins_4x4x48:   {pts:100,label:'4x4x48 챌린지',       icon:'🏃'},
+  routine_done_cancel:{pts:-1, label:'루틴 완료 취소',        icon:'↩️'},
+  target_done_cancel: {pts:-1, label:'할일 완료 취소',        icon:'↩️'},
+};
+
+// 점수 로그는 daily_logs.targets에 특수 항목으로 저장 (별도 컬럼 불필요)
+// 형식: {text:'__pts__', st:'done', _pts:[{type,pts,ts}]}
+// 대신 간단하게 logCache에 _ptsLog 추가해서 saveLog에 포함
+
+function getAccumulatedScore(){
+  // 모든 logCache에서 점수 합산
+  let total=0;
+  Object.values(logCache).forEach(l=>{
+    if(l._ptsLog)l._ptsLog.forEach(e=>total+=e.pts);
+  });
+  return total;
+}
+
+function getTodayScore(){
+  const l=logCache[TODAY]||log;
+  if(!l._ptsLog)return 0;
+  return l._ptsLog.reduce((a,e)=>a+e.pts,0);
+}
+
+function addScore(type, note=''){
+  const ev=SCORE_EVENTS[type];if(!ev)return;
+  const l=logCache[TODAY]||log;
+  if(!l._ptsLog)l._ptsLog=[];
+  l._ptsLog.push({type,pts:ev.pts,label:ev.label,icon:ev.icon,ts:new Date().toISOString(),note});
+  logCache[TODAY]=l;
+  updateGogginsHeader();
+  // Toast for positive points
+  if(ev.pts>0)showToast(ev.icon+' +'+ev.pts+'점 — '+ev.label);
+  else if(ev.pts<0)showToast(ev.icon+' '+ev.pts+'점 — '+ev.label);
+}
 
 // ── DAILY GOGGINS MOTTOS (10개, 하루씩 순환) ──
 const GOGGINS_MOTTOS=[
@@ -2082,18 +2137,15 @@ function showDailyMotto(){
 }
 
 function calcGogginsScore(l){
+  // Legacy wrapper — returns today breakdown for Goggins tab bars
   if(!l)return{total:0,diet:0,wo:0,mand:0,tgt:0};
-  const mealArr=(l.meals||[]);
-  const loggedMeals=mealArr.filter(m=>m.type);
-  const diet=loggedMeals.length>0?Math.round(loggedMeals.filter(m=>m.type==='green').length/loggedMeals.length*100):0;
-  const ws=l.workouts||[];
-  const wo=ws.length>0?Math.round(ws.filter(w=>w.status==='done').length/ws.length*100):0;
-  const ms=l.mandatory||[];
-  const mand=ms.length>0?Math.round(ms.filter(m=>m.done).length/ms.length*100):0;
-  const ts=l.targets||[];
-  const tgt=ts.length>0?Math.round(ts.filter(t=>t.st==='done').length/ts.length*100):0;
-  const total=Math.round(diet*.3+wo*.3+mand*.3+tgt*.1);
-  return{total,diet,wo,mand,tgt};
+  const pts=l._ptsLog||[];
+  const diet=pts.filter(e=>['diet_log','diet_clean'].includes(e.type)).reduce((a,e)=>a+Math.max(0,e.pts),0);
+  const wo=pts.filter(e=>e.type==='workout_done').reduce((a,e)=>a+Math.max(0,e.pts),0);
+  const mand=pts.filter(e=>e.type==='routine_done').reduce((a,e)=>a+Math.max(0,e.pts),0);
+  const tgt=pts.filter(e=>e.type==='target_done').reduce((a,e)=>a+Math.max(0,e.pts),0);
+  const todayTotal=pts.reduce((a,e)=>a+e.pts,0);
+  return{total:todayTotal,diet,wo,mand,tgt};
 }
 
 // ── STATE ──
@@ -2415,7 +2467,7 @@ async function loadLog(key){
         }
       }
     }
-    const l={weight:data.weight!==null?parseFloat(data.weight):null,water_cups:data.water_cups||0,meals,workouts:data.workouts||[],mandatory:data.mandatory?data.mandatory:[],targets:data.targets||[]};
+    const l={weight:data.weight!==null?parseFloat(data.weight):null,water_cups:data.water_cups||0,meals,workouts:data.workouts||[],mandatory:data.mandatory?data.mandatory:[],targets:data.targets||[],_ptsLog:data.points_log||[]};
     logCache[key]=l;log=l;
   }else{
     const routineDefs=await loadRoutineDefinitions();
@@ -2451,7 +2503,8 @@ async function saveLog(key,silent=false){
     user_id:CU.id,log_date:key,
     weight:l.weight,water_cups:l.water_cups,
     meals:l.meals||[],workouts:l.workouts||[],
-    mandatory:l.mandatory||[],targets:l.targets||[]
+    mandatory:l.mandatory||[],targets:l.targets||[],
+    points_log:l._ptsLog||[]
   };
   // Retry up to 3 times on failure
   let lastErr=null;
@@ -2986,13 +3039,13 @@ function switchTab(name,idx){
 // ── GOGGINS ──
 // mottos already declared above
 function updateGogginsHeader(){
-  const todayLog=logCache[TODAY]||log;
-  const scores=calcGogginsScore(todayLog);
+  const total=getAccumulatedScore();
+  const todayPts=getTodayScore();
   const streak=calcStreak();
-  const tier=getTier(scores.total);
+  const tier=getTier(total);
   document.getElementById('hdr-streak').textContent=streak+'일';
-  document.getElementById('hdr-score').textContent=scores.total+'점';
-  document.getElementById('hdr-tier').textContent=tier.name;
+  document.getElementById('hdr-score').textContent=total+'점';
+  document.getElementById('hdr-tier').textContent=tier.icon+' '+tier.name;
 }
 function calcStreak(){
   let streak=0;const d=new Date(now);
@@ -3009,7 +3062,7 @@ async function renderGogginsTab(){
     if(data)data.forEach(d=>{
       let gmeals=d.meals||[];
       if(!gmeals.length){for(let n=1;n<=4;n++){if(d['meal_'+n+'_type']||d['meal_'+n+'_name']){gmeals.push({name:d['meal_'+n+'_name']||'',type:d['meal_'+n+'_type']||null,photo:d['meal_'+n+'_photo']||null});}}}
-      const l={weight:d.weight!==null?parseFloat(d.weight):null,water_cups:d.water_cups||0,meals:gmeals,workouts:d.workouts||[],mandatory:d.mandatory?d.mandatory:[],targets:d.targets||[]};
+      const l={weight:d.weight!==null?parseFloat(d.weight):null,water_cups:d.water_cups||0,meals:gmeals,workouts:d.workouts||[],mandatory:d.mandatory?d.mandatory:[],targets:d.targets||[],_ptsLog:d.points_log||[]};
       logCache[normKey(d.log_date)]=l;
     });
   }
@@ -3105,7 +3158,20 @@ function renderWeight(){
   if(log.weight!==null){wd.textContent=parseFloat(log.weight).toFixed(1);wd.style.color='var(--text)';wu.style.display='block';tr.textContent='기록됨';tr.style.color='var(--green)';}
   else{wd.textContent='—';wd.style.color='var(--text3)';wu.style.display='none';tr.textContent='수정을 눌러 기록하세요';tr.style.color='var(--text3)';}
 }
-function saveWeight(){const v=parseFloat(document.getElementById('wt-inp').value);if(isNaN(v))return;log.weight=v;closeModal('weight-modal');renderWeight();saveNow('⚖️ 체중 저장됨');}
+function saveWeight(){
+  const v=parseFloat(document.getElementById('wt-inp').value);
+  if(isNaN(v))return;
+  const prev=log.weight;
+  log.weight=v;
+  closeModal('weight-modal');renderWeight();
+  addScore('weight_record');
+  // 감량 체크 (이전 기록과 비교)
+  if(prev!==null&&v<prev)addScore('weight_loss');
+  // 목표 체중 체크
+  const goal=CP?.weight_goal||null;
+  if(goal&&v<=goal&&(prev===null||prev>goal))addScore('weight_goal');
+  saveNow();
+}
 
 function renderMeals(){
   const meals=log.meals||[];
@@ -3368,9 +3434,12 @@ function saveMeal(){
   log=logCache[selectedKey];
   if(mealIdx===null){log.meals.push(entry);}
   else{log.meals[mealIdx]=entry;}
-  closeModal('meal-modal');renderMeals();saveNow('🥗 식단 저장됨');
-  if(foodType==='red'){setTimeout(showRage,300);}
-  else if(foodType==='green'){showWin('routine');}
+  closeModal('meal-modal');renderMeals();
+  // Score events
+  addScore('diet_log');
+  if(foodType==='red'){addScore('diet_junk');setTimeout(showRage,300);}
+  else if(foodType==='green'){addScore('diet_clean');showWin('routine');}
+  saveNow();
   checkPerfectDay();
 }
 
@@ -3749,9 +3818,8 @@ async function finishSession(){
   }
 
   renderWorkouts();
-  // Save immediately on session finish — too important to debounce
+  addScore('workout_done');
   await saveLog(selectedKey,true);
-  showToast('💾 운동 저장됨');
   document.getElementById('workout-session-overlay').classList.remove('open');
   if(wasEditing){showToast('✓ 세션이 수정됐어요');}
   else{
@@ -3866,20 +3934,22 @@ function renderMandatory(){
     const todayIdx=todayTasks.findIndex(tt=>tt===t);
     if(todayIdx>=10)return'';
     const daysLabel=t.days&&t.days.length<7?['월','화','수','목','금','토','일'].filter((_,di)=>t.days.includes(di)).join(''):'매일';
-    return`<div class="ck-row">
+    const isFail=!!t.fail;
+    return`<div class="ck-row" style="${isFail?'background:rgba(248,113,113,0.06);':''}">
       <div style="min-width:44px;min-height:44px;display:flex;align-items:center;justify-content:center;cursor:pointer;touch-action:manipulation;"
         onclick="togMand(${i})"
         ontouchstart="mandTouchStart()"
         ontouchend="event.preventDefault();mandTouchEnd(${i})">
-        <div class="ck-box ${t.done?'done':''}"></div>
+        <div class="ck-box ${t.done?'done':isFail?'fail':''}"></div>
       </div>
       <div style="flex:1;cursor:pointer;padding:12px 0;touch-action:manipulation;"
         onclick="togMand(${i})"
         ontouchstart="mandTouchStart()"
         ontouchend="event.preventDefault();mandTouchEnd(${i})">
-        <div class="ck-name ${t.done?'done':''}">${t.name}</div>
-        <div style="font-size:10px;color:var(--text3);margin-top:1px;">${daysLabel}</div>
+        <div class="ck-name ${t.done?'done':isFail?'fail':''}">${t.name}${isFail?' ❌':''}</div>
+        <div style="font-size:10px;color:${isFail?'var(--red)':'var(--text3)'};margin-top:1px;">${isFail?'실패 -5점':daysLabel}</div>
       </div>
+      ${!t.done?`<button onclick="markMandFail(${i})" style="font-size:11px;padding:5px 10px;border-radius:8px;border:1px solid ${isFail?'var(--red)':'var(--border2)'};background:${isFail?'var(--red-bg)':'transparent'};color:${isFail?'var(--red)':'var(--text3)'};cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;white-space:nowrap;flex-shrink:0;">${isFail?'취소':'실패'}</button>`:''}
       <button class="ck-edit" onclick="editMandatory(${i})">✎</button>
       <button class="ck-del" onclick="delMand(${i})">✕</button>
     </div>`;
@@ -3890,10 +3960,12 @@ function mandTouchStart(){_mandTouchY=0;_mandMoved=false;}
 function mandTouchEnd(i){if(!_mandMoved)togMand(i);}
 function togMand(i){
   const wasDone=log.mandatory[i].done;
+  const wasFail=log.mandatory[i].fail;
   log.mandatory[i].done=!wasDone;
+  if(wasFail&&!wasDone){log.mandatory[i].fail=false;} // 실패→완료 시 실패 해제
   renderMandatory();saveNow();
   if(!wasDone){
-    // Just completed
+    addScore('routine_done');
     setTimeout(()=>{
       const boxes=document.querySelectorAll('.ck-box.done');
       if(boxes[boxes.length-1])bounceEl(boxes[boxes.length-1]);
@@ -3901,12 +3973,22 @@ function togMand(i){
       checkPerfectDay();
     },50);
   }
+  // 완료→미완료로 되돌리면 점수 취소
+  if(wasDone) addScore('routine_done_cancel');
 }
 function delMand(i){
   const removed=log.mandatory[i];
   log.mandatory.splice(i,1);
   renderMandatory();
   saveLog(selectedKey).then(()=>propagateMandatoryDefs(log.mandatory));
+}
+function markMandFail(i){
+  const wasFail=log.mandatory[i].fail;
+  log.mandatory[i].fail=!wasFail;
+  if(log.mandatory[i].done&&!wasFail){log.mandatory[i].done=false;} // 완료→실패 시 완료 해제
+  if(!wasFail) addScore('routine_fail'); // 실패 처리 → -5
+  renderMandatory();saveNow();
+  if(!wasFail) showToast('❌ -5점 — 루틴 실패 기록됨');
 }
 function openAddMandatoryModal(){
   mandEditIdx2=null;newMandDays=[0,1,2,3,4,5,6];
@@ -4000,21 +4082,17 @@ function renderTargets(){
       const isDone=t.st==='done';
       const isFail=t.st==='fail';
       const checkContent=isDone?'<span style="color:var(--green);font-size:14px;">✓</span>':isFail?'<span style="color:var(--red);font-size:12px;">✕</span>':'';
-      return`<div class="tgt-row">
+      return`<div class="tgt-row" style="${isFail?'background:rgba(248,113,113,0.05);':''}">
         <div class="tgt-btn ${t.st||''}"
           onclick="togTgt(${i})"
-          oncontextmenu="event.preventDefault();markFail(${i})"
-          ontouchstart="tgtTouchStart(${i})"
-          ontouchend="tgtTouchEnd(${i},event)"
           style="cursor:pointer;-webkit-user-select:none;user-select:none;flex-shrink:0;">
           ${checkContent}
         </div>
         <div class="tgt-text ${isDone?'done':isFail?'fail':''}"
           onclick="togTgt(${i})"
-          ontouchstart="tgtTouchStart(${i})"
-          ontouchend="tgtTouchEnd(${i},event)"
           style="cursor:pointer;flex:1;padding:12px 4px;-webkit-user-select:none;user-select:none;">${t.text}</div>
-        <button onclick="delTgt(${i})" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:12px;padding:3px 5px;">✕</button>
+        ${!isDone?`<button onclick="markFail(${i})" style="font-size:11px;padding:5px 10px;border-radius:8px;border:1px solid ${isFail?'var(--red)':'var(--border2)'};background:${isFail?'var(--red-bg)':'transparent'};color:${isFail?'var(--red)':'var(--text3)'};cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;white-space:nowrap;flex-shrink:0;">${isFail?'취소':'실패'}</button>`:''}
+        <button onclick="delTgt(${i})" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:18px;padding:6px 8px;min-width:36px;touch-action:manipulation;">✕</button>
       </div>`;
     }).join('');
 }
@@ -4024,41 +4102,30 @@ function togTgt(i){
   const s=log.targets[i].st||'';
   const nowDone=s!=='done';
   log.targets[i].st=nowDone?'done':'';
-  renderTargets();scheduleSave();
+  renderTargets();saveNow();
   if(nowDone){
+    addScore('target_done');
     setTimeout(()=>{
       const btns=document.querySelectorAll('.tgt-btn.done');
       if(btns[btns.length-1])bounceEl(btns[btns.length-1]);
       showWin('task');
       checkPerfectDay();
     },50);
+  } else {
+    addScore('target_done_cancel'); // 완료→미완료 되돌리기
   }
 }
 
 // Long press / right click = mark as failed
 function markFail(i){
-  log.targets[i].st=log.targets[i].st==='fail'?'':'fail';
+  const wasFail=log.targets[i].st==='fail';
+  log.targets[i].st=wasFail?'':'fail';
+  if(!wasFail) addScore('target_fail'); // 실패 처리 → -3
   renderTargets();saveNow();
 }
 
-// Long press support for mobile
-// Touch handling for 오늘의 할일
-let tgtPressTimer=null,tgtTouchFired=false,tgtScrolled=false;
-function tgtTouchStart(i){
-  tgtTouchFired=false;tgtScrolled=false;
-  tgtPressTimer=setTimeout(()=>{
-    if(!tgtScrolled){tgtTouchFired=true;tgtPressTimer=null;markFail(i);}
-  },450);
-}
-function tgtTouchEnd(i,e){
-  if(e){e.preventDefault();e.stopPropagation();}
-  if(tgtPressTimer){
-    clearTimeout(tgtPressTimer);
-    tgtPressTimer=null;
-    if(!tgtTouchFired&&!tgtScrolled){togTgt(i);}
-  }
-}
-document.addEventListener('touchmove',()=>{tgtScrolled=true;_mandMoved=true;},{passive:true});
+// Touch: simple tap only (fail button replaces long press)
+document.addEventListener('touchmove',()=>{_mandMoved=true;},{passive:true});
 
 function delTgt(i){log.targets.splice(i,1);renderTargets();saveNow();}
 function toggleAddTgt(){const x=document.getElementById('add-tgt-input');x.classList.toggle('open');if(x.classList.contains('open'))document.getElementById('tgt-inp').focus();}
