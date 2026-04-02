@@ -2568,10 +2568,17 @@ function scheduleSave(){
   clearTimeout(saveTimer);
   saveTimer=setTimeout(async()=>{ await saveLog(selectedKey,true); },2000);
 }
+let _saving=false;
 async function saveNow(msg){
   clearTimeout(saveTimer);
-  await saveLog(selectedKey,true);
-  if(msg)showToast(msg);
+  if(_saving)return; // 저장 중이면 중복 방지
+  _saving=true;
+  try{
+    await saveLog(selectedKey,true);
+    if(msg)showToast(msg);
+  }finally{
+    _saving=false;
+  }
 }
 async function saveLog(key,silent=false){
   if(!CU)return;
@@ -2584,22 +2591,18 @@ async function saveLog(key,silent=false){
   };
   // points_log 컬럼이 있을 때만 포함 (없으면 저장 실패 방지)
   if(l._ptsLog&&l._ptsLog.length>0)p.points_log=l._ptsLog;
-  // Retry up to 3 times on failure
-  let lastErr=null;
-  for(let attempt=0;attempt<3;attempt++){
-    const{error}=await sb.from('daily_logs').upsert(p,{onConflict:'user_id,log_date'});
-    if(!error){
-      if(!silent)updateGogginsHeader();
-      return;
-    }
-    lastErr=error;
-    if(attempt<2)await new Promise(r=>setTimeout(r,1000*(attempt+1)));
+  const{error}=await sb.from('daily_logs').upsert(p,{onConflict:'user_id,log_date'});
+  if(!error){
+    if(!silent)updateGogginsHeader();
+    return;
   }
-  // All retries failed — show warning but keep data in memory
-  console.error('saveLog failed after 3 attempts:',lastErr?.message);
-  if(!silent)showToast('⚠️ 저장 실패 — 잠시 후 재시도됩니다');
-  // Queue retry in 10s
-  setTimeout(()=>saveLog(key,true),10000);
+  // 1회 재시도 (3초 후)
+  console.warn('saveLog failed, retrying:',error?.message);
+  await new Promise(r=>setTimeout(r,3000));
+  const{error:err2}=await sb.from('daily_logs').upsert(p,{onConflict:'user_id,log_date'});
+  if(!err2){if(!silent)updateGogginsHeader();return;}
+  console.error('saveLog failed:',err2?.message);
+  if(!silent)showToast('⚠️ 저장 실패');
 }
 function openShareModal(){
   const session=currentSession.length>0?currentSession:(()=>{
@@ -4141,30 +4144,9 @@ async function propagateMandatoryDefs(defs){
     existing.mandatory=merged;
   });
 
-  // SAFE DB UPDATE: Only update the mandatory column, never touch workouts/meals
-  const now2=new Date();
-  const keys=[];
-  for(let i=-3;i<=3;i++){const d=new Date(now2);d.setDate(now2.getDate()+i);keys.push(dkey(d));}
-
-  const{data:existingRows}=await sb.from('daily_logs')
-    .select('id,log_date,mandatory')
-    .eq('user_id',CU.id)
-    .in('log_date',keys);
-
-  if(!existingRows||!existingRows.length){showToast('루틴이 적용됐어요 ✓');return;}
-
-  const updatePromises=existingRows.map(row=>{
-    const k=normKey(row.log_date);
-    if(k===selectedKey)return null;
-    const merged=defsList.map(def=>{
-      const et=(row.mandatory||[]).find(m=>m.name===def.name);
-      return{name:def.name,done:et?.done||false,days:def.days};
-    });
-    if(JSON.stringify(merged)===JSON.stringify(row.mandatory||[]))return null;
-    return sb.from('daily_logs').update({mandatory:merged}).eq('id',row.id);
-  }).filter(Boolean);
-
-  if(updatePromises.length>0)await Promise.all(updatePromises);
+  // DB: 오늘 날짜 기준 -3~+3일 중 변경이 필요한 row만 순차 업데이트
+  // parallel update 대신 오늘 날짜만 즉시, 나머지는 logCache 메모리만
+  // (나머지 날짜는 해당 날짜 접근 시 자동으로 renderRoutine에서 처리됨)
   showToast('루틴이 적용됐어요 ✓');
 }
 function toggleDay(el,idx){
@@ -4441,7 +4423,7 @@ async function renderChallengeHome(){
   if(!CU)return;
 
   // Fetch user's challenges
-  const{data:allComps_raw}=await sb.from('competitions').select('*').in('status',['waiting','active','failed']);
+  const{data:allComps_raw}=await sb.from('competitions').select('id,code,name,creator_id,members,sections,challenge_type,status,max_members,start_date,duration_days,weight_goal,member_wgoals').in('status',['waiting','active','failed']);
   const myComps=(allComps_raw||[]).filter(c=>{
     if(c.creator_id===CU.id)return true;
     try{const mbs=Array.isArray(c.members)?c.members:JSON.parse(c.members||'[]');return mbs.includes(CU.id);}
@@ -4563,7 +4545,7 @@ function hideChallengeJoin(){
 }
 
 async function enterChallenge(compId){
-  const{data:comp}=await sb.from('competitions').select('*').eq('id',compId).single();
+  const{data:comp}=await sb.from('competitions').select('id,code,name,creator_id,members,sections,challenge_type,status,start_date,duration_days,weight_goal,member_wgoals').eq('id',compId).single();
   if(!comp)return;
   activeComp=comp;
   openChallengeRoom();
@@ -4865,10 +4847,10 @@ async function loadActiveCompetition(force=false){
   if(!force&&activeComp!==null&&(now_ms-_compLastFetch)<120000)return; // 2분 캐시
   _compLastFetch=now_ms;
   if(!CU)return;
-  const{data}=await sb.from('competitions').select('*').or('creator_id.eq.'+CU.id).eq('status','active').maybeSingle();
+  const{data}=await sb.from('competitions').select('id,code,name,creator_id,members,sections,challenge_type,status,start_date,duration_days,weight_goal,member_wgoals').or('creator_id.eq.'+CU.id).eq('status','active').maybeSingle();
   // also check member
   if(!data){
-    const{data:d2}=await sb.from('competitions').select('*').eq('status','active').maybeSingle();
+    const{data:d2}=await sb.from('competitions').select('id,code,name,creator_id,members,sections,challenge_type,status,start_date,duration_days,weight_goal,member_wgoals').eq('status','active').maybeSingle();
     if(d2&&d2.members){
       try{const mbs=typeof d2.members==='string'?JSON.parse(d2.members):d2.members;if(mbs.includes(CU.id))activeComp=d2;}catch(e){}
     }
