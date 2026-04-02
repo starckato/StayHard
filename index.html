@@ -2129,7 +2129,10 @@ function removeRoutineEx(i){
   routineExercises.splice(i,1);
   renderRoutineExList(routineExercises);
 }
+let _savingRoutine=false;
 async function saveRoutine(){
+  if(_savingRoutine)return;
+  _savingRoutine=true;
   const name=document.getElementById('routine-name-inp').value.trim();
   if(!name){showToast('루틴 이름을 입력하세요');return;}
   if(routineExercises.length===0){showToast('운동을 1개 이상 추가하세요');return;}
@@ -2169,9 +2172,19 @@ async function saveRoutine(){
 }
 async function deleteRoutine(id){
   if(!confirm('이 루틴을 삭제할까요?'))return;
-  await sb.from('user_routines').delete().eq('id',id);
-  await loadRoutines(true);
+  // 낙관적 삭제 — UI 먼저 반영
+  userRoutines=userRoutines.filter(r=>r.id!==id);
   renderRoutineList();
+  try{
+    const timeout=new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),8000));
+    await Promise.race([sb.from('user_routines').delete().eq('id',id),timeout]);
+    await loadRoutines(true);
+    renderRoutineList();
+  }catch(e){
+    showToast('⚠️ 삭제 실패 — 다시 시도해주세요');
+    await loadRoutines(true); // 원상복구
+    renderRoutineList();
+  }
 }
 function editRoutine(id){
   const r=userRoutines.find(r=>r.id===id);if(!r)return;
@@ -2343,7 +2356,7 @@ function calcGogginsScore(l){
 }
 
 // ── STATE ──
-let CU=null,CP=null,activeComp=null,saveTimer=null;
+let CU=null,CP=null,activeComp=null;
 // Challenge setup state — defaults match the UI pre-selected values
 let compDurVal=14,compType='routine';
 let compSecs={diet:true,workout:true,mandatory:true,target:false};
@@ -2603,18 +2616,23 @@ async function onLogin(user){
 }
 
 // ── SLIDER DOT PREFETCH ──
+function _hasRealData(l){
+  // 빈 로그(에러로 캐시된 것)와 실제 데이터 구분
+  if(!l)return false;
+  return l.weight!==null||(l.meals||[]).length>0||(l.workouts||[]).length>0||l.water_cups>0||(l.mandatory||[]).some(m=>m.done)||(l.targets||[]).length>0;
+}
 async function _prefetchWeekLogs(){
-  // 이번주 + 지난주 (최근 14일) 커버
+  const today=dkey(new Date()); // 매번 현재 날짜 계산
+  function toISO(k){const p=k.split('-');return p[0]+'-'+p[1].padStart(2,'0')+'-'+p[2].padStart(2,'0');}
+  // 최근 14일 — 캐시 없거나 빈 로그인 날짜만 fetch
   const keys=[];
   for(let i=13;i>=0;i--){
-    const d=new Date(now);d.setDate(now.getDate()-i);
+    const d=new Date();d.setDate(d.getDate()-i);
     const k=dkey(d);
-    if(!logCache[k]&&k<=TODAY)keys.push(k);
+    if(k<=today&&!_hasRealData(logCache[k]))keys.push(k);
   }
   if(!keys.length)return;
   try{
-    // YYYY-M-D → YYYY-MM-DD 변환 (Supabase는 ISO 형식 필요)
-    function toISO(k){const p=k.split('-');return p[0]+'-'+p[1].padStart(2,'0')+'-'+p[2].padStart(2,'0');}
     const from=toISO(keys[0]),to=toISO(keys[keys.length-1]);
     const{data,error}=await sb.from('daily_logs')
       .select('log_date,weight,water_cups,meals,workouts,mandatory,targets,points_log')
@@ -2625,23 +2643,24 @@ async function _prefetchWeekLogs(){
     if(data){
       data.forEach(d=>{
         const k=normKey(d.log_date);
-        if(!logCache[k]){
-          logCache[k]={
-            weight:d.weight?parseFloat(d.weight):null,
-            water_cups:d.water_cups||0,
-            meals:d.meals||[],
-            workouts:d.workouts||[],
-            mandatory:d.mandatory||[],
-            targets:d.targets||[],
-            _ptsLog:d.points_log||[]
-          };
-        }
+        // 실제 데이터 있으면 무조건 덮어쓰기
+        logCache[k]={
+          weight:d.weight!==null?parseFloat(d.weight):null,
+          water_cups:d.water_cups||0,
+          meals:d.meals||[],
+          workouts:d.workouts||[],
+          mandatory:d.mandatory||[],
+          targets:d.targets||[],
+          _ptsLog:d.points_log||[]
+        };
       });
+      // 오늘 날짜면 현재 log도 동기화
+      if(logCache[today])log=logCache[today];
       buildSlider();
+      renderRoutine(); // 화면 갱신
     }
   }catch(e){
     console.warn('prefetch failed:',e);
-    // 실패해도 30초 후 재시도
     setTimeout(_prefetchWeekLogs,30000);
   }
 }
@@ -2774,41 +2793,59 @@ async function loadRoutineDefinitions(){
   if(data&&data.length>0){const recent=data.find(d=>d.mandatory&&d.mandatory.length>0);if(recent)return recent.mandatory.map(r=>({name:r.name,done:false,days:r.days||[0,1,2,3,4,5,6]}));}
   return[];
 }
-function scheduleSave(){
-  // Only for water (minor, frequent taps). All critical actions use saveNow().
-  clearTimeout(saveTimer);
-  saveTimer=setTimeout(async()=>{ await saveLog(selectedKey,true); },2000);
+
+// ── SAVE QUEUE: 모든 저장은 여기를 통해 ──
+// 원칙: 메모리 즉시 반영 → DB는 500ms 디바운스로 단 1회
+let _saveTimer=null;
+let _saveInFlight=false;
+let _saveQueued=false;
+
+function queueSave(){
+  // 기존 타이머 취소하고 새로 시작 (마지막 변경만 저장)
+  clearTimeout(_saveTimer);
+  _saveTimer=setTimeout(_flushSave, 500);
 }
-let _saving=false;
-let _pendingSaveKey=null; // 저장 중 변경된 key 기록
-async function saveNow(msg){
-  clearTimeout(saveTimer);
-  const currentKey=selectedKey;
-  if(_saving){
-    _pendingSaveKey=currentKey; // 나중에 재저장할 key 기록
+
+async function _flushSave(){
+  if(_saveInFlight){
+    // 저장 중이면 완료 후 재시도
+    _saveQueued=true;
     return;
   }
-  _saving=true;
-  _pendingSaveKey=null;
+  _saveInFlight=true;
+  _saveQueued=false;
   try{
-    await saveLog(currentKey,true);
-    if(msg)showToast(msg);
+    await saveLog(selectedKey, true);
   }catch(e){
-    console.warn('saveNow failed:',e);
-    // 실패 시 500ms 후 재시도
-    _saving=false;
-    setTimeout(()=>saveNow(),500);
-    return;
+    console.warn('save failed, retry in 3s:', e.message);
+    setTimeout(_flushSave, 3000);
   }finally{
-    _saving=false;
-  }
-  // 저장 중 변경이 있었으면 즉시 재저장
-  if(_pendingSaveKey){
-    const k=_pendingSaveKey;
-    _pendingSaveKey=null;
-    setTimeout(()=>saveLog(k,true),30);
+    _saveInFlight=false;
+    if(_saveQueued){
+      _saveQueued=false;
+      setTimeout(_flushSave, 100);
+    }
   }
 }
+
+// 페이지 떠날 때 강제 flush (데이터 유실 방지)
+window.addEventListener('beforeunload', ()=>{
+  if(_saveTimer){
+    clearTimeout(_saveTimer);
+    // 동기 방식으로 최후 저장 시도
+    navigator.sendBeacon && saveLog(selectedKey, true);
+  }
+});
+window.addEventListener('visibilitychange', ()=>{
+  if(document.visibilityState==='hidden'){
+    clearTimeout(_saveTimer);
+    _flushSave();
+  }
+});
+
+// 하위 호환성 — saveNow 호출은 queueSave로 리다이렉트
+function saveNow(msg){ queueSave(); }
+function scheduleSave(){ queueSave(); }
 async function saveLog(key,silent=false){
   if(!CU)return;
   const l=logCache[key];if(!l)return;
@@ -4115,11 +4152,14 @@ let currentGymIdx=-1; // index into log.workouts for the active gym session
 const _origFinishSession=window.finishSession;
 
 // Override finishSession to use new data model
+let _finishingSession=false; // 중복 실행 방지 플래그
 async function finishSession(){
+  if(_finishingSession)return; // 이미 처리 중이면 무시
   if(currentSession.length===0){
     document.getElementById('workout-session-overlay').classList.remove('open');
     return;
   }
+  _finishingSession=true;
   // Calculate total volume
   const totalVolume=currentSession.reduce((total,ex)=>{
     if(!ex.isStrength)return total;
@@ -4153,15 +4193,20 @@ async function finishSession(){
   }
 
   renderWorkouts();
-  addScore('workout_done');
-  // UI 먼저 닫기 — 저장이 hang돼도 버튼 응답
+  // UI 먼저 닫기
   document.getElementById('workout-session-overlay').classList.remove('open');
-  if(wasEditing){showToast('✓ 세션이 수정됐어요');}
-  else{
-    setTimeout(()=>{showWin('workout',5);launchConfetti();checkPerfectDay();},300);
-  }
-  // 저장은 백그라운드에서 (실패해도 UI에 영향 없음)
-  saveLog(selectedKey,true).catch(e=>console.warn('workout save failed:',e));
+  // DB 저장 성공 후에만 점수 부여 + 수정이면 점수 없음
+  saveLog(selectedKey,true).then(()=>{
+    if(!wasEditing){
+      // 오늘 이미 workout_done 점수 받았는지 확인 (중복 방지)
+      const l=logCache[selectedKey]||log;
+      const alreadyScored=(l._ptsLog||[]).filter(e=>e.type==='workout_done').length>1;
+      if(!alreadyScored)addScore('workout_done');
+      setTimeout(()=>{showWin('workout',5);launchConfetti();checkPerfectDay();},300);
+    } else {
+      showToast('✓ 세션이 수정됐어요');
+    }
+  }).catch(e=>console.warn('workout save failed:',e));
 
   // ── Routine prompt policies ──
   const sessionExercises=currentSession.slice();
@@ -4172,6 +4217,8 @@ async function finishSession(){
   sessionSourceRoutineId=null;
   sessionOriginalExCount=0;
   currentSession=[];
+  currentGymIdx=-1;
+  _finishingSession=false; // 완료 후 플래그 해제
 
   setTimeout(async()=>{
     const exForRoutine=sessionExercises.map(ex=>({
@@ -4491,7 +4538,7 @@ const MLABELS=['체중 (kg)','아침','점심','저녁','운동','필수'];
 function wvWeekDates(offset){const d=new Date(now);d.setDate(d.getDate()-((d.getDay()+6)%7)+offset*7);d.setHours(0,0,0,0);return Array.from({length:7},(_,i)=>{const x=new Date(d);x.setDate(d.getDate()+i);return x;});}
 async function renderWeeklyView(){
   // Flush pending saves silently so table shows latest data
-  if(saveTimer){clearTimeout(saveTimer);saveTimer=null;await saveLog(selectedKey,true);}
+  clearTimeout(_saveTimer);await _flushSave();
   const dates=wvWeekDates(wvOffset);
   const from=dkey(dates[0]),to=dkey(dates[6]);
   const s=dates[0],e=dates[6];
