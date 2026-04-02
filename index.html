@@ -546,7 +546,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
     <div style="display:flex;align-items:center;justify-content:space-between;width:100%;">
       <div class="hdr-title" style="font-size:19px;letter-spacing:.8px;color:#f87171;font-weight:600;">Stay Hard</div>
       <div style="display:flex;align-items:center;gap:8px;">
-        <div class="goggins-badge" id="goggins-badge" style="cursor:default;">
+        <div class="goggins-badge" id="goggins-badge" onclick="openScoreGuide()" style="cursor:pointer;">
           <span class="goggins-flame streak-fire">🔥</span>
           <span class="goggins-streak" id="hdr-streak">0</span>
           <span class="goggins-dot"></span>
@@ -851,7 +851,78 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 
   </div>
 
-  <!-- CHALLENGE ROOM OVERLAY -->
+  <!-- SCORE GUIDE MODAL -->
+<div id="score-guide-modal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.75);z-index:800;align-items:flex-end;justify-content:center;">
+  <div style="width:100%;max-width:430px;background:var(--surface);border-radius:20px 20px 0 0;max-height:90vh;display:flex;flex-direction:column;overflow:hidden;">
+    <!-- 헤더 -->
+    <div style="padding:16px 20px 12px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);flex-shrink:0;">
+      <div>
+        <div style="font-size:17px;font-weight:700;">⚡ 점수 시스템</div>
+        <div style="font-size:12px;color:var(--text3);margin-top:2px;">행동할 때마다 점수가 쌓여요</div>
+      </div>
+      <button onclick="closeScoreGuide()" style="background:none;border:none;color:var(--text3);font-size:22px;cursor:pointer;padding:4px;touch-action:manipulation;">✕</button>
+    </div>
+    <!-- 내 현황 -->
+    <div id="sg-my-status" style="padding:16px 20px;background:var(--surface2);border-bottom:1px solid var(--border);flex-shrink:0;display:flex;align-items:center;gap:16px;"></div>
+    <!-- 스크롤 영역 -->
+    <div style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 20px 40px;">
+
+      <!-- 티어 목록 -->
+      <div style="margin-top:16px;margin-bottom:20px;">
+        <div style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;">🏆 티어</div>
+        <div id="sg-tiers" style="display:flex;flex-direction:column;gap:6px;"></div>
+      </div>
+
+      <!-- 점수 획득 방법 -->
+      <div style="margin-bottom:20px;">
+        <div style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;">✅ 점수 획득</div>
+        <div style="display:flex;flex-direction:column;gap:4px;">
+          ${[
+            ['⚖️','공복 체중 기록','+1'],
+            ['⬇️','체중 감량 (전날 대비)','+2'],
+            ['🎯','목표 체중 달성','+10'],
+            ['🥗','식단 등록','+1'],
+            ['🟢','클린 식단','+5'],
+            ['💪','운동 완료','+5'],
+            ['✅','필수 루틴 완료','+1'],
+            ['🚿','찬물 샤워','+10'],
+            ['🌅','새벽 6시 기상','+10'],
+            ['📋','오늘의 할일 완료','+1'],
+            ['💀','4x4x48 챌린지','+100'],
+          ].map(([icon,label,pts])=>
+            `<div style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--surface2);border-radius:10px;">
+              <span style="font-size:16px;width:24px;text-align:center;">${icon}</span>
+              <span style="flex:1;font-size:14px;color:var(--text);">${label}</span>
+              <span style="font-size:14px;font-weight:700;color:var(--green);">${pts}</span>
+            </div>`
+          ).join('')}
+        </div>
+      </div>
+
+      <!-- 점수 차감 -->
+      <div style="margin-bottom:20px;">
+        <div style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;">❌ 점수 차감</div>
+        <div style="display:flex;flex-direction:column;gap:4px;">
+          ${[
+            ['🔴','금지 식단','-10'],
+            ['❌','필수 루틴 실패','-5'],
+            ['💢','오늘의 할일 실패','-3'],
+            ['🗑️','등록한 운동 삭제','-5'],
+          ].map(([icon,label,pts])=>
+            `<div style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--surface2);border-radius:10px;">
+              <span style="font-size:16px;width:24px;text-align:center;">${icon}</span>
+              <span style="flex:1;font-size:14px;color:var(--text);">${label}</span>
+              <span style="font-size:14px;font-weight:700;color:var(--red);">${pts}</span>
+            </div>`
+          ).join('')}
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- CHALLENGE ROOM OVERLAY -->
   <div id="challenge-room" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;width:100%;background:var(--bg);z-index:700;flex-direction:column;overflow-y:auto;-webkit-overflow-scrolling:touch;">
     <!-- Room Header -->
     <div style="display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--border);flex-shrink:0;background:var(--surface);">
@@ -2126,12 +2197,12 @@ const WDAYS_STRIP=['월','화','수','목','금','토','일'];
 
 // ── GOGGINS TIERS (누적 점수 기반) ──
 const TIERS=[
-  {min:0,   max:49,  icon:'🥉',name:'Rookie',  color:'#888'},
-  {min:50,  max:149, icon:'⚔️',name:'Warrior', color:'#60a5fa'},
-  {min:150, max:349, icon:'🔩',name:'Iron',    color:'#fbbf24'},
-  {min:350, max:699, icon:'💎',name:'Elite',   color:'#4ade80'},
-  {min:700, max:1499,icon:'🔥',name:'Hard',    color:'#f87171'},
-  {min:1500,max:99999,icon:'💀',name:'Goggins',color:'#a855f7'},
+  {min:0,    max:99,   icon:'😴',name:'방관자', desc:'자기 삶을 구경만 하는 자',    color:'#888'},
+  {min:100,  max:299,  icon:'👁️',name:'각성자', desc:'뭔가 달라져야 함을 느낀 자', color:'#60a5fa'},
+  {min:300,  max:699,  icon:'⚔️',name:'저항자', desc:'나태함에 맞서 싸우기 시작한 자', color:'#fbbf24'},
+  {min:700,  max:1299, icon:'🔥',name:'수련자', desc:'고통을 선택하며 단련되는 자',  color:'#4ade80'},
+  {min:1300, max:2499, icon:'💎',name:'지배자', desc:'자신의 삶을 완전히 통제하는 자',color:'#f87171'},
+  {min:2500, max:99999,icon:'💀',name:'Goggins',desc:'타협 없음. 한계란 없음',       color:'#a855f7'},
 ];
 function getTier(score){return [...TIERS].reverse().find(t=>score>=t.min)||TIERS[0];}
 
@@ -4705,6 +4776,47 @@ function closeChallengeRoom(){
   document.getElementById('challenge-room').style.display='none';
   document.body.style.overflow='';
   renderChallengeHome();
+}
+
+function openScoreGuide(){
+  const modal=document.getElementById('score-guide-modal');
+  modal.style.display='flex';
+  document.body.style.overflow='hidden';
+
+  // 내 현황
+  const total=getAccumulatedScore();
+  const tier=getTier(total);
+  const nextTier=[...TIERS].find(t=>t.min>total);
+  const statusEl=document.getElementById('sg-my-status');
+  statusEl.innerHTML=`
+    <div style="flex:1;">
+      <div style="font-size:13px;color:var(--text3);margin-bottom:4px;">내 누적 점수</div>
+      <div style="font-size:28px;font-weight:800;color:${tier.color};">${total}<span style="font-size:14px;font-weight:400;color:var(--text3);"> 점</span></div>
+    </div>
+    <div style="text-align:right;">
+      <div style="font-size:20px;margin-bottom:2px;">${tier.icon} ${tier.name}</div>
+      <div style="font-size:11px;color:var(--text3);">${nextTier?nextTier.name+' 까지 '+(nextTier.min-total)+'점':'최고 등급 달성! 💀'}</div>
+    </div>`;
+
+  // 티어 목록
+  const tiersEl=document.getElementById('sg-tiers');
+  tiersEl.innerHTML=TIERS.map(t=>{
+    const isCurrent=total>=t.min&&(!TIERS[TIERS.indexOf(t)+1]||total<TIERS[TIERS.indexOf(t)+1].min);
+    return`<div style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:12px;background:${isCurrent?t.color+'22':'var(--surface2)'};border:1.5px solid ${isCurrent?t.color:'var(--border)'};">
+      <span style="font-size:24px;">${t.icon}</span>
+      <div style="flex:1;">
+        <div style="font-size:15px;font-weight:${isCurrent?'700':'500'};color:${isCurrent?t.color:'var(--text)'};">${t.name}</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:2px;">${t.desc}</div>
+        <div style="font-size:10px;color:var(--text3);margin-top:1px;">${t.min}점${t.max<99999?' ~ '+t.max+'점':' 이상'}</div>
+      </div>
+      ${isCurrent?`<div style="font-size:11px;font-weight:700;color:${t.color};background:${t.color}22;padding:3px 8px;border-radius:8px;">현재</div>`:''}
+    </div>`;
+  }).join('');
+}
+
+function closeScoreGuide(){
+  document.getElementById('score-guide-modal').style.display='none';
+  document.body.style.overflow='';
 }
 
 function shareRoomCode(){
