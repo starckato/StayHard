@@ -1585,16 +1585,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 <script>
 const SB_URL='https://uvaosxhsjscigheyymus.supabase.co';
 const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV2YW9zeGhzanNjaWdoZXl5bXVzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1ODExNjQsImV4cCI6MjA5MDE1NzE2NH0.aS1ZxN0ds8CUs3q_dMTFlEwjvNFgCH7JwY-tg4q0NA8';
-let sb=null;
-function ensureSupabaseClient(){
-  if(sb) return sb;
-  if(!window.supabase || !window.supabase.createClient){
-    throw new Error('Supabase 라이브러리를 불러오지 못했습니다. 네트워크를 확인한 뒤 새로고침해주세요.');
-  }
-  sb=window.supabase.createClient(SB_URL,SB_KEY);
-  return sb;
-}
-
+const sb=supabase.createClient(SB_URL,SB_KEY);
 
 // ── CATALOGUES ──
 const CATS={
@@ -2391,20 +2382,17 @@ let log=emptyLog();
 // ── INIT ──
 async function init(){
   try{
-    ensureSupabaseClient();
-    const timeout=new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),12000));
+    const timeout=new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),15000));
     const sessionP=sb.auth.getSession();
     const{data:{session}}=await Promise.race([sessionP,timeout]);
-    if(session) await onLogin(session.user);
+    if(session)await onLogin(session.user);
     else showAuth();
   }catch(e){
-    console.warn('init error:',e?.message||e);
+    console.warn('init error:',e.message);
+    // Supabase timeout — show auth screen anyway
     hide('loading');
     showAuth();
-    document.getElementById('li-err').textContent = e?.message==='timeout'
-      ? '서버 응답이 지연되고 있어요. 잠시 후 다시 시도해주세요.'
-      : (e?.message || '앱 초기화에 실패했습니다.');
-    showToast('⚠️ '+(e?.message==='timeout' ? '서버 연결 지연' : '초기화 실패'));
+    showToast('⚠️ 서버 연결 지연 — 잠시 후 다시 시도해주세요');
   }
 }
 function showAuth(){
@@ -2611,17 +2599,7 @@ async function onLogin(user){
   document.getElementById('hdr-sub').textContent=(p.display_name||p.username)+'의 보드';
   showDailyMotto();
   // 병렬 로딩 — 오늘 + 루틴 + 챌린지 동시
-  const withTimeout=(promise, ms, label)=>Promise.race([
-    promise,
-    new Promise((_,rej)=>setTimeout(()=>rej(new Error(label+' timeout')), ms))
-  ]);
-  const bootResults=await Promise.allSettled([
-    withTimeout(loadLog(TODAY), 8000, 'loadLog'),
-    withTimeout(loadRoutines(), 8000, 'loadRoutines'),
-    withTimeout(loadActiveCompetition(), 8000, 'loadActiveCompetition')
-  ]);
-  const bootErrors=bootResults.filter(r=>r.status==='rejected');
-  if(bootErrors.length) console.warn('boot partial failures:', bootErrors.map(r=>r.reason?.message||String(r.reason)));
+  await Promise.all([loadLog(TODAY), loadRoutines(), loadActiveCompetition()]);
   showApp();
   buildSlider();
   renderRoutine();
@@ -2697,7 +2675,6 @@ async function showForgotPassword(){
   const email=document.getElementById('li-email').value.trim();
   const input=email||prompt('가입한 이메일 주소를 입력하세요');
   if(!input)return;
-  ensureSupabaseClient();
   const{error}=await sb.auth.resetPasswordForEmail(input,{redirectTo:'https://stay-hard-rouge.vercel.app'});
   if(error){alert('오류: '+error.message);return;}
   alert('✅ 비밀번호 재설정 이메일을 보냈어요!\n메일함을 확인해주세요.');
@@ -2710,7 +2687,6 @@ async function doLogin(){
   document.getElementById('li-err').textContent='';
   try{
     const timeout=new Promise((_,rej)=>setTimeout(()=>rej(new Error('서버 응답 지연 — 잠시 후 다시 시도해주세요')),20000));
-    ensureSupabaseClient();
     const loginP=sb.auth.signInWithPassword({email,password:pw});
     const{data,error}=await Promise.race([loginP,timeout]);
     if(error)throw new Error(error.message);
@@ -2781,34 +2757,25 @@ async function doSignOut(){
 // ── LOAD / SAVE ──
 async function loadLog(key){
   if(logCache[key]){log=logCache[key];return;}
-  const localDraft=readLocalDraft(key);
+  // Timeout after 8s to prevent infinite loading
   const timeout=new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),8000));
-  let data=null;
-  try{
-    const res=await Promise.race([
-      sb.from('daily_logs').select('*').eq('user_id',CU.id).eq('log_date',key).maybeSingle(),
-      timeout
-    ]);
-    data=res.data;
-  }catch(e){
+  let data=null;try{const res=await Promise.race([sb.from('daily_logs').select('*').eq('user_id',CU.id).eq('log_date',key).maybeSingle(),timeout]);data=res.data;}catch(e){
     console.warn('loadLog timeout/error:',e);
-    if(localDraft){
-      const restored=normalizeDraftLog(localDraft);
-      logCache[key]=restored;log=restored;
-      showToast('임시 저장본을 불러왔어요');
-    }else if(logCache[key]){
-      log=logCache[key];
-    }
+    // 에러 시 캐시에 빈 로그 저장하지 않음 — 재시도 가능하게
+    if(logCache[key])log=logCache[key]; // 이미 캐시가 있으면 사용
     return;
   }
   if(data){
-    const remoteLog=normalizeDailyLogRow(data);
-    const finalLog=localDraft?mergeDraftOverRemote(remoteLog, localDraft):remoteLog;
-    logCache[key]=finalLog;log=finalLog;
-    if(localDraft && navigator.onLine)setTimeout(()=>saveLog(key,true),50);
-  }else if(localDraft){
-    const restored=normalizeDraftLog(localDraft);
-    logCache[key]=restored;log=restored;
+    let meals=data.meals||[];
+    if(!meals.length){
+      for(let n=1;n<=4;n++){
+        if(data['meal_'+n+'_type']||data['meal_'+n+'_name']){
+          meals.push({name:data['meal_'+n+'_name']||'',type:data['meal_'+n+'_type']||null,photo:data['meal_'+n+'_photo']||null});
+        }
+      }
+    }
+    const l={weight:data.weight!==null?parseFloat(data.weight):null,water_cups:data.water_cups||0,meals,workouts:data.workouts||[],mandatory:data.mandatory?data.mandatory:[],targets:data.targets||[],_ptsLog:data.points_log||[]};
+    logCache[key]=l;log=l;
   }else{
     const routineDefs=await loadRoutineDefinitions();
     const l=emptyLog(true);
@@ -2827,88 +2794,21 @@ async function loadRoutineDefinitions(){
   return[];
 }
 
-function normalizeDailyLogRow(data){
-  let meals=data.meals||[];
-  if(!meals.length){
-    for(let n=1;n<=4;n++){
-      if(data['meal_'+n+'_type']||data['meal_'+n+'_name']){
-        meals.push({name:data['meal_'+n+'_name']||'',type:data['meal_'+n+'_type']||null,photo:data['meal_'+n+'_photo']||null});
-      }
-    }
-  }
-  return {
-    weight:data.weight!==null?parseFloat(data.weight):null,
-    water_cups:data.water_cups||0,
-    meals:meals||[],
-    workouts:data.workouts||[],
-    mandatory:data.mandatory||[],
-    targets:data.targets||[],
-    _ptsLog:data.points_log||[]
-  };
-}
-function normalizeDraftLog(draft){
-  const d=draft&&draft.payload?draft.payload:draft;
-  return {
-    weight:d?.weight??null,
-    water_cups:d?.water_cups||0,
-    meals:d?.meals||[],
-    workouts:d?.workouts||[],
-    mandatory:d?.mandatory||[],
-    targets:d?.targets||[],
-    _ptsLog:d?._ptsLog||d?.points_log||[]
-  };
-}
-function mergeDraftOverRemote(remoteLog,draft){
-  const local=normalizeDraftLog(draft);
-  return {...remoteLog,...local};
-}
-function buildDailyPayload(key,l){
-  const p={
-    user_id:CU.id,log_date:key,
-    weight:l.weight,water_cups:l.water_cups,
-    meals:l.meals||[],workouts:l.workouts||[],
-    mandatory:l.mandatory||[],targets:l.targets||[]
-  };
-  if(l._ptsLog&&l._ptsLog.length>0)p.points_log=l._ptsLog;
-  return p;
-}
-function draftStorageKey(key){
-  if(!CU?.id)return null;
-  return `routineboard:draft:${CU.id}:${key}`;
-}
-function persistLocalDraft(key,l){
-  const storageKey=draftStorageKey(key);
-  if(!storageKey)return;
-  try{localStorage.setItem(storageKey, JSON.stringify({ts:Date.now(),payload:normalizeDraftLog(l)}));}catch(e){console.warn('persistLocalDraft failed:', e?.message||e);}
-}
-function readLocalDraft(key){
-  const storageKey=draftStorageKey(key);
-  if(!storageKey)return null;
-  try{const raw=localStorage.getItem(storageKey);return raw?JSON.parse(raw):null;}catch(e){return null;}
-}
-function clearLocalDraft(key){
-  const storageKey=draftStorageKey(key);
-  if(!storageKey)return;
-  try{localStorage.removeItem(storageKey);}catch(e){}
-}
-
 // ── SAVE QUEUE: 모든 저장은 여기를 통해 ──
-// 원칙: 메모리 즉시 반영 → 중요 액션은 즉시 저장, 잦은 변경은 짧게 디바운스
+// 원칙: 메모리 즉시 반영 → DB는 500ms 디바운스로 단 1회
 let _saveTimer=null;
 let _saveInFlight=false;
 let _saveQueued=false;
 
-function queueSave(reason=''){
+function queueSave(){
+  // 기존 타이머 취소하고 새로 시작 (마지막 변경만 저장)
   clearTimeout(_saveTimer);
-  _saveTimer=setTimeout(()=>_flushSave(false),350);
+  _saveTimer=setTimeout(_flushSave, 500);
 }
 
-async function _flushSave(forceImmediate=false){
-  clearTimeout(_saveTimer);
-  _saveTimer=null;
-  if(!CU||!selectedKey||!logCache[selectedKey])return;
-  persistLocalDraft(selectedKey, logCache[selectedKey]);
+async function _flushSave(){
   if(_saveInFlight){
+    // 저장 중이면 완료 후 재시도
     _saveQueued=true;
     return;
   }
@@ -2917,59 +2817,58 @@ async function _flushSave(forceImmediate=false){
   try{
     await saveLog(selectedKey, true);
   }catch(e){
-    console.warn('save failed, retry in 2s:', e?.message||e);
-    _saveQueued=true;
-    setTimeout(()=>_flushSave(true), 2000);
+    console.warn('save failed, retry in 3s:', e.message);
+    setTimeout(_flushSave, 3000);
   }finally{
     _saveInFlight=false;
-    if(_saveQueued && !forceImmediate){
+    if(_saveQueued){
       _saveQueued=false;
-      setTimeout(()=>_flushSave(true),100);
+      setTimeout(_flushSave, 100);
     }
   }
 }
 
-function persistVisibleLogDraft(){
-  if(selectedKey&&logCache[selectedKey])persistLocalDraft(selectedKey, logCache[selectedKey]);
-}
-window.addEventListener('beforeunload', persistVisibleLogDraft);
-window.addEventListener('pagehide', persistVisibleLogDraft);
-window.addEventListener('visibilitychange', ()=>{
-  if(document.visibilityState==='hidden')persistVisibleLogDraft();
-  else if(document.visibilityState==='visible'&&selectedKey&&readLocalDraft(selectedKey))_flushSave(true);
+// 페이지 떠날 때 강제 flush (데이터 유실 방지)
+window.addEventListener('beforeunload', ()=>{
+  if(_saveTimer){
+    clearTimeout(_saveTimer);
+    // 동기 방식으로 최후 저장 시도
+    navigator.sendBeacon && saveLog(selectedKey, true);
+  }
 });
-window.addEventListener('online', ()=>{
-  if(selectedKey&&readLocalDraft(selectedKey))_flushSave(true);
+window.addEventListener('visibilitychange', ()=>{
+  if(document.visibilityState==='hidden'){
+    clearTimeout(_saveTimer);
+    _flushSave();
+  }
 });
 
-function saveNow(msg){
-  if(msg)showToast(msg);
-  return _flushSave(true);
-}
+// 하위 호환성 — saveNow 호출은 queueSave로 리다이렉트
+function saveNow(msg){ queueSave(); }
 function scheduleSave(){ queueSave(); }
 async function saveLog(key,silent=false){
   if(!CU)return;
   const l=logCache[key];if(!l)return;
-  persistLocalDraft(key, l);
-  const p=buildDailyPayload(key,l);
-  const {error}=await sb.from('daily_logs').upsert(p,{onConflict:'user_id,log_date'});
+  const p={
+    user_id:CU.id,log_date:key,
+    weight:l.weight,water_cups:l.water_cups,
+    meals:l.meals||[],workouts:l.workouts||[],
+    mandatory:l.mandatory||[],targets:l.targets||[]
+  };
+  // points_log 컬럼이 있을 때만 포함 (없으면 저장 실패 방지)
+  if(l._ptsLog&&l._ptsLog.length>0)p.points_log=l._ptsLog;
+  const{error}=await sb.from('daily_logs').upsert(p,{onConflict:'user_id,log_date'});
   if(!error){
-    clearLocalDraft(key);
     if(!silent)updateGogginsHeader();
-    return true;
+    return;
   }
+  // 1회 재시도 (3초 후)
   console.warn('saveLog failed, retrying:',error?.message);
-  await new Promise(r=>setTimeout(r,1200));
-  const {error:err2}=await sb.from('daily_logs').upsert(p,{onConflict:'user_id,log_date'});
-  if(!err2){
-    clearLocalDraft(key);
-    if(!silent)updateGogginsHeader();
-    return true;
-  }
+  await new Promise(r=>setTimeout(r,3000));
+  const{error:err2}=await sb.from('daily_logs').upsert(p,{onConflict:'user_id,log_date'});
+  if(!err2){if(!silent)updateGogginsHeader();return;}
   console.error('saveLog failed:',err2?.message);
-  persistLocalDraft(key, l);
-  if(!silent)showToast('⚠️ 서버 저장 실패: 임시 저장됨');
-  throw err2||error;
+  if(!silent)showToast('⚠️ 저장 실패');
 }
 function openShareModal(){
   const session=currentSession.length>0?currentSession:(()=>{
@@ -4421,10 +4320,16 @@ function renderMandatory(){
     const daysLabel=t.days&&t.days.length<7?['월','화','수','목','금','토','일'].filter((_,di)=>t.days.includes(di)).join(''):'매일';
     const isFail=!!t.fail;
     return`<div class="ck-row" style="${isFail?'background:rgba(248,113,113,0.06);':''}">
-      <div style="min-width:44px;min-height:44px;display:flex;align-items:center;justify-content:center;cursor:pointer;touch-action:manipulation;" onclick="togMand(${i})">
+      <div style="min-width:44px;min-height:44px;display:flex;align-items:center;justify-content:center;cursor:pointer;touch-action:manipulation;"
+        onclick="togMand(${i})"
+        ontouchstart="mandTouchStart()"
+        ontouchend="event.preventDefault();mandTouchEnd(${i})">
         <div class="ck-box ${t.done?'done':isFail?'fail':''}"></div>
       </div>
-      <div style="flex:1;cursor:pointer;padding:12px 0;touch-action:manipulation;" onclick="togMand(${i})">
+      <div style="flex:1;cursor:pointer;padding:12px 0;touch-action:manipulation;"
+        onclick="togMand(${i})"
+        ontouchstart="mandTouchStart()"
+        ontouchend="event.preventDefault();mandTouchEnd(${i})">
         <div class="ck-name ${t.done?'done':isFail?'fail':''}">${t.name}${isFail?' ❌':''}</div>
         <div style="font-size:10px;color:${isFail?'var(--red)':'var(--text3)'};margin-top:1px;">${isFail?'실패 -5점':daysLabel}</div>
       </div>
@@ -4435,13 +4340,9 @@ function renderMandatory(){
   }).join('');
 }
 let _mandTouchY=0,_mandMoved=false;
-let _lastMandToggleAt=0,_lastMandToggleIdx=null;
-function mandTouchStart(){}
-function mandTouchEnd(i){togMand(i);}
+function mandTouchStart(){_mandTouchY=0;_mandMoved=false;}
+function mandTouchEnd(i){if(!_mandMoved)togMand(i);}
 function togMand(i){
-  const nowTs=Date.now();
-  if(_lastMandToggleIdx===i && nowTs-_lastMandToggleAt<350)return;
-  _lastMandToggleIdx=i;_lastMandToggleAt=nowTs;
   const wasDone=log.mandatory[i].done;
   const wasFail=log.mandatory[i].fail;
   log.mandatory[i].done=!wasDone;
@@ -4469,11 +4370,11 @@ function togMand(i){
     addScore('routine_done_cancel','',-(earnedPts)); // 받은만큼 정확히 차감
   }
 }
-async function delMand(i){
+function delMand(i){
+  const removed=log.mandatory[i];
   log.mandatory.splice(i,1);
   renderMandatory();
-  await saveNow();
-  await propagateMandatoryDefs(log.mandatory);
+  saveLog(selectedKey).then(()=>propagateMandatoryDefs(log.mandatory));
 }
 function markMandFail(i){
   const wasFail=log.mandatory[i].fail;
@@ -4518,7 +4419,7 @@ function editMandatory(i){
   refreshDayPills();openModal('mand-modal');
 }
 function refreshDayPills(){document.querySelectorAll('#days-row .dpill').forEach((el,idx)=>el.classList.toggle('on',newMandDays.includes(idx)));}
-async function saveMandatory(){
+function saveMandatory(){
   const name=document.getElementById('mand-inp').value.trim();if(!name)return;
   if(mandEditIdx2!==null){
     log.mandatory[mandEditIdx2].name=name;
@@ -4531,62 +4432,32 @@ async function saveMandatory(){
     log.mandatory.push(entry);
   }
   closeModal('mand-modal');renderMandatory();
-  await saveNow();
-  await propagateMandatoryDefs(log.mandatory);
+  // Save current day first, then propagate defs to all other days
+  saveLog(selectedKey).then(()=>propagateMandatoryDefs(log.mandatory));
 }
 
-// Propagate routine DEFINITIONS to loaded + recent days
-// Each day gets the definition with done/fail state preserved.
+// Propagate routine DEFINITIONS to all cached + nearby days
+// Each day gets the definition with done=false (preserving existing done status)
 async function propagateMandatoryDefs(defs){
-  if(!CU)return;
-  const defsList=(defs||[]).map(d=>({name:d.name,days:d.days||[0,1,2,3,4,5,6],_scoreType:d._scoreType}));
-  const mergeMandatory=(existing=[])=>defsList.map(def=>{
-    const et=(existing||[]).find(m=>m.name===def.name);
-    return {name:def.name,done:et?.done||false,fail:et?.fail||false,days:def.days,_scoreType:def._scoreType||et?._scoreType};
-  });
+  if(!defs||!defs.length||!CU)return;
+  const defsList=defs.map(d=>({name:d.name,days:d.days||[0,1,2,3,4,5,6]}));
+
+  // Update logCache in memory only (safe, no DB write)
   Object.keys(logCache).forEach(k=>{
-    const existing=logCache[k]||emptyLog(true);
-    existing.mandatory=mergeMandatory(existing.mandatory||[]);
-    logCache[k]=existing;
-    persistLocalDraft(k, existing);
+    if(k===selectedKey)return;
+    const existing=logCache[k];
+    if(!existing)return;
+    const merged=defsList.map(def=>{
+      const et=existing.mandatory?.find(m=>m.name===def.name);
+      return{name:def.name,done:et?.done||false,days:def.days};
+    });
+    existing.mandatory=merged;
   });
 
-  const start=new Date(selectedDate); start.setDate(start.getDate()-30);
-  const end=new Date(selectedDate); end.setDate(end.getDate()+30);
-  const startKey=dkey(start), endKey=dkey(end);
-  const {data,error}=await sb.from('daily_logs')
-    .select('log_date,weight,water_cups,meals,workouts,mandatory,targets,points_log')
-    .eq('user_id',CU.id)
-    .gte('log_date',startKey)
-    .lte('log_date',endKey);
-  if(error){
-    console.warn('propagateMandatoryDefs load failed:', error.message);
-    showToast('루틴은 현재 화면에만 적용됐어요');
-    return;
-  }
-  const rowsByKey={};
-  (data||[]).forEach(row=>{ rowsByKey[normKey(row.log_date)] = normalizeDailyLogRow(row); });
-  const updates=[];
-  const cursor=new Date(start);
-  while(cursor<=end){
-    const k=dkey(cursor);
-    const existing=rowsByKey[k] || logCache[k] || emptyLog(true);
-    const mergedLog={...existing, mandatory:mergeMandatory(existing.mandatory||[])};
-    logCache[k]=mergedLog;
-    updates.push(buildDailyPayload(k, mergedLog));
-    cursor.setDate(cursor.getDate()+1);
-  }
-  if(updates.length){
-    const {error:upErr}=await sb.from('daily_logs').upsert(updates,{onConflict:'user_id,log_date'});
-    if(upErr){
-      console.warn('propagateMandatoryDefs upsert failed:', upErr.message);
-      showToast('루틴 적용 중 일부 저장에 실패했어요');
-      return;
-    }
-  }
-  if(selectedKey&&logCache[selectedKey])log=logCache[selectedKey];
-  renderMandatory();
-  showToast('루틴이 저장됐어요 ✓');
+  // DB: 오늘 날짜 기준 -3~+3일 중 변경이 필요한 row만 순차 업데이트
+  // parallel update 대신 오늘 날짜만 즉시, 나머지는 logCache 메모리만
+  // (나머지 날짜는 해당 날짜 접근 시 자동으로 renderRoutine에서 처리됨)
+  showToast('루틴이 적용됐어요 ✓');
 }
 function toggleDay(el,idx){
   if(newMandDays.includes(idx)){newMandDays=newMandDays.filter(d=>d!==idx);el.classList.remove('on');}
@@ -4623,11 +4494,7 @@ function renderTargets(){
 }
 
 // Tap = toggle done/undone
-let _lastTargetToggleAt=0,_lastTargetToggleIdx=null;
 function togTgt(i){
-  const nowTs=Date.now();
-  if(_lastTargetToggleIdx===i && nowTs-_lastTargetToggleAt<350)return;
-  _lastTargetToggleIdx=i;_lastTargetToggleAt=nowTs;
   const s=log.targets[i].st||'';
   const nowDone=s!=='done';
   log.targets[i].st=nowDone?'done':'';
@@ -5704,17 +5571,6 @@ document.querySelectorAll('.modal-overlay').forEach(m=>{m.addEventListener('clic
 
 // ── Routine modal button listeners (avoid inline handler issues on iOS) ──
 
-
-setTimeout(()=>{
-  const loadingEl=document.getElementById('loading');
-  const authEl=document.getElementById('auth-screen');
-  const appEl=document.getElementById('app-screen');
-  if(loadingEl && getComputedStyle(loadingEl).display!=='none' && authEl && getComputedStyle(authEl).display==='none' && appEl && getComputedStyle(appEl).display==='none'){
-    hide('loading');
-    showAuth();
-    document.getElementById('li-err').textContent='초기 로딩이 오래 걸리고 있어요. 네트워크 상태를 확인한 뒤 다시 로그인해주세요.';
-  }
-}, 10000);
 
 init();
 
