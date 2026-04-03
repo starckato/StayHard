@@ -1280,6 +1280,16 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
   <div id="goggins-rage">
     <div class="rage-face" id="rage-face">😤</div>
     <div class="rage-msg" id="rage-msg"></div>
+    <!-- 채찍피티 운동 선고 영역 -->
+    <div id="chaek-loading" style="display:none;flex-direction:column;align-items:center;gap:8px;margin-bottom:16px;">
+      <div style="width:20px;height:20px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;"></div>
+      <div style="font-size:12px;color:rgba(255,255,255,.7);">채찍피티가 징역을 계산 중…</div>
+    </div>
+    <div id="chaek-result" style="display:none;background:rgba(0,0,0,.35);border-radius:16px;padding:16px 20px;margin-bottom:16px;max-width:300px;text-align:left;border:1px solid rgba(255,255,255,.15);">
+      <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;">⚖️ 채찍피티 선고</div>
+      <div id="chaek-sentence" style="font-size:15px;font-weight:700;color:#fff;line-height:1.6;margin-bottom:12px;"></div>
+      <button id="chaek-accept-btn" onclick="acceptChaekSentence()" style="width:100%;padding:11px;background:#fff;border:none;border-radius:20px;font-size:13px;font-weight:700;color:#f87171;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">✓ 형량 수락 — 운동 추가</button>
+    </div>
     <button class="rage-close" onclick="closeRage()">알겠어, 다시 일어선다</button>
   </div>
 
@@ -3558,11 +3568,86 @@ function showRage(){
   el.style.display='flex';
   if(navigator.vibrate)navigator.vibrate([100,50,100,50,200]);
 }
-function closeRage(){
-  document.getElementById('goggins-rage').style.display='none';
+// ═══════════════════════════════════════════════
+// 채찍피티 — 금지식 먹으면 Claude가 징역 선고
+// ═══════════════════════════════════════════════
+let _chaekPendingWorkout = null; // API 응답으로 생성된 운동 대기 중
+
+async function callChaekpipty(mealName) {
+  // 로딩 표시
+  document.getElementById('chaek-loading').style.display = 'flex';
+  document.getElementById('chaek-result').style.display = 'none';
+  _chaekPendingWorkout = null;
+
+  const userName = CP?.display_name || CP?.username || '이 겁쟁이';
+  const prompt = `당신은 데이비드 고긴스 스타일의 극한 피트니스 코치 "채찍피티"입니다.
+${userName}이(가) 방금 금지 식단을 먹었습니다: "${mealName || '금지 음식'}"
+
+다음 JSON 형식으로만 응답하세요. 다른 텍스트 없이 JSON만:
+{
+  "sentence": "한국어로 2-3줄의 고긴스 스타일 징벌 선고문. 예: '유산소 징역 3시간형!\n러닝으로 그 칼로리를 태워버려.\n변명은 없다.'",
+  "workout": {
+    "type": "activity",
+    "icon": "이모지 1개",
+    "name": "운동명 (한국어)",
+    "cat": "cardio",
+    "meta": "상세 (예: 5km · 30분)",
+    "status": "planned"
+  }
 }
 
-// 팡파레 큐 — 연속 호출 시 순서대로 표시
+운동은 반드시 유산소 종목 (달리기/사이클/수영/줄넘기 등). 강도는 먹은 음식에 비례해서 잔인하게.`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 300,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    const data = await res.json();
+    const raw = data.content?.[0]?.text || '';
+    // JSON 파싱 (마크다운 펜스 제거)
+    const cleaned = raw.replace(/```json|```/g, '').trim();
+    const parsed = JSON.parse(cleaned);
+
+    _chaekPendingWorkout = parsed.workout;
+
+    // UI 업데이트
+    document.getElementById('chaek-loading').style.display = 'none';
+    document.getElementById('chaek-sentence').textContent = parsed.sentence;
+    document.getElementById('chaek-result').style.display = 'block';
+  } catch(e) {
+    // API 실패 시 폴백 — 조용히 넘어감
+    document.getElementById('chaek-loading').style.display = 'none';
+    console.warn('채찍피티 API 실패:', e.message);
+  }
+}
+
+function acceptChaekSentence() {
+  if (!_chaekPendingWorkout) return;
+  // 운동 카드에 추가
+  if (!logCache[selectedKey]) logCache[selectedKey] = log;
+  log = logCache[selectedKey];
+  log.workouts.push(_chaekPendingWorkout);
+  _chaekPendingWorkout = null;
+  renderWorkouts();
+  queueSave();
+  closeRage();
+  showToast('⚖️ 형량이 운동 목록에 추가됐어요');
+}
+
+
+
+function closeRage(){
+  document.getElementById('goggins-rage').style.display='none';
+  document.getElementById('chaek-loading').style.display='none';
+  document.getElementById('chaek-result').style.display='none';
+  _chaekPendingWorkout=null;
+}
 let _winQueue=[];
 let _winShowing=false;
 
@@ -4115,7 +4200,11 @@ function saveMeal(){
   closeModal('meal-modal');renderMeals();
   // Score events
   addScore('diet_log');
-  if(foodType==='red'){addScore('diet_junk');setTimeout(showRage,300);}
+  if(foodType==='red'){
+    addScore('diet_junk');
+    const junkName=document.getElementById('mm-name').value.trim()||'금지 음식';
+    setTimeout(()=>{showRage();callChaekpipty(junkName);},300);
+  }
   else if(foodType==='green'){addScore('diet_clean');showWin('diet_clean',5+1,'클린 식단!');}
   saveNow();
   checkPerfectDay();
