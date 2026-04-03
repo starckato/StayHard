@@ -1907,12 +1907,15 @@ function selectExercise(name,icon,muscle,equip){
 }
 
 // ── SESSION ──
+let _sessionStatus='done'; // 세션 시작 시 고정된 status
 function openWorkoutSession(prefillExercises){
   currentSession=prefillExercises||[];
   currentGymIdx=-1;
   sessionStartedFromRoutine=false;
   sessionSourceRoutineId=null;
   sessionOriginalExCount=0;
+  // 시작 시점에 status 고정 (이후 _workoutMode 변경에 영향 없음)
+  _sessionStatus=_workoutMode==='planned'?'planned':_workoutMode==='done'?'recorded':'done';
   const btn=document.getElementById('ws-done-btn');
   if(btn){
     const labels={
@@ -2116,7 +2119,7 @@ function saveSessionToLog(){
     sessionName:'헬스 세션',
     exercises:currentSession.map(ex=>({name:ex.name,icon:ex.icon,muscle:ex.muscle,equip:ex.equip,sets:ex.sets,isStrength:ex.isStrength})),
     totalVolume,
-    status:_workoutMode==='planned'?'planned':_workoutMode==='done'?'recorded':'done',
+    status:_sessionStatus||'done',
     _expanded:false
   };
   // Use stored index — never search by reference
@@ -4542,7 +4545,7 @@ async function finishSession(){
   // UI 즉시 닫기 + 팡파레 즉시 (저장 기다리지 않음)
   document.getElementById('workout-session-overlay').classList.remove('open');
   if(!wasEditing){
-    if(_workoutMode==='planned'){
+    if(_sessionStatus==='planned'){
       // 예정 등록 — 점수 없음, 조용히 저장
       showToast('📅 운동 일정이 등록됐어요');
     } else {
