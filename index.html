@@ -558,7 +558,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
           <span class="goggins-dot"></span>
           <span class="goggins-tier" id="hdr-tier">일반인</span>
         </div>
-        <div class="avatar-btn" onclick="openModal('profile-modal')">👤</div>
+        <div class="avatar-btn" onclick="openProfileModal()">👤</div>
       </div>
     </div>
     <!-- 2행: 유저명 -->
@@ -1712,6 +1712,13 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
     <div class="profile-row">
       <div class="pav">🧑</div>
       <div><div class="pname" id="p-name"></div><div class="pemail" id="p-email"></div><div style="font-size:10px;color:var(--text3);margin-top:1px;" id="p-username"></div></div>
+    </div>
+    <div class="mfield" style="margin-top:4px;">
+      <label class="mlabel">닉네임 변경</label>
+      <div style="display:flex;gap:8px;">
+        <input class="minput" id="p-nickname-inp" placeholder="새 닉네임 입력" style="flex:1;"/>
+        <button onclick="saveNickname()" style="padding:0 18px;background:var(--accent);border:none;border-radius:var(--radius-sm);color:#fff;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;white-space:nowrap;touch-action:manipulation;">저장</button>
+      </div>
     </div>
     <button class="signout-btn" onclick="doSignOut()">로그아웃</button>
     <button class="mbtn-ghost" onclick="closeModal('profile-modal')">닫기</button>
@@ -2924,6 +2931,23 @@ async function doSignup(){
   }
   await sb.from('profiles').insert({id:data.user.id,username:un,display_name:name});
   show('loading');await onLogin(data.user);
+}
+function openProfileModal(){
+  const inp=document.getElementById('p-nickname-inp');
+  if(inp)inp.value=CP?.display_name||'';
+  openModal('profile-modal');
+}
+async function saveNickname(){
+  const inp=document.getElementById('p-nickname-inp');
+  const name=(inp?.value||'').trim();
+  if(!name){showToast('닉네임을 입력해주세요');return;}
+  if(name.length<2){showToast('닉네임은 2자 이상이어야 해요');return;}
+  if(CP)CP.display_name=name;
+  await sb.from('profiles').update({display_name:name}).eq('id',CU.id);
+  document.getElementById('p-name').textContent=name;
+  document.getElementById('hdr-sub').textContent=name+'의 보드';
+  closeModal('profile-modal');
+  showToast('✓ 닉네임이 변경됐어요');
 }
 async function doSignOut(){
   await sb.auth.signOut();
@@ -5882,7 +5906,8 @@ async function renderChallengeRoom(){
       const toGoal=wgoal&&curW?(curW-wgoal):null;
       const reached=toGoal!==null&&toGoal<=0;
 
-      const lostStr=lost!=null?(lost>0?'-'+lost.toFixed(1)+'kg':lost<0?'+'+Math.abs(lost).toFixed(1)+'kg':'±0kg'):'—';
+      const lostStr=curW!=null?curW.toFixed(1)+'kg':'—';
+      const goalStr=wgoal?wgoal+'kg':'미설정';
       const toGoalStr=toGoal!=null?(reached?'🎉 달성!':toGoal.toFixed(1)+'kg'):'—';
 
       const border=isMe?'var(--accent-bd)':'var(--border)';
@@ -5899,12 +5924,12 @@ async function renderChallengeRoom(){
         </div>
         <div style="display:flex;gap:8px;">
           <div style="flex:1;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px;text-align:center;">
-            <div style="font-size:16px;font-weight:700;font-family:'DM Mono',monospace;white-space:nowrap;">${curW!=null?curW.toFixed(1)+'kg':'—'}</div>
+            <div style="font-size:16px;font-weight:700;font-family:'DM Mono',monospace;white-space:nowrap;">${lostStr}</div>
             <div style="font-size:10px;color:var(--text3);margin-top:2px;">현재 체중</div>
           </div>
           <div style="flex:1;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px;text-align:center;">
-            <div style="font-size:16px;font-weight:700;font-family:'DM Mono',monospace;color:${lost>0?'var(--green)':lost<0?'var(--red)':'var(--text3)'};white-space:nowrap;">${lostStr}</div>
-            <div style="font-size:10px;color:var(--text3);margin-top:2px;">챌린지 감량</div>
+            <div style="font-size:16px;font-weight:700;font-family:'DM Mono',monospace;white-space:nowrap;color:${wgoal?'var(--text)':'var(--text3)'};">${goalStr}</div>
+            <div style="font-size:10px;color:var(--text3);margin-top:2px;">목표 몸무게</div>
           </div>
           ${wgoal?`<div style="flex:1;background:${reached?'var(--green-bg)':'var(--surface)'};border:1px solid ${reached?'var(--green-bd)':'var(--border)'};border-radius:10px;padding:10px;text-align:center;">
             <div style="font-size:16px;font-weight:700;font-family:'DM Mono',monospace;color:${reached?'var(--green)':toGoal<=2?'var(--amber)':'var(--text)'};white-space:nowrap;">${toGoalStr}</div>
