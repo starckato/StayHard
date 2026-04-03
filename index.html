@@ -2327,9 +2327,12 @@ function _flushScoreUpdate(){
   clearTimeout(_scoreFlushTimer);
   _scoreFlushTimer=setTimeout(async()=>{
     if(!CU||!CP)return;
-    await sb.from('profiles')
-      .update({total_score:CP.total_score, score_updated_at:new Date().toISOString()})
-      .eq('id',CU.id);
+    try{
+      const{error}=await sb.from('profiles')
+        .update({total_score:CP.total_score, score_updated_at:new Date().toISOString()})
+        .eq('id',CU.id);
+      if(error)console.warn('score update failed:',error.message);
+    }catch(e){console.warn('score update error:',e.message);}
   },300);
 }
 
@@ -2595,7 +2598,12 @@ async function onLogin(user){
     _compLastFetch=0;
   }
   CU=user;
-  let{data:p}=await sb.from('profiles').select('id,username,display_name,water_goal,onboarded,total_score').eq('id',user.id).maybeSingle();
+  let{data:p,error:pErr}=await sb.from('profiles').select('id,username,display_name,water_goal,onboarded,total_score').eq('id',user.id).maybeSingle();
+  if(pErr){
+    // total_score 컬럼 없을 경우 fallback
+    const{data:p2}=await sb.from('profiles').select('id,username,display_name,water_goal,onboarded').eq('id',user.id).maybeSingle();
+    p=p2;
+  }
   if(!p){
     const un=user.email.split('@')[0].replace(/[^a-z0-9]/gi,'').toLowerCase();
     const{data:np}=await sb.from('profiles').upsert({id:user.id,username:un,display_name:un},{onConflict:'id'}).select().single();
@@ -2645,7 +2653,7 @@ async function _prefetchWeekLogs(){
   for(let i=13;i>=0;i--){
     const d=new Date();d.setDate(d.getDate()-i);
     const k=dkey(d);
-    if(k<=today&&!_hasRealData(logCache[k]))keys.push(k);
+    if(k<=today)keys.push(k); // 오늘 포함, 항상 최신 데이터로 갱신
   }
   if(!keys.length)return;
   try{
@@ -2823,9 +2831,9 @@ function queueSave(){
   _saveTimer=setTimeout(_flushSave, 500);
 }
 
+let _flushRetryCount=0;
 async function _flushSave(){
   if(_saveInFlight){
-    // 저장 중이면 완료 후 재시도
     _saveQueued=true;
     return;
   }
@@ -2833,9 +2841,16 @@ async function _flushSave(){
   _saveQueued=false;
   try{
     await saveLog(selectedKey, true);
+    _flushRetryCount=0; // 성공 시 재시도 카운터 초기화
   }catch(e){
-    console.warn('save failed, retry in 3s:', e.message);
-    setTimeout(_flushSave, 3000);
+    _flushRetryCount++;
+    if(_flushRetryCount<=3){ // 최대 3회만 재시도
+      console.warn('save failed, retry '+_flushRetryCount+'/3:', e.message);
+      setTimeout(_flushSave, 3000*_flushRetryCount);
+    } else {
+      console.error('save giving up after 3 retries');
+      _flushRetryCount=0;
+    }
   }finally{
     _saveInFlight=false;
     if(_saveQueued){
