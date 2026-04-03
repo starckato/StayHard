@@ -184,7 +184,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 /* WATER */
 .water-strip{display:flex;align-items:center;gap:10px;padding:12px 16px 14px;}
 .water-cups{display:flex;gap:4px;flex:1;}
-.wc{flex:1;min-width:0;height:26px;border-radius:6px;border:1.5px solid var(--border);background:var(--surface2);cursor:pointer;transition:all .12s;touch-action:manipulation;}
+.wc{width:28px;height:28px;border-radius:7px;border:1.5px solid var(--border);background:var(--surface2);cursor:pointer;transition:all .12s;touch-action:manipulation;}
 .wc.on{background:#2563eb;border-color:#60a5fa;box-shadow:0 0 0 1px #60a5fa44;}
 .water-val{font-family:'DM Mono',monospace;font-size:12px;color:var(--blue);min-width:28px;text-align:right;}
 
@@ -613,31 +613,23 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
       <div class="day-strip" id="day-strip"></div>
       <div class="sel-day-label" id="sel-day-label" onclick="jumpToToday()" title="오늘로 돌아가기"></div>
     </div>
-    <!-- 공복 체중 카드 (독립) -->
     <div class="s-card" style="margin-bottom:10px;">
       <div class="s-card-hdr">
         <div class="s-card-title">⚖️ 공복 체중</div>
-        <button class="wt-edit" onclick="openWeightModal()" style="font-size:13px;padding:7px 14px;min-height:36px;">기록 / 수정</button>
+        <button class="wt-edit" onclick="openWeightModal()" style="font-size:13px;padding:7px 14px;min-height:36px;">설정</button>
       </div>
       <div class="s-divider"></div>
-      <!-- 미입력 상태 -->
       <div id="wt-empty-state" style="padding:12px 16px 14px;">
         <div style="font-size:13px;color:var(--text3);">오늘 공복 체중을 기록해보세요</div>
-        <div id="wt-goal-empty" style="display:none;margin-top:6px;font-size:12px;color:var(--text3);"></div>
+        <div id="wt-goal-empty" style="display:none;margin-top:4px;font-size:12px;color:var(--text3);"></div>
       </div>
-      <!-- 입력된 상태 -->
       <div id="wt-filled-state" style="display:none;padding:14px 16px 16px;">
-        <div style="display:flex;align-items:center;gap:12px;">
-          <div style="flex:1;">
-            <div style="display:flex;align-items:flex-end;gap:6px;">
-              <div class="wt-num" id="wt-display" style="font-size:36px;">—</div>
-              <div class="wt-unit" id="wt-unit" style="font-size:16px;color:var(--text3);padding-bottom:4px;">kg</div>
-              <!-- 목표까지 남은 표시 -->
-              <div id="wt-goal-badge" style="display:none;margin-bottom:5px;margin-left:4px;font-size:12px;font-weight:600;padding:3px 9px;border-radius:10px;background:var(--accent-bg);color:var(--accent);border:1px solid var(--accent-bd);white-space:nowrap;"></div>
-            </div>
-            <div style="font-size:12px;color:var(--text3);margin-top:4px;" id="wt-trend"></div>
-          </div>
+        <div style="display:flex;align-items:flex-end;gap:6px;">
+          <div class="wt-num" id="wt-display" style="font-size:36px;">—</div>
+          <div class="wt-unit" id="wt-unit" style="font-size:16px;color:var(--text3);padding-bottom:4px;">kg</div>
+          <div id="wt-goal-badge" style="display:none;margin-bottom:5px;margin-left:2px;font-size:12px;font-weight:600;padding:3px 9px;border-radius:10px;white-space:nowrap;"></div>
         </div>
+        <div style="font-size:12px;color:var(--text3);margin-top:4px;" id="wt-trend"></div>
       </div>
     </div>
 
@@ -658,7 +650,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
           <div class="water-val" id="water-val" style="font-size:13px;color:var(--blue);margin-left:auto;"></div>
           <button onclick="toggleWaterGoalPanel()" id="water-gear-btn" style="background:none;border:none;cursor:pointer;font-size:16px;color:var(--text3);padding:4px;touch-action:manipulation;" title="물 목표 설정">⚙️</button>
         </div>
-        <div class="water-cups" id="water-cups" style="display:flex;gap:4px;flex-wrap:nowrap;overflow:hidden;"></div>
+        <div class="water-cups" id="water-cups" style="display:flex;gap:5px;flex-wrap:wrap;"></div>
       </div>
       <div id="water-goal-panel" style="display:none;padding:10px 14px 14px;border-top:1px solid var(--border);animation:fadeIn .15s ease;">
         <div style="font-size:10px;color:var(--text3);margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em;">하루 물 목표</div>
@@ -1444,7 +1436,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
     <div class="mtitle">공복 체중 기록</div>
     <div class="mfield"><label class="mlabel">오늘 체중 (kg)</label><input class="minput" id="wt-inp" type="number" step="0.1" placeholder="예: 74.0"/></div>
     <div class="mfield">
-      <label class="mlabel">목표 체중 (kg) <span style="font-weight:400;color:var(--text3);text-transform:none;letter-spacing:0;">— 선택사항</span></label>
+      <label class="mlabel">목표 체중 (kg) <span style="font-weight:400;color:var(--text3);font-size:11px;text-transform:none;letter-spacing:0;">선택사항</span></label>
       <input class="minput" id="wt-goal-inp" type="number" step="0.1" placeholder="예: 70.0"/>
     </div>
     <button class="mbtn" onclick="saveWeight()">저장</button>
@@ -2747,11 +2739,8 @@ async function onLogin(user){
   if(!p.onboarded){
     let hiddenUntil=0;
     try{hiddenUntil=parseInt(localStorage.getItem('ob_hide_until_'+user.id)||'0');}catch(e){}
-    if(Date.now()<hiddenUntil){
-      setTimeout(checkYesterdayReminder,800);
-    } else {
-      setTimeout(()=>showOnboarding(p.display_name||p.username||''),500);
-    }
+    if(Date.now()<hiddenUntil){setTimeout(checkYesterdayReminder,800);}
+    else{setTimeout(()=>showOnboarding(p.display_name||p.username||''),500);}
   } else {
     // Check yesterday's completion and show reminder banner
     setTimeout(checkYesterdayReminder, 800);
@@ -3552,38 +3541,39 @@ const RAGE_HEAVY = [
 // 채찍피티 — 룰 기반 유산소 징역 선고
 // ═══════════════════════════════════════════════
 const CHAEK_SENTENCES = [
-  {sentence:'유산소 징역 1시간형!\n그 칼로리 러닝으로 태워버려.\n변명은 없다.', icon:'🏃', name:'달리기', meta:'60분 유산소'},
-  {sentence:'자전거 1시간 선고!\n앉아서 먹었으면 달리면서 갚아.\n지금 당장.', icon:'🚴', name:'사이클', meta:'60분 유산소'},
-  {sentence:'줄넘기 1시간형!\n쉬운 게 없어. 뛰어.', icon:'🪢', name:'줄넘기', meta:'60분 유산소'},
-  {sentence:'수영 1시간 강제 집행!\n물 속에서 후회해.\n도망가지 마.', icon:'🏊', name:'수영', meta:'60분 유산소'},
-  {sentence:'걷기 1시간형!\n최소한 이건 해야지.\n움직여.', icon:'🚶', name:'걷기', meta:'60분 유산소'},
+  {
+    sentence:'걷기 3시간 유산소 징역형 선고!\n그 칼로리 다 태우고 와.\n도망가면 더 힘들어진다.',
+    icon:'🚶', name:'걷기', cat:'cardio', meta:'3시간 유산소', _isChaek:true
+  },
+  {
+    sentence:'러닝 2시간 강제 집행!\n뛰면서 후회해.\n변명은 필요 없어.',
+    icon:'🏃', name:'달리기', cat:'cardio', meta:'2시간 유산소', _isChaek:true
+  },
 ];
 
 function showChaekpipty(mealName) {
   // rage 먼저 표시
   showRage();
-  // 랜덤 선고 선택
   const pick = CHAEK_SENTENCES[Math.floor(Math.random() * CHAEK_SENTENCES.length)];
-  // rage 메시지를 채찍피티 스타일로 교체
+  // rage 얼굴/메시지 교체
   const faceEl = document.getElementById('rage-face');
   const msgEl = document.getElementById('rage-msg');
   if(faceEl) faceEl.textContent = '⚖️';
   if(msgEl) msgEl.textContent = pick.sentence;
-  // rage 닫기 버튼 텍스트 변경
+  // 버튼: 형량 수락
   const closeBtn = document.querySelector('#goggins-rage .rage-close');
   if(closeBtn){
-    closeBtn.textContent = '형량 수락 — 운동 추가';
+    closeBtn.textContent = '💀 형량 수락 — 운동 추가';
     closeBtn.onclick = () => {
-      // 운동을 오늘 목록에 추가
       if(!logCache[selectedKey]) logCache[selectedKey] = log;
       log = logCache[selectedKey];
-      log.workouts.push({type:'activity', icon:pick.icon, name:pick.name, cat:'cardio', meta:pick.meta, status:'planned'});
+      log.workouts.push({type:'activity', icon:pick.icon, name:pick.name, cat:pick.cat, meta:pick.meta, status:'planned', _isChaek:true});
       renderWorkouts();
       queueSave();
       closeRage();
-      showToast('⚖️ '+pick.name+' 1시간 형량이 추가됐어요');
+      showToast('⚖️ '+pick.name+' 형량이 추가됐어요');
     };
-    // 두 번째 버튼: 도망가기
+    // 도망 버튼
     let escBtn = document.getElementById('chaek-escape-btn');
     if(!escBtn){
       escBtn = document.createElement('button');
@@ -3596,6 +3586,15 @@ function showChaekpipty(mealName) {
     escBtn.onclick = closeRage;
     escBtn.style.display = 'block';
   }
+}
+
+function closeRage(){
+  document.getElementById('goggins-rage').style.display='none';
+  // 버튼 원복
+  const closeBtn=document.querySelector('#goggins-rage .rage-close');
+  if(closeBtn){closeBtn.textContent='알겠어, 다시 일어선다';closeBtn.onclick=closeRage;}
+  const escBtn=document.getElementById('chaek-escape-btn');
+  if(escBtn)escBtn.style.display='none';
 }
 
 function showRage(){
@@ -3614,11 +3613,6 @@ function showRage(){
 }
 function closeRage(){
   document.getElementById('goggins-rage').style.display='none';
-  // 채찍피티 버튼 원래대로 복원
-  const closeBtn=document.querySelector('#goggins-rage .rage-close');
-  if(closeBtn){closeBtn.textContent='알겠어, 다시 일어선다';closeBtn.onclick=closeRage;}
-  const escBtn=document.getElementById('chaek-escape-btn');
-  if(escBtn)escBtn.style.display='none';
 }
 
 // 팡파레 큐 — 연속 호출 시 순서대로 표시
@@ -3855,41 +3849,31 @@ function renderRoutine(){renderWeight();renderMeals();renderWater();renderWorkou
 function renderWeight(){
   const emptyState=document.getElementById('wt-empty-state');
   const filledState=document.getElementById('wt-filled-state');
-  if(emptyState&&filledState){
-    const hasWeight=log.weight!==null&&log.weight!==undefined;
-    emptyState.style.display=hasWeight?'none':'block';
-    filledState.style.display=hasWeight?'block':'none';
-  }
+  const hasWeight=log.weight!==null&&log.weight!==undefined;
+  if(emptyState)emptyState.style.display=hasWeight?'none':'block';
+  if(filledState)filledState.style.display=hasWeight?'block':'none';
   const wd=document.getElementById('wt-display'),tr=document.getElementById('wt-trend'),wu=document.getElementById('wt-unit');
   const goal=CP?.weight_goal||null;
-
-  // 미입력 상태에서 목표 체중 안내
-  const goalEmpty=document.getElementById('wt-goal-empty');
-  if(goalEmpty){
-    if(goal){goalEmpty.style.display='block';goalEmpty.textContent='목표 체중: '+goal+'kg';}
-    else{goalEmpty.style.display='none';}
-  }
-
-  if(log.weight!==null&&log.weight!==undefined){
+  // 미입력 상태 목표 안내
+  const ge=document.getElementById('wt-goal-empty');
+  if(ge){ge.style.display=goal?'block':'none';if(goal)ge.textContent='목표 체중: '+parseFloat(goal).toFixed(1)+'kg';}
+  if(hasWeight){
     const w=parseFloat(log.weight);
     wd.textContent=w.toFixed(1);wd.style.color='var(--text)';wu.style.display='block';
-    // 전날 대비 추세
     tr.textContent='기록됨';tr.style.color='var(--green)';
     // 목표 배지
     const badge=document.getElementById('wt-goal-badge');
-    if(badge){
-      if(goal){
-        const diff=(w-goal);
-        if(diff<=0){
-          badge.style.display='inline-block';badge.textContent='🎯 목표 달성!';
-          badge.style.background='var(--green-bg)';badge.style.color='var(--green)';badge.style.borderColor='var(--green-bd)';
-        } else {
-          badge.style.display='inline-block';
-          badge.textContent='목표까지 -'+diff.toFixed(1)+'kg';
-          badge.style.background='var(--accent-bg)';badge.style.color='var(--accent)';badge.style.borderColor='var(--accent-bd)';
-        }
-      } else {badge.style.display='none';}
-    }
+    if(badge&&goal){
+      const diff=w-parseFloat(goal);
+      badge.style.display='inline-block';
+      if(diff<=0){
+        badge.textContent='🎯 목표 달성!';
+        badge.style.cssText=badge.style.cssText+'background:var(--green-bg);color:var(--green);border:1px solid var(--green-bd);';
+      } else {
+        badge.textContent='목표까지 -'+diff.toFixed(1)+'kg';
+        badge.style.background='var(--accent-bg)';badge.style.color='var(--accent)';badge.style.border='1px solid var(--accent-bd)';
+      }
+    } else if(badge){badge.style.display='none';}
   } else {
     wd.textContent='—';wd.style.color='var(--text3)';wu.style.display='none';tr.textContent='';
     const badge=document.getElementById('wt-goal-badge');if(badge)badge.style.display='none';
@@ -3897,50 +3881,33 @@ function renderWeight(){
 }
 function openWeightModal(){
   const inp=document.getElementById('wt-inp');
-  const goalInp=document.getElementById('wt-goal-inp');
-  if(inp&&log.weight!=null)inp.value=parseFloat(log.weight).toFixed(1);
-  else if(inp)inp.value='';
-  if(goalInp)goalInp.value=CP?.weight_goal?parseFloat(CP.weight_goal).toFixed(1):'';
+  const gi=document.getElementById('wt-goal-inp');
+  if(inp)inp.value=log.weight!=null?parseFloat(log.weight).toFixed(1):'';
+  if(gi)gi.value=CP?.weight_goal?parseFloat(CP.weight_goal).toFixed(1):'';
   openModal('weight-modal');
 }
 function saveWeight(){
   const v=parseFloat(document.getElementById('wt-inp').value);
   if(isNaN(v))return;
   // 목표 체중 저장
-  const goalInp=document.getElementById('wt-goal-inp');
-  if(goalInp&&goalInp.value.trim()!==''){
-    const gv=parseFloat(goalInp.value);
-    if(!isNaN(gv)&&gv>0){
-      if(CP)CP.weight_goal=gv;
-      sb.from('profiles').update({weight_goal:gv}).eq('id',CU.id).then(()=>{});
-    }
+  const gi=document.getElementById('wt-goal-inp');
+  if(gi&&gi.value.trim()!==''){
+    const gv=parseFloat(gi.value);
+    if(!isNaN(gv)&&gv>0){if(CP)CP.weight_goal=gv;sb.from('profiles').update({weight_goal:gv}).eq('id',CU.id).then(()=>{});}
   }
   const prev=log.weight;
-  const isFirstRecord=prev===null||prev===undefined;
   log.weight=v;
   closeModal('weight-modal');renderWeight();
-
   // 1일 1회 weight_record 제한
   const todayPtsLog=(logCache[TODAY]||log)._ptsLog||[];
   const alreadyRecorded=todayPtsLog.some(e=>e.type==='weight_record');
-
-  if(!alreadyRecorded){
-    // 처음 기록 — 팡파레
-    setTimeout(()=>showWin('weight',1,'체중 기록 성공!'),200);
-    addScore('weight_record');
-  }
+  if(!alreadyRecorded){setTimeout(()=>showWin('weight',1,'체중 기록 성공!'),200);addScore('weight_record');}
   // 감량도 1일 1회만
   const alreadyLoss=todayPtsLog.some(e=>e.type==='weight_loss');
-  if(!alreadyLoss&&prev!==null&&prev!==undefined&&v<prev){
-    addScore('weight_loss');
-    setTimeout(()=>showWin('weight_loss',2,'감량 성공!'),500);
-  }
+  if(!alreadyLoss&&prev!==null&&prev!==undefined&&v<prev){addScore('weight_loss');setTimeout(()=>showWin('weight_loss',2,'감량 성공!'),500);}
   // 목표 체중 달성
   const goal=CP?.weight_goal||null;
-  if(goal&&v<=goal&&(prev===null||prev>goal)){
-    addScore('weight_goal');
-    setTimeout(()=>showWin('weight_goal',10,'목표 체중 달성!'),800);
-  }
+  if(goal&&v<=goal&&(prev===null||prev>goal)){addScore('weight_goal');setTimeout(()=>showWin('weight_goal',10,'목표 체중 달성!'),800);}
   saveNow();
 }
 
@@ -4318,11 +4285,22 @@ function renderWorkouts(){
       </div>`;
     } else {
       // Single activity row
-      return`<div class="wo-row" onclick="editActivity(${i})" style="cursor:pointer;">
-        <div class="wo-icon-box">${w.icon||'🏃'}</div>
-        <div class="wo-info"><div class="wo-name">${w.name}</div><div class="wo-meta">${w.meta||'기록됨'}</div></div>
-        <div class="wo-status ${w.status==='done'?'done':'planned'}" onclick="event.stopPropagation();${w.status!=='done'?'editActivity('+i+')':''}" style="cursor:${w.status!=='done'?'pointer':'default'}">${w.status==='done'?'✓ 완료':'예정'}</div>
-        <button class="wo-del" onclick="event.stopPropagation();delWO(${i})">✕</button>
+      const isChaek = !!w._isChaek;
+      const isPlanned = w.status !== 'done';
+      return`<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:6px;overflow:hidden;">
+        <div class="wo-row" style="padding:10px 14px;cursor:pointer;" onclick="editActivity(${i})">
+          <div class="wo-icon-box">${w.icon||'🏃'}</div>
+          <div class="wo-info">
+            <div class="wo-name">${w.name}${isChaek?' <span style="font-size:10px;color:var(--red);font-weight:600;">⚖️징역</span>':''}</div>
+            <div class="wo-meta">${w.meta||'기록됨'}</div>
+          </div>
+          <div class="wo-status ${w.status==='done'?'done':'planned'}" style="cursor:default;pointer-events:none;">${w.status==='done'?'✓ 완료':'예정'}</div>
+          <button class="wo-del" onclick="event.stopPropagation();delWO(${i})" style="pointer-events:all;">✕</button>
+        </div>
+        ${isPlanned?`<div style="display:flex;gap:8px;padding:10px 14px;border-top:1px solid var(--border);">
+          <button onclick="event.stopPropagation();markActivityDone(${i})" style="flex:1;padding:10px;background:rgba(74,222,128,.15);border:1px solid rgba(74,222,128,.3);border-radius:10px;color:#4ade80;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">✓ 완료했어요</button>
+          <button onclick="event.stopPropagation();editActivity(${i})" style="flex:1;padding:10px;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;color:var(--text2);font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">✎ 수정</button>
+        </div>`:''}
       </div>`;
     }
   }).join('');
@@ -4440,13 +4418,53 @@ function markWorkoutDone(i){
   queueSave();
 }
 
+const GOGGINS_ENCOURAGE = [
+  '고통은 일시적이다.\n하지만 포기는 영원히 남는다.',
+  '넌 지금 자신과 싸우고 있어.\n그 싸움에서 지지 마.',
+  '힘들면 올바른 방향으로 가고 있는 거야.\n계속 가.',
+  '변명은 무기가 아니야.\n행동만이 너를 바꾼다.',
+  '아무도 널 구하러 오지 않아.\n네가 일어서야 해.',
+  '형량을 다 채웠어.\n이게 진짜 너야.',
+  '도망가지 않았어.\n고긴스도 인정한다.',
+];
+
+function markActivityDone(i){
+  const w=log.workouts[i];
+  w.status='done';
+  renderWorkouts();
+  if(w._isChaek){
+    // 징역 완료 — 점수 없음, 고긴스 격려
+    const msg=GOGGINS_ENCOURAGE[Math.floor(Math.random()*GOGGINS_ENCOURAGE.length)];
+    const faceEl=document.getElementById('rage-face');
+    const msgEl=document.getElementById('rage-msg');
+    const closeBtn=document.querySelector('#goggins-rage .rage-close');
+    const escBtn=document.getElementById('chaek-escape-btn');
+    if(faceEl)faceEl.textContent='💪';
+    if(msgEl)msgEl.textContent=msg;
+    if(closeBtn){closeBtn.textContent='계속 간다';closeBtn.onclick=closeRage;}
+    if(escBtn)escBtn.style.display='none';
+    document.getElementById('goggins-rage').style.display='flex';
+    if(navigator.vibrate)navigator.vibrate([100,50,200]);
+  } else {
+    const todayPtsLog=(logCache[TODAY]||log)._ptsLog||[];
+    const alreadyScored=todayPtsLog.some(e=>e.type==='workout_done');
+    if(!alreadyScored){addScore('workout_done');setTimeout(()=>{showWin('workout',5,'운동 완료!');launchConfetti();},200);}
+  }
+  queueSave();
+}
+
 function delWO(i){
   const w=log.workouts[i];
   const name=w?.type==='gym'?(w.sessionName||'헬스 세션'):w?.name||'운동';
   if(!confirm('"'+name+'"을 삭제할까요?'))return;
   const delWo=log.workouts[i];
+  // 채찍 징역 운동은 점수 영향 없음, 일반 완료 운동만 차감
   if(delWo&&delWo.type==='gym'&&delWo.status==='done'){
-    addScore('workout_delete','',-5); // 운동 완료 점수 반환
+    addScore('workout_delete','',-5);
+  }
+  // activity 완료분은 채찍이 아닐 때만 차감
+  if(delWo&&delWo.type==='activity'&&delWo.status==='done'&&!delWo._isChaek){
+    addScore('workout_delete','',-5);
   }
   log.workouts.splice(i,1);renderWorkouts();saveNow();
 }
