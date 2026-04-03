@@ -619,15 +619,16 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
         <button class="wt-edit" onclick="openWeightModal()" style="font-size:13px;padding:7px 14px;min-height:36px;">설정</button>
       </div>
       <div class="s-divider"></div>
-      <div id="wt-empty-state" style="padding:12px 16px 14px;">
-        <div style="font-size:13px;color:var(--text3);">오늘 공복 체중을 기록해보세요</div>
+      <div id="wt-empty-state" style="padding:12px 16px 14px;cursor:pointer;" onclick="openWeightModal()">
+        <div style="font-size:13px;color:var(--text3);">오늘 공복 체중을 기록해보세요 →</div>
         <div id="wt-goal-empty" style="display:none;margin-top:4px;font-size:12px;color:var(--text3);"></div>
       </div>
       <div id="wt-filled-state" style="display:none;padding:14px 16px 16px;">
-        <div style="display:flex;align-items:flex-end;gap:6px;">
+        <div style="display:flex;align-items:flex-end;gap:6px;cursor:pointer;-webkit-tap-highlight-color:transparent;" onclick="openWeightModal()" title="탭해서 수정">
           <div class="wt-num" id="wt-display" style="font-size:36px;">—</div>
           <div class="wt-unit" id="wt-unit" style="font-size:16px;color:var(--text3);padding-bottom:4px;">kg</div>
           <div id="wt-goal-badge" style="display:none;margin-bottom:5px;margin-left:2px;font-size:12px;font-weight:600;padding:3px 9px;border-radius:10px;white-space:nowrap;"></div>
+          <div style="font-size:13px;color:var(--text3);padding-bottom:5px;margin-left:2px;">✎</div>
         </div>
         <div style="font-size:12px;color:var(--text3);margin-top:4px;" id="wt-trend"></div>
       </div>
@@ -1617,14 +1618,6 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
           <div style="font-size:11px;font-weight:700;color:#fbbf24;background:rgba(251,191,36,.12);border:1px solid rgba(251,191,36,.3);border-radius:8px;padding:3px 8px;">+10점</div>
         </div>
 
-        <div onclick="pickRecommendedRoutine('🏃 4x4x48 챌린지','goggins_4x4x48')" style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:rgba(168,85,247,.08);border:1px solid rgba(168,85,247,.3);border-radius:12px;cursor:pointer;touch-action:manipulation;">
-          <div style="font-size:22px;">💀</div>
-          <div style="flex:1;">
-            <div style="font-size:14px;font-weight:700;color:#a855f7;">고긴스 4x4x48 챌린지</div>
-            <div style="font-size:11px;color:var(--text3);">48시간 동안 4시간마다 6.4km. 총 77km.</div>
-          </div>
-          <div style="font-size:11px;font-weight:700;color:#a855f7;background:rgba(168,85,247,.12);border:1px solid rgba(168,85,247,.3);border-radius:8px;padding:3px 8px;">+100점</div>
-        </div>
 
         <div onclick="pickRecommendedRoutine('📚 독서 30분',null)" style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:12px;cursor:pointer;touch-action:manipulation;">
           <div style="font-size:22px;">📚</div>
@@ -2703,10 +2696,10 @@ async function onLogin(user){
     _compLastFetch=0;
   }
   CU=user;
-  let{data:p,error:pErr}=await sb.from('profiles').select('id,username,display_name,water_goal,onboarded,total_score').eq('id',user.id).maybeSingle();
+  let{data:p,error:pErr}=await sb.from('profiles').select('id,username,display_name,water_goal,onboarded,total_score,weight_goal').eq('id',user.id).maybeSingle();
   if(pErr){
     // total_score 컬럼 없을 경우 fallback
-    const{data:p2}=await sb.from('profiles').select('id,username,display_name,water_goal,onboarded').eq('id',user.id).maybeSingle();
+    const{data:p2}=await sb.from('profiles').select('id,username,display_name,water_goal,onboarded,weight_goal').eq('id',user.id).maybeSingle();
     p=p2;
   }
   if(!p){
@@ -4921,31 +4914,59 @@ function saveMandatory(){
   }
   closeModal('mand-modal');renderMandatory();
   queueSave();
-  // 루틴 정의 전파는 메모리만 (DB 쓰기 제거)
   propagateMandatoryDefs(log.mandatory);
 }
 
 // Propagate routine DEFINITIONS to all cached + nearby days
 // Each day gets the definition with done=false (preserving existing done status)
-function propagateMandatoryDefs(defs){
-  // 메모리 캐시만 업데이트 — DB는 절대 건드리지 않음
-  // 각 날짜는 해당 날짜 접근 시 자신의 데이터를 유지
-  if(!defs||!defs.length)return;
-  const defsList=defs.map(d=>({name:d.name,days:d.days||[0,1,2,3,4,5,6],_scoreType:d._scoreType}));
-  // 오늘 이후 날짜(미래)의 캐시만 업데이트 — 과거 기록 보존
-  const today=dkey(new Date());
-  Object.keys(logCache).forEach(k=>{
-    if(k===selectedKey)return; // 현재 날짜는 이미 저장됨
-    if(k<today)return; // 과거 날짜 건드리지 않음
-    const existing=logCache[k];
-    if(!existing)return;
-    // 기존 루틴의 done 상태 보존하면서 정의만 업데이트
-    const merged=defsList.map(def=>{
-      const et=existing.mandatory?.find(m=>m.name===def.name);
-      return{name:def.name,done:et?.done||false,fail:et?.fail||false,days:def.days,_scoreType:def._scoreType};
-    });
-    existing.mandatory=merged;
-  });
+// Propagate routine DEFINITIONS to current week + next 14 days (DB upsert)
+async function propagateMandatoryDefs(defs){
+  if(!defs||!defs.length||!CU)return;
+  const defsList=defs.map(d=>({name:d.name,days:d.days||[0,1,2,3,4,5,6],_scoreType:d._scoreType||null}));
+  const today=new Date();today.setHours(0,0,0,0);
+
+  // 오늘 ~ 14일 후까지 upsert (과거는 건드리지 않음)
+  const dates=[];
+  for(let i=0;i<=14;i++){
+    const d=new Date(today);d.setDate(today.getDate()+i);
+    dates.push(dkey(d));
+  }
+
+  // 각 날짜를 순차적으로 처리
+  for(const k of dates){
+    if(k===selectedKey)continue; // 현재 날짜는 이미 저장됨
+
+    // 1) 메모리 캐시 업데이트
+    if(logCache[k]){
+      const existing=logCache[k];
+      existing.mandatory=defsList.map(def=>{
+        const et=existing.mandatory?.find(m=>m.name===def.name);
+        return{name:def.name,done:et?.done||false,fail:et?.fail||false,days:def.days,_scoreType:def._scoreType};
+      });
+    }
+
+    // 2) DB upsert — mandatory만 교체, 나머지 컬럼은 건드리지 않음
+    // DB에 해당 날짜 레코드가 있으면 mandatory 업데이트, 없으면 새로 생성
+    try{
+      const{data:existing}=await sb.from('daily_logs')
+        .select('mandatory')
+        .eq('user_id',CU.id)
+        .eq('log_date',k)
+        .maybeSingle();
+
+      const mergedMandatory=defsList.map(def=>{
+        const et=existing?.mandatory?.find(m=>m.name===def.name);
+        return{name:def.name,done:et?.done||false,fail:et?.fail||false,days:def.days,_scoreType:def._scoreType};
+      });
+
+      await sb.from('daily_logs').upsert(
+        {user_id:CU.id,log_date:k,mandatory:mergedMandatory},
+        {onConflict:'user_id,log_date'}
+      );
+    }catch(e){
+      console.warn('propagate failed for',k,e.message);
+    }
+  }
 }
 function toggleDay(el,idx){
   if(newMandDays.includes(idx)){newMandDays=newMandDays.filter(d=>d!==idx);el.classList.remove('on');}
