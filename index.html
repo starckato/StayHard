@@ -174,7 +174,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 .meal-dot.green{background:var(--green);}
 .meal-dot.red{background:var(--red);}
 .meal-dot.skipped{background:var(--amber);}
-.meal-dot.normal{background:var(--text3);}
+.meal-dot.normal{background:#888;}
 .meal-dot.empty{background:var(--surface3);border:1px solid var(--border2);}
 .meal-row-label{font-size:11px;color:var(--text2);width:60px;flex-shrink:0;}
 .meal-row-name{font-size:15px;font-weight:500;flex:1;}
@@ -398,7 +398,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 .ftbtn.sel-green{background:var(--green-bg);border-color:var(--green);color:var(--green);}
 .ftbtn.sel-red{background:var(--red-bg);border-color:var(--red);color:var(--red);}
 .ftbtn.sel-skipped{background:var(--amber-bg);border-color:var(--amber);color:var(--amber);}
-.ftbtn.sel-normal{background:var(--surface3);border-color:var(--text3);color:var(--text2);}
+.ftbtn.sel-normal{background:rgba(180,180,180,0.12);border-color:#888;color:#aaa;}
 .photo-wrap{position:relative;display:inline-block;}
 .photo-thumb{width:56px;height:56px;border-radius:8px;object-fit:cover;display:block;}
 .photo-del{position:absolute;top:-6px;right:-6px;width:18px;height:18px;border-radius:50%;background:var(--red);border:none;color:#fff;font-size:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
@@ -1210,7 +1210,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
           <div style="font-size:13px;color:var(--text2);line-height:1.7;margin-bottom:20px;">자기 자신을 통제하는 삶을 시작해요.<br>식단, 운동, 루틴을 매일 기록하고<br>점수로 성장을 확인하세요.</div>
           <div style="font-size:11px;color:#f87171;font-style:italic;margin-bottom:24px;">"고통은 일시적이다. 포기하면 영원히 남는다."</div>
           <button onclick="obNext(2)" style="width:100%;padding:15px;background:#f87171;border:none;border-radius:14px;color:#fff;font-size:16px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">시작하기 →</button>
-          <button onclick="obDismissForever()" style="width:100%;padding:10px;background:none;border:none;color:var(--text3);font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;margin-top:6px;touch-action:manipulation;">건너뛰기</button>
+          <button onclick="obDismissWeek()" style="width:100%;padding:10px;background:none;border:none;color:var(--text3);font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;margin-top:6px;touch-action:manipulation;">1주일간 보이지 않기</button>
         </div>
 
         <!-- Step 2: 목표 선택 -->
@@ -2741,7 +2741,13 @@ async function onLogin(user){
   updateGogginsHeader();
   // Show onboarding for new users
   if(!p.onboarded){
-    setTimeout(()=>showOnboarding(p.display_name||p.username||''),500);
+    let hiddenUntil=0;
+    try{hiddenUntil=parseInt(localStorage.getItem('ob_hide_until_'+user.id)||'0');}catch(e){}
+    if(Date.now()<hiddenUntil){
+      setTimeout(checkYesterdayReminder, 800);
+    } else {
+      setTimeout(()=>showOnboarding(p.display_name||p.username||''),500);
+    }
   } else {
     // Check yesterday's completion and show reminder banner
     setTimeout(checkYesterdayReminder, 800);
@@ -3097,6 +3103,11 @@ function obDismissForever(){
   document.getElementById('onboarding-modal').style.display='none';
   sb.from('profiles').update({onboarded:true}).eq('id',CU.id);
   if(CP)CP.onboarded=true;
+}
+function obDismissWeek(){
+  document.getElementById('onboarding-modal').style.display='none';
+  const expires=Date.now()+(7*24*60*60*1000);
+  try{localStorage.setItem('ob_hide_until_'+CU.id, expires);}catch(e){}
 }
 function showOnboarding(name){
   document.getElementById('ob-name').textContent=name;
