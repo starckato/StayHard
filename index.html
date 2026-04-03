@@ -1280,17 +1280,33 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
   <div id="goggins-rage">
     <div class="rage-face" id="rage-face">😤</div>
     <div class="rage-msg" id="rage-msg"></div>
-    <!-- 채찍피티 운동 선고 영역 -->
-    <div id="chaek-loading" style="display:none;flex-direction:column;align-items:center;gap:8px;margin-bottom:16px;">
-      <div style="width:20px;height:20px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;"></div>
-      <div style="font-size:12px;color:rgba(255,255,255,.7);">채찍피티가 징역을 계산 중…</div>
-    </div>
-    <div id="chaek-result" style="display:none;background:rgba(0,0,0,.35);border-radius:16px;padding:16px 20px;margin-bottom:16px;max-width:300px;text-align:left;border:1px solid rgba(255,255,255,.15);">
-      <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;">⚖️ 채찍피티 선고</div>
-      <div id="chaek-sentence" style="font-size:15px;font-weight:700;color:#fff;line-height:1.6;margin-bottom:12px;"></div>
-      <button id="chaek-accept-btn" onclick="acceptChaekSentence()" style="width:100%;padding:11px;background:#fff;border:none;border-radius:20px;font-size:13px;font-weight:700;color:#f87171;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">✓ 형량 수락 — 운동 추가</button>
-    </div>
+    <div id="chaek-rage-hint" style="display:none;font-size:12px;color:rgba(255,255,255,.65);margin-bottom:12px;margin-top:-16px;">⚖️ 채찍피티가 형량 계산 중…</div>
     <button class="rage-close" onclick="closeRage()">알겠어, 다시 일어선다</button>
+  </div>
+
+  <!-- 채찍피티 선고 모달 (rage 닫힌 후 바텀시트로 등장) -->
+  <div id="chaek-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:900;align-items:flex-end;justify-content:center;">
+    <div style="width:100%;max-width:430px;background:#1a1a1f;border-radius:22px 22px 0 0;padding:24px 20px 40px;animation:mslide .25s ease;">
+      <div style="width:32px;height:4px;background:#333;border-radius:2px;margin:0 auto 20px;"></div>
+      <!-- 로딩 상태 -->
+      <div id="chaek-loading" style="display:flex;flex-direction:column;align-items:center;gap:12px;padding:24px 0;">
+        <div style="width:28px;height:28px;border:2px solid #333;border-top-color:#f87171;border-radius:50%;animation:spin .7s linear infinite;"></div>
+        <div style="font-size:14px;color:#888;">채찍피티가 형량을 계산 중이야…</div>
+      </div>
+      <!-- 결과 상태 -->
+      <div id="chaek-result" style="display:none;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+          <div style="font-size:32px;">⚖️</div>
+          <div>
+            <div style="font-size:11px;font-weight:600;color:#f87171;text-transform:uppercase;letter-spacing:.08em;">채찍피티 선고</div>
+            <div style="font-size:13px;color:#888;margin-top:1px;">형량을 수락하고 운동하거나, 무시하거나</div>
+          </div>
+        </div>
+        <div id="chaek-sentence" style="font-size:17px;font-weight:700;color:#f0f0f0;line-height:1.7;margin-bottom:20px;padding:16px;background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.2);border-radius:14px;white-space:pre-line;"></div>
+        <button onclick="acceptChaekSentence()" style="width:100%;padding:16px;background:#f87171;border:none;border-radius:14px;color:#fff;font-size:16px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;margin-bottom:8px;">💀 형량 수락 — 운동 추가</button>
+        <button onclick="closeChaekModal()" style="width:100%;padding:13px;background:transparent;border:none;color:#555;font-size:14px;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">도망갈게요 (겁쟁이)</button>
+      </div>
+    </div>
   </div>
 
   <!-- GOGGINS WIN OVERLAY -->
@@ -3571,13 +3587,18 @@ function showRage(){
 // ═══════════════════════════════════════════════
 // 채찍피티 — 금지식 먹으면 Claude가 징역 선고
 // ═══════════════════════════════════════════════
-let _chaekPendingWorkout = null; // API 응답으로 생성된 운동 대기 중
+let _chaekPendingWorkout = null;
+let _chaekSentenceText = '';
+let _chaekReady = false;
 
 async function callChaekpipty(mealName) {
-  // 로딩 표시
-  document.getElementById('chaek-loading').style.display = 'flex';
-  document.getElementById('chaek-result').style.display = 'none';
   _chaekPendingWorkout = null;
+  _chaekSentenceText = '';
+  _chaekReady = false;
+
+  // rage 안 힌트 표시
+  const hint = document.getElementById('chaek-rage-hint');
+  if (hint) hint.style.display = 'block';
 
   const userName = CP?.display_name || CP?.username || '이 겁쟁이';
   const prompt = `당신은 데이비드 고긴스 스타일의 극한 피트니스 코치 "채찍피티"입니다.
@@ -3585,7 +3606,7 @@ ${userName}이(가) 방금 금지 식단을 먹었습니다: "${mealName || '금
 
 다음 JSON 형식으로만 응답하세요. 다른 텍스트 없이 JSON만:
 {
-  "sentence": "한국어로 2-3줄의 고긴스 스타일 징벌 선고문. 예: '유산소 징역 3시간형!\n러닝으로 그 칼로리를 태워버려.\n변명은 없다.'",
+  "sentence": "한국어로 2-3줄의 고긴스 스타일 징벌 선고문. 예: '유산소 징역 3시간형!\\n러닝으로 그 칼로리를 태워버려.\\n변명은 없다.'",
   "workout": {
     "type": "activity",
     "icon": "이모지 1개",
@@ -3595,58 +3616,94 @@ ${userName}이(가) 방금 금지 식단을 먹었습니다: "${mealName || '금
     "status": "planned"
   }
 }
-
 운동은 반드시 유산소 종목 (달리기/사이클/수영/줄넘기 등). 강도는 먹은 음식에 비례해서 잔인하게.`;
 
   try {
     const res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
         max_tokens: 300,
-        messages: [{ role: 'user', content: prompt }]
+        messages: [{role: 'user', content: prompt}]
       })
     });
     const data = await res.json();
     const raw = data.content?.[0]?.text || '';
-    // JSON 파싱 (마크다운 펜스 제거)
     const cleaned = raw.replace(/```json|```/g, '').trim();
     const parsed = JSON.parse(cleaned);
-
     _chaekPendingWorkout = parsed.workout;
+    _chaekSentenceText = parsed.sentence;
+    _chaekReady = true;
 
-    // UI 업데이트
-    document.getElementById('chaek-loading').style.display = 'none';
-    document.getElementById('chaek-sentence').textContent = parsed.sentence;
-    document.getElementById('chaek-result').style.display = 'block';
+    // rage가 아직 열려있으면 힌트 업데이트
+    const rage = document.getElementById('goggins-rage');
+    if (hint && rage.style.display !== 'none') {
+      hint.textContent = '⚖️ 형량 준비 완료 — 닫으면 선고한다';
+    } else {
+      // rage 이미 닫혔으면 바로 모달
+      openChaekModal();
+    }
   } catch(e) {
-    // API 실패 시 폴백 — 조용히 넘어감
-    document.getElementById('chaek-loading').style.display = 'none';
     console.warn('채찍피티 API 실패:', e.message);
+    if (hint) hint.style.display = 'none';
   }
+}
+
+function openChaekModal() {
+  const modal = document.getElementById('chaek-modal');
+  if (!modal) return;
+  const loadingEl = document.getElementById('chaek-loading');
+  const resultEl = document.getElementById('chaek-result');
+  if (_chaekReady) {
+    loadingEl.style.display = 'none';
+    resultEl.style.display = 'block';
+    document.getElementById('chaek-sentence').textContent = _chaekSentenceText;
+  } else {
+    loadingEl.style.display = 'flex';
+    resultEl.style.display = 'none';
+    // API 응답 오면 자동 업데이트 — polling
+    const interval = setInterval(()=>{
+      if (_chaekReady) {
+        clearInterval(interval);
+        loadingEl.style.display = 'none';
+        resultEl.style.display = 'block';
+        document.getElementById('chaek-sentence').textContent = _chaekSentenceText;
+      }
+    }, 300);
+    setTimeout(()=>clearInterval(interval), 30000); // 30초 후 포기
+  }
+  modal.style.display = 'flex';
+}
+
+function closeChaekModal() {
+  const modal = document.getElementById('chaek-modal');
+  if (modal) modal.style.display = 'none';
+  _chaekPendingWorkout = null;
+  _chaekReady = false;
 }
 
 function acceptChaekSentence() {
   if (!_chaekPendingWorkout) return;
-  // 운동 카드에 추가
   if (!logCache[selectedKey]) logCache[selectedKey] = log;
   log = logCache[selectedKey];
   log.workouts.push(_chaekPendingWorkout);
   _chaekPendingWorkout = null;
+  _chaekReady = false;
   renderWorkouts();
   queueSave();
-  closeRage();
+  closeChaekModal();
   showToast('⚖️ 형량이 운동 목록에 추가됐어요');
 }
 
-
-
 function closeRage(){
   document.getElementById('goggins-rage').style.display='none';
-  document.getElementById('chaek-loading').style.display='none';
-  document.getElementById('chaek-result').style.display='none';
-  _chaekPendingWorkout=null;
+  const hint = document.getElementById('chaek-rage-hint');
+  if (hint) { hint.style.display='none'; hint.textContent='⚖️ 채찍피티가 형량 계산 중…'; }
+  // rage 닫을 때 채찍피티 결과 있으면 모달 오픈
+  if (_chaekReady || _chaekSentenceText) {
+    setTimeout(openChaekModal, 200);
+  }
 }
 let _winQueue=[];
 let _winShowing=false;
