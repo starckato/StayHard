@@ -615,16 +615,26 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
     <div class="s-card" style="margin-bottom:10px;">
       <div class="s-card-hdr">
         <div class="s-card-title">⚖️ 공복 체중</div>
-        <button class="wt-edit" onclick="openModal('weight-modal')" style="font-size:13px;padding:7px 14px;min-height:36px;">수정</button>
+        <button class="wt-edit" id="wt-edit-btn" onclick="openModal('weight-modal')" style="font-size:13px;padding:7px 14px;min-height:36px;display:none;">수정</button>
       </div>
       <div class="s-divider"></div>
-      <div style="padding:14px 16px 16px;display:flex;align-items:center;gap:12px;">
-        <div style="flex:1;">
-          <div style="display:flex;align-items:flex-end;gap:6px;">
-            <div class="wt-num" id="wt-display" style="font-size:36px;">—</div>
-            <div class="wt-unit" id="wt-unit" style="font-size:16px;color:var(--text3);padding-bottom:4px;">kg</div>
+      <!-- 미입력 상태 -->
+      <div id="wt-empty-state" style="padding:16px;">
+        <button onclick="openModal('weight-modal')" style="width:100%;padding:16px;background:rgba(124,106,247,.08);border:1.5px dashed rgba(124,106,247,.4);border-radius:12px;color:var(--accent);font-size:15px;font-weight:600;cursor:pointer;touch-action:manipulation;display:flex;align-items:center;justify-content:center;gap:8px;">
+          <span style="font-size:20px;">⚖️</span> 오늘 공복 체중 기록하기
+        </button>
+      </div>
+      <!-- 입력된 상태 -->
+      <div id="wt-filled-state" style="display:none;padding:14px 16px 16px;">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div style="flex:1;">
+            <div style="display:flex;align-items:flex-end;gap:6px;">
+              <div class="wt-num" id="wt-display" style="font-size:36px;">—</div>
+              <div class="wt-unit" id="wt-unit" style="font-size:16px;color:var(--text3);padding-bottom:4px;">kg</div>
+            </div>
+            <div style="font-size:12px;color:var(--text3);margin-top:4px;" id="wt-trend"></div>
           </div>
-          <div style="font-size:12px;color:var(--text3);margin-top:4px;" id="wt-trend">수정을 눌러 기록하세요</div>
+          <button class="wt-edit" onclick="openModal('weight-modal')" style="font-size:13px;padding:7px 14px;min-height:36px;">수정</button>
         </div>
       </div>
     </div>
@@ -1243,6 +1253,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 
 <div id="goggins-win">
     <div class="win-emoji" id="win-emoji">🔥</div>
+    <div id="win-title" style="display:none;font-size:13px;font-weight:700;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.1em;margin-top:14px;"></div>
     <div class="win-msg" id="win-msg"></div>
     <div id="win-pts" style="display:none;font-weight:800;color:#4ade80;margin-top:8px;animation:winSlide .4s ease;"></div>
   </div>
@@ -3113,6 +3124,10 @@ const RAGE_MSGS = [
 ];
 
 const WIN_MSGS = {
+  weight:['몸을 직면했어. 그게 용기야.','숫자가 두렵지 않은 자가 변한다.','기록이 변화의 시작이야.'],
+  weight_loss:['줄었어. 통제가 시작됐다.','어제보다 가벼워졌어. 계속해.','감량은 의지의 증거야.'],
+  weight_goal:['목표에 도달했어. 진짜 시작은 지금부터야.','목표 달성. 하지만 멈추지 마.','숫자가 증명했어. 넌 할 수 있어.'],
+  diet_clean:['클린 식단. 몸이 고마워할 거야.','먹는 것이 곧 너야. 잘했어.','통제된 식단이 통제된 삶을 만들어.'],
   routine: [
     '🔥 루틴 완료! 이게 바로 규율이다.',
     '✅ 하나씩 쌓이는 거야. 멈추지 마.',
@@ -3363,31 +3378,64 @@ function closeRage(){
   document.getElementById('goggins-rage').style.display='none';
 }
 
-function showWin(type, pts=null){
-  // 100점 특별 팡파레
+// 팡파레 큐 — 연속 호출 시 순서대로 표시
+let _winQueue=[];
+let _winShowing=false;
+
+function showWin(type, pts=null, title=null){
   if(pts===100){
     const el=document.getElementById('goggins-100');
     el.style.display='flex';
     document.body.style.overflow='hidden';
     if(navigator.vibrate)navigator.vibrate([100,50,100,50,500]);
-    // 별도 폭죽
     for(let i=0;i<120;i++)setTimeout(()=>spawnConfetti(),Math.random()*3000);
     return;
   }
-  const msgs=WIN_MSGS[type]||WIN_MSGS.routine;
+  _winQueue.push({type,pts,title});
+  if(!_winShowing)_showNextWin();
+}
+
+function _showNextWin(){
+  if(!_winQueue.length){_winShowing=false;return;}
+  _winShowing=true;
+  const{type,pts,title}=_winQueue.shift();
+
+  const EMOJIS={
+    weight:'⚖️', weight_loss:'⬇️', weight_goal:'🎯',
+    diet:'🥗', diet_clean:'🟢', diet_junk:'🔴',
+    workout:'💥', routine:'✅', task:'📋',
+    cold_shower:'🚿', early_rise:'🌅', perfect:'🏆'
+  };
+  const emoji=EMOJIS[type]||'✅';
+
+  const msgs=WIN_MSGS[type]||WIN_MSGS[type==='weight'||type==='weight_loss'||type==='weight_goal'?'routine':type]||WIN_MSGS.routine;
   const msg=msgs[Math.floor(Math.random()*msgs.length)];
+
   const el=document.getElementById('goggins-win');
-  document.getElementById('win-emoji').textContent=type==='workout'?'💥':type==='task'?'🎯':type==='perfect'?'🏆':'✅';
+  document.getElementById('win-emoji').textContent=emoji;
+
+  // 제목
+  const titleEl=document.getElementById('win-title');
+  if(titleEl&&title){titleEl.textContent=title;titleEl.style.display='block';}
+  else if(titleEl){titleEl.style.display='none';}
+
   document.getElementById('win-msg').textContent=msg;
+
   const ptsEl=document.getElementById('win-pts');
   if(ptsEl&&pts){
     ptsEl.textContent='+'+pts+'점';
     ptsEl.style.fontSize=pts>=10?'32px':pts>=5?'26px':'20px';
     ptsEl.style.display='block';
   } else if(ptsEl){ptsEl.style.display='none';}
+
   el.style.display='flex';
   if(navigator.vibrate)navigator.vibrate(50);
-  setTimeout(()=>el.style.display='none', type==='perfect'?5000:3000);
+
+  const duration=type==='perfect'?5000:2500;
+  setTimeout(()=>{
+    el.style.display='none';
+    setTimeout(_showNextWin, 300); // 다음 팡파레
+  }, duration);
 }
 
 function launchConfetti(){
@@ -3413,7 +3461,7 @@ function checkPerfectDay(){
   const scores=calcGogginsScore(log);
   if(scores.total===100){
     setTimeout(()=>{
-      showWin('perfect',10);
+      showWin('perfect',10,'완벽한 하루!');
       launchConfetti();
     },300);
   }
@@ -3562,6 +3610,13 @@ function renderRoutine(){renderWeight();renderMeals();renderWater();renderWorkou
 
 // WEIGHT
 function renderWeight(){
+  const emptyState=document.getElementById('wt-empty-state');
+  const filledState=document.getElementById('wt-filled-state');
+  if(emptyState&&filledState){
+    const hasWeight=log.weight!==null&&log.weight!==undefined;
+    emptyState.style.display=hasWeight?'none':'block';
+    filledState.style.display=hasWeight?'block':'none';
+  }
   const wd=document.getElementById('wt-display'),tr=document.getElementById('wt-trend'),wu=document.getElementById('wt-unit');
   if(log.weight!==null){wd.textContent=parseFloat(log.weight).toFixed(1);wd.style.color='var(--text)';wu.style.display='block';tr.textContent='기록됨';tr.style.color='var(--green)';}
   else{wd.textContent='—';wd.style.color='var(--text3)';wu.style.display='none';tr.textContent='수정을 눌러 기록하세요';tr.style.color='var(--text3)';}
@@ -3570,14 +3625,31 @@ function saveWeight(){
   const v=parseFloat(document.getElementById('wt-inp').value);
   if(isNaN(v))return;
   const prev=log.weight;
+  const isFirstRecord=prev===null||prev===undefined;
   log.weight=v;
   closeModal('weight-modal');renderWeight();
-  addScore('weight_record');
-  // 감량 체크 (이전 기록과 비교)
-  if(prev!==null&&v<prev)addScore('weight_loss');
-  // 목표 체중 체크
+
+  // 1일 1회 weight_record 제한
+  const todayPtsLog=(logCache[TODAY]||log)._ptsLog||[];
+  const alreadyRecorded=todayPtsLog.some(e=>e.type==='weight_record');
+
+  if(!alreadyRecorded){
+    // 처음 기록 — 팡파레
+    setTimeout(()=>showWin('weight',1,'체중 기록 성공!'),200);
+    addScore('weight_record');
+  }
+  // 감량도 1일 1회만
+  const alreadyLoss=todayPtsLog.some(e=>e.type==='weight_loss');
+  if(!alreadyLoss&&prev!==null&&prev!==undefined&&v<prev){
+    addScore('weight_loss');
+    setTimeout(()=>showWin('weight_loss',2,'감량 성공!'),500);
+  }
+  // 목표 체중 달성
   const goal=CP?.weight_goal||null;
-  if(goal&&v<=goal&&(prev===null||prev>goal))addScore('weight_goal');
+  if(goal&&v<=goal&&(prev===null||prev>goal)){
+    addScore('weight_goal');
+    setTimeout(()=>showWin('weight_goal',10,'목표 체중 달성!'),800);
+  }
   saveNow();
 }
 
@@ -3846,7 +3918,7 @@ function saveMeal(){
   // Score events
   addScore('diet_log');
   if(foodType==='red'){addScore('diet_junk');setTimeout(showRage,300);}
-  else if(foodType==='green'){addScore('diet_clean');showWin('routine',1);}
+  else if(foodType==='green'){addScore('diet_clean');showWin('diet_clean',5+1,'클린 식단!');}
   saveNow();
   checkPerfectDay();
 }
@@ -4239,7 +4311,7 @@ async function finishSession(){
     const l=logCache[selectedKey]||log;
     const alreadyScored=(l._ptsLog||[]).filter(e=>e.type==='workout_done').length>=1;
     if(!alreadyScored)addScore('workout_done');
-    setTimeout(()=>{showWin('workout',5);launchConfetti();checkPerfectDay();},300);
+    setTimeout(()=>{showWin('workout',5,'운동 완료!');launchConfetti();checkPerfectDay();},300);
   } else {
     showToast('✓ 세션이 수정됐어요');
   }
@@ -4396,7 +4468,7 @@ function togMand(i){
       // 방금 완료한 항목만 bounce (인덱스로 직접 찾기)
       const rows=document.querySelectorAll('#check-rows .ck-row');
       if(rows[_bounceIdx]){const box=rows[_bounceIdx].querySelector('.ck-box');if(box)bounceEl(box);}
-      if(earnedPts<100)showWin('routine',earnedPts);
+      if(earnedPts<100)showWin('routine',earnedPts,'루틴 완료!');
       else showWin('routine',100);
       checkPerfectDay();
     },50);
