@@ -4254,21 +4254,21 @@ function saveMeal(){
   closeModal('meal-modal');renderMeals();renderCheatBadge();
   // 점수
   if(mealCategory==='drink'){
-    // 음료는 기록만 (점수 없음)
+    // 음료는 점수 없음
   } else if(foodType==='red'){
-    addScore('diet_junk');setTimeout(()=>showChaekpipty(name),300);
+    addScore('diet_log');addScore('diet_junk');setTimeout(()=>showChaekpipty(name),300);
   } else if(foodType==='green'){
-    addScore('diet_clean');showWin('diet_clean',6,'클린 식단!');
+    addScore('diet_log');addScore('diet_clean');showWin('diet_clean',6,'클린 식단!');
   } else if(foodType==='cheat'){
-    // 치팅은 점수 차감 없음, 조용히 저장
     showToast('🎉 치팅 사용! 잔여 '+getCheatRemaining()+'회');
   } else {
     addScore('diet_log');
   }
-  if(foodType!=='cheat'&&foodType!=='red'&&mealCategory!=='drink')addScore('diet_log');
   saveNow();
   checkPerfectDay();
 }
+
+function applyDetectedTime(t){
   if(!t||mealTime)return;
   mealTime=t;
   document.querySelectorAll('#mm-time-btns .ftbtn').forEach(b=>{
@@ -4360,7 +4360,6 @@ function delPhoto(){
   if(c)c.value='';if(g)g.value='';
 }
 
-function applyDetectedTime(t){
 function renderWater(){
   const c=document.getElementById('water-cups');c.innerHTML='';
   for(let i=0;i<12;i++){const d=document.createElement('div');d.className='wc'+(i<log.water_cups?' on':'');d.onclick=()=>{log.water_cups=(log.water_cups===i+1)?i:i+1;renderWater();scheduleSave();};c.appendChild(d);}
