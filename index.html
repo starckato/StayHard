@@ -2334,6 +2334,9 @@ const SCORE_EVENTS={
   cold_shower:      {pts:10, label:'찬물 샤워',            icon:'🚿'},
   early_rise:       {pts:10, label:'새벽 기상',            icon:'🌅'},
   goggins_4x4x48:   {pts:100,label:'4x4x48 챌린지',       icon:'🏃'},
+  diet_log_cancel:    {pts:-1, label:'식단 등록 취소',        icon:'🥗'},
+  diet_clean_cancel:  {pts:-5, label:'클린 식단 취소',        icon:'🟢'},
+  diet_junk_cancel:   {pts:10, label:'금지 식단 취소 (복구)', icon:'🔴'},
   routine_done_cancel:{pts:-1, label:'루틴 완료 취소',        icon:'↩️'},
   target_done_cancel: {pts:-1, label:'할일 완료 취소',        icon:'↩️'},
   routine_fail_cancel:{pts:5,  label:'루틴 실패 취소 (복구)',  icon:'↩️'},
@@ -3719,7 +3722,21 @@ function renderMeals(){
     }).join('');
 }
 
-function deleteMeal(i){log.meals.splice(i,1);renderMeals();saveNow();}
+function deleteMeal(i){
+  const meal=log.meals[i];
+  if(meal){
+    const foodType=meal.type; // 'green'|'red'|null
+    // diet_log 점수 취소 (-1)
+    addScore('diet_log_cancel','',-1);
+    // 클린이면 +5 취소
+    if(foodType==='green') addScore('diet_clean_cancel','',-5);
+    // 금지식이면 -10 복구 (+10)
+    if(foodType==='red') addScore('diet_junk_cancel','',10);
+  }
+  log.meals.splice(i,1);
+  renderMeals();
+  saveNow();
+}
 
 let mealIdx=null,foodType=null,photoData=null,mealTime=null,mealCategory=null;
 
