@@ -198,7 +198,9 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 .wo-meta{font-size:11px;color:var(--text2);font-family:'DM Mono',monospace;margin-top:1px;}
 .wo-status{padding:6px 12px;border-radius:20px;font-size:13px;font-weight:500;flex-shrink:0;}
 .wo-status.done{background:var(--green-bg);color:var(--green);border:1px solid var(--green-bd);}
-.wo-status.planned{background:var(--accent-bg);color:var(--accent);border:1px solid var(--accent-bd);}
+.wo-status.planned{background:rgba(96,165,250,.15);color:#60a5fa;border:1px solid rgba(96,165,250,.3);}
+.wo-status.recorded{background:rgba(124,106,247,.15);color:var(--accent);border:1px solid rgba(124,106,247,.3);}
+.wo-status.in_progress{background:rgba(251,191,36,.15);color:#fbbf24;border:1px solid rgba(251,191,36,.3);}
 .wo-status.skip{background:var(--red-bg);color:var(--red);border:1px solid var(--red-bd);}
 .wo-del{background:none;border:none;color:var(--text3);cursor:pointer;font-size:14px;padding:4px;}
 .wo-empty{font-size:12px;color:var(--text3);font-style:italic;padding:8px 0;}
@@ -1407,20 +1409,62 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 <div class="modal-overlay" id="workout-modal">
   <div class="modal">
     <div class="mhandle"></div>
-    <div class="mtitle">무슨 운동을 했나요?</div>
+    <div class="mtitle">운동을 어떻게 할까요?</div>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px;">
+
+      <!-- 지금 시작 -->
+      <div onclick="openWorkoutTypeSelect('now')" style="display:flex;align-items:center;gap:14px;padding:16px;border-radius:14px;border:1.5px solid var(--border);background:var(--surface2);cursor:pointer;touch-action:manipulation;">
+        <div style="width:44px;height:44px;border-radius:12px;background:rgba(124,106,247,.15);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">▶️</div>
+        <div style="flex:1;">
+          <div style="font-size:15px;font-weight:700;color:var(--text);">지금 시작할게요</div>
+          <div style="font-size:12px;color:var(--text3);margin-top:2px;">실시간으로 세트 체크하면서 기록</div>
+        </div>
+        <div style="font-size:18px;color:var(--text3);">›</div>
+      </div>
+
+      <!-- 이미 했어요 -->
+      <div onclick="openWorkoutTypeSelect('done')" style="display:flex;align-items:center;gap:14px;padding:16px;border-radius:14px;border:1.5px solid var(--border);background:var(--surface2);cursor:pointer;touch-action:manipulation;">
+        <div style="width:44px;height:44px;border-radius:12px;background:rgba(74,222,128,.12);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">📝</div>
+        <div style="flex:1;">
+          <div style="font-size:15px;font-weight:700;color:var(--text);">이미 했어요</div>
+          <div style="font-size:12px;color:var(--text3);margin-top:2px;">완료한 운동을 사후 기록</div>
+        </div>
+        <div style="font-size:18px;color:var(--text3);">›</div>
+      </div>
+
+      <!-- 예정 등록 -->
+      <div onclick="openWorkoutTypeSelect('planned')" style="display:flex;align-items:center;gap:14px;padding:16px;border-radius:14px;border:1.5px solid var(--border);background:var(--surface2);cursor:pointer;touch-action:manipulation;">
+        <div style="width:44px;height:44px;border-radius:12px;background:rgba(96,165,250,.12);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">📅</div>
+        <div style="flex:1;">
+          <div style="font-size:15px;font-weight:700;color:var(--text);">예정 등록할게요</div>
+          <div style="font-size:12px;color:var(--text3);margin-top:2px;">오늘 할 운동을 미리 등록</div>
+        </div>
+        <div style="font-size:18px;color:var(--text3);">›</div>
+      </div>
+
+    </div>
+    <button class="mbtn-ghost" onclick="closeModal('workout-modal')">취소</button>
+  </div>
+</div>
+
+<!-- WORKOUT TYPE MODAL (헬스 vs 유산소) -->
+<div class="modal-overlay" id="workout-type-modal">
+  <div class="modal">
+    <div class="mhandle"></div>
+    <div class="mtitle" id="workout-type-title">어떤 운동을 할까요?</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
-      <div onclick="startGymSession()" style="padding:18px 12px;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:var(--surface2);cursor:pointer;text-align:center;transition:all .15s;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+      <div onclick="selectWorkoutType('gym')" style="padding:18px 12px;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:var(--surface2);cursor:pointer;text-align:center;touch-action:manipulation;">
         <div style="font-size:28px;margin-bottom:8px;">🏋️</div>
         <div style="font-size:13px;font-weight:600;margin-bottom:3px;">헬스 / 근력</div>
         <div style="font-size:11px;color:var(--text3);">세트별 운동 기록</div>
       </div>
-      <div onclick="openActivityModal()" style="padding:18px 12px;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:var(--surface2);cursor:pointer;text-align:center;transition:all .15s;" onmouseover="this.style.borderColor='var(--green)'" onmouseout="this.style.borderColor='var(--border)'">
+      <div onclick="selectWorkoutType('activity')" style="padding:18px 12px;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:var(--surface2);cursor:pointer;text-align:center;touch-action:manipulation;">
         <div style="font-size:28px;margin-bottom:8px;">🏃</div>
         <div style="font-size:13px;font-weight:600;margin-bottom:3px;">유산소 / 스포츠</div>
         <div style="font-size:11px;color:var(--text3);">단일 활동 기록</div>
       </div>
     </div>
-    <button class="mbtn-ghost" onclick="closeModal('workout-modal')">취소</button>
+    <button class="mbtn-ghost" onclick="closeModal('workout-type-modal');openModal('workout-modal')">← 뒤로</button>
   </div>
 </div>
 
@@ -1549,15 +1593,6 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
           <div style="flex:1;">
             <div style="font-size:14px;font-weight:600;">독서 30분</div>
             <div style="font-size:11px;color:var(--text3);">하루 30분 독서. 생각이 넓어진다.</div>
-          </div>
-          <div style="font-size:11px;color:var(--text3);">+1점</div>
-        </div>
-
-        <div onclick="pickRecommendedRoutine('🧘 명상 10분',null)" style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:12px;cursor:pointer;touch-action:manipulation;">
-          <div style="font-size:22px;">🧘</div>
-          <div style="flex:1;">
-            <div style="font-size:14px;font-weight:600;">명상 10분</div>
-            <div style="font-size:11px;color:var(--text3);">하루 10분 마음 비우기.</div>
           </div>
           <div style="font-size:11px;color:var(--text3);">+1점</div>
         </div>
@@ -2025,7 +2060,7 @@ function saveSessionToLog(){
     sessionName:'헬스 세션',
     exercises:currentSession.map(ex=>({name:ex.name,icon:ex.icon,muscle:ex.muscle,equip:ex.equip,sets:ex.sets,isStrength:ex.isStrength})),
     totalVolume,
-    status:currentSession.some(ex=>ex.sets.some(s=>s.done))?'done':'planned',
+    status:_workoutMode==='planned'?'planned':currentSession.some(ex=>ex.sets.some(s=>s.done))?(_workoutMode==='done'?'recorded':'done'):'done',
     _expanded:false
   };
   // Use stored index — never search by reference
@@ -3984,7 +4019,9 @@ function renderWorkouts(){
             <div class="wo-name">${w.sessionName||'헬스 세션'}</div>
             <div class="wo-meta">${preview}${volStr?' · '+volStr:''}</div>
           </div>
-          <div class="wo-status ${w.status==='done'?'done':'planned'}">${w.status==='done'?'✓ 완료':'예정'}</div>
+          <div class="wo-status ${w.status==='done'?'done':w.status==='recorded'?'recorded':w.status==='planned'?'planned':'done'}" onclick="event.stopPropagation();${w.status==='planned'?'markWorkoutDone('+i+')':''}" style="cursor:${w.status==='planned'?'pointer':'default'};">
+            ${w.status==='done'?'✓ 완료':w.status==='recorded'?'✓ 기록됨':w.status==='planned'?'📅 예정':'완료'}
+          </div>
           <button onclick="event.stopPropagation();delWO(${i})" class="wo-del" style="pointer-events:all;">✕</button>
         </div>
         ${vol>0?`<div style="display:flex;gap:0;border-top:1px solid var(--border);">
@@ -4114,6 +4151,20 @@ function downloadImage(canvas){
   showToast('📸 이미지 저장됨!');
 }
 
+function markWorkoutDone(i){
+  if(!confirm('운동을 완료했나요? ✓'))return;
+  log.workouts[i].status='done';
+  renderWorkouts();
+  // 점수 부여 (오늘 workout_done 없으면)
+  const todayPtsLog=(logCache[TODAY]||log)._ptsLog||[];
+  const alreadyScored=todayPtsLog.some(e=>e.type==='workout_done');
+  if(!alreadyScored){
+    addScore('workout_done');
+    setTimeout(()=>{showWin('workout',5,'운동 완료!');launchConfetti();},200);
+  }
+  queueSave();
+}
+
 function delWO(i){
   const w=log.workouts[i];
   const name=w?.type==='gym'?(w.sessionName||'헬스 세션'):w?.name||'운동';
@@ -4126,7 +4177,21 @@ function delWO(i){
 }
 
 // ── GYM SESSION ──
-function startGymSession(){
+function selectWorkoutType(type){
+  closeModal('workout-type-modal');
+  if(type==='gym'){
+    if(_workoutMode==='now'||_workoutMode==='done'){
+      startGymSession();
+    } else {
+      // 예정 등록 — 운동 세션 시작하되 planned 상태로
+      startGymSession(true);
+    }
+  } else {
+    openActivityModal();
+  }
+}
+
+function startGymSession(isPlanned=false){
   closeModal('workout-modal');
   openWorkoutSession([]);
 }
@@ -4147,6 +4212,23 @@ function editGymSession(i){
   // Update button label to signal edit mode
   const btn=document.getElementById('ws-done-btn');
   if(btn)btn.textContent='수정 완료 ✓';
+}
+
+// 운동 등록 모드 상태
+let _workoutMode='now'; // 'now' | 'done' | 'planned'
+
+function openWorkoutTypeSelect(mode){
+  _workoutMode=mode;
+  closeModal('workout-modal');
+  // 헬스/유산소 선택 모달로 이동
+  openWorkoutTypeModal();
+}
+
+function openWorkoutTypeModal(){
+  // 기존 타입 선택 (헬스 vs 유산소) — 모드에 따라 타이틀 변경
+  const titles={'now':'지금 시작 — 어떤 운동?','done':'어떤 운동을 했나요?','planned':'어떤 운동을 예정할까요?'};
+  document.getElementById('workout-type-title').textContent=titles[_workoutMode]||'운동 종류 선택';
+  openModal('workout-type-modal');
 }
 
 function openWorkoutModal(){
