@@ -1660,6 +1660,7 @@ const EXERCISE_LIBRARY = [
   {i:'🖥️',n:'펙덱 플라이',m:'가슴',e:'머신'},
   {i:'🖥️',n:'머신 체스트 프레스',m:'가슴',e:'머신'},
   {i:'🖥️',n:'스미스 머신 벤치프레스',m:'가슴',e:'머신'},
+  {i:'🤸',n:'슬로우 푸쉬업',m:'가슴',e:'맨몸'},
   {i:'🖥️',n:'스미스 인클라인 프레스',m:'가슴',e:'머신'},
   {i:'🖥️',n:'플라이 머신 (단측)',m:'가슴',e:'머신'},
   {i:'🤸',n:'푸쉬업',m:'가슴',e:'맨몸'},
@@ -1682,6 +1683,8 @@ const EXERCISE_LIBRARY = [
   {i:'💪',n:'리버스 플라이',m:'등',e:'덤벨'},
   {i:'🔩',n:'케이블 로우',m:'등',e:'케이블'},
   {i:'🔩',n:'시티드 케이블 로우',m:'등',e:'케이블'},
+  {i:'🔩',n:'케이블 시티드 로우',m:'등',e:'케이블'},
+  {i:'🖥️',n:'어시스트 풀업',m:'등',e:'머신'},
   {i:'🔩',n:'페이스풀',m:'등',e:'케이블'},
   {i:'🖥️',n:'랫풀다운',m:'등',e:'머신'},
   {i:'🖥️',n:'와이드 랫풀다운',m:'등',e:'머신'},
@@ -1726,6 +1729,8 @@ const EXERCISE_LIBRARY = [
   {i:'🏋️',n:'업라이트 로우',m:'어깨',e:'바벨'},
   {i:'🏋️',n:'슈러그',m:'어깨',e:'바벨'},
   {i:'💪',n:'덤벨 숄더 프레스',m:'어깨',e:'덤벨'},
+  {i:'💪',n:'스탠딩 덤벨 숄더 프레스',m:'어깨',e:'덤벨'},
+  {i:'🖥️',n:'리버스 팩덱 플라이',m:'어깨',e:'머신'},
   {i:'💪',n:'아놀드 프레스',m:'어깨',e:'덤벨'},
   {i:'💪',n:'레터럴 레이즈',m:'어깨',e:'덤벨'},
   {i:'💪',n:'프론트 레이즈',m:'어깨',e:'덤벨'},
@@ -1750,6 +1755,7 @@ const EXERCISE_LIBRARY = [
   {i:'💪',n:'덤벨 트라이셉스 킥백',m:'팔',e:'덤벨'},
   {i:'🔩',n:'케이블 컬',m:'팔',e:'케이블'},
   {i:'🔩',n:'트라이셉스 푸쉬다운',m:'팔',e:'케이블'},
+  {i:'🔩',n:'케이블 푸쉬다운',m:'팔',e:'케이블'},
   {i:'🔩',n:'케이블 킥백 (팔)',m:'팔',e:'케이블'},
   {i:'🖥️',n:'프리처 컬',m:'팔',e:'머신'},
   {i:'🤸',n:'딥스',m:'팔',e:'맨몸'},
@@ -1758,6 +1764,7 @@ const EXERCISE_LIBRARY = [
   {i:'🤸',n:'싯업',m:'복근',e:'맨몸'},
   {i:'🤸',n:'레그 레이즈',m:'복근',e:'맨몸'},
   {i:'🤸',n:'행잉 레그 레이즈',m:'복근',e:'맨몸'},
+  {i:'🤸',n:'행잉 니업',m:'복근',e:'맨몸'},
   {i:'🤸',n:'플랭크',m:'복근',e:'맨몸'},
   {i:'🤸',n:'사이드 플랭크',m:'복근',e:'맨몸'},
   {i:'🤸',n:'러시안 트위스트',m:'복근',e:'맨몸'},
@@ -2060,7 +2067,7 @@ function saveSessionToLog(){
     sessionName:'헬스 세션',
     exercises:currentSession.map(ex=>({name:ex.name,icon:ex.icon,muscle:ex.muscle,equip:ex.equip,sets:ex.sets,isStrength:ex.isStrength})),
     totalVolume,
-    status:_workoutMode==='planned'?'planned':currentSession.some(ex=>ex.sets.some(s=>s.done))?(_workoutMode==='done'?'recorded':'done'):'done',
+    status:_workoutMode==='planned'?'planned':_workoutMode==='done'?'recorded':'done',
     _expanded:false
   };
   // Use stored index — never search by reference
@@ -2421,6 +2428,7 @@ function calcGogginsScore(l){
 
 // ── STATE ──
 let CU=null,CP=null,activeComp=null;
+let _workoutMode='now'; // 'now'=지금시작 | 'done'=이미했어요 | 'planned'=예정
 // Challenge setup state — defaults match the UI pre-selected values
 let compDurVal=14,compType='routine';
 let compSecs={diet:true,workout:true,mandatory:true,target:false};
@@ -4214,8 +4222,6 @@ function editGymSession(i){
   if(btn)btn.textContent='수정 완료 ✓';
 }
 
-// 운동 등록 모드 상태
-let _workoutMode='now'; // 'now' | 'done' | 'planned'
 
 function openWorkoutTypeSelect(mode){
   _workoutMode=mode;
