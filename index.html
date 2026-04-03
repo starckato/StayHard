@@ -617,22 +617,33 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
     </div>
     <div class="s-card" style="margin-bottom:10px;">
       <div class="s-card-hdr">
-        <div class="s-card-title">⚖️ 공복 체중</div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <div class="s-card-title">⚖️ 체중</div>
+          <div id="wt-info-btn" onclick="toggleWeightInfo()" style="width:18px;height:18px;border-radius:50%;border:1.5px solid var(--text3);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--text3);cursor:pointer;flex-shrink:0;touch-action:manipulation;">i</div>
+        </div>
         <button class="wt-edit" onclick="openWeightModal()" style="font-size:13px;padding:7px 14px;min-height:36px;">설정</button>
+      </div>
+      <!-- i 설명 패널 -->
+      <div id="wt-info-panel" style="display:none;padding:10px 16px;background:var(--surface2);border-bottom:1px solid var(--border);font-size:12px;color:var(--text2);line-height:1.6;">
+        🌅 <strong>정확한 체중 측정법</strong><br>
+        아침에 일어나자마자 화장실 다녀온 뒤, 빈속에 재는 게 가장 정확해요.<br>
+        매일 같은 조건에서 재야 변화를 제대로 볼 수 있어요.
       </div>
       <div class="s-divider"></div>
       <div id="wt-empty-state" style="padding:12px 16px 14px;cursor:pointer;" onclick="openWeightModal()">
-        <div style="font-size:13px;color:var(--text3);">오늘 공복 체중을 기록해보세요 →</div>
+        <div style="font-size:13px;color:var(--text3);">오늘 체중을 기록해보세요 →</div>
         <div id="wt-goal-empty" style="display:none;margin-top:4px;font-size:12px;color:var(--text3);"></div>
       </div>
       <div id="wt-filled-state" style="display:none;padding:14px 16px 16px;">
+        <!-- 체중 숫자 + 어제 대비 -->
         <div style="display:flex;align-items:flex-end;gap:6px;cursor:pointer;-webkit-tap-highlight-color:transparent;" onclick="openWeightModal()" title="탭해서 수정">
           <div class="wt-num" id="wt-display" style="font-size:36px;">—</div>
           <div class="wt-unit" id="wt-unit" style="font-size:16px;color:var(--text3);padding-bottom:4px;">kg</div>
-          <div id="wt-goal-badge" style="display:none;margin-bottom:5px;margin-left:2px;font-size:12px;font-weight:600;padding:3px 9px;border-radius:10px;white-space:nowrap;"></div>
+          <div id="wt-vs-yesterday" style="display:none;margin-bottom:5px;margin-left:2px;font-size:12px;font-weight:600;padding:3px 9px;border-radius:10px;white-space:nowrap;"></div>
           <div style="font-size:13px;color:var(--text3);padding-bottom:5px;margin-left:2px;">✎</div>
         </div>
-        <div style="font-size:12px;color:var(--text3);margin-top:4px;" id="wt-trend"></div>
+        <!-- 목표/잔여/추세 한 줄 -->
+        <div id="wt-stats-row" style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;"></div>
       </div>
     </div>
 
@@ -2787,7 +2798,8 @@ async function onLogin(user){
   document.getElementById('hdr-sub').textContent=(p.display_name||p.username)+'의 보드';
   showDailyMotto();
   // 병렬 로딩 — 오늘 + 루틴 + 챌린지 동시
-  await Promise.all([loadLog(TODAY), loadRoutines(), loadActiveCompetition()]);
+  const yesterday=new Date(now);yesterday.setDate(yesterday.getDate()-1);
+  await Promise.all([loadLog(TODAY), loadLog(dkey(yesterday)), loadRoutines(), loadActiveCompetition()]);
   showApp();
   buildSlider();
   renderRoutine();
@@ -3898,7 +3910,9 @@ function buildSlider(){
 }
 async function selectDay(d,k){
   selectedDate=d;selectedKey=k;show('loading');
-  try{await loadLog(k);}catch(e){
+  // 어제 체중 비교를 위해 전날 로그도 같이 로드
+  const prev=new Date(d);prev.setDate(prev.getDate()-1);const prevKey=dkey(prev);
+  try{await Promise.all([loadLog(k),logCache[prevKey]?null:loadLog(prevKey)]);}catch(e){
     console.warn('loadLog failed',e);
     showToast('⚠️ 데이터 불러오기 실패 — 다시 탭해주세요');
   }
@@ -3924,37 +3938,75 @@ function shiftWeek(dir){sliderOffset+=dir;buildSlider();}
 function renderRoutine(){renderWeight();renderMeals();renderCheatBadge();renderWater();renderWorkouts();renderMandatory();renderTargets();}
 
 // WEIGHT
+function toggleWeightInfo(){
+  const panel=document.getElementById('wt-info-panel');
+  if(panel)panel.style.display=panel.style.display==='none'?'block':'none';
+}
+
 function renderWeight(){
   const emptyState=document.getElementById('wt-empty-state');
   const filledState=document.getElementById('wt-filled-state');
   const hasWeight=log.weight!==null&&log.weight!==undefined;
   if(emptyState)emptyState.style.display=hasWeight?'none':'block';
   if(filledState)filledState.style.display=hasWeight?'block':'none';
-  const wd=document.getElementById('wt-display'),tr=document.getElementById('wt-trend'),wu=document.getElementById('wt-unit');
+
+  const wd=document.getElementById('wt-display');
+  const wu=document.getElementById('wt-unit');
   const goal=CP?.weight_goal||null;
+
   // 미입력 상태 목표 안내
   const ge=document.getElementById('wt-goal-empty');
   if(ge){ge.style.display=goal?'block':'none';if(goal)ge.textContent='목표 체중: '+parseFloat(goal).toFixed(1)+'kg';}
-  if(hasWeight){
-    const w=parseFloat(log.weight);
-    wd.textContent=w.toFixed(1);wd.style.color='var(--text)';wu.style.display='block';
-    tr.textContent='기록됨';tr.style.color='var(--green)';
-    // 목표 배지
-    const badge=document.getElementById('wt-goal-badge');
-    if(badge&&goal){
-      const diff=w-parseFloat(goal);
-      badge.style.display='inline-block';
-      if(diff<=0){
-        badge.textContent='🎯 목표 달성!';
-        badge.style.cssText=badge.style.cssText+'background:var(--green-bg);color:var(--green);border:1px solid var(--green-bd);';
+
+  if(!hasWeight){
+    if(wd){wd.textContent='—';wd.style.color='var(--text3)';}
+    if(wu)wu.style.display='none';
+    const vs=document.getElementById('wt-vs-yesterday');if(vs)vs.style.display='none';
+    const sr=document.getElementById('wt-stats-row');if(sr)sr.innerHTML='';
+    return;
+  }
+
+  const w=parseFloat(log.weight);
+  if(wd){wd.textContent=w.toFixed(1);wd.style.color='var(--text)';}
+  if(wu)wu.style.display='block';
+
+  // 어제 체중 비교
+  const yesterday=new Date(selectedDate);yesterday.setDate(yesterday.getDate()-1);
+  const yKey=dkey(yesterday);
+  const yLog=logCache[yKey];
+  const yWeight=yLog?.weight!=null?parseFloat(yLog.weight):null;
+  const vs=document.getElementById('wt-vs-yesterday');
+  if(vs){
+    if(yWeight!=null){
+      const diff=w-yWeight;
+      if(Math.abs(diff)<0.05){
+        vs.style.display='inline-block';vs.textContent='→ 유지';
+        vs.style.background='var(--surface3)';vs.style.color='var(--text3)';vs.style.border='1px solid var(--border2)';
+      } else if(diff<0){
+        vs.style.display='inline-block';vs.textContent='▼ '+Math.abs(diff).toFixed(1)+'kg';
+        vs.style.background='var(--green-bg)';vs.style.color='var(--green)';vs.style.border='1px solid var(--green-bd)';
       } else {
-        badge.textContent='목표까지 -'+diff.toFixed(1)+'kg';
-        badge.style.background='var(--accent-bg)';badge.style.color='var(--accent)';badge.style.border='1px solid var(--accent-bd)';
+        vs.style.display='inline-block';vs.textContent='▲ '+diff.toFixed(1)+'kg';
+        vs.style.background='var(--red-bg)';vs.style.color='var(--red)';vs.style.border='1px solid var(--red-bd)';
       }
-    } else if(badge){badge.style.display='none';}
-  } else {
-    wd.textContent='—';wd.style.color='var(--text3)';wu.style.display='none';tr.textContent='';
-    const badge=document.getElementById('wt-goal-badge');if(badge)badge.style.display='none';
+    } else {vs.style.display='none';}
+  }
+
+  // 통계 행: 목표 체중 + 목표까지
+  const sr=document.getElementById('wt-stats-row');
+  if(sr){
+    const pills=[];
+    if(goal){
+      const gv=parseFloat(goal);
+      pills.push(`<div style="font-size:11px;font-weight:500;padding:4px 10px;border-radius:10px;background:var(--surface2);border:1px solid var(--border2);color:var(--text2);white-space:nowrap;">🎯 목표 ${gv.toFixed(1)}kg</div>`);
+      const diff=w-gv;
+      if(diff<=0){
+        pills.push(`<div style="font-size:11px;font-weight:600;padding:4px 10px;border-radius:10px;background:var(--green-bg);border:1px solid var(--green-bd);color:var(--green);white-space:nowrap;">🏆 목표 달성!</div>`);
+      } else {
+        pills.push(`<div style="font-size:11px;font-weight:600;padding:4px 10px;border-radius:10px;background:var(--accent-bg);border:1px solid var(--accent-bd);color:var(--accent);white-space:nowrap;">−${diff.toFixed(1)}kg 남음</div>`);
+      }
+    }
+    sr.innerHTML=pills.join('');
   }
 }
 function openWeightModal(){
