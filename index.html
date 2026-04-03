@@ -173,6 +173,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 .meal-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
 .meal-dot.green{background:var(--green);}
 .meal-dot.red{background:var(--red);}
+.meal-dot.cheat{background:var(--amber);}
 .meal-dot.skipped{background:var(--amber);}
 .meal-dot.normal{background:#888;}
 .meal-dot.empty{background:var(--surface3);border:1px solid var(--border2);}
@@ -184,7 +185,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 /* WATER */
 .water-strip{display:flex;align-items:center;gap:10px;padding:12px 16px 14px;}
 .water-cups{display:flex;gap:4px;flex:1;}
-.wc{width:28px;height:28px;border-radius:7px;border:1.5px solid var(--border);background:var(--surface2);cursor:pointer;transition:all .12s;touch-action:manipulation;}
+.wc{flex:1;min-width:0;height:26px;border-radius:6px;border:1.5px solid var(--border);background:var(--surface2);cursor:pointer;transition:all .12s;touch-action:manipulation;}
 .wc.on{background:#2563eb;border-color:#60a5fa;box-shadow:0 0 0 1px #60a5fa44;}
 .water-val{font-family:'DM Mono',monospace;font-size:12px;color:var(--blue);min-width:28px;text-align:right;}
 
@@ -399,6 +400,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 .ftbtn.sel-red{background:var(--red-bg);border-color:var(--red);color:var(--red);}
 .ftbtn.sel-skipped{background:var(--amber-bg);border-color:var(--amber);color:var(--amber);}
 .ftbtn.sel-normal{background:rgba(180,180,180,0.12);border-color:#888;color:#aaa;}
+.ftbtn.sel-cheat{background:var(--amber-bg);border-color:var(--amber);color:var(--amber);}
 .photo-wrap{position:relative;display:inline-block;}
 .photo-thumb{width:56px;height:56px;border-radius:8px;object-fit:cover;display:block;}
 .photo-del{position:absolute;top:-6px;right:-6px;width:18px;height:18px;border-radius:50%;background:var(--red);border:none;color:#fff;font-size:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
@@ -636,7 +638,13 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 
     <!-- 식단 카드 -->
     <div class="s-card">
-      <div class="s-card-hdr"><div class="s-card-title">🥗 식단</div><div class="s-badge" id="diet-badge">0끼 기록</div></div>
+      <div class="s-card-hdr">
+        <div class="s-card-title">🥗 식단</div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <div id="cheat-quota-badge" style="display:none;font-size:11px;font-weight:600;padding:3px 8px;border-radius:10px;background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-bd);cursor:pointer;" onclick="openCheatSettings()"></div>
+          <div class="s-badge" id="diet-badge">0끼 기록</div>
+        </div>
+      </div>
       <div class="s-divider"></div>
       <div class="meal-rows" id="meal-rows"></div>
       <div onclick="openAddMealModal()" style="margin:8px 14px;padding:14px 16px;background:var(--accent-bg);border:1.5px dashed var(--accent-bd);border-radius:12px;display:flex;align-items:center;gap:10px;cursor:pointer;touch-action:manipulation;">
@@ -651,7 +659,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
           <div class="water-val" id="water-val" style="font-size:13px;color:var(--blue);margin-left:auto;"></div>
           <button onclick="toggleWaterGoalPanel()" id="water-gear-btn" style="background:none;border:none;cursor:pointer;font-size:16px;color:var(--text3);padding:4px;touch-action:manipulation;" title="물 목표 설정">⚙️</button>
         </div>
-        <div class="water-cups" id="water-cups" style="display:flex;gap:5px;flex-wrap:wrap;"></div>
+        <div class="water-cups" id="water-cups" style="display:flex;gap:4px;flex-wrap:nowrap;overflow:hidden;"></div>
       </div>
       <div id="water-goal-panel" style="display:none;padding:10px 14px 14px;border-top:1px solid var(--border);animation:fadeIn .15s ease;">
         <div style="font-size:10px;color:var(--text3);margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em;">하루 물 목표</div>
@@ -1387,9 +1395,27 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
       <button class="mbtn-ghost" onclick="closeModal('meal-modal')" style="touch-action:manipulation;">취소</button>
     </div>
 
-    <!-- STEP 2: Meal type + slot -->
+    <!-- STEP 2: Category + slot -->
     <div id="mm-s2" style="display:none;">
       <div id="mm-s2-thumb" style="display:none;margin-bottom:12px;"></div>
+
+      <div class="mfield">
+        <label class="mlabel">카테고리</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-bottom:14px;" id="mm-category-btns">
+          <button onclick="pickMealCategory('meal',this)" style="padding:12px 6px;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:var(--surface2);cursor:pointer;font-family:'DM Sans',sans-serif;text-align:center;touch-action:manipulation;">
+            <div style="font-size:18px;margin-bottom:3px;">🥗</div>
+            <div style="font-size:12px;color:var(--text2);font-weight:500;">식사</div>
+          </button>
+          <button onclick="pickMealCategory('snack',this)" style="padding:12px 6px;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:var(--surface2);cursor:pointer;font-family:'DM Sans',sans-serif;text-align:center;touch-action:manipulation;">
+            <div style="font-size:18px;margin-bottom:3px;">🍰</div>
+            <div style="font-size:12px;color:var(--text2);font-weight:500;">간식</div>
+          </button>
+          <button onclick="pickMealCategory('drink',this)" style="padding:12px 6px;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:var(--surface2);cursor:pointer;font-family:'DM Sans',sans-serif;text-align:center;touch-action:manipulation;">
+            <div style="font-size:18px;margin-bottom:3px;">☕</div>
+            <div style="font-size:12px;color:var(--text2);font-weight:500;">음료</div>
+          </button>
+        </div>
+      </div>
 
       <div class="mfield">
         <label class="mlabel">어떤 끼니인가요?</label>
@@ -1398,7 +1424,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
           <button class="ftbtn" onclick="pickMealTime('아침',this)" style="touch-action:manipulation;">🌅 아침</button>
           <button class="ftbtn" onclick="pickMealTime('점심',this)" style="touch-action:manipulation;">☀️ 점심</button>
           <button class="ftbtn" onclick="pickMealTime('저녁',this)" style="touch-action:manipulation;">🌙 저녁</button>
-          <button class="ftbtn" onclick="pickMealTime('간식',this)" style="touch-action:manipulation;">🍎 간식</button>
+          <button class="ftbtn" onclick="pickMealTime('간식',this)" style="touch-action:manipulation;">🍎 간식/음료</button>
         </div>
       </div>
 
@@ -1417,18 +1443,44 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 
       <div class="mfield">
         <label class="mlabel">이 식사를 평가하면?</label>
-        <div style="font-size:10px;color:var(--text3);margin-bottom:4px;">클린: 샐러드·닭가슴살·포케 &nbsp;|&nbsp; 일반: 된장찌개·파스타 &nbsp;|&nbsp; 금지: 피자·치킨·술</div>
+        <div style="font-size:10px;color:var(--text3);margin-bottom:4px;">클린: 샐러드·닭가슴살 &nbsp;|&nbsp; 일반: 된장찌개·파스타 &nbsp;|&nbsp; 치팅: 치트밀 &nbsp;|&nbsp; 금지: 술·폭식</div>
         <div class="food-types" id="mm-quality-btns">
-          <div class="ftbtn" onclick="pickFT('green',this)" style="touch-action:manipulation;">✅ 클린식</div>
-          <div class="ftbtn" onclick="pickFT('normal',this)" style="touch-action:manipulation;">🍚 일반식</div>
-          <div class="ftbtn" onclick="pickFT('red',this)" style="touch-action:manipulation;">🚫 금지식</div>
+          <div class="ftbtn" onclick="pickFT('green',this)" style="touch-action:manipulation;">✅ 클린</div>
+          <div class="ftbtn" onclick="pickFT('normal',this)" style="touch-action:manipulation;">🍚 일반</div>
+          <div class="ftbtn" onclick="pickFT('cheat',this)" style="touch-action:manipulation;" id="mm-cheat-btn">🎉 치팅</div>
+          <div class="ftbtn" onclick="pickFT('red',this)" style="touch-action:manipulation;">🚫 금지</div>
         </div>
+        <div id="mm-cheat-quota-hint" style="display:none;font-size:11px;margin-top:6px;padding:5px 10px;border-radius:8px;background:var(--amber-bg);border:1px solid var(--amber-bd);color:var(--amber);"></div>
       </div>
 
       <button class="mbtn" id="mm-save-btn" onclick="saveMeal()" style="touch-action:manipulation;">식사 저장</button>
       <button class="mbtn-ghost" onclick="closeModal('meal-modal')" style="touch-action:manipulation;">취소</button>
     </div>
 
+  </div>
+</div>
+<!-- CHEAT SETTINGS MODAL -->
+<div class="modal-overlay" id="cheat-modal">
+  <div class="modal">
+    <div class="mhandle"></div>
+    <div class="mtitle">🎉 치팅 설정</div>
+    <div class="mfield">
+      <label class="mlabel">월 치팅 허용 횟수</label>
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;" id="cheat-quota-btns">
+        <button onclick="pickCheatQuota(1,this)" style="padding:12px 0;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:var(--surface2);cursor:pointer;font-size:15px;font-weight:600;font-family:'DM Sans',sans-serif;touch-action:manipulation;">1</button>
+        <button onclick="pickCheatQuota(2,this)" style="padding:12px 0;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:var(--surface2);cursor:pointer;font-size:15px;font-weight:600;font-family:'DM Sans',sans-serif;touch-action:manipulation;">2</button>
+        <button onclick="pickCheatQuota(4,this)" style="padding:12px 0;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:var(--surface2);cursor:pointer;font-size:15px;font-weight:600;font-family:'DM Sans',sans-serif;touch-action:manipulation;">4</button>
+        <button onclick="pickCheatQuota(6,this)" style="padding:12px 0;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:var(--surface2);cursor:pointer;font-size:15px;font-weight:600;font-family:'DM Sans',sans-serif;touch-action:manipulation;">6</button>
+        <button onclick="pickCheatQuota(8,this)" style="padding:12px 0;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:var(--surface2);cursor:pointer;font-size:15px;font-weight:600;font-family:'DM Sans',sans-serif;touch-action:manipulation;">8</button>
+      </div>
+      <div style="font-size:11px;color:var(--text3);margin-top:6px;">매월 1일 자동 초기화돼요</div>
+    </div>
+    <div style="background:var(--surface2);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:14px;">
+      <div style="font-size:12px;color:var(--text2);margin-bottom:4px;font-weight:500;">이번달 현황</div>
+      <div id="cheat-modal-status" style="font-size:13px;color:var(--text);"></div>
+    </div>
+    <button class="mbtn" onclick="saveCheatSettings()">저장</button>
+    <button class="mbtn-ghost" onclick="closeModal('cheat-modal')">취소</button>
   </div>
 </div>
 <div class="modal-overlay" id="weight-modal">
@@ -1641,6 +1693,17 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
       <div class="days-row" id="days-row">
         <div class="dpill on" onclick="toggleDay(this,0)">월</div><div class="dpill on" onclick="toggleDay(this,1)">화</div><div class="dpill on" onclick="toggleDay(this,2)">수</div><div class="dpill on" onclick="toggleDay(this,3)">목</div><div class="dpill on" onclick="toggleDay(this,4)">금</div><div class="dpill on" onclick="toggleDay(this,5)">토</div><div class="dpill on" onclick="toggleDay(this,6)">일</div>
       </div>
+    </div>
+    <div class="mfield">
+      <label class="mlabel">종료일 <span style="font-weight:400;color:var(--text3);font-size:11px;text-transform:none;letter-spacing:0;">선택사항 — 없으면 무기한</span></label>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;" id="end-date-presets">
+        <button onclick="pickEndDatePreset(1,this)" style="padding:7px 12px;border-radius:20px;font-size:12px;border:1px solid var(--border2);background:var(--surface2);color:var(--text2);cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">1주</button>
+        <button onclick="pickEndDatePreset(2,this)" style="padding:7px 12px;border-radius:20px;font-size:12px;border:1px solid var(--border2);background:var(--surface2);color:var(--text2);cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">2주</button>
+        <button onclick="pickEndDatePreset(4,this)" style="padding:7px 12px;border-radius:20px;font-size:12px;border:1px solid var(--border2);background:var(--surface2);color:var(--text2);cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">1달</button>
+        <button onclick="pickEndDatePreset(12,this)" style="padding:7px 12px;border-radius:20px;font-size:12px;border:1px solid var(--border2);background:var(--surface2);color:var(--text2);cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">3달</button>
+        <button onclick="pickEndDatePreset(0,this)" id="end-date-clear-btn" style="padding:7px 12px;border-radius:20px;font-size:12px;border:1px solid var(--border2);background:var(--surface2);color:var(--text3);cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">무기한</button>
+      </div>
+      <input type="date" id="mand-end-date" style="width:100%;background:var(--surface2);border:1.5px solid var(--border2);border-radius:var(--radius-sm);color:var(--text);font-family:'DM Sans',sans-serif;font-size:16px;padding:12px 14px;outline:none;box-sizing:border-box;" oninput="onEndDateInput()"/>
     </div>
     <button class="mbtn" id="mand-save-btn" onclick="saveMandatory()">루틴 추가</button>
     <button class="mbtn-ghost" onclick="closeModal('mand-modal')">취소</button>
@@ -2696,10 +2759,10 @@ async function onLogin(user){
     _compLastFetch=0;
   }
   CU=user;
-  let{data:p,error:pErr}=await sb.from('profiles').select('id,username,display_name,water_goal,onboarded,total_score,weight_goal').eq('id',user.id).maybeSingle();
+  let{data:p,error:pErr}=await sb.from('profiles').select('id,username,display_name,water_goal,onboarded,total_score,weight_goal,cheat_quota').eq('id',user.id).maybeSingle();
   if(pErr){
     // total_score 컬럼 없을 경우 fallback
-    const{data:p2}=await sb.from('profiles').select('id,username,display_name,water_goal,onboarded,weight_goal').eq('id',user.id).maybeSingle();
+    const{data:p2}=await sb.from('profiles').select('id,username,display_name,water_goal,onboarded,weight_goal,cheat_quota').eq('id',user.id).maybeSingle();
     p=p2;
   }
   if(!p){
@@ -3836,7 +3899,7 @@ async function jumpToDateFromWeekly(k,yr,mo,day){
 function shiftWeek(dir){sliderOffset+=dir;buildSlider();}
 
 // ── RENDER ROUTINE ──
-function renderRoutine(){renderWeight();renderMeals();renderWater();renderWorkouts();renderMandatory();renderTargets();}
+function renderRoutine(){renderWeight();renderMeals();renderCheatBadge();renderWater();renderWorkouts();renderMandatory();renderTargets();}
 
 // WEIGHT
 function renderWeight(){
@@ -3916,7 +3979,7 @@ function renderMeals(){
     :meals.map((m,i)=>{
       const timeIcon=timeLabels[m.time]||'🍽️';
       const timeLabel=m.time||('식사 '+(i+1));
-      const dotCls=m.type==='green'?'green':m.type==='red'?'red':m.type==='normal'?'normal':m.type==='skipped'?'normal':'empty';
+      const dotCls=m.type==='green'?'green':m.type==='red'?'red':m.type==='cheat'?'cheat':m.type==='normal'?'normal':m.type==='skipped'?'normal':'empty';
       return`<div class="meal-row" onclick="openEditMealModal(${i})">
         <div class="meal-dot ${dotCls}"></div>
         <div class="meal-row-label">${timeIcon} ${timeLabel}</div>
@@ -4073,13 +4136,139 @@ function pickMealTime(t,el){
   document.getElementById('mm-photo-suggest').style.display='none';
 }
 
-function pickFT(t,el){
+function pickMealCategory(cat, el){
+  mealCategory=cat;
+  document.querySelectorAll('#mm-category-btns button').forEach(b=>{
+    b.style.borderColor='var(--border)';b.style.background='var(--surface2)';
+    b.querySelector('div:last-child').style.color='var(--text2)';
+  });
+  el.style.borderColor='var(--accent)';el.style.background='var(--accent-bg)';
+  el.querySelector('div:last-child').style.color='var(--accent)';
+}
+
+function pickFT(t, el){
+  // 치팅 선택 시 잔여 횟수 체크
+  if(t==='cheat'){
+    const remaining=getCheatRemaining();
+    const hint=document.getElementById('mm-cheat-quota-hint');
+    if(remaining<=0){
+      showToast('이번달 치팅 횟수를 모두 사용했어요 🚫');
+      if(hint){hint.style.display='block';hint.style.background='var(--red-bg)';hint.style.borderColor='var(--red-bd)';hint.style.color='var(--red)';hint.textContent='이번달 치팅 소진! 내달 1일에 초기화돼요.';}
+      return;
+    }
+    if(hint){
+      hint.style.display='block';
+      hint.style.background='var(--amber-bg)';hint.style.borderColor='var(--amber-bd)';hint.style.color='var(--amber)';
+      hint.textContent='치팅 잔여 '+(remaining-1)+'회 남음 (선택 후)';
+    }
+  } else {
+    const hint=document.getElementById('mm-cheat-quota-hint');
+    if(hint)hint.style.display='none';
+  }
   foodType=t;
   document.querySelectorAll('#mm-quality-btns .ftbtn').forEach(b=>b.className='ftbtn');
   el.classList.add('sel-'+t);
 }
 
-function applyDetectedTime(t){
+// ═══════════════════════════════════════════
+// 치팅 시스템
+// ═══════════════════════════════════════════
+function getCheatQuota(){return CP?.cheat_quota||4;}
+function getCheatYearMonth(){const n=new Date();return n.getFullYear()+'-'+(n.getMonth()+1);}
+
+function getCheatUsed(){
+  // 이번달 전체 로그에서 cheat 타입 식사 수 집계
+  const ym=getCheatYearMonth();
+  let used=0;
+  Object.keys(logCache).forEach(k=>{
+    if(!k.startsWith(ym.replace('-','').slice(0,4)+'-'+(String(parseInt(ym.split('-')[1])).padStart(2,'0'))))return;
+    const l=logCache[k];
+    if(l&&l.meals)used+=l.meals.filter(m=>m.type==='cheat').length;
+  });
+  return used;
+}
+
+function getCheatRemaining(){return Math.max(0,getCheatQuota()-getCheatUsed());}
+
+function renderCheatBadge(){
+  const badge=document.getElementById('cheat-quota-badge');
+  if(!badge)return;
+  const quota=getCheatQuota();
+  if(!quota){badge.style.display='none';return;}
+  const used=getCheatUsed();
+  const remaining=quota-used;
+  badge.style.display='inline-block';
+  if(remaining<=0){
+    badge.textContent='치팅 소진';
+    badge.style.background='var(--red-bg)';badge.style.color='var(--red)';badge.style.borderColor='var(--red-bd)';
+  } else {
+    badge.textContent='치팅 '+remaining+'/'+quota;
+    badge.style.background='var(--amber-bg)';badge.style.color='var(--amber)';badge.style.borderColor='var(--amber-bd)';
+  }
+}
+
+let _pendingCheatQuota=4;
+function openCheatSettings(){
+  _pendingCheatQuota=getCheatQuota();
+  // 버튼 초기 선택 표시
+  document.querySelectorAll('#cheat-quota-btns button').forEach(b=>{
+    const v=parseInt(b.textContent);
+    const sel=v===_pendingCheatQuota;
+    b.style.background=sel?'var(--accent)':'var(--surface2)';
+    b.style.color=sel?'#fff':'var(--text)';
+    b.style.borderColor=sel?'var(--accent)':'var(--border)';
+  });
+  // 현황 표시
+  const used=getCheatUsed();const quota=getCheatQuota();
+  const st=document.getElementById('cheat-modal-status');
+  if(st)st.textContent='사용 '+used+'회 / 허용 '+quota+'회 (잔여 '+Math.max(0,quota-used)+'회)';
+  openModal('cheat-modal');
+}
+function pickCheatQuota(v,el){
+  _pendingCheatQuota=v;
+  document.querySelectorAll('#cheat-quota-btns button').forEach(b=>{
+    const sel=parseInt(b.textContent)===v;
+    b.style.background=sel?'var(--accent)':'var(--surface2)';
+    b.style.color=sel?'#fff':'var(--text)';
+    b.style.borderColor=sel?'var(--accent)':'var(--border)';
+  });
+  const used=getCheatUsed();
+  const st=document.getElementById('cheat-modal-status');
+  if(st)st.textContent='사용 '+used+'회 / 허용 '+v+'회 (잔여 '+Math.max(0,v-used)+'회)';
+}
+function saveCheatSettings(){
+  if(CP)CP.cheat_quota=_pendingCheatQuota;
+  sb.from('profiles').update({cheat_quota:_pendingCheatQuota}).eq('id',CU.id).then(()=>{});
+  closeModal('cheat-modal');
+  renderCheatBadge();
+  showToast('✓ 치팅 설정 저장됨');
+}
+
+function saveMeal(){
+  const name=document.getElementById('mm-name').value.trim();
+  const entry={name,type:foodType,photo:photoData,time:mealTime,category:mealCategory};
+  if(!logCache[selectedKey])logCache[selectedKey]=log;
+  log=logCache[selectedKey];
+  if(mealIdx===null){log.meals.push(entry);}
+  else{log.meals[mealIdx]=entry;}
+  closeModal('meal-modal');renderMeals();renderCheatBadge();
+  // 점수
+  if(mealCategory==='drink'){
+    // 음료는 기록만 (점수 없음)
+  } else if(foodType==='red'){
+    addScore('diet_junk');setTimeout(()=>showChaekpipty(name),300);
+  } else if(foodType==='green'){
+    addScore('diet_clean');showWin('diet_clean',6,'클린 식단!');
+  } else if(foodType==='cheat'){
+    // 치팅은 점수 차감 없음, 조용히 저장
+    showToast('🎉 치팅 사용! 잔여 '+getCheatRemaining()+'회');
+  } else {
+    addScore('diet_log');
+  }
+  if(foodType!=='cheat'&&foodType!=='red'&&mealCategory!=='drink')addScore('diet_log');
+  saveNow();
+  checkPerfectDay();
+}
   if(!t||mealTime)return;
   mealTime=t;
   document.querySelectorAll('#mm-time-btns .ftbtn').forEach(b=>{
@@ -4171,24 +4360,7 @@ function delPhoto(){
   if(c)c.value='';if(g)g.value='';
 }
 
-function saveMeal(){
-  const name=document.getElementById('mm-name').value.trim();
-  const entry={name,type:foodType,photo:photoData,time:mealTime,category:mealCategory};
-  // Always work on the cached log to ensure consistency
-  if(!logCache[selectedKey])logCache[selectedKey]=log;
-  log=logCache[selectedKey];
-  if(mealIdx===null){log.meals.push(entry);}
-  else{log.meals[mealIdx]=entry;}
-  closeModal('meal-modal');renderMeals();
-  // Score events
-  addScore('diet_log');
-  if(foodType==='red'){addScore('diet_junk');setTimeout(()=>showChaekpipty(name),300);}
-  else if(foodType==='green'){addScore('diet_clean');showWin('diet_clean',5+1,'클린 식단!');}
-  saveNow();
-  checkPerfectDay();
-}
-
-// WATER
+function applyDetectedTime(t){
 function renderWater(){
   const c=document.getElementById('water-cups');c.innerHTML='';
   for(let i=0;i<12;i++){const d=document.createElement('div');d.className='wc'+(i<log.water_cups?' on':'');d.onclick=()=>{log.water_cups=(log.water_cups===i+1)?i:i+1;renderWater();scheduleSave();};c.appendChild(d);}
@@ -4782,8 +4954,13 @@ function editWorkout(i){
 let mandEditIdx2=null;
 function renderMandatory(){
   const dow=(selectedDate.getDay()+6)%7;
-  // Only show tasks scheduled for today, max 10
-  const todayTasks=log.mandatory.filter(t=>!t.days||t.days.includes(dow)).slice(0,10);
+  const todayStr=selectedKey; // 'YYYY-MM-DD'
+  // end_date 지난 루틴 + 오늘 요일 아닌 것 제외
+  const todayTasks=log.mandatory.filter(t=>{
+    if(t.days&&!t.days.includes(dow))return false;
+    if(t.end_date&&t.end_date<todayStr)return false;
+    return true;
+  }).slice(0,10);
   const done=todayTasks.filter(t=>t.done).length;
   const b=document.getElementById('mand-badge');
   b.textContent=done+'/'+todayTasks.length;
@@ -4792,13 +4969,13 @@ function renderMandatory(){
     document.getElementById('check-rows').innerHTML='<div style="padding:16px 0;text-align:center;"><div style="font-size:28px;margin-bottom:6px;">✅</div><div style="font-size:13px;color:var(--text3);margin-bottom:4px;">매일 반복할 루틴을 추가하세요</div><div style="font-size:11px;color:var(--text3);">예: 🐱 고양이 밥 · 🪥 양치 · 🧹 집 청소</div></div>';
     return;
   }
-  // Find actual index in log.mandatory for each today task
   document.getElementById('check-rows').innerHTML=log.mandatory.map((t,i)=>{
     if(t.days&&!t.days.includes(dow))return'';
-    // check if over max 10 for today
+    if(t.end_date&&t.end_date<todayStr)return'';
     const todayIdx=todayTasks.findIndex(tt=>tt===t);
     if(todayIdx>=10)return'';
     const daysLabel=t.days&&t.days.length<7?['월','화','수','목','금','토','일'].filter((_,di)=>t.days.includes(di)).join(''):'매일';
+    const endBadge=t.end_date?`<span style="font-size:10px;color:var(--text3);margin-left:4px;">~${t.end_date.slice(5).replace('-','/')}</span>`:'';
     const isFail=!!t.fail;
     return`<div class="ck-row" style="${isFail?'background:rgba(248,113,113,0.06);':''}">
       <div style="min-width:44px;min-height:44px;display:flex;align-items:center;justify-content:center;cursor:pointer;touch-action:manipulation;"
@@ -4811,7 +4988,7 @@ function renderMandatory(){
         onclick="togMand(${i})"
         ontouchstart="mandTouchStart()"
         ontouchend="event.preventDefault();mandTouchEnd(${i})">
-        <div class="ck-name ${t.done?'done':isFail?'fail':''}">${t.name}${isFail?' ❌':''}</div>
+        <div class="ck-name ${t.done?'done':isFail?'fail':''}">${t.name}${isFail?' ❌':''}${endBadge}</div>
         <div style="font-size:10px;color:${isFail?'var(--red)':'var(--text3)'};margin-top:1px;">${isFail?'실패 -5점':daysLabel}</div>
       </div>
       ${!t.done?`<button onclick="markMandFail(${i})" style="font-size:11px;padding:5px 10px;border-radius:8px;border:1px solid ${isFail?'var(--red)':'var(--border2)'};background:${isFail?'var(--red-bg)':'transparent'};color:${isFail?'var(--red)':'var(--text3)'};cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;white-space:nowrap;flex-shrink:0;">${isFail?'취소':'실패'}</button>`:''}
@@ -4868,24 +5045,57 @@ function markMandFail(i){
   }
   renderMandatory();saveNow();
 }
+let _mandEndDate=null; // 'YYYY-MM-DD' or null
+
+function pickEndDatePreset(weeks, el){
+  document.querySelectorAll('#end-date-presets button').forEach(b=>{
+    b.style.background='var(--surface2)';b.style.color='var(--text2)';b.style.borderColor='var(--border2)';
+  });
+  el.style.background='var(--accent)';el.style.color='#fff';el.style.borderColor='var(--accent)';
+  if(weeks===0){
+    _mandEndDate=null;
+    document.getElementById('mand-end-date').value='';
+  } else {
+    const d=new Date();d.setDate(d.getDate()+weeks*7);
+    _mandEndDate=dkey(d);
+    document.getElementById('mand-end-date').value=_mandEndDate;
+  }
+}
+function onEndDateInput(){
+  const v=document.getElementById('mand-end-date').value;
+  _mandEndDate=v||null;
+  // 프리셋 버튼 선택 해제
+  document.querySelectorAll('#end-date-presets button').forEach(b=>{
+    b.style.background='var(--surface2)';b.style.color='var(--text2)';b.style.borderColor='var(--border2)';
+  });
+}
+function resetEndDateUI(){
+  _mandEndDate=null;
+  const inp=document.getElementById('mand-end-date');if(inp)inp.value='';
+  document.querySelectorAll('#end-date-presets button').forEach(b=>{
+    b.style.background='var(--surface2)';b.style.color='var(--text2)';b.style.borderColor='var(--border2)';
+  });
+  // "무기한" 버튼 활성화
+  const clearBtn=document.getElementById('end-date-clear-btn');
+  if(clearBtn){clearBtn.style.background='var(--accent)';clearBtn.style.color='#fff';clearBtn.style.borderColor='var(--accent)';}
+}
+
 function openAddMandatoryModal(){
   mandEditIdx2=null;newMandDays=[0,1,2,3,4,5,6];
   document.getElementById('mand-inp').value='';
   document.getElementById('mand-modal-title').textContent='필수 루틴 추가';
   document.getElementById('mand-save-btn').textContent='루틴 추가';
-  // 추천 섹션 보이기 (수정 모드일 땐 숨김)
   const recSec=document.getElementById('mand-recommend-section');
   if(recSec)recSec.style.display='block';
+  resetEndDateUI();
   refreshDayPills();openModal('mand-modal');
 }
 
-// 추천 루틴 선택 → 이름 자동 입력 후 커서 이동
 let _pendingScoreType=null;
 function pickRecommendedRoutine(name, scoreType){
   document.getElementById('mand-inp').value=name;
   document.getElementById('mand-inp').focus();
-  _pendingScoreType=scoreType; // 저장 시 특별 점수 부여
-  // 추천 섹션 접기
+  _pendingScoreType=scoreType;
   const recSec=document.getElementById('mand-recommend-section');
   if(recSec)recSec.style.display='none';
 }
@@ -4895,19 +5105,32 @@ function editMandatory(i){
   document.getElementById('mand-modal-title').textContent='루틴 수정';
   document.getElementById('mand-save-btn').textContent='변경 저장';
   const recSec=document.getElementById('mand-recommend-section');
-  if(recSec)recSec.style.display='none'; // 수정 모드엔 추천 숨김
+  if(recSec)recSec.style.display='none';
   _pendingScoreType=null;
+  // end_date 복원
+  _mandEndDate=t.end_date||null;
+  const inp=document.getElementById('mand-end-date');if(inp)inp.value=_mandEndDate||'';
+  // 프리셋 초기화 (무기한 선택 표시)
+  document.querySelectorAll('#end-date-presets button').forEach(b=>{
+    b.style.background='var(--surface2)';b.style.color='var(--text2)';b.style.borderColor='var(--border2)';
+  });
+  if(!_mandEndDate){
+    const clearBtn=document.getElementById('end-date-clear-btn');
+    if(clearBtn){clearBtn.style.background='var(--accent)';clearBtn.style.color='#fff';clearBtn.style.borderColor='var(--accent)';}
+  }
   refreshDayPills();openModal('mand-modal');
 }
 function refreshDayPills(){document.querySelectorAll('#days-row .dpill').forEach((el,idx)=>el.classList.toggle('on',newMandDays.includes(idx)));}
 function saveMandatory(){
   const name=document.getElementById('mand-inp').value.trim();if(!name)return;
+  const endDate=_mandEndDate||null;
   if(mandEditIdx2!==null){
     log.mandatory[mandEditIdx2].name=name;
     log.mandatory[mandEditIdx2].days=[...newMandDays];
+    log.mandatory[mandEditIdx2].end_date=endDate;
   } else {
     if(log.mandatory.length>=10){showToast('필수 루틴은 최대 10개까지 추가할 수 있어요.');closeModal('mand-modal');return;}
-    const entry={name,done:false,days:[...newMandDays]};
+    const entry={name,done:false,days:[...newMandDays],end_date:endDate};
     if(_pendingScoreType)entry._scoreType=_pendingScoreType;
     _pendingScoreType=null;
     log.mandatory.push(entry);
@@ -4922,7 +5145,7 @@ function saveMandatory(){
 // Propagate routine DEFINITIONS to current week + next 14 days (DB upsert)
 async function propagateMandatoryDefs(defs){
   if(!defs||!defs.length||!CU)return;
-  const defsList=defs.map(d=>({name:d.name,days:d.days||[0,1,2,3,4,5,6],_scoreType:d._scoreType||null}));
+  const defsList=defs.map(d=>({name:d.name,days:d.days||[0,1,2,3,4,5,6],_scoreType:d._scoreType||null,end_date:d.end_date||null}));
   const today=new Date();today.setHours(0,0,0,0);
 
   // 오늘 ~ 14일 후까지 upsert (과거는 건드리지 않음)
@@ -4941,7 +5164,7 @@ async function propagateMandatoryDefs(defs){
       const existing=logCache[k];
       existing.mandatory=defsList.map(def=>{
         const et=existing.mandatory?.find(m=>m.name===def.name);
-        return{name:def.name,done:et?.done||false,fail:et?.fail||false,days:def.days,_scoreType:def._scoreType};
+        return{name:def.name,done:et?.done||false,fail:et?.fail||false,days:def.days,_scoreType:def._scoreType,end_date:def.end_date};
       });
     }
 
@@ -4956,7 +5179,7 @@ async function propagateMandatoryDefs(defs){
 
       const mergedMandatory=defsList.map(def=>{
         const et=existing?.mandatory?.find(m=>m.name===def.name);
-        return{name:def.name,done:et?.done||false,fail:et?.fail||false,days:def.days,_scoreType:def._scoreType};
+        return{name:def.name,done:et?.done||false,fail:et?.fail||false,days:def.days,_scoreType:def._scoreType,end_date:def.end_date};
       });
 
       await sb.from('daily_logs').upsert(
