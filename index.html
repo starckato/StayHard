@@ -5506,7 +5506,7 @@ async function renderChallengeHome(){
   if(!CU)return;
 
   // Fetch user's challenges
-  const{data:allComps_raw}=await sb.from('competitions').select('id,code,name,creator_id,members,sections,challenge_type,status,max_members,start_date,duration_days,weight_goal,member_wgoals').in('status',['waiting','active','failed']);
+  const{data:allComps_raw}=await sb.from('competitions').select('id,code,name,creator_id,members,sections,challenge_type,status,max_members,start_date,duration_days,weight_goal,member_wgoals').in('status',['waiting','active','failed','completed']);
   const myComps=(allComps_raw||[]).filter(c=>{
     if(c.creator_id===CU.id)return true;
     try{const mbs=Array.isArray(c.members)?c.members:JSON.parse(c.members||'[]');return mbs.includes(CU.id);}
@@ -5514,6 +5514,12 @@ async function renderChallengeHome(){
   });
 
   const activeComps=myComps.filter(c=>c.status==='active');
+  // 기간 만료됐지만 아직 active인 챌린지도 포함 (renderChallengeRoom에서 처리)
+  const expiredActive=activeComps.filter(c=>{
+    const start=c.start_date?new Date(c.start_date):new Date();
+    const dayNum=Math.floor((new Date()-start)/(1000*60*60*24))+1;
+    return dayNum>c.duration_days;
+  });
   const waitingComps=myComps.filter(c=>c.status==='waiting');
   const hasActive=activeComps.length>0;
 
@@ -5750,217 +5756,227 @@ async function renderChallengeRoom(){
   const c=activeComp;
   if(!c)return;
 
-  // Header
   document.getElementById('room-title').textContent=c.name||'챌린지';
 
-  // D-Day & progress (time-based only, no fake grade)
   const startDate=c.start_date?new Date(c.start_date):new Date();
   const dayNum=Math.max(1,Math.floor((new Date()-startDate)/(1000*60*60*24))+1);
   const daysLeft=Math.max(0,c.duration_days-dayNum+1);
   const timePct=Math.min(100,Math.round((dayNum/c.duration_days)*100));
+  const isCompleted=dayNum>c.duration_days;
 
   document.getElementById('room-subtitle').textContent=`${dayNum}일차 · ${daysLeft}일 남음`;
   document.getElementById('room-dday').textContent='D+'+dayNum;
   document.getElementById('room-period').textContent=`${startDate.getMonth()+1}/${startDate.getDate()} 시작 · ${c.duration_days}일 챌린지`;
-  // Grade & score shown after member data loads (my personal score)
   document.getElementById('room-grade').textContent='—';
   document.getElementById('room-grade').style.color='var(--text3)';
   document.getElementById('room-progress-bar').style.width=timePct+'%';
-  document.getElementById('room-progress-bar').style.background='var(--accent)';
-  document.getElementById('room-progress-label').textContent=`${dayNum}일째 진행 중`;
-  document.getElementById('room-progress-pct').textContent=`${daysLeft}일 남음`;
+  document.getElementById('room-progress-bar').style.background=isCompleted?'var(--green)':'var(--accent)';
+  document.getElementById('room-progress-label').textContent=isCompleted?'챌린지 완료!':'${dayNum}일째 진행 중';
+  document.getElementById('room-progress-pct').textContent=isCompleted?'종료됨':`${daysLeft}일 남음`;
 
-  // Members — fetch logs for ENTIRE challenge period
   const mbs=Array.isArray(c.members)?c.members:JSON.parse(c.members||'[]');
   const{data:profiles}=await sb.from('profiles').select('id,display_name,username').in('id',mbs);
   const chStart=startDate.toISOString().slice(0,10);
   const chEnd=new Date(startDate.getTime()+c.duration_days*86400000).toISOString().slice(0,10);
-  const{data:allLogs}=await sb.from('daily_logs')
-    .select('user_id,log_date,weight,meals,workouts,mandatory')
-    .in('user_id',mbs).gte('log_date',chStart).lte('log_date',TODAY);
-  const todayLogs=(allLogs||[]).filter(l=>l.user_id&&l.log_date&&l.log_date.slice(0,10)===TODAY.slice(0,10));
   const memberWgoals=c.member_wgoals||{};
+  const isDietChallenge=c.challenge_type==='diet';
 
-  // Check if challenge is completed
-  const isCompleted=dayNum>c.duration_days;
-
-  // Show completion screen if challenge is over
+  // ── 기한 종료 처리 ──
   if(isCompleted){
+    // DB status를 completed로 업데이트 (아직 active면)
+    if(c.status==='active'){
+      await sb.from('competitions').update({status:'completed'}).eq('id',c.id);
+      activeComp={...c,status:'completed'};
+    }
+
+    // 체중 감량 챌린지: 최신 체중 가져오기
+    let memberWeights={};
+    if(isDietChallenge){
+      const{data:wLogs}=await sb.from('daily_logs')
+        .select('user_id,log_date,weight')
+        .in('user_id',mbs).not('weight','is',null)
+        .order('log_date',{ascending:false});
+      mbs.forEach(uid=>{
+        const latest=(wLogs||[]).find(l=>l.user_id===uid);
+        if(latest)memberWeights[uid]=latest.weight;
+      });
+    } else {
+      const{data:allLogs}=await sb.from('daily_logs')
+        .select('user_id,log_date,meals,workouts,mandatory')
+        .in('user_id',mbs).gte('log_date',chStart).lte('log_date',chEnd);
+      var _allLogs=allLogs;
+    }
+
+    const resultRows=(profiles||[]).map(p2=>{
+      const name2=(p2.display_name&&p2.display_name.trim())?p2.display_name:(p2.username||'유저');
+      const isMe=p2.id===CU.id;
+      const wgoal=memberWgoals[p2.id];
+
+      if(isDietChallenge){
+        const curW=memberWeights[p2.id];
+        const startW=c.start_weights?.[p2.id];
+        const lost=startW&&curW?((startW-curW)).toFixed(1):null;
+        const reached=wgoal&&curW&&curW<=wgoal;
+        return`<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);">
+          <div style="font-size:18px;">${reached?'🏆':isMe?'😎':'👤'}</div>
+          <div style="flex:1;">
+            <div style="font-size:14px;font-weight:600;">${name2}${isMe?' (나)':''}</div>
+            <div style="font-size:12px;color:var(--text3);">
+              ${curW?curW+'kg':'체중 미기록'}${wgoal?' → 목표 '+wgoal+'kg':''}
+              ${reached?' 🎉 달성!':lost?' (-'+lost+'kg 감량)':''}
+            </div>
+          </div>
+          ${reached?'<div style="font-size:12px;font-weight:700;color:var(--green);">달성!</div>':''}
+        </div>`;
+      } else {
+        const p2Logs=(_allLogs||[]).filter(l=>l.user_id===p2.id);
+        const d2=p2Logs.filter(l=>(l.meals||[]).some(m=>m.type==='green')).length;
+        const w2=p2Logs.filter(l=>(l.workouts||[]).some(w=>w.status==='done')).length;
+        return`<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);">
+          <div style="font-size:18px;">${isMe?'😎':'👤'}</div>
+          <div style="flex:1;">
+            <div style="font-size:14px;font-weight:600;">${name2}${isMe?' (나)':''}</div>
+            <div style="font-size:12px;color:var(--text3);">클린 식단 ${d2}일 · 운동 완료 ${w2}일</div>
+          </div>
+        </div>`;
+      }
+    }).join('');
+
     document.getElementById('room-members').innerHTML=`
-      <div style="text-align:center;padding:32px 16px;">
-        <div style="font-size:56px;margin-bottom:16px;">🏆</div>
-        <div style="font-size:20px;font-weight:800;margin-bottom:8px;">챌린지 완료!</div>
-        <div style="font-size:14px;color:var(--text2);margin-bottom:24px;">${c.duration_days}일 챌린지가 끝났어요</div>
-        <div style="background:var(--surface2);border-radius:14px;padding:16px;margin-bottom:16px;text-align:left;">
-          <div style="font-size:12px;color:var(--text3);margin-bottom:10px;text-transform:uppercase;letter-spacing:.06em;">최종 결과</div>
-          ${(profiles||[]).map(p2=>{
-            const p2Logs=(allLogs||[]).filter(l=>l.user_id===p2.id);
-            const d2=p2Logs.filter(l=>(l.meals||[]).some(m=>m.type==='green')).length;
-            const w2=p2Logs.filter(l=>(l.workouts||[]).some(w=>w.type==='session'&&w.status==='done')).length;
-            const wg2=(memberWgoals||{})[p2.id];
-            const lastW=p2Logs.slice(-1)[0]?.weight;
-            const name2=(p2.display_name&&p2.display_name.trim())?p2.display_name:(p2.username||'유저');
-            return`<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);">
-              <div style="font-size:16px;">${p2.id===CU.id?'😎':'👤'}</div>
-              <div style="flex:1;">
-                <div style="font-size:13px;font-weight:600;">${name2}</div>
-                <div style="font-size:11px;color:var(--text3);">식단 ${d2}일 · 운동 ${w2}일${wg2?` · 목표 ${wg2}kg${lastW&&lastW<=wg2?' 달성🎉':''}`:''}</div>
-              </div>
-            </div>`;
-          }).join('')}
-        </div>
-        <button onclick="closeChallengeRoom()" style="width:100%;padding:15px;background:var(--accent);border:none;border-radius:12px;color:#fff;font-size:15px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">확인</button>
+      <div style="text-align:center;padding:24px 16px 16px;">
+        <div style="font-size:52px;margin-bottom:12px;">🏆</div>
+        <div style="font-size:20px;font-weight:800;margin-bottom:6px;">챌린지 완료!</div>
+        <div style="font-size:13px;color:var(--text2);margin-bottom:20px;">${c.duration_days}일간의 여정이 끝났어요</div>
+      </div>
+      <div style="background:var(--surface2);border-radius:14px;padding:14px 16px;margin:0 16px 16px;">
+        <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;">최종 결과</div>
+        ${resultRows}
+      </div>
+      <div style="padding:0 16px 24px;">
+        <button onclick="closeChallengeRoom()" style="width:100%;padding:15px;background:var(--accent);border:none;border-radius:12px;color:#fff;font-size:15px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">확인하고 나가기</button>
       </div>`;
     return;
   }
 
+  // ── 진행 중 ──
+
+  // 체중 감량 챌린지 전용 뷰
+  if(isDietChallenge){
+    // 각 멤버의 최신 체중 + 시작 체중 fetch
+    const{data:allWLogs}=await sb.from('daily_logs')
+      .select('user_id,log_date,weight')
+      .in('user_id',mbs).not('weight','is',null)
+      .order('log_date',{ascending:true});
+
+    const startWeights={};
+    const currentWeights={};
+    mbs.forEach(uid=>{
+      const uLogs=(allWLogs||[]).filter(l=>l.user_id===uid&&l.weight!=null);
+      if(uLogs.length>0){
+        startWeights[uid]=parseFloat(uLogs[0].weight);
+        currentWeights[uid]=parseFloat(uLogs[uLogs.length-1].weight);
+      }
+    });
+
+    document.getElementById('room-grade').textContent='⚖️ 감량';
+    document.getElementById('room-members').innerHTML=(profiles||[]).map(p=>{
+      const isMe=p.id===CU.id;
+      const displayName=(p.display_name&&p.display_name.trim())?p.display_name:(p.username||'유저');
+      const wgoal=memberWgoals[p.id];
+      const startW=startWeights[p.id];
+      const curW=currentWeights[p.id];
+      const lost=startW&&curW?(startW-curW):null;
+      const toGoal=wgoal&&curW?(curW-wgoal):null;
+      const reached=toGoal!==null&&toGoal<=0;
+
+      const lostStr=lost!=null?(lost>0?'-'+lost.toFixed(1)+'kg 감량':lost<0?'+'+Math.abs(lost).toFixed(1)+'kg 증가':'변화 없음'):'—';
+      const toGoalStr=toGoal!=null?(reached?'목표 달성! 🎉':toGoal.toFixed(1)+'kg 남음'):'—';
+
+      const border=isMe?'var(--accent-bd)':'var(--border)';
+      const bg=isMe?'var(--accent-bg)':'var(--surface2)';
+
+      return`<div style="background:${bg};border:1px solid ${border};border-radius:14px;padding:14px 16px;margin-bottom:8px;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+          <div style="width:34px;height:34px;border-radius:50%;background:var(--surface3);display:flex;align-items:center;justify-content:center;font-size:16px;">${reached?'🏆':isMe?'😎':'👤'}</div>
+          <div style="flex:1;">
+            <div style="font-size:14px;font-weight:700;">${displayName}${isMe?' <span style="font-size:11px;color:var(--accent);">(나)</span>':''}</div>
+            ${wgoal?`<div style="font-size:11px;color:var(--text3);">목표 ${wgoal}kg</div>`:''}
+          </div>
+          ${reached?'<div style="font-size:12px;font-weight:700;color:var(--green);">🎉 달성!</div>':''}
+        </div>
+        <div style="display:flex;gap:8px;">
+          <div style="flex:1;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px;text-align:center;">
+            <div style="font-size:18px;font-weight:700;font-family:'DM Mono',monospace;">${curW!=null?curW.toFixed(1)+'kg':'—'}</div>
+            <div style="font-size:10px;color:var(--text3);margin-top:2px;">현재 체중</div>
+          </div>
+          <div style="flex:1;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px;text-align:center;">
+            <div style="font-size:18px;font-weight:700;font-family:'DM Mono',monospace;color:${lost>0?'var(--green)':lost<0?'var(--red)':'var(--text3)'};">${lostStr}</div>
+            <div style="font-size:10px;color:var(--text3);margin-top:2px;">챌린지 감량</div>
+          </div>
+          ${wgoal?`<div style="flex:1;background:${reached?'var(--green-bg)':'var(--surface)'};border:1px solid ${reached?'var(--green-bd)':'var(--border)'};border-radius:10px;padding:10px;text-align:center;">
+            <div style="font-size:18px;font-weight:700;font-family:'DM Mono',monospace;color:${reached?'var(--green)':toGoal<=2?'var(--amber)':'var(--text)'};">${toGoalStr}</div>
+            <div style="font-size:10px;color:var(--text3);margin-top:2px;">목표까지</div>
+          </div>`:''}
+        </div>
+      </div>`;
+    }).join('');
+    return;
+  }
+
+  // ── 기존 루틴 챌린지 뷰 ──
+  const{data:allLogs}=await sb.from('daily_logs')
+    .select('user_id,log_date,weight,meals,workouts,mandatory')
+    .in('user_id',mbs).gte('log_date',chStart).lte('log_date',TODAY);
+  const todayLogs=(allLogs||[]).filter(l=>l.user_id&&l.log_date&&l.log_date.slice(0,10)===TODAY.slice(0,10));
+
   document.getElementById('room-members').innerHTML=(profiles||[]).map(p=>{
     const pLog=todayLogs?.find(l=>l.user_id===p.id)||{};
     const isMe=p.id===CU.id;
-
-    // ── 식단 ──
     const meals=pLog.meals||[];
     const mealRows=meals.length>0
-      ? meals.map(m=>{
-          const dot=m.type==='green'?'🟢':m.type==='red'?'🔴':'⚪';
-          const timeIcon=m.time==='아침'?'🌅':m.time==='점심'?'☀️':m.time==='저녁'?'🌙':'🍎';
-          return`<div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text2);">${dot} ${timeIcon} ${m.name||m.time||'식사'}</div>`;
-        }).join('')
-      : '<div style="font-size:11px;color:var(--text3);">아직 기록 없음</div>';
-
-    // ── 운동 ──
-    const sessions=(pLog.workouts||[]).filter(w=>w.type==='session');
-    const workoutRows=sessions.length>0
-      ? sessions.map(s=>{
-          const vol=s.totalVolume>=1000?(s.totalVolume/1000).toFixed(1)+'t':s.totalVolume>0?s.totalVolume+'kg':'';
-          const exNames=(s.exercises||[]).map(e=>e.name).slice(0,2).join(', ')+(s.exercises?.length>2?'…':'');
-          return`<div style="font-size:11px;color:var(--text2);">💪 ${exNames||'운동'}${vol?' · '+vol:''}</div>`;
-        }).join('')
-      : '<div style="font-size:11px;color:var(--text3);">아직 기록 없음</div>';
-
-    // ── 루틴 ──
-    const mandTotal=(pLog.mandatory||[]).length;
-    const mandDone=(pLog.mandatory||[]).filter(m=>m.done).length;
-    const mandRow=mandTotal>0
-      ? `<div style="font-size:11px;color:var(--text2);">✅ 루틴 ${mandDone}/${mandTotal} 완료</div>`
-      : '<div style="font-size:11px;color:var(--text3);">루틴 없음</div>';
-
-    // ── 체중 & 목표 ──
-    const wgoal=memberWgoals[p.id];
-    const currentW=pLog.weight;
-    let weightRow='';
-    if(wgoal){
-      if(currentW){
-        const diff=(currentW-wgoal).toFixed(1);
-        const reached=currentW<=wgoal;
-        const color=reached?'var(--green)':parseFloat(diff)<=2?'var(--amber)':'var(--text2)';
-        const icon=reached?'🎉':'⚖️';
-        weightRow=`<div style="font-size:11px;color:${color};font-weight:${reached?'700':'400'};">${icon} ${currentW}kg → 목표 ${wgoal}kg (${reached?'달성!':diff+'kg 남음'})</div>`;
-      } else {
-        weightRow=`<div style="font-size:11px;color:var(--text3);">⚖️ 목표 ${wgoal}kg · 오늘 체중 미기록</div>`;
-      }
-    }
-
-    // Period-wide stats
+      ?meals.map(m=>{const dot=m.type==='green'?'🟢':m.type==='red'?'🔴':'⚪';const timeIcon=m.time==='아침'?'🌅':m.time==='점심'?'☀️':m.time==='저녁'?'🌙':'🍎';return`<div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text2);">${dot} ${timeIcon} ${m.name||m.time||'식사'}</div>`;}).join('')
+      :'<div style="font-size:11px;color:var(--text3);">아직 기록 없음</div>';
     const pLogs=(allLogs||[]).filter(l=>l.user_id===p.id);
     const totalDays=Math.max(1,dayNum);
-
-    // ── Option A: O/X per day ──
-    // 🥗 식단: 그날 금지식(red) 0개 && 식단 기록 있음
-    const dietDays=pLogs.filter(l=>{
-      const ms=l.meals||[];
-      return ms.length>0 && !ms.some(m=>m.type==='red');
-    }).length;
-
-    // 💪 운동: 그날 운동 기록 있음 (세션 유무만, 완료 여부 상관없이)
-    const workoutDays=pLogs.filter(l=>(l.workouts||[]).some(w=>w.type==='session')).length;
-
-    // ✅ 루틴: 그날 루틴 1개 이상 완료
+    const dietDays=pLogs.filter(l=>{const ms=l.meals||[];return ms.length>0&&!ms.some(m=>m.type==='red');}).length;
+    const workoutDays=pLogs.filter(l=>(l.workouts||[]).some(w=>w.status==='done')).length;
     const routineDays=pLogs.filter(l=>(l.mandatory||[]).some(m=>m.done)).length;
-
-    // 오늘 O/X
     const todayDietOK=(meals.length>0)&&!meals.some(m=>m.type==='red');
-    const todayWorkoutOK=(pLog.workouts||[]).some(w=>w.type==='session');
+    const todayWorkoutOK=(pLog.workouts||[]).some(w=>w.status==='done');
     const todayRoutineOK=(pLog.mandatory||[]).some(m=>m.done);
-    const wgoalReached=wgoal&&currentW&&currentW<=wgoal;
-
-    // Display name
-    const displayName=p.display_name&&p.display_name.trim()?p.display_name:p.username||'유저';
-
-    // 헤더 등급 — 내 총 달성일 / 전체 기간
+    const displayName=(p.display_name&&p.display_name.trim())?p.display_name:(p.username||'유저');
     if(isMe){
       const totalScore=Math.round((dietDays+workoutDays+routineDays)/(totalDays*3)*100);
       const myGrade=getGrade(totalScore);
       document.getElementById('room-grade').textContent=myGrade.icon+' '+myGrade.grade;
       document.getElementById('room-grade').style.color=myGrade.color;
     }
-
     const border=isMe?'var(--accent-bd)':'var(--border)';
     const bg=isMe?'var(--accent-bg)':'var(--surface2)';
-
     return`<div style="background:${bg};border:1px solid ${border};border-radius:14px;overflow:hidden;margin-bottom:8px;">
-      <!-- 멤버 헤더 -->
       <div style="display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid ${border};">
         <div style="width:34px;height:34px;border-radius:50%;background:var(--surface3);display:flex;align-items:center;justify-content:center;font-size:16px;">${isMe?'😎':'👤'}</div>
         <div style="flex:1;">
           <div style="font-size:14px;font-weight:700;">${displayName}${isMe?' <span style="font-size:11px;color:var(--accent);font-weight:500;">(나)</span>':''}</div>
-          ${isMe?'<div style="font-size:11px;color:var(--text3);">내 개인 점수</div>':'<div style="font-size:11px;color:var(--text3);">팀원 현황</div>'}
         </div>
-        ${wgoalReached?'<div style="font-size:12px;font-weight:700;color:var(--green);">🎉 목표달성!</div>':
-          wgoal?`<div style="font-size:11px;color:var(--text3);">목표 ${wgoal}kg</div>`:''}
       </div>
-      <!-- 체중 목표 진행 -->
-      ${weightRow?`<div style="padding:10px 14px;background:${wgoalReached?'var(--green-bg)':'transparent'};border-bottom:1px solid ${border};">${weightRow}</div>`:''}
-      <!-- 챌린지 전체 현황 — O/X 달성일 -->
       <div style="padding:12px 14px;border-bottom:1px solid ${border};">
-        <div style="font-size:10px;font-weight:600;color:var(--text3);margin-bottom:10px;text-transform:uppercase;letter-spacing:.05em;">${totalDays}일간 달성 현황</div>
+        <div style="font-size:10px;font-weight:600;color:var(--text3);margin-bottom:10px;text-transform:uppercase;letter-spacing:.05em;">${totalDays}일간 달성</div>
         <div style="display:flex;flex-direction:column;gap:8px;">
-          <div style="display:flex;align-items:center;gap:10px;">
-            <div style="font-size:11px;width:44px;white-space:nowrap;color:var(--text2);">🥗 식단</div>
-            <div style="flex:1;height:7px;background:var(--border);border-radius:4px;overflow:hidden;">
-              <div style="height:7px;border-radius:4px;background:var(--green);width:${Math.round(dietDays/totalDays*100)}%;transition:width .6s;"></div>
-            </div>
-            <div style="font-size:12px;font-weight:600;color:var(--text);min-width:42px;text-align:right;">${dietDays}<span style="font-size:10px;font-weight:400;color:var(--text3);">/${totalDays}일</span></div>
-          </div>
-          <div style="display:flex;align-items:center;gap:10px;">
-            <div style="font-size:11px;width:44px;white-space:nowrap;color:var(--text2);">💪 운동</div>
-            <div style="flex:1;height:7px;background:var(--border);border-radius:4px;overflow:hidden;">
-              <div style="height:7px;border-radius:4px;background:var(--accent);width:${Math.round(workoutDays/totalDays*100)}%;transition:width .6s;"></div>
-            </div>
-            <div style="font-size:12px;font-weight:600;color:var(--text);min-width:42px;text-align:right;">${workoutDays}<span style="font-size:10px;font-weight:400;color:var(--text3);">/${totalDays}일</span></div>
-          </div>
-          <div style="display:flex;align-items:center;gap:10px;">
-            <div style="font-size:11px;width:44px;white-space:nowrap;color:var(--text2);">✅ 루틴</div>
-            <div style="flex:1;height:7px;background:var(--border);border-radius:4px;overflow:hidden;">
-              <div style="height:7px;border-radius:4px;background:var(--amber);width:${Math.round(routineDays/totalDays*100)}%;transition:width .6s;"></div>
-            </div>
-            <div style="font-size:12px;font-weight:600;color:var(--text);min-width:42px;text-align:right;">${routineDays}<span style="font-size:10px;font-weight:400;color:var(--text3);">/${totalDays}일</span></div>
-          </div>
+          <div style="display:flex;align-items:center;gap:10px;"><div style="font-size:11px;width:44px;white-space:nowrap;color:var(--text2);">🥗 식단</div><div style="flex:1;height:7px;background:var(--border);border-radius:4px;overflow:hidden;"><div style="height:7px;border-radius:4px;background:var(--green);width:${Math.round(dietDays/totalDays*100)}%;"></div></div><div style="font-size:12px;font-weight:600;min-width:42px;text-align:right;">${dietDays}<span style="font-size:10px;font-weight:400;color:var(--text3);">/${totalDays}일</span></div></div>
+          <div style="display:flex;align-items:center;gap:10px;"><div style="font-size:11px;width:44px;white-space:nowrap;color:var(--text2);">💪 운동</div><div style="flex:1;height:7px;background:var(--border);border-radius:4px;overflow:hidden;"><div style="height:7px;border-radius:4px;background:var(--accent);width:${Math.round(workoutDays/totalDays*100)}%;"></div></div><div style="font-size:12px;font-weight:600;min-width:42px;text-align:right;">${workoutDays}<span style="font-size:10px;font-weight:400;color:var(--text3);">/${totalDays}일</span></div></div>
+          <div style="display:flex;align-items:center;gap:10px;"><div style="font-size:11px;width:44px;white-space:nowrap;color:var(--text2);">✅ 루틴</div><div style="flex:1;height:7px;background:var(--border);border-radius:4px;overflow:hidden;"><div style="height:7px;border-radius:4px;background:var(--amber);width:${Math.round(routineDays/totalDays*100)}%;"></div></div><div style="font-size:12px;font-weight:600;min-width:42px;text-align:right;">${routineDays}<span style="font-size:10px;font-weight:400;color:var(--text3);">/${totalDays}일</span></div></div>
         </div>
       </div>
-      <!-- 오늘 O/X -->
       <div style="padding:12px 14px;border-bottom:1px solid ${border};">
-        <div style="font-size:10px;font-weight:600;color:var(--text3);margin-bottom:8px;text-transform:uppercase;letter-spacing:.05em;">오늘</div>
+        <div style="font-size:10px;font-weight:600;color:var(--text3);margin-bottom:8px;">오늘</div>
         <div style="display:flex;gap:8px;">
-          <div style="flex:1;padding:8px;background:${todayDietOK?'var(--green-bg)':'var(--surface3)'};border:1px solid ${todayDietOK?'var(--green-bd)':'var(--border)'};border-radius:10px;text-align:center;">
-            <div style="font-size:16px;">${todayDietOK?'🟢':'—'}</div>
-            <div style="font-size:10px;color:var(--text3);margin-top:3px;">식단</div>
-          </div>
-          <div style="flex:1;padding:8px;background:${todayWorkoutOK?'var(--accent-bg)':'var(--surface3)'};border:1px solid ${todayWorkoutOK?'var(--accent-bd)':'var(--border)'};border-radius:10px;text-align:center;">
-            <div style="font-size:16px;">${todayWorkoutOK?'💪':'—'}</div>
-            <div style="font-size:10px;color:var(--text3);margin-top:3px;">운동</div>
-          </div>
-          <div style="flex:1;padding:8px;background:${todayRoutineOK?'var(--amber-bg)':'var(--surface3)'};border:1px solid ${todayRoutineOK?'var(--amber-bd)':'var(--border)'};border-radius:10px;text-align:center;">
-            <div style="font-size:16px;">${todayRoutineOK?'✅':'—'}</div>
-            <div style="font-size:10px;color:var(--text3);margin-top:3px;">루틴</div>
-          </div>
+          <div style="flex:1;padding:8px;background:${todayDietOK?'var(--green-bg)':'var(--surface3)'};border:1px solid ${todayDietOK?'var(--green-bd)':'var(--border)'};border-radius:10px;text-align:center;"><div style="font-size:16px;">${todayDietOK?'🟢':'—'}</div><div style="font-size:10px;color:var(--text3);margin-top:3px;">식단</div></div>
+          <div style="flex:1;padding:8px;background:${todayWorkoutOK?'var(--accent-bg)':'var(--surface3)'};border:1px solid ${todayWorkoutOK?'var(--accent-bd)':'var(--border)'};border-radius:10px;text-align:center;"><div style="font-size:16px;">${todayWorkoutOK?'💪':'—'}</div><div style="font-size:10px;color:var(--text3);margin-top:3px;">운동</div></div>
+          <div style="flex:1;padding:8px;background:${todayRoutineOK?'var(--amber-bg)':'var(--surface3)'};border:1px solid ${todayRoutineOK?'var(--amber-bd)':'var(--border)'};border-radius:10px;text-align:center;"><div style="font-size:16px;">${todayRoutineOK?'✅':'—'}</div><div style="font-size:10px;color:var(--text3);margin-top:3px;">루틴</div></div>
         </div>
       </div>
-      <!-- 오늘 식단 상세 -->
-      <div style="padding:10px 14px;">
-        <div style="font-size:10px;font-weight:600;color:var(--text3);margin-bottom:6px;">오늘 식단</div>
-        ${mealRows}
-      </div>
+      <div style="padding:10px 14px;"><div style="font-size:10px;font-weight:600;color:var(--text3);margin-bottom:6px;">오늘 식단</div>${mealRows}</div>
     </div>`;
   }).join('');
 }
