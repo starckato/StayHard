@@ -1199,37 +1199,79 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 
   <!-- ONBOARDING MODAL -->
   <div id="onboarding-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:800;align-items:center;justify-content:center;padding:24px;">
-    <div style="width:100%;max-width:380px;background:var(--surface);border-radius:20px;overflow:hidden;">
-      <!-- Steps container -->
+    <div style="width:100%;max-width:380px;background:var(--surface);border-radius:20px;overflow:hidden;max-height:90vh;overflow-y:auto;">
       <div id="ob-steps">
-        <!-- Step 1 -->
+
+        <!-- Step 1: 환영 -->
         <div id="ob-s1" style="padding:32px 24px 24px;text-align:center;">
           <div style="font-size:56px;margin-bottom:16px;">🔥</div>
-          <div style="font-size:22px;font-weight:800;color:var(--red);margin-bottom:8px;">Stay Hard</div>
-          <div style="font-size:14px;color:var(--text2);line-height:1.7;margin-bottom:8px;">안녕하세요, <span id="ob-name" style="color:var(--text);font-weight:600;"></span>님!<br>매일의 루틴을 기록하고 성장하세요.</div>
-          <div style="font-size:12px;color:var(--red);font-style:italic;margin-bottom:28px;">"고통은 일시적이다. 포기하면 영원히 남는다."</div>
-          <div style="display:flex;flex-direction:column;gap:10px;text-align:left;background:var(--surface2);border-radius:12px;padding:16px;margin-bottom:24px;">
-            <div style="display:flex;align-items:center;gap:12px;font-size:13px;color:var(--text2);"><span style="font-size:20px;">🥗</span> 식단을 기록하세요</div>
-            <div style="display:flex;align-items:center;gap:12px;font-size:13px;color:var(--text2);"><span style="font-size:20px;">🏋️</span> 운동을 추적하세요</div>
-            <div style="display:flex;align-items:center;gap:12px;font-size:13px;color:var(--text2);"><span style="font-size:20px;">✅</span> 매일 루틴을 완료하세요</div>
-            <div style="display:flex;align-items:center;gap:12px;font-size:13px;color:var(--text2);"><span style="font-size:20px;">🎯</span> 오늘의 할일을 정복하세요</div>
-          </div>
-          <button onclick="obNext(2)" style="width:100%;padding:15px;background:var(--red);border:none;border-radius:12px;color:#fff;font-size:15px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">시작하기 →</button>
-          <button onclick="obDismissForever()" style="width:100%;padding:10px;background:none;border:none;color:var(--text3);font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;margin-top:6px;touch-action:manipulation;">다시 보지 않기</button>
+          <div style="font-size:22px;font-weight:800;color:#f87171;margin-bottom:8px;">Stay Hard</div>
+          <div style="font-size:15px;color:var(--text);font-weight:600;margin-bottom:6px;">안녕하세요, <span id="ob-name"></span>님!</div>
+          <div style="font-size:13px;color:var(--text2);line-height:1.7;margin-bottom:20px;">자기 자신을 통제하는 삶을 시작해요.<br>식단, 운동, 루틴을 매일 기록하고<br>점수로 성장을 확인하세요.</div>
+          <div style="font-size:11px;color:#f87171;font-style:italic;margin-bottom:24px;">"고통은 일시적이다. 포기하면 영원히 남는다."</div>
+          <button onclick="obNext(2)" style="width:100%;padding:15px;background:#f87171;border:none;border-radius:14px;color:#fff;font-size:16px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">시작하기 →</button>
+          <button onclick="obDismissForever()" style="width:100%;padding:10px;background:none;border:none;color:var(--text3);font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;margin-top:6px;touch-action:manipulation;">건너뛰기</button>
         </div>
-        <!-- Step 2 -->
-        <div id="ob-s2" style="display:none;padding:32px 24px 24px;text-align:center;">
-          <div style="font-size:48px;margin-bottom:16px;">✅</div>
-          <div style="font-size:18px;font-weight:700;margin-bottom:8px;">필수 루틴 설정</div>
-          <div style="font-size:13px;color:var(--text2);line-height:1.7;margin-bottom:20px;">매일 반복할 루틴을 추가하세요.<br>나중에 언제든 수정할 수 있어요.</div>
-          <div style="text-align:left;margin-bottom:16px;">
+
+        <!-- Step 2: 목표 선택 -->
+        <div id="ob-s2" style="display:none;padding:28px 24px 24px;">
+          <div style="text-align:center;margin-bottom:20px;">
+            <div style="font-size:36px;margin-bottom:10px;">🎯</div>
+            <div style="font-size:18px;font-weight:700;margin-bottom:6px;">목표가 뭔가요?</div>
+            <div style="font-size:13px;color:var(--text2);">목표에 맞는 루틴을 추천해드릴게요</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:24px;">
+            <div id="ob-goal-diet" onclick="obSelectGoal('diet')" style="display:flex;align-items:center;gap:14px;padding:16px;border-radius:14px;border:2px solid var(--border);background:var(--surface2);cursor:pointer;touch-action:manipulation;">
+              <div style="font-size:28px;">⚖️</div>
+              <div style="flex:1;">
+                <div style="font-size:15px;font-weight:700;">다이어트</div>
+                <div style="font-size:12px;color:var(--text3);margin-top:2px;">체중 감량 · 식단 관리 · 유산소</div>
+              </div>
+            </div>
+            <div id="ob-goal-muscle" onclick="obSelectGoal('muscle')" style="display:flex;align-items:center;gap:14px;padding:16px;border-radius:14px;border:2px solid var(--border);background:var(--surface2);cursor:pointer;touch-action:manipulation;">
+              <div style="font-size:28px;">💪</div>
+              <div style="flex:1;">
+                <div style="font-size:15px;font-weight:700;">근성장</div>
+                <div style="font-size:12px;color:var(--text3);margin-top:2px;">근력 향상 · 헬스 · 단백질 식단</div>
+              </div>
+            </div>
+            <div id="ob-goal-habit" onclick="obSelectGoal('habit')" style="display:flex;align-items:center;gap:14px;padding:16px;border-radius:14px;border:2px solid var(--border);background:var(--surface2);cursor:pointer;touch-action:manipulation;">
+              <div style="font-size:28px;">🔥</div>
+              <div style="flex:1;">
+                <div style="font-size:15px;font-weight:700;">습관 형성</div>
+                <div style="font-size:12px;color:var(--text3);margin-top:2px;">자기관리 · 루틴 구축 · 성장</div>
+              </div>
+            </div>
+          </div>
+          <button onclick="obNext(3)" id="ob-goal-next" style="width:100%;padding:15px;background:var(--accent);border:none;border-radius:14px;color:#fff;font-size:15px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;opacity:.4;pointer-events:none;">다음 →</button>
+          <button onclick="obNext(3)" style="width:100%;padding:10px;background:none;border:none;color:var(--text3);font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;margin-top:6px;touch-action:manipulation;">건너뛰기</button>
+        </div>
+
+        <!-- Step 3: 목표 체중 + 루틴 추천 -->
+        <div id="ob-s3" style="display:none;padding:28px 24px 24px;">
+          <div style="text-align:center;margin-bottom:20px;">
+            <div style="font-size:36px;margin-bottom:10px;" id="ob-s3-icon">✅</div>
+            <div style="font-size:18px;font-weight:700;margin-bottom:6px;" id="ob-s3-title">추천 루틴</div>
+            <div style="font-size:13px;color:var(--text2);" id="ob-s3-desc">탭해서 추가할 루틴을 선택하세요</div>
+          </div>
+          <!-- 목표 체중 (다이어트일 때만) -->
+          <div id="ob-weight-section" style="display:none;margin-bottom:16px;background:var(--surface2);border-radius:12px;padding:14px 16px;">
+            <div style="font-size:12px;color:var(--text3);margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em;">목표 체중</div>
+            <div style="display:flex;align-items:center;gap:10px;">
+              <input id="ob-weight-inp" type="number" inputmode="decimal" placeholder="예: 70" style="flex:1;background:var(--surface);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;color:var(--text);font-size:16px;font-family:'DM Mono',monospace;"/>
+              <span style="font-size:14px;color:var(--text3);">kg</span>
+            </div>
+          </div>
+          <!-- 추천 루틴 칩 -->
+          <div style="margin-bottom:16px;">
             <div style="font-size:11px;color:var(--text3);margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em;">추천 루틴 (탭해서 추가)</div>
             <div id="ob-routine-chips" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
           </div>
-          <div id="ob-selected-routines" style="min-height:48px;margin-bottom:16px;display:flex;flex-direction:column;gap:4px;"></div>
-          <button onclick="obFinish()" style="width:100%;padding:15px;background:var(--accent);border:none;border-radius:12px;color:#fff;font-size:15px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">완료 — 시작! 🔥</button>
-          <button onclick="obFinish()" style="width:100%;padding:10px;background:none;border:none;color:var(--text3);font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;margin-top:6px;">건너뛰기</button>
+          <div id="ob-selected-routines" style="margin-bottom:16px;display:flex;flex-direction:column;gap:4px;"></div>
+          <button onclick="obFinish()" style="width:100%;padding:15px;background:var(--accent);border:none;border-radius:14px;color:#fff;font-size:16px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">완료 — 시작! 🔥</button>
+          <button onclick="obFinish()" style="width:100%;padding:10px;background:none;border:none;color:var(--text3);font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;margin-top:6px;touch-action:manipulation;">건너뛰기</button>
         </div>
+
       </div>
     </div>
   </div>
@@ -3012,8 +3054,34 @@ async function captureShareCard(){
   }catch(e){showToast('스크린샷으로 저장해주세요 📱');}
 }
 // ── ONBOARDING ──
-const OB_ROUTINES=['🪥 양치','💊 영양제','📖 독서 30분','🧊 냉수 샤워','🧹 집 청소','💪 운동','🌅 아침 루틴','🧘 명상 10분','😴 11시 취침','🚶 산책 30분'];
-let obSelectedRoutines=[];
+// OB_ROUTINES → OB_GOAL_ROUTINES로 대체됨
+let obSelectedRoutines=[]; // [{name, scoreType}]
+
+// 목표별 추천 루틴
+const OB_GOAL_ROUTINES={
+  diet:[
+    {name:'🚿 찬물 샤워', scoreType:'cold_shower'},
+    {name:'🌅 새벽 6시 기상', scoreType:'early_rise'},
+    {name:'⚖️ 공복 체중 측정', scoreType:null},
+    {name:'🚶 30분 걷기', scoreType:null},
+    {name:'🪥 양치', scoreType:null},
+  ],
+  muscle:[
+    {name:'🚿 찬물 샤워', scoreType:'cold_shower'},
+    {name:'🌅 새벽 6시 기상', scoreType:'early_rise'},
+    {name:'⚖️ 공복 체중 측정', scoreType:null},
+    {name:'💊 단백질 보충제', scoreType:null},
+    {name:'🪥 양치', scoreType:null},
+  ],
+  habit:[
+    {name:'🚿 찬물 샤워', scoreType:'cold_shower'},
+    {name:'🌅 새벽 6시 기상', scoreType:'early_rise'},
+    {name:'📚 독서 30분', scoreType:null},
+    {name:'🪥 양치', scoreType:null},
+    {name:'🧹 집 청소', scoreType:null},
+  ],
+};
+let _obGoal=null;
 
 function obDismissForever(){
   document.getElementById('onboarding-modal').style.display='none';
@@ -3023,47 +3091,90 @@ function obDismissForever(){
 function showOnboarding(name){
   document.getElementById('ob-name').textContent=name;
   obSelectedRoutines=[];
-  // Build routine chips
-  document.getElementById('ob-routine-chips').innerHTML=OB_ROUTINES.map(r=>
-    `<div onclick="obToggleRoutine(this,'${r}')" style="padding:6px 12px;border-radius:20px;border:1px solid var(--border2);background:var(--surface2);font-size:12px;cursor:pointer;color:var(--text2);touch-action:manipulation;">${r}</div>`
-  ).join('');
-  document.getElementById('ob-selected-routines').innerHTML='';
-  const m=document.getElementById('onboarding-modal');
-  m.style.display='flex';
+  _obGoal=null;
+  ['ob-s1','ob-s2','ob-s3'].forEach((id,i)=>{
+    document.getElementById(id).style.display=i===0?'block':'none';
+  });
+  document.getElementById('onboarding-modal').style.display='flex';
 }
 function obNext(step){
   document.getElementById('ob-s1').style.display='none';
-  document.getElementById('ob-s2').style.display='block';
+  document.getElementById('ob-s2').style.display='none';
+  document.getElementById('ob-s3').style.display='none';
+  document.getElementById('ob-s'+step).style.display='block';
+  if(step===3)obBuildRoutineChips();
 }
-function obToggleRoutine(el,name){
-  const idx=obSelectedRoutines.indexOf(name);
+function obSelectGoal(goal){
+  _obGoal=goal;
+  // 선택 강조
+  ['diet','muscle','habit'].forEach(g=>{
+    const el=document.getElementById('ob-goal-'+g);
+    if(el){
+      el.style.borderColor=g===goal?'var(--accent)':'var(--border)';
+      el.style.background=g===goal?'rgba(124,106,247,.1)':'var(--surface2)';
+    }
+  });
+  // 다음 버튼 활성화
+  const btn=document.getElementById('ob-goal-next');
+  if(btn){btn.style.opacity='1';btn.style.pointerEvents='auto';}
+}
+function obBuildRoutineChips(){
+  obSelectedRoutines=[];
+  const routines=_obGoal?OB_GOAL_ROUTINES[_obGoal]:OB_GOAL_ROUTINES.habit;
+  // 아이콘/타이틀 업데이트
+  const icons={diet:'⚖️',muscle:'💪',habit:'🔥'};
+  const titles={diet:'다이어트 추천 루틴',muscle:'근성장 추천 루틴',habit:'습관 형성 추천 루틴'};
+  const descs={diet:'목표 체중을 설정하고 루틴을 골라보세요',muscle:'근성장을 위한 루틴을 골라보세요',habit:'매일 반복할 루틴을 골라보세요'};
+  if(_obGoal){
+    document.getElementById('ob-s3-icon').textContent=icons[_obGoal]||'✅';
+    document.getElementById('ob-s3-title').textContent=titles[_obGoal]||'추천 루틴';
+    document.getElementById('ob-s3-desc').textContent=descs[_obGoal]||'탭해서 추가할 루틴을 선택하세요';
+  }
+  // 다이어트면 목표 체중 입력 표시
+  const wtSec=document.getElementById('ob-weight-section');
+  if(wtSec)wtSec.style.display=_obGoal==='diet'||_obGoal==='muscle'?'block':'none';
+  // 루틴 칩 생성
+  document.getElementById('ob-routine-chips').innerHTML=routines.map((r,i)=>
+    `<div onclick="obToggleRoutine(this,'${r.name}',${r.scoreType?`'${r.scoreType}'`:'null'})" style="padding:8px 14px;border-radius:20px;border:1.5px solid var(--border2);background:var(--surface2);font-size:13px;cursor:pointer;color:var(--text2);touch-action:manipulation;">${r.name}</div>`
+  ).join('');
+  document.getElementById('ob-selected-routines').innerHTML='';
+}
+function obToggleRoutine(el,name,scoreType){
+  const idx=obSelectedRoutines.findIndex(r=>r.name===name);
   if(idx>=0){
     obSelectedRoutines.splice(idx,1);
-    el.style.background='var(--surface2)';
-    el.style.color='var(--text2)';
-    el.style.borderColor='var(--border2)';
+    el.style.background='var(--surface2)';el.style.color='var(--text2)';el.style.borderColor='var(--border2)';
   } else {
-    obSelectedRoutines.push(name);
-    el.style.background='var(--accent)';
-    el.style.color='#fff';
-    el.style.borderColor='var(--accent)';
+    obSelectedRoutines.push({name,scoreType:scoreType||null});
+    el.style.background='var(--accent)';el.style.color='#fff';el.style.borderColor='var(--accent)';
   }
   document.getElementById('ob-selected-routines').innerHTML=obSelectedRoutines.length>0
     ?`<div style="font-size:11px;color:var(--text3);margin-bottom:4px;">선택된 루틴 ${obSelectedRoutines.length}개</div>`
-    +obSelectedRoutines.map(r=>`<div style="font-size:12px;color:var(--text2);padding:4px 0;">✓ ${r}</div>`).join('')
-    :'';
+    +obSelectedRoutines.map(r=>`<div style="font-size:13px;color:var(--text2);padding:3px 0;">✓ ${r.name}</div>`).join(''):'';
 }
 async function obFinish(){
   document.getElementById('onboarding-modal').style.display='none';
+  // 목표 체중 저장
+  const wtInp=document.getElementById('ob-weight-inp');
+  const wtVal=wtInp?parseFloat(wtInp.value):null;
+  if(wtVal&&!isNaN(wtVal)){
+    if(CP)CP.weight_goal=wtVal;
+    sb.from('profiles').update({weight_goal:wtVal}).eq('id',CU.id).then(()=>{});
+  }
+  // 선택된 루틴 적용
   if(obSelectedRoutines.length>0){
-    const mand=obSelectedRoutines.map(name=>({name,done:false,days:[0,1,2,3,4,5,6]}));
+    const mand=obSelectedRoutines.map(r=>({
+      name:r.name,done:false,days:[0,1,2,3,4,5,6],
+      ...(r.scoreType?{_scoreType:r.scoreType}:{})
+    }));
     log.mandatory=mand;
-    await propagateMandatoryDefs(mand);
+    propagateMandatoryDefs(mand);
     renderMandatory();
   }
-  // Mark onboarding done in profile
+  // 온보딩 완료
   await sb.from('profiles').update({onboarded:true}).eq('id',CU.id);
-  CP.onboarded=true;
+  if(CP)CP.onboarded=true;
+  queueSave();
 }
 
 
