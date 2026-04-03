@@ -1699,8 +1699,8 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
       <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;" id="end-date-presets">
         <button onclick="pickEndDatePreset(1,this)" style="padding:7px 12px;border-radius:20px;font-size:12px;border:1px solid var(--border2);background:var(--surface2);color:var(--text2);cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">1주</button>
         <button onclick="pickEndDatePreset(2,this)" style="padding:7px 12px;border-radius:20px;font-size:12px;border:1px solid var(--border2);background:var(--surface2);color:var(--text2);cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">2주</button>
-        <button onclick="pickEndDatePreset(4,this)" style="padding:7px 12px;border-radius:20px;font-size:12px;border:1px solid var(--border2);background:var(--surface2);color:var(--text2);cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">1달</button>
-        <button onclick="pickEndDatePreset(12,this)" style="padding:7px 12px;border-radius:20px;font-size:12px;border:1px solid var(--border2);background:var(--surface2);color:var(--text2);cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">3달</button>
+        <button onclick="pickEndDatePreset('1m',this)" style="padding:7px 12px;border-radius:20px;font-size:12px;border:1px solid var(--border2);background:var(--surface2);color:var(--text2);cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">1달</button>
+        <button onclick="pickEndDatePreset('3m',this)" style="padding:7px 12px;border-radius:20px;font-size:12px;border:1px solid var(--border2);background:var(--surface2);color:var(--text2);cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">3달</button>
         <button onclick="pickEndDatePreset(0,this)" id="end-date-clear-btn" style="padding:7px 12px;border-radius:20px;font-size:12px;border:1px solid var(--border2);background:var(--surface2);color:var(--text3);cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">무기한</button>
       </div>
       <input type="date" id="mand-end-date" style="width:100%;background:var(--surface2);border:1.5px solid var(--border2);border-radius:var(--radius-sm);color:var(--text);font-family:'DM Sans',sans-serif;font-size:16px;padding:12px 14px;outline:none;box-sizing:border-box;" oninput="onEndDateInput()"/>
@@ -3993,16 +3993,15 @@ function renderMeals(){
 function deleteMeal(i){
   const meal=log.meals[i];
   if(meal){
-    const foodType=meal.type; // 'green'|'red'|null
-    // diet_log 점수 취소 (-1)
+    const ft=meal.type;
     addScore('diet_log_cancel','',-1);
-    // 클린이면 +5 취소
-    if(foodType==='green') addScore('diet_clean_cancel','',-5);
-    // 금지식이면 -10 복구 (+10)
-    if(foodType==='red') addScore('diet_junk_cancel','',10);
+    if(ft==='green') addScore('diet_clean_cancel','',-5);
+    if(ft==='red') addScore('diet_junk_cancel','',10);
+    // 치팅은 점수 없으므로 별도 처리 없음 — 그냥 삭제하면 used 자동 감소
   }
   log.meals.splice(i,1);
   renderMeals();
+  renderCheatBadge(); // 치팅 잔여 즉시 업데이트
   saveNow();
 }
 
@@ -4264,28 +4263,38 @@ function saveMeal(){
   const entry={name,type:foodType,photo:photoData,time:mealTime,category:mealCategory};
   if(!logCache[selectedKey])logCache[selectedKey]=log;
   log=logCache[selectedKey];
+  // 편집 모드면 기존 타입 기억 (점수/치팅 취소용)
+  const prevType=mealIdx!==null?log.meals[mealIdx]?.type:null;
   if(mealIdx===null){log.meals.push(entry);}
   else{log.meals[mealIdx]=entry;}
   closeModal('meal-modal');renderMeals();renderCheatBadge();
-  // 점수
-  if(mealCategory==='drink'){
-    // 음료는 점수 없음
-  } else if(foodType==='red'){
-    addScore('diet_log');addScore('diet_junk');setTimeout(()=>showChaekpipty(name),300);
-  } else if(foodType==='green'){
-    addScore('diet_log');addScore('diet_clean');showWin('diet_clean',6,'클린 식단!');
-  } else if(foodType==='cheat'){
-    // logCache에 이미 push됐으므로 getCheatUsed()는 지금 저장된 값 반영
-    const usedNow=getCheatUsed();
-    const quotaNow=getCheatQuota();
-    const remNow=Math.max(0,quotaNow-usedNow);
-    if(remNow<=0){
-      showToast('🎉 치팅 사용! 이번달 치팅 소진됐어요');
+  // 점수: 편집 모드면 이전 점수 취소 후 새 점수 부여
+  if(mealIdx!==null&&prevType&&prevType!==foodType){
+    // 이전 타입 점수 취소
+    if(prevType==='green'){addScore('diet_clean_cancel','',-5);}
+    else if(prevType==='red'){addScore('diet_junk_cancel','',10);}
+    // cheat는 점수 없으므로 취소 불필요
+  }
+  // 신규 저장이거나 편집으로 타입이 바뀐 경우에만 점수 부여
+  const isNew=mealIdx===null;
+  const typeChanged=mealIdx!==null&&prevType!==foodType;
+  if(isNew||typeChanged){
+    if(mealCategory==='drink'){
+      // 음료 점수 없음
+    } else if(foodType==='red'){
+      if(isNew)addScore('diet_log');
+      addScore('diet_junk');setTimeout(()=>showChaekpipty(name),300);
+    } else if(foodType==='green'){
+      if(isNew)addScore('diet_log');
+      addScore('diet_clean');if(isNew)showWin('diet_clean',6,'클린 식단!');
+    } else if(foodType==='cheat'){
+      const usedNow=getCheatUsed();
+      const quotaNow=getCheatQuota();
+      const remNow=Math.max(0,quotaNow-usedNow);
+      showToast(remNow<=0?'🎉 치팅 사용! 이번달 치팅 소진됐어요':'🎉 치팅 사용! 잔여 '+remNow+'회');
     } else {
-      showToast('🎉 치팅 사용! 잔여 '+remNow+'회');
+      if(isNew)addScore('diet_log');
     }
-  } else {
-    addScore('diet_log');
   }
   saveNow();
   checkPerfectDay();
@@ -5069,16 +5078,19 @@ function markMandFail(i){
 }
 let _mandEndDate=null; // 'YYYY-MM-DD' or null
 
-function pickEndDatePreset(weeks, el){
+function pickEndDatePreset(val, el){
   document.querySelectorAll('#end-date-presets button').forEach(b=>{
     b.style.background='var(--surface2)';b.style.color='var(--text2)';b.style.borderColor='var(--border2)';
   });
   el.style.background='var(--accent)';el.style.color='#fff';el.style.borderColor='var(--accent)';
-  if(weeks===0){
+  if(val===0){
     _mandEndDate=null;
     document.getElementById('mand-end-date').value='';
   } else {
-    const d=new Date();d.setDate(d.getDate()+weeks*7);
+    const d=new Date();
+    if(val==='1m'){d.setMonth(d.getMonth()+1);}
+    else if(val==='3m'){d.setMonth(d.getMonth()+3);}
+    else{d.setDate(d.getDate()+val*7);} // 1주=7일, 2주=14일
     _mandEndDate=dkey(d);
     document.getElementById('mand-end-date').value=_mandEndDate;
   }
