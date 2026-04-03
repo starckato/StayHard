@@ -994,16 +994,12 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
     <!-- Room Body -->
     <div style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;" id="room-body">
 
-      <!-- D-Day + Grade + Progress -->
+      <!-- D-Day + Progress -->
       <div style="padding:16px;background:linear-gradient(135deg,var(--surface),var(--surface2));border-bottom:1px solid var(--border);">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
           <div>
             <div style="font-size:28px;font-weight:800;color:var(--accent);" id="room-dday">D-1</div>
             <div style="font-size:11px;color:var(--text3);" id="room-period"></div>
-          </div>
-          <div style="text-align:right;">
-            <div style="font-size:22px;font-weight:800;" id="room-grade">—</div>
-            <div style="font-size:10px;color:var(--text3);">현재 등급</div>
           </div>
         </div>
         <div style="background:var(--border);border-radius:4px;height:8px;">
@@ -5767,11 +5763,9 @@ async function renderChallengeRoom(){
   document.getElementById('room-subtitle').textContent=`${dayNum}일차 · ${daysLeft}일 남음`;
   document.getElementById('room-dday').textContent='D+'+dayNum;
   document.getElementById('room-period').textContent=`${startDate.getMonth()+1}/${startDate.getDate()} 시작 · ${c.duration_days}일 챌린지`;
-  document.getElementById('room-grade').textContent='—';
-  document.getElementById('room-grade').style.color='var(--text3)';
   document.getElementById('room-progress-bar').style.width=timePct+'%';
   document.getElementById('room-progress-bar').style.background=isCompleted?'var(--green)':'var(--accent)';
-  document.getElementById('room-progress-label').textContent=isCompleted?'챌린지 완료!':'${dayNum}일째 진행 중';
+  document.getElementById('room-progress-label').textContent=isCompleted?'챌린지 완료!':`${dayNum}일째 진행 중`;
   document.getElementById('room-progress-pct').textContent=isCompleted?'종료됨':`${daysLeft}일 남음`;
 
   const mbs=Array.isArray(c.members)?c.members:JSON.parse(c.members||'[]');
@@ -5878,7 +5872,6 @@ async function renderChallengeRoom(){
       }
     });
 
-    document.getElementById('room-grade').textContent='⚖️ 감량';
     document.getElementById('room-members').innerHTML=(profiles||[]).map(p=>{
       const isMe=p.id===CU.id;
       const displayName=(p.display_name&&p.display_name.trim())?p.display_name:(p.username||'유저');
@@ -5889,8 +5882,8 @@ async function renderChallengeRoom(){
       const toGoal=wgoal&&curW?(curW-wgoal):null;
       const reached=toGoal!==null&&toGoal<=0;
 
-      const lostStr=lost!=null?(lost>0?'-'+lost.toFixed(1)+'kg 감량':lost<0?'+'+Math.abs(lost).toFixed(1)+'kg 증가':'변화 없음'):'—';
-      const toGoalStr=toGoal!=null?(reached?'목표 달성! 🎉':toGoal.toFixed(1)+'kg 남음'):'—';
+      const lostStr=lost!=null?(lost>0?'-'+lost.toFixed(1)+'kg':lost<0?'+'+Math.abs(lost).toFixed(1)+'kg':'±0kg'):'—';
+      const toGoalStr=toGoal!=null?(reached?'🎉 달성!':toGoal.toFixed(1)+'kg'):'—';
 
       const border=isMe?'var(--accent-bd)':'var(--border)';
       const bg=isMe?'var(--accent-bg)':'var(--surface2)';
@@ -5906,15 +5899,15 @@ async function renderChallengeRoom(){
         </div>
         <div style="display:flex;gap:8px;">
           <div style="flex:1;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px;text-align:center;">
-            <div style="font-size:18px;font-weight:700;font-family:'DM Mono',monospace;">${curW!=null?curW.toFixed(1)+'kg':'—'}</div>
+            <div style="font-size:16px;font-weight:700;font-family:'DM Mono',monospace;white-space:nowrap;">${curW!=null?curW.toFixed(1)+'kg':'—'}</div>
             <div style="font-size:10px;color:var(--text3);margin-top:2px;">현재 체중</div>
           </div>
           <div style="flex:1;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px;text-align:center;">
-            <div style="font-size:18px;font-weight:700;font-family:'DM Mono',monospace;color:${lost>0?'var(--green)':lost<0?'var(--red)':'var(--text3)'};">${lostStr}</div>
+            <div style="font-size:16px;font-weight:700;font-family:'DM Mono',monospace;color:${lost>0?'var(--green)':lost<0?'var(--red)':'var(--text3)'};white-space:nowrap;">${lostStr}</div>
             <div style="font-size:10px;color:var(--text3);margin-top:2px;">챌린지 감량</div>
           </div>
           ${wgoal?`<div style="flex:1;background:${reached?'var(--green-bg)':'var(--surface)'};border:1px solid ${reached?'var(--green-bd)':'var(--border)'};border-radius:10px;padding:10px;text-align:center;">
-            <div style="font-size:18px;font-weight:700;font-family:'DM Mono',monospace;color:${reached?'var(--green)':toGoal<=2?'var(--amber)':'var(--text)'};">${toGoalStr}</div>
+            <div style="font-size:16px;font-weight:700;font-family:'DM Mono',monospace;color:${reached?'var(--green)':toGoal<=2?'var(--amber)':'var(--text)'};white-space:nowrap;">${toGoalStr}</div>
             <div style="font-size:10px;color:var(--text3);margin-top:2px;">목표까지</div>
           </div>`:''}
         </div>
@@ -5948,8 +5941,6 @@ async function renderChallengeRoom(){
     if(isMe){
       const totalScore=Math.round((dietDays+workoutDays+routineDays)/(totalDays*3)*100);
       const myGrade=getGrade(totalScore);
-      document.getElementById('room-grade').textContent=myGrade.icon+' '+myGrade.grade;
-      document.getElementById('room-grade').style.color=myGrade.color;
     }
     const border=isMe?'var(--accent-bd)':'var(--border)';
     const bg=isMe?'var(--accent-bg)':'var(--surface2)';
