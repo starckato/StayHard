@@ -4147,19 +4147,20 @@ function pickMealCategory(cat, el){
 }
 
 function pickFT(t, el){
-  // 치팅 선택 시 잔여 횟수 체크
   if(t==='cheat'){
-    const remaining=getCheatRemaining();
+    const used=getCheatUsed();
+    const quota=getCheatQuota();
+    const remaining=quota-used;
     const hint=document.getElementById('mm-cheat-quota-hint');
     if(remaining<=0){
       showToast('이번달 치팅 횟수를 모두 사용했어요 🚫');
-      if(hint){hint.style.display='block';hint.style.background='var(--red-bg)';hint.style.borderColor='var(--red-bd)';hint.style.color='var(--red)';hint.textContent='이번달 치팅 소진! 내달 1일에 초기화돼요.';}
-      return;
+      if(hint){hint.style.display='block';hint.style.background='var(--red-bg)';hint.style.borderColor='var(--red-bd)';hint.style.color='var(--red)';hint.textContent='이번달 치팅 소진 ('+used+'/'+quota+'회). 내달 1일 초기화.';}
+      return; // 선택 막음
     }
     if(hint){
       hint.style.display='block';
       hint.style.background='var(--amber-bg)';hint.style.borderColor='var(--amber-bd)';hint.style.color='var(--amber)';
-      hint.textContent='치팅 잔여 '+(remaining-1)+'회 남음 (선택 후)';
+      hint.textContent='저장 후 잔여 '+(remaining-1)+'회 ('+used+'/'+quota+'회 사용)';
     }
   } else {
     const hint=document.getElementById('mm-cheat-quota-hint');
@@ -4174,17 +4175,31 @@ function pickFT(t, el){
 // 치팅 시스템
 // ═══════════════════════════════════════════
 function getCheatQuota(){return CP?.cheat_quota||4;}
-function getCheatYearMonth(){const n=new Date();return n.getFullYear()+'-'+(n.getMonth()+1);}
+function getCheatYearMonth(){
+  const n=new Date();
+  // 'YYYY-MM' 형식으로 반환 (padded)
+  return n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0');
+}
 
 function getCheatUsed(){
-  // 이번달 전체 로그에서 cheat 타입 식사 수 집계
-  const ym=getCheatYearMonth();
+  const ym=getCheatYearMonth(); // e.g. '2026-04'
   let used=0;
+  // logCache에서 이번달 날짜('YYYY-MM-DD')만 필터
   Object.keys(logCache).forEach(k=>{
-    if(!k.startsWith(ym.replace('-','').slice(0,4)+'-'+(String(parseInt(ym.split('-')[1])).padStart(2,'0'))))return;
+    if(!k.startsWith(ym))return; // 'YYYY-MM'으로 시작하는 날짜만
     const l=logCache[k];
     if(l&&l.meals)used+=l.meals.filter(m=>m.type==='cheat').length;
   });
+  // 현재 선택 날짜가 이번달이면 log(현재)도 포함 (캐시 동기화 보장)
+  if(selectedKey&&selectedKey.startsWith(ym)){
+    const cur=log;
+    if(cur&&cur.meals){
+      // logCache[selectedKey]와 log가 같은 참조이면 중복 안 됨
+      if(!logCache[selectedKey]||logCache[selectedKey]!==cur){
+        used+=cur.meals.filter(m=>m.type==='cheat').length;
+      }
+    }
+  }
   return used;
 }
 
@@ -4260,7 +4275,15 @@ function saveMeal(){
   } else if(foodType==='green'){
     addScore('diet_log');addScore('diet_clean');showWin('diet_clean',6,'클린 식단!');
   } else if(foodType==='cheat'){
-    showToast('🎉 치팅 사용! 잔여 '+getCheatRemaining()+'회');
+    // logCache에 이미 push됐으므로 getCheatUsed()는 지금 저장된 값 반영
+    const usedNow=getCheatUsed();
+    const quotaNow=getCheatQuota();
+    const remNow=Math.max(0,quotaNow-usedNow);
+    if(remNow<=0){
+      showToast('🎉 치팅 사용! 이번달 치팅 소진됐어요');
+    } else {
+      showToast('🎉 치팅 사용! 잔여 '+remNow+'회');
+    }
   } else {
     addScore('diet_log');
   }
