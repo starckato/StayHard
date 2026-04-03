@@ -3161,15 +3161,21 @@ async function obFinish(){
     if(CP)CP.weight_goal=wtVal;
     sb.from('profiles').update({weight_goal:wtVal}).eq('id',CU.id).then(()=>{});
   }
-  // 선택된 루틴 적용
+  // 선택된 루틴 — 기존 루틴에 추가 (덮어쓰기 금지)
   if(obSelectedRoutines.length>0){
-    const mand=obSelectedRoutines.map(r=>({
-      name:r.name,done:false,days:[0,1,2,3,4,5,6],
-      ...(r.scoreType?{_scoreType:r.scoreType}:{})
-    }));
-    log.mandatory=mand;
-    propagateMandatoryDefs(mand);
-    renderMandatory();
+    const existing=log.mandatory||[];
+    const existingNames=new Set(existing.map(r=>r.name));
+    const newRoutines=obSelectedRoutines
+      .filter(r=>!existingNames.has(r.name)) // 중복 제거
+      .map(r=>({
+        name:r.name,done:false,days:[0,1,2,3,4,5,6],
+        ...(r.scoreType?{_scoreType:r.scoreType}:{})
+      }));
+    if(newRoutines.length>0){
+      log.mandatory=[...existing,...newRoutines];
+      propagateMandatoryDefs(log.mandatory);
+      renderMandatory();
+    }
   }
   // 온보딩 완료
   await sb.from('profiles').update({onboarded:true}).eq('id',CU.id);
