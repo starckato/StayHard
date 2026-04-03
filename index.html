@@ -1914,7 +1914,14 @@ function openWorkoutSession(prefillExercises){
   sessionSourceRoutineId=null;
   sessionOriginalExCount=0;
   const btn=document.getElementById('ws-done-btn');
-  if(btn)btn.textContent='운동 종료 ✓';
+  if(btn){
+    const labels={
+      'now':'운동 종료 ✓',
+      'done':'기록 완료 ✓',
+      'planned':'일정 등록 ✓'
+    };
+    btn.textContent=labels[_workoutMode]||'운동 종료 ✓';
+  }
   document.getElementById('workout-session-overlay').classList.add('open');
   renderSession();
 }
@@ -4161,12 +4168,19 @@ function renderWorkouts(){
             <div class="wo-name">${w.sessionName||'헬스 세션'}</div>
             <div class="wo-meta">${preview}${volStr?' · '+volStr:''}</div>
           </div>
-          <div class="wo-status ${w.status==='done'?'done':w.status==='recorded'?'recorded':w.status==='planned'?'planned':'done'}" onclick="event.stopPropagation();${w.status==='planned'?'markWorkoutDone('+i+')':''}" style="cursor:${w.status==='planned'?'pointer':'default'};">
+          <div class="wo-status ${w.status==='done'?'done':w.status==='recorded'?'recorded':w.status==='planned'?'planned':'done'}" style="cursor:default;">
             ${w.status==='done'?'✓ 완료':w.status==='recorded'?'✓ 기록됨':w.status==='planned'?'📅 예정':'완료'}
           </div>
           <button onclick="event.stopPropagation();delWO(${i})" class="wo-del" style="pointer-events:all;">✕</button>
         </div>
-        ${vol>0?`<div style="display:flex;gap:0;border-top:1px solid var(--border);">
+        ${w.status==='planned'?`<div style="display:flex;gap:8px;padding:10px 14px;border-top:1px solid var(--border);pointer-events:all;">
+          <button onclick="event.stopPropagation();markWorkoutDone(${i})" style="flex:1;padding:10px;background:rgba(74,222,128,.15);border:1px solid rgba(74,222,128,.3);border-radius:10px;color:#4ade80;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">✓ 완료했어요</button>
+          <button onclick="event.stopPropagation();editGymSession(${i})" style="flex:1;padding:10px;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;color:var(--text2);font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">✎ 세션 수정</button>
+        </div>`:''}
+        <div style="display:none;"><!-- placeholder
+        </div>
+        --></div>
+        ${w.status!=='planned'&&vol>0?`<div style="display:flex;gap:0;border-top:1px solid var(--border);">
           <div style="flex:1;text-align:center;padding:7px 0;border-right:1px solid var(--border);">
             <div style="font-size:13px;font-weight:700;color:var(--accent);">${volStr}</div>
             <div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.04em;">볼륨</div>
@@ -4294,10 +4308,8 @@ function downloadImage(canvas){
 }
 
 function markWorkoutDone(i){
-  if(!confirm('운동을 완료했나요? ✓'))return;
   log.workouts[i].status='done';
   renderWorkouts();
-  // 점수 부여 (오늘 workout_done 없으면)
   const todayPtsLog=(logCache[TODAY]||log)._ptsLog||[];
   const alreadyScored=todayPtsLog.some(e=>e.type==='workout_done');
   if(!alreadyScored){
@@ -4530,10 +4542,15 @@ async function finishSession(){
   // UI 즉시 닫기 + 팡파레 즉시 (저장 기다리지 않음)
   document.getElementById('workout-session-overlay').classList.remove('open');
   if(!wasEditing){
-    const l=logCache[selectedKey]||log;
-    const alreadyScored=(l._ptsLog||[]).filter(e=>e.type==='workout_done').length>=1;
-    if(!alreadyScored)addScore('workout_done');
-    setTimeout(()=>{showWin('workout',5,'운동 완료!');launchConfetti();checkPerfectDay();},300);
+    if(_workoutMode==='planned'){
+      // 예정 등록 — 점수 없음, 조용히 저장
+      showToast('📅 운동 일정이 등록됐어요');
+    } else {
+      const l=logCache[selectedKey]||log;
+      const alreadyScored=(l._ptsLog||[]).filter(e=>e.type==='workout_done').length>=1;
+      if(!alreadyScored)addScore('workout_done');
+      setTimeout(()=>{showWin('workout',5,'운동 완료!');launchConfetti();checkPerfectDay();},300);
+    }
   } else {
     showToast('✓ 세션이 수정됐어요');
   }
