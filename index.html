@@ -4524,7 +4524,7 @@ async function finishSession(){
       isStrength:ex.isStrength
     })),
     totalVolume,
-    status:currentSession.some(ex=>ex.sets.some(s=>s.done))?'done':'planned',
+    status:_sessionStatus==='planned'?'planned':'done',
     _expanded:false
   };
 
