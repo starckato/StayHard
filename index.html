@@ -2650,27 +2650,50 @@ function emptyLog(isNew=false){return{weight:null,water_cups:0,meals:[],workouts
 let log=emptyLog();
 
 // ── INIT ──
-// getSession()은 만료 토큰을 refresh 완료 전에 반환 → 400 에러 원인
-// onAuthStateChange INITIAL_SESSION은 refresh 완료 후 발생 → 항상 유효한 토큰 보장
+// 핵심 원칙:
+// 1. getSession()으로 세션 존재 여부 확인
+// 2. 세션이 있으면 refreshSession()으로 토큰 강제 갱신 후 onLogin
+//    → refresh 완료 = 유효한 토큰 보장 = 400 에러 없음
+// 3. onAuthStateChange는 이후 SIGNED_IN / SIGNED_OUT 변경만 처리
 let _initDone=false;
-function init(){
-  // 15초 안에 INITIAL_SESSION 없으면 로그인 화면으로
-  const fallbackTimer=setTimeout(()=>{
-    if(!_initDone){hide('loading');showAuth();showToast('⚠️ 서버 연결 지연 — 잠시 후 다시 시도해주세요');}
-  },15000);
-
+async function init(){
+  // 이후 로그인/로그아웃 변경 감지 (init과 별개로 항상 등록)
   sb.auth.onAuthStateChange(async(event,session)=>{
-    if((event==='INITIAL_SESSION'||event==='SIGNED_IN')&&!_initDone){
-      clearTimeout(fallbackTimer);
+    if(event==='SIGNED_IN'&&!_initDone){
       _initDone=true;
-      if(session){await onLogin(session.user);}
-      else{hide('loading');showAuth();}
+      await onLogin(session.user);
+    }
+    if(event==='TOKEN_REFRESHED'&&!_initDone){
+      _initDone=true;
+      await onLogin(session.user);
     }
     if(event==='SIGNED_OUT'){
       _initDone=false;
       hide('loading');showAuth();
     }
   });
+
+  try{
+    const timeout=new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),15000));
+    const{data:{session}}=await Promise.race([sb.auth.getSession(),timeout]);
+    if(!session){hide('loading');showAuth();return;}
+    // 세션 있음 → 토큰 강제 refresh 후 onLogin (유효한 토큰 보장)
+    const{data:{session:fresh},error}=await Promise.race([
+      sb.auth.refreshSession(),
+      new Promise((_,rej)=>setTimeout(()=>rej(new Error('refresh timeout')),10000))
+    ]);
+    if(_initDone)return; // onAuthStateChange가 먼저 처리했으면 skip
+    _initDone=true;
+    if(error||!fresh){
+      // refresh 실패 = 세션 만료 → 로그인 화면
+      hide('loading');showAuth();
+    }else{
+      await onLogin(fresh.user);
+    }
+  }catch(e){
+    console.warn('init error:',e.message);
+    if(!_initDone){hide('loading');showAuth();showToast('⚠️ 서버 연결 지연 — 잠시 후 다시 시도해주세요');}
+  }
 }
 function showAuth(){
   hide('loading');
@@ -2961,9 +2984,7 @@ async function _prefetchWeekLogs(){
           _ptsLog:ptsLog
         };
       });
-      if(_saveInFlight&&logCache[selectedKey]){}
-      else if(logCache[selectedKey])log=logCache[selectedKey];
-      else if(logCache[today])log=logCache[today];
+      if(_saveInFlight&&logCache[selectedKey]){}else if(logCache[selectedKey])log=logCache[selectedKey];else if(logCache[today])log=logCache[today];
       buildSlider();
       renderRoutine();
     }
@@ -4547,11 +4568,7 @@ async function saveCheatSettings(){
 async function saveMeal(){
   const name=document.getElementById('mm-name').value.trim();
   let finalPhoto=null;
-  if(photoFile){
-    showToast('📷 사진 저장 중...');
-    const url=await uploadPhotoToStorage(photoFile);
-    finalPhoto=url||photoData;photoFile=null;
-  }else{finalPhoto=photoData;}
+  if(photoFile){showToast('📷 사진 저장 중...');const url=await uploadPhotoToStorage(photoFile);finalPhoto=url||photoData;photoFile=null;}else{finalPhoto=photoData;}
   const entry={name,type:foodType,photo:finalPhoto,time:mealTime,category:mealCategory};
   if(!logCache[selectedKey])logCache[selectedKey]=log;
   log=logCache[selectedKey];
