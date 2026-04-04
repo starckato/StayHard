@@ -2938,11 +2938,12 @@ async function _prefetchWeekLogs(){
     if(data){
       data.forEach(d=>{
         const k=normKey(d.log_date);
+        // 저장 진행 중이거나 유저가 현재 보고 있는 날짜는 덮어쓰지 않음
+        // (미저장 변경사항이 날아가는 레이스 컨디션 방지)
+        if(_saveInFlight && k===selectedKey) return;
         const existing=logCache[k];
-        // _ptsLog: 메모리 캐시 우선 (아직 DB에 저장 안 됐을 수 있음)
         const memPtsLog=existing?._ptsLog;
         const dbPtsLog=d.points_log||[];
-        // 메모리 쪽이 더 많은 항목을 가지고 있으면 메모리 우선
         const ptsLog=(memPtsLog&&memPtsLog.length>=dbPtsLog.length)?memPtsLog:dbPtsLog;
         logCache[k]={
           weight:d.weight!==null?parseFloat(d.weight):null,
@@ -2954,11 +2955,11 @@ async function _prefetchWeekLogs(){
           _ptsLog:ptsLog
         };
       });
-      // 현재 보고 있는 날짜 캐시 갱신 (오늘이든 다른 날이든)
-      if(logCache[selectedKey])log=logCache[selectedKey];
-      else if(logCache[today])log=logCache[today];
+      // 현재 보고 있는 날짜 기준으로 화면 갱신
+      if(logCache[selectedKey]) log=logCache[selectedKey];
+      else if(logCache[today]) log=logCache[today];
       buildSlider();
-      renderRoutine(); // 화면 갱신
+      renderRoutine();
     }
   }catch(e){
     console.warn('prefetch failed:',e);
@@ -4006,7 +4007,7 @@ async function selectDay(d,k){
   selectedDate=d;selectedKey=k;show('loading');
   // 어제 체중 비교를 위해 전날 로그도 같이 로드
   const prev=new Date(d);prev.setDate(prev.getDate()-1);const prevKey=dkey(prev);
-  try{await Promise.all([loadLog(k, true), logCache[prevKey]?null:loadLog(prevKey)]);}catch(e){
+  try{await Promise.all([loadLog(k, true),logCache[prevKey]?null:loadLog(prevKey)]);}catch(e){
     console.warn('loadLog failed',e);
     showToast('⚠️ 데이터 불러오기 실패 — 다시 탭해주세요');
   }
