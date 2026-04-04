@@ -1782,7 +1782,13 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
         <button onclick="pickEndDatePreset('3m',this)" style="padding:7px 12px;border-radius:20px;font-size:12px;border:1px solid var(--border2);background:var(--surface2);color:var(--text2);cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">3달</button>
         <button onclick="pickEndDatePreset(0,this)" id="end-date-clear-btn" style="padding:7px 12px;border-radius:20px;font-size:12px;border:1px solid var(--border2);background:var(--surface2);color:var(--text3);cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">무기한</button>
       </div>
-      <input type="date" id="mand-end-date" style="width:100%;background:var(--surface2);border:1.5px solid var(--border2);border-radius:var(--radius-sm);color:var(--text);font-family:'DM Sans',sans-serif;font-size:16px;padding:12px 14px;outline:none;box-sizing:border-box;" oninput="onEndDateInput()"/>
+      <div style="position:relative;">
+        <div style="position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:16px;pointer-events:none;z-index:1;">📅</div>
+        <input type="date" id="mand-end-date"
+          style="width:100%;background:var(--surface2);border:1.5px solid var(--border2);border-radius:var(--radius-sm);color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;padding:12px 14px 12px 42px;outline:none;box-sizing:border-box;-webkit-appearance:none;appearance:none;min-height:48px;"
+          oninput="onEndDateInput()"/>
+      </div>
+      <div id="mand-end-date-display" style="font-size:12px;color:var(--text3);margin-top:4px;min-height:16px;"></div>
     </div>
     <button class="mbtn" id="mand-save-btn" onclick="saveMandatory()">루틴 추가</button>
     <button class="mbtn-ghost" onclick="closeModal('mand-modal')">취소</button>
@@ -4157,13 +4163,13 @@ function getWeightGoal(){
 // 목표 체중 저장 — CP + localStorage + profiles DB (이중 저장)
 async function saveWeightGoal(gv){
   if(CP)CP.weight_goal=gv;
-  // localStorage 백업 (즉시, 오프라인도 OK)
+  // localStorage 즉시 저장 (primary — 오프라인/빠른 저장 대응)
   try{const k=_wgKey();if(k){if(gv)localStorage.setItem(k,String(gv));else localStorage.removeItem(k);}}catch(e){}
-  // profiles DB (비동기, 실패해도 localStorage가 백업)
+  // DB는 fire-and-forget (실패해도 localStorage 백업 유지)
   if(CU){
-    const{error}=await sb.from('profiles').update({weight_goal:gv||null}).eq('id',CU.id);
-    if(error) console.error('[saveWeightGoal] DB 저장 실패 (localStorage는 유지됨):', error);
-    else console.log('[saveWeightGoal] DB 저장 성공:', gv);
+    sb.from('profiles').update({weight_goal:gv||null}).eq('id',CU.id).then(({error})=>{
+      if(error)console.warn('[saveWeightGoal] DB 저장 실패 (localStorage 유지):', error.message);
+    });
   }
 }
 
@@ -4178,13 +4184,13 @@ function openWeightModal(){
 async function saveWeight(){
   const v=parseFloat(document.getElementById('wt-inp').value);
   if(isNaN(v))return;
-  // 목표 체중 처리
+  // 목표 체중 처리 — fire-and-forget
   const gi=document.getElementById('wt-goal-inp');
   if(gi&&gi.value.trim()!==''){
     const gv=parseFloat(gi.value);
-    if(!isNaN(gv)&&gv>0) await saveWeightGoal(gv);
+    if(!isNaN(gv)&&gv>0)saveWeightGoal(gv);
   } else if(gi&&gi.value.trim()===''){
-    await saveWeightGoal(null);
+    saveWeightGoal(null);
   }
   const prev=log.weight;
   log.weight=v;
@@ -5318,6 +5324,18 @@ function markMandFail(i){
 }
 let _mandEndDate=null; // 'YYYY-MM-DD' or null
 
+function _updateEndDateDisplay(dateStr){
+  const el=document.getElementById('mand-end-date-display');
+  if(!el)return;
+  if(!dateStr){el.textContent='종료일 없음 — 무기한 반복';el.style.color='var(--text3)';return;}
+  // YYYY-MM-DD → M월 D일까지
+  const parts=dateStr.split('-');
+  if(parts.length===3){
+    el.textContent=parseInt(parts[1])+'월 '+parseInt(parts[2])+'일까지 반복';
+    el.style.color='var(--accent)';
+  }
+}
+
 function pickEndDatePreset(val, el){
   document.querySelectorAll('#end-date-presets button').forEach(b=>{
     b.style.background='var(--surface2)';b.style.color='var(--text2)';b.style.borderColor='var(--border2)';
@@ -5330,18 +5348,19 @@ function pickEndDatePreset(val, el){
     const d=new Date();
     if(val==='1m'){d.setMonth(d.getMonth()+1);}
     else if(val==='3m'){d.setMonth(d.getMonth()+3);}
-    else{d.setDate(d.getDate()+val*7);} // 1주=7일, 2주=14일
+    else{d.setDate(d.getDate()+val*7);}
     _mandEndDate=dkey(d);
     document.getElementById('mand-end-date').value=_mandEndDate;
   }
+  _updateEndDateDisplay(_mandEndDate);
 }
 function onEndDateInput(){
   const v=document.getElementById('mand-end-date').value;
   _mandEndDate=v||null;
-  // 프리셋 버튼 선택 해제
   document.querySelectorAll('#end-date-presets button').forEach(b=>{
     b.style.background='var(--surface2)';b.style.color='var(--text2)';b.style.borderColor='var(--border2)';
   });
+  _updateEndDateDisplay(_mandEndDate);
 }
 function resetEndDateUI(){
   _mandEndDate=null;
@@ -5349,9 +5368,9 @@ function resetEndDateUI(){
   document.querySelectorAll('#end-date-presets button').forEach(b=>{
     b.style.background='var(--surface2)';b.style.color='var(--text2)';b.style.borderColor='var(--border2)';
   });
-  // "무기한" 버튼 활성화
   const clearBtn=document.getElementById('end-date-clear-btn');
   if(clearBtn){clearBtn.style.background='var(--accent)';clearBtn.style.color='#fff';clearBtn.style.borderColor='var(--accent)';}
+  _updateEndDateDisplay(null);
 }
 
 function openAddMandatoryModal(){
