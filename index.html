@@ -3730,24 +3730,26 @@ const CHAEK_SENTENCES = [
 ];
 
 function showChaekpipty(mealName) {
+  // rage 먼저 표시
   showRage();
   const pick = CHAEK_SENTENCES[Math.floor(Math.random() * CHAEK_SENTENCES.length)];
+  // rage 얼굴/메시지 교체
   const faceEl = document.getElementById('rage-face');
   const msgEl = document.getElementById('rage-msg');
   if(faceEl) faceEl.textContent = '⚖️';
   if(msgEl) msgEl.textContent = pick.sentence;
+  // 버튼: 형량 수락
   const closeBtn = document.querySelector('#goggins-rage .rage-close');
   if(closeBtn){
     closeBtn.textContent = '💀 형량 수락 — 운동 추가';
     closeBtn.onclick = () => {
-      // 형량 수락 — 운동 추가, 점수는 완료 시 +10으로 만회
       if(!logCache[selectedKey]) logCache[selectedKey] = log;
       log = logCache[selectedKey];
       log.workouts.push({type:'activity', icon:pick.icon, name:pick.name, cat:pick.cat, meta:pick.meta, status:'planned', _isChaek:true});
       renderWorkouts();
       queueSave();
       closeRage();
-      showToast('⚖️ '+pick.name+' 형량 추가 — 완료하면 -10점 만회!');
+      showToast('⚖️ '+pick.name+' 형량이 추가됐어요');
     };
     // 도망 버튼
     let escBtn = document.getElementById('chaek-escape-btn');
@@ -3760,8 +3762,7 @@ function showChaekpipty(mealName) {
     }
     escBtn.textContent = '도망갈게요 (겁쟁이)';
     escBtn.onclick = () => {
-      // 도망 → -10점 차감
-      addScore('diet_junk');
+      addScore('diet_junk'); // 도망 → -10점
       closeRage();
     };
     escBtn.style.display = 'block';
@@ -3770,11 +3771,14 @@ function showChaekpipty(mealName) {
 
 function closeRage(){
   document.getElementById('goggins-rage').style.display='none';
+  // 버튼 원복
   const closeBtn=document.querySelector('#goggins-rage .rage-close');
   if(closeBtn){closeBtn.textContent='알겠어, 다시 일어선다';closeBtn.onclick=closeRage;}
   const escBtn=document.getElementById('chaek-escape-btn');
   if(escBtn)escBtn.style.display='none';
 }
+
+function showRage(){
   // 20% 기존, 80% 강력 메시지
   let r;
   if(Math.random()<0.8){
@@ -4333,11 +4337,14 @@ function openEditMealModal(i){
       if(b.textContent.includes(mealTime))b.classList.add('time-sel');
     });
   }
-  // Restore quality
+  // Restore quality — 버튼 순서: 0=클린, 1=일반, 2=치팅, 3=금지
   if(foodType){
-    const mp={green:0,normal:1,red:2,skipped:1};
+    const mp={green:0,normal:1,cheat:2,red:3,skipped:1};
     const idx=mp[foodType];
-    if(idx!==undefined)document.querySelectorAll('#mm-quality-btns .ftbtn')[idx].classList.add('sel-'+foodType);
+    if(idx!==undefined){
+      const btns=document.querySelectorAll('#mm-quality-btns .ftbtn');
+      if(btns[idx])btns[idx].classList.add('sel-'+foodType);
+    }
   }
   document.getElementById('mm-save-btn').textContent='변경 저장';
   // Skip to step 3 for edits
