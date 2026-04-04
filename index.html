@@ -4249,7 +4249,48 @@ async function deleteMeal(i){
   saveNow();
 }
 
-let mealIdx=null,foodType=null,photoData=null,mealTime=null,mealCategory=null;
+let mealIdx=null,foodType=null,photoData=null,photoFile=null,mealTime=null,mealCategory=null;
+
+// ── PHOTO UPLOAD TO SUPABASE STORAGE ──
+async function uploadPhotoToStorage(file){
+  if(!file||!CU)return null;
+  try{
+    // 파일 압축 (max 800px, 0.75 quality)
+    const compressed=await compressImage(file,800,0.75);
+    const ext=file.type==='image/png'?'png':'jpg';
+    const path=`meals/${CU.id}/${Date.now()}.${ext}`;
+    const{data,error}=await sb.storage.from('meal-photos').upload(path,compressed,{
+      contentType:'image/jpeg',upsert:false
+    });
+    if(error)throw error;
+    const{data:{publicUrl}}=sb.storage.from('meal-photos').getPublicUrl(path);
+    return publicUrl;
+  }catch(e){
+    console.warn('[uploadPhoto] failed, falling back to base64:',e.message);
+    return null; // 실패하면 null 반환 → base64 fallback
+  }
+}
+
+function compressImage(file,maxPx,quality){
+  return new Promise((resolve)=>{
+    const img=new Image();
+    const url=URL.createObjectURL(file);
+    img.onload=()=>{
+      URL.revokeObjectURL(url);
+      let w=img.width,h=img.height;
+      if(w>maxPx||h>maxPx){
+        if(w>h){h=Math.round(h*maxPx/w);w=maxPx;}
+        else{w=Math.round(w*maxPx/h);h=maxPx;}
+      }
+      const canvas=document.createElement('canvas');
+      canvas.width=w;canvas.height=h;
+      canvas.getContext('2d').drawImage(img,0,0,w,h);
+      canvas.toBlob(blob=>resolve(blob),'image/jpeg',quality);
+    };
+    img.onerror=()=>resolve(file);
+    img.src=url;
+  });
+}
 
 // ── MEAL MODAL: 3-STEP FLOW ──
 function mmSetStep(step){
@@ -4298,7 +4339,7 @@ function mmGoStep3(){
 }
 
 function openAddMealModal(){
-  mealIdx=null;foodType=null;photoData=null;mealTime=null;mealCategory=null;
+  mealIdx=null;foodType=null;photoData=null;photoFile=null;mealTime=null;mealCategory=null;
   document.querySelectorAll('.ftbtn').forEach(b=>{b.className='ftbtn';b.style.cssText='';});
   document.getElementById('mm-name').value='';
   document.getElementById('mm-photo-wrap').style.display='none';
@@ -4314,7 +4355,7 @@ function openAddMealModal(){
 function openEditMealModal(i){
   mealIdx=i;
   const m=log.meals[i];
-  foodType=m.type;photoData=m.photo;mealTime=m.time||null;mealCategory=m.category||null;
+  foodType=m.type;photoData=m.photo;photoFile=null;mealTime=m.time||null;mealCategory=m.category||null;
   // Reset buttons
   document.querySelectorAll('.ftbtn').forEach(b=>{b.className='ftbtn';b.style.cssText='';});
   document.querySelectorAll('#mm-category-btns button').forEach(b=>{
@@ -4510,7 +4551,29 @@ async function saveCheatSettings(){
 
 async function saveMeal(){
   const name=document.getElementById('mm-name').value.trim();
-  const entry={name,type:foodType,photo:photoData,time:mealTime,category:mealCategory};
+
+  // 사진 처리: 새 파일이 있으면 Storage 업로드, 없으면 기존 photoData 유지 (편집 시)
+  let finalPhoto=null;
+  if(photoFile){
+    // 새 사진 선택됨 → Storage 업로드 시도
+    showToast('📷 사진 저장 중...');
+    const url=await uploadPhotoToStorage(photoFile);
+    if(url){
+      finalPhoto=url; // Storage URL 사용
+    } else {
+      // Storage 실패 시 base64 fallback (오프라인 등)
+      finalPhoto=photoData;
+      showToast('⚠ 사진을 로컬에 임시 저장했어요');
+    }
+    photoFile=null;
+  } else if(photoData&&!photoData.startsWith('http')){
+    // 기존 base64 유지 (편집 모드에서 사진 바꾸지 않은 경우)
+    finalPhoto=photoData;
+  } else {
+    finalPhoto=photoData; // 이미 URL인 경우 (기존 Storage URL)
+  }
+
+  const entry={name,type:foodType,photo:finalPhoto,time:mealTime,category:mealCategory};
   if(!logCache[selectedKey])logCache[selectedKey]=log;
   log=logCache[selectedKey];
   const prevType=mealIdx!==null?log.meals[mealIdx]?.type:null;
@@ -4613,6 +4676,7 @@ function readExifDateTime(arrayBuffer){
 
 function previewPhoto(inp){
   const f=inp.files[0];if(!f)return;
+  photoFile=f; // Storage 업로드용 파일 참조 보관
   const isCamera=inp.id==='mm-photo-camera';
   if(isCamera){applyDetectedTime(hourToMealTime(new Date().getHours()));}
   const abReader=new FileReader();
@@ -4622,9 +4686,10 @@ function previewPhoto(inp){
       if(exifDate){applyDetectedTime(hourToMealTime(parseInt(exifDate.substr(11,2))));}
       else{applyDetectedTime(hourToMealTime(new Date(f.lastModified).getHours()));}
     }
+    // 미리보기용 base64 (UI만 사용, DB 저장 안 함)
     const urlReader=new FileReader();
     urlReader.onload=function(ev){
-      photoData=ev.target.result;
+      photoData=ev.target.result; // 미리보기 전용
       document.getElementById('mm-photo-img').src=ev.target.result;
       document.getElementById('mm-photo-wrap').style.display='block';
     };
@@ -4635,6 +4700,7 @@ function previewPhoto(inp){
 
 function delPhoto(){
   photoData=null;
+  photoFile=null;
   document.getElementById('mm-photo-wrap').style.display='none';
   document.getElementById('mm-photo-time-hint').textContent='';
   const c=document.getElementById('mm-photo-camera');const g=document.getElementById('mm-photo-gallery');
