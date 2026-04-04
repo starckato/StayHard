@@ -2650,33 +2650,20 @@ function emptyLog(isNew=false){return{weight:null,water_cups:0,meals:[],workouts
 let log=emptyLog();
 
 // ── INIT ──
-let _initDone=false;
 async function init(){
-  // getSession()으로 즉시 세션 확인 (가장 빠름)
-  // onAuthStateChange는 SIGNED_IN/SIGNED_OUT 이후 변경만 처리
   try{
     const timeout=new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),15000));
-    const{data:{session}}=await Promise.race([sb.auth.getSession(),timeout]);
-    if(_initDone)return;
-    _initDone=true;
-    if(session){await onLogin(session.user);}
-    else{hide('loading');showAuth();}
+    const sessionP=sb.auth.getSession();
+    const{data:{session}}=await Promise.race([sessionP,timeout]);
+    if(session)await onLogin(session.user);
+    else showAuth();
   }catch(e){
     console.warn('init error:',e.message);
-    if(!_initDone){hide('loading');showAuth();showToast('⚠️ 서버 연결 지연 — 잠시 후 다시 시도해주세요');}
+    // Supabase timeout — show auth screen anyway
+    hide('loading');
+    showAuth();
+    showToast('⚠️ 서버 연결 지연 — 잠시 후 다시 시도해주세요');
   }
-  // 로그인/로그아웃 이후 상태 변경 감지
-  sb.auth.onAuthStateChange(async(event,session)=>{
-    if(event==='SIGNED_IN'&&!_initDone){
-      _initDone=true;
-      await onLogin(session.user);
-    }
-    if(event==='SIGNED_OUT'){
-      _initDone=false;
-      CU=null;CP=null;
-      hide('loading');showAuth();
-    }
-  });
 }
 function showAuth(){
   hide('loading');
@@ -3069,7 +3056,6 @@ async function saveNickname(){
   showToast('✓ 닉네임이 변경됐어요');
 }
 async function doSignOut(){
-  _initDone=false;
   await sb.auth.signOut();
   // 반드시 모든 상태 초기화 — 다른 계정 로그인 시 데이터 혼재 방지
   CU=null;CP=null;activeComp=null;
@@ -6813,11 +6799,13 @@ document.addEventListener('mousedown',function(e){
   </div>
 </div>
 <script>
-// ── AUTO UPDATE: check sw.js for changes every 60s ──
-// If sw.js content changes (new deploy), reload the page automatically
-// Auto-update disabled (manual refresh for now)
+// ── SERVICE WORKER: 기존 SW 강제 언등록 (Supabase 요청 가로채기 버그 수정) ──
 if('serviceWorker' in navigator){
-  navigator.serviceWorker.register('/sw.js').catch(()=>{});
+  navigator.serviceWorker.getRegistrations().then(regs=>{
+    regs.forEach(r=>r.unregister());
+  });
+  // 캐시 전체 삭제
+  caches.keys().then(keys=>Promise.all(keys.map(k=>caches.delete(k))));
 }
 // ══════════════════════════════════════════════
 // STATS / GRAPHS
