@@ -3760,7 +3760,7 @@ function showChaekpipty(mealName) {
       escBtn.style.cssText = 'margin-top:8px;background:transparent;color:rgba(255,255,255,.5);border:1px solid rgba(255,255,255,.2);font-size:13px;padding:10px 28px;';
       closeBtn.after(escBtn);
     }
-    escBtn.textContent = '도망갈게요 (겁쟁이) — 10점 차감';
+    escBtn.textContent = '도망갈게요 (겁쟁이 -10점)';
     escBtn.onclick = () => {
       addScore('diet_junk'); // 도망 → -10점
       closeRage();
