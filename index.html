@@ -2650,29 +2650,33 @@ function emptyLog(isNew=false){return{weight:null,water_cups:0,meals:[],workouts
 let log=emptyLog();
 
 // ── INIT ──
-let _initDone=false; // onLogin 중복 호출 방지
+let _initDone=false;
 async function init(){
-  // supabase-js@2의 onAuthStateChange 사용
-  // getSession()과의 레이스 컨디션 + 중복 onLogin 호출 방지
+  // getSession()으로 즉시 세션 확인 (가장 빠름)
+  // onAuthStateChange는 SIGNED_IN/SIGNED_OUT 이후 변경만 처리
+  try{
+    const timeout=new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),15000));
+    const{data:{session}}=await Promise.race([sb.auth.getSession(),timeout]);
+    if(_initDone)return;
+    _initDone=true;
+    if(session){await onLogin(session.user);}
+    else{hide('loading');showAuth();}
+  }catch(e){
+    console.warn('init error:',e.message);
+    if(!_initDone){hide('loading');showAuth();showToast('⚠️ 서버 연결 지연 — 잠시 후 다시 시도해주세요');}
+  }
+  // 로그인/로그아웃 이후 상태 변경 감지
   sb.auth.onAuthStateChange(async(event,session)=>{
-    if(event==='INITIAL_SESSION'||event==='SIGNED_IN'){
-      if(_initDone)return; // 이미 처리됨 — 중복 무시
+    if(event==='SIGNED_IN'&&!_initDone){
       _initDone=true;
-      if(session){await onLogin(session.user);}
-      else{hide('loading');showAuth();}
+      await onLogin(session.user);
     }
     if(event==='SIGNED_OUT'){
       _initDone=false;
+      CU=null;CP=null;
       hide('loading');showAuth();
     }
   });
-  // 15초 안에 INITIAL_SESSION이 없으면 fallback
-  setTimeout(()=>{
-    if(!_initDone){
-      hide('loading');showAuth();
-      showToast('⚠️ 서버 연결 지연 — 잠시 후 다시 시도해주세요');
-    }
-  },15000);
 }
 function showAuth(){
   hide('loading');
@@ -3065,7 +3069,7 @@ async function saveNickname(){
   showToast('✓ 닉네임이 변경됐어요');
 }
 async function doSignOut(){
-  _initDone=false; // 다음 로그인 시 onLogin 다시 실행되도록
+  _initDone=false;
   await sb.auth.signOut();
   // 반드시 모든 상태 초기화 — 다른 계정 로그인 시 데이터 혼재 방지
   CU=null;CP=null;activeComp=null;
