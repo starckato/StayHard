@@ -11,7 +11,7 @@
 <link rel="apple-touch-icon" href="/icon-192.png">
 <title>Stay Hard</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -2650,49 +2650,16 @@ function emptyLog(isNew=false){return{weight:null,water_cups:0,meals:[],workouts
 let log=emptyLog();
 
 // ── INIT ──
-// 핵심 원칙:
-// 1. getSession()으로 세션 존재 여부 확인
-// 2. 세션이 있으면 refreshSession()으로 토큰 강제 갱신 후 onLogin
-//    → refresh 완료 = 유효한 토큰 보장 = 400 에러 없음
-// 3. onAuthStateChange는 이후 SIGNED_IN / SIGNED_OUT 변경만 처리
-let _initDone=false;
 async function init(){
-  // 이후 로그인/로그아웃 변경 감지 (init과 별개로 항상 등록)
-  sb.auth.onAuthStateChange(async(event,session)=>{
-    if(event==='SIGNED_IN'&&!_initDone){
-      _initDone=true;
-      await onLogin(session.user);
-    }
-    if(event==='TOKEN_REFRESHED'&&!_initDone){
-      _initDone=true;
-      await onLogin(session.user);
-    }
-    if(event==='SIGNED_OUT'){
-      _initDone=false;
-      hide('loading');showAuth();
-    }
-  });
-
   try{
     const timeout=new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),15000));
     const{data:{session}}=await Promise.race([sb.auth.getSession(),timeout]);
-    if(!session){hide('loading');showAuth();return;}
-    // 세션 있음 → 토큰 강제 refresh 후 onLogin (유효한 토큰 보장)
-    const{data:{session:fresh},error}=await Promise.race([
-      sb.auth.refreshSession(),
-      new Promise((_,rej)=>setTimeout(()=>rej(new Error('refresh timeout')),10000))
-    ]);
-    if(_initDone)return; // onAuthStateChange가 먼저 처리했으면 skip
-    _initDone=true;
-    if(error||!fresh){
-      // refresh 실패 = 세션 만료 → 로그인 화면
-      hide('loading');showAuth();
-    }else{
-      await onLogin(fresh.user);
-    }
+    if(session)await onLogin(session.user);
+    else{hide('loading');showAuth();}
   }catch(e){
     console.warn('init error:',e.message);
-    if(!_initDone){hide('loading');showAuth();showToast('⚠️ 서버 연결 지연 — 잠시 후 다시 시도해주세요');}
+    hide('loading');showAuth();
+    showToast('⚠️ 서버 연결 지연 — 잠시 후 다시 시도해주세요');
   }
 }
 function showAuth(){
@@ -3085,7 +3052,6 @@ async function saveNickname(){
   showToast('✓ 닉네임이 변경됐어요');
 }
 async function doSignOut(){
-  _initDone=false;
   await sb.auth.signOut();
   // 반드시 모든 상태 초기화 — 다른 계정 로그인 시 데이터 혼재 방지
   CU=null;CP=null;activeComp=null;
@@ -6859,7 +6825,6 @@ document.addEventListener('mousedown',function(e){
   </div>
 </div>
 <script>
-// ── SW 언등록 ──
 if('serviceWorker' in navigator){
   navigator.serviceWorker.getRegistrations().then(regs=>{regs.forEach(r=>r.unregister());});
   caches.keys().then(keys=>Promise.all(keys.map(k=>caches.delete(k))));
