@@ -2650,20 +2650,29 @@ function emptyLog(isNew=false){return{weight:null,water_cups:0,meals:[],workouts
 let log=emptyLog();
 
 // ── INIT ──
+let _initDone=false; // onLogin 중복 호출 방지
 async function init(){
-  try{
-    const timeout=new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),15000));
-    const sessionP=sb.auth.getSession();
-    const{data:{session}}=await Promise.race([sessionP,timeout]);
-    if(session)await onLogin(session.user);
-    else showAuth();
-  }catch(e){
-    console.warn('init error:',e.message);
-    // Supabase timeout — show auth screen anyway
-    hide('loading');
-    showAuth();
-    showToast('⚠️ 서버 연결 지연 — 잠시 후 다시 시도해주세요');
-  }
+  // supabase-js@2의 onAuthStateChange 사용
+  // getSession()과의 레이스 컨디션 + 중복 onLogin 호출 방지
+  sb.auth.onAuthStateChange(async(event,session)=>{
+    if(event==='INITIAL_SESSION'||event==='SIGNED_IN'){
+      if(_initDone)return; // 이미 처리됨 — 중복 무시
+      _initDone=true;
+      if(session){await onLogin(session.user);}
+      else{hide('loading');showAuth();}
+    }
+    if(event==='SIGNED_OUT'){
+      _initDone=false;
+      hide('loading');showAuth();
+    }
+  });
+  // 15초 안에 INITIAL_SESSION이 없으면 fallback
+  setTimeout(()=>{
+    if(!_initDone){
+      hide('loading');showAuth();
+      showToast('⚠️ 서버 연결 지연 — 잠시 후 다시 시도해주세요');
+    }
+  },15000);
 }
 function showAuth(){
   hide('loading');
@@ -2938,12 +2947,11 @@ async function _prefetchWeekLogs(){
     if(data){
       data.forEach(d=>{
         const k=normKey(d.log_date);
-        // 저장 진행 중이거나 유저가 현재 보고 있는 날짜는 덮어쓰지 않음
-        // (미저장 변경사항이 날아가는 레이스 컨디션 방지)
-        if(_saveInFlight && k===selectedKey) return;
         const existing=logCache[k];
+        // _ptsLog: 메모리 캐시 우선 (아직 DB에 저장 안 됐을 수 있음)
         const memPtsLog=existing?._ptsLog;
         const dbPtsLog=d.points_log||[];
+        // 메모리 쪽이 더 많은 항목을 가지고 있으면 메모리 우선
         const ptsLog=(memPtsLog&&memPtsLog.length>=dbPtsLog.length)?memPtsLog:dbPtsLog;
         logCache[k]={
           weight:d.weight!==null?parseFloat(d.weight):null,
@@ -2955,11 +2963,10 @@ async function _prefetchWeekLogs(){
           _ptsLog:ptsLog
         };
       });
-      // 현재 보고 있는 날짜 기준으로 화면 갱신
-      if(logCache[selectedKey]) log=logCache[selectedKey];
-      else if(logCache[today]) log=logCache[today];
+      // 오늘 날짜면 현재 log도 동기화
+      if(logCache[today])log=logCache[today];
       buildSlider();
-      renderRoutine();
+      renderRoutine(); // 화면 갱신
     }
   }catch(e){
     console.warn('prefetch failed:',e);
@@ -3058,6 +3065,7 @@ async function saveNickname(){
   showToast('✓ 닉네임이 변경됐어요');
 }
 async function doSignOut(){
+  _initDone=false; // 다음 로그인 시 onLogin 다시 실행되도록
   await sb.auth.signOut();
   // 반드시 모든 상태 초기화 — 다른 계정 로그인 시 데이터 혼재 방지
   CU=null;CP=null;activeComp=null;
@@ -3074,8 +3082,8 @@ async function doSignOut(){
 }
 
 // ── LOAD / SAVE ──
-async function loadLog(key, force=false){
-  if(!force && logCache[key]){log=logCache[key];return;}
+async function loadLog(key){
+  if(logCache[key]){log=logCache[key];return;}
   // Timeout after 8s to prevent infinite loading
   const timeout=new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),8000));
   let data=null;try{const res=await Promise.race([sb.from('daily_logs').select('*').eq('user_id',CU.id).eq('log_date',key).maybeSingle(),timeout]);data=res.data;}catch(e){
@@ -4007,7 +4015,7 @@ async function selectDay(d,k){
   selectedDate=d;selectedKey=k;show('loading');
   // 어제 체중 비교를 위해 전날 로그도 같이 로드
   const prev=new Date(d);prev.setDate(prev.getDate()-1);const prevKey=dkey(prev);
-  try{await Promise.all([loadLog(k, true),logCache[prevKey]?null:loadLog(prevKey)]);}catch(e){
+  try{await Promise.all([loadLog(k),logCache[prevKey]?null:loadLog(prevKey)]);}catch(e){
     console.warn('loadLog failed',e);
     showToast('⚠️ 데이터 불러오기 실패 — 다시 탭해주세요');
   }
