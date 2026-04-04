@@ -2863,6 +2863,19 @@ async function onLogin(user){
   }
   if(p&&p.total_score===null)p.total_score=0;
   CP=p;
+  // weight_goal: DB에 없으면 localStorage 백업에서 복원
+  if(CP&&!CP.weight_goal){
+    try{
+      const lsKey='wg_'+user.id;
+      const lsVal=localStorage.getItem(lsKey);
+      if(lsVal){
+        CP.weight_goal=parseFloat(lsVal);
+        // DB에도 다시 쓰기 (조용히)
+        sb.from('profiles').update({weight_goal:CP.weight_goal}).eq('id',user.id).then(()=>{});
+        console.log('[init] weight_goal localStorage에서 복원:', CP.weight_goal);
+      }
+    }catch(e){}
+  }
   refreshWaterGoalUI();
   document.getElementById('p-name').textContent=p.display_name||p.username;
   document.getElementById('p-email').textContent=user.email;
@@ -3334,9 +3347,7 @@ async function obFinish(){
   const wtInp=document.getElementById('ob-weight-inp');
   const wtVal=wtInp?parseFloat(wtInp.value):null;
   if(wtVal&&!isNaN(wtVal)){
-    if(CP)CP.weight_goal=wtVal;
-    const{error:wgErr}=await sb.from('profiles').update({weight_goal:wtVal}).eq('id',CU.id);
-    if(wgErr)console.error('[obFinish] weight_goal 저장 실패:',wgErr);
+    await saveWeightGoal(wtVal);
   }
   // 선택된 루틴 — 기존 루틴에 추가 (덮어쓰기 금지)
   if(obSelectedRoutines.length>0){
@@ -4023,7 +4034,7 @@ function renderWeight(){
   if(emptyState)emptyState.style.display=hasWeight?'none':'block';
   if(filledState)filledState.style.display=hasWeight?'block':'none';
 
-  const goal=CP?.weight_goal?parseFloat(CP.weight_goal):null;
+  const goal=getWeightGoal();
 
   // 미입력 상태 — 목표 있으면 미리보기
   const ge=document.getElementById('wt-goal-empty');
@@ -4130,34 +4141,50 @@ function renderWeight(){
     }
   }
 }
+// ── 목표 체중: localStorage KEY (유저별)
+function _wgKey(){return CU?'wg_'+CU.id:null;}
+
+// 목표 체중 읽기 — CP → localStorage 순으로 fallback
+function getWeightGoal(){
+  if(CP?.weight_goal) return parseFloat(CP.weight_goal);
+  try{
+    const k=_wgKey(); if(!k)return null;
+    const v=localStorage.getItem(k);
+    return v?parseFloat(v):null;
+  }catch(e){return null;}
+}
+
+// 목표 체중 저장 — CP + localStorage + profiles DB (이중 저장)
+async function saveWeightGoal(gv){
+  if(CP)CP.weight_goal=gv;
+  // localStorage 백업 (즉시, 오프라인도 OK)
+  try{const k=_wgKey();if(k){if(gv)localStorage.setItem(k,String(gv));else localStorage.removeItem(k);}}catch(e){}
+  // profiles DB (비동기, 실패해도 localStorage가 백업)
+  if(CU){
+    const{error}=await sb.from('profiles').update({weight_goal:gv||null}).eq('id',CU.id);
+    if(error) console.error('[saveWeightGoal] DB 저장 실패 (localStorage는 유지됨):', error);
+    else console.log('[saveWeightGoal] DB 저장 성공:', gv);
+  }
+}
+
 function openWeightModal(){
   const inp=document.getElementById('wt-inp');
   const gi=document.getElementById('wt-goal-inp');
   if(inp)inp.value=log.weight!=null?parseFloat(log.weight).toFixed(1):'';
-  if(gi)gi.value=CP?.weight_goal?parseFloat(CP.weight_goal).toFixed(1):'';
+  const currentGoal=getWeightGoal();
+  if(gi)gi.value=currentGoal?currentGoal.toFixed(1):'';
   openModal('weight-modal');
 }
 async function saveWeight(){
   const v=parseFloat(document.getElementById('wt-inp').value);
   if(isNaN(v))return;
-  // 목표 체중 저장 — await로 완전히 기다리고 에러 확인
+  // 목표 체중 처리
   const gi=document.getElementById('wt-goal-inp');
   if(gi&&gi.value.trim()!==''){
     const gv=parseFloat(gi.value);
-    if(!isNaN(gv)&&gv>0){
-      if(CP)CP.weight_goal=gv;
-      const{error:goalErr}=await sb.from('profiles').update({weight_goal:gv}).eq('id',CU.id);
-      if(goalErr){
-        console.error('[saveWeight] weight_goal 저장 실패:', goalErr);
-        showToast('목표 체중 저장 실패: '+goalErr.message);
-      } else {
-        console.log('[saveWeight] weight_goal 저장 성공:', gv);
-      }
-    }
+    if(!isNaN(gv)&&gv>0) await saveWeightGoal(gv);
   } else if(gi&&gi.value.trim()===''){
-    // 목표 체중 입력란을 지웠으면 null로 저장
-    if(CP)CP.weight_goal=null;
-    await sb.from('profiles').update({weight_goal:null}).eq('id',CU.id);
+    await saveWeightGoal(null);
   }
   const prev=log.weight;
   log.weight=v;
@@ -4170,7 +4197,7 @@ async function saveWeight(){
   const alreadyLoss=todayPtsLog.some(e=>e.type==='weight_loss');
   if(!alreadyLoss&&prev!==null&&prev!==undefined&&v<prev){addScore('weight_loss');setTimeout(()=>showWin('weight_loss',2,'감량 성공!'),500);}
   // 목표 체중 달성
-  const goal=CP?.weight_goal||null;
+  const goal=getWeightGoal();
   if(goal&&v<=goal&&(prev===null||prev>goal)){addScore('weight_goal');setTimeout(()=>showWin('weight_goal',10,'목표 체중 달성!'),800);}
   saveNow();
 }
