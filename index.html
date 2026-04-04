@@ -2650,22 +2650,26 @@ function emptyLog(isNew=false){return{weight:null,water_cups:0,meals:[],workouts
 let log=emptyLog();
 
 // ── INIT ──
+// getSession()은 만료 토큰을 refresh 완료 전에 반환 → 400 에러 원인
+// onAuthStateChange INITIAL_SESSION은 refresh 완료 후 발생 → 항상 유효한 토큰 보장
 let _initDone=false;
-async function init(){
-  try{
-    const timeout=new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),15000));
-    const{data:{session}}=await Promise.race([sb.auth.getSession(),timeout]);
-    if(_initDone)return;
-    _initDone=true;
-    if(session){await onLogin(session.user);}
-    else{hide('loading');showAuth();}
-  }catch(e){
-    console.warn('init error:',e.message);
+function init(){
+  // 15초 안에 INITIAL_SESSION 없으면 로그인 화면으로
+  const fallbackTimer=setTimeout(()=>{
     if(!_initDone){hide('loading');showAuth();showToast('⚠️ 서버 연결 지연 — 잠시 후 다시 시도해주세요');}
-  }
+  },15000);
+
   sb.auth.onAuthStateChange(async(event,session)=>{
-    if(event==='SIGNED_IN'&&!_initDone){_initDone=true;await onLogin(session.user);}
-    if(event==='SIGNED_OUT'){_initDone=false;CU=null;CP=null;hide('loading');showAuth();}
+    if((event==='INITIAL_SESSION'||event==='SIGNED_IN')&&!_initDone){
+      clearTimeout(fallbackTimer);
+      _initDone=true;
+      if(session){await onLogin(session.user);}
+      else{hide('loading');showAuth();}
+    }
+    if(event==='SIGNED_OUT'){
+      _initDone=false;
+      hide('loading');showAuth();
+    }
   });
 }
 function showAuth(){
@@ -2957,7 +2961,6 @@ async function _prefetchWeekLogs(){
           _ptsLog:ptsLog
         };
       });
-      // 현재 보고 있는 날짜 기준 갱신 (저장 중인 날짜는 덮어쓰지 않음)
       if(_saveInFlight&&logCache[selectedKey]){}
       else if(logCache[selectedKey])log=logCache[selectedKey];
       else if(logCache[today])log=logCache[today];
@@ -4257,7 +4260,6 @@ async function deleteMeal(i){
 
 let mealIdx=null,foodType=null,photoData=null,photoFile=null,mealTime=null,mealCategory=null;
 
-// ── 사진 Storage 업로드 ──
 async function uploadPhotoToStorage(file){
   if(!file||!CU)return null;
   try{
@@ -4268,26 +4270,20 @@ async function uploadPhotoToStorage(file){
     if(error)throw error;
     const{data:{publicUrl}}=sb.storage.from('meal-photos').getPublicUrl(path);
     return publicUrl;
-  }catch(e){
-    console.warn('[uploadPhoto] failed, base64 fallback:',e.message);
-    return null;
-  }
+  }catch(e){console.warn('[uploadPhoto] failed, base64 fallback:',e.message);return null;}
 }
 function compressImage(file,maxPx,quality){
   return new Promise((resolve)=>{
-    const img=new Image();
-    const url=URL.createObjectURL(file);
+    const img=new Image();const url=URL.createObjectURL(file);
     img.onload=()=>{
       URL.revokeObjectURL(url);
       let w=img.width,h=img.height;
       if(w>maxPx||h>maxPx){if(w>h){h=Math.round(h*maxPx/w);w=maxPx;}else{w=Math.round(w*maxPx/h);h=maxPx;}}
-      const canvas=document.createElement('canvas');
-      canvas.width=w;canvas.height=h;
+      const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;
       canvas.getContext('2d').drawImage(img,0,0,w,h);
       canvas.toBlob(blob=>resolve(blob),'image/jpeg',quality);
     };
-    img.onerror=()=>resolve(file);
-    img.src=url;
+    img.onerror=()=>resolve(file);img.src=url;
   });
 }
 
@@ -4554,11 +4550,8 @@ async function saveMeal(){
   if(photoFile){
     showToast('📷 사진 저장 중...');
     const url=await uploadPhotoToStorage(photoFile);
-    finalPhoto=url||photoData;
-    photoFile=null;
-  }else{
-    finalPhoto=photoData;
-  }
+    finalPhoto=url||photoData;photoFile=null;
+  }else{finalPhoto=photoData;}
   const entry={name,type:foodType,photo:finalPhoto,time:mealTime,category:mealCategory};
   if(!logCache[selectedKey])logCache[selectedKey]=log;
   log=logCache[selectedKey];
@@ -6849,11 +6842,9 @@ document.addEventListener('mousedown',function(e){
   </div>
 </div>
 <script>
-// ── SERVICE WORKER 언등록 (Supabase 요청 가로채기 버그 수정) ──
+// ── SW 언등록 ──
 if('serviceWorker' in navigator){
-  navigator.serviceWorker.getRegistrations().then(regs=>{
-    regs.forEach(r=>r.unregister());
-  });
+  navigator.serviceWorker.getRegistrations().then(regs=>{regs.forEach(r=>r.unregister());});
   caches.keys().then(keys=>Promise.all(keys.map(k=>caches.delete(k))));
 }
 // ══════════════════════════════════════════════
