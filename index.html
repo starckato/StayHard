@@ -11,7 +11,7 @@
 <link rel="apple-touch-icon" href="/icon-192.png">
 <title>Stay Hard</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -2649,20 +2649,23 @@ function emptyLog(isNew=false){return{weight:null,water_cups:0,meals:[],workouts
 let log=emptyLog();
 
 // ── INIT ──
+let _initDone=false;
 async function init(){
   try{
     const timeout=new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),15000));
-    const sessionP=sb.auth.getSession();
-    const{data:{session}}=await Promise.race([sessionP,timeout]);
-    if(session)await onLogin(session.user);
-    else showAuth();
+    const{data:{session}}=await Promise.race([sb.auth.getSession(),timeout]);
+    if(_initDone)return;
+    _initDone=true;
+    if(session){await onLogin(session.user);}
+    else{hide('loading');showAuth();}
   }catch(e){
     console.warn('init error:',e.message);
-    // Supabase timeout — show auth screen anyway
-    hide('loading');
-    showAuth();
-    showToast('⚠️ 서버 연결 지연 — 잠시 후 다시 시도해주세요');
+    if(!_initDone){hide('loading');showAuth();showToast('⚠️ 서버 연결 지연 — 잠시 후 다시 시도해주세요');}
   }
+  sb.auth.onAuthStateChange(async(event,session)=>{
+    if(event==='SIGNED_IN'&&!_initDone){_initDone=true;await onLogin(session.user);}
+    if(event==='SIGNED_OUT'){_initDone=false;CU=null;CP=null;hide('loading');showAuth();}
+  });
 }
 function showAuth(){
   hide('loading');
@@ -2949,10 +2952,9 @@ async function _prefetchWeekLogs(){
           _ptsLog:existing?._ptsLog||d.points_log||[]
         };
       });
-      // 오늘 날짜면 현재 log도 동기화
-      if(logCache[today])log=logCache[today];
+      if(_saveInFlight&&logCache[selectedKey]){}else if(logCache[selectedKey])log=logCache[selectedKey];else if(logCache[today])log=logCache[today];
       buildSlider();
-      renderRoutine(); // 화면 갱신
+      renderRoutine();
     }
   }catch(e){
     console.warn('prefetch failed:',e);
@@ -3051,6 +3053,7 @@ async function saveNickname(){
   showToast('✓ 닉네임이 변경됐어요');
 }
 async function doSignOut(){
+  _initDone=false;
   await sb.auth.signOut();
   // 반드시 모든 상태 초기화 — 다른 계정 로그인 시 데이터 혼재 방지
   CU=null;CP=null;activeComp=null;
@@ -3067,8 +3070,8 @@ async function doSignOut(){
 }
 
 // ── LOAD / SAVE ──
-async function loadLog(key){
-  if(logCache[key]){log=logCache[key];return;}
+async function loadLog(key,force=false){
+  if(!force&&logCache[key]){log=logCache[key];return;}
   // Timeout after 8s to prevent infinite loading
   const timeout=new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),8000));
   let data=null;try{const res=await Promise.race([sb.from('daily_logs').select('*').eq('user_id',CU.id).eq('log_date',key).maybeSingle(),timeout]);data=res.data;}catch(e){
@@ -3179,7 +3182,7 @@ async function saveLog(key,silent=false){
   // 5초 타임아웃으로 빠르게 실패 처리
   const _upsertWithTimeout=()=>Promise.race([
     sb.from('daily_logs').upsert(p,{onConflict:'user_id,log_date'}),
-    new Promise((_,rej)=>setTimeout(()=>rej(new Error('client timeout')),5000))
+    new Promise((_,rej)=>setTimeout(()=>rej(new Error('client timeout')),15000))
   ]);
   try{
     const{error}=await _upsertWithTimeout();
@@ -3194,6 +3197,16 @@ async function saveLog(key,silent=false){
       throw new Error(err2.message);
     }catch(e2){
       console.error('saveLog failed:',e2.message);
+      // 저장 실패 시 localStorage 임시 백업 (데이터 유실 방지)
+      try{
+        const bkKey='pendingSave_'+key;
+        localStorage.setItem(bkKey,JSON.stringify(logCache[key]));
+        showToast('⚠️ 저장 실패 — 임시 저장됨. 연결 후 재시도합니다');
+        // 30초 후 자동 재시도
+        setTimeout(()=>saveLog(key,true).then(()=>{
+          localStorage.removeItem(bkKey);
+        }),30000);
+      }catch(ex){}
     }
   }
 }
@@ -4000,7 +4013,7 @@ async function selectDay(d,k){
   selectedDate=d;selectedKey=k;show('loading');
   // 어제 체중 비교를 위해 전날 로그도 같이 로드
   const prev=new Date(d);prev.setDate(prev.getDate()-1);const prevKey=dkey(prev);
-  try{await Promise.all([loadLog(k),logCache[prevKey]?null:loadLog(prevKey)]);}catch(e){
+  try{await Promise.all([loadLog(k,true),logCache[prevKey]?null:loadLog(prevKey)]);}catch(e){
     console.warn('loadLog failed',e);
     showToast('⚠️ 데이터 불러오기 실패 — 다시 탭해주세요');
   }
@@ -4244,7 +4257,34 @@ async function deleteMeal(i){
   saveNow();
 }
 
-let mealIdx=null,foodType=null,photoData=null,mealTime=null,mealCategory=null;
+let mealIdx=null,foodType=null,photoData=null,photoFile=null,mealTime=null,mealCategory=null;
+
+async function uploadPhotoToStorage(file){
+  if(!file||!CU)return null;
+  try{
+    const compressed=await compressImage(file,800,0.75);
+    const ext=file.type==='image/png'?'png':'jpg';
+    const path=`meals/${CU.id}/${Date.now()}.${ext}`;
+    const{data,error}=await sb.storage.from('meal-photos').upload(path,compressed,{contentType:'image/jpeg',upsert:false});
+    if(error)throw error;
+    const{data:{publicUrl}}=sb.storage.from('meal-photos').getPublicUrl(path);
+    return publicUrl;
+  }catch(e){console.warn('[uploadPhoto] failed, base64 fallback:',e.message);return null;}
+}
+function compressImage(file,maxPx,quality){
+  return new Promise((resolve)=>{
+    const img=new Image();const url=URL.createObjectURL(file);
+    img.onload=()=>{
+      URL.revokeObjectURL(url);
+      let w=img.width,h=img.height;
+      if(w>maxPx||h>maxPx){if(w>h){h=Math.round(h*maxPx/w);w=maxPx;}else{w=Math.round(w*maxPx/h);h=maxPx;}}
+      const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;
+      canvas.getContext('2d').drawImage(img,0,0,w,h);
+      canvas.toBlob(blob=>resolve(blob),'image/jpeg',quality);
+    };
+    img.onerror=()=>resolve(file);img.src=url;
+  });
+}
 
 // ── MEAL MODAL: 3-STEP FLOW ──
 function mmSetStep(step){
@@ -4293,7 +4333,7 @@ function mmGoStep3(){
 }
 
 function openAddMealModal(){
-  mealIdx=null;foodType=null;photoData=null;mealTime=null;mealCategory=null;
+  mealIdx=null;foodType=null;photoData=null;photoFile=null;mealTime=null;mealCategory=null;
   document.querySelectorAll('.ftbtn').forEach(b=>{b.className='ftbtn';b.style.cssText='';});
   document.getElementById('mm-name').value='';
   document.getElementById('mm-photo-wrap').style.display='none';
@@ -4309,7 +4349,7 @@ function openAddMealModal(){
 function openEditMealModal(i){
   mealIdx=i;
   const m=log.meals[i];
-  foodType=m.type;photoData=m.photo;mealTime=m.time||null;mealCategory=m.category||null;
+  foodType=m.type;photoData=m.photo;photoFile=null;mealTime=m.time||null;mealCategory=m.category||null;
   // Reset buttons
   document.querySelectorAll('.ftbtn').forEach(b=>{b.className='ftbtn';b.style.cssText='';});
   document.querySelectorAll('#mm-category-btns button').forEach(b=>{
@@ -4508,7 +4548,9 @@ async function saveCheatSettings(){
 
 async function saveMeal(){
   const name=document.getElementById('mm-name').value.trim();
-  const entry={name,type:foodType,photo:photoData,time:mealTime,category:mealCategory};
+  let finalPhoto=null;
+  if(photoFile){showToast('📷 사진 저장 중...');const url=await uploadPhotoToStorage(photoFile);finalPhoto=url||photoData;photoFile=null;}else{finalPhoto=photoData;}
+  const entry={name,type:foodType,photo:finalPhoto,time:mealTime,category:mealCategory};
   if(!logCache[selectedKey])logCache[selectedKey]=log;
   log=logCache[selectedKey];
   const prevType=mealIdx!==null?log.meals[mealIdx]?.type:null;
@@ -4611,6 +4653,7 @@ function readExifDateTime(arrayBuffer){
 
 function previewPhoto(inp){
   const f=inp.files[0];if(!f)return;
+  photoFile=f;
   const isCamera=inp.id==='mm-photo-camera';
   if(isCamera){applyDetectedTime(hourToMealTime(new Date().getHours()));}
   const abReader=new FileReader();
@@ -4632,7 +4675,7 @@ function previewPhoto(inp){
 }
 
 function delPhoto(){
-  photoData=null;
+  photoData=null;photoFile=null;
   document.getElementById('mm-photo-wrap').style.display='none';
   document.getElementById('mm-photo-time-hint').textContent='';
   const c=document.getElementById('mm-photo-camera');const g=document.getElementById('mm-photo-gallery');
@@ -6798,11 +6841,9 @@ document.addEventListener('mousedown',function(e){
   </div>
 </div>
 <script>
-// ── AUTO UPDATE: check sw.js for changes every 60s ──
-// If sw.js content changes (new deploy), reload the page automatically
-// Auto-update disabled (manual refresh for now)
 if('serviceWorker' in navigator){
-  navigator.serviceWorker.register('/sw.js').catch(()=>{});
+  navigator.serviceWorker.getRegistrations().then(regs=>{regs.forEach(r=>r.unregister());});
+  caches.keys().then(keys=>Promise.all(keys.map(k=>caches.delete(k))));
 }
 // ══════════════════════════════════════════════
 // STATS / GRAPHS
