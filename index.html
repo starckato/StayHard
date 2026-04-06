@@ -2527,10 +2527,25 @@ const SCORE_EVENTS={
   diet_log_cancel:    {pts:-1, label:'식단 등록 취소',        icon:'🥗'},
   diet_clean_cancel:  {pts:-5, label:'클린 식단 취소',        icon:'🟢'},
   diet_junk_cancel:   {pts:10, label:'금지 식단 취소 (복구)', icon:'🔴'},
+  diet_clean_register:{pts:6,  label:'클린 식단 등록',        icon:'🟢'},
+  diet_clean_delete:  {pts:-6, label:'클린 식단 취소',        icon:'🟢'},
+  diet_log_only:      {pts:1,  label:'식단 등록',             icon:'🥗'},
+  diet_log_only_cancel:{pts:-1,label:'식단 등록 취소',        icon:'🥗'},
   routine_done_cancel:{pts:-1, label:'루틴 완료 취소',        icon:'↩️'},
   target_done_cancel: {pts:-1, label:'할일 완료 취소',        icon:'↩️'},
   routine_fail_cancel:{pts:5,  label:'루틴 실패 취소 (복구)',  icon:'↩️'},
   target_fail_cancel: {pts:3,  label:'할일 실패 취소 (복구)', icon:'↩️'},
+};
+
+const COMBINED_SCORE_EVENTS={
+  diet_clean_register:{
+    toast:'🟢 +6점 — 클린 식단 등록 (등록 +1, 클린 보너스 +5)',
+    win:{type:'diet_clean',pts:6,title:'클린 식단!'}
+  },
+  diet_clean_delete:{
+    toast:'🟢 -6점 — 클린 식단 취소 (등록 -1, 보너스 -5)',
+    win:null
+  },
 };
 
 // 점수 로그는 daily_logs.targets에 특수 항목으로 저장 (별도 컬럼 불필요)
@@ -2563,8 +2578,13 @@ function addScore(type, note='', ptsOverride=null){
   // 3. profiles DB 업데이트 (디바운스 — 연속 addScore 시 1번만)
   _flushScoreUpdate();
   updateGogginsHeader();
-  if(pts>0)showToast(ev.icon+' +'+pts+'점 — '+ev.label);
-  else if(pts<0)showToast(ev.icon+' '+pts+'점 — '+ev.label);
+  const combined=COMBINED_SCORE_EVENTS[type];
+  if(combined){
+    showToast(combined.toast);
+  } else {
+    if(pts>0)showToast(ev.icon+' +'+pts+'점 — '+ev.label);
+    else if(pts<0)showToast(ev.icon+' '+pts+'점 — '+ev.label);
+  }
 }
 
 // 점수 DB 저장 디바운스 (300ms)
@@ -3935,7 +3955,24 @@ function bounceEl(el){
   el.classList.add('bounce');
   setTimeout(()=>el.classList.remove('bounce'),400);
 }
-function showToast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2000);}
+let _toastQueue=[];
+let _toastShowing=false;
+function showToast(m,duration=2000){
+  _toastQueue.push({m,duration});
+  if(!_toastShowing)_flushToast();
+}
+function _flushToast(){
+  if(!_toastQueue.length){_toastShowing=false;return;}
+  _toastShowing=true;
+  const {m,duration}=_toastQueue.shift();
+  const t=document.getElementById('toast');
+  t.textContent=m;
+  t.classList.add('show');
+  setTimeout(()=>{
+    t.classList.remove('show');
+    setTimeout(_flushToast,300);
+  },duration);
+}
 
 // ── TABS ──
 function switchTab(name,idx){
@@ -4278,11 +4315,8 @@ function renderMeals(){
 async function deleteMeal(i){
   const meal=log.meals[i];
   if(meal){
-    const ft=meal.type;
-    addScore('diet_log_cancel','',-1);
-    if(ft==='green')addScore('diet_clean_cancel','',-5);
-    if(ft==='red')addScore('diet_junk_cancel','',10);
-    if(ft==='cheat')await cheatReturn();
+    applyMealScore(meal.type,null,false,meal.category);
+    if(meal.type==='cheat')await cheatReturn();
   }
   log.meals.splice(i,1);
   renderMeals();
@@ -4579,6 +4613,40 @@ async function saveCheatSettings(){
   showToast('✓ 치팅 설정 저장됨');
 }
 
+function applyMealScore(prevType,newType,isNew,category){
+  if(category==='drink')return;
+
+  // ── DELETE path (newType is null) ──
+  if(newType===null){
+    if(prevType==='green')addScore('diet_clean_delete','',-6);
+    else if(prevType==='red')addScore('diet_junk_cancel','',10);
+    else if(prevType&&prevType!=='cheat')addScore('diet_log_only_cancel','',-1);
+    return;
+  }
+
+  // ── EDIT path (type changed, not new) ──
+  if(!isNew&&prevType!==newType){
+    if(prevType==='green')addScore('diet_clean_cancel','',-5);
+    else if(prevType==='red')addScore('diet_junk_cancel','',10);
+    if(newType==='green')addScore('diet_clean');
+    else if(newType==='red')setTimeout(()=>showChaekpipty(''),300);
+    return;
+  }
+
+  // ── NEW REGISTRATION ──
+  if(isNew){
+    if(newType==='green'){
+      addScore('diet_clean_register','',6);
+      showWin('diet_clean',6,'클린 식단!');
+    } else if(newType==='red'){
+      addScore('diet_log_only','',1);
+      setTimeout(()=>showChaekpipty(''),300);
+    } else {
+      addScore('diet_log_only','',1);
+    }
+  }
+}
+
 async function saveMeal(){
   const name=document.getElementById('mm-name').value.trim();
   let finalPhoto=null;
@@ -4606,18 +4674,7 @@ async function saveMeal(){
 
   // 점수 처리
   const isNew=mealIdx===null;
-  const typeChanged=prevType!==foodType;
-  if(prevType&&typeChanged){
-    if(prevType==='green'){addScore('diet_clean_cancel','',-5);}
-    else if(prevType==='red'){addScore('diet_junk_cancel','',10);}
-  }
-  if(isNew||typeChanged){
-    if(mealCategory==='drink'){/* 음료 점수 없음 */}
-    else if(foodType==='red'){if(isNew)addScore('diet_log');setTimeout(()=>showChaekpipty(name),300);/* -10점은 도망갈 때만 */}
-    else if(foodType==='green'){if(isNew)addScore('diet_log');addScore('diet_clean');if(isNew)showWin('diet_clean',6,'클린 식단!');}
-    else if(foodType==='cheat'){/* 점수 없음 */}
-    else{if(isNew)addScore('diet_log');}
-  }
+  applyMealScore(prevType,foodType,isNew,mealCategory);
   saveNow();
   checkPerfectDay();
 }
