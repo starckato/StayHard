@@ -2632,7 +2632,7 @@ function dkey(d){
   const day=String(d.getDate()).padStart(2,'0');
   return y+'-'+m+'-'+day;
 }
-function normKey(s){return s||s;}
+function normKey(s){return s?s.slice(0,10):null;}
 const TODAY=dkey(now);
 let sliderOffset=0,selectedDate=new Date(now),selectedKey=TODAY;
 let wvOffset=0,wvLogs={};
@@ -2897,6 +2897,8 @@ async function onLogin(user){
   renderRoutine();
   // 슬라이더 dot 표시를 위해 이번주 날짜 백그라운드 fetch
   _prefetchWeekLogs();
+  // 이전 세션 저장 실패분 복구 (localStorage pendingSave_* 키)
+  _recoverPendingSaves();
   updateGogginsHeader();
   // 치팅 월 초기화 체크
   checkCheatMonthReset().then(()=>renderCheatBadge());
@@ -2939,7 +2941,11 @@ async function _prefetchWeekLogs(){
     if(error)throw error;
     if(data){
       data.forEach(d=>{
-        const k=normKey(d.log_date);
+        const k=d.log_date?d.log_date.slice(0,10):null;
+        if(!k)return;
+        // 저장 대기 중인 날짜는 DB 데이터로 덮어쓰지 않음 — 데이터 유실 방지
+        const hasPendingSave=k===selectedKey&&(_saveInFlight||_saveTimer!==null);
+        if(hasPendingSave)return;
         // 실제 데이터 있으면 덮어쓰기 (단, 이미 캐시에 _ptsLog가 있으면 유지)
         const existing=logCache[k];
         logCache[k]={
@@ -2952,7 +2958,11 @@ async function _prefetchWeekLogs(){
           _ptsLog:existing?._ptsLog||d.points_log||[]
         };
       });
-      if(_saveInFlight&&logCache[selectedKey]){}else if(logCache[selectedKey])log=logCache[selectedKey];else if(logCache[today])log=logCache[today];
+      // 저장 중이 아닐 때만 log 참조 갱신 (미저장 변경 유실 방지)
+      if(!_saveInFlight&&!_saveTimer){
+        if(logCache[selectedKey])log=logCache[selectedKey];
+        else if(logCache[today])log=logCache[today];
+      }
       buildSlider();
       renderRoutine();
     }
@@ -2960,6 +2970,28 @@ async function _prefetchWeekLogs(){
     console.warn('prefetch failed:',e);
     setTimeout(_prefetchWeekLogs,30000);
   }
+}
+
+// ── PENDING SAVE 복구: 앱 시작 시 localStorage 임시 백업을 DB에 재저장 ──
+async function _recoverPendingSaves(){
+  if(!CU)return;
+  try{
+    const keys=Object.keys(localStorage).filter(k=>k.startsWith('pendingSave_'));
+    if(!keys.length)return;
+    console.log('[recovery] pendingSave 복구 시작:',keys.length,'건');
+    for(const bk of keys){
+      const dateKey=bk.replace('pendingSave_','');
+      try{
+        const data=JSON.parse(localStorage.getItem(bk)||'null');
+        if(!data)continue;
+        // 메모리 캐시에 반영 후 저장
+        if(!logCache[dateKey]||!_hasRealData(logCache[dateKey]))logCache[dateKey]=data;
+        await saveLog(dateKey,true);
+        localStorage.removeItem(bk);
+        console.log('[recovery] pendingSave 복원 완료:',dateKey);
+      }catch(e){console.warn('[recovery] pendingSave 복원 실패:',dateKey,e);}
+    }
+  }catch(e){console.warn('[recovery] pendingSave 복구 오류:',e);}
 }
 
 // ── AUTH ACTIONS ──
@@ -3123,6 +3155,7 @@ function queueSave(){
 
 let _flushRetryCount=0;
 async function _flushSave(){
+  _saveTimer=null; // 타이머 만료 — null로 리셋해야 prefetch 가드가 정확히 동작
   if(_saveInFlight){
     _saveQueued=true;
     return;
