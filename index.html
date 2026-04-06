@@ -5702,19 +5702,17 @@ async function renderWeeklyView(){
   const from=dkey(dates[0]),to=dkey(dates[6]);
   const s=dates[0],e=dates[6];
   document.getElementById('wv-week-label').textContent=(s.getMonth()+1)+'월 '+s.getDate()+'일 – '+(e.getMonth()+1)+'월 '+e.getDate()+'일, '+e.getFullYear();
-  // Check which days are missing from cache
   const wvDates2=dates.map(d=>dkey(d));
-  const wvMissing=wvDates2.filter(k=>!logCache[k]&&k<=TODAY); // 미래 날짜는 fetch 안 함
   wvLogs={};
-  if(wvMissing.length>0){
-    const{data}=await sb.from('daily_logs').select('*').eq('user_id',CU.id).gte('log_date',from).lte('log_date',to);
-    if(data)data.forEach(d=>{
-      const nk=normKey(d.log_date);
-      const parsed={...d,targets:d.targets||[],mandatory:d.mandatory||[],workouts:d.workouts||[],meals:d.meals||[]};
-      logCache[nk]=parsed;
-    });
-  }
-  // Build wvLogs from cache — deep clone
+  // Always fetch from DB for the displayed week — ensures weekly view is never stale
+  const{data:wvData}=await sb.from('daily_logs').select('*').eq('user_id',CU.id).gte('log_date',from).lte('log_date',to);
+  if(wvData)wvData.forEach(d=>{
+    const nk=normKey(d.log_date);
+    const parsed={...d,targets:d.targets||[],mandatory:d.mandatory||[],workouts:d.workouts||[],meals:d.meals||[],_ptsLog:d.points_log||[]};
+    logCache[nk]=parsed;
+  });
+  // Build wvLogs from cache — deep clone; today's in-memory state (e.g. unsaved targets) is already
+  // merged because _flushSave() ran above, so logCache[TODAY] is up-to-date
   wvDates2.forEach(k=>{if(logCache[k])wvLogs[k]=JSON.parse(JSON.stringify(logCache[k]));});
   buildWVTable(dates);
   // Show empty state hint if no data this week
@@ -5862,14 +5860,14 @@ function buildWVTable(dates){
       const dl=wvLogs[k];const task=dl?.targets?.[ti];
       let cls='c-empty',val='',icon='';
       if(iF){cls='c-future';}
-      else if(task){
+      else if(task&&task.text){
         val=task.text;
         icon=task.st==='done'?'✓ ':task.st==='fail'?'✕ ':'';
         cls=task.st==='done'?'c-green':task.st==='fail'?'c-red':'c-empty';
       }
       const clickable=true;
       const shortVal=val?icon+val.slice(0,7)+(val.length>7?'…':''):'';
-      const emptyStyle=(!task&&!iF)?'color:var(--accent);opacity:.4;':'';
+      const emptyStyle=(!val&&!iF)?'color:var(--accent);opacity:.4;':'';
       const tgtClick=clickable?`onclick="wvTapTarget('${k}',${ti},this,${d.getTime()})"`:'' ;
       html+=`<td class="dc${isT?' today-col':''} ${cls}" title="${val||''}" style="cursor:${clickable?'pointer':'default'};touch-action:manipulation;-webkit-tap-highlight-color:transparent;${emptyStyle}" ${tgtClick}>${val?shortVal:'＋'}</td>`;
     });
@@ -6842,7 +6840,7 @@ async function wvTapTarget(k,ti,el){
   if(!wvLogs[k])wvLogs[k]={weight:null,water_cups:0,meals:[],workouts:[],mandatory:[],targets:[]};
   const dl=wvLogs[k];
   dl.targets=dl.targets||[];
-  if(ti===999||ti>=dl.targets.length||!dl.targets[ti]){
+  if(ti===999||ti>=dl.targets.length||!dl.targets[ti]||!dl.targets[ti].text){
     wvMmOpen('할일 추가','오늘 할 일을 입력하세요','',{type:'target-add',dateKey:k},el);
     return;
   }
