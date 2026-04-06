@@ -2554,7 +2554,7 @@ const COMBINED_SCORE_EVENTS={
 
 function getAccumulatedScore(){
   // profiles.total_score 사용 (logCache 합산 방식 폐기)
-  return CP?.total_score||0;
+  return +(CP?.total_score)||0;
 }
 
 function getTodayScore(){
@@ -2573,8 +2573,7 @@ function addScore(type, note='', ptsOverride=null){
   logCache[TODAY]=l;
   // 2. CP.total_score에 즉시 반영
   if(!CP)return;
-  CP.total_score=(CP.total_score||0)+pts;
-  if(CP.total_score<0)CP.total_score=0; // 최소 0점
+  CP.total_score=Math.max(0,(+CP.total_score||0)+pts);
   // 3. localStorage 즉시 백업 — DB flush 전 앱 종료돼도 점수 보존
   try{if(CU)localStorage.setItem('score_'+CU.id,String(CP.total_score));}catch(e){}
   // 4. profiles DB 업데이트 (디바운스 — 연속 addScore 시 1번만)
@@ -5300,7 +5299,7 @@ async function finishSession(){
       // 예정 등록 — 점수 없음, 조용히 저장
       showToast('📅 운동 일정이 등록됐어요');
     } else {
-      const l=logCache[selectedKey]||log;
+      const l=logCache[TODAY]||log;
       const alreadyScored=(l._ptsLog||[]).filter(e=>e.type==='workout_done').length>=1;
       if(!alreadyScored)addScore('workout_done');
       setTimeout(()=>{showWin('workout',5,'운동 완료!');launchConfetti();checkPerfectDay();},300);
