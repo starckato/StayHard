@@ -5057,7 +5057,7 @@ function selectWorkoutType(type){
       startGymSession(true);
     }
   } else {
-    openActivityModal();
+    openActivityModal(_workoutMode);
   }
 }
 
@@ -5135,9 +5135,11 @@ const ACTIVITY_TYPES=[
 ];
 let actTypeIdx=null,editingActivityIdx=null;
 
-function openActivityModal(){
+function openActivityModal(mode=null, fromEdit=false){
+  if(!fromEdit) editingActivityIdx=null;
+  if(mode) _workoutMode=mode;
   closeModal('workout-modal');
-  actTypeIdx=null;editingActivityIdx=null;
+  actTypeIdx=null;
   document.getElementById('act-title').textContent='유산소 / 스포츠';
   document.getElementById('act-fields').style.display='none';
   document.getElementById('act-save-btn').style.display='none';
@@ -5174,19 +5176,29 @@ function saveActivity(){
   const v1=document.getElementById('act-v1').value;
   const v2=document.getElementById('act-v2').value;
   let meta=v1?v1+' '+t.u1:'';if(t.u2&&v2)meta+=(meta?' · ':'')+v2+' '+t.u2;if(!meta)meta='기록됨';
-  const entry={type:'activity',icon:t.i,name:t.n,cat:t.cat,meta,status:'done',actTypeIdx};
+  const isEdit=editingActivityIdx!==null;
+  const status=isEdit
+    ?(log.workouts[editingActivityIdx]?.status||'done')
+    :(_workoutMode==='planned'?'planned':'done');
+  const entry={type:'activity',icon:t.i,name:t.n,cat:t.cat,meta,status,actTypeIdx};
   if(!logCache[selectedKey])logCache[selectedKey]=log;
   log=logCache[selectedKey];
-  if(editingActivityIdx!==null){log.workouts[editingActivityIdx]=entry;}
+  if(isEdit){log.workouts[editingActivityIdx]=entry;}
   else{log.workouts.push(entry);}
-  closeModal('activity-modal');renderWorkouts();saveNow('💪 운동 저장됨');
+  closeModal('activity-modal');renderWorkouts();
+  if(!isEdit&&status==='done'){
+    const todayPtsLog=(logCache[TODAY]||log)._ptsLog||[];
+    const alreadyScored=todayPtsLog.some(e=>e.type==='workout_done');
+    if(!alreadyScored){addScore('workout_done');setTimeout(()=>{showWin('workout',5,'운동 완료!');launchConfetti();},200);}
+  }
+  saveNow(status==='planned'?'📅 운동 일정 등록됨':'💪 운동 저장됨');
 }
 
 function editActivity(i){
   const w=log.workouts[i];
   if(w.type!=='activity')return;
   editingActivityIdx=i;
-  openActivityModal();
+  openActivityModal(null, true);
   // After modal opens, pre-select the type
   const idx=w.actTypeIdx??ACTIVITY_TYPES.findIndex(t=>t.n===w.name);
   if(idx>=0){
