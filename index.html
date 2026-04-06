@@ -2575,7 +2575,9 @@ function addScore(type, note='', ptsOverride=null){
   if(!CP)return;
   CP.total_score=(CP.total_score||0)+pts;
   if(CP.total_score<0)CP.total_score=0; // 최소 0점
-  // 3. profiles DB 업데이트 (디바운스 — 연속 addScore 시 1번만)
+  // 3. localStorage 즉시 백업 — DB flush 전 앱 종료돼도 점수 보존
+  try{if(CU)localStorage.setItem('score_'+CU.id,String(CP.total_score));}catch(e){}
+  // 4. profiles DB 업데이트 (디바운스 — 연속 addScore 시 1번만)
   _flushScoreUpdate();
   updateGogginsHeader();
   const combined=COMBINED_SCORE_EVENTS[type];
@@ -2600,6 +2602,16 @@ function _flushScoreUpdate(){
       if(error)console.warn('score update failed:',error.message);
     }catch(e){console.warn('score update error:',e.message);}
   },300);
+}
+// 점수 즉시 flush (페이지 종료/백그라운드 시 호출)
+async function _saveScoreNow(){
+  clearTimeout(_scoreFlushTimer);
+  if(!CU||!CP)return;
+  try{localStorage.setItem('score_'+CU.id,String(CP.total_score));}catch(e){}
+  try{
+    const{error}=await sb.from('profiles').update({total_score:CP.total_score}).eq('id',CU.id);
+    if(error)console.warn('score flush error:',error.message);
+  }catch(e){console.warn('score flush error:',e.message);}
 }
 
 // ── DAILY GOGGINS MOTTOS (10개, 하루씩 순환) ──
@@ -2890,6 +2902,17 @@ async function onLogin(user){
   }
   if(p&&p.total_score===null)p.total_score=0;
   CP=p;
+  // total_score: localStorage 백업이 DB값보다 높으면 복원 (저장 실패 대비)
+  if(CP){
+    try{
+      const lsScore=parseInt(localStorage.getItem('score_'+user.id)||'0');
+      if(lsScore>(CP.total_score||0)){
+        CP.total_score=lsScore;
+        sb.from('profiles').update({total_score:lsScore}).eq('id',user.id).then(()=>{});
+        console.log('[init] total_score localStorage에서 복원:',lsScore);
+      }
+    }catch(e){}
+  }
   // weight_goal: DB에 없으면 localStorage 백업에서 복원
   if(CP&&!CP.weight_goal){
     try{
@@ -3210,11 +3233,14 @@ window.addEventListener('beforeunload', ()=>{
     // 동기 방식으로 최후 저장 시도
     navigator.sendBeacon && saveLog(selectedKey, true);
   }
+  // beforeunload에서 async DB 저장 불가 → localStorage에 점수 백업
+  if(CU&&CP)try{localStorage.setItem('score_'+CU.id,String(CP.total_score));}catch(e){}
 });
 window.addEventListener('visibilitychange', ()=>{
   if(document.visibilityState==='hidden'){
     clearTimeout(_saveTimer);
     _flushSave();
+    _saveScoreNow(); // 점수도 즉시 DB flush
   }
 });
 
