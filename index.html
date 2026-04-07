@@ -4675,7 +4675,15 @@ function applyMealScore(prevType,newType,isNew,category){
   }
 }
 
+let _mealSaving=false;
 async function saveMeal(){
+  if(_mealSaving)return;
+  _mealSaving=true;
+  const _saveBtn=document.getElementById('mm-save-btn');
+  if(_saveBtn)_saveBtn.disabled=true;
+  try{await _doSaveMeal();}finally{_mealSaving=false;if(_saveBtn)_saveBtn.disabled=false;}
+}
+async function _doSaveMeal(){
   const name=document.getElementById('mm-name').value.trim();
   let finalPhoto=null;
   if(photoFile){showToast('📷 사진 저장 중...');const url=await uploadPhotoToStorage(photoFile);finalPhoto=url||photoData;photoFile=null;}else{finalPhoto=photoData;}
