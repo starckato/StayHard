@@ -652,6 +652,41 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
       <span style="font-size:16px;color:var(--text3);flex-shrink:0;">›</span>
     </div>
 
+    <!-- SUMMARY CARD -->
+    <div id="summary-card" style="margin:0 16px 4px;background:var(--surface);border:1px solid var(--border2);border-radius:14px;padding:12px 14px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <div style="display:flex;align-items:baseline;gap:3px;">
+          <span id="summ-pts" style="font-size:18px;font-weight:700;font-family:'DM Mono',monospace;">+0</span>
+          <span style="font-size:11px;color:var(--text3);">pt 오늘</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:4px;">
+          <span style="font-size:13px;">🔥</span>
+          <span id="summ-streak" style="font-size:13px;font-weight:600;color:var(--amber);font-family:'DM Mono',monospace;">0</span>
+          <span style="font-size:11px;color:var(--text3);">일 연속</span>
+        </div>
+      </div>
+      <div style="height:1px;background:var(--border);margin-bottom:10px;"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:5px;margin-bottom:10px;">
+        <div id="summ-diet" onclick="scrollToSection('diet')" style="display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 4px;border-radius:10px;background:var(--surface2);cursor:pointer;touch-action:manipulation;">
+          <span style="font-size:16px;">🥗</span><span style="font-size:10px;font-weight:600;color:var(--text3);font-family:'DM Mono',monospace;">0끼</span>
+        </div>
+        <div id="summ-workout" onclick="scrollToSection('workout')" style="display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 4px;border-radius:10px;background:var(--surface2);cursor:pointer;touch-action:manipulation;">
+          <span style="font-size:16px;">💪</span><span style="font-size:10px;font-weight:600;color:var(--text3);font-family:'DM Mono',monospace;">미완</span>
+        </div>
+        <div id="summ-routine" onclick="scrollToSection('routine')" style="display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 4px;border-radius:10px;background:var(--surface2);cursor:pointer;touch-action:manipulation;">
+          <span style="font-size:16px;">✅</span><span style="font-size:10px;font-weight:600;color:var(--text3);font-family:'DM Mono',monospace;">0/0</span>
+        </div>
+        <div id="summ-water" onclick="scrollToSection('water')" style="display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 4px;border-radius:10px;background:var(--surface2);cursor:pointer;touch-action:manipulation;">
+          <span style="font-size:16px;">💧</span><span style="font-size:10px;font-weight:600;color:var(--text3);font-family:'DM Mono',monospace;">0/0</span>
+        </div>
+      </div>
+      <div style="height:1px;background:var(--border);margin-bottom:10px;"></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div style="font-size:12px;color:var(--text2);">⚖️ <span id="summ-weight">미기록</span></div>
+        <div id="summ-status" style="font-size:12px;color:var(--text3);"></div>
+      </div>
+    </div>
+
     <div class="day-slider-wrap">
       <div class="month-row">
         <div class="month-label" id="slider-month"></div>
@@ -1725,7 +1760,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 
 <!-- ROOM OVERLAY -->
 <div id="room-overlay" style="display:none;position:fixed;top:0;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;height:100%;z-index:900;flex-direction:column;background:#0a0a10;overflow:hidden;">
-  <img id="room-bg-img" src="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0.9;"/>
+  <img id="room-bg-img" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0.9;" onerror="console.error('[room-bg-img] 로드 실패:', this.src);"/>
   <div style="position:relative;z-index:2;padding:52px 18px 12px;background:linear-gradient(180deg,rgba(10,10,16,.95) 50%,transparent);">
     <div style="display:flex;justify-content:space-between;align-items:flex-start;">
       <button onclick="closeRoomOverlay()" style="width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.08);border:0.5px solid rgba(255,255,255,.15);color:var(--text2);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;touch-action:manipulation;">✕</button>
@@ -2874,9 +2909,6 @@ function openRoomOverlay(){
   const assets=getTierAssets(score);
   const next=TIERS[Math.min(tierIdx+1,TIERS.length-1)];
   const pct=tierIdx===TIERS.length-1?100:Math.round((score-tier.min)/(next.min-tier.min)*100);
-  const bgImg=document.getElementById('room-bg-img');
-  bgImg.style.display='';
-  bgImg.src=assets.room;
   const rtn=document.getElementById('room-tier-name');
   rtn.textContent=tier.icon+' '+tier.name;rtn.style.color=tier.color;
   document.getElementById('room-tier-pts').textContent=score+' pts';
@@ -2894,9 +2926,12 @@ function openRoomOverlay(){
       ?`<div style="width:12px;height:1.5px;background:${i<tierIdx?'#4ade8044':'rgba(255,255,255,.08)'};margin-top:13px;flex-shrink:0;"></div>`:'';
     return `<div style="display:flex;align-items:flex-start;"><div style="display:flex;flex-direction:column;align-items:center;gap:3px;"><div style="width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;background:${bg};border:1.5px solid ${border};${glow}">${t.icon}</div><div style="font-size:9px;color:${nameColor};font-family:'DM Mono',monospace;white-space:nowrap;">${t.name}</div></div>${connector}</div>`;
   }).join('');
+  // 오버레이 먼저 표시 후 src 설정 (Safari: display:none 상태에서 img 로드 안 됨)
   document.body.style.overflow='hidden';
   const el=document.getElementById('room-overlay');
   el.style.display='flex';
+  const bgImg=document.getElementById('room-bg-img');
+  bgImg.src=assets.room;
 }
 
 function closeRoomOverlay(){
@@ -4570,7 +4605,58 @@ async function jumpToDateFromWeekly(k,yr,mo,day){
 function shiftWeek(dir){sliderOffset+=dir;buildSlider();}
 
 // ── RENDER ROUTINE ──
-function renderRoutine(){renderCharCard();renderWeight();renderMeals();renderCheatBadge();renderWater();renderWorkouts();renderMandatory();renderTargets();updateGogginsHeader();}
+function renderSummaryCard(){
+  const l=logCache[TODAY]||log;
+  const score=(l._ptsLog||[]).reduce((a,e)=>a+e.pts,0);
+  const streak=calcStreak();
+  const meals=(l.meals||[]).length;
+  const hasWorkout=(l.workouts||[]).some(w=>w.status==='done');
+  const mandTotal=(l.mandatory||[]).length;
+  const mandDone=(l.mandatory||[]).filter(m=>m.done).length;
+  const water=l.water_cups||0;
+  const waterGoal=CP?.water_goal||6;
+  const weight=l.weight!=null?parseFloat(l.weight).toFixed(1)+'kg':'미기록';
+
+  const ptsEl=document.getElementById('summ-pts');
+  if(!ptsEl)return;
+  ptsEl.textContent=(score>0?'+':'')+score;
+  ptsEl.style.color=score>0?'var(--accent)':score<0?'var(--red)':'var(--text3)';
+  document.getElementById('summ-streak').textContent=streak;
+
+  const dietDone=meals>=3;
+  const workoutDone=hasWorkout;
+  const routineDone=mandTotal>0&&mandDone===mandTotal;
+  const waterDone=water>=waterGoal;
+
+  function chip(id,icon,label,done){
+    const el=document.getElementById(id);if(!el)return;
+    el.style.background=done?'rgba(74,222,128,0.1)':'var(--surface2)';
+    const lc=done?'var(--green)':'var(--text3)';
+    el.querySelector('span:last-child').textContent=label;
+    el.querySelector('span:last-child').style.color=lc;
+  }
+  chip('summ-diet','🥗',meals+'끼',dietDone);
+  chip('summ-workout','💪',workoutDone?'완료':'미완',workoutDone);
+  chip('summ-routine','✅',mandDone+'/'+mandTotal,routineDone);
+  chip('summ-water','💧',water+'/'+waterGoal,waterDone);
+
+  document.getElementById('summ-weight').textContent=weight;
+  const statusEl=document.getElementById('summ-status');
+  if(dietDone&&workoutDone&&routineDone&&waterDone){
+    statusEl.textContent='완벽한 하루 🔥';statusEl.style.color='var(--amber)';
+  } else {
+    const inc=[];
+    if(!dietDone)inc.push('식단');if(!workoutDone)inc.push('운동');
+    if(!routineDone)inc.push('루틴');if(!waterDone)inc.push('수분');
+    statusEl.textContent=inc.join(' · ')+' 미완료';statusEl.style.color='var(--text3)';
+  }
+}
+function scrollToSection(s){
+  const map={diet:'meal-rows',workout:'workout-rows',routine:'check-rows',water:'water-cups'};
+  const el=document.getElementById(map[s]);
+  if(el)el.scrollIntoView({behavior:'smooth',block:'start'});
+}
+function renderRoutine(){renderCharCard();renderSummaryCard();renderWeight();renderMeals();renderCheatBadge();renderWater();renderWorkouts();renderMandatory();renderTargets();updateGogginsHeader();}
 
 // WEIGHT
 function toggleWeightInfo(){
