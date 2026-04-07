@@ -1676,12 +1676,42 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
   <div class="lib-body" id="lib-body"></div>
 </div>
 
+<!-- ADD EXERCISE MODAL (세션 중 운동 추가 전용) -->
+<div id="add-exercise-modal" style="display:none;position:fixed;inset:0;z-index:600;background:rgba(0,0,0,.55);align-items:flex-end;justify-content:center;">
+  <div style="background:var(--surface);border-radius:20px 20px 0 0;width:100%;max-width:430px;max-height:88vh;display:flex;flex-direction:column;border-top:.5px solid var(--border2);">
+    <div style="width:32px;height:4px;background:var(--border2);border-radius:2px;margin:10px auto 0;flex-shrink:0;"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 18px 0;flex-shrink:0;">
+      <div style="font-size:16px;font-weight:600;color:var(--text);">운동 추가</div>
+      <button onclick="closeAddExerciseModal()" style="width:28px;height:28px;border-radius:50%;background:var(--surface2);border:none;color:var(--text2);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
+    </div>
+    <!-- 3탭 네비 -->
+    <div style="display:flex;margin:12px 18px 0;background:var(--surface2);border-radius:10px;padding:3px;gap:2px;flex-shrink:0;" id="add-ex-tab-nav">
+      <button id="add-tab-btn-routine" onclick="switchAddTab('routine')" style="flex:1;padding:7px 4px;border:none;background:var(--accent);border-radius:7px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;color:#fff;cursor:pointer;white-space:nowrap;touch-action:manipulation;">내 루틴</button>
+      <button id="add-tab-btn-recent" onclick="switchAddTab('recent')" style="flex:1;padding:7px 4px;border:none;background:transparent;border-radius:7px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;color:var(--text3);cursor:pointer;white-space:nowrap;touch-action:manipulation;">최근 운동</button>
+      <button id="add-tab-btn-search" onclick="switchAddTab('search')" style="flex:1;padding:7px 4px;border:none;background:transparent;border-radius:7px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;color:var(--text3);cursor:pointer;white-space:nowrap;touch-action:manipulation;">검색/분류</button>
+    </div>
+    <!-- 탭 콘텐츠 -->
+    <div id="add-ex-tab-body" style="flex:1;overflow-y:auto;padding-top:12px;"></div>
+    <!-- 루틴 확인 바텀시트 (내부 오버레이) -->
+    <div id="routine-confirm-sheet" style="display:none;position:absolute;inset:0;background:rgba(0,0,0,.5);border-radius:20px 20px 0 0;align-items:flex-end;">
+      <div style="background:var(--surface);border-radius:16px 16px 0 0;width:100%;padding:20px 20px 24px;border-top:.5px solid var(--border2);">
+        <div style="text-align:center;font-size:28px;margin-bottom:10px;">📋</div>
+        <div style="text-align:center;font-size:16px;font-weight:600;color:var(--text);margin-bottom:6px;">루틴 운동 모두 추가할까요?</div>
+        <div style="text-align:center;font-size:13px;color:var(--text2);line-height:1.55;margin-bottom:14px;">아래 운동들이 현재 세션에 모두 추가됩니다.</div>
+        <div id="routine-confirm-pills" style="display:flex;flex-wrap:wrap;gap:5px;justify-content:center;margin-bottom:18px;"></div>
+        <button id="routine-confirm-yes-btn" onclick="" style="width:100%;padding:13px;border-radius:11px;background:var(--accent);color:#fff;font-size:15px;font-weight:700;border:none;margin-bottom:8px;font-family:'DM Sans',sans-serif;cursor:pointer;touch-action:manipulation;">✓ 모두 추가</button>
+        <button onclick="hideRoutineConfirmSheet()" style="width:100%;padding:11px;border-radius:11px;background:transparent;color:var(--text2);font-size:13px;font-weight:500;border:1px solid var(--border2);font-family:'DM Sans',sans-serif;cursor:pointer;touch-action:manipulation;">← 루틴 목록으로</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- WORKOUT SESSION OVERLAY -->
 <div id="workout-session-overlay">
   <div class="ws-header">
     <button class="ws-close" onclick="closeSession()">✕</button>
     <div class="ws-title" id="ws-title">오늘의 운동</div>
-    <button onclick="openRoutineModal()" style="background:var(--surface2);border:1px solid var(--border2);color:var(--text2);border-radius:8px;padding:6px 11px;font-size:12px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;touch-action:manipulation;">📋 저장된 루틴</button>
+    <button onclick="openAddExerciseModal('routine')" style="background:var(--surface2);border:1px solid var(--border2);color:var(--text2);border-radius:8px;padding:6px 11px;font-size:12px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;touch-action:manipulation;">📋 저장된 루틴</button>
   </div>
   <div class="ws-body" id="ws-body"></div>
   <div class="ws-footer">
@@ -1958,7 +1988,7 @@ const EXERCISE_LIBRARY = [
 ];
 
 // ── LIBRARY STATE ──
-let libMuscleFilter='전체', libContext='session', libRoutineEditIdx=null;
+let libMuscleFilter='전체', libEquipFilter='전체', libContext='session', libRoutineEditIdx=null;
 let currentSession=[]; // [{exercise, sets:[{kg,reps,done}]}]
 let userRoutines=[]; // loaded from Supabase
 let editingRoutineId=null;
@@ -1969,6 +1999,257 @@ async function loadRoutines(force=false){
   if(!force&&userRoutines.length>0)return; // 캐시 있으면 skip
   const{data}=await sb.from('user_routines').select('*').eq('user_id',CU.id).order('created_at',{ascending:false});
   userRoutines=data||[];
+}
+
+// ── ADD EXERCISE MODAL (세션 중 운동 추가 전용) ──
+let _addExCurrentTab='routine';
+
+function openAddExerciseModal(tab='routine'){
+  const el=document.getElementById('add-exercise-modal');
+  if(!el)return;
+  el.style.display='flex';
+  switchAddTab(tab);
+}
+function closeAddExerciseModal(){
+  const el=document.getElementById('add-exercise-modal');
+  if(el)el.style.display='none';
+  hideRoutineConfirmSheet();
+}
+function switchAddTab(tab){
+  _addExCurrentTab=tab;
+  ['routine','recent','search'].forEach(t=>{
+    const btn=document.getElementById('add-tab-btn-'+t);
+    if(!btn)return;
+    const active=t===tab;
+    btn.style.background=active?'var(--accent)':'transparent';
+    btn.style.color=active?'#fff':'var(--text3)';
+    btn.style.fontWeight=active?'600':'500';
+  });
+  const body=document.getElementById('add-ex-tab-body');
+  if(!body)return;
+  if(tab==='routine')renderAddRoutineTab();
+  else if(tab==='recent')renderAddRecentTab();
+  else renderAddSearchTab();
+}
+
+function renderAddRoutineTab(){
+  const body=document.getElementById('add-ex-tab-body');
+  if(!body)return;
+  if(!userRoutines||userRoutines.length===0){
+    body.innerHTML=`<div style="padding:40px 24px;text-align:center;">
+      <div style="font-size:32px;margin-bottom:12px;">📋</div>
+      <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:6px;">저장된 루틴이 없어요</div>
+      <div style="font-size:12px;color:var(--text3);line-height:1.6;">검색/분류 탭에서 운동을 추가하면<br>세션 저장 시 루틴으로 등록할 수 있어요</div>
+    </div>`;
+    return;
+  }
+  body.innerHTML=userRoutines.map(r=>{
+    const exNames=(r.exercises||[]).map(e=>e.name);
+    const preview=exNames.slice(0,3).join(' · ')+(exNames.length>3?' 외 '+(exNames.length-3)+'개':'');
+    const initial=r.name?r.name[0]:'?';
+    return`<div onclick="showRoutineConfirmSheet('${r.id}')" style="display:flex;align-items:center;gap:11px;padding:12px;background:var(--surface2);border-radius:11px;margin:0 18px 7px;border:1px solid transparent;cursor:pointer;touch-action:manipulation;">
+      <div style="width:36px;height:36px;border-radius:9px;background:var(--accent-bg);border:1px solid var(--accent-bd);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;">💪</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:13px;font-weight:600;color:var(--text);">${r.name}</div>
+        <div style="font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${preview||'운동 없음'}</div>
+      </div>
+      <div style="font-size:11px;font-weight:600;padding:3px 8px;border-radius:14px;background:var(--accent-bg);color:var(--accent);border:1px solid var(--accent-bd);flex-shrink:0;">${(r.exercises||[]).length}개</div>
+    </div>`;
+  }).join('');
+}
+
+function showRoutineConfirmSheet(routineId){
+  const r=userRoutines.find(r=>r.id===routineId);
+  if(!r)return;
+  const sheet=document.getElementById('routine-confirm-sheet');
+  if(!sheet)return;
+  const pills=document.getElementById('routine-confirm-pills');
+  if(pills){
+    pills.innerHTML=(r.exercises||[]).map(e=>`<span style="font-size:11px;padding:4px 9px;border-radius:20px;background:var(--surface2);border:1px solid var(--border2);color:var(--text2);font-family:'DM Mono',monospace;">${e.icon||'💪'} ${e.name}</span>`).join('');
+  }
+  const yesBtn=document.getElementById('routine-confirm-yes-btn');
+  if(yesBtn)yesBtn.onclick=()=>confirmAddRoutine(routineId);
+  sheet.style.display='flex';
+}
+function hideRoutineConfirmSheet(){
+  const sheet=document.getElementById('routine-confirm-sheet');
+  if(sheet)sheet.style.display='none';
+}
+function confirmAddRoutine(routineId){
+  const r=userRoutines.find(r=>r.id===routineId);
+  if(!r)return;
+  const wasEmpty=currentSession.length===0;
+  // Build prev weights map from logCache
+  const prevWeights={};
+  Object.values(logCache).forEach(dayLog=>{
+    (dayLog.workouts||[]).forEach(w=>{
+      if(w.type==='gym')(w.exercises||[]).forEach(ex=>{
+        if(!prevWeights[ex.name]){
+          const done=(ex.sets||[]).filter(s=>s.done&&s.kg);
+          if(done.length>0)prevWeights[ex.name]=done.map(s=>({kg:s.kg,reps:s.reps}));
+        }
+      });
+    });
+  });
+  const added=(r.exercises||[]).map(ex=>{
+    const isStr=ex.muscle!=='유산소'&&ex.equip!=='유산소';
+    const prev=prevWeights[ex.name];
+    const numSets=ex.targetSets||3;
+    let sets;
+    if(isStr&&prev&&prev.length>0){
+      sets=Array.from({length:numSets},(_,i)=>{const src=prev[Math.min(i,prev.length-1)];return{kg:src.kg||'',reps:src.reps||'',done:false};});
+    } else if(isStr&&(ex.lastKg||ex.lastReps)){
+      sets=Array.from({length:numSets},()=>({kg:ex.lastKg||'',reps:ex.lastReps||'',done:false}));
+    } else if(isStr){
+      sets=Array.from({length:numSets},()=>({kg:'',reps:'',done:false}));
+    } else {
+      sets=[{dist:'',time:'',done:false}];
+    }
+    return{name:ex.name,icon:ex.icon,muscle:ex.muscle,equip:ex.equip,isStrength:isStr,sets,status:'done'};
+  });
+  // Append to existing session (no reset)
+  currentSession.push(...added);
+  // Only set routine tracking flags when starting fresh
+  if(wasEmpty){
+    sessionStartedFromRoutine=true;
+    sessionSourceRoutineId=routineId;
+  }
+  closeAddExerciseModal();
+  renderSession();
+  showToast('📋 '+r.name+' 운동 '+added.length+'개 추가됨');
+}
+
+function renderAddRecentTab(){
+  const body=document.getElementById('add-ex-tab-body');
+  if(!body)return;
+  // Collect recent exercises from logCache (last 30 days)
+  const recentMap={};
+  Object.entries(logCache)
+    .sort(([a],[b])=>b.localeCompare(a))
+    .forEach(([dateKey,dayLog])=>{
+      const parts=dateKey.split('-');
+      const d=new Date(parseInt(parts[0]),parseInt(parts[1])-1,parseInt(parts[2]));
+      const td=new Date(TODAY.split('-')[0],TODAY.split('-')[1]-1,TODAY.split('-')[2]);
+      const daysAgo=Math.round((td-d)/86400000);
+      if(daysAgo<0||daysAgo>30)return;
+      (dayLog.workouts||[]).forEach(w=>{
+        if(w.type!=='gym')return;
+        (w.exercises||[]).forEach(ex=>{
+          if(recentMap[ex.name])return;
+          const doneSets=(ex.sets||[]).filter(s=>s.done);
+          recentMap[ex.name]={name:ex.name,icon:ex.icon||'💪',muscle:ex.muscle,equip:ex.equip,
+            lastKg:doneSets[doneSets.length-1]?.kg||'',
+            lastReps:doneSets[doneSets.length-1]?.reps||'',
+            lastSets:doneSets.length,daysAgo};
+        });
+      });
+    });
+  const items=Object.values(recentMap);
+  if(items.length===0){
+    body.innerHTML=`<div style="padding:40px 24px;text-align:center;font-size:13px;color:var(--text3);">아직 기록된 운동이 없어요</div>`;
+    return;
+  }
+  const sections=[{label:'이번 주',min:0,max:7},{label:'지난 주',min:8,max:14},{label:'2주 전',min:15,max:30}];
+  let html='';
+  sections.forEach(sec=>{
+    const secItems=items.filter(e=>e.daysAgo>=sec.min&&e.daysAgo<=sec.max);
+    if(!secItems.length)return;
+    html+=`<div style="font-size:10px;font-weight:600;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;font-family:'DM Mono',monospace;padding:0 18px 6px;">${sec.label}</div>`;
+    html+=`<div style="padding:0 18px;">`;
+    secItems.forEach(e=>{
+      const metaParts=[];
+      if(e.lastKg)metaParts.push(e.lastKg+'kg');
+      if(e.lastSets)metaParts.push(e.lastSets+'세트');
+      html+=`<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);">
+        <div style="width:30px;height:30px;border-radius:8px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;">${e.icon}</div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:13px;font-weight:500;color:var(--text);">${e.name}</div>
+          ${metaParts.length?`<div style="font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;margin-top:1px;">${metaParts.join(' · ')}</div>`:''}
+        </div>
+        <div style="font-size:10px;color:var(--text3);font-family:'DM Mono',monospace;white-space:nowrap;flex-shrink:0;">${e.daysAgo}일 전</div>
+        <button onclick="addRecentExercise('${e.name.replace(/'/g,"\\'")}','${(e.icon||'💪').replace(/'/g,"\\'")}','${(e.muscle||'').replace(/'/g,"\\'")}','${(e.equip||'').replace(/'/g,"\\'")}');closeAddExerciseModal();" style="width:26px;height:26px;border-radius:50%;background:var(--accent-bg);border:1px solid var(--accent-bd);color:var(--accent);font-size:15px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-left:6px;cursor:pointer;touch-action:manipulation;line-height:1;">＋</button>
+      </div>`;
+    });
+    html+=`</div>`;
+  });
+  body.innerHTML=html;
+}
+function addRecentExercise(name,icon,muscle,equip){
+  addExerciseToSession(name,icon,muscle,equip);
+}
+
+let _addSearchEquipFilter='전체';
+function renderAddSearchTab(){
+  const body=document.getElementById('add-ex-tab-body');
+  if(!body)return;
+  const muscleChips=['전체','가슴','등','어깨','하체','팔','복근','전신','유산소'];
+  const equipChips=['전체','바벨','덤벨','머신','케이블','맨몸'];
+  body.innerHTML=`
+    <div style="display:flex;align-items:center;gap:9px;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:9px 12px;margin:0 18px 10px;">
+      <span style="color:var(--text3);font-size:13px;">🔍</span>
+      <input id="add-lib-search" placeholder="운동 이름 검색..." oninput="renderAddSearchResults()" style="flex:1;background:none;border:none;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;" />
+    </div>
+    <div style="padding:0 18px 6px;">
+      <div style="font-size:10px;font-weight:600;color:var(--text3);letter-spacing:.07em;text-transform:uppercase;font-family:'DM Mono',monospace;margin-bottom:6px;">부위</div>
+      <div style="display:flex;gap:5px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px;">
+        ${muscleChips.map(m=>`<button onclick="filterAddMuscle('${m}',this)" style="padding:5px 11px;border-radius:18px;font-size:11px;font-weight:500;border:1px solid var(--border2);color:${m==='전체'?'var(--accent)':'var(--text2)'};background:${m==='전체'?'var(--accent-bg)':'transparent'};white-space:nowrap;cursor:pointer;font-family:'DM Sans',sans-serif;flex-shrink:0;touch-action:manipulation;" data-add-muscle="${m}">${m}</button>`).join('')}
+      </div>
+    </div>
+    <div style="height:1px;background:var(--border);margin:6px 18px 8px;"></div>
+    <div style="padding:0 18px 8px;">
+      <div style="font-size:10px;font-weight:600;color:var(--text3);letter-spacing:.07em;text-transform:uppercase;font-family:'DM Mono',monospace;margin-bottom:6px;">장비</div>
+      <div style="display:flex;gap:5px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px;">
+        ${equipChips.map(e=>`<button onclick="filterAddEquip('${e}',this)" style="padding:5px 11px;border-radius:18px;font-size:11px;font-weight:500;border:1px solid var(--border2);color:${e==='전체'?'var(--green)':'var(--text2)'};background:${e==='전체'?'rgba(61,214,140,0.08)':'transparent'};white-space:nowrap;cursor:pointer;font-family:'DM Sans',sans-serif;flex-shrink:0;touch-action:manipulation;" data-add-equip="${e}">${e}</button>`).join('')}
+      </div>
+    </div>
+    <div style="height:1px;background:var(--border);margin:0 18px 8px;"></div>
+    <div id="add-search-results" style="padding:0 18px 20px;"></div>`;
+  renderAddSearchResults();
+}
+function filterAddMuscle(m,el){
+  libMuscleFilter=m;
+  document.querySelectorAll('[data-add-muscle]').forEach(b=>{
+    const active=b.dataset.addMuscle===m;
+    b.style.color=active?'var(--accent)':'var(--text2)';
+    b.style.background=active?'var(--accent-bg)':'transparent';
+    b.style.borderColor=active?'var(--accent-bd)':'var(--border2)';
+  });
+  renderAddSearchResults();
+}
+function filterAddEquip(equip,el){
+  _addSearchEquipFilter=equip;
+  document.querySelectorAll('[data-add-equip]').forEach(b=>{
+    const active=b.dataset.addEquip===equip;
+    b.style.color=active?'var(--green)':'var(--text2)';
+    b.style.background=active?'rgba(61,214,140,0.08)':'transparent';
+    b.style.borderColor=active?'var(--green-bd)':'var(--border2)';
+  });
+  renderAddSearchResults();
+}
+function renderAddSearchResults(){
+  const resultsEl=document.getElementById('add-search-results');
+  if(!resultsEl)return;
+  const inp=document.getElementById('add-lib-search');
+  const q=inp?inp.value.trim().toLowerCase():'';
+  const list=EXERCISE_LIBRARY.filter(ex=>{
+    const matchMuscle=libMuscleFilter==='전체'||ex.m===libMuscleFilter;
+    const matchEquip=_addSearchEquipFilter==='전체'||ex.e===_addSearchEquipFilter;
+    const matchQ=!q||ex.n.toLowerCase().includes(q)||ex.m.includes(q)||ex.e.includes(q);
+    return matchMuscle&&matchEquip&&matchQ;
+  });
+  if(!list.length){resultsEl.innerHTML=`<div style="padding:24px 0;text-align:center;font-size:13px;color:var(--text3);">검색 결과가 없습니다</div>`;return;}
+  resultsEl.innerHTML=list.map(ex=>`
+    <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);">
+      <div style="width:32px;height:32px;border-radius:8px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;">${ex.i}</div>
+      <div style="flex:1;">
+        <div style="font-size:13px;font-weight:500;color:var(--text);">${ex.n}</div>
+        <div style="display:flex;gap:5px;margin-top:3px;">
+          <span style="font-size:10px;padding:2px 6px;border-radius:5px;font-family:'DM Mono',monospace;background:var(--accent-bg);color:var(--accent);border:1px solid var(--accent-bd);">${ex.m}</span>
+          <span style="font-size:10px;padding:2px 6px;border-radius:5px;font-family:'DM Mono',monospace;background:var(--green-bg);color:var(--green);border:1px solid var(--green-bd);">${ex.e}</span>
+        </div>
+      </div>
+      <button onclick="addExerciseToSession('${ex.n.replace(/'/g,"\\'")}','${ex.i.replace(/'/g,"\\'")}','${ex.m.replace(/'/g,"\\'")}','${ex.e.replace(/'/g,"\\'")}');closeAddExerciseModal();" style="width:26px;height:26px;border-radius:50%;background:var(--accent-bg);border:1px solid var(--accent-bd);color:var(--accent);font-size:15px;display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer;touch-action:manipulation;line-height:1;">＋</button>
+    </div>`).join('');
 }
 
 // ── LIBRARY OPEN/CLOSE ──
@@ -2010,8 +2291,9 @@ function filterLibrary(){
   const q=document.getElementById('lib-search').value.trim().toLowerCase();
   const list=EXERCISE_LIBRARY.filter(ex=>{
     const matchMuscle=libMuscleFilter==='전체'||ex.m===libMuscleFilter;
+    const matchEquip=libEquipFilter==='전체'||ex.e===libEquipFilter;
     const matchQ=!q||ex.n.toLowerCase().includes(q)||ex.m.includes(q)||ex.e.includes(q);
-    return matchMuscle&&matchQ;
+    return matchMuscle&&matchEquip&&matchQ;
   });
   document.getElementById('lib-body').innerHTML=list.length===0
     ?'<div style="padding:32px 16px;text-align:center;font-size:13px;color:var(--text3);">검색 결과가 없습니다</div>'
@@ -2126,10 +2408,10 @@ function renderSession(){
       <div style="font-size:48px;">🏋️</div>
       <div style="font-size:15px;font-weight:600;color:var(--text);">어떤 운동을 했나요?</div>
       <div style="font-size:12px;color:var(--text3);text-align:center;line-height:1.6;">헬스 세션, 달리기, 요가 등<br>오늘의 운동을 기록해보세요</div>
-      <button onclick="openLibraryForSession()" style="margin-top:8px;padding:16px 32px;background:var(--accent);border:none;border-radius:var(--radius);color:#fff;font-size:15px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;max-width:280px;touch-action:manipulation;">
+      <button onclick="openAddExerciseModal()" style="margin-top:8px;padding:16px 32px;background:var(--accent);border:none;border-radius:var(--radius);color:#fff;font-size:15px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;max-width:280px;touch-action:manipulation;">
         ＋ 운동 추가
       </button>
-      <button onclick="openRoutineModal()" style="padding:13px 32px;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius);color:var(--text2);font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;max-width:280px;touch-action:manipulation;">
+      <button onclick="openAddExerciseModal('routine')" style="padding:13px 32px;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius);color:var(--text2);font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;max-width:280px;touch-action:manipulation;">
         📋 나의 루틴으로 시작
       </button>
     </div>`;
@@ -2172,7 +2454,7 @@ function renderSession(){
         ${ex.sets.length>1&&(ex.sets[0].kg||ex.sets[0].reps)?`<button class="ws-add-set" style="border-top:none;border-left:1px solid var(--border);flex:1;color:var(--accent);font-weight:500;" onclick="fillRemainingSets(${ei})">나머지 채우기 ↓</button>`:''}
       </div>`:''}
     </div>`;
-  }).join('')+`<button onclick="openLibraryForSession()" style="width:100%;margin:12px 0 0;padding:16px;background:var(--accent-bg);border:2px solid var(--accent-bd);border-radius:var(--radius);font-size:14px;font-weight:700;color:var(--accent);cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;touch-action:manipulation;">
+  }).join('')+`<button onclick="openAddExerciseModal()" style="width:100%;margin:12px 0 0;padding:16px;background:var(--accent-bg);border:2px solid var(--accent-bd);border-radius:var(--radius);font-size:14px;font-weight:700;color:var(--accent);cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;touch-action:manipulation;">
     <span style="font-size:20px;">＋</span> 같은 세션에 운동 추가
     <span style="font-size:11px;font-weight:400;opacity:.7;margin-left:2px;">· 한 운동 더!</span>
   </button>
