@@ -1542,21 +1542,21 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 <div class="modal-overlay" id="cheat-modal">
   <div class="modal">
     <div class="mhandle"></div>
-    <div class="mtitle">🎉 치팅 설정</div>
+    <div class="mtitle">💀 치팅 설정</div>
+    <div id="cheat-skull-display" style="display:flex;justify-content:center;gap:24px;margin-bottom:6px;min-height:60px;"></div>
+    <div id="cheat-modal-status" style="text-align:center;font-size:12px;color:var(--text2);margin-bottom:14px;"></div>
     <div class="mfield">
-      <label class="mlabel">월 치팅 허용 횟수</label>
-      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;" id="cheat-quota-btns">
+      <label class="mlabel">주간 허용 횟수</label>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;" id="cheat-quota-btns">
         <button onclick="pickCheatQuota(1,this)" style="padding:12px 0;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:var(--surface2);cursor:pointer;font-size:15px;font-weight:600;font-family:'DM Sans',sans-serif;touch-action:manipulation;">1</button>
         <button onclick="pickCheatQuota(2,this)" style="padding:12px 0;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:var(--surface2);cursor:pointer;font-size:15px;font-weight:600;font-family:'DM Sans',sans-serif;touch-action:manipulation;">2</button>
+        <button onclick="pickCheatQuota(3,this)" style="padding:12px 0;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:var(--surface2);cursor:pointer;font-size:15px;font-weight:600;font-family:'DM Sans',sans-serif;touch-action:manipulation;">3</button>
         <button onclick="pickCheatQuota(4,this)" style="padding:12px 0;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:var(--surface2);cursor:pointer;font-size:15px;font-weight:600;font-family:'DM Sans',sans-serif;touch-action:manipulation;">4</button>
-        <button onclick="pickCheatQuota(6,this)" style="padding:12px 0;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:var(--surface2);cursor:pointer;font-size:15px;font-weight:600;font-family:'DM Sans',sans-serif;touch-action:manipulation;">6</button>
-        <button onclick="pickCheatQuota(8,this)" style="padding:12px 0;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:var(--surface2);cursor:pointer;font-size:15px;font-weight:600;font-family:'DM Sans',sans-serif;touch-action:manipulation;">8</button>
       </div>
-      <div style="font-size:11px;color:var(--text3);margin-top:6px;">매월 1일 자동 초기화돼요</div>
-    </div>
-    <div style="background:var(--surface2);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:14px;">
-      <div style="font-size:12px;color:var(--text2);margin-bottom:4px;font-weight:500;">이번달 현황</div>
-      <div id="cheat-modal-status" style="font-size:13px;color:var(--text);"></div>
+      <div style="background:var(--surface2);border-radius:var(--radius-sm);padding:10px 12px;margin-top:10px;font-size:12px;color:var(--text2);line-height:1.7;">
+        안 쓴 치팅 1개당 <span style="color:var(--amber);font-weight:600;">+50점</span> 지급<br>
+        매주 <span style="color:var(--text);font-weight:600;">월요일</span> 자동 초기화 + 보너스 계산
+      </div>
     </div>
     <button class="mbtn" onclick="saveCheatSettings()">저장</button>
     <button class="mbtn-ghost" onclick="closeModal('cheat-modal')">취소</button>
@@ -2535,6 +2535,7 @@ const SCORE_EVENTS={
   target_done_cancel: {pts:-1, label:'할일 완료 취소',        icon:'↩️'},
   routine_fail_cancel:{pts:5,  label:'루틴 실패 취소 (복구)',  icon:'↩️'},
   target_fail_cancel: {pts:3,  label:'할일 실패 취소 (복구)', icon:'↩️'},
+  cheat_bonus:        {pts:50, label:'치팅 절제 보너스',       icon:'💀'},
 };
 
 const COMBINED_SCORE_EVENTS={
@@ -2883,10 +2884,10 @@ async function onLogin(user){
     _compLastFetch=0;
   }
   CU=user;
-  let{data:p,error:pErr}=await sb.from('profiles').select('id,username,display_name,water_goal,onboarded,total_score,weight_goal,cheat_quota,cheat_used,cheat_reset_month,system_notice').eq('id',user.id).maybeSingle();
+  let{data:p,error:pErr}=await sb.from('profiles').select('id,username,display_name,water_goal,onboarded,total_score,weight_goal,cheat_quota,cheat_used,cheat_reset_month,cheat_reset_week,system_notice').eq('id',user.id).maybeSingle();
   if(pErr){
     // total_score 컬럼 없을 경우 fallback
-    const{data:p2}=await sb.from('profiles').select('id,username,display_name,water_goal,onboarded,weight_goal,cheat_quota,cheat_used,cheat_reset_month').eq('id',user.id).maybeSingle();
+    const{data:p2}=await sb.from('profiles').select('id,username,display_name,water_goal,onboarded,weight_goal,cheat_quota,cheat_used,cheat_reset_month,cheat_reset_week').eq('id',user.id).maybeSingle();
     p=p2;
   }
   if(!p){
@@ -2952,7 +2953,7 @@ async function onLogin(user){
   _recoverPendingSaves();
   updateGogginsHeader();
   // 치팅 월 초기화 체크
-  checkCheatMonthReset().then(()=>renderCheatBadge());
+  checkCheatWeekReset().then(()=>renderCheatBadge());
   // Show onboarding for new users
   if(!p.onboarded){
     let hiddenUntil=0;
@@ -4551,8 +4552,8 @@ function pickFT(t, el){
     const remaining=getCheatRemaining();
     const hint=document.getElementById('mm-cheat-quota-hint');
     if(remaining<=0){
-      showToast('이번달 치팅 횟수를 모두 사용했어요 🚫');
-      if(hint){hint.style.display='block';hint.style.background='var(--red-bg)';hint.style.borderColor='var(--red-bd)';hint.style.color='var(--red)';hint.textContent='이번달 치팅 소진 ('+getCheatUsed()+'/'+getCheatQuota()+'회). 내달 1일 초기화.';}
+      showToast('이번주 치팅 횟수를 모두 사용했어요 🚫');
+      if(hint){hint.style.display='block';hint.style.background='var(--red-bg)';hint.style.borderColor='var(--red-bd)';hint.style.color='var(--red)';hint.textContent='이번주 치팅 소진 ('+getCheatUsed()+'/'+getCheatQuota()+'회). 다음주 월요일 초기화.';}
       return;
     }
     if(hint){
@@ -4570,36 +4571,53 @@ function pickFT(t, el){
 }
 
 // ═══════════════════════════════════════════
-// 치팅 시스템
+// 치팅 시스템 — 주간 해골 슬롯 + 절제 보너스
+// profiles 컬럼: cheat_quota, cheat_used, cheat_reset_week('YYYY-WNN')
 // ═══════════════════════════════════════════
-// ═══════════════════════════════════════════
-// 치팅 시스템 — Supabase profiles 직접 관리
-// profiles 컬럼: cheat_quota(허용), cheat_used(사용), cheat_reset_month('YYYY-MM')
-// ═══════════════════════════════════════════
-function getCheatQuota(){return CP?.cheat_quota||4;}
+function getCheatQuota(){return CP?.cheat_quota||2;}
 function getCheatUsed(){return CP?.cheat_used||0;}
 function getCheatRemaining(){return Math.max(0,getCheatQuota()-getCheatUsed());}
-function getCheatYearMonth(){
-  const n=new Date();
-  return n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0');
+
+function getCheatWeekKey(d=new Date()){
+  const date=new Date(d);
+  date.setHours(0,0,0,0);
+  date.setDate(date.getDate()+3-(date.getDay()+6)%7);
+  const week1=new Date(date.getFullYear(),0,4);
+  const weekNum=1+Math.round(((date-week1)/86400000-3+(week1.getDay()+6)%7)/7);
+  return date.getFullYear()+'-W'+String(weekNum).padStart(2,'0');
 }
 
-// 앱 로드 시 달 초기화 체크
-async function checkCheatMonthReset(){
+// 앱 로드 시 주간 초기화 + 절제 보너스 체크
+async function checkCheatWeekReset(){
   if(!CP||!CU)return;
-  const curMonth=getCheatYearMonth();
-  if(CP.cheat_reset_month!==curMonth){
-    // 새 달 — used 초기화
-    CP.cheat_used=0;
-    CP.cheat_reset_month=curMonth;
-    await sb.from('profiles').update({cheat_used:0,cheat_reset_month:curMonth}).eq('id',CU.id);
+  const curWeek=getCheatWeekKey();
+  if(CP.cheat_reset_week===curWeek)return;
+  const lastUsed=CP.cheat_used||0;
+  const lastQuota=CP.cheat_quota||2;
+  const unused=Math.max(0,lastQuota-lastUsed);
+  if(CP.cheat_reset_week&&unused>0){
+    const bonusPts=unused*50;
+    for(let i=0;i<unused;i++)addScore('cheat_bonus');
+    setTimeout(()=>{
+      showWin('diet_clean',bonusPts,'치팅 절제 보너스!');
+      showToast('💀 지난주 치팅 '+unused+'개 절제 → +'+bonusPts+'점!');
+    },1500);
   }
+  CP.cheat_used=0;
+  CP.cheat_reset_week=curWeek;
+  if(!CP.cheat_quota)CP.cheat_quota=2;
+  await sb.from('profiles').update({
+    cheat_used:0,
+    cheat_reset_week:curWeek,
+    cheat_quota:CP.cheat_quota,
+    total_score:+(CP.total_score)||0
+  }).eq('id',CU.id);
 }
 
 // 치팅 사용 (+1)
 async function cheatUse(){
   const remaining=getCheatRemaining();
-  if(remaining<=0)return false; // 소진
+  if(remaining<=0)return false;
   CP.cheat_used=(CP.cheat_used||0)+1;
   await sb.from('profiles').update({cheat_used:CP.cheat_used}).eq('id',CU.id);
   renderCheatBadge();
@@ -4614,25 +4632,52 @@ async function cheatReturn(){
   renderCheatBadge();
 }
 
+function _skullHTML(quota,used){
+  let html='';
+  for(let i=0;i<quota;i++){
+    const isUsed=i<used;
+    html+=isUsed
+      ?`<span style="position:relative;display:inline-block;opacity:0.22;font-size:16px;line-height:1;">💀<span style="position:absolute;left:-10%;top:50%;width:120%;height:1.5px;background:#f87171;transform:translateY(-50%) rotate(-20deg);border-radius:2px;display:block;"></span></span>`
+      :`<span style="font-size:16px;line-height:1;">💀</span>`;
+  }
+  return html;
+}
+
 function renderCheatBadge(){
   const badge=document.getElementById('cheat-quota-badge');
   if(!badge)return;
   const quota=getCheatQuota();
   const used=getCheatUsed();
-  const remaining=quota-used;
-  badge.style.display='inline-block';
+  const remaining=Math.max(0,quota-used);
+  badge.style.display='inline-flex';
+  badge.style.alignItems='center';
+  badge.style.gap='4px';
+  badge.style.background='transparent';
+  badge.style.border='none';
+  badge.style.padding='0';
+  let labelHtml='';
   if(remaining<=0){
-    badge.textContent='치팅 소진';
-    badge.style.background='var(--red-bg)';badge.style.color='var(--red)';badge.style.borderColor='var(--red-bd)';
+    labelHtml=`<span style="font-size:10px;font-weight:600;padding:1px 7px;border-radius:8px;border:1px solid var(--red-bd);background:var(--red-bg);color:var(--red);">소진</span>`;
   } else {
-    badge.textContent='치팅 '+remaining+'/'+quota;
-    badge.style.background='var(--amber-bg)';badge.style.color='var(--amber)';badge.style.borderColor='var(--amber-bd)';
+    labelHtml=`<span style="font-size:10px;font-weight:600;padding:1px 7px;border-radius:8px;border:1px solid var(--amber-bd);background:var(--amber-bg);color:var(--amber);">${remaining}회 남음</span>`;
   }
+  badge.innerHTML=_skullHTML(quota,used)+labelHtml;
 }
 
-let _pendingCheatQuota=4;
+let _pendingCheatQuota=2;
 function openCheatSettings(){
   _pendingCheatQuota=getCheatQuota();
+  const used=getCheatUsed();const quota=getCheatQuota();
+  const skullDisp=document.getElementById('cheat-skull-display');
+  if(skullDisp){
+    skullDisp.innerHTML=Array.from({length:quota},(_,i)=>{
+      const isUsed=i<used;
+      return`<div style="text-align:center;">
+        <div style="font-size:36px;line-height:1;position:relative;display:inline-block;${isUsed?'opacity:0.22;':''}">💀${isUsed?`<span style="position:absolute;left:-10%;top:50%;width:120%;height:2.5px;background:#f87171;transform:translateY(-50%) rotate(-18deg);border-radius:2px;display:block;"></span>`:''}</div>
+        <div style="font-size:10px;color:${isUsed?'var(--red)':'var(--text3)'};margin-top:3px;">${isUsed?'사용됨':'남음'}</div>
+      </div>`;
+    }).join('');
+  }
   document.querySelectorAll('#cheat-quota-btns button').forEach(b=>{
     const v=parseInt(b.textContent);
     const sel=v===_pendingCheatQuota;
@@ -4640,9 +4685,8 @@ function openCheatSettings(){
     b.style.color=sel?'#fff':'var(--text)';
     b.style.borderColor=sel?'var(--accent)':'var(--border)';
   });
-  const used=getCheatUsed();const quota=getCheatQuota();
   const st=document.getElementById('cheat-modal-status');
-  if(st)st.textContent='사용 '+used+'회 / 허용 '+quota+'회 (잔여 '+Math.max(0,quota-used)+'회)';
+  if(st)st.textContent='주 '+quota+'회 허용 · '+used+'회 사용 · '+Math.max(0,quota-used)+'회 남음';
   openModal('cheat-modal');
 }
 function pickCheatQuota(v,el){
@@ -4655,7 +4699,7 @@ function pickCheatQuota(v,el){
   });
   const used=getCheatUsed();
   const st=document.getElementById('cheat-modal-status');
-  if(st)st.textContent='사용 '+used+'회 / 허용 '+v+'회 (잔여 '+Math.max(0,v-used)+'회)';
+  if(st)st.textContent='주 '+v+'회 허용 · '+used+'회 사용 · '+Math.max(0,v-used)+'회 남음';
 }
 async function saveCheatSettings(){
   if(CP)CP.cheat_quota=_pendingCheatQuota;
@@ -4724,9 +4768,9 @@ async function _doSaveMeal(){
   const isCheat=foodType==='cheat';
   if(!wasCheat&&isCheat){
     const ok=await cheatUse();
-    if(!ok){showToast('이번달 치팅 횟수를 모두 사용했어요 🚫');return;}
+    if(!ok){showToast('이번주 치팅 횟수를 모두 사용했어요 🚫');return;}
     const rem=getCheatRemaining();
-    showToast(rem<=0?'🎉 치팅 사용! 이번달 치팅 소진됐어요':'🎉 치팅 사용! 잔여 '+rem+'회');
+    showToast(rem<=0?'💀 치팅 사용! 이번주 치팅 소진됐어요':'💀 치팅 사용! 이번주 잔여 '+rem+'회');
   } else if(wasCheat&&!isCheat){
     await cheatReturn();
   }
