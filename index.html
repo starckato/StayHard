@@ -416,6 +416,13 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 .modal{background:var(--surface);border-radius:22px 22px 0 0;padding:18px 18px 36px;width:100%;max-width:430px;animation:mslide .22s ease;max-height:88vh;overflow-y:auto;}
 @keyframes mslide{from{transform:translateY(100%);}to{transform:translateY(0);}}
 @keyframes charBreathe{0%,100%{transform:translateY(0px);}50%{transform:translateY(-2px);}}
+@keyframes roomCharWalk{
+  0%  {transform:translateX(-60px) scaleX(1);}
+  49% {transform:translateX(60px)  scaleX(1);}
+  50% {transform:translateX(60px)  scaleX(-1);}
+  99% {transform:translateX(-60px) scaleX(-1);}
+  100%{transform:translateX(-60px) scaleX(1);}
+}
 .mhandle{width:32px;height:4px;background:var(--surface3);border-radius:2px;margin:0 auto 18px;}
 .mtitle{font-size:15px;font-weight:600;margin-bottom:14px;}
 .mfield{margin-bottom:13px;}
@@ -637,7 +644,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
     </div>
 
     <!-- CHAR CARD -->
-    <div id="char-card" onclick="openRoomOverlay()" style="margin:8px 16px 4px;background:var(--surface);border:1px solid var(--border2);border-radius:14px;padding:10px 14px;display:flex;align-items:center;gap:12px;cursor:pointer;">
+    <div id="char-card" onclick="openRoomOverlay()" style="margin:8px 16px 4px;background:var(--surface);border:1px solid var(--border2);border-radius:14px;padding:10px 14px;display:flex;align-items:center;gap:12px;cursor:pointer;min-height:72px;">
       <img id="char-img" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" width="44" height="52" style="object-fit:contain;animation:charBreathe 2.4s ease-in-out infinite;flex-shrink:0;" onerror="this.style.display='none';if(!this.parentNode.querySelector('.char-fallback')){const d=document.createElement('div');d.className='char-fallback';d.style.cssText='width:44px;height:52px;display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0;';d.textContent=this.dataset.fallbackIcon||'💪';this.parentNode.insertBefore(d,this);}"/>
       <div style="flex:1;min-width:0;">
         <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;">
@@ -1761,6 +1768,8 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 <!-- ROOM OVERLAY -->
 <div id="room-overlay" style="display:none;position:fixed;top:0;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;height:100%;z-index:900;flex-direction:column;background:#0a0a10;overflow:hidden;">
   <img id="room-bg-img" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0.9;" onerror="console.error('[room-bg-img] 로드 실패:', this.src);"/>
+  <!-- 방 안 캐릭터 -->
+  <img id="room-char-img" style="position:absolute;bottom:220px;left:calc(50% - 40px);width:80px;height:auto;z-index:1;animation:roomCharWalk 4s ease-in-out infinite;" onerror="console.error('[room-char-img] 로드 실패:', this.src);this.style.display='none';"/>
   <div style="position:relative;z-index:2;padding:52px 18px 12px;background:linear-gradient(180deg,rgba(10,10,16,.95) 50%,transparent);">
     <div style="display:flex;justify-content:space-between;align-items:flex-start;">
       <button onclick="closeRoomOverlay()" style="width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.08);border:0.5px solid rgba(255,255,255,.15);color:var(--text2);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;touch-action:manipulation;">✕</button>
@@ -2876,6 +2885,7 @@ function renderCharCard(){
   const score=+(CP?.total_score)||0;
   const tier=getTier(score);
   const tierIdx=TIERS.indexOf(tier);
+  console.log('[renderCharCard] score='+score+' tier='+tier.name+' tierIdx='+tierIdx);
   const assets=getTierAssets(score);
   const next=TIERS[Math.min(tierIdx+1,TIERS.length-1)];
   const pct=tierIdx===TIERS.length-1?100:Math.round((score-tier.min)/(next.min-tier.min)*100);
@@ -2932,6 +2942,8 @@ function openRoomOverlay(){
   el.style.display='flex';
   const bgImg=document.getElementById('room-bg-img');
   bgImg.src=assets.room;
+  const charImg=document.getElementById('room-char-img');
+  if(charImg){charImg.style.display='';charImg.src=assets.char;}
 }
 
 function closeRoomOverlay(){
