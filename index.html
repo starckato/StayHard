@@ -1542,24 +1542,14 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 <div class="modal-overlay" id="cheat-modal">
   <div class="modal">
     <div class="mhandle"></div>
-    <div class="mtitle">💀 치팅 설정</div>
+    <div class="mtitle">💀 치팅 현황</div>
     <div id="cheat-skull-display" style="display:flex;justify-content:center;gap:24px;margin-bottom:6px;min-height:60px;"></div>
     <div id="cheat-modal-status" style="text-align:center;font-size:12px;color:var(--text2);margin-bottom:14px;"></div>
-    <div class="mfield">
-      <label class="mlabel">주간 허용 횟수</label>
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;" id="cheat-quota-btns">
-        <button onclick="pickCheatQuota(1,this)" style="padding:12px 0;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:var(--surface2);cursor:pointer;font-size:15px;font-weight:600;font-family:'DM Sans',sans-serif;touch-action:manipulation;">1</button>
-        <button onclick="pickCheatQuota(2,this)" style="padding:12px 0;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:var(--surface2);cursor:pointer;font-size:15px;font-weight:600;font-family:'DM Sans',sans-serif;touch-action:manipulation;">2</button>
-        <button onclick="pickCheatQuota(3,this)" style="padding:12px 0;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:var(--surface2);cursor:pointer;font-size:15px;font-weight:600;font-family:'DM Sans',sans-serif;touch-action:manipulation;">3</button>
-        <button onclick="pickCheatQuota(4,this)" style="padding:12px 0;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:var(--surface2);cursor:pointer;font-size:15px;font-weight:600;font-family:'DM Sans',sans-serif;touch-action:manipulation;">4</button>
-      </div>
-      <div style="background:var(--surface2);border-radius:var(--radius-sm);padding:10px 12px;margin-top:10px;font-size:12px;color:var(--text2);line-height:1.7;">
-        안 쓴 치팅 1개당 <span style="color:var(--amber);font-weight:600;">+50점</span> 지급<br>
-        매주 <span style="color:var(--text);font-weight:600;">월요일</span> 자동 초기화 + 보너스 계산
-      </div>
+    <div style="background:var(--surface2);border-radius:var(--radius-sm);padding:10px 12px;margin-bottom:16px;font-size:12px;color:var(--text2);line-height:1.7;">
+      안 쓴 치팅 1개당 <span style="color:var(--amber);font-weight:600;">+50점</span> 지급<br>
+      매주 <span style="color:var(--text);font-weight:600;">월요일</span> 자동 초기화 + 보너스 계산
     </div>
-    <button class="mbtn" onclick="saveCheatSettings()">저장</button>
-    <button class="mbtn-ghost" onclick="closeModal('cheat-modal')">취소</button>
+    <button class="mbtn-ghost" onclick="closeModal('cheat-modal')">닫기</button>
   </div>
 </div>
 <div class="modal-overlay" id="weight-modal">
@@ -4574,7 +4564,7 @@ function pickFT(t, el){
 // 치팅 시스템 — 주간 해골 슬롯 + 절제 보너스
 // profiles 컬럼: cheat_quota, cheat_used, cheat_reset_week('YYYY-WNN')
 // ═══════════════════════════════════════════
-function getCheatQuota(){return CP?.cheat_quota||2;}
+function getCheatQuota(){return 2;}
 function getCheatUsed(){return CP?.cheat_used||0;}
 function getCheatRemaining(){return Math.max(0,getCheatQuota()-getCheatUsed());}
 
@@ -4593,8 +4583,7 @@ async function checkCheatWeekReset(){
   const curWeek=getCheatWeekKey();
   if(CP.cheat_reset_week===curWeek)return;
   const lastUsed=CP.cheat_used||0;
-  const lastQuota=CP.cheat_quota||2;
-  const unused=Math.max(0,lastQuota-lastUsed);
+  const unused=Math.max(0,2-lastUsed);
   if(CP.cheat_reset_week&&unused>0){
     const bonusPts=unused*50;
     for(let i=0;i<unused;i++)addScore('cheat_bonus');
@@ -4605,11 +4594,9 @@ async function checkCheatWeekReset(){
   }
   CP.cheat_used=0;
   CP.cheat_reset_week=curWeek;
-  if(!CP.cheat_quota)CP.cheat_quota=2;
   await sb.from('profiles').update({
     cheat_used:0,
     cheat_reset_week:curWeek,
-    cheat_quota:CP.cheat_quota,
     total_score:+(CP.total_score)||0
   }).eq('id',CU.id);
 }
@@ -4664,13 +4651,11 @@ function renderCheatBadge(){
   badge.innerHTML=_skullHTML(quota,used)+labelHtml;
 }
 
-let _pendingCheatQuota=2;
 function openCheatSettings(){
-  _pendingCheatQuota=getCheatQuota();
-  const used=getCheatUsed();const quota=getCheatQuota();
+  const used=getCheatUsed();
   const skullDisp=document.getElementById('cheat-skull-display');
   if(skullDisp){
-    skullDisp.innerHTML=Array.from({length:quota},(_,i)=>{
+    skullDisp.innerHTML=Array.from({length:2},(_,i)=>{
       const isUsed=i<used;
       return`<div style="text-align:center;">
         <div style="font-size:36px;line-height:1;position:relative;display:inline-block;${isUsed?'opacity:0.22;':''}">💀${isUsed?`<span style="position:absolute;left:-10%;top:50%;width:120%;height:2.5px;background:#f87171;transform:translateY(-50%) rotate(-18deg);border-radius:2px;display:block;"></span>`:''}</div>
@@ -4678,35 +4663,9 @@ function openCheatSettings(){
       </div>`;
     }).join('');
   }
-  document.querySelectorAll('#cheat-quota-btns button').forEach(b=>{
-    const v=parseInt(b.textContent);
-    const sel=v===_pendingCheatQuota;
-    b.style.background=sel?'var(--accent)':'var(--surface2)';
-    b.style.color=sel?'#fff':'var(--text)';
-    b.style.borderColor=sel?'var(--accent)':'var(--border)';
-  });
   const st=document.getElementById('cheat-modal-status');
-  if(st)st.textContent='주 '+quota+'회 허용 · '+used+'회 사용 · '+Math.max(0,quota-used)+'회 남음';
+  if(st)st.textContent='주 2회 허용 · '+used+'회 사용 · '+Math.max(0,2-used)+'회 남음';
   openModal('cheat-modal');
-}
-function pickCheatQuota(v,el){
-  _pendingCheatQuota=v;
-  document.querySelectorAll('#cheat-quota-btns button').forEach(b=>{
-    const sel=parseInt(b.textContent)===v;
-    b.style.background=sel?'var(--accent)':'var(--surface2)';
-    b.style.color=sel?'#fff':'var(--text)';
-    b.style.borderColor=sel?'var(--accent)':'var(--border)';
-  });
-  const used=getCheatUsed();
-  const st=document.getElementById('cheat-modal-status');
-  if(st)st.textContent='주 '+v+'회 허용 · '+used+'회 사용 · '+Math.max(0,v-used)+'회 남음';
-}
-async function saveCheatSettings(){
-  if(CP)CP.cheat_quota=_pendingCheatQuota;
-  await sb.from('profiles').update({cheat_quota:_pendingCheatQuota}).eq('id',CU.id);
-  closeModal('cheat-modal');
-  renderCheatBadge();
-  showToast('✓ 치팅 설정 저장됨');
 }
 
 function applyMealScore(prevType,newType,isNew,category){
