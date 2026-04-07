@@ -671,38 +671,13 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
       <div class="sel-day-label" id="sel-day-label" onclick="jumpToToday()" title="오늘로 돌아가기"></div>
     </div>
 
-    <!-- SUMMARY CARD -->
-    <div id="summary-card" style="margin:8px 16px 4px;background:var(--surface);border-radius:16px;padding:14px 16px;border:1px solid var(--border);">
-      <!-- 상단 바: 체중(좌) + 점수/스트릭(우) -->
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;">
-        <div onclick="scrollToSection('weight')" style="cursor:pointer;">
-          <div style="font-size:10px;color:var(--text3);margin-bottom:2px;">⚖️ 체중</div>
-          <div id="summ-weight" style="font-size:20px;font-weight:700;line-height:1;">—</div>
-        </div>
-        <div style="text-align:right;">
-          <div id="summ-pts" style="font-size:13px;font-weight:700;color:var(--accent);margin-bottom:2px;">+0pt 오늘</div>
-          <div style="font-size:12px;font-weight:600;color:var(--amber);">🔥 <span id="summ-streak">0</span>일 연속</div>
-        </div>
-      </div>
-      <!-- 항목 리스트 -->
-      <div style="display:flex;flex-direction:column;gap:0;">
-        <div onclick="scrollToSection('diet')" style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;padding:7px 0;border-bottom:0.5px solid var(--border);">
-          <span style="font-size:12px;color:var(--text3);min-width:80px;">🍽 식단</span>
-          <span id="summ-diet-row" style="font-size:12px;font-weight:500;text-align:right;flex:1;">—</span>
-        </div>
-        <div onclick="scrollToSection('workout')" style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;padding:7px 0;border-bottom:0.5px solid var(--border);">
-          <span style="font-size:12px;color:var(--text3);min-width:80px;">💪 운동</span>
-          <span id="summ-workout-row" style="font-size:12px;font-weight:500;">—</span>
-        </div>
-        <div onclick="scrollToSection('routine')" style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;padding:7px 0;border-bottom:0.5px solid var(--border);">
-          <span style="font-size:12px;color:var(--text3);min-width:80px;">✅ 필수루틴</span>
-          <span id="summ-routine-row" style="font-size:12px;font-weight:500;">—</span>
-        </div>
-        <div onclick="scrollToSection('targets')" style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;padding:7px 0;">
-          <span style="font-size:12px;color:var(--text3);min-width:80px;">📌 오늘의 할일</span>
-          <span id="summ-target-row" style="font-size:12px;font-weight:500;">—</span>
-        </div>
-      </div>
+    <div style="padding:4px 16px 8px;display:flex;justify-content:flex-end;">
+      <button id="summary-open-btn" onclick="openSummaryModal()"
+        style="display:flex;align-items:center;gap:6px;padding:5px 12px;background:var(--surface2);border:0.5px solid var(--border2);border-radius:18px;color:var(--text2);font-size:11px;font-weight:500;font-family:'DM Sans',sans-serif;cursor:pointer;touch-action:manipulation;">
+        <div id="summary-btn-dot" style="width:6px;height:6px;border-radius:50%;background:var(--amber);flex-shrink:0;"></div>
+        오늘 요약 보기
+        <span style="font-size:10px;color:var(--text3);">›</span>
+      </button>
     </div>
 
     <div class="s-card" style="margin-bottom:10px;">
@@ -1760,6 +1735,68 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
         <div id="routine-confirm-pills" style="display:flex;flex-wrap:wrap;gap:5px;justify-content:center;margin-bottom:18px;"></div>
         <button id="routine-confirm-yes-btn" onclick="" style="width:100%;padding:13px;border-radius:11px;background:var(--accent);color:#fff;font-size:15px;font-weight:700;border:none;margin-bottom:8px;font-family:'DM Sans',sans-serif;cursor:pointer;touch-action:manipulation;">✓ 모두 추가</button>
         <button onclick="hideRoutineConfirmSheet()" style="width:100%;padding:11px;border-radius:11px;background:transparent;color:var(--text2);font-size:13px;font-weight:500;border:1px solid var(--border2);font-family:'DM Sans',sans-serif;cursor:pointer;touch-action:manipulation;">← 루틴 목록으로</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SUMMARY MODAL -->
+<div id="summary-modal"
+  style="display:none;position:fixed;inset:0;z-index:850;background:rgba(0,0,0,0.65);align-items:flex-end;justify-content:center;max-width:430px;left:50%;transform:translateX(-50%);"
+  onclick="if(event.target===this)closeSummaryModal()">
+  <div style="background:var(--surface);border-radius:22px 22px 0 0;border-top:0.5px solid var(--border2);width:100%;display:flex;flex-direction:column;">
+    <div style="width:32px;height:4px;background:var(--border2);border-radius:2px;margin:10px auto 0;flex-shrink:0;"></div>
+    <!-- 헤더 -->
+    <div style="padding:12px 18px 10px;display:flex;justify-content:space-between;align-items:center;border-bottom:0.5px solid var(--border);flex-shrink:0;">
+      <div>
+        <div style="font-size:16px;font-weight:700;color:var(--text);">오늘의 요약</div>
+        <div id="summ-modal-date" style="font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;"></div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <button onclick="shareSummary()"
+          style="display:flex;align-items:center;gap:5px;padding:6px 12px;background:var(--accent-bg);border:1px solid var(--accent-bd);border-radius:18px;color:var(--accent);font-size:12px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;touch-action:manipulation;">
+          📸 공유
+        </button>
+        <button onclick="closeSummaryModal()"
+          style="width:26px;height:26px;border-radius:50%;background:var(--surface2);border:none;color:var(--text2);font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
+      </div>
+    </div>
+    <!-- 캡쳐 타겟 영역 -->
+    <div id="summary-capture-area" style="padding:16px 18px 28px;display:flex;flex-direction:column;gap:0;">
+      <!-- 점수 + 스트릭 -->
+      <div style="display:flex;justify-content:space-between;align-items:center;background:var(--surface2);border-radius:12px;padding:12px 14px;margin-bottom:16px;">
+        <div>
+          <div style="font-size:10px;color:var(--text3);letter-spacing:0.06em;margin-bottom:3px;">오늘 획득 점수</div>
+          <div id="summ-pts-modal" style="font-size:22px;font-weight:700;font-family:'DM Mono',monospace;"></div>
+          <div id="summ-total-pts" style="font-size:11px;color:var(--text3);margin-top:2px;"></div>
+        </div>
+        <div style="text-align:right;">
+          <div id="summ-streak-modal" style="font-size:16px;font-weight:700;color:var(--amber);"></div>
+          <div style="font-size:11px;color:var(--text3);margin-top:2px;">연속 달성</div>
+        </div>
+      </div>
+      <!-- 항목 리스트 -->
+      <div style="display:flex;flex-direction:column;gap:0;">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:0.5px solid var(--border);">
+          <span style="font-size:13px;color:var(--text2);">⚖️ 체중</span>
+          <span id="summ-w" style="font-size:13px;font-weight:600;"></span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:0.5px solid var(--border);">
+          <span style="font-size:13px;color:var(--text2);">🍽 식단</span>
+          <span id="summ-d" style="font-size:12px;font-weight:500;text-align:right;"></span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:0.5px solid var(--border);">
+          <span style="font-size:13px;color:var(--text2);">💪 운동</span>
+          <span id="summ-wo" style="font-size:13px;font-weight:600;"></span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:0.5px solid var(--border);">
+          <span style="font-size:13px;color:var(--text2);">✅ 필수 루틴</span>
+          <span id="summ-rt" style="font-size:13px;font-weight:600;"></span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:11px 0;">
+          <span style="font-size:13px;color:var(--text2);">📌 오늘의 할일</span>
+          <span id="summ-tg" style="font-size:13px;font-weight:600;"></span>
+        </div>
       </div>
     </div>
   </div>
@@ -4631,24 +4668,49 @@ function shiftWeek(dir){sliderOffset+=dir;buildSlider();}
 
 // ── RENDER ROUTINE ──
 function renderSummaryCard(){
+  // 버튼 상태 도트 업데이트
   const l=logCache[TODAY]||log;
-  const ptsEl=document.getElementById('summ-pts');
-  if(!ptsEl)return;
-
-  // pts
-  const score=(l._ptsLog||[]).reduce((a,e)=>a+e.pts,0);
-  ptsEl.textContent=(score>0?'+':'')+score+'pt 오늘';
-  ptsEl.style.color=score>0?'var(--accent)':score<0?'var(--red)':'var(--text3)';
-
-  // streak
-  document.getElementById('summ-streak').textContent=calcStreak();
-
-  // weight
-  const weightEl=document.getElementById('summ-weight');
-  weightEl.textContent=l.weight!=null?parseFloat(l.weight).toFixed(1)+'kg':'—';
-  weightEl.style.color=l.weight!=null?'var(--text)':'var(--text3)';
-
-  // diet by type
+  const meals=l.meals||[];
+  const hasWorkout=(l.workouts||[]).some(w=>w.status==='done');
+  const dow=(new Date().getDay()+6)%7;
+  const todayMand=(l.mandatory||[]).filter(t=>!(t.days&&!t.days.includes(dow)));
+  const mandDone=todayMand.filter(m=>m.done).length;
+  const tgts=(l.targets||[]).filter(t=>!t._meta&&t.text);
+  const tgtDone=tgts.filter(t=>t.st==='done').length;
+  const allDone=hasWorkout&&
+    (todayMand.length>0&&mandDone===todayMand.length)&&
+    (tgts.length>0&&tgtDone===tgts.length)&&
+    meals.filter(m=>m.type).length>0;
+  const dot=document.getElementById('summary-btn-dot');
+  if(dot)dot.style.background=allDone?'var(--green)':'var(--amber)';
+}
+function openSummaryModal(){
+  renderSummaryModal();
+  document.getElementById('summary-modal').style.display='flex';
+  document.body.style.overflow='hidden';
+}
+function closeSummaryModal(){
+  document.getElementById('summary-modal').style.display='none';
+  document.body.style.overflow='';
+}
+function renderSummaryModal(){
+  const l=logCache[TODAY]||log;
+  // 날짜
+  const d=new Date();
+  document.getElementById('summ-modal-date').textContent=(d.getMonth()+1)+'월 '+d.getDate()+'일 ('+['일','월','화','수','목','금','토'][d.getDay()]+') · 오늘';
+  // 점수
+  const todayPts=(l._ptsLog||[]).reduce((a,e)=>a+e.pts,0);
+  const totalPts=+(CP?.total_score)||0;
+  const ptsEl=document.getElementById('summ-pts-modal');
+  ptsEl.textContent=(todayPts>=0?'+':'')+todayPts+'pt';
+  ptsEl.style.color=todayPts>0?'var(--accent)':todayPts<0?'var(--red)':'var(--text3)';
+  document.getElementById('summ-total-pts').textContent='누적 '+totalPts.toLocaleString()+'pts';
+  document.getElementById('summ-streak-modal').textContent='🔥 '+calcStreak()+'일';
+  // 체중
+  const wEl=document.getElementById('summ-w');
+  if(l.weight!=null){wEl.textContent=parseFloat(l.weight).toFixed(1)+'kg';wEl.style.color='var(--text)';}
+  else{wEl.textContent='미기록';wEl.style.color='var(--text3)';}
+  // 식단
   const meals=l.meals||[];
   const tc={clean:0,normal:0,junk:0,cheat:0};
   meals.forEach(m=>{if(m.type&&tc[m.type]!=null)tc[m.type]++;});
@@ -4657,28 +4719,57 @@ function renderSummaryCard(){
   if(tc.normal)parts.push('<span style="color:var(--text2)">일반 '+tc.normal+'</span>');
   if(tc.junk)  parts.push('<span style="color:var(--amber)">금지 '+tc.junk+'</span>');
   if(tc.cheat) parts.push('<span style="color:var(--red)">치팅 '+tc.cheat+'</span>');
-  document.getElementById('summ-diet-row').innerHTML=parts.length?parts.join(' · '):'<span style="color:var(--text3)">미기록</span>';
-
-  // workout
-  const done=(l.workouts||[]).some(w=>w.status==='done');
-  const woEl=document.getElementById('summ-workout-row');
-  woEl.textContent=done?'완료 ✓':'미완';
-  woEl.style.color=done?'var(--green)':'var(--text3)';
-
-  // mandatory routine (요일 필터 적용)
+  document.getElementById('summ-d').innerHTML=parts.length?parts.join(' · '):'<span style="color:var(--text3)">미기록</span>';
+  // 운동
+  const doneWo=(l.workouts||[]).filter(w=>w.status==='done');
+  const woEl=document.getElementById('summ-wo');
+  if(doneWo.length===0){woEl.textContent='미완';woEl.style.color='var(--text3)';}
+  else{
+    const gymCount=doneWo.filter(w=>w.type==='gym').length;
+    const actCounts={};
+    doneWo.filter(w=>w.type==='activity').forEach(w=>{actCounts[w.name]=(actCounts[w.name]||0)+1;});
+    const woParts=[];
+    if(gymCount>0)woParts.push('헬스 '+gymCount+'회');
+    Object.entries(actCounts).forEach(([name,cnt])=>woParts.push(name+' '+cnt+'회'));
+    woEl.textContent=woParts.join(' · ');
+    woEl.style.color='var(--green)';
+  }
+  // 필수 루틴
   const dow=(new Date().getDay()+6)%7;
-  const todayMand=(l.mandatory||[]).filter(t=>!(t.days&&!t.days.includes(dow)));
+  const todayMand=(l.mandatory||[]).filter(t=>!(t.days&&!t.days.includes(dow))).slice(0,10);
   const mandDone=todayMand.filter(m=>m.done).length;
-  const rtEl=document.getElementById('summ-routine-row');
+  const rtEl=document.getElementById('summ-rt');
   if(todayMand.length===0){rtEl.textContent='—';rtEl.style.color='var(--text3)';}
   else{rtEl.textContent=mandDone+'/'+todayMand.length;rtEl.style.color=mandDone===todayMand.length?'var(--green)':'var(--text3)';}
-
-  // targets
+  // 오늘의 할일
   const tgts=(l.targets||[]).filter(t=>!t._meta&&t.text);
   const tgtDone=tgts.filter(t=>t.st==='done').length;
-  const tgEl=document.getElementById('summ-target-row');
+  const tgEl=document.getElementById('summ-tg');
   if(tgts.length===0){tgEl.textContent='—';tgEl.style.color='var(--text3)';}
   else{tgEl.textContent=tgtDone+'/'+tgts.length;tgEl.style.color=tgtDone===tgts.length?'var(--green)':'var(--text3)';}
+}
+async function shareSummary(){
+  const area=document.getElementById('summary-capture-area');
+  if(!area)return;
+  showToast('📸 캡쳐 중...');
+  try{
+    const canvas=await html2canvas(area,{backgroundColor:'#18181c',scale:2,useCORS:true,logging:false});
+    canvas.toBlob(async blob=>{
+      if(!blob){showToast('캡쳐 실패 😢');return;}
+      const file=new File([blob],'stayhard-'+TODAY+'.png',{type:'image/png'});
+      if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){
+        try{await navigator.share({files:[file],title:'StayHard — 오늘의 요약'});return;}catch(e){}
+      }
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement('a');
+      a.href=url;a.download=file.name;a.click();
+      URL.revokeObjectURL(url);
+      showToast('📸 이미지 저장됨!');
+    },'image/png');
+  }catch(err){
+    console.error('[shareSummary]',err);
+    showToast('캡쳐 실패. 스크린샷을 이용해주세요 📸');
+  }
 }
 function scrollToSection(s){
   const map={weight:'wt-empty-state',diet:'meal-rows',workout:'workout-rows',routine:'check-rows',targets:'tgt-rows'};
