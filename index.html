@@ -3983,15 +3983,20 @@ function launchConfetti(){
   }
 }
 
+let _perfectDayShown=false;
 function checkPerfectDay(){
   // 100점 오버레이가 떠있으면 skip
   if(document.getElementById('goggins-100').style.display==='flex')return;
   const scores=calcGogginsScore(log);
   if(scores.total===100){
+    if(_perfectDayShown)return; // 이미 발동됨 — confetti 중복 생성 방지
+    _perfectDayShown=true;
     setTimeout(()=>{
       showWin('perfect',10,'완벽한 하루!');
       launchConfetti();
     },300);
+  } else {
+    _perfectDayShown=false; // 점수 감소 시 리셋 (재발동 가능)
   }
 }
 
@@ -4127,7 +4132,7 @@ function buildSlider(){
   labelEl.style.color=isT?'var(--text2)':'var(--accent)';
 }
 async function selectDay(d,k){
-  selectedDate=d;selectedKey=k;show('loading');
+  selectedDate=d;selectedKey=k;_perfectDayShown=false;show('loading');
   // 어제 체중 비교를 위해 전날 로그도 같이 로드
   const prev=new Date(d);prev.setDate(prev.getDate()-1);const prevKey=dkey(prev);
   try{await Promise.all([loadLog(k,true),logCache[prevKey]?null:loadLog(prevKey)]);}catch(e){
