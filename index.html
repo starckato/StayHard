@@ -2883,7 +2883,7 @@ async function onLogin(user){
     _compLastFetch=0;
   }
   CU=user;
-  let{data:p,error:pErr}=await sb.from('profiles').select('id,username,display_name,water_goal,onboarded,total_score,weight_goal,cheat_quota,cheat_used,cheat_reset_month').eq('id',user.id).maybeSingle();
+  let{data:p,error:pErr}=await sb.from('profiles').select('id,username,display_name,water_goal,onboarded,total_score,weight_goal,cheat_quota,cheat_used,cheat_reset_month,system_notice').eq('id',user.id).maybeSingle();
   if(pErr){
     // total_score 컬럼 없을 경우 fallback
     const{data:p2}=await sb.from('profiles').select('id,username,display_name,water_goal,onboarded,weight_goal,cheat_quota,cheat_used,cheat_reset_month').eq('id',user.id).maybeSingle();
@@ -2937,6 +2937,15 @@ async function onLogin(user){
   showApp();
   buildSlider();
   renderRoutine();
+  // 시스템 공지 표시 (관리자가 system_notice 컬럼에 메시지 설정 시)
+  if(CP?.system_notice){
+    const _notice=CP.system_notice;
+    setTimeout(()=>{
+      showSystemNotice(_notice);
+      sb.from('profiles').update({system_notice:null}).eq('id',CU.id).then(()=>{});
+      CP.system_notice=null;
+    },1500);
+  }
   // 슬라이더 dot 표시를 위해 이번주 날짜 백그라운드 fetch
   _prefetchWeekLogs();
   // 이전 세션 저장 실패분 복구 (localStorage pendingSave_* 키)
@@ -3889,6 +3898,21 @@ function showRage(){
 
 // 팡파레 큐 — 연속 호출 시 순서대로 표시
 let _winQueue=[];
+function showSystemNotice(msg){
+  const existing=document.getElementById('system-notice-modal');
+  if(existing)existing.remove();
+  const el=document.createElement('div');
+  el.id='system-notice-modal';
+  el.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;z-index:9999;padding:24px;';
+  el.innerHTML=`<div style="background:var(--card);border-radius:20px;padding:28px 24px;max-width:340px;width:100%;text-align:center;box-shadow:0 8px 40px rgba(0,0,0,.4);">
+    <div style="font-size:40px;margin-bottom:12px;">📣</div>
+    <div style="font-size:16px;font-weight:700;color:var(--text1);margin-bottom:12px;">공지사항</div>
+    <div style="font-size:14px;color:var(--text2);line-height:1.6;white-space:pre-wrap;margin-bottom:20px;">${msg}</div>
+    <button onclick="document.getElementById('system-notice-modal').remove()" style="background:var(--accent);color:#fff;border:none;border-radius:12px;padding:12px 32px;font-size:15px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;">확인</button>
+  </div>`;
+  document.body.appendChild(el);
+}
+
 let _winShowing=false;
 
 function showWin(type, pts=null, title=null){
