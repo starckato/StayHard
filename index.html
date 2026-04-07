@@ -638,7 +638,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 
     <!-- CHAR CARD -->
     <div id="char-card" onclick="openRoomOverlay()" style="margin:8px 16px 4px;background:var(--surface);border:1px solid var(--border2);border-radius:14px;padding:10px 14px;display:flex;align-items:center;gap:12px;cursor:pointer;">
-      <img id="char-img" src="" width="44" height="52" style="image-rendering:pixelated;object-fit:contain;animation:charBreathe 2.4s ease-in-out infinite;flex-shrink:0;" onerror="this.style.display='none';if(!this.parentNode.querySelector('.char-fallback')){const d=document.createElement('div');d.className='char-fallback';d.style.cssText='width:44px;height:52px;display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0;';d.textContent=document.getElementById('char-tier-name')?.textContent?.split(' ')[0]||'💪';this.parentNode.insertBefore(d,this);}"/>
+      <img id="char-img" src="" width="44" height="52" style="image-rendering:pixelated;object-fit:contain;animation:charBreathe 2.4s ease-in-out infinite;flex-shrink:0;" onerror="this.style.display='none';if(!this.parentNode.querySelector('.char-fallback')){const d=document.createElement('div');d.className='char-fallback';d.style.cssText='width:44px;height:52px;display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0;';d.textContent=this.dataset.fallbackIcon||'💪';this.parentNode.insertBefore(d,this);}"/>
       <div style="flex:1;min-width:0;">
         <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;">
           <span id="char-tier-name" style="font-size:13px;font-weight:600;"></span>
@@ -1724,7 +1724,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 </div>
 
 <!-- ROOM OVERLAY -->
-<div id="room-overlay" style="display:none;position:fixed;inset:0;z-index:900;flex-direction:column;max-width:430px;left:50%;transform:translateX(-50%);background:#0a0a10;overflow:hidden;">
+<div id="room-overlay" style="display:none;position:fixed;top:0;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;height:100%;z-index:900;flex-direction:column;background:#0a0a10;overflow:hidden;">
   <img id="room-bg-img" src="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;image-rendering:pixelated;opacity:0.9;" onerror="this.style.display='none';"/>
   <div style="position:relative;z-index:2;padding:52px 18px 12px;background:linear-gradient(180deg,rgba(10,10,16,.95) 50%,transparent);">
     <div style="display:flex;justify-content:space-between;align-items:flex-start;">
@@ -2824,12 +2824,12 @@ function getTier(score){return [...TIERS].reverse().find(t=>score>=t.min)||TIERS
 
 const ASSET_BASE='https://uvaosxhsjscigheyymus.supabase.co/storage/v1/object/public/game-assets';
 const TIER_ASSETS={
-  0:{char:`${ASSET_BASE}/char_tier1.png`,room:`${ASSET_BASE}/room_tier1.png`},
-  1:{char:`${ASSET_BASE}/char_tier1.png`,room:`${ASSET_BASE}/room_tier1.png`},
-  2:{char:`${ASSET_BASE}/char_tier2.png`,room:`${ASSET_BASE}/room_tier2.png`},
-  3:{char:`${ASSET_BASE}/char_tier3.png`,room:`${ASSET_BASE}/room_tier3.png`},
-  4:{char:`${ASSET_BASE}/char_tier4.png`,room:`${ASSET_BASE}/room_tier4.png`},
-  5:{char:`${ASSET_BASE}/char_tier4.png`,room:`${ASSET_BASE}/room_tier4.png`},
+  0:{char:`${ASSET_BASE}/GymRat_Tier1_character.png`,room:`${ASSET_BASE}/GymRat_Tier1_room.png`},
+  1:{char:`${ASSET_BASE}/GymRat_Tier1_character.png`,room:`${ASSET_BASE}/GymRat_Tier1_room.png`},
+  2:{char:`${ASSET_BASE}/GymRat_Tier2_character.png`,room:`${ASSET_BASE}/GymRat_Tier2_room.png`},
+  3:{char:`${ASSET_BASE}/GymRat_Tier3_character.png`,room:`${ASSET_BASE}/GymRat_Tier3_room.png`},
+  4:{char:`${ASSET_BASE}/GymRat_Tier4_character.png`,room:`${ASSET_BASE}/GymRat_Tier4_room.png`},
+  5:{char:`${ASSET_BASE}/GymRat_Tier4_character.png`,room:`${ASSET_BASE}/GymRat_Tier4_room.png`},
 };
 function getTierAssets(score){
   const tier=getTier(score);
@@ -2848,8 +2848,14 @@ function renderCharCard(){
   if(!card)return;
   const img=document.getElementById('char-img');
   if(img){
+    // fallback emoji를 data 속성에 미리 저장 (onerror 시 사용)
+    img.dataset.fallbackIcon=tier.icon;
     img.src=assets.char;
     img.style.filter='drop-shadow(0 0 4px '+tier.color+'44)';
+    // 이전 fallback div 제거 (src가 바뀔 때 다시 보이도록)
+    const prev=img.parentNode.querySelector('.char-fallback');
+    if(prev)prev.remove();
+    img.style.display='';
   }
   const tn=document.getElementById('char-tier-name');
   if(tn){tn.textContent=tier.icon+' '+tier.name;tn.style.color=tier.color;}
