@@ -5494,18 +5494,30 @@ function markActivityDone(i){
   queueSave();
 }
 
+let _delWOTs=0;
 function delWO(i){
+  // iOS confirm click-through 및 중복 호출 방지
+  const now=Date.now();
+  if(now-_delWOTs<600)return;
   const w=log.workouts[i];
-  const name=w?.type==='gym'?(w.sessionName||'헬스 세션'):w?.name||'운동';
+  if(!w)return;
+  const name=w.type==='gym'?(w.sessionName||'헬스 세션'):w.name||'운동';
   if(!confirm('"'+name+'"을 삭제할까요?'))return;
+  _delWOTs=Date.now();
   const delWo=log.workouts[i];
-  // 채찍 징역 운동은 점수 영향 없음, 일반 완료 운동만 차감
-  if(delWo&&delWo.type==='gym'&&delWo.status==='done'){
-    addScore('workout_delete','',-5);
-  }
-  // activity 완료분은 채찍이 아닐 때만 차감
-  if(delWo&&delWo.type==='activity'&&delWo.status==='done'&&!delWo._isChaek){
-    addScore('workout_delete','',-5);
+  if(!delWo)return;
+  // 오늘 실제로 workout 점수를 받은 경우에만 차감 (중복 차감 방지)
+  const pl=(logCache[TODAY]||log)._ptsLog||[];
+  const netWo=pl.filter(e=>e.type==='workout_done').length-pl.filter(e=>e.type==='workout_delete').length;
+  if(netWo>0){
+    // 채찍 징역 운동은 점수 영향 없음, 일반 완료 운동만 차감
+    if(delWo.type==='gym'&&delWo.status==='done'){
+      addScore('workout_delete','',-5);
+    }
+    // activity 완료분은 채찍이 아닐 때만 차감
+    if(delWo.type==='activity'&&delWo.status==='done'&&!delWo._isChaek){
+      addScore('workout_delete','',-5);
+    }
   }
   log.workouts.splice(i,1);renderWorkouts();saveNow();
 }
