@@ -2367,21 +2367,21 @@ async function saveRoutine(){
   if(_savingRoutine)return;
   _savingRoutine=true;
   const name=document.getElementById('routine-name-inp').value.trim();
-  if(!name){showToast('루틴 이름을 입력하세요');return;}
-  if(routineExercises.length===0){showToast('운동을 1개 이상 추가하세요');return;}
+  if(!name){showToast('루틴 이름을 입력하세요');_savingRoutine=false;return;}
+  if(routineExercises.length===0){showToast('운동을 1개 이상 추가하세요');_savingRoutine=false;return;}
   // Duplicate name check (only for new routines)
   if(!editingRoutineId){
     const exists=userRoutines.find(r=>r.name.trim()===name);
     if(exists){
       const overwrite=confirm('"'+name+'" 루틴이 이미 있어요. 덮어쓸까요?');
-      if(!overwrite)return;
+      if(!overwrite){_savingRoutine=false;return;}
       // Overwrite the existing one
       await sb.from('user_routines').update({exercises:routineExercises}).eq('id',exists.id);
       editingRoutineId=null;
       await loadRoutines();
       showRoutineList();
       showToast('루틴 업데이트됨 ✓');
-      return;
+      _savingRoutine=false;return;
     }
   }
   try{
@@ -2401,6 +2401,8 @@ async function saveRoutine(){
   }catch(e){
     showToast('저장 실패: '+e.message);
     console.error('saveRoutine error:',e);
+  }finally{
+    _savingRoutine=false;
   }
 }
 async function deleteRoutine(id){
@@ -2505,7 +2507,7 @@ const SCORE_EVENTS={
   diet_clean:       {pts:5,  label:'클린 식단',            icon:'🟢'},
   diet_junk:        {pts:-10,label:'금지 식단',            icon:'🔴'},
   workout_done:     {pts:5,  label:'운동 완료',            icon:'💪'},
-  workout_delete:   {pts:-5, label:'운동 삭제',            icon:'🗑️'},
+  workout_deleted:  {pts:-5, label:'운동 삭제',            icon:'🗑️'},
   workout_delete:   {pts:-5, label:'운동 취소',            icon:'🗑️'},
   routine_done:     {pts:1,  label:'필수 루틴 완료',       icon:'✅'},
   routine_fail:     {pts:-5, label:'필수 루틴 실패',       icon:'❌'},
@@ -3230,13 +3232,13 @@ async function _flushSave(){
 
 // 페이지 떠날 때 강제 flush (데이터 유실 방지)
 window.addEventListener('beforeunload', ()=>{
-  if(_saveTimer){
-    clearTimeout(_saveTimer);
-    // 동기 방식으로 최후 저장 시도
-    navigator.sendBeacon && saveLog(selectedKey, true);
-  }
-  // beforeunload에서 async DB 저장 불가 → localStorage에 점수 백업
+  // beforeunload에서 async DB 저장 불가 → localStorage 백업으로 다음 실행 시 복구
   if(CU&&CP)try{localStorage.setItem('score_'+CU.id,String(CP.total_score));}catch(e){}
+  if(_saveTimer&&CU){
+    clearTimeout(_saveTimer);
+    // pendingSave 백업 → 다음 앱 실행 시 _recoverPendingSaves()에서 DB 저장
+    try{const l=logCache[selectedKey];if(l)localStorage.setItem('pendingSave_'+selectedKey,JSON.stringify(l));}catch(e){}
+  }
 });
 window.addEventListener('visibilitychange', ()=>{
   if(document.visibilityState==='hidden'){
@@ -3856,6 +3858,8 @@ function showChaekpipty(mealName) {
     }
     escBtn.textContent = '도망갈게요 (겁쟁이 -10점)';
     escBtn.onclick = () => {
+      // 의도적 동작: 도망은 점수 차감만(-10pts), cheat quota 소모 없음
+      // (운동 형량을 거부한 것 — 치팅 사용과 무관)
       addScore('diet_junk'); // 도망 → -10점
       closeRage();
     };
@@ -4319,8 +4323,8 @@ async function saveWeight(){
   const prev=log.weight;
   log.weight=v;
   closeModal('weight-modal');renderWeight();
-  // 1일 1회 weight_record 제한
-  const todayPtsLog=(logCache[TODAY]||log)._ptsLog||[];
+  // 1일 1회 weight_record 제한 (현재 선택 날짜 기준)
+  const todayPtsLog=(logCache[selectedKey]||log)._ptsLog||[];
   const alreadyRecorded=todayPtsLog.some(e=>e.type==='weight_record');
   if(!alreadyRecorded){setTimeout(()=>showWin('weight',1,'체중 기록 성공!'),200);addScore('weight_record');}
   // 감량도 1일 1회만
@@ -4525,16 +4529,6 @@ function pickMealTime(t,el){
   document.querySelectorAll('#mm-time-btns .ftbtn').forEach(b=>b.classList.remove('time-sel'));
   if(mealTime)el.classList.add('time-sel');
   document.getElementById('mm-photo-suggest').style.display='none';
-}
-
-function pickMealCategory(cat, el){
-  mealCategory=cat;
-  document.querySelectorAll('#mm-category-btns button').forEach(b=>{
-    b.style.borderColor='var(--border)';b.style.background='var(--surface2)';
-    b.querySelector('div:last-child').style.color='var(--text2)';
-  });
-  el.style.borderColor='var(--accent)';el.style.background='var(--accent-bg)';
-  el.querySelector('div:last-child').style.color='var(--accent)';
 }
 
 function pickFT(t, el){
@@ -4904,9 +4898,7 @@ function renderWorkouts(){
           <button onclick="event.stopPropagation();markWorkoutDone(${i})" style="flex:1;padding:10px;background:rgba(74,222,128,.15);border:1px solid rgba(74,222,128,.3);border-radius:10px;color:#4ade80;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">✓ 완료했어요</button>
           <button onclick="event.stopPropagation();editGymSession(${i})" style="flex:1;padding:10px;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;color:var(--text2);font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">✎ 세션 수정</button>
         </div>`:''}
-        <div style="display:none;"><!-- placeholder
-        </div>
-        --></div>
+        <!-- placeholder -->
         ${w.status!=='planned'&&vol>0?`<div style="display:flex;gap:0;border-top:1px solid var(--border);">
           <div style="flex:1;text-align:center;padding:7px 0;border-right:1px solid var(--border);">
             <div style="font-size:13px;font-weight:700;color:var(--accent);">${volStr}</div>
@@ -6175,9 +6167,8 @@ async function quitChallenge(){
   if(!activeComp||!CU)return;
   // Mark as failed in DB
   await sb.from('competitions').update({status:'failed'}).eq('id',activeComp.id);
-  // Goggins score penalty — add a "quit" record
-  log.workouts=log.workouts||[];
-  log.workouts.push({type:'quit_penalty',name:'챌린지 포기',penalty:-20,timestamp:new Date().toISOString()});
+  // Goggins score penalty — CP.total_score에 즉시 반영
+  addScore('routine_fail','챌린지 포기',-20);
   scheduleSave();
   activeComp=null;
   document.getElementById('challenge-room').style.display='none';
@@ -6548,7 +6539,7 @@ async function createComp(){
     return;
   }
   const wgoal=parseFloat(document.getElementById('comp-wgoal').value)||null;
-  if(!wgoal){
+  if(compType==='weight'&&!wgoal){
     errEl.textContent='⚠️ 내 목표 체중을 입력해주세요.';
     document.getElementById('comp-wgoal').focus();
     return;
@@ -6612,7 +6603,7 @@ async function joinComp(){
     return;
   }
   if(members.length>=(comp.max_members||6)){
-    document.getElementById('join-err').textContent='최대 인원에 도달했습니다.';
+    document.getElementById('ch-join-err').textContent='최대 인원에 도달했습니다.';
     jbtn.disabled=false;jbtn.textContent='참여하기';return;
   }
   const joinWgoal=parseFloat(document.getElementById('join-wgoal')?.value||document.getElementById('comp-wgoal-join')?.value)||null;
