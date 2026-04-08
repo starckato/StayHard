@@ -1203,81 +1203,56 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
         </div>
       </div>
 
-      <!-- 측정 방식 선택 -->
+      <!-- 측정 방식 선택 + 목표 설정 통합 -->
       <div style="margin-bottom:16px;">
         <div style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em;">📏 목표 측정 방식</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">
           <div id="ch-mtype-weight" onclick="selectMeasureType('weight')"
             style="padding:12px;background:var(--accent-bg);border:2px solid var(--accent-bd);border-radius:12px;cursor:pointer;touch-action:manipulation;text-align:center;">
             <div style="font-size:20px;margin-bottom:4px;">⚖️</div>
             <div style="font-size:13px;font-weight:600;color:var(--accent);">체중만</div>
-            <div style="font-size:10px;color:var(--text3);margin-top:2px;">목표 체중 달성 여부</div>
+            <div style="font-size:10px;color:var(--text3);margin-top:2px;">목표 체중만 설정</div>
           </div>
           <div id="ch-mtype-inbody" onclick="selectMeasureType('inbody')"
             style="padding:12px;background:var(--surface2);border:2px solid var(--border);border-radius:12px;cursor:pointer;touch-action:manipulation;text-align:center;">
             <div style="font-size:20px;margin-bottom:4px;">📊</div>
             <div style="font-size:13px;font-weight:600;color:var(--text2);">인바디</div>
-            <div style="font-size:10px;color:var(--text3);margin-top:2px;">골격근·체지방 포함</div>
-          </div>
-        </div>
-        <div id="ch-inbody-notice" style="display:none;margin-top:8px;padding:8px 10px;background:var(--surface2);border-radius:8px;font-size:11px;color:var(--text3);line-height:1.5;">
-          📌 인바디 선택 시 참여자들이 골격근량 또는 체지방률을 함께 기록해요.<br>그래프는 체중 기준으로 표시됩니다.
-        </div>
-      </div>
-
-      <!-- 내 목표 체중 -->
-      <div class="mfield">
-        <label class="mlabel">내 목표 체중 (kg)</label>
-        <div style="position:relative;">
-          <input class="minput" id="comp-wgoal" type="number" placeholder="예: 68.0" step="0.1" style="padding-right:40px;"/>
-          <span style="position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:13px;color:var(--text3);">kg</span>
-        </div>
-        <div style="font-size:11px;color:var(--text3);margin-top:4px;">참여자마다 목표 체중을 개별로 설정해요</div>
-      </div>
-
-      <!-- 점수 산정 방식 선택 -->
-      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:16px;">
-        <div style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:12px;text-transform:uppercase;letter-spacing:.06em;">📊 점수 산정 방식 선택</div>
-        <div style="font-size:12px;color:var(--text3);margin-bottom:10px;">포함할 항목을 선택하세요 (미선택 시 제외)</div>
-        
-        <!-- 목표 체중 — 메인 점수 -->
-        <div style="background:var(--accent-bg);border:1.5px solid var(--accent-bd);border-radius:10px;padding:12px;margin-bottom:8px;">
-          <div style="display:flex;align-items:center;gap:10px;">
-            <span style="font-size:18px;">⚖️</span>
-            <div style="flex:1;">
-              <div style="font-size:13px;font-weight:700;color:var(--accent);">목표 체중 달성</div>
-              <div style="font-size:11px;color:var(--text3);">챌린지 핵심 지표 — 목표 도달 시 최고 점수</div>
-            </div>
-            <div style="font-size:11px;font-weight:700;color:var(--accent);">필수</div>
+            <div style="font-size:10px;color:var(--text3);margin-top:2px;">골격근 + 체지방 포함</div>
           </div>
         </div>
 
-        <!-- 선택 항목들 -->
-        <div id="score-options" style="display:flex;flex-direction:column;gap:6px;">
-          <div class="score-opt selected" onclick="toggleScoreOpt(this,'diet')" data-key="diet" style="display:flex;align-items:center;gap:10px;padding:12px;border-radius:10px;border:1.5px solid var(--accent-bd);background:var(--accent-bg);cursor:pointer;touch-action:manipulation;">
-            <span style="font-size:18px;">🥗</span>
-            <div style="flex:1;">
-              <div style="font-size:13px;font-weight:600;">클린 식단 완료율</div>
-              <div style="font-size:11px;color:var(--text3);">기간 내 클린식 비율</div>
+        <!-- 체중만 목표 필드 -->
+        <div id="ch-goal-weight-fields">
+          <div class="mfield" style="margin-bottom:0;">
+            <label class="mlabel">내 목표 체중 (kg)</label>
+            <div style="position:relative;">
+              <input class="minput" id="comp-wgoal" type="number" placeholder="예: 68.0" step="0.1" style="padding-right:40px;"/>
+              <span style="position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:13px;color:var(--text3);">kg</span>
             </div>
-            <div class="opt-check" style="font-size:16px;">✓</div>
+            <div style="font-size:11px;color:var(--text3);margin-top:4px;">참여자마다 목표 체중을 개별로 설정해요</div>
           </div>
-          <div class="score-opt selected" onclick="toggleScoreOpt(this,'workout')" data-key="workout" style="display:flex;align-items:center;gap:10px;padding:12px;border-radius:10px;border:1.5px solid var(--accent-bd);background:var(--accent-bg);cursor:pointer;touch-action:manipulation;">
-            <span style="font-size:18px;">💪</span>
-            <div style="flex:1;">
-              <div style="font-size:13px;font-weight:600;">운동 완료율</div>
-              <div style="font-size:11px;color:var(--text3);">기간 내 운동 기록 일수</div>
+        </div>
+
+        <!-- 인바디 목표 필드 -->
+        <div id="ch-goal-inbody-fields" style="display:none;">
+          <div class="mfield">
+            <label class="mlabel">내 목표 체중 (kg)</label>
+            <div style="position:relative;">
+              <input class="minput" id="comp-wgoal-inbody" type="number" placeholder="예: 68.0" step="0.1" style="padding-right:40px;" oninput="syncWgoal()"/>
+              <span style="position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:13px;color:var(--text3);">kg</span>
             </div>
-            <div class="opt-check" style="font-size:16px;">✓</div>
           </div>
-          <div class="score-opt selected" onclick="toggleScoreOpt(this,'mandatory')" data-key="mandatory" style="display:flex;align-items:center;gap:10px;padding:12px;border-radius:10px;border:1.5px solid var(--accent-bd);background:var(--accent-bg);cursor:pointer;touch-action:manipulation;">
-            <span style="font-size:18px;">✅</span>
-            <div style="flex:1;">
-              <div style="font-size:13px;font-weight:600;">루틴 달성률</div>
-              <div style="font-size:11px;color:var(--text3);">완료 루틴 수 ÷ 총 루틴 수 (차등 적용)</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:0;">
+            <div class="mfield" style="margin-bottom:0;">
+              <label class="mlabel">목표 골격근량 (kg) <span style="font-weight:400;color:var(--text3);font-size:10px;">선택</span></label>
+              <input class="minput" id="comp-muscle-goal" type="number" placeholder="예: 35.0" step="0.1"/>
             </div>
-            <div class="opt-check" style="font-size:16px;">✓</div>
+            <div class="mfield" style="margin-bottom:0;">
+              <label class="mlabel">목표 체지방률 (%) <span style="font-weight:400;color:var(--text3);font-size:10px;">선택</span></label>
+              <input class="minput" id="comp-fatpct-goal" type="number" placeholder="예: 15.0" step="0.1"/>
+            </div>
           </div>
+          <div style="font-size:11px;color:var(--text3);margin-top:6px;line-height:1.5;">📌 그래프는 체중 기준으로 표시돼요. 참여자마다 목표를 개별 설정해요.</div>
         </div>
       </div>
 
@@ -1631,29 +1606,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
     <!-- 체중 -->
     <div class="mfield">
       <label class="mlabel">체중 (kg) <span style="font-size:10px;font-weight:600;padding:1px 6px;border-radius:5px;background:rgba(248,113,113,0.12);color:#f87171;border:1px solid rgba(248,113,113,0.2);">필수</span></label>
-      <input class="minput" id="wt-inp" type="number" step="0.1" placeholder="예: 74.0" oninput="calcBodyFat()"/>
-    </div>
-
-    <!-- 인바디 섹션 -->
-    <div style="background:var(--surface2);border:1px solid var(--border2);border-radius:12px;padding:12px 14px;margin-bottom:12px;">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-        <div style="font-size:12px;font-weight:600;color:var(--text2);">인바디 측정값 <span style="font-weight:400;color:var(--text3);">(선택)</span></div>
-        <div style="font-size:10px;color:var(--text3);">둘 중 하나만 입력해도 됩니다</div>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-        <div>
-          <label style="font-size:11px;color:var(--text3);font-weight:600;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em;">골격근량 (kg)</label>
-          <input class="minput" id="wt-muscle" type="number" step="0.1" placeholder="예: 32.5" oninput="calcBodyFatFromMuscle()" style="font-size:14px;padding:10px 12px;"/>
-        </div>
-        <div>
-          <label style="font-size:11px;color:var(--text3);font-weight:600;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em;">체지방률 (%)</label>
-          <input class="minput" id="wt-fatpct" type="number" step="0.1" placeholder="예: 18.5" oninput="calcBodyFatFromPct()" style="font-size:14px;padding:10px 12px;"/>
-        </div>
-      </div>
-      <!-- 자동계산 결과 -->
-      <div id="wt-calc-result" style="display:none;margin-top:8px;padding:8px 10px;background:var(--accent-bg);border-radius:8px;border:1px solid var(--accent-bd);">
-        <div style="font-size:11px;color:var(--accent);font-weight:500;" id="wt-calc-text"></div>
-      </div>
+      <input class="minput" id="wt-inp" type="number" step="0.1" placeholder="예: 74.0"/>
     </div>
 
     <!-- 목표 체중 -->
@@ -5057,10 +5010,6 @@ async function saveWeight(){
   const v=parseFloat(document.getElementById('wt-inp').value);
   if(isNaN(v)||v<=0){showToast('체중을 입력해주세요');return;}
 
-  // 인바디 값
-  const muscleVal=parseFloat(document.getElementById('wt-muscle')?.value)||null;
-  const fatPctVal=parseFloat(document.getElementById('wt-fatpct')?.value)||null;
-
   // 목표 체중 처리
   const gi=document.getElementById('wt-goal-inp');
   if(gi&&gi.value.trim()!==''){
@@ -5071,17 +5020,7 @@ async function saveWeight(){
   }
   const prev=log.weight;
   log.weight=v;
-  if(muscleVal) log.muscle_mass=muscleVal;
-  if(fatPctVal) log.body_fat_pct=fatPctVal;
-
   closeModal('weight-modal');
-  // 입력 초기화
-  const muscleInp=document.getElementById('wt-muscle');
-  const fatInp=document.getElementById('wt-fatpct');
-  const calcEl=document.getElementById('wt-calc-result');
-  if(muscleInp)muscleInp.value='';
-  if(fatInp)fatInp.value='';
-  if(calcEl)calcEl.style.display='none';
 
   renderWeight();
   // 1일 1회 weight_record 제한
@@ -6812,21 +6751,35 @@ function selectMeasureType(type){
   compMeasureType=type;
   const wBtn=document.getElementById('ch-mtype-weight');
   const iBtn=document.getElementById('ch-mtype-inbody');
-  const notice=document.getElementById('ch-inbody-notice');
+  const wFields=document.getElementById('ch-goal-weight-fields');
+  const iFields=document.getElementById('ch-goal-inbody-fields');
   if(!wBtn||!iBtn)return;
+
+  const accentOn={background:'var(--accent-bg)',borderColor:'var(--accent-bd)'};
+  const accentOff={background:'var(--surface2)',borderColor:'var(--border)'};
+  const greenOn={background:'rgba(61,214,140,0.1)',borderColor:'rgba(61,214,140,0.3)'};
+
   if(type==='weight'){
-    wBtn.style.background='var(--accent-bg)';wBtn.style.borderColor='var(--accent-bd)';
+    Object.assign(wBtn.style,accentOn);
     wBtn.querySelector('div:nth-child(2)').style.color='var(--accent)';
-    iBtn.style.background='var(--surface2)';iBtn.style.borderColor='var(--border)';
+    Object.assign(iBtn.style,accentOff);
     iBtn.querySelector('div:nth-child(2)').style.color='var(--text2)';
-    if(notice)notice.style.display='none';
+    if(wFields)wFields.style.display='block';
+    if(iFields)iFields.style.display='none';
   } else {
-    iBtn.style.background='rgba(61,214,140,0.1)';iBtn.style.borderColor='rgba(61,214,140,0.3)';
+    Object.assign(iBtn.style,greenOn);
     iBtn.querySelector('div:nth-child(2)').style.color='#3dd68c';
-    wBtn.style.background='var(--surface2)';wBtn.style.borderColor='var(--border)';
+    Object.assign(wBtn.style,accentOff);
     wBtn.querySelector('div:nth-child(2)').style.color='var(--text2)';
-    if(notice)notice.style.display='block';
+    if(wFields)wFields.style.display='none';
+    if(iFields)iFields.style.display='block';
   }
+}
+function syncWgoal(){
+  // 인바디 체중 입력 → comp-wgoal에 동기화
+  const v=document.getElementById('comp-wgoal-inbody')?.value;
+  const t=document.getElementById('comp-wgoal');
+  if(t&&v)t.value=v;
 }
 function prefillChallenge(name, days){
   showChallengeCreate();
@@ -6843,6 +6796,10 @@ function prefillChallenge(name, days){
 
 function showChallengeCreate(){
   compDurVal=14;compType='routine';compMeasureType='weight';
+  // 인바디 목표 필드 초기화
+  ['comp-wgoal','comp-wgoal-inbody','comp-muscle-goal','comp-fatpct-goal'].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.value='';
+  });
   selectMeasureType('weight');
   compSecs={diet:true,workout:true,mandatory:true,target:false};
   document.getElementById('comp-name-inp').value='';
@@ -7641,24 +7598,39 @@ async function createComp(){
     document.getElementById('ch-create-overlay').scrollTop=0;
     return;
   }
-  const wgoal=parseFloat(document.getElementById('comp-wgoal').value)||null;
-  if(compType==='weight'&&!wgoal){
+  // 측정 방식에 따라 목표값 읽기
+  const isInbody=compMeasureType==='inbody';
+  const wgoalRaw=isInbody
+    ?document.getElementById('comp-wgoal-inbody')?.value
+    :document.getElementById('comp-wgoal')?.value;
+  const wgoal=parseFloat(wgoalRaw)||null;
+  if(!wgoal){
     errEl.textContent='⚠️ 내 목표 체중을 입력해주세요.';
-    document.getElementById('comp-wgoal').focus();
+    (document.getElementById(isInbody?'comp-wgoal-inbody':'comp-wgoal')||{}).focus?.();
     return;
   }
+  const muscleGoal=isInbody?(parseFloat(document.getElementById('comp-muscle-goal')?.value)||null):null;
+  const fatPctGoal=isInbody?(parseFloat(document.getElementById('comp-fatpct-goal')?.value)||null):null;
+
   const code='RB-'+Math.floor(1000+Math.random()*9000);
   const members=[CU.id];
-  const memberWgoals={};if(wgoal)memberWgoals[CU.id]=wgoal;
-  // Diet challenge — all sections on
+  const memberWgoals={};
+  memberWgoals[CU.id]=wgoal;
+  // 인바디 목표 별도 저장 (member_inbody_goals)
+  const memberInbodyGoals={};
+  if(isInbody&&(muscleGoal||fatPctGoal)){
+    memberInbodyGoals[CU.id]={muscle:muscleGoal,fatPct:fatPctGoal};
+  }
   const sections={diet:true,workout:true,mandatory:true,target:false};
-  // Use custom start date if set
   const startInput=document.getElementById('dur-start');
   const customStart=document.getElementById('dur-custom-panel').style.display!=='none'&&startInput.value?startInput.value:null;
   const{data,error}=await sb.from('competitions').insert({
     code,name,creator_id:CU.id,duration_days:compDurVal,
-    sections,challenge_type:'diet',weight_goal:wgoal,measure_type:compMeasureType||'weight',
-    member_wgoals:memberWgoals,status:'waiting',max_members:6,members,
+    sections,challenge_type:'diet',weight_goal:wgoal,
+    measure_type:compMeasureType||'weight',
+    member_wgoals:memberWgoals,
+    member_inbody_goals:Object.keys(memberInbodyGoals).length?memberInbodyGoals:null,
+    status:'waiting',max_members:6,members,
     start_date:customStart||new Date().toISOString().slice(0,10)
   }).select().single();
   if(error){errEl.textContent='오류: '+error.message;return;}
