@@ -1853,6 +1853,73 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
   </div>
 </div>
 
+<!-- 인바디 내 목표 편집 팝업 -->
+<div id="inbody-edit-popup" style="display:none;position:fixed;top:0;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;z-index:910;background:rgba(0,0,0,0.7);align-items:flex-end;justify-content:center;" onclick="if(event.target===this)closeInbodyEditPopup()">
+  <div style="background:var(--surface);border-radius:22px 22px 0 0;border-top:0.5px solid var(--border2);width:100%;padding:0 0 36px;max-height:90vh;overflow-y:auto;">
+    <div style="width:32px;height:4px;background:var(--border2);border-radius:2px;margin:10px auto 0;"></div>
+    <div style="padding:14px 18px 12px;display:flex;justify-content:space-between;align-items:center;border-bottom:0.5px solid var(--border);">
+      <div>
+        <div style="font-size:15px;font-weight:700;">✏️ 내 인바디 목표</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:2px;">챌린지에서 사용할 목표를 설정하세요</div>
+      </div>
+      <button onclick="closeInbodyEditPopup()" style="width:26px;height:26px;border-radius:50%;background:var(--surface2);border:none;color:var(--text2);font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
+    </div>
+    <div style="padding:16px 18px;">
+      <!-- 체중 목표 (필수) -->
+      <div style="margin-bottom:14px;">
+        <div style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:8px;">⚖️ 목표 체중 <span style="color:var(--red);">*</span></div>
+        <div style="position:relative;">
+          <input id="iep-wgoal" class="minput" type="number" placeholder="예: 68.0" step="0.1" style="padding-right:36px;"/>
+          <span style="position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:13px;color:var(--text3);">kg</span>
+        </div>
+      </div>
+      <div style="height:0.5px;background:var(--border);margin-bottom:14px;"></div>
+      <!-- 골격근량 (선택) -->
+      <div style="margin-bottom:14px;">
+        <div style="font-size:12px;font-weight:600;color:var(--green);margin-bottom:8px;">💪 골격근량 <span style="font-size:10px;font-weight:400;color:var(--text3);">선택</span></div>
+        <div style="display:flex;gap:8px;">
+          <div style="flex:1;">
+            <div style="font-size:10px;color:var(--text3);margin-bottom:4px;">현재</div>
+            <div style="position:relative;">
+              <input id="iep-muscle-now" class="minput" type="number" placeholder="예: 32.0" step="0.1" style="padding-right:30px;"/>
+              <span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:11px;color:var(--text3);">kg</span>
+            </div>
+          </div>
+          <div style="flex:1;">
+            <div style="font-size:10px;color:var(--text3);margin-bottom:4px;">목표</div>
+            <div style="position:relative;">
+              <input id="iep-muscle-goal" class="minput" type="number" placeholder="예: 35.0" step="0.1" style="padding-right:30px;"/>
+              <span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:11px;color:var(--text3);">kg</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- 체지방률 (선택) -->
+      <div style="margin-bottom:20px;">
+        <div style="font-size:12px;font-weight:600;color:var(--amber);margin-bottom:8px;">🔥 체지방률 <span style="font-size:10px;font-weight:400;color:var(--text3);">선택</span></div>
+        <div style="display:flex;gap:8px;">
+          <div style="flex:1;">
+            <div style="font-size:10px;color:var(--text3);margin-bottom:4px;">현재</div>
+            <div style="position:relative;">
+              <input id="iep-fat-now" class="minput" type="number" placeholder="예: 25.0" step="0.1" style="padding-right:24px;"/>
+              <span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:11px;color:var(--text3);">%</span>
+            </div>
+          </div>
+          <div style="flex:1;">
+            <div style="font-size:10px;color:var(--text3);margin-bottom:4px;">목표</div>
+            <div style="position:relative;">
+              <input id="iep-fat-goal" class="minput" type="number" placeholder="예: 18.0" step="0.1" style="padding-right:24px;"/>
+              <span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:11px;color:var(--text3);">%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="iep-err" style="font-size:12px;color:var(--red);margin-bottom:10px;display:none;"></div>
+      <button onclick="saveMyInbodyGoal()" style="width:100%;padding:14px;background:var(--accent);border:none;border-radius:12px;color:#fff;font-size:15px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer;touch-action:manipulation;">저장</button>
+    </div>
+  </div>
+</div>
+
 <div id="summary-modal"
   style="display:none;position:fixed;top:0;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;z-index:850;background:rgba(0,0,0,0.65);align-items:flex-end;justify-content:center;"
   onclick="if(event.target===this)closeSummaryModal()">
@@ -7323,6 +7390,67 @@ function closeInbodyPopup(){
   document.getElementById('inbody-popup').style.display = 'none';
   document.body.style.overflow = '';
 }
+let _inbodyEditCompId=null;
+function openInbodyEditPopup(compId){
+  _inbodyEditCompId=compId;
+  // 기존 값 채우기
+  const ig=(activeComp?.member_inbody_goals||{})[CU.id]||{};
+  const wg=(activeComp?.member_wgoals||{})[CU.id]||'';
+  document.getElementById('iep-wgoal').value=wg||'';
+  document.getElementById('iep-muscle-now').value=ig.muscleNow||'';
+  document.getElementById('iep-muscle-goal').value=ig.muscle||'';
+  document.getElementById('iep-fat-now').value=ig.fatNow||'';
+  document.getElementById('iep-fat-goal').value=ig.fatPct||'';
+  const errEl=document.getElementById('iep-err');
+  errEl.style.display='none';errEl.textContent='';
+  document.getElementById('inbody-edit-popup').style.display='flex';
+  document.body.style.overflow='hidden';
+}
+function closeInbodyEditPopup(){
+  document.getElementById('inbody-edit-popup').style.display='none';
+  document.body.style.overflow='';
+}
+async function saveMyInbodyGoal(){
+  const compId=_inbodyEditCompId;
+  if(!compId)return;
+  const errEl=document.getElementById('iep-err');
+  errEl.style.display='none';
+  const wgoal=parseFloat(document.getElementById('iep-wgoal').value)||null;
+  if(!wgoal){
+    errEl.textContent='⚠️ 목표 체중을 입력해주세요.';
+    errEl.style.display='block';
+    document.getElementById('iep-wgoal').focus();
+    return;
+  }
+  const muscleNow=parseFloat(document.getElementById('iep-muscle-now').value)||null;
+  const muscle=parseFloat(document.getElementById('iep-muscle-goal').value)||null;
+  const fatNow=parseFloat(document.getElementById('iep-fat-now').value)||null;
+  const fatPct=parseFloat(document.getElementById('iep-fat-goal').value)||null;
+  // 현재 DB 값 fetch
+  const{data:comp,error:ferr}=await sb.from('competitions')
+    .select('member_wgoals,member_inbody_goals')
+    .eq('id',compId).single();
+  if(ferr||!comp){errEl.textContent='불러오기 실패: '+(ferr?.message||'');errEl.style.display='block';return;}
+  const newWgoals={...(comp.member_wgoals||{}),[CU.id]:wgoal};
+  const newInbody={...(comp.member_inbody_goals||{})};
+  if(muscleNow||muscle||fatNow||fatPct){
+    newInbody[CU.id]={muscleNow,muscle,fatNow,fatPct};
+  } else {
+    delete newInbody[CU.id];
+  }
+  const{error}=await sb.from('competitions')
+    .update({member_wgoals:newWgoals,member_inbody_goals:Object.keys(newInbody).length?newInbody:null})
+    .eq('id',compId);
+  if(error){errEl.textContent='저장 실패: '+error.message;errEl.style.display='block';return;}
+  // activeComp 로컬 업데이트
+  if(activeComp&&activeComp.id===compId){
+    activeComp.member_wgoals=newWgoals;
+    activeComp.member_inbody_goals=Object.keys(newInbody).length?newInbody:null;
+  }
+  closeInbodyEditPopup();
+  showToast('✅ 목표가 저장됐어!');
+  renderChallengeRoom();
+}
 function leaveOrCancelRoom(){
   if(!activeComp)return;
   cancelChallenge(activeComp.id, activeComp.name||'챌린지', null);
@@ -7586,9 +7714,18 @@ async function renderChallengeRoom(){
         const ig=memberInbodyGoals[p.id]||{};
         const hasInbody=ig.muscle||ig.fatPct||ig.muscleNow||ig.fatNow;
         const inbodyDataJson=JSON.stringify(ig).replace(/"/g,'&quot;');
-        inbodyBtn=`<button onclick="openInbodyPopup('${displayName}','${wgoal||0}','${(curW||0)}',${inbodyDataJson})" style="margin-top:8px;width:100%;padding:8px 12px;background:var(--surface);border:1px solid var(--border2);border-radius:10px;color:var(--text2);font-size:12px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;display:flex;align-items:center;justify-content:center;gap:6px;">
-          <span>📊</span><span>인바디 목표 보기</span><span style="margin-left:auto;color:var(--text3);">›</span>
-        </button>`;
+        if(isMe){
+          const label=hasInbody?'✏️ 내 목표 수정':'✏️ 내 인바디 목표 설정';
+          const btnColor=hasInbody?'var(--accent-bd)':'var(--border2)';
+          const txtColor=hasInbody?'var(--accent)':'var(--text2)';
+          inbodyBtn=`<button onclick="openInbodyEditPopup('${c.id}')" style="margin-top:8px;width:100%;padding:8px 12px;background:var(--surface);border:1px solid ${btnColor};border-radius:10px;color:${txtColor};font-size:12px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;display:flex;align-items:center;justify-content:center;gap:6px;">
+            <span>${label}</span><span style="margin-left:auto;color:var(--text3);">›</span>
+          </button>`;
+        } else {
+          inbodyBtn=`<button onclick="openInbodyPopup('${displayName}','${wgoal||0}','${(curW||0)}',${inbodyDataJson})" style="margin-top:8px;width:100%;padding:8px 12px;background:var(--surface);border:1px solid var(--border2);border-radius:10px;color:var(--text2);font-size:12px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;display:flex;align-items:center;justify-content:center;gap:6px;">
+            <span>📊</span><span>인바디 목표 보기</span><span style="margin-left:auto;color:var(--text3);">›</span>
+          </button>`;
+        }
       }
 
       return`<div style="background:${bg};border:1px solid ${border};border-radius:14px;padding:14px 16px;margin-bottom:8px;">
