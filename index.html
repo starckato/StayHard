@@ -6838,38 +6838,38 @@ function renderGroupStats(profiles,mbs,allLogs,memberWgoals,chStart,chEnd,dayNum
       dates.push(d.toISOString().slice(0,10));
     }
     if(dates.length>0){
-      // 고정 Y축: 0~120kg
-      const YMIN=0,YMAX=120;
-      // 레이아웃: 좌측 Y축 레이블 공간 확보
-      const W=300,H=130;
-      const padL=28,padR=8,padT=10,padB=20;
+      // 고정 Y축: 40~120kg
+      const YMIN=40,YMAX=120;
+      // 레이아웃: 좌측 Y축 레이블 + 하단 날짜 공간
+      const W=300,H=150;
+      const padL=28,padR=8,padT=10,padB=28;
       const chartW=W-padL-padR,chartH=H-padT-padB;
       const toX=i=>padL+(i/Math.max(dates.length-1,1))*chartW;
-      const toY=w=>padT+chartH-((w-YMIN)/(YMAX-YMIN))*chartH;
+      const toY=w=>padT+chartH-((Math.min(Math.max(w,YMIN),YMAX)-YMIN)/(YMAX-YMIN))*chartH;
 
       let svgContent='';
 
-      // Y축 가이드라인 + 레이블 (0, 30, 60, 90, 120)
-      [0,30,60,90,120].forEach(kg=>{
+      // Y축 가이드라인 + 레이블 (40,50,60,70,80,90,100,110,120)
+      [40,50,60,70,80,90,100,110,120].forEach(kg=>{
         const y=toY(kg);
-        // 수평 점선
-        svgContent+=`<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="rgba(255,255,255,0.07)" stroke-width="0.5" stroke-dasharray="3 4"/>`;
-        // 레이블
+        svgContent+=`<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="rgba(255,255,255,0.06)" stroke-width="0.5" stroke-dasharray="3 4"/>`;
         svgContent+=`<text x="${padL-4}" y="${y+3}" font-size="7" fill="rgba(255,255,255,0.25)" font-family="'DM Mono',monospace" text-anchor="end">${kg}</text>`;
       });
 
-      // X축 날짜 점선 (데이터 있는 날짜마다)
-      const allDateSet=new Set();
-      sortedProfiles.forEach(p=>{Object.keys(memberWeightMaps[p.id]).forEach(d=>allDateSet.add(d));});
+      // X축 — 챌린지 시작일~종료일 날짜 전체 표시
+      // 날짜 수에 따라 표시 간격 조정
+      const labelInterval=dates.length<=14?1:dates.length<=30?3:dates.length<=60?7:14;
       dates.forEach((date,i)=>{
-        if(allDateSet.has(date)){
-          const x=toX(i);
-          svgContent+=`<line x1="${x}" y1="${padT}" x2="${x}" y2="${padT+chartH}" stroke="rgba(255,255,255,0.08)" stroke-width="0.5" stroke-dasharray="2 3"/>`;
-          // 월/일 레이블 (5일 간격)
-          if(i===0||i===dates.length-1||(i%5===0)){
-            const mo=(new Date(date).getMonth()+1),dy=new Date(date).getDate();
-            svgContent+=`<text x="${x}" y="${H-4}" font-size="6" fill="rgba(255,255,255,0.2)" font-family="'DM Mono',monospace" text-anchor="middle">${mo}/${dy}</text>`;
-          }
+        const x=toX(i);
+        // 수직 점선 (체중 기록 있는 날만)
+        const hasData=sortedProfiles.some(p=>memberWeightMaps[p.id][date]!=null);
+        if(hasData){
+          svgContent+=`<line x1="${x}" y1="${padT}" x2="${x}" y2="${padT+chartH}" stroke="rgba(255,255,255,0.07)" stroke-width="0.5" stroke-dasharray="2 3"/>`;
+        }
+        // 날짜 레이블 (간격에 따라)
+        if(i===0||i===dates.length-1||i%labelInterval===0){
+          const mo=(new Date(date).getMonth()+1),dy=new Date(date).getDate();
+          svgContent+=`<text x="${x}" y="${H-14}" font-size="6" fill="rgba(255,255,255,0.22)" font-family="'DM Mono',monospace" text-anchor="middle">${mo}/${dy}</text>`;
         }
       });
 
@@ -6907,6 +6907,7 @@ function renderGroupStats(profiles,mbs,allLogs,memberWgoals,chStart,chEnd,dayNum
       });
 
       svg.setAttribute('viewBox',`0 0 ${W} ${H}`);
+      svg.style.height=H+'px';
       svg.innerHTML=svgContent;
     }
   }
@@ -7213,6 +7214,10 @@ async function renderChallengeRoom(){
       .select('user_id,log_date,weight')
       .in('user_id',mbs).not('weight','is',null)
       .order('log_date',{ascending:true});
+    // 볼륨/운동일수용 — workouts 포함 별도 fetch
+    const{data:allLogsForStats}=await sb.from('daily_logs')
+      .select('user_id,log_date,weight,workouts')
+      .in('user_id',mbs).gte('log_date',chStart).lte('log_date',chEnd);
 
     const startWeights={};
     const currentWeights={};
@@ -7224,7 +7229,7 @@ async function renderChallengeRoom(){
       }
     });
 
-    renderGroupStats(profiles,mbs,allWLogs,memberWgoals,chStart,chEnd,dayNum);
+    renderGroupStats(profiles,mbs,allLogsForStats||allWLogs,memberWgoals,chStart,chEnd,dayNum);
     document.getElementById('room-members').innerHTML=(profiles||[]).map(p=>{
       const isMe=p.id===CU.id;
       const displayName=(p.display_name&&p.display_name.trim())?p.display_name:(p.username||'유저');
