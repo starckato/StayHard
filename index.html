@@ -1295,13 +1295,49 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
         <label class="mlabel">참여 코드</label>
         <input class="minput" id="join-code" placeholder="예: 1234" style="text-transform:uppercase;letter-spacing:4px;font-size:20px;font-weight:700;text-align:center;"/>
       </div>
+      <!-- 코드 확인 후 챌린지 정보 표시 -->
+      <div id="join-comp-info" style="display:none;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:10px 14px;margin-bottom:12px;font-size:12px;">
+        <div style="font-weight:700;font-size:13px;margin-bottom:2px;" id="join-comp-name"></div>
+        <div id="join-comp-meta" style="color:var(--text3);"></div>
+      </div>
       <div class="mfield">
-        <label class="mlabel" style="display:flex;align-items:center;gap:6px;">내 목표 체중 (kg) <span style="font-size:10px;font-weight:600;padding:1px 6px;border-radius:6px;background:rgba(248,113,113,0.12);color:#f87171;border:1px solid rgba(248,113,113,0.25);">필수</span></label>
+        <label class="mlabel" id="join-wgoal-label" style="display:flex;align-items:center;gap:6px;">내 목표 체중 (kg) <span style="font-size:10px;font-weight:600;padding:1px 6px;border-radius:6px;background:rgba(248,113,113,0.12);color:#f87171;border:1px solid rgba(248,113,113,0.25);">필수</span></label>
         <div style="position:relative;">
           <input class="minput" id="join-wgoal" type="number" placeholder="예: 68.0" step="0.1" style="padding-right:40px;"/>
           <span style="position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:13px;color:var(--text3);">kg</span>
         </div>
         <div style="font-size:11px;color:var(--text3);margin-top:4px;">챌린지 진행 상황 비교를 위해 꼭 필요해요</div>
+      </div>
+      <!-- 인바디 챌린지 추가 필드 (코드 확인 후 표시) -->
+      <div id="join-inbody-section" style="display:none;">
+        <div style="height:0.5px;background:var(--border);margin-bottom:14px;"></div>
+        <div style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:10px;">📊 인바디 목표 <span style="font-size:10px;font-weight:400;color:var(--text3);">선택 · 나중에 설정 가능</span></div>
+        <div style="margin-bottom:12px;">
+          <div style="font-size:11px;font-weight:600;color:var(--green);margin-bottom:6px;">💪 골격근량</div>
+          <div style="display:flex;gap:8px;">
+            <div style="flex:1;">
+              <div style="font-size:10px;color:var(--text3);margin-bottom:4px;">현재 (kg)</div>
+              <input class="minput" id="join-muscle-now" type="number" placeholder="예: 32.0" step="0.1"/>
+            </div>
+            <div style="flex:1;">
+              <div style="font-size:10px;color:var(--text3);margin-bottom:4px;">목표 (kg)</div>
+              <input class="minput" id="join-muscle-goal" type="number" placeholder="예: 35.0" step="0.1"/>
+            </div>
+          </div>
+        </div>
+        <div style="margin-bottom:14px;">
+          <div style="font-size:11px;font-weight:600;color:var(--amber);margin-bottom:6px;">🔥 체지방률</div>
+          <div style="display:flex;gap:8px;">
+            <div style="flex:1;">
+              <div style="font-size:10px;color:var(--text3);margin-bottom:4px;">현재 (%)</div>
+              <input class="minput" id="join-fat-now" type="number" placeholder="예: 25.0" step="0.1"/>
+            </div>
+            <div style="flex:1;">
+              <div style="font-size:10px;color:var(--text3);margin-bottom:4px;">목표 (%)</div>
+              <input class="minput" id="join-fat-goal" type="number" placeholder="예: 18.0" step="0.1"/>
+            </div>
+          </div>
+        </div>
       </div>
       <button onclick="joinCompetition()" class="mbtn" style="margin-top:16px;touch-action:manipulation;" id="ch-join-btn">참여하기</button>
       <div id="ch-join-err" style="color:var(--red);font-size:12px;margin-top:8px;text-align:center;"></div>
@@ -6875,7 +6911,7 @@ async function renderChallengeHome(){
   const activeCard=document.getElementById('ch-active-card');
   const allCardsEl=document.getElementById('ch-all-cards');
   if(allVisible.length>0){
-    activeComp=activeComps[0]||null;
+    if(!activeComp) activeComp=activeComps[0]||null;
     if(allCardsEl) allCardsEl.innerHTML=allVisible.map(c=>buildCompCard(c)).join('');
     activeCard.style.display='block';
   } else {
@@ -6995,6 +7031,15 @@ function showChallengeJoin(){
 function hideChallengeJoin(){
   document.getElementById('ch-join-overlay').style.display='none';
   document.body.style.overflow='';
+  _joinCompData=null;
+  document.getElementById('join-code').disabled=false;
+  document.getElementById('join-comp-info').style.display='none';
+  document.getElementById('join-inbody-section').style.display='none';
+  ['join-code','join-wgoal','join-muscle-now','join-muscle-goal','join-fat-now','join-fat-goal'].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.value='';
+  });
+  document.getElementById('ch-join-err').textContent='';
+  document.getElementById('ch-join-btn').textContent='참여하기';
 }
 
 async function enterChallenge(compId){
@@ -7393,9 +7438,10 @@ function closeInbodyPopup(){
 let _inbodyEditCompId=null;
 function openInbodyEditPopup(compId){
   _inbodyEditCompId=compId;
-  // 기존 값 채우기
-  const ig=(activeComp?.member_inbody_goals||{})[CU.id]||{};
-  const wg=(activeComp?.member_wgoals||{})[CU.id]||'';
+  // activeComp가 해당 comp인지 확인 후 초기값 채우기
+  const compData=(activeComp?.id===compId)?activeComp:null;
+  const ig=(compData?.member_inbody_goals||{})[CU.id]||{};
+  const wg=(compData?.member_wgoals||{})[CU.id]||'';
   document.getElementById('iep-wgoal').value=wg||'';
   document.getElementById('iep-muscle-now').value=ig.muscleNow||'';
   document.getElementById('iep-muscle-goal').value=ig.muscle||'';
@@ -7692,6 +7738,22 @@ async function renderChallengeRoom(){
       const bg=isMe?'var(--accent-bg)':'var(--surface2)';
 
       // 체중 블록
+      const curMuscle=currentMuscle[p.id];
+      const curFat=currentFatPct[p.id];
+      const ig2=memberInbodyGoals[p.id]||{};
+      const inbodyStatsRow=isInbodyChallenge&&(curMuscle!=null||curFat!=null)?`
+        <div style="display:flex;gap:8px;margin-bottom:8px;">
+          ${curMuscle!=null?`<div style="flex:1;background:rgba(74,222,128,0.08);border:1px solid rgba(74,222,128,0.2);border-radius:10px;padding:8px;text-align:center;">
+            <div style="font-size:13px;font-weight:700;font-family:'DM Mono',monospace;color:var(--green);">${curMuscle.toFixed(1)}kg</div>
+            <div style="font-size:10px;color:var(--text3);margin-top:1px;">현재 골격근</div>
+            ${ig2.muscle?`<div style="font-size:9px;color:var(--green);margin-top:1px;">목표 ${ig2.muscle}kg</div>`:''}
+          </div>`:''}
+          ${curFat!=null?`<div style="flex:1;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);border-radius:10px;padding:8px;text-align:center;">
+            <div style="font-size:13px;font-weight:700;font-family:'DM Mono',monospace;color:var(--amber);">${curFat.toFixed(1)}%</div>
+            <div style="font-size:10px;color:var(--text3);margin-top:1px;">현재 체지방</div>
+            ${ig2.fatPct?`<div style="font-size:9px;color:var(--amber);margin-top:1px;">목표 ${ig2.fatPct}%</div>`:''}
+          </div>`:''}
+        </div>`:'';
       const weightBlock=`
         <div style="display:flex;gap:8px;margin-bottom:${isInbodyChallenge?'8px':'0'};">
           <div style="flex:1;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px;text-align:center;">
@@ -7706,7 +7768,8 @@ async function renderChallengeRoom(){
             <div style="font-size:15px;font-weight:700;font-family:'DM Mono',monospace;color:${reached?'var(--green)':toGoal<=2?'var(--amber)':'var(--text)'};">${reached?'🎉':toGoal!=null?toGoal.toFixed(1)+'kg':'—'}</div>
             <div style="font-size:10px;color:var(--text3);margin-top:2px;">${reached?'달성!':'목표까지'}</div>
           </div>`:''}
-        </div>`;
+        </div>
+        ${inbodyStatsRow}`;
 
       // 인바디 버튼 (인바디 모드일 때만)
       let inbodyBtn='';
@@ -7716,9 +7779,10 @@ async function renderChallengeRoom(){
         const inbodyDataJson=JSON.stringify(ig).replace(/"/g,'&quot;');
         if(isMe){
           const label=hasInbody?'✏️ 내 목표 수정':'✏️ 내 인바디 목표 설정';
-          const btnColor=hasInbody?'var(--accent-bd)':'var(--border2)';
-          const txtColor=hasInbody?'var(--accent)':'var(--text2)';
-          inbodyBtn=`<button onclick="openInbodyEditPopup('${c.id}')" style="margin-top:8px;width:100%;padding:8px 12px;background:var(--surface);border:1px solid ${btnColor};border-radius:10px;color:${txtColor};font-size:12px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;display:flex;align-items:center;justify-content:center;gap:6px;">
+          const btnColor=hasInbody?'var(--accent-bd)':'var(--amber)';
+          const txtColor=hasInbody?'var(--accent)':'var(--amber)';
+          const noticeBanner=!hasInbody?`<div style="background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.25);border-radius:8px;padding:7px 10px;margin-bottom:8px;font-size:11px;color:var(--amber);">⚠️ 인바디 목표를 아직 설정하지 않았어요</div>`:'';
+          inbodyBtn=`${noticeBanner}<button onclick="openInbodyEditPopup('${c.id}')" style="margin-top:0;width:100%;padding:8px 12px;background:var(--surface);border:1px solid ${btnColor};border-radius:10px;color:${txtColor};font-size:12px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;display:flex;align-items:center;justify-content:center;gap:6px;">
             <span>${label}</span><span style="margin-left:auto;color:var(--text3);">›</span>
           </button>`;
         } else {
@@ -7984,23 +8048,32 @@ function showInviteCode(code,name){
 function copyCode(){const c=document.getElementById('ci-code').textContent;if(navigator.clipboard)navigator.clipboard.writeText(c);const b=document.getElementById('ci-copy-btn');b.textContent='✓ 복사됨!';setTimeout(()=>b.textContent='코드 복사',2000);}
 
 async function joinCompetition(){await joinComp();}
+let _joinCompData=null;
 async function joinComp(){
   const rawCode=document.getElementById('join-code').value.trim().toUpperCase();
   const code=rawCode.startsWith('RB-')?rawCode:'RB-'+rawCode;
-  if(!rawCode){document.getElementById('ch-join-err').textContent='코드를 입력하세요.';return;}
   const jbtn=document.getElementById('ch-join-btn');
+  const errEl=document.getElementById('ch-join-err');
+  errEl.textContent='';
+  if(!rawCode){errEl.textContent='코드를 입력하세요.';return;}
+
+  // ── 2단계: 코드 확인 후 inbody 필드 보이면 바로 참여 실행 ──
+  if(_joinCompData){
+    await _doJoinComp(_joinCompData);
+    return;
+  }
+
+  // ── 1단계: 코드 검증 ──
   jbtn.disabled=true;jbtn.textContent='확인 중…';
-  document.getElementById('ch-join-err').textContent='';
   const{data:comp,error}=await sb.from('competitions').select('*').eq('code',code).maybeSingle();
   if(error||!comp){
-    document.getElementById('ch-join-err').textContent='코드를 찾을 수 없습니다.';
+    errEl.textContent='코드를 찾을 수 없습니다.';
     jbtn.disabled=false;jbtn.textContent='참여하기';return;
   }
-  // Parse members safely
   let members=[];
   try{members=Array.isArray(comp.members)?comp.members:JSON.parse(comp.members||'[]');}catch(e){members=[];}
 
-  // If creator joins their own room — just enter
+  // 이미 참여 중 → 바로 입장
   if(comp.creator_id===CU.id||members.includes(CU.id)){
     activeComp=comp;
     jbtn.disabled=false;jbtn.textContent='참여하기';
@@ -8009,31 +8082,73 @@ async function joinComp(){
     return;
   }
   if(members.length>=(comp.max_members||6)){
-    document.getElementById('ch-join-err').textContent='최대 인원에 도달했습니다.';
+    errEl.textContent='최대 인원에 도달했습니다.';
     jbtn.disabled=false;jbtn.textContent='참여하기';return;
   }
-  const joinWgoalRaw=document.getElementById('join-wgoal')?.value||document.getElementById('comp-wgoal-join')?.value||'';
-  const joinWgoal=parseFloat(joinWgoalRaw)||null;
-  // 목표 몸무게 필수 검증
+
+  // 인바디 챌린지 → 추가 필드 표시 후 대기
+  if(comp.measure_type==='inbody'){
+    _joinCompData=comp;
+    document.getElementById('join-comp-info').style.display='block';
+    document.getElementById('join-comp-name').textContent='📋 '+comp.name;
+    document.getElementById('join-comp-meta').textContent='📊 인바디 챌린지 · '+comp.duration_days+'일';
+    document.getElementById('join-inbody-section').style.display='block';
+    document.getElementById('join-code').disabled=true;
+    jbtn.disabled=false;jbtn.textContent='참여하기 →';
+    return;
+  }
+
+  // 일반 챌린지 → 바로 참여 실행
+  jbtn.disabled=false;jbtn.textContent='참여하기';
+  await _doJoinComp(comp);
+}
+async function _doJoinComp(comp){
+  const jbtn=document.getElementById('ch-join-btn');
+  const errEl=document.getElementById('ch-join-err');
+  jbtn.disabled=true;
+  let members=[];
+  try{members=Array.isArray(comp.members)?comp.members:JSON.parse(comp.members||'[]');}catch(e){members=[];}
+
+  const joinWgoal=parseFloat(document.getElementById('join-wgoal').value)||null;
   if(!joinWgoal||joinWgoal<=0){
-    document.getElementById('ch-join-err').textContent='목표 체중을 입력해주세요. (필수)';
-    jbtn.disabled=false;jbtn.textContent='참여하기';return;
+    errEl.textContent='목표 체중을 입력해주세요. (필수)';
+    jbtn.disabled=false;return;
   }
   if(joinWgoal<20||joinWgoal>300){
-    document.getElementById('ch-join-err').textContent='올바른 목표 체중을 입력해주세요. (20~300kg)';
-    jbtn.disabled=false;jbtn.textContent='참여하기';return;
+    errEl.textContent='올바른 목표 체중을 입력해주세요. (20~300kg)';
+    jbtn.disabled=false;return;
   }
-  const memberWgoals=comp.member_wgoals||{};
-  memberWgoals[CU.id]=joinWgoal;
+  const memberWgoals={...(comp.member_wgoals||{}),[CU.id]:joinWgoal};
   const newMembers=[...members,CU.id];
   const today=new Date().toISOString().split('T')[0];
-  const{data:upd,error:upErr}=await sb.from('competitions')
-    .update({members:newMembers,status:'active',start_date:comp.start_date||today,member_wgoals:memberWgoals})
-    .eq('id',comp.id).select().single();
-  if(upErr||!upd){
-    document.getElementById('join-err').textContent='오류가 발생했습니다. 다시 시도해주세요.';
-    jbtn.disabled=false;jbtn.textContent='챌린지 참여';return;
+
+  // 인바디 목표 처리
+  const isInbody=comp.measure_type==='inbody';
+  const memberInbodyGoals={...(comp.member_inbody_goals||{})};
+  if(isInbody){
+    const muscleNow=parseFloat(document.getElementById('join-muscle-now')?.value)||null;
+    const muscle=parseFloat(document.getElementById('join-muscle-goal')?.value)||null;
+    const fatNow=parseFloat(document.getElementById('join-fat-now')?.value)||null;
+    const fatPct=parseFloat(document.getElementById('join-fat-goal')?.value)||null;
+    if(muscleNow||muscle||fatNow||fatPct){
+      memberInbodyGoals[CU.id]={muscleNow,muscle,fatNow,fatPct};
+    }
   }
+
+  const updateData={
+    members:newMembers,status:'active',
+    start_date:comp.start_date||today,
+    member_wgoals:memberWgoals,
+  };
+  if(isInbody)updateData.member_inbody_goals=Object.keys(memberInbodyGoals).length?memberInbodyGoals:null;
+
+  const{data:upd,error:upErr}=await sb.from('competitions')
+    .update(updateData).eq('id',comp.id).select().single();
+  if(upErr||!upd){
+    errEl.textContent='오류가 발생했습니다. 다시 시도해주세요.';
+    jbtn.disabled=false;return;
+  }
+  _joinCompData=null;
   activeComp=upd;
   hideChallengeJoin();
   switchTab('competition',2);
@@ -8070,6 +8185,7 @@ async function leaveComp(){
         members:mbs,
         status:mbs.length>=1?'active':'waiting'
       }).eq('id',activeComp.id);
+      showToast('👑 방장 권한이 다음 멤버에게 이양됩니다.');
     }
   } else {
     // regular member leaving
