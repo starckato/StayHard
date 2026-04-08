@@ -1130,6 +1130,37 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 
       <div id="room-today-checks" style="display:none;"></div>
 
+      <!-- 그룹 통계 섹션 -->
+      <div id="group-stats-section" style="padding:0 16px 4px;">
+        <div onclick="toggleGroupStats()" id="group-stats-header" style="display:flex;justify-content:space-between;align-items:center;padding:12px 0 8px;cursor:pointer;touch-action:manipulation;">
+          <div style="font-size:13px;font-weight:600;color:var(--text);">그룹 통계</div>
+          <span id="group-stats-chevron" style="font-size:12px;color:var(--text3);transition:transform 0.2s;">▾</span>
+        </div>
+        <div id="group-stats-body">
+          <div style="display:flex;gap:6px;margin-bottom:12px;">
+            <button id="gs-tab-weight" onclick="switchGroupStatsTab('weight')" style="padding:5px 14px;border-radius:16px;font-size:12px;font-weight:500;border:0.5px solid var(--accent-bd);background:var(--accent-bg);color:var(--accent);font-family:'DM Sans',sans-serif;cursor:pointer;touch-action:manipulation;">⚖️ 체중 추세</button>
+            <button id="gs-tab-volume" onclick="switchGroupStatsTab('volume')" style="padding:5px 14px;border-radius:16px;font-size:12px;font-weight:500;border:0.5px solid var(--border2);background:transparent;color:var(--text3);font-family:'DM Sans',sans-serif;cursor:pointer;touch-action:manipulation;">💪 운동 볼륨</button>
+          </div>
+          <div id="gs-weight-panel">
+            <div id="gs-legend" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px;"></div>
+            <div style="background:var(--surface2);border-radius:12px;padding:12px 10px 8px;">
+              <svg id="gs-weight-svg" width="100%" viewBox="0 0 300 100" style="display:block;overflow:visible;"></svg>
+            </div>
+            <div id="gs-goal-bars" style="margin-top:10px;"></div>
+          </div>
+          <div id="gs-volume-panel" style="display:none;">
+            <div style="background:var(--surface2);border-radius:12px;padding:12px 14px;margin-bottom:8px;">
+              <div style="font-size:10px;color:var(--text3);letter-spacing:0.06em;margin-bottom:10px;">챌린지 기간 누적 볼륨</div>
+              <div id="gs-volume-bars"></div>
+            </div>
+            <div style="background:var(--surface2);border-radius:12px;padding:12px 14px;">
+              <div style="font-size:10px;color:var(--text3);letter-spacing:0.06em;margin-bottom:10px;">운동 완료 일수</div>
+              <div id="gs-workout-day-bars"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- 멤버 현황 -->
       <div style="padding:16px;">
         <div style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:12px;text-transform:uppercase;letter-spacing:.06em;">👥 멤버 현황</div>
@@ -6738,6 +6769,191 @@ function openChallengeRoom(){
   renderChallengeRoom();
 }
 
+let _groupStatsOpen=true;
+function toggleGroupStats(){
+  _groupStatsOpen=!_groupStatsOpen;
+  const body=document.getElementById('group-stats-body');
+  const chevron=document.getElementById('group-stats-chevron');
+  if(body)body.style.display=_groupStatsOpen?'block':'none';
+  if(chevron)chevron.style.transform=_groupStatsOpen?'rotate(0deg)':'rotate(-90deg)';
+}
+let _groupStatsTab='weight';
+function switchGroupStatsTab(tab){
+  _groupStatsTab=tab;
+  const wPanel=document.getElementById('gs-weight-panel');
+  const vPanel=document.getElementById('gs-volume-panel');
+  if(wPanel)wPanel.style.display=tab==='weight'?'block':'none';
+  if(vPanel)vPanel.style.display=tab==='volume'?'block':'none';
+  const wBtn=document.getElementById('gs-tab-weight');
+  const vBtn=document.getElementById('gs-tab-volume');
+  if(!wBtn||!vBtn)return;
+  if(tab==='weight'){
+    wBtn.style.background='var(--accent-bg)';wBtn.style.borderColor='var(--accent-bd)';wBtn.style.color='var(--accent)';
+    vBtn.style.background='transparent';vBtn.style.borderColor='var(--border2)';vBtn.style.color='var(--text3)';
+  }else{
+    vBtn.style.background='var(--accent-bg)';vBtn.style.borderColor='var(--accent-bd)';vBtn.style.color='var(--accent)';
+    wBtn.style.background='transparent';wBtn.style.borderColor='var(--border2)';wBtn.style.color='var(--text3)';
+  }
+}
+function renderGroupStats(profiles,mbs,allLogs,memberWgoals,chStart,chEnd,dayNum){
+  if(!profiles||!allLogs)return;
+  const MEMBER_COLORS=['#7c6af7','#3dd68c','#f59e0b','#60a5fa','#f87171'];
+  // 나 첫번째 정렬
+  const sortedProfiles=[...profiles].sort((a,b)=>{
+    if(a.id===CU.id)return -1;
+    if(b.id===CU.id)return 1;
+    return 0;
+  });
+  const colorMap={};
+  sortedProfiles.forEach((p,i)=>{colorMap[p.id]=MEMBER_COLORS[i%MEMBER_COLORS.length];});
+
+  // 범례
+  const legendEl=document.getElementById('gs-legend');
+  if(legendEl){
+    legendEl.innerHTML=sortedProfiles.map(p=>{
+      const name=(p.display_name&&p.display_name.trim())?p.display_name:(p.username||'유저');
+      const col=colorMap[p.id];
+      return`<div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text2);">
+        <div style="width:12px;height:3px;border-radius:2px;background:${col};flex-shrink:0;"></div>
+        ${name}${p.id===CU.id?' (나)':''}
+      </div>`;
+    }).join('');
+  }
+
+  // 멤버별 날짜-체중 맵
+  const memberWeightMaps={};
+  sortedProfiles.forEach(p=>{
+    const uLogs=allLogs.filter(l=>l.user_id===p.id&&l.weight!=null);
+    const map={};
+    uLogs.forEach(l=>{map[l.log_date?l.log_date.slice(0,10):'']=parseFloat(l.weight);});
+    memberWeightMaps[p.id]=map;
+  });
+
+  // SVG 라인 차트
+  const svg=document.getElementById('gs-weight-svg');
+  if(svg){
+    const dates=[];
+    const start=new Date(chStart);
+    for(let i=0;i<=Math.min(dayNum,90);i++){
+      const d=new Date(start);d.setDate(d.getDate()+i);
+      dates.push(d.toISOString().slice(0,10));
+    }
+    if(dates.length>0){
+      const W=300,H=100,padL=8,padR=8,padT=8,padB=16;
+      const chartW=W-padL-padR,chartH=H-padT-padB;
+      let allWeights=[];
+      sortedProfiles.forEach(p=>{
+        Object.values(memberWeightMaps[p.id]).forEach(w=>allWeights.push(w));
+        if(memberWgoals[p.id])allWeights.push(parseFloat(memberWgoals[p.id]));
+      });
+      if(allWeights.length>0){
+        const minW=Math.min(...allWeights)-1;
+        const maxW=Math.max(...allWeights)+1;
+        const toX=i=>padL+(i/Math.max(dates.length-1,1))*chartW;
+        const toY=w=>padT+chartH-((w-minW)/(maxW-minW))*chartH;
+        let svgContent='';
+        // 목표 수평 점선 먼저 (각자 색상, 희미하게)
+        sortedProfiles.forEach(p=>{
+          const goal=memberWgoals[p.id];
+          if(!goal)return;
+          const gy=toY(parseFloat(goal));
+          const col=colorMap[p.id];
+          svgContent+=`<line x1="${padL}" y1="${gy}" x2="${W-padR}" y2="${gy}" stroke="${col}" stroke-width="1" stroke-dasharray="3 4" opacity="0.3"/>`;
+        });
+        // 체중 라인 (목표선 위에)
+        sortedProfiles.forEach(p=>{
+          const col=colorMap[p.id];
+          const wmap=memberWeightMaps[p.id];
+          const points=[];
+          dates.forEach((date,i)=>{if(wmap[date]!=null)points.push(`${toX(i)},${toY(wmap[date])}`);});
+          if(points.length<2)return;
+          svgContent+=`<polyline points="${points.join(' ')}" fill="none" stroke="${col}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`;
+          const last=points[points.length-1].split(',');
+          svgContent+=`<circle cx="${last[0]}" cy="${last[1]}" r="3" fill="${col}"/>`;
+        });
+        svgContent+=`<text x="${padL}" y="${H}" font-size="7" fill="rgba(255,255,255,0.2)" font-family="'DM Mono',monospace">시작</text>`;
+        svgContent+=`<text x="${W-padR-16}" y="${H}" font-size="7" fill="rgba(255,255,255,0.2)" font-family="'DM Mono',monospace">오늘</text>`;
+        svg.innerHTML=svgContent;
+      }
+    }
+  }
+
+  // 목표 달성 진행바
+  const goalBarsEl=document.getElementById('gs-goal-bars');
+  if(goalBarsEl){
+    goalBarsEl.innerHTML=sortedProfiles.map(p=>{
+      const name=(p.display_name&&p.display_name.trim())?p.display_name:(p.username||'유저');
+      const isMe=p.id===CU.id;
+      const col=colorMap[p.id];
+      const goal=memberWgoals[p.id]?parseFloat(memberWgoals[p.id]):null;
+      const wmap=memberWeightMaps[p.id];
+      const wArr=Object.entries(wmap).sort((a,b)=>a[0].localeCompare(b[0]));
+      const startW=wArr.length>0?wArr[0][1]:null;
+      const curW=wArr.length>0?wArr[wArr.length-1][1]:null;
+      if(!goal||!startW||!curW){
+        return`<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:0.5px solid var(--border);font-size:12px;">
+          <span style="color:${col};font-weight:500;">${name}${isMe?' (나)':''}</span>
+          <span style="color:var(--text3);">목표 미설정</span>
+        </div>`;
+      }
+      const totalNeeded=Math.abs(startW-goal);
+      const achieved=Math.abs(startW-curW);
+      const pct=totalNeeded>0?Math.min(100,Math.round(achieved/totalNeeded*100)):100;
+      const toGo=(curW-goal).toFixed(1);
+      const reached=curW<=goal;
+      return`<div style="margin-bottom:8px;">
+        <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px;">
+          <span style="color:${col};font-weight:500;">${name}${isMe?' (나)':''}</span>
+          <span style="color:${reached?'var(--green)':'var(--text3)'};">${reached?'🎉 달성!':curW.toFixed(1)+'kg → 목표 '+goal+'kg · –'+Math.abs(toGo)+'kg 남음'}</span>
+        </div>
+        <div style="height:6px;background:var(--surface3);border-radius:3px;overflow:hidden;">
+          <div style="height:100%;border-radius:3px;background:${col};width:${pct}%;transition:width 0.6s ease;"></div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  // 운동 볼륨 바
+  const volBarsEl=document.getElementById('gs-volume-bars');
+  const dayBarsEl=document.getElementById('gs-workout-day-bars');
+  if(volBarsEl&&dayBarsEl){
+    const volData=sortedProfiles.map(p=>{
+      const uLogs=allLogs.filter(l=>l.user_id===p.id);
+      const totalVol=uLogs.reduce((a,l)=>a+(l.workouts||[]).filter(w=>w.type==='gym'&&w.status==='done').reduce((b,w)=>b+(w.totalVolume||0),0),0);
+      const workoutDays=uLogs.filter(l=>(l.workouts||[]).some(w=>w.status==='done')).length;
+      return{p,totalVol,workoutDays,col:colorMap[p.id]};
+    });
+    const maxVol=Math.max(...volData.map(d=>d.totalVol),1);
+    const maxDays=Math.max(dayNum,1);
+    volBarsEl.innerHTML=volData.map(({p,totalVol,col})=>{
+      const name=(p.display_name&&p.display_name.trim())?p.display_name:(p.username||'유저');
+      const isMe=p.id===CU.id;
+      const pct=Math.round(totalVol/maxVol*100);
+      const label=totalVol>=1000?(totalVol/1000).toFixed(1)+'t':totalVol.toLocaleString()+'kg';
+      return`<div style="display:flex;align-items:center;gap:8px;margin-bottom:7px;">
+        <div style="font-size:11px;color:var(--text2);width:52px;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${name}${isMe?' (나)':''}</div>
+        <div style="flex:1;height:16px;background:var(--surface3);border-radius:3px;overflow:hidden;">
+          <div style="height:100%;border-radius:3px;background:${col};width:${pct}%;display:flex;align-items:center;padding-left:6px;min-width:${totalVol>0?'28px':'0'};">
+            <span style="font-size:10px;color:#fff;font-family:'DM Mono',monospace;white-space:nowrap;">${totalVol>0?label:''}</span>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+    dayBarsEl.innerHTML=volData.map(({p,workoutDays,col})=>{
+      const name=(p.display_name&&p.display_name.trim())?p.display_name:(p.username||'유저');
+      const isMe=p.id===CU.id;
+      const pct=Math.round(workoutDays/maxDays*100);
+      return`<div style="display:flex;align-items:center;gap:8px;margin-bottom:7px;">
+        <div style="font-size:11px;color:var(--text2);width:52px;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${name}${isMe?' (나)':''}</div>
+        <div style="flex:1;height:16px;background:var(--surface3);border-radius:3px;overflow:hidden;">
+          <div style="height:100%;border-radius:3px;background:${col};width:${pct}%;display:flex;align-items:center;padding-left:6px;min-width:${workoutDays>0?'28px':'0'};">
+            <span style="font-size:10px;color:#fff;font-family:'DM Mono',monospace;white-space:nowrap;">${workoutDays>0?workoutDays+'/'+dayNum+'일':''}</span>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+}
 function closeChallengeRoom(){
   document.getElementById('challenge-room').style.display='none';
   document.body.style.overflow='';
@@ -6949,6 +7165,7 @@ async function renderChallengeRoom(){
       }
     });
 
+    renderGroupStats(profiles,mbs,allWLogs,memberWgoals,chStart,chEnd,dayNum);
     document.getElementById('room-members').innerHTML=(profiles||[]).map(p=>{
       const isMe=p.id===CU.id;
       const displayName=(p.display_name&&p.display_name.trim())?p.display_name:(p.username||'유저');
@@ -7000,6 +7217,7 @@ async function renderChallengeRoom(){
     .in('user_id',mbs).gte('log_date',chStart).lte('log_date',TODAY);
   const todayLogs=(allLogs||[]).filter(l=>l.user_id&&l.log_date&&l.log_date.slice(0,10)===TODAY.slice(0,10));
 
+  renderGroupStats(profiles,mbs,allLogs,memberWgoals,chStart,chEnd,dayNum);
   document.getElementById('room-members').innerHTML=(profiles||[]).map(p=>{
     const pLog=todayLogs?.find(l=>l.user_id===p.id)||{};
     const isMe=p.id===CU.id;
