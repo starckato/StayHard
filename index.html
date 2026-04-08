@@ -6655,7 +6655,7 @@ async function renderChallengeHome(){
   if(!CU)return;
 
   // Fetch user's challenges
-  const{data:allComps_raw}=await sb.from('competitions').select('id,code,name,creator_id,members,sections,challenge_type,status,max_members,start_date,duration_days,weight_goal,member_wgoals').in('status',['waiting','active','failed','completed']);
+  const{data:allComps_raw}=await sb.from('competitions').select('id,code,name,creator_id,members,sections,challenge_type,status,max_members,start_date,duration_days,weight_goal,member_wgoals,measure_type,member_inbody_goals').in('status',['waiting','active','failed','completed']);
   const myComps=(allComps_raw||[]).filter(c=>{
     if(c.creator_id===CU.id)return true;
     try{const mbs=Array.isArray(c.members)?c.members:JSON.parse(c.members||'[]');return mbs.includes(CU.id);}
@@ -6839,7 +6839,7 @@ function hideChallengeJoin(){
 }
 
 async function enterChallenge(compId){
-  const{data:comp}=await sb.from('competitions').select('id,code,name,creator_id,members,sections,challenge_type,status,start_date,duration_days,weight_goal,member_wgoals').eq('id',compId).single();
+  const{data:comp}=await sb.from('competitions').select('id,code,name,creator_id,members,sections,challenge_type,status,start_date,duration_days,weight_goal,member_wgoals,measure_type,member_inbody_goals').eq('id',compId).single();
   if(!comp)return;
   activeComp=comp;
   openChallengeRoom();
@@ -7354,7 +7354,7 @@ async function renderChallengeRoom(){
   if(isDietChallenge){
     // 각 멤버의 최신 체중 + 시작 체중 fetch
     const{data:allWLogs}=await sb.from('daily_logs')
-      .select('user_id,log_date,weight')
+      .select('user_id,log_date,weight,muscle_mass,body_fat_pct')
       .in('user_id',mbs).not('weight','is',null)
       .order('log_date',{ascending:true});
     // 볼륨/운동일수용 — workouts 포함 별도 fetch
@@ -7372,6 +7372,23 @@ async function renderChallengeRoom(){
       }
     });
 
+    const isInbodyChallenge=c.measure_type==='inbody';
+    const memberInbodyGoals=c.member_inbody_goals||{};
+
+    // 인바디 모드: 최신 muscle_mass, body_fat_pct도 추출
+    const currentMuscle={};
+    const currentFatPct={};
+    if(isInbodyChallenge){
+      mbs.forEach(uid=>{
+        const uLogs=(allWLogs||[]).filter(l=>l.user_id===uid);
+        // 가장 최신 muscle_mass, body_fat_pct
+        const withMuscle=uLogs.filter(l=>l.muscle_mass!=null);
+        const withFat=uLogs.filter(l=>l.body_fat_pct!=null);
+        if(withMuscle.length>0) currentMuscle[uid]=parseFloat(withMuscle[withMuscle.length-1].muscle_mass);
+        if(withFat.length>0) currentFatPct[uid]=parseFloat(withFat[withFat.length-1].body_fat_pct);
+      });
+    }
+
     renderGroupStats(profiles,mbs,allLogsForStats||allWLogs,memberWgoals,chStart,chEnd,dayNum);
     document.getElementById('room-members').innerHTML=(profiles||[]).map(p=>{
       const isMe=p.id===CU.id;
@@ -7379,40 +7396,64 @@ async function renderChallengeRoom(){
       const wgoal=memberWgoals[p.id];
       const startW=startWeights[p.id];
       const curW=currentWeights[p.id];
-      const lost=startW&&curW?(startW-curW):null;
       const toGoal=wgoal&&curW?(curW-wgoal):null;
       const reached=toGoal!==null&&toGoal<=0;
 
-      const lostStr=curW!=null?curW.toFixed(1)+'kg':'—';
-      const goalStr=wgoal?wgoal+'kg':'미설정';
-      const toGoalStr=toGoal!=null?(reached?'🎉 달성!':toGoal.toFixed(1)+'kg'):'—';
-
       const border=isMe?'var(--accent-bd)':'var(--border)';
       const bg=isMe?'var(--accent-bg)':'var(--surface2)';
+
+      // 체중 블록
+      const weightBlock=`
+        <div style="display:flex;gap:8px;margin-bottom:${isInbodyChallenge?'8px':'0'};">
+          <div style="flex:1;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px;text-align:center;">
+            <div style="font-size:16px;font-weight:700;font-family:'DM Mono',monospace;">${curW!=null?curW.toFixed(1)+'kg':'—'}</div>
+            <div style="font-size:10px;color:var(--text3);margin-top:2px;">현재 체중</div>
+          </div>
+          <div style="flex:1;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px;text-align:center;">
+            <div style="font-size:16px;font-weight:700;font-family:'DM Mono',monospace;color:${wgoal?'var(--text)':'var(--text3)'};">${wgoal?wgoal+'kg':'미설정'}</div>
+            <div style="font-size:10px;color:var(--text3);margin-top:2px;">목표 체중</div>
+          </div>
+          ${wgoal?`<div style="flex:1;background:${reached?'var(--green-bg)':'var(--surface)'};border:1px solid ${reached?'var(--green-bd)':'var(--border)'};border-radius:10px;padding:10px;text-align:center;">
+            <div style="font-size:15px;font-weight:700;font-family:'DM Mono',monospace;color:${reached?'var(--green)':toGoal<=2?'var(--amber)':'var(--text)'};">${reached?'🎉':toGoal!=null?toGoal.toFixed(1)+'kg':'—'}</div>
+            <div style="font-size:10px;color:var(--text3);margin-top:2px;">${reached?'달성!':'목표까지'}</div>
+          </div>`:''}
+        </div>`;
+
+      // 인바디 블록 (인바디 모드일 때만)
+      let inbodyBlock='';
+      if(isInbodyChallenge){
+        const curM=currentMuscle[p.id];
+        const curF=currentFatPct[p.id];
+        const inbodyGoal=memberInbodyGoals[p.id]||{};
+        const goalM=inbodyGoal.muscle;
+        const goalF=inbodyGoal.fatPct;
+
+        const muscleRow=`
+          <div style="flex:1;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:8px 10px;">
+            <div style="font-size:10px;color:var(--text3);margin-bottom:3px;letter-spacing:.04em;">💪 골격근량</div>
+            <div style="font-size:14px;font-weight:700;font-family:'DM Mono',monospace;color:var(--green);">${curM!=null?curM.toFixed(1)+'kg':'—'}</div>
+            ${goalM?`<div style="font-size:10px;color:var(--text3);margin-top:2px;">목표 ${goalM}kg</div>`:''}
+          </div>`;
+        const fatRow=`
+          <div style="flex:1;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:8px 10px;">
+            <div style="font-size:10px;color:var(--text3);margin-bottom:3px;letter-spacing:.04em;">🔥 체지방률</div>
+            <div style="font-size:14px;font-weight:700;font-family:'DM Mono',monospace;color:var(--amber);">${curF!=null?curF.toFixed(1)+'%':'—'}</div>
+            ${goalF?`<div style="font-size:10px;color:var(--text3);margin-top:2px;">목표 ${goalF}%</div>`:''}
+          </div>`;
+        inbodyBlock=`<div style="display:flex;gap:8px;">${muscleRow}${fatRow}</div>`;
+      }
 
       return`<div style="background:${bg};border:1px solid ${border};border-radius:14px;padding:14px 16px;margin-bottom:8px;">
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
           <div style="width:34px;height:34px;border-radius:50%;background:var(--surface3);display:flex;align-items:center;justify-content:center;font-size:16px;">${reached?'🏆':isMe?'😎':'👤'}</div>
           <div style="flex:1;">
             <div style="font-size:14px;font-weight:700;">${displayName}${isMe?' <span style="font-size:11px;color:var(--accent);">(나)</span>':''}</div>
-            ${wgoal?`<div style="font-size:11px;color:var(--text3);">목표 ${wgoal}kg</div>`:''}
+            <div style="font-size:11px;color:var(--text3);margin-top:1px;">${isInbodyChallenge?'📊 인바디':'⚖️ 체중'} 챌린지</div>
           </div>
           ${reached?'<div style="font-size:12px;font-weight:700;color:var(--green);">🎉 달성!</div>':''}
         </div>
-        <div style="display:flex;gap:8px;">
-          <div style="flex:1;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px;text-align:center;">
-            <div style="font-size:16px;font-weight:700;font-family:'DM Mono',monospace;white-space:nowrap;">${lostStr}</div>
-            <div style="font-size:10px;color:var(--text3);margin-top:2px;">현재 체중</div>
-          </div>
-          <div style="flex:1;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px;text-align:center;">
-            <div style="font-size:16px;font-weight:700;font-family:'DM Mono',monospace;white-space:nowrap;color:${wgoal?'var(--text)':'var(--text3)'};">${goalStr}</div>
-            <div style="font-size:10px;color:var(--text3);margin-top:2px;">목표 몸무게</div>
-          </div>
-          ${wgoal?`<div style="flex:1;background:${reached?'var(--green-bg)':'var(--surface)'};border:1px solid ${reached?'var(--green-bd)':'var(--border)'};border-radius:10px;padding:10px;text-align:center;">
-            <div style="font-size:16px;font-weight:700;font-family:'DM Mono',monospace;color:${reached?'var(--green)':toGoal<=2?'var(--amber)':'var(--text)'};white-space:nowrap;">${toGoalStr}</div>
-            <div style="font-size:10px;color:var(--text3);margin-top:2px;">목표까지</div>
-          </div>`:''}
-        </div>
+        ${weightBlock}
+        ${inbodyBlock}
       </div>`;
     }).join('');
     return;
@@ -7481,10 +7522,10 @@ async function loadActiveCompetition(force=false){
   if(!force&&activeComp!==null&&(now_ms-_compLastFetch)<120000)return; // 2분 캐시
   _compLastFetch=now_ms;
   if(!CU)return;
-  const{data}=await sb.from('competitions').select('id,code,name,creator_id,members,sections,challenge_type,status,start_date,duration_days,weight_goal,member_wgoals').or('creator_id.eq.'+CU.id).eq('status','active').maybeSingle();
+  const{data}=await sb.from('competitions').select('id,code,name,creator_id,members,sections,challenge_type,status,start_date,duration_days,weight_goal,member_wgoals,measure_type,member_inbody_goals').or('creator_id.eq.'+CU.id).eq('status','active').maybeSingle();
   // also check member
   if(!data){
-    const{data:d2}=await sb.from('competitions').select('id,code,name,creator_id,members,sections,challenge_type,status,start_date,duration_days,weight_goal,member_wgoals').eq('status','active').maybeSingle();
+    const{data:d2}=await sb.from('competitions').select('id,code,name,creator_id,members,sections,challenge_type,status,start_date,duration_days,weight_goal,member_wgoals,measure_type,member_inbody_goals').eq('status','active').maybeSingle();
     if(d2&&d2.members){
       try{const mbs=typeof d2.members==='string'?JSON.parse(d2.members):d2.members;if(mbs.includes(CU.id))activeComp=d2;}catch(e){}
     }
