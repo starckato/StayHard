@@ -3270,7 +3270,11 @@ function addScore(type, note='', ptsOverride=null){
   const _prevTier=getTier(_prevScore);
   const _newTier=getTier(CP.total_score);
   if(_prevTier.name!==_newTier.name){
-    setTimeout(()=>{openRoomOverlay();showToast('🎉 '+_newTier.icon+' '+_newTier.name+' 달성!');},800);
+    setTimeout(()=>{
+      launchConfetti();
+      showWin('perfect',0,_newTier.icon+' '+_newTier.name+'\n티어 달성!');
+      openRoomOverlay();
+    },800);
   }
   // 3. localStorage 즉시 백업 — DB flush 전 앱 종료돼도 점수 보존
   try{if(CU)localStorage.setItem('score_'+CU.id,String(CP.total_score));}catch(e){}
@@ -4532,6 +4536,12 @@ const CHAEK_SENTENCES = [
 ];
 
 function showChaekpipty(mealName) {
+  // 오늘 이미 형량이 집행 중이면 중복 추가 방지
+  const curLog=logCache[selectedKey]||log;
+  if((curLog.workouts||[]).some(w=>w._isChaek&&w.status==='planned')){
+    showToast('⚖️ 이미 형량이 집행 중입니다');
+    return;
+  }
   // rage 먼저 표시
   showRage();
   const pick = CHAEK_SENTENCES[Math.floor(Math.random() * CHAEK_SENTENCES.length)];
@@ -4672,7 +4682,11 @@ function _showNextWin(){
   }, duration);
 }
 
+let _confettiLock=false;
 function launchConfetti(){
+  if(_confettiLock)return;
+  _confettiLock=true;
+  setTimeout(()=>_confettiLock=false,1200);
   const colors=['#f87171','#4ade80','#fbbf24','#60a5fa','#7c6af7','#f0f0f0'];
   for(let i=0;i<90;i++){
     const p=document.createElement('div');
@@ -4757,20 +4771,23 @@ function updateGogginsHeader(){
   document.getElementById('hdr-tier').textContent=tier.icon+' '+tier.name;
 }
 function calcStreak(){
+  function hasAct(l){
+    return l&&(
+      (l.workouts||[]).some(w=>w.status==='done')||
+      (l.meals||[]).some(m=>m.type)||
+      l.weight!=null||
+      (l.water_cups||0)>0||
+      (l.mandatory||[]).some(m=>m.done)||
+      (l.targets||[]).filter(t=>!t._meta).some(t=>t.st==='done')
+    );
+  }
   let streak=0;const d=new Date(now);
-  for(let i=0;i<60;i++){
+  // 오늘 활동이 없으면 어제부터 카운트 (아침에 아직 아무것도 안 한 경우 스트릭 0 방지)
+  if(!hasAct(logCache[dkey(d)])) d.setDate(d.getDate()-1);
+  for(let i=0;i<61;i++){
     const k=dkey(d);const l=logCache[k];
-    if(l){
-      const hasActivity=(
-        (l.workouts||[]).some(w=>w.status==='done')||
-        (l.meals||[]).some(m=>m.type)||
-        l.weight!=null||
-        (l.water_cups||0)>0||
-        (l.mandatory||[]).some(m=>m.done)||
-        (l.targets||[]).filter(t=>!t._meta).some(t=>t.st==='done')
-      );
-      if(hasActivity){streak++;d.setDate(d.getDate()-1);}else break;
-    }else break;
+    if(l&&hasAct(l)){streak++;d.setDate(d.getDate()-1);}
+    else break;
   }
   return streak;
 }
@@ -7497,6 +7514,38 @@ async function saveMyInbodyGoal(){
   showToast('✅ 목표가 저장됐어!');
   renderChallengeRoom();
 }
+async function shareChallengResult(){
+  const area=document.getElementById('room-members');
+  if(!area)return;
+  showToast('📸 캡쳐 중...');
+  try{
+    const canvas=await html2canvas(area,{backgroundColor:'#18181c',scale:2,useCORS:true,logging:false});
+    canvas.toBlob(async blob=>{
+      if(!blob){showToast('캡쳐 실패 😢');return;}
+      const file=new File([blob],'stayhard-challenge-result.png',{type:'image/png'});
+      if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){
+        try{await navigator.share({files:[file],title:'StayHard — 챌린지 결과'});return;}catch(e){}
+      }
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement('a');
+      a.href=url;a.download=file.name;a.click();
+      URL.revokeObjectURL(url);
+      showToast('📸 결과 이미지 저장됨!');
+    },'image/png');
+  }catch(err){showToast('캡쳐 실패. 스크린샷을 이용해주세요 📸');}
+}
+async function startChallengeNow(compId){
+  if(!confirm('지금 바로 시작할까요?\n나중에 친구가 코드로 합류할 수 있어요.'))return;
+  const today=new Date().toISOString().split('T')[0];
+  const{error}=await sb.from('competitions')
+    .update({status:'active',start_date:today}).eq('id',compId);
+  if(error){showToast('오류: '+error.message);return;}
+  if(activeComp&&activeComp.id===compId){
+    activeComp.status='active';activeComp.start_date=today;
+  }
+  showToast('✅ 챌린지 시작!');
+  renderChallengeRoom();
+}
 function leaveOrCancelRoom(){
   if(!activeComp)return;
   cancelChallenge(activeComp.id, activeComp.name||'챌린지', null);
@@ -7606,6 +7655,27 @@ async function renderChallengeRoom(){
   const memberWgoals=c.member_wgoals||{};
   const isDietChallenge=c.challenge_type==='diet';
 
+  // ── 대기 중 처리 ──
+  if(c.status==='waiting'){
+    const isCreator=c.creator_id===CU.id;
+    document.getElementById('room-members').innerHTML=`
+      <div style="text-align:center;padding:28px 16px 20px;">
+        <div style="font-size:48px;margin-bottom:12px;">⏳</div>
+        <div style="font-size:17px;font-weight:700;margin-bottom:6px;">참여자를 기다리는 중...</div>
+        <div style="font-size:13px;color:var(--text2);margin-bottom:20px;">친구에게 코드를 공유하세요</div>
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;">
+          <div>
+            <div style="font-size:10px;color:var(--text3);margin-bottom:3px;">참여 코드</div>
+            <div style="font-size:22px;font-weight:800;letter-spacing:4px;font-family:'DM Mono',monospace;">${c.code||'—'}</div>
+          </div>
+          <button onclick="shareRoomCode()" style="padding:8px 14px;background:var(--accent);border:none;border-radius:10px;color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">공유</button>
+        </div>
+        ${isCreator?`<button onclick="startChallengeNow('${c.id}')" style="width:100%;padding:14px;background:var(--surface2);border:1px solid var(--border2);border-radius:12px;color:var(--text2);font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;margin-top:4px;">혼자서 바로 시작하기</button>
+        <div style="font-size:11px;color:var(--text3);margin-top:8px;">나중에 코드로 합류 가능해요</div>`:''}
+      </div>`;
+    return;
+  }
+
   // ── 기한 종료 처리 ──
   if(isCompleted){
     // DB status를 completed로 업데이트 (아직 active면)
@@ -7677,7 +7747,8 @@ async function renderChallengeRoom(){
         <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;">최종 결과</div>
         ${resultRows}
       </div>
-      <div style="padding:0 16px 24px;">
+      <div style="padding:0 16px 24px;display:flex;flex-direction:column;gap:8px;">
+        <button onclick="shareChallengResult()" style="width:100%;padding:13px;background:var(--surface2);border:1px solid var(--border2);border-radius:12px;color:var(--text2);font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">📸 결과 공유</button>
         <button onclick="closeChallengeRoom()" style="width:100%;padding:15px;background:var(--accent);border:none;border-radius:12px;color:#fff;font-size:15px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">확인하고 나가기</button>
       </div>`;
     return;
@@ -8153,8 +8224,8 @@ async function _doJoinComp(comp){
   hideChallengeJoin();
   switchTab('competition',2);
   jbtn.disabled=false;jbtn.textContent='참여하기';
-  showCS('cs-active');
-  await renderCompetition();
+  showToast('🎉 챌린지에 참여했어요!');
+  setTimeout(()=>openChallengeRoom(),300);
 }
 
 async function cancelNewChallenge(){
