@@ -941,6 +941,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
           <div style="font-size:12px;font-weight:600;color:#fff;">입장하기 →</div>
         </div>
       </div>
+      <button id="ch-card-cancel-btn" onclick="event.stopPropagation();cancelActiveChallenge()" style="margin-top:8px;width:100%;padding:8px;background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.3);border-radius:10px;color:#f87171;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;display:none;">🗑 챌린지 취소</button>
     </div>
 
     <!-- DISCOVERY MODE: 빈 상태 -->
@@ -1966,13 +1967,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
       <div class="pav">🧑</div>
       <div><div class="pname" id="p-name"></div><div class="pemail" id="p-email"></div><div style="font-size:10px;color:var(--text3);margin-top:1px;" id="p-username"></div></div>
     </div>
-    <div class="mfield" style="margin-top:4px;">
-      <label class="mlabel">닉네임 변경</label>
-      <div style="display:flex;gap:8px;">
-        <input class="minput" id="p-nickname-inp" placeholder="새 닉네임 입력" style="flex:1;"/>
-        <button onclick="saveNickname()" style="padding:0 18px;background:var(--accent);border:none;border-radius:var(--radius-sm);color:#fff;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;white-space:nowrap;touch-action:manipulation;">저장</button>
-      </div>
-    </div>
+
     <button class="signout-btn" onclick="doSignOut()">로그아웃</button>
     <button class="mbtn-ghost" onclick="closeModal('profile-modal')">닫기</button>
   </div>
@@ -3414,10 +3409,9 @@ async function onLogin(user){
     const{data:np}=await sb.from('profiles').upsert({id:user.id,username:un,display_name:un},{onConflict:'id'}).select().single();
     p=np||{display_name:user.email.split('@')[0],username:user.email.split('@')[0]};
   }
-  // Backfill display_name if missing (old accounts)
+  // display_name 없을 경우 username을 로컬에서만 fallback (DB 덮어쓰기 안 함)
   if(p&&!p.display_name&&p.username){
     p.display_name=p.username;
-    sb.from('profiles').update({display_name:p.username}).eq('id',user.id).then(()=>{});
   }
   if(p&&p.total_score===null)p.total_score=0;
   CP=p;
@@ -3449,7 +3443,7 @@ async function onLogin(user){
   document.getElementById('p-name').textContent=p.display_name||p.username;
   document.getElementById('p-email').textContent=user.email;
   document.getElementById('p-username').textContent='@'+(p.username||'');
-  document.getElementById('hdr-sub').textContent=(p.display_name||p.username)+'의 보드';
+  document.getElementById('hdr-sub').textContent=(p.display_name&&p.display_name.trim()?p.display_name:p.username)+'의 보드';
   showDailyMotto();
   // 병렬 로딩 — 오늘 + 루틴 + 챌린지 동시
   const yesterday=new Date(now);yesterday.setDate(yesterday.getDate()-1);
@@ -6619,18 +6613,13 @@ async function renderChallengeHome(){
   });
 
   const activeComps=myComps.filter(c=>c.status==='active');
-  // 기간 만료됐지만 아직 active인 챌린지도 포함 (renderChallengeRoom에서 처리)
-  const expiredActive=activeComps.filter(c=>{
-    const start=c.start_date?new Date(c.start_date):new Date();
-    const dayNum=Math.floor((new Date()-start)/(1000*60*60*24))+1;
-    return dayNum>c.duration_days;
-  });
   const waitingComps=myComps.filter(c=>c.status==='waiting');
-  const hasActive=activeComps.length>0;
+  const allVisible=[...activeComps,...waitingComps];
+  const hasAny=allVisible.length>0;
 
-  // ── ACTIVE CARD ──
+  // ── ACTIVE CARD: 첫 번째 active만 상단 카드에 표시 ──
   const activeCard=document.getElementById('ch-active-card');
-  if(hasActive){
+  if(activeComps.length>0){
     const c=activeComps[0];
     activeComp=c;
     const startDate=c.start_date?new Date(c.start_date):new Date();
@@ -6644,27 +6633,42 @@ async function renderChallengeHome(){
     document.getElementById('ch-card-progress').style.width=pct+'%';
     document.getElementById('ch-card-days-left').textContent=`${pct}% 달성 · ${daysLeft}일 남음`;
     activeCard.style.display='block';
+    const cancelBtn=document.getElementById('ch-card-cancel-btn');
+    if(cancelBtn)cancelBtn.style.display=c.creator_id===CU.id?'block':'none';
   } else {
     activeCard.style.display='none';
   }
 
   // ── EMPTY / DISCOVERY ──
   const emptyEl=document.getElementById('ch-empty');
-  emptyEl.style.display=hasActive?'none':'block';
+  emptyEl.style.display=hasAny?'none':'block';
 
-  // ── MY LIST (waiting comps) ──
+  // ── MY LIST: active 여러 개 + waiting 전부 표시 ──
   const listSection=document.getElementById('ch-list-section');
   const listEl=document.getElementById('ch-list');
-  if(waitingComps.length>0){
+  // active 2번째 이후 + waiting 모두 목록에 표시
+  const listComps=[...activeComps.slice(1),...waitingComps];
+  if(listComps.length>0){
     listSection.style.display='block';
-    listEl.innerHTML=waitingComps.map(c=>{
+    listEl.innerHTML=listComps.map(c=>{
       const mbs=Array.isArray(c.members)?c.members:JSON.parse(c.members||'[]');
-      return`<div onclick="enterChallenge('${c.id}')" style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px;cursor:pointer;touch-action:manipulation;">
-        <div style="display:flex;justify-content:space-between;align-items:center;">
-          <div style="font-size:13px;font-weight:600;">${c.name||'챌린지'}</div>
-          <span style="font-size:10px;background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-bd);border-radius:10px;padding:2px 8px;">대기 중</span>
+      const isActive=c.status==='active';
+      const startDate=isActive&&c.start_date?new Date(c.start_date):null;
+      const dayNum=startDate?Math.max(1,Math.floor((new Date()-startDate)/(1000*60*60*24))+1):null;
+      const daysLeft=dayNum?Math.max(0,c.duration_days-dayNum+1):null;
+      const statusBadge=isActive
+        ?`<span style="font-size:10px;background:var(--accent-bg);color:var(--accent);border:1px solid var(--accent-bd);border-radius:10px;padding:2px 8px;">진행 중${daysLeft!=null?' · D-'+daysLeft:''}</span>`
+        :`<span style="font-size:10px;background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-bd);border-radius:10px;padding:2px 8px;">대기 중</span>`;
+      const isCreator=c.creator_id===CU.id;
+      return`<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px;margin-bottom:8px;">
+        <div onclick="enterChallenge('${c.id}')" style="cursor:pointer;touch-action:manipulation;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+            <div style="font-size:13px;font-weight:600;">${c.name||'챌린지'}</div>
+            ${statusBadge}
+          </div>
+          <div style="font-size:11px;color:var(--text3);">👥 ${mbs.length}명 · 🔑 ${c.code}</div>
         </div>
-        <div style="font-size:11px;color:var(--text3);margin-top:4px;">👥 ${mbs.length}명 · 🔑 ${c.code}</div>
+        ${isCreator?`<button onclick="cancelChallenge('${c.id}','${(c.name||'챌린지').replace(/'/g,"\'")}',event)" style="margin-top:10px;width:100%;padding:8px;background:var(--red-bg);border:1px solid var(--red-bd);border-radius:8px;color:var(--red);font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">🗑 챌린지 취소</button>`:''}
       </div>`;
     }).join('');
   } else {
@@ -6750,8 +6754,9 @@ async function fixMemberDisplayNames(memberIds){
   try{
     const{data:ps}=await sb.from('profiles').select('id,display_name,username').in('id',memberIds);
     for(const p of (ps||[])){
+      // display_name 없으면 로컬 fallback만, DB 덮어쓰기 안 함
       if(!p.display_name&&p.username){
-        await sb.from('profiles').update({display_name:p.username}).eq('id',p.id);
+        p.display_name=p.username;
       }
     }
   }catch(e){}
@@ -7072,6 +7077,20 @@ function showQuitConfirm(){
   if(!activeComp)return;
   if(!confirm('"'+activeComp.name+'" 챌린지를 포기할까요?\n\n포기하면 고긴스 점수가 대폭 감점되고\n챌린지는 실패로 기록돼요.\n\nLittle Loser가 되는 거야. 진짜로 포기할 거야?'))return;
   quitChallenge();
+}
+
+async function cancelActiveChallenge(){
+  if(!activeComp)return;
+  cancelChallenge(activeComp.id, activeComp.name||'챌린지', null);
+}
+async function cancelChallenge(compId, compName, e){
+  if(e){e.stopPropagation();}
+  if(!confirm('"'+compName+'" 챌린지를 취소할까요?\n\n정말로 취소하면 챌린지가 삭제되고\n참여 중인 멤버도 모두 나가게 됩니다.\n\n취소하시겠습니까?'))return;
+  const{error}=await sb.from('competitions').delete().eq('id',compId).eq('creator_id',CU.id);
+  if(error){showToast('취소 실패: '+error.message);return;}
+  if(activeComp&&activeComp.id===compId)activeComp=null;
+  showToast('챌린지가 취소됐어요');
+  renderChallengeHome();
 }
 
 async function quitChallenge(){
