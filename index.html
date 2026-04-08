@@ -618,13 +618,18 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 
     <!-- YESTERDAY REMINDER BANNER -->
     <div id="reminder-banner" style="display:none;margin:8px 12px 0;border-radius:14px;overflow:hidden;">
-      <div style="background:linear-gradient(135deg,#7c3aed,#dc2626);padding:14px 16px;display:flex;align-items:center;gap:12px;">
-        <div style="font-size:26px;flex-shrink:0;" id="reminder-icon">😤</div>
-        <div style="flex:1;min-width:0;">
-          <div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:2px;" id="reminder-title">어제 못 끝낸 게 있어</div>
-          <div style="font-size:12px;color:rgba(255,255,255,.8);line-height:1.4;" id="reminder-body"></div>
+      <div style="background:linear-gradient(135deg,#7c3aed,#dc2626);padding:14px 16px;">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">
+          <div style="font-size:26px;flex-shrink:0;" id="reminder-icon">😤</div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:2px;" id="reminder-title">어제 못 끝낸 게 있어</div>
+            <div style="font-size:12px;color:rgba(255,255,255,.8);line-height:1.4;" id="reminder-body"></div>
+          </div>
+          <button onclick="dismissReminder()" style="background:rgba(255,255,255,.2);border:none;color:#fff;border-radius:8px;padding:6px 11px;font-size:12px;cursor:pointer;flex-shrink:0;font-family:'DM Sans',sans-serif;touch-action:manipulation;">닫기</button>
         </div>
-        <button onclick="dismissReminder()" style="background:rgba(255,255,255,.2);border:none;color:#fff;border-radius:8px;padding:6px 11px;font-size:12px;cursor:pointer;flex-shrink:0;font-family:'DM Sans',sans-serif;touch-action:manipulation;">닫기</button>
+        <button onclick="goToYesterdayFromBanner()" style="width:100%;padding:10px;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);border-radius:10px;color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;display:flex;align-items:center;justify-content:center;gap:6px;">
+          📅 어제 기록 확인하러 가기 →
+        </button>
       </div>
     </div>
 
@@ -675,7 +680,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
       <button id="summary-open-btn" onclick="openSummaryModal()"
         style="display:flex;align-items:center;gap:6px;padding:5px 12px;background:var(--surface2);border:0.5px solid var(--border2);border-radius:18px;color:var(--text2);font-size:11px;font-weight:500;font-family:'DM Sans',sans-serif;cursor:pointer;touch-action:manipulation;">
         <div id="summary-btn-dot" style="width:6px;height:6px;border-radius:50%;background:var(--amber);flex-shrink:0;"></div>
-        오늘 요약 보기
+        요약 보기
         <span style="font-size:10px;color:var(--text3);">›</span>
       </button>
     </div>
@@ -3560,6 +3565,14 @@ function dismissReminder(){
   setTimeout(()=>banner.style.display='none',200);
   localStorage.setItem('carryover_handled',TODAY);
 }
+function goToYesterdayFromBanner(){
+  dismissReminder();
+  const yesterday=new Date(now);
+  yesterday.setDate(yesterday.getDate()-1);
+  const yKey=dkey(yesterday);
+  sliderOffset=yesterday<weekStart(0)?-1:0;
+  selectDay(yesterday,yKey);
+}
 function show(id){document.getElementById(id).style.display='block';}
 function hide(id){document.getElementById(id).style.display='none';}
 
@@ -4940,18 +4953,28 @@ function closeSummaryModal(){
   document.body.style.overflow='';
 }
 function renderSummaryModal(){
-  const l=logCache[TODAY]||log;
+  const l=logCache[selectedKey]||log;
+  const isToday=selectedKey===TODAY;
   // 날짜
-  const d=new Date();
-  document.getElementById('summ-modal-date').textContent=(d.getMonth()+1)+'월 '+d.getDate()+'일 ('+['일','월','화','수','목','금','토'][d.getDay()]+') · 오늘';
+  const d=new Date(selectedDate);
+  const weekday=['일','월','화','수','목','금','토'][d.getDay()];
+  const dateStr=(d.getMonth()+1)+'월 '+d.getDate()+'일 ('+weekday+')';
+  document.getElementById('summ-modal-date').textContent=dateStr+(isToday?' · 오늘':'');
   // 점수
-  const todayPts=(l._ptsLog||[]).reduce((a,e)=>a+e.pts,0);
-  const totalPts=+(CP?.total_score)||0;
+  const dayPts=(l._ptsLog||[]).reduce((a,e)=>a+e.pts,0);
   const ptsEl=document.getElementById('summ-pts-modal');
-  ptsEl.textContent=(todayPts>=0?'+':'')+todayPts+'pt';
-  ptsEl.style.color=todayPts>0?'var(--accent)':todayPts<0?'var(--red)':'var(--text3)';
-  document.getElementById('summ-total-pts').textContent='누적 '+totalPts.toLocaleString()+'pts';
-  document.getElementById('summ-streak-modal').textContent='🔥 '+calcStreak()+'일';
+  ptsEl.textContent=(dayPts>=0?'+':'')+dayPts+'pt';
+  ptsEl.style.color=dayPts>0?'var(--accent)':dayPts<0?'var(--red)':'var(--text3)';
+  const totalPtsEl=document.getElementById('summ-total-pts');
+  if(isToday){
+    totalPtsEl.textContent='누적 '+(+(CP?.total_score)||0).toLocaleString()+'pts';
+  } else {
+    totalPtsEl.textContent=dateStr+' 기록';
+  }
+  // 스트릭: 오늘만 의미 있음
+  const streakRow=document.getElementById('summ-streak-modal')?.parentElement;
+  if(streakRow)streakRow.style.display=isToday?'':'none';
+  if(isToday)document.getElementById('summ-streak-modal').textContent='🔥 '+calcStreak()+'일';
   // 체중
   const wEl=document.getElementById('summ-w');
   if(l.weight!=null){wEl.textContent=parseFloat(l.weight).toFixed(1)+'kg';wEl.style.color='var(--text)';}
@@ -4981,13 +5004,13 @@ function renderSummaryModal(){
     woEl.style.color='var(--green)';
   }
   // 필수 루틴
-  const dow=(new Date().getDay()+6)%7;
+  const dow=(d.getDay()+6)%7;
   const todayMand=(l.mandatory||[]).filter(t=>!(t.days&&!t.days.includes(dow))).slice(0,10);
   const mandDone=todayMand.filter(m=>m.done).length;
   const rtEl=document.getElementById('summ-rt');
   if(todayMand.length===0){rtEl.textContent='—';rtEl.style.color='var(--text3)';}
   else{rtEl.textContent=mandDone+'/'+todayMand.length;rtEl.style.color=mandDone===todayMand.length?'var(--green)':'var(--text3)';}
-  // 오늘의 할일
+  // 할일
   const tgts=(l.targets||[]).filter(t=>!t._meta&&t.text);
   const tgtDone=tgts.filter(t=>t.st==='done').length;
   const tgEl=document.getElementById('summ-tg');
@@ -5002,7 +5025,7 @@ async function shareSummary(){
     const canvas=await html2canvas(area,{backgroundColor:'#18181c',scale:2,useCORS:true,logging:false});
     canvas.toBlob(async blob=>{
       if(!blob){showToast('캡쳐 실패 😢');return;}
-      const file=new File([blob],'stayhard-'+TODAY+'.png',{type:'image/png'});
+      const file=new File([blob],'stayhard-'+selectedKey+'.png',{type:'image/png'});
       if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){
         try{await navigator.share({files:[file],title:'StayHard — 오늘의 요약'});return;}catch(e){}
       }
