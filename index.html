@@ -2668,15 +2668,18 @@ function openWorkoutSession(prefillExercises){
     btn.textContent=labels[_workoutMode]||'운동 종료 ✓';
   }
   document.getElementById('workout-session-overlay').classList.add('open');
+  document.body.style.overflow='hidden';
   renderSession();
 }
 function closeSession(){
   if(currentSession.length===0){
     document.getElementById('workout-session-overlay').classList.remove('open');
+    document.body.style.overflow='';
     return;
   }
   if(confirm('세션을 종료하시겠어요? 완료된 세트는 저장됩니다.')){
     document.getElementById('workout-session-overlay').classList.remove('open');
+    document.body.style.overflow='';
   }
 }
 function findPrevSets(exName){
@@ -2785,7 +2788,7 @@ function renderSession(){
         <button class="ws-add-set" style="border-top:none;flex:1;" onclick="addSet(${ei})">+ 세트 추가</button>
         ${ex.sets.length>1&&(ex.sets[0].kg||ex.sets[0].reps)?`<button class="ws-add-set" style="border-top:none;border-left:1px solid var(--border);flex:1;color:var(--accent);font-weight:500;" onclick="fillRemainingSets(${ei})">나머지 채우기 ↓</button>`:''}
       </div>
-      <button onclick="completeNextSet(${ei})" ${ex.sets.every(s=>s.done)?'disabled':''} style="width:100%;padding:14px;border:none;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;border-radius:0 0 var(--radius) var(--radius);touch-action:manipulation;cursor:${ex.sets.every(s=>s.done)?'default':'pointer'};background:${ex.sets.every(s=>s.done)?'var(--green)':'var(--accent)'};color:#fff;">${ex.sets.every(s=>s.done)?'✓ 모든 세트 완료!':'세트 '+(ex.sets.findIndex(s=>!s.done)+1)+' 완료  ✓  ('+ex.sets.filter(s=>s.done).length+'/'+ex.sets.length+')'}</button>`:''}
+      <button onclick="completeNextSet(${ei})" ${ex.sets.every(s=>s.done)?'disabled':''} style="width:100%;padding:14px;border:none;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;border-radius:0 0 var(--radius) var(--radius);touch-action:manipulation;cursor:${ex.sets.every(s=>s.done)?'default':'pointer'};background:${ex.sets.every(s=>s.done)?'var(--green)':'var(--blue)'};color:#fff;">${ex.sets.every(s=>s.done)?'✓ 모든 세트 완료!':'세트 '+(ex.sets.findIndex(s=>!s.done)+1)+' 완료  ✓  ('+ex.sets.filter(s=>s.done).length+'/'+ex.sets.length+')'}</button>`:''}
     </div>`;
   }).join('')+`<button onclick="openAddExerciseModal()" style="width:100%;margin:12px 0 0;padding:16px;background:var(--accent-bg);border:2px solid var(--accent-bd);border-radius:var(--radius);font-size:14px;font-weight:700;color:var(--accent);cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;touch-action:manipulation;">
     <span style="font-size:20px;">＋</span> 같은 세션에 운동 추가
@@ -2831,11 +2834,13 @@ function removeSetConfirm(ei,si){
   if(currentSession[ei].sets.length<=1){showToast('마지막 세트는 삭제할 수 없어요');return;}
   const wsBody=document.getElementById('ws-body');
   const scrollPos=wsBody?wsBody.scrollTop:0;
+  const isLastSet=si>=currentSession[ei].sets.length-1; // splice 전에 판정
   currentSession[ei].sets.splice(si,1);
   renderSession();
   if(wsBody){
-    const isLastSet=si>=currentSession[ei].sets.length;
-    wsBody.scrollTop=isLastSet?Math.max(0,scrollPos-44):scrollPos;
+    requestAnimationFrame(()=>{
+      wsBody.scrollTop=isLastSet?Math.max(0,scrollPos-44):scrollPos;
+    });
   }
 }
 function completeNextSet(ei){
@@ -3106,6 +3111,7 @@ function startSessionFromRoutine(id){
   sessionSourceRoutineId=id;
   sessionOriginalExCount=prefill.length;
   document.getElementById('workout-session-overlay').classList.add('open');
+  document.body.style.overflow='hidden';
   renderSession();
 }
 
@@ -6068,6 +6074,7 @@ function editGymSession(i){
   }));
   editingSessionIdx=i;
   document.getElementById('workout-session-overlay').classList.add('open');
+  document.body.style.overflow='hidden';
   renderSession();
   // Update button label to signal edit mode
   const btn=document.getElementById('ws-done-btn');
@@ -6221,6 +6228,7 @@ async function finishSession(){
   if(_finishingSession)return; // 이미 처리 중이면 무시
   if(currentSession.length===0){
     document.getElementById('workout-session-overlay').classList.remove('open');
+    document.body.style.overflow='';
     return;
   }
   _finishingSession=true;
@@ -6259,6 +6267,7 @@ async function finishSession(){
   renderWorkouts();
   // UI 즉시 닫기 + 팡파레 즉시 (저장 기다리지 않음)
   document.getElementById('workout-session-overlay').classList.remove('open');
+  document.body.style.overflow='';
   if(!wasEditing){
     if(_sessionStatus==='planned'){
       // 예정 등록 — 점수 없음, 조용히 저장
