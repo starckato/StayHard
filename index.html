@@ -1235,6 +1235,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 
         <!-- 인바디 목표 필드 -->
         <div id="ch-goal-inbody-fields" style="display:none;">
+          <!-- 목표 체중 -->
           <div class="mfield">
             <label class="mlabel">내 목표 체중 (kg)</label>
             <div style="position:relative;">
@@ -1242,17 +1243,35 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
               <span style="position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:13px;color:var(--text3);">kg</span>
             </div>
           </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:0;">
-            <div class="mfield" style="margin-bottom:0;">
-              <label class="mlabel">목표 골격근량 (kg) <span style="font-weight:400;color:var(--text3);font-size:10px;">선택</span></label>
-              <input class="minput" id="comp-muscle-goal" type="number" placeholder="예: 35.0" step="0.1"/>
-            </div>
-            <div class="mfield" style="margin-bottom:0;">
-              <label class="mlabel">목표 체지방률 (%) <span style="font-weight:400;color:var(--text3);font-size:10px;">선택</span></label>
-              <input class="minput" id="comp-fatpct-goal" type="number" placeholder="예: 15.0" step="0.1"/>
+          <!-- 골격근량: 현재 / 목표 -->
+          <div style="margin-bottom:10px;">
+            <div style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;">💪 골격근량 (kg)</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+              <div>
+                <label style="font-size:10px;color:var(--text3);display:block;margin-bottom:4px;">현재</label>
+                <input class="minput" id="comp-muscle-now" type="number" placeholder="예: 32.5" step="0.1" style="padding:10px 12px;font-size:14px;"/>
+              </div>
+              <div>
+                <label style="font-size:10px;color:var(--text3);display:block;margin-bottom:4px;">목표</label>
+                <input class="minput" id="comp-muscle-goal" type="number" placeholder="예: 35.0" step="0.1" style="padding:10px 12px;font-size:14px;"/>
+              </div>
             </div>
           </div>
-          <div style="font-size:11px;color:var(--text3);margin-top:6px;line-height:1.5;">📌 그래프는 체중 기준으로 표시돼요. 참여자마다 목표를 개별 설정해요.</div>
+          <!-- 체지방률: 현재 / 목표 -->
+          <div style="margin-bottom:8px;">
+            <div style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;">🔥 체지방률 (%)</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+              <div>
+                <label style="font-size:10px;color:var(--text3);display:block;margin-bottom:4px;">현재</label>
+                <input class="minput" id="comp-fat-now" type="number" placeholder="예: 20.0" step="0.1" style="padding:10px 12px;font-size:14px;"/>
+              </div>
+              <div>
+                <label style="font-size:10px;color:var(--text3);display:block;margin-bottom:4px;">목표</label>
+                <input class="minput" id="comp-fatpct-goal" type="number" placeholder="예: 15.0" step="0.1" style="padding:10px 12px;font-size:14px;"/>
+              </div>
+            </div>
+          </div>
+          <div style="font-size:11px;color:var(--text3);line-height:1.5;">📌 그래프는 체중 기준 표시. 선택사항이에요.</div>
         </div>
       </div>
 
@@ -1761,6 +1780,79 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 </div>
 
 <!-- SUMMARY MODAL -->
+<!-- 인바디 목표 팝업 -->
+<div id="inbody-popup" style="display:none;position:fixed;inset:0;z-index:900;background:rgba(0,0,0,0.7);align-items:flex-end;justify-content:center;max-width:430px;left:50%;transform:translateX(-50%);" onclick="if(event.target===this)closeInbodyPopup()">
+  <div style="background:var(--surface);border-radius:22px 22px 0 0;border-top:0.5px solid var(--border2);width:100%;padding:0 0 32px;">
+    <div style="width:32px;height:4px;background:var(--border2);border-radius:2px;margin:10px auto 0;"></div>
+    <div style="padding:14px 18px 12px;display:flex;justify-content:space-between;align-items:center;border-bottom:0.5px solid var(--border);">
+      <div>
+        <div style="font-size:15px;font-weight:700;" id="inbody-popup-name">인바디 목표</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:2px;">목표 vs 현재 비교</div>
+      </div>
+      <button onclick="closeInbodyPopup()" style="width:26px;height:26px;border-radius:50%;background:var(--surface2);border:none;color:var(--text2);font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
+    </div>
+    <div style="padding:16px 18px;">
+
+      <!-- 체중 행 -->
+      <div style="display:flex;gap:8px;margin-bottom:10px;">
+        <div style="flex:1;background:var(--surface2);border-radius:10px;padding:12px;text-align:center;">
+          <div style="font-size:10px;color:var(--text3);margin-bottom:4px;letter-spacing:.04em;">현재 체중</div>
+          <div style="font-size:18px;font-weight:700;font-family:'DM Mono',monospace;" id="ibp-cur-w">—</div>
+        </div>
+        <div style="flex:1;background:var(--surface2);border-radius:10px;padding:12px;text-align:center;">
+          <div style="font-size:10px;color:var(--text3);margin-bottom:4px;letter-spacing:.04em;">목표 체중</div>
+          <div style="font-size:18px;font-weight:700;font-family:'DM Mono',monospace;" id="ibp-goal-w">—</div>
+        </div>
+        <div style="flex:1;background:var(--surface2);border-radius:10px;padding:12px;text-align:center;">
+          <div style="font-size:10px;color:var(--text3);margin-bottom:4px;letter-spacing:.04em;">목표까지</div>
+          <div style="font-size:18px;font-weight:700;font-family:'DM Mono',monospace;" id="ibp-diff-w">—</div>
+        </div>
+      </div>
+
+      <!-- 골격근량 행 -->
+      <div id="ibp-muscle-row" style="display:none;margin-bottom:8px;">
+        <div style="font-size:11px;font-weight:600;color:var(--green);margin-bottom:6px;letter-spacing:.04em;">💪 골격근량</div>
+        <div style="display:flex;gap:8px;">
+          <div style="flex:1;background:var(--surface2);border-radius:10px;padding:10px;text-align:center;">
+            <div style="font-size:10px;color:var(--text3);margin-bottom:3px;">시작</div>
+            <div style="font-size:15px;font-weight:700;font-family:'DM Mono',monospace;color:var(--green);" id="ibp-muscle-start">—</div>
+          </div>
+          <div style="flex:1;background:var(--surface2);border-radius:10px;padding:10px;text-align:center;">
+            <div style="font-size:10px;color:var(--text3);margin-bottom:3px;">목표</div>
+            <div style="font-size:15px;font-weight:700;font-family:'DM Mono',monospace;color:var(--green);" id="ibp-muscle-goal">—</div>
+          </div>
+          <div style="flex:1;background:var(--surface2);border-radius:10px;padding:10px;text-align:center;">
+            <div style="font-size:10px;color:var(--text3);margin-bottom:3px;">목표까지</div>
+            <div style="font-size:15px;font-weight:700;font-family:'DM Mono',monospace;" id="ibp-muscle-diff">—</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 체지방률 행 -->
+      <div id="ibp-fat-row" style="display:none;">
+        <div style="font-size:11px;font-weight:600;color:var(--amber);margin-bottom:6px;letter-spacing:.04em;">🔥 체지방률</div>
+        <div style="display:flex;gap:8px;">
+          <div style="flex:1;background:var(--surface2);border-radius:10px;padding:10px;text-align:center;">
+            <div style="font-size:10px;color:var(--text3);margin-bottom:3px;">시작</div>
+            <div style="font-size:15px;font-weight:700;font-family:'DM Mono',monospace;color:var(--amber);" id="ibp-fat-start">—</div>
+          </div>
+          <div style="flex:1;background:var(--surface2);border-radius:10px;padding:10px;text-align:center;">
+            <div style="font-size:10px;color:var(--text3);margin-bottom:3px;">목표</div>
+            <div style="font-size:15px;font-weight:700;font-family:'DM Mono',monospace;color:var(--amber);" id="ibp-fat-goal">—</div>
+          </div>
+          <div style="flex:1;background:var(--surface2);border-radius:10px;padding:10px;text-align:center;">
+            <div style="font-size:10px;color:var(--text3);margin-bottom:3px;">목표까지</div>
+            <div style="font-size:15px;font-weight:700;font-family:'DM Mono',monospace;" id="ibp-fat-diff">—</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 데이터 없을 때 -->
+      <div id="ibp-empty" style="display:none;text-align:center;padding:20px 0;color:var(--text3);font-size:13px;">인바디 목표가 설정되지 않았어요</div>
+    </div>
+  </div>
+</div>
+
 <div id="summary-modal"
   style="display:none;position:fixed;top:0;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;z-index:850;background:rgba(0,0,0,0.65);align-items:flex-end;justify-content:center;"
   onclick="if(event.target===this)closeSummaryModal()">
@@ -6797,7 +6889,7 @@ function prefillChallenge(name, days){
 function showChallengeCreate(){
   compDurVal=14;compType='routine';compMeasureType='weight';
   // 인바디 목표 필드 초기화
-  ['comp-wgoal','comp-wgoal-inbody','comp-muscle-goal','comp-fatpct-goal'].forEach(id=>{
+  ['comp-wgoal','comp-wgoal-inbody','comp-muscle-now','comp-muscle-goal','comp-fat-now','comp-fatpct-goal'].forEach(id=>{
     const el=document.getElementById(id);if(el)el.value='';
   });
   selectMeasureType('weight');
@@ -7162,6 +7254,75 @@ function closeScoreGuide(){
   document.body.style.overflow='';
 }
 
+function openInbodyPopup(name, wgoal, curW, inbodyGoal){
+  document.getElementById('inbody-popup-name').textContent = name + '의 인바디 목표';
+  const el = document.getElementById('inbody-popup');
+
+  // 체중
+  const cw = parseFloat(curW)||null;
+  const gw = parseFloat(wgoal)||null;
+  document.getElementById('ibp-cur-w').textContent = cw ? cw.toFixed(1)+'kg' : '—';
+  document.getElementById('ibp-goal-w').textContent = gw ? gw+'kg' : '미설정';
+  if(cw&&gw){
+    const diff = (cw-gw).toFixed(1);
+    const diffEl = document.getElementById('ibp-diff-w');
+    diffEl.textContent = cw<=gw ? '🎉 달성!' : diff+'kg';
+    diffEl.style.color = cw<=gw ? 'var(--green)' : parseFloat(diff)<=2 ? 'var(--amber)' : 'var(--text)';
+  } else {
+    document.getElementById('ibp-diff-w').textContent = '—';
+  }
+
+  // 골격근량
+  const muscleRow = document.getElementById('ibp-muscle-row');
+  const mStart = inbodyGoal?.muscleNow;
+  const mGoal  = inbodyGoal?.muscle;
+  if(mStart||mGoal){
+    muscleRow.style.display = 'block';
+    document.getElementById('ibp-muscle-start').textContent = mStart ? mStart+'kg' : '—';
+    document.getElementById('ibp-muscle-goal').textContent  = mGoal  ? mGoal+'kg'  : '—';
+    if(mStart&&mGoal){
+      const diff = (mGoal - mStart).toFixed(1);
+      const diffEl = document.getElementById('ibp-muscle-diff');
+      diffEl.textContent = parseFloat(diff) <= 0 ? '🎉 달성!' : '+'+diff+'kg';
+      diffEl.style.color = parseFloat(diff) <= 0 ? 'var(--green)' : 'var(--amber)';
+    } else {
+      document.getElementById('ibp-muscle-diff').textContent = '—';
+    }
+  } else {
+    muscleRow.style.display = 'none';
+  }
+
+  // 체지방률
+  const fatRow = document.getElementById('ibp-fat-row');
+  const fStart = inbodyGoal?.fatNow;
+  const fGoal  = inbodyGoal?.fatPct;
+  if(fStart||fGoal){
+    fatRow.style.display = 'block';
+    document.getElementById('ibp-fat-start').textContent = fStart ? fStart+'%' : '—';
+    document.getElementById('ibp-fat-goal').textContent  = fGoal  ? fGoal+'%'  : '—';
+    if(fStart&&fGoal){
+      const diff = (fStart - fGoal).toFixed(1);
+      const diffEl = document.getElementById('ibp-fat-diff');
+      diffEl.textContent = parseFloat(diff) <= 0 ? '목표 초과' : diff+'%';
+      diffEl.style.color = parseFloat(diff) <= 0 ? 'var(--red)' : parseFloat(diff) < 1 ? 'var(--amber)' : 'var(--green)';
+    } else {
+      document.getElementById('ibp-fat-diff').textContent = '—';
+    }
+  } else {
+    fatRow.style.display = 'none';
+  }
+
+  // 빈 상태
+  const hasAny = (mStart||mGoal||fStart||fGoal);
+  document.getElementById('ibp-empty').style.display = hasAny ? 'none' : 'block';
+
+  el.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+function closeInbodyPopup(){
+  document.getElementById('inbody-popup').style.display = 'none';
+  document.body.style.overflow = '';
+}
 function leaveOrCancelRoom(){
   if(!activeComp)return;
   cancelChallenge(activeComp.id, activeComp.name||'챌린지', null);
@@ -7419,28 +7580,15 @@ async function renderChallengeRoom(){
           </div>`:''}
         </div>`;
 
-      // 인바디 블록 (인바디 모드일 때만)
-      let inbodyBlock='';
+      // 인바디 버튼 (인바디 모드일 때만)
+      let inbodyBtn='';
       if(isInbodyChallenge){
-        const curM=currentMuscle[p.id];
-        const curF=currentFatPct[p.id];
-        const inbodyGoal=memberInbodyGoals[p.id]||{};
-        const goalM=inbodyGoal.muscle;
-        const goalF=inbodyGoal.fatPct;
-
-        const muscleRow=`
-          <div style="flex:1;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:8px 10px;">
-            <div style="font-size:10px;color:var(--text3);margin-bottom:3px;letter-spacing:.04em;">💪 골격근량</div>
-            <div style="font-size:14px;font-weight:700;font-family:'DM Mono',monospace;color:var(--green);">${curM!=null?curM.toFixed(1)+'kg':'—'}</div>
-            ${goalM?`<div style="font-size:10px;color:var(--text3);margin-top:2px;">목표 ${goalM}kg</div>`:''}
-          </div>`;
-        const fatRow=`
-          <div style="flex:1;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:8px 10px;">
-            <div style="font-size:10px;color:var(--text3);margin-bottom:3px;letter-spacing:.04em;">🔥 체지방률</div>
-            <div style="font-size:14px;font-weight:700;font-family:'DM Mono',monospace;color:var(--amber);">${curF!=null?curF.toFixed(1)+'%':'—'}</div>
-            ${goalF?`<div style="font-size:10px;color:var(--text3);margin-top:2px;">목표 ${goalF}%</div>`:''}
-          </div>`;
-        inbodyBlock=`<div style="display:flex;gap:8px;">${muscleRow}${fatRow}</div>`;
+        const ig=memberInbodyGoals[p.id]||{};
+        const hasInbody=ig.muscle||ig.fatPct||ig.muscleNow||ig.fatNow;
+        const inbodyDataJson=JSON.stringify(ig).replace(/"/g,'&quot;');
+        inbodyBtn=`<button onclick="openInbodyPopup('${displayName}','${wgoal||0}','${(curW||0)}',${inbodyDataJson})" style="margin-top:8px;width:100%;padding:8px 12px;background:var(--surface);border:1px solid var(--border2);border-radius:10px;color:var(--text2);font-size:12px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;display:flex;align-items:center;justify-content:center;gap:6px;">
+          <span>📊</span><span>인바디 목표 보기</span><span style="margin-left:auto;color:var(--text3);">›</span>
+        </button>`;
       }
 
       return`<div style="background:${bg};border:1px solid ${border};border-radius:14px;padding:14px 16px;margin-bottom:8px;">
@@ -7453,7 +7601,7 @@ async function renderChallengeRoom(){
           ${reached?'<div style="font-size:12px;font-weight:700;color:var(--green);">🎉 달성!</div>':''}
         </div>
         ${weightBlock}
-        ${inbodyBlock}
+        ${inbodyBtn}
       </div>`;
     }).join('');
     return;
@@ -7650,6 +7798,8 @@ async function createComp(){
     (document.getElementById(isInbody?'comp-wgoal-inbody':'comp-wgoal')||{}).focus?.();
     return;
   }
+  const muscleNow=isInbody?(parseFloat(document.getElementById('comp-muscle-now')?.value)||null):null;
+  const fatNow=isInbody?(parseFloat(document.getElementById('comp-fat-now')?.value)||null):null;
   const muscleGoal=isInbody?(parseFloat(document.getElementById('comp-muscle-goal')?.value)||null):null;
   const fatPctGoal=isInbody?(parseFloat(document.getElementById('comp-fatpct-goal')?.value)||null):null;
 
@@ -7659,8 +7809,11 @@ async function createComp(){
   memberWgoals[CU.id]=wgoal;
   // 인바디 목표 별도 저장 (member_inbody_goals)
   const memberInbodyGoals={};
-  if(isInbody&&(muscleGoal||fatPctGoal)){
-    memberInbodyGoals[CU.id]={muscle:muscleGoal,fatPct:fatPctGoal};
+  if(isInbody&&(muscleNow||muscleGoal||fatNow||fatPctGoal)){
+    memberInbodyGoals[CU.id]={
+      muscleNow:muscleNow, muscle:muscleGoal,
+      fatNow:fatNow, fatPct:fatPctGoal
+    };
   }
   const sections={diet:true,workout:true,mandatory:true,target:false};
   const startInput=document.getElementById('dur-start');
