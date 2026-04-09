@@ -664,15 +664,19 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 
     <!-- CARRY-OVER MODAL -->
     <div id="carryover-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:900;align-items:flex-end;justify-content:center;">
-      <div style="width:100%;max-width:430px;background:var(--surface);border-radius:20px 20px 0 0;padding:24px 20px 40px;">
-        <div style="font-size:22px;text-align:center;margin-bottom:8px;" id="co-icon">📋</div>
-        <div style="font-size:17px;font-weight:700;text-align:center;margin-bottom:6px;" id="co-title">어제 못 한 할일이 있어요</div>
-        <div style="font-size:14px;color:var(--text2);text-align:center;margin-bottom:20px;line-height:1.6;" id="co-body"></div>
-        <div id="co-task-list" style="margin-bottom:20px;max-height:180px;overflow-y:auto;"></div>
-        <div style="display:flex;flex-direction:column;gap:10px;">
-          <button onclick="carryOverTasks()" style="width:100%;padding:16px;background:var(--accent);border:none;border-radius:12px;color:#fff;font-size:16px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">오늘로 가져올게요</button>
-          <button onclick="skipCarryOver()" style="width:100%;padding:14px;background:var(--surface2);border:1px solid var(--border);border-radius:12px;color:var(--text2);font-size:15px;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">어제 다 했는데 깜빡했어요 ✓</button>
-          <button onclick="dismissCarryOver()" style="width:100%;padding:12px;background:none;border:none;color:var(--text3);font-size:14px;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">그냥 넘어갈게요</button>
+      <div style="width:100%;max-width:430px;background:var(--surface);border-radius:20px 20px 0 0;padding:20px 20px 36px;">
+        <div style="width:36px;height:3px;background:var(--border2);border-radius:2px;margin:0 auto 16px;"></div>
+        <div style="font-size:20px;text-align:center;margin-bottom:6px;" id="co-icon">📋</div>
+        <div style="font-size:16px;font-weight:700;text-align:center;margin-bottom:4px;" id="co-title">어제 못 한 할일이 있어요</div>
+        <div style="font-size:13px;color:var(--text2);text-align:center;margin-bottom:16px;line-height:1.5;" id="co-body"></div>
+        <!-- 항목별 선택 리스트 -->
+        <div id="co-task-list" style="margin-bottom:16px;max-height:200px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;"></div>
+        <!-- 선택 요약 -->
+        <div id="co-selection-hint" style="font-size:11px;color:var(--text3);text-align:center;margin-bottom:12px;"></div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <button onclick="carryOverSelectedTasks()" id="co-carry-btn" style="width:100%;padding:15px;background:var(--accent);border:none;border-radius:12px;color:#fff;font-size:15px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">선택 항목 오늘로 이월</button>
+          <button onclick="skipCarryOver()" style="width:100%;padding:13px;background:var(--surface2);border:1px solid var(--border);border-radius:12px;color:var(--text2);font-size:14px;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">어제 다 했어요 ✓</button>
+          <button onclick="dismissCarryOver()" style="width:100%;padding:10px;background:none;border:none;color:var(--text3);font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">그냥 넘어갈게요</button>
         </div>
       </div>
     </div>
@@ -1708,6 +1712,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
     <div class="mfield">
       <label class="mlabel">체중 (kg) <span style="font-size:10px;font-weight:600;padding:1px 6px;border-radius:5px;background:rgba(248,113,113,0.12);color:#f87171;border:1px solid rgba(248,113,113,0.2);">필수</span></label>
       <input class="minput" id="wt-inp" type="number" step="0.1" placeholder="예: 74.0"/>
+      <div id="wt-yesterday-hint" style="display:none;margin-top:7px;padding:7px 11px;background:var(--surface2);border-radius:8px;font-size:12px;color:var(--text2);display:flex;align-items:center;gap:6px;"></div>
     </div>
 
     <!-- 목표 체중 -->
@@ -3525,43 +3530,90 @@ async function checkYesterdayReminder(){
 function showCarryOverModal(tasks, missing){
   const modal=document.getElementById('carryover-modal');
   document.getElementById('co-icon').textContent=tasks.length>2?'😤':'📋';
-  document.getElementById('co-title').textContent=`어제 못 한 할일이 ${tasks.length}개 있어요`;
-  
-  const missingStr=missing.length>0?`\n(${missing.join(', ')}도 미완료)`:'';
-  document.getElementById('co-body').textContent=`혹시 까먹으셨나요, 아니면 오늘 마저 하실 건가요?${missingStr}`;
-  
-  document.getElementById('co-task-list').innerHTML=tasks.map(t=>`
-    <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--surface2);border-radius:10px;margin-bottom:6px;">
-      <div style="width:8px;height:8px;border-radius:50%;background:var(--accent);flex-shrink:0;"></div>
-      <div style="font-size:14px;color:var(--text);">${t.text}</div>
+  document.getElementById('co-title').textContent=`어제 못 한 할일 ${tasks.length}개`;
+  const missingStr=missing.length>0?`어제 ${missing.join(', ')}도 미완료였어요.`:'';
+  document.getElementById('co-body').textContent=(missingStr?missingStr+' ':'')+'오늘로 이월할 항목을 골라주세요.';
+
+  // 항목별 체크 UI — 기본 전체 선택
+  document.getElementById('co-task-list').innerHTML=tasks.map((t,i)=>`
+    <div onclick="toggleCarryItem(${i},this)" id="co-item-${i}" data-selected="true"
+      style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--accent-bg);border:1.5px solid var(--accent-bd);border-radius:10px;cursor:pointer;touch-action:manipulation;transition:all .15s;">
+      <div id="co-chk-${i}" style="width:18px;height:18px;border-radius:5px;background:var(--accent);border:2px solid var(--accent);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:11px;color:#fff;transition:all .15s;">✓</div>
+      <div style="font-size:13px;color:var(--text);font-weight:500;flex:1;">${t.text}</div>
+      <div style="font-size:10px;color:var(--accent);font-weight:600;">이월</div>
     </div>`).join('');
-  
+
+  _updateCarryHint(tasks.length, tasks.length);
   modal.style.display='flex';
 }
 
-async function carryOverTasks(){
-  // Copy undone tasks to today
+function toggleCarryItem(i, el){
+  const sel=el.getAttribute('data-selected')==='true';
+  const newSel=!sel;
+  el.setAttribute('data-selected', String(newSel));
+  const chk=document.getElementById('co-chk-'+i);
+  if(newSel){
+    el.style.background='var(--accent-bg)';el.style.borderColor='var(--accent-bd)';
+    el.querySelector('div:last-child').style.color='var(--accent)';
+    el.querySelector('div:last-child').textContent='이월';
+    if(chk){chk.style.background='var(--accent)';chk.style.borderColor='var(--accent)';chk.textContent='✓';}
+  } else {
+    el.style.background='var(--surface2)';el.style.borderColor='var(--border)';
+    el.querySelector('div:last-child').style.color='var(--text3)';
+    el.querySelector('div:last-child').textContent='건너뜀';
+    if(chk){chk.style.background='transparent';chk.style.borderColor='var(--border2)';chk.textContent='';}
+  }
+  const total=_yesterdayUndoneTasks.length;
+  const selCount=document.querySelectorAll('#co-task-list [data-selected="true"]').length;
+  _updateCarryHint(selCount, total);
+}
+
+function _updateCarryHint(selCount, total){
+  const hint=document.getElementById('co-selection-hint');
+  const btn=document.getElementById('co-carry-btn');
+  if(hint)hint.textContent=selCount>0?`${selCount}개 이월 · ${total-selCount}개 실패 처리`:`모두 건너뜀 — 어제 할일은 실패 처리됩니다`;
+  if(btn)btn.textContent=selCount>0?`${selCount}개 오늘로 이월`:'건너뜀으로 확인';
+  if(btn)btn.style.opacity=selCount>0?'1':'0.6';
+}
+
+async function carryOverSelectedTasks(){
   const todayTargets=log.targets||[];
-  _yesterdayUndoneTasks.forEach(t=>{
-    if(!todayTargets.find(tt=>tt.text===t.text)){
-      todayTargets.push({text:t.text,st:''});
+  const yk=dkey(new Date(now.getFullYear(),now.getMonth(),now.getDate()-1));
+  const selectedTexts=new Set();
+
+  // 선택된 것 오늘로 이월
+  _yesterdayUndoneTasks.forEach((t,i)=>{
+    const el=document.getElementById('co-item-'+i);
+    const sel=el?.getAttribute('data-selected')==='true';
+    if(sel){
+      selectedTexts.add(t.text);
+      if(!todayTargets.find(tt=>tt.text===t.text)){
+        todayTargets.push({text:t.text,st:'',_carried:true});
+      }
     }
   });
   log.targets=todayTargets;
-  
-  // Mark yesterday's undone as skipped
-  const yk=dkey(new Date(now.getFullYear(),now.getMonth(),now.getDate()-1));
+
+  // 어제 항목 처리: 이월된 것은 fail, 이미 done은 유지
   if(logCache[yk]){
-    logCache[yk].targets=(logCache[yk].targets||[]).map(t=>
-      t.st!=='done'&&t.st!=='fail'?{...t,st:'fail'}:t
-    );
+    logCache[yk].targets=(logCache[yk].targets||[]).map(t=>{
+      if(t.st==='done'||t.st==='fail')return t;
+      return{...t,st:'fail'};
+    });
     await saveLog(yk,true);
   }
-  
+
   await saveLog(selectedKey,true);
   renderTargets();
   dismissCarryOver();
-  showToast(`✅ ${_yesterdayUndoneTasks.length}개 할일을 오늘로 옮겼어요`);
+  const cnt=selectedTexts.size;
+  const skipCnt=_yesterdayUndoneTasks.length-cnt;
+  showToast(cnt>0?(skipCnt>0?`✅ ${cnt}개 이월, ${skipCnt}개 실패 처리`:`✅ ${cnt}개 오늘로 이월`):'건너뜀 처리 완료');
+}
+
+async function carryOverTasks(){
+  // legacy — redirect to new function
+  await carryOverSelectedTasks();
 }
 
 async function skipCarryOver(){
@@ -5263,6 +5315,29 @@ function openWeightModal(){
   if(inp)inp.value=log.weight!=null?parseFloat(log.weight).toFixed(1):'';
   const currentGoal=getWeightGoal();
   if(gi)gi.value=currentGoal?currentGoal.toFixed(1):'';
+
+  // 전날 체중 힌트
+  const hint=document.getElementById('wt-yesterday-hint');
+  if(hint){
+    const yest=new Date(now);yest.setDate(yest.getDate()-1);
+    const yk=dkey(yest);
+    const yl=logCache[yk];
+    const yWeight=yl?.weight!=null?parseFloat(yl.weight):null;
+    if(yWeight!=null){
+      const todayW=log.weight!=null?parseFloat(log.weight):null;
+      let diffStr='';
+      if(todayW!=null){
+        const diff=todayW-yWeight;
+        const sign=diff>0?'+':'';
+        const col=diff>0?'var(--red)':diff<0?'var(--green)':'var(--text3)';
+        diffStr=` <span style="font-weight:600;color:${col};">${sign}${diff.toFixed(1)}kg</span>`;
+      }
+      hint.style.display='flex';
+      hint.innerHTML=`<span style="color:var(--text3);">어제</span><span style="color:var(--text);font-weight:600;">${yWeight.toFixed(1)}kg</span>${diffStr}`;
+    } else {
+      hint.style.display='none';
+    }
+  }
   openModal('weight-modal');
 }
 // ── 인바디 자동계산 헬퍼 ──
@@ -6997,7 +7072,8 @@ function renderTargets(){
         </div>
         <div class="tgt-text ${isDone?'done':isFail?'fail':''}"
           onclick="togTgt(${i})"
-          style="cursor:pointer;flex:1;padding:12px 4px;-webkit-user-select:none;user-select:none;">${t.text}</div>
+          style="cursor:pointer;flex:1;padding:12px 4px;-webkit-user-select:none;user-select:none;">${t.text}${t._carried?` <span style="font-size:9px;font-weight:600;padding:1px 5px;border-radius:4px;background:var(--accent-bg);color:var(--accent);border:0.5px solid var(--accent-bd);vertical-align:middle;">이월</span>`:''}
+        </div>
         ${!isDone?`<button onclick="markFail(${i})" style="font-size:11px;padding:5px 10px;border-radius:8px;border:1px solid ${isFail?'var(--red)':'var(--border2)'};background:${isFail?'var(--red-bg)':'transparent'};color:${isFail?'var(--red)':'var(--text3)'};cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;white-space:nowrap;flex-shrink:0;">${isFail?'취소':'실패'}</button>`:''}
         <button onclick="delTgt(${i})" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:18px;padding:6px 8px;min-width:36px;touch-action:manipulation;">✕</button>
       </div>`;
