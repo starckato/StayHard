@@ -639,7 +639,8 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
     <div class="tbar-tab active" onclick="switchTab('routine',0)">기록</div>
     <!-- 고긴스 tab hidden until Phase 2 -->
     <div class="tbar-tab" onclick="switchTab('weekly',1)">주간 기록</div>
-    <div class="tbar-tab" onclick="switchTab('competition',2)">챌린지</div>
+    <div class="tbar-tab" onclick="switchTab('stats',2)">통계</div>
+    <div class="tbar-tab" onclick="switchTab('competition',3)">챌린지</div>
   </div>
 
   <!-- ══ DAILY ROUTINE ══ -->
@@ -920,33 +921,128 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
     <div class="wv-scroll"><table class="wv-table" id="wv-table"></table></div>
 
     <!-- ── STATS GRAPHS ── -->
-    <div id="stats-section" style="padding:16px 16px 8px;opacity:0;transition:opacity .3s;">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-        <div style="font-size:14px;font-weight:700;">📈 나의 기록</div>
-        <div style="display:flex;gap:4px;" id="stats-period-btns">
-          <button class="stats-period-btn active" onclick="setStatsPeriod(30,this)">30일</button>
-          <button class="stats-period-btn" onclick="setStatsPeriod(60,this)">60일</button>
-          <button class="stats-period-btn" onclick="setStatsPeriod(90,this)">90일</button>
+
+
+
+  <!-- ══ STATS ══ -->
+  <div class="view" id="view-stats" style="padding:0 0 80px;">
+
+    <!-- 헤더 + 기간 선택 -->
+    <div style="padding:16px 16px 0;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+        <div style="font-size:17px;font-weight:700;">📊 통계</div>
+        <div style="display:flex;gap:4px;" id="st-period-btns">
+          <button class="stats-period-btn active" onclick="stSetPeriod(7,this)">1주</button>
+          <button class="stats-period-btn" onclick="stSetPeriod(30,this)">1달</button>
+          <button class="stats-period-btn" onclick="stSetPeriod(90,this)">3달</button>
+          <button class="stats-period-btn" onclick="stSetPeriod(0,this)">전체</button>
         </div>
       </div>
-      <div id="stats-loading" style="text-align:center;padding:32px 0;color:var(--text3);font-size:13px;display:none;">데이터 불러오는 중…</div>
 
-      <!-- Weight chart -->
+      <!-- 로딩 -->
+      <div id="st-loading" style="text-align:center;padding:48px 0;color:var(--text3);font-size:13px;display:none;">
+        <div class="spinner" style="margin:0 auto 10px;"></div>데이터 불러오는 중…
+      </div>
+    </div>
+
+    <!-- 핵심 지표 카드 4개 -->
+    <div id="st-kpi-section" style="padding:0 16px;display:none;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;">
+        <div class="stats-card" style="margin:0;">
+          <div class="stats-card-title">루틴 완료율</div>
+          <div style="font-size:26px;font-weight:700;color:var(--green);margin:4px 0;" id="st-kpi-routine">—</div>
+          <div style="font-size:10px;color:var(--text3);" id="st-kpi-routine-sub"></div>
+        </div>
+        <div class="stats-card" style="margin:0;">
+          <div class="stats-card-title">할일 완료율</div>
+          <div style="font-size:26px;font-weight:700;color:var(--amber);margin:4px 0;" id="st-kpi-target">—</div>
+          <div style="font-size:10px;color:var(--text3);" id="st-kpi-target-sub"></div>
+        </div>
+        <div class="stats-card" style="margin:0;">
+          <div class="stats-card-title">클린식 비율</div>
+          <div style="font-size:26px;font-weight:700;color:var(--green);margin:4px 0;" id="st-kpi-clean">—</div>
+          <div style="font-size:10px;color:var(--text3);" id="st-kpi-clean-sub"></div>
+        </div>
+        <div class="stats-card" style="margin:0;">
+          <div class="stats-card-title">운동 횟수</div>
+          <div style="font-size:26px;font-weight:700;color:var(--accent);margin:4px 0;" id="st-kpi-workout">—</div>
+          <div style="font-size:10px;color:var(--text3);" id="st-kpi-workout-sub"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 인사이트 카드 -->
+    <div id="st-insights-section" style="padding:0 16px;display:none;">
+      <div style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px;">이번 기간 인사이트</div>
+      <div id="st-insights-list"></div>
+    </div>
+
+    <!-- 차트 섹션 -->
+    <div id="st-charts-section" style="padding:0 16px;display:none;">
+
+      <!-- 체중 추이 -->
       <div class="stats-card">
-        <div class="stats-card-title">⚖️ 체중 추세</div>
-        <div class="stats-meta" id="weight-meta"></div>
-        <div style="position:relative;height:160px;width:100%;"><canvas id="chart-weight"></canvas></div>
-        <div id="weight-empty" class="stats-empty" style="display:none;">체중 기록이 없어요</div>
+        <div class="stats-card-title">⚖️ 체중 추이 (kg)</div>
+        <div class="stats-meta" id="st-weight-meta"></div>
+        <div style="position:relative;height:160px;"><canvas id="st-chart-weight"></canvas></div>
+        <div id="st-weight-empty" class="stats-empty" style="display:none;">체중 기록이 없어요</div>
       </div>
 
-      <!-- Volume chart -->
+      <!-- 운동 볼륨 -->
       <div class="stats-card">
-        <div class="stats-card-title">🏋️ 운동 볼륨</div>
-        <div class="stats-meta" id="vol-meta"></div>
-        <div style="position:relative;height:160px;width:100%;"><canvas id="chart-vol"></canvas></div>
-        <div id="vol-empty" class="stats-empty" style="display:none;">운동 기록이 없어요</div>
+        <div class="stats-card-title">🏋️ 운동 볼륨 (주별)</div>
+        <div class="stats-meta" id="st-vol-meta"></div>
+        <div style="position:relative;height:140px;"><canvas id="st-chart-vol"></canvas></div>
+        <div id="st-vol-empty" class="stats-empty" style="display:none;">운동 볼륨 기록이 없어요</div>
       </div>
 
+      <!-- 루틴 완료율 추이 -->
+      <div class="stats-card">
+        <div class="stats-card-title">✅ 루틴 완료율 추이 (%)</div>
+        <div class="stats-meta" id="st-routine-meta"></div>
+        <div style="position:relative;height:130px;"><canvas id="st-chart-routine"></canvas></div>
+        <div id="st-routine-empty" class="stats-empty" style="display:none;">루틴 기록이 없어요</div>
+      </div>
+
+      <!-- 식단 품질 히트맵 -->
+      <div class="stats-card">
+        <div class="stats-card-title">🥗 식단 품질 (끼니별)</div>
+        <div class="stats-meta" id="st-meal-meta"></div>
+        <div id="st-meal-heatmap"></div>
+        <div style="display:flex;gap:10px;margin-top:8px;flex-wrap:wrap;">
+          <div style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--text3);">
+            <div style="width:10px;height:10px;border-radius:2px;background:var(--green);opacity:0.8;"></div>클린
+          </div>
+          <div style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--text3);">
+            <div style="width:10px;height:10px;border-radius:2px;background:#888;opacity:0.6;"></div>일반
+          </div>
+          <div style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--text3);">
+            <div style="width:10px;height:10px;border-radius:2px;background:var(--amber);opacity:0.7;"></div>치팅
+          </div>
+          <div style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--text3);">
+            <div style="width:10px;height:10px;border-radius:2px;background:var(--red);opacity:0.6;"></div>금지/음주
+          </div>
+          <div style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--text3);">
+            <div style="width:10px;height:10px;border-radius:2px;background:var(--surface3);border:1px solid var(--border2);"></div>미기록
+          </div>
+        </div>
+        <div id="st-meal-empty" class="stats-empty" style="display:none;">식단 기록이 없어요</div>
+      </div>
+
+      <!-- 점수 추이 -->
+      <div class="stats-card">
+        <div class="stats-card-title">🔥 점수 추이</div>
+        <div class="stats-meta" id="st-score-meta"></div>
+        <div style="position:relative;height:140px;"><canvas id="st-chart-score"></canvas></div>
+        <div id="st-score-empty" class="stats-empty" style="display:none;">점수 기록이 없어요</div>
+      </div>
+
+    </div>
+
+    <div id="st-empty" style="display:none;text-align:center;padding:60px 0 24px;">
+      <div style="font-size:40px;margin-bottom:12px;">📊</div>
+      <div style="font-size:14px;font-weight:600;color:var(--text2);margin-bottom:4px;">아직 데이터가 없어요</div>
+      <div style="font-size:12px;color:var(--text3);">기록을 쌓으면 통계가 나타납니다</div>
     </div>
   </div>
 
@@ -1559,7 +1655,8 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
     <div class="bni active" onclick="switchTab('routine',0)"><div class="bni-icon">📋</div><div>기록</div></div>
     <!-- goggins bnav hidden phase2 -->
     <div class="bni" onclick="switchTab('weekly',1)"><div class="bni-icon">📅</div><div>주간</div></div>
-    <div class="bni" onclick="switchTab('competition',2)"><div class="bni-icon">🏆</div><div>챌린지</div></div>
+    <div class="bni" onclick="switchTab('stats',2)"><div class="bni-icon">📊</div><div>통계</div></div>
+    <div class="bni" onclick="switchTab('competition',3)"><div class="bni-icon">🏆</div><div>챌린지</div></div>
   </div>
 </div>
 
@@ -4903,7 +5000,8 @@ function switchTab(name,idx){
   document.getElementById('view-'+name).classList.add('active');
   const tabs=document.querySelectorAll('.tbar-tab');if(tabs[idx])tabs[idx].classList.add('active');
   const bnis=document.querySelectorAll('.bni');if(bnis[idx])bnis[idx].classList.add('active');
-  if(name==='weekly'){renderWeeklyView().then(()=>requestAnimationFrame(loadAndRenderStats));}
+  if(name==='weekly'){renderWeeklyView();}
+  if(name==='stats'){loadStatsTab();}
   if(name==='competition'){renderChallengeHome();}
   if(name==='goggins')renderGogginsTab();
 }
@@ -8675,7 +8773,7 @@ async function createComp(){
   if(error){errEl.textContent='오류: '+error.message;return;}
   activeComp=data;
   hideChallengeCreate();
-  switchTab('competition',2);
+  switchTab('competition',3);
   showToast('✅ 챌린지가 만들어졌어요! 코드: '+code);
   // Show invite code
   setTimeout(()=>showInviteCode(code,name),400);
@@ -8795,7 +8893,7 @@ async function _doJoinComp(comp){
   _joinCompData=null;
   activeComp=upd;
   hideChallengeJoin();
-  switchTab('competition',2);
+  switchTab('competition',3);
   jbtn.disabled=false;jbtn.textContent='참여하기';
   showToast('🎉 챌린지에 참여했어요!');
   setTimeout(()=>openChallengeRoom(),300);
@@ -9178,9 +9276,16 @@ if('serviceWorker' in navigator){
 // ══════════════════════════════════════════════
 // STATS / GRAPHS
 // ══════════════════════════════════════════════
+// ══════════════════════════════════════════════════════
+// STATS 탭 — 전체 구현
+// ══════════════════════════════════════════════════════
 let statsPeriod=30;
-let statsCharts={weight:null,vol:null};
+let stPeriod=7;  // stats 탭 전용
+let statsCharts={weight:null,vol:null,routine:null,score:null};
+let stCharts={weight:null,vol:null,routine:null,score:null};
+let _stData=null;  // 캐시
 
+// ── 기존 weekly 탭 stats (하위 호환) ──
 function setStatsPeriod(days,btn){
   statsPeriod=days;
   document.querySelectorAll('.stats-period-btn').forEach(b=>b.classList.remove('active'));
@@ -9190,129 +9295,406 @@ function setStatsPeriod(days,btn){
 
 async function loadAndRenderStats(){
   if(!CU)return;
-  document.getElementById('stats-loading').style.display='block';
-  const from=new Date(now);
-  from.setDate(from.getDate()-(statsPeriod-1));
-  const fromKey=dkey(from);
-  const{data,error}=await sb.from('daily_logs')
-    .select('log_date,weight,water_cups,workouts,mandatory')
-    .eq('user_id',CU.id)
-    .gte('log_date',fromKey)
-    .order('log_date',{ascending:true});
-  document.getElementById('stats-loading').style.display='none';
-  const ss=document.getElementById('stats-section');if(ss)ss.style.opacity='1';
-  if(error||!data)return;
-  // Normalize keys
-  const rows=data.map(d=>({...d,_key:normKey(d.log_date)}));
-  renderWeightChart(rows);
-  renderVolChart(rows);
-}
-
-function getChartColors(){
-  return{
-    grid:'rgba(255,255,255,0.05)',
-    text:'#666',
-    accent:'#7c6af7',
-    green:'#4ade80',
-    amber:'#fbbf24',
-    red:'#f87171',
-    blue:'#60a5fa',
-  };
+  // noop — weekly 뷰에서 stats-section 제거됨
 }
 
 function destroyChart(key){
   if(statsCharts[key]){statsCharts[key].destroy();statsCharts[key]=null;}
+  if(stCharts[key]){stCharts[key].destroy();stCharts[key]=null;}
 }
 
-function renderWeightChart(rows){
-  const pts=rows.filter(r=>r.weight!=null).map(r=>({x:r._key,y:parseFloat(r.weight)}));
-  const emptyEl=document.getElementById('weight-empty');
-  const canvas=document.getElementById('chart-weight');
-  if(pts.length===0){emptyEl.style.display='block';canvas.style.display='none';document.getElementById('weight-meta').textContent='';return;}
-  emptyEl.style.display='none';canvas.style.display='block';
-  const vals=pts.map(p=>p.y);
-  const min=Math.min(...vals),max=Math.max(...vals);
-  const diff=(max-min).toFixed(1);
-  const trend=vals[vals.length-1]-vals[0];
-  const trendStr=(trend>0?'+':'')+trend.toFixed(1)+'kg ('+statsPeriod+'일)';
-  document.getElementById('weight-meta').textContent=
-    '최소 '+min.toFixed(1)+'kg · 최대 '+max.toFixed(1)+'kg · 변화 '+trendStr;
+function getChartColors(){
+  return{grid:'rgba(255,255,255,0.05)',text:'#666',accent:'#7c6af7',green:'#4ade80',amber:'#fbbf24',red:'#f87171',blue:'#60a5fa'};
+}
+
+// ── stats 탭 기간 선택 ──
+function stSetPeriod(days, btn){
+  stPeriod=days;
+  document.querySelectorAll('#st-period-btns .stats-period-btn').forEach(b=>b.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+  stRenderAll(_stData);
+}
+
+// ── stats 탭 데이터 로드 ──
+async function loadStatsTab(){
+  if(!CU)return;
+  document.getElementById('st-loading').style.display='block';
+  ['st-kpi-section','st-insights-section','st-charts-section','st-empty'].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.style.display='none';
+  });
+
+  // 최근 90일치 한 번 fetch — 기간 변경은 메모리 집계
+  const from=new Date(now);from.setDate(from.getDate()-89);
+  const fromKey=dkey(from);
+  const{data,error}=await sb.from('daily_logs')
+    .select('log_date,weight,water_cups,meals,workouts,mandatory,targets,points_log')
+    .eq('user_id',CU.id)
+    .gte('log_date',fromKey)
+    .order('log_date',{ascending:true});
+
+  document.getElementById('st-loading').style.display='none';
+  if(error||!data||data.length===0){
+    document.getElementById('st-empty').style.display='block';return;
+  }
+
+  _stData=data.map(d=>({...d,_key:normKey(d.log_date)}));
+  stRenderAll(_stData);
+}
+
+// ── 기간 필터 ──
+function stFilterRows(rows){
+  if(!stPeriod)return rows;  // 0 = 전체
+  const cutoff=new Date(now);cutoff.setDate(cutoff.getDate()-(stPeriod-1));
+  const cutoffKey=dkey(cutoff);
+  return rows.filter(r=>r._key>=cutoffKey);
+}
+
+// ── 메인 렌더 ──
+function stRenderAll(rows){
+  if(!rows||!rows.length)return;
+  const filtered=stFilterRows(rows);
+  if(!filtered.length){
+    document.getElementById('st-empty').style.display='block';
+    ['st-kpi-section','st-insights-section','st-charts-section'].forEach(id=>{
+      const el=document.getElementById(id);if(el)el.style.display='none';
+    });
+    return;
+  }
+  document.getElementById('st-empty').style.display='none';
+  ['st-kpi-section','st-insights-section','st-charts-section'].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.style.display='';
+  });
+
+  stRenderKPI(filtered);
+  stRenderInsights(filtered);
+  stRenderWeightChart(filtered);
+  stRenderVolChart(filtered);
+  stRenderRoutineChart(filtered);
+  stRenderMealHeatmap(filtered);
+  stRenderScoreChart(filtered);
+}
+
+// ── KPI 카드 ──
+function stRenderKPI(rows){
   const c=getChartColors();
-  destroyChart('weight');
-  statsCharts.weight=new Chart(canvas,{
+
+  // 루틴 완료율
+  let mandDone=0,mandTotal=0;
+  rows.forEach(r=>{
+    const m=r.mandatory||[];
+    mandTotal+=m.length;
+    mandDone+=m.filter(x=>x.done).length;
+  });
+  const routinePct=mandTotal>0?Math.round(mandDone/mandTotal*100):0;
+  document.getElementById('st-kpi-routine').textContent=routinePct+'%';
+  document.getElementById('st-kpi-routine').style.color=routinePct>=80?'var(--green)':routinePct>=50?'var(--amber)':'var(--red)';
+  document.getElementById('st-kpi-routine-sub').textContent=mandDone+'/'+mandTotal+'개 완료';
+
+  // 할일 완료율
+  let tgtDone=0,tgtTotal=0;
+  rows.forEach(r=>{
+    const t=r.targets||[];
+    tgtTotal+=t.length;
+    tgtDone+=t.filter(x=>x.st==='done').length;
+  });
+  const tgtPct=tgtTotal>0?Math.round(tgtDone/tgtTotal*100):0;
+  document.getElementById('st-kpi-target').textContent=tgtPct+'%';
+  document.getElementById('st-kpi-target').style.color=tgtPct>=70?'var(--green)':tgtPct>=40?'var(--amber)':'var(--red)';
+  document.getElementById('st-kpi-target-sub').textContent=tgtDone+'/'+tgtTotal+'개 완료';
+
+  // 클린식 비율
+  let mealClean=0,mealAll=0;
+  rows.forEach(r=>{
+    const ms=(r.meals||[]).filter(m=>['아침','점심','저녁'].includes(m.time)&&m.type);
+    mealAll+=ms.length;
+    mealClean+=ms.filter(m=>m.type==='green').length;
+  });
+  const cleanPct=mealAll>0?Math.round(mealClean/mealAll*100):0;
+  document.getElementById('st-kpi-clean').textContent=cleanPct+'%';
+  document.getElementById('st-kpi-clean').style.color=cleanPct>=50?'var(--green)':cleanPct>=30?'var(--amber)':'var(--red)';
+  document.getElementById('st-kpi-clean-sub').textContent=mealClean+'/'+mealAll+'끼 클린';
+
+  // 운동 횟수
+  let woCnt=0;
+  rows.forEach(r=>{woCnt+=(r.workouts||[]).filter(w=>w.status==='done').length;});
+  const periodDays=stPeriod||rows.length;
+  const woPerWeek=(woCnt/(periodDays/7)).toFixed(1);
+  document.getElementById('st-kpi-workout').textContent=woCnt+'회';
+  document.getElementById('st-kpi-workout').style.color='var(--accent)';
+  document.getElementById('st-kpi-workout-sub').textContent='주 평균 '+woPerWeek+'회';
+}
+
+// ── 인사이트 엔진 ──
+function stRenderInsights(rows){
+  const insights=[];
+  const c=getChartColors();
+
+  // 스트릭
+  const streak=calcStreak();
+  if(streak>=30)insights.push({icon:'🔥',text:'스트릭 '+streak+'일 달성! 완벽한 습관이 만들어지고 있어요.',color:'var(--green)'});
+  else if(streak>=7)insights.push({icon:'🔥',text:'스트릭 '+streak+'일 진행 중. 30일까지 도전해보세요!',color:'var(--amber)'});
+
+  // 볼륨 증감
+  if(rows.length>=14){
+    const half=Math.floor(rows.length/2);
+    const v1=rows.slice(0,half).reduce((a,r)=>{
+      return a+(r.workouts||[]).filter(w=>w.type==='gym'&&w.status==='done').reduce((b,w)=>b+(w.totalVolume||0),0);
+    },0);
+    const v2=rows.slice(half).reduce((a,r)=>{
+      return a+(r.workouts||[]).filter(w=>w.type==='gym'&&w.status==='done').reduce((b,w)=>b+(w.totalVolume||0),0);
+    },0);
+    if(v1>0&&v2>0){
+      const pct=Math.round((v2-v1)/v1*100);
+      if(pct>=20)insights.push({icon:'💪',text:'운동 볼륨이 전반기 대비 +'+pct+'% 증가했어요. PR 경신 가능!',color:'var(--green)'});
+      else if(pct<=-20)insights.push({icon:'⚠️',text:'운동 볼륨이 전반기 대비 '+pct+'% 감소했어요. 꾸준함을 유지해보세요.',color:'var(--amber)'});
+    }
+  }
+
+  // 클린식 비율
+  let mealClean=0,mealAll=0;
+  rows.forEach(r=>{
+    const ms=(r.meals||[]).filter(m=>['아침','점심','저녁'].includes(m.time)&&m.type);
+    mealAll+=ms.length;mealClean+=ms.filter(m=>m.type==='green').length;
+  });
+  const cleanPct=mealAll>0?Math.round(mealClean/mealAll*100):0;
+  if(cleanPct>=60)insights.push({icon:'🥗',text:'클린식 비율 '+cleanPct+'%! 식단 관리가 정말 잘 되고 있어요.',color:'var(--green)'});
+  else if(mealAll>5&&cleanPct<30)insights.push({icon:'🥗',text:'클린식 비율이 '+cleanPct+'%예요. 한 끼씩 클린하게 바꿔보세요.',color:'var(--red)'});
+
+  // 특정 요일 치팅 패턴
+  const dayCheat={0:0,1:0,2:0,3:0,4:0,5:0,6:0};
+  rows.forEach(r=>{
+    const d=new Date(r._key+'T00:00:00');
+    const cheatCnt=(r.meals||[]).filter(m=>m.type==='cheat'||m.type==='alcohol').length;
+    if(cheatCnt>0)dayCheat[d.getDay()]+=cheatCnt;
+  });
+  const dayNames=['일','월','화','수','목','금','토'];
+  const maxDay=Object.entries(dayCheat).sort((a,b)=>b[1]-a[1])[0];
+  if(maxDay[1]>=3)insights.push({icon:'🎉',text:dayNames[maxDay[0]]+'요일에 치팅이 집중돼요 ('+maxDay[1]+'회). 미리 계획을 세워보세요.',color:'var(--amber)'});
+
+  // 할일 완료율 저조
+  let tgtDone=0,tgtTotal=0;
+  rows.forEach(r=>{const t=r.targets||[];tgtTotal+=t.length;tgtDone+=t.filter(x=>x.st==='done').length;});
+  const tgtPct=tgtTotal>5?Math.round(tgtDone/tgtTotal*100):null;
+  if(tgtPct!==null&&tgtPct<40)insights.push({icon:'📋',text:'할일 완료율이 '+tgtPct+'%예요. 할일 수를 줄이거나 우선순위를 조정해보세요.',color:'var(--amber)'});
+
+  // 체중 추이
+  const wPts=rows.filter(r=>r.weight!=null).map(r=>parseFloat(r.weight));
+  if(wPts.length>=7){
+    const diff=wPts[wPts.length-1]-wPts[0];
+    if(diff<=-1)insights.push({icon:'⬇️',text:'체중이 '+Math.abs(diff).toFixed(1)+'kg 감량됐어요. 꾸준히 유지해요!',color:'var(--green)'});
+    else if(diff>=2)insights.push({icon:'⬆️',text:'체중이 '+diff.toFixed(1)+'kg 증가했어요. 식단을 점검해보세요.',color:'var(--red)'});
+  }
+
+  // 음주
+  let alcCnt=0;
+  rows.forEach(r=>{alcCnt+=(r.meals||[]).filter(m=>m.category==='alcohol').length;});
+  const alcPerWeek=(alcCnt/((stPeriod||rows.length)/7)).toFixed(1);
+  if(alcCnt>=3)insights.push({icon:'🍺',text:'기간 내 음주 '+alcCnt+'회 (주 평균 '+alcPerWeek+'회). 회복 식단을 챙기세요.',color:'var(--red)'});
+
+  // 루틴 마스터
+  let mandDone2=0,mandTotal2=0;
+  rows.forEach(r=>{const m=r.mandatory||[];mandTotal2+=m.length;mandDone2+=m.filter(x=>x.done).length;});
+  const routinePct2=mandTotal2>0?Math.round(mandDone2/mandTotal2*100):0;
+  if(routinePct2>=90&&mandTotal2>10)insights.push({icon:'🏆',text:'루틴 완료율 '+routinePct2+'%! 난이도를 올릴 때가 됐어요.',color:'var(--green)'});
+
+  const list=document.getElementById('st-insights-list');
+  if(!insights.length){
+    list.innerHTML='<div style="font-size:12px;color:var(--text3);padding:10px 0;">기록이 더 쌓이면 인사이트가 생성됩니다.</div>';
+    return;
+  }
+  list.innerHTML=insights.slice(0,5).map(ins=>`
+    <div style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;background:var(--surface2);border-radius:10px;margin-bottom:6px;border-left:3px solid ${ins.color};">
+      <span style="font-size:16px;flex-shrink:0;">${ins.icon}</span>
+      <span style="font-size:12px;color:var(--text);line-height:1.6;">${ins.text}</span>
+    </div>`).join('');
+}
+
+// ── 차트들 ──
+function stDestroyChart(key){
+  if(stCharts[key]){stCharts[key].destroy();stCharts[key]=null;}
+}
+const stChartCfg={responsive:true,maintainAspectRatio:false,animation:{duration:300},plugins:{legend:{display:false}}};
+
+function stRenderWeightChart(rows){
+  const pts=rows.filter(r=>r.weight!=null).map(r=>({x:r._key,y:parseFloat(r.weight)}));
+  const empty=document.getElementById('st-weight-empty');
+  const canvas=document.getElementById('st-chart-weight');
+  if(!pts.length){empty.style.display='block';canvas.style.display='none';document.getElementById('st-weight-meta').textContent='';return;}
+  empty.style.display='none';canvas.style.display='block';
+  const vals=pts.map(p=>p.y);
+  const diff=(vals[vals.length-1]-vals[0]);
+  const sign=diff>0?'+':'';
+  document.getElementById('st-weight-meta').textContent=
+    vals[0].toFixed(1)+'kg → '+vals[vals.length-1].toFixed(1)+'kg ('+sign+diff.toFixed(1)+'kg)';
+  const c=getChartColors();
+  stDestroyChart('weight');
+  stCharts.weight=new Chart(canvas,{
     type:'line',
     data:{
-      labels:pts.map(p=>p.x.split('-').slice(1).join('/')),
-      datasets:[{
-        data:pts.map(p=>p.y),
-        borderColor:c.blue,
-        backgroundColor:'rgba(96,165,250,0.1)',
-        borderWidth:2,
-        pointRadius:pts.length>30?0:3,
-        pointBackgroundColor:c.blue,
-        fill:true,
-        tension:0.3,
-      }]
+      labels:pts.map(p=>p.x.slice(5).replace('-','/')),
+      datasets:[{data:vals,borderColor:c.blue,backgroundColor:'rgba(96,165,250,0.08)',borderWidth:2,
+        pointRadius:pts.length>20?0:3,pointBackgroundColor:c.blue,fill:true,tension:0.3}]
     },
-    options:{
-      responsive:true,maintainAspectRatio:false,animation:{duration:400},
-      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>ctx.parsed.y.toFixed(1)+'kg'}}},
-      scales:{
-        x:{ticks:{color:c.text,font:{size:9},maxTicksLimit:8},grid:{color:c.grid}},
-        y:{ticks:{color:c.text,font:{size:9},callback:v=>v+'kg'},grid:{color:c.grid},
-          min:Math.floor(min-1),max:Math.ceil(max+1)}
-      }
-    }
+    options:{...stChartCfg,scales:{
+      x:{ticks:{color:c.text,font:{size:9},maxTicksLimit:8},grid:{color:c.grid}},
+      y:{ticks:{color:c.text,font:{size:9},callback:v=>v+'kg'},grid:{color:c.grid},
+        min:Math.floor(Math.min(...vals)-1),max:Math.ceil(Math.max(...vals)+1)}
+    }}
   });
 }
 
-function renderVolChart(rows){
-  // Group by week
+function stRenderVolChart(rows){
   const weekMap={};
   rows.forEach(r=>{
-    const d=new Date(now);
-    const rDate=new Date(...r._key.split('-').map((v,i)=>i===1?parseInt(v)-1:parseInt(v)));
-    const mon=new Date(rDate);mon.setDate(rDate.getDate()-((rDate.getDay()+6)%7));
+    const d=new Date(r._key+'T00:00:00');
+    const mon=new Date(d);mon.setDate(d.getDate()-((d.getDay()+6)%7));
     const wk=(mon.getMonth()+1)+'/'+mon.getDate();
-    const wos=r.workouts||[];
-    const vol=wos.filter(w=>w.type==='gym'&&w.status==='done').reduce((a,w)=>a+(w.totalVolume||0),0);
+    const vol=(r.workouts||[]).filter(w=>w.type==='gym'&&w.status==='done').reduce((a,w)=>a+(w.totalVolume||0),0);
     if(!weekMap[wk])weekMap[wk]=0;
     weekMap[wk]+=vol;
   });
-  const labels=Object.keys(weekMap);
-  const vals=Object.values(weekMap);
-  const emptyEl=document.getElementById('vol-empty');
-  const canvas=document.getElementById('chart-vol');
-  const hasData=vals.some(v=>v>0);
-  if(!hasData){emptyEl.style.display='block';canvas.style.display='none';document.getElementById('vol-meta').textContent='';return;}
-  emptyEl.style.display='none';canvas.style.display='block';
-  const totalVol=vals.reduce((a,v)=>a+v,0);
-  const avgVol=totalVol/vals.filter(v=>v>0).length;
-  document.getElementById('vol-meta').textContent=
-    '총 '+(totalVol>=1000?(totalVol/1000).toFixed(1)+'t':totalVol.toLocaleString()+'kg')+
-    ' · 주평균 '+(avgVol>=1000?(avgVol/1000).toFixed(1)+'t':Math.round(avgVol).toLocaleString()+'kg');
+  const labels=Object.keys(weekMap),vals=Object.values(weekMap);
+  const empty=document.getElementById('st-vol-empty');
+  const canvas=document.getElementById('st-chart-vol');
+  if(!vals.some(v=>v>0)){empty.style.display='block';canvas.style.display='none';document.getElementById('st-vol-meta').textContent='';return;}
+  empty.style.display='none';canvas.style.display='block';
+  const total=vals.reduce((a,v)=>a+v,0);
+  const avg=total/vals.filter(v=>v>0).length;
+  document.getElementById('st-vol-meta').textContent=
+    '총 '+(total>=1000?(total/1000).toFixed(1)+'t':total.toLocaleString()+'kg')+
+    ' · 주평균 '+(avg>=1000?(avg/1000).toFixed(1)+'t':Math.round(avg).toLocaleString()+'kg');
   const c=getChartColors();
-  destroyChart('vol');
-  statsCharts.vol=new Chart(document.getElementById('chart-vol'),{
+  stDestroyChart('vol');
+  stCharts.vol=new Chart(canvas,{
     type:'bar',
-    data:{
-      labels,
-      datasets:[{
-        data:vals.map(v=>v>=1000?parseFloat((v/1000).toFixed(2)):v),
-        backgroundColor:vals.map(v=>v>0?'rgba(124,106,247,0.7)':'rgba(124,106,247,0.15)'),
-        borderRadius:4,
-      }]
-    },
-    options:{
-      responsive:true,maintainAspectRatio:false,animation:{duration:400},
-      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>{const v=ctx.parsed.y;return v>=1?(v.toFixed(1)+'t'):(v*1000).toLocaleString()+'kg';}}}},
-      scales:{
-        x:{ticks:{color:c.text,font:{size:9}},grid:{display:false}},
-        y:{ticks:{color:c.text,font:{size:9},callback:v=>v>=1?v+'t':v*1000+'kg'},grid:{color:c.grid}}
-      }
-    }
+    data:{labels,datasets:[{
+      data:vals.map(v=>v>=1000?(v/1000):v),
+      backgroundColor:vals.map(v=>v>0?'rgba(124,106,247,0.7)':'rgba(124,106,247,0.15)'),
+      borderRadius:4}]},
+    options:{...stChartCfg,scales:{
+      x:{ticks:{color:c.text,font:{size:9}},grid:{display:false}},
+      y:{ticks:{color:c.text,font:{size:9},callback:v=>v>=1?v+'t':v*1000+'kg'},grid:{color:c.grid}}
+    },plugins:{...stChartCfg.plugins,tooltip:{callbacks:{label:ctx=>{const v=ctx.parsed.y;return v>=1?v.toFixed(1)+'t':(v*1000).toLocaleString()+'kg';}}}}}
   });
 }
+
+function stRenderRoutineChart(rows){
+  const pts=rows.filter(r=>(r.mandatory||[]).length>0).map(r=>{
+    const m=r.mandatory||[];
+    return{x:r._key,y:Math.round(m.filter(x=>x.done).length/m.length*100)};
+  });
+  const empty=document.getElementById('st-routine-empty');
+  const canvas=document.getElementById('st-chart-routine');
+  if(!pts.length){empty.style.display='block';canvas.style.display='none';document.getElementById('st-routine-meta').textContent='';return;}
+  empty.style.display='none';canvas.style.display='block';
+  const avg=Math.round(pts.reduce((a,p)=>a+p.y,0)/pts.length);
+  document.getElementById('st-routine-meta').textContent='평균 완료율 '+avg+'%';
+  const c=getChartColors();
+  stDestroyChart('routine');
+  stCharts.routine=new Chart(canvas,{
+    type:'line',
+    data:{
+      labels:pts.map(p=>p.x.slice(5).replace('-','/')),
+      datasets:[{data:pts.map(p=>p.y),borderColor:c.green,backgroundColor:'rgba(74,222,128,0.08)',
+        borderWidth:2,pointRadius:pts.length>20?0:3,fill:true,tension:0.3}]
+    },
+    options:{...stChartCfg,scales:{
+      x:{ticks:{color:c.text,font:{size:9},maxTicksLimit:8},grid:{color:c.grid}},
+      y:{min:0,max:100,ticks:{color:c.text,font:{size:9},callback:v=>v+'%'},grid:{color:c.grid}}
+    }}
+  });
+}
+
+function stRenderMealHeatmap(rows){
+  const slots=['아침','점심','저녁'];
+  const dayNames=['월','화','수','목','금','토','일'];
+  const colorMap={green:'rgba(74,222,128,0.75)',normal:'rgba(136,136,136,0.5)',cheat:'rgba(251,191,36,0.65)',red:'rgba(248,113,113,0.6)',alcohol:'rgba(248,113,113,0.6)',null:'rgba(42,42,50,0.8)'};
+
+  // 최근 21일만 표시
+  const recent=rows.slice(-21);
+  const empty=document.getElementById('st-meal-empty');
+  const container=document.getElementById('st-meal-heatmap');
+  if(!recent.length){empty.style.display='block';container.innerHTML='';document.getElementById('st-meal-meta').textContent='';return;}
+  empty.style.display='none';
+
+  let totalMeals=0,cleanMeals=0;
+  rows.forEach(r=>{
+    const ms=(r.meals||[]).filter(m=>slots.includes(m.time)&&m.type);
+    totalMeals+=ms.length;
+    cleanMeals+=ms.filter(m=>m.type==='green').length;
+  });
+  document.getElementById('st-meal-meta').textContent=
+    '최근 '+recent.length+'일 · 클린 '+(totalMeals>0?Math.round(cleanMeals/totalMeals*100):0)+'%';
+
+  // 헤더
+  let html='<div style="display:flex;gap:2px;margin-bottom:4px;">';
+  html+='<div style="width:24px;flex-shrink:0;"></div>';
+  slots.forEach(s=>html+=`<div style="flex:1;text-align:center;font-size:9px;color:var(--text3);font-weight:500;">${s}</div>`);
+  html+='</div>';
+
+  recent.forEach(r=>{
+    const d=new Date(r._key+'T00:00:00');
+    const dayLabel=dayNames[(d.getDay()+6)%7];
+    const isToday=r._key===TODAY;
+    html+=`<div style="display:flex;gap:2px;margin-bottom:2px;align-items:center;">`;
+    html+=`<div style="width:24px;flex-shrink:0;font-size:9px;color:${isToday?'var(--accent)':'var(--text3)'};text-align:right;padding-right:4px;font-weight:${isToday?700:400};">${dayLabel}</div>`;
+    slots.forEach(slot=>{
+      const meal=(r.meals||[]).find(m=>m.time===slot&&m.type);
+      const bg=meal?colorMap[meal.type]||colorMap.normal:colorMap.null;
+      const border=meal?'none':'0.5px solid rgba(255,255,255,0.06)';
+      html+=`<div style="flex:1;height:22px;border-radius:3px;background:${bg};border:${border};"></div>`;
+    });
+    html+='</div>';
+  });
+
+  container.innerHTML=html;
+}
+
+function stRenderScoreChart(rows){
+  // 날짜별 당일 점수 합산
+  const pts=rows.map(r=>{
+    const dayPts=(r.points_log||[]).reduce((a,e)=>a+(e.pts||0),0);
+    return{x:r._key,y:dayPts};
+  }).filter(p=>p.y!==0);
+
+  const empty=document.getElementById('st-score-empty');
+  const canvas=document.getElementById('st-chart-score');
+  if(!pts.length){empty.style.display='block';canvas.style.display='none';document.getElementById('st-score-meta').textContent='';return;}
+  empty.style.display='none';canvas.style.display='block';
+
+  // 누적 점수로 변환
+  let cum=0;
+  const cumPts=rows.map(r=>{
+    const dayPts=(r.points_log||[]).reduce((a,e)=>a+(e.pts||0),0);
+    cum+=dayPts;
+    return{x:r._key,y:cum};
+  });
+
+  const total=cumPts[cumPts.length-1]?.y||0;
+  const avg=pts.length?Math.round(pts.reduce((a,p)=>a+p.y,0)/pts.length):0;
+  document.getElementById('st-score-meta').textContent=
+    '기간 누적 '+(total>0?'+':'')+total+'점 · 활동일 평균 '+(avg>0?'+':'')+avg+'점';
+
+  const c=getChartColors();
+  stDestroyChart('score');
+  stCharts.score=new Chart(canvas,{
+    type:'line',
+    data:{
+      labels:cumPts.map(p=>p.x.slice(5).replace('-','/')),
+      datasets:[{data:cumPts.map(p=>p.y),borderColor:c.accent,
+        backgroundColor:'rgba(124,106,247,0.08)',borderWidth:2,
+        pointRadius:cumPts.length>20?0:3,fill:true,tension:0.3}]
+    },
+    options:{...stChartCfg,scales:{
+      x:{ticks:{color:c.text,font:{size:9},maxTicksLimit:8},grid:{color:c.grid}},
+      y:{ticks:{color:c.text,font:{size:9},callback:v=>v+'pt'},grid:{color:c.grid}}
+    }}
+  });
+}
+
+// ── weekly 뷰 하위 호환용 ──
+function renderWeightChart(rows){}
+function renderVolChart(rows){}
 
 
 </script>
