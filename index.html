@@ -1564,129 +1564,146 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 </div>
 
 <!-- MODALS -->
-<div class="modal-overlay" id="meal-modal">
+
+<!-- ① 끼니 모달 (아침/점심/저녁 슬롯 전용) -->
+<div class="modal-overlay" id="meal-modal-slot">
   <div class="modal">
     <div class="mhandle"></div>
-
-    <!-- Step indicator -->
-    <div style="display:flex;align-items:center;gap:6px;margin-bottom:16px;">
-      <div id="mm-step-back" onclick="mmBack()" style="background:none;border:none;color:var(--text2);font-size:18px;cursor:pointer;padding:0 6px 0 0;display:none;">←</div>
-      <div style="flex:1;">
-        <div style="display:flex;gap:4px;margin-bottom:4px;">
-          <div id="mm-dot-1" style="height:3px;flex:1;border-radius:2px;background:var(--accent);transition:all .2s;"></div>
-          <div id="mm-dot-2" style="height:3px;flex:1;border-radius:2px;background:var(--surface3);transition:all .2s;"></div>
-          <div id="mm-dot-3" style="height:3px;flex:1;border-radius:2px;background:var(--surface3);transition:all .2s;"></div>
-        </div>
-        <div class="mtitle" id="mm-title" style="margin-bottom:0;">식사 기록</div>
+    <!-- 헤더: 끼니명 + 수정 시 삭제 버튼 -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div class="mtitle" id="ms-title" style="margin-bottom:0;">아침 기록</div>
+        <div id="ms-ctx-pill" style="font-size:11px;padding:2px 9px;background:var(--accent-bg);color:var(--accent);border-radius:12px;border:1px solid var(--accent-bd);font-weight:600;"></div>
       </div>
+      <button id="ms-delete-btn" onclick="deleteMealFromModal('slot')" style="display:none;font-size:11px;padding:4px 10px;border-radius:8px;border:1px solid var(--red-bd);background:var(--red-bg);color:var(--red);cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">삭제</button>
     </div>
 
-    <!-- STEP 1: Photo -->
-    <div id="mm-s1">
-      <input type="file" accept="image/*" capture="environment" id="mm-photo-camera" style="display:none;" onchange="previewPhoto(this)">
-      <input type="file" accept="image/*" id="mm-photo-gallery" style="display:none;" onchange="previewPhoto(this)">
+    <!-- 음식 이름 -->
+    <div class="mfield">
+      <label class="mlabel">음식 이름 <span style="color:var(--text3);font-weight:400;text-transform:none;letter-spacing:0;">(선택)</span></label>
+      <input class="minput" id="ms-name" placeholder="예: 닭가슴살 샐러드, 된장찌개…"/>
+    </div>
 
-      <div id="mm-photo-wrap" style="display:none;margin-bottom:12px;">
-        <div class="photo-wrap" style="position:relative;display:inline-block;">
-          <img id="mm-photo-img" class="photo-thumb" style="width:100%;height:140px;object-fit:cover;border-radius:10px;">
-          <button class="photo-del" onclick="delPhoto()" style="position:absolute;top:-6px;right:-6px;width:22px;height:22px;border-radius:50%;background:var(--red);border:none;color:#fff;font-size:11px;cursor:pointer;">✕</button>
-        </div>
-        <div id="mm-photo-time-hint" style="font-size:11px;color:var(--text2);margin-top:6px;"></div>
+    <!-- 품질 평가 -->
+    <div class="mfield">
+      <label class="mlabel">식사 평가 <span style="color:var(--red);font-weight:600;">*</span></label>
+      <div style="font-size:10px;color:var(--text3);margin-bottom:8px;">클린: 샐러드·닭가슴살 &nbsp;|&nbsp; 일반: 밥·찌개 &nbsp;|&nbsp; 치팅: 치트밀 &nbsp;|&nbsp; 금지: 폭식</div>
+      <div class="food-types" id="ms-quality-btns">
+        <div class="ftbtn" onclick="msPickQuality('green',this)" style="touch-action:manipulation;">✅ 클린</div>
+        <div class="ftbtn" onclick="msPickQuality('normal',this)" style="touch-action:manipulation;">🍚 일반</div>
+        <div class="ftbtn" onclick="msPickQuality('cheat',this)" style="touch-action:manipulation;" id="ms-cheat-btn">🎉 치팅</div>
+        <div class="ftbtn" onclick="msPickQuality('red',this)" style="touch-action:manipulation;">🚫 금지</div>
       </div>
+      <div id="ms-cheat-hint" style="display:none;font-size:11px;margin-top:6px;padding:5px 10px;border-radius:8px;background:var(--amber-bg);border:1px solid var(--amber-bd);color:var(--amber);"></div>
+    </div>
 
-      <div style="display:flex;gap:8px;margin-bottom:12px;">
-        <button onclick="document.getElementById('mm-photo-camera').click()" style="flex:1;padding:16px 8px;background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;font-family:'DM Sans',sans-serif;text-align:center;touch-action:manipulation;">
-          <div style="font-size:22px;margin-bottom:4px;">📷</div>
-          <div style="font-size:12px;color:var(--text2);font-weight:500;">촬영</div>
+    <!-- 사진 첨부 -->
+    <div class="mfield">
+      <input type="file" accept="image/*" capture="environment" id="ms-photo-camera" style="display:none;" onchange="msPreviewPhoto(this)">
+      <input type="file" accept="image/*" id="ms-photo-gallery" style="display:none;" onchange="msPreviewPhoto(this)">
+      <div id="ms-photo-preview" style="display:none;margin-bottom:10px;position:relative;display:none;">
+        <img id="ms-photo-img" style="width:100%;height:130px;object-fit:cover;border-radius:10px;display:block;">
+        <button onclick="msClearPhoto()" style="position:absolute;top:-6px;right:-6px;width:22px;height:22px;border-radius:50%;background:var(--red);border:none;color:#fff;font-size:11px;cursor:pointer;touch-action:manipulation;">✕</button>
+      </div>
+      <div id="ms-photo-btns" style="display:flex;gap:8px;">
+        <button onclick="document.getElementById('ms-photo-camera').click()" style="flex:1;padding:11px 8px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;font-family:'DM Sans',sans-serif;text-align:center;touch-action:manipulation;">
+          <div style="font-size:18px;margin-bottom:3px;">📷</div>
+          <div style="font-size:11px;color:var(--text2);font-weight:500;">촬영</div>
         </button>
-        <button onclick="document.getElementById('mm-photo-gallery').click()" style="flex:1;padding:16px 8px;background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;font-family:'DM Sans',sans-serif;text-align:center;touch-action:manipulation;">
-          <div style="font-size:22px;margin-bottom:4px;">🖼️</div>
-          <div style="font-size:12px;color:var(--text2);font-weight:500;">갤러리</div>
+        <button onclick="document.getElementById('ms-photo-gallery').click()" style="flex:1;padding:11px 8px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;font-family:'DM Sans',sans-serif;text-align:center;touch-action:manipulation;">
+          <div style="font-size:18px;margin-bottom:3px;">🖼️</div>
+          <div style="font-size:11px;color:var(--text2);font-weight:500;">갤러리</div>
         </button>
       </div>
-
-      <button class="mbtn" onclick="mmGoStep2()" style="touch-action:manipulation;">다음 →</button>
-      <button class="mbtn-ghost" onclick="closeModal('meal-modal')" style="touch-action:manipulation;">취소</button>
     </div>
 
-    <!-- STEP 2: Category + slot -->
-    <div id="mm-s2" style="display:none;">
-      <div id="mm-s2-thumb" style="display:none;margin-bottom:12px;"></div>
+    <button class="mbtn" id="ms-save-btn" onclick="saveSlotMeal()" style="touch-action:manipulation;">저장</button>
+    <button class="mbtn-ghost" onclick="closeModal('meal-modal-slot')" style="touch-action:manipulation;">취소</button>
+  </div>
+</div>
 
-      <div class="mfield">
-        <label class="mlabel">카테고리</label>
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:7px;margin-bottom:14px;" id="mm-category-btns">
-          <button onclick="pickMealCategory('meal',this)" style="padding:12px 6px;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:var(--surface2);cursor:pointer;font-family:'DM Sans',sans-serif;text-align:center;touch-action:manipulation;">
-            <div style="font-size:18px;margin-bottom:3px;">🥗</div>
-            <div style="font-size:12px;color:var(--text2);font-weight:500;">식사</div>
-          </button>
-          <button onclick="pickMealCategory('snack',this)" style="padding:12px 6px;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:var(--surface2);cursor:pointer;font-family:'DM Sans',sans-serif;text-align:center;touch-action:manipulation;">
-            <div style="font-size:18px;margin-bottom:3px;">🍰</div>
-            <div style="font-size:12px;color:var(--text2);font-weight:500;">간식</div>
-          </button>
-          <button onclick="pickMealCategory('drink',this)" style="padding:12px 6px;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:var(--surface2);cursor:pointer;font-family:'DM Sans',sans-serif;text-align:center;touch-action:manipulation;">
-            <div style="font-size:18px;margin-bottom:3px;">☕</div>
-            <div style="font-size:12px;color:var(--text2);font-weight:500;">음료</div>
-          </button>
-          <button onclick="pickMealCategory('alcohol',this)" style="padding:12px 6px;border-radius:var(--radius-sm);border:1.5px solid var(--red-bd);background:var(--red-bg);cursor:pointer;font-family:'DM Sans',sans-serif;text-align:center;touch-action:manipulation;">
-            <div style="font-size:18px;margin-bottom:3px;">🍺</div>
-            <div style="font-size:12px;color:var(--red);font-weight:500;">술·안주</div>
-          </button>
-        </div>
-      </div>
-
-      <div id="mm-alcohol-warning" style="display:none;margin-bottom:12px;padding:12px 14px;background:var(--red-bg);border:1px solid var(--red-bd);border-radius:var(--radius-sm);">
-        <div style="font-size:13px;font-weight:700;color:var(--red);margin-bottom:8px;">🍺 술 · 안주 기록</div>
-        <div id="mm-alcohol-cheat-row" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-          <div>
-            <div style="font-size:12px;color:var(--red);font-weight:600;">이번주 치팅으로 처리</div>
-            <div id="mm-alcohol-quota-hint" style="font-size:10px;color:var(--red);opacity:0.7;margin-top:1px;"></div>
-          </div>
-          <button id="mm-alcohol-cheat-toggle" onclick="toggleAlcoholCheat()" style="padding:5px 12px;border-radius:20px;border:1.5px solid var(--red-bd);background:transparent;color:var(--red);font-size:11px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">치팅 적용</button>
-        </div>
-        <div id="mm-alcohol-penalty-label" style="font-size:11px;color:var(--red);opacity:0.8;line-height:1.6;padding-top:6px;border-top:0.5px solid var(--red-bd);">고정 <strong>−30점</strong> 패널티 · Goggins가 실망합니다</div>
-      </div>
-
-      <div class="mfield">
-        <label class="mlabel">어떤 끼니인가요?</label>
-        <div id="mm-photo-suggest" style="font-size:11px;color:var(--accent);margin-bottom:6px;display:none;">📍 사진 시간 기준으로 추천됩니다</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;" id="mm-time-btns">
-          <button class="ftbtn" onclick="pickMealTime('아침',this)" style="touch-action:manipulation;">🌅 아침</button>
-          <button class="ftbtn" onclick="pickMealTime('점심',this)" style="touch-action:manipulation;">☀️ 점심</button>
-          <button class="ftbtn" onclick="pickMealTime('저녁',this)" style="touch-action:manipulation;">🌙 저녁</button>
-          <button class="ftbtn" onclick="pickMealTime('간식',this)" style="touch-action:manipulation;">🍎 간식/음료</button>
-        </div>
-      </div>
-
-      <button class="mbtn" onclick="mmGoStep3()" style="touch-action:manipulation;">다음 →</button>
-      <button class="mbtn-ghost" onclick="closeModal('meal-modal')" style="touch-action:manipulation;">취소</button>
+<!-- ② 간식/음료/술안주 모달 -->
+<div class="modal-overlay" id="meal-modal-snack">
+  <div class="modal">
+    <div class="mhandle"></div>
+    <!-- 헤더 -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+      <div class="mtitle" style="margin-bottom:0;">간식 / 음료 / 술·안주</div>
+      <button id="msn-delete-btn" onclick="deleteMealFromModal('snack')" style="display:none;font-size:11px;padding:4px 10px;border-radius:8px;border:1px solid var(--red-bd);background:var(--red-bg);color:var(--red);cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">삭제</button>
     </div>
 
-    <!-- STEP 3: Name + quality rating -->
-    <div id="mm-s3" style="display:none;">
-      <div id="mm-context-bar" style="display:flex;align-items:center;gap:8px;background:var(--surface2);border-radius:var(--radius-sm);padding:8px 12px;margin-bottom:14px;font-size:12px;color:var(--text2);"></div>
-
-      <div class="mfield">
-        <label class="mlabel">음식 이름 <span style="color:var(--text3);font-weight:400;">(선택)</span></label>
-        <input class="minput" id="mm-name" placeholder="예: 닭가슴살 샐러드, 서브웨이…"/>
+    <!-- 카테고리 선택 -->
+    <div class="mfield">
+      <label class="mlabel">종류 <span style="color:var(--red);font-weight:600;">*</span></label>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;" id="msn-cat-btns">
+        <button onclick="msnPickCat('snack',this)" style="padding:12px 6px;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:var(--surface2);cursor:pointer;font-family:'DM Sans',sans-serif;text-align:center;touch-action:manipulation;">
+          <div style="font-size:20px;margin-bottom:3px;">🍰</div>
+          <div style="font-size:12px;color:var(--text2);font-weight:500;">간식</div>
+        </button>
+        <button onclick="msnPickCat('drink',this)" style="padding:12px 6px;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:var(--surface2);cursor:pointer;font-family:'DM Sans',sans-serif;text-align:center;touch-action:manipulation;">
+          <div style="font-size:20px;margin-bottom:3px;">☕</div>
+          <div style="font-size:12px;color:var(--text2);font-weight:500;">음료</div>
+        </button>
+        <button onclick="msnPickCat('alcohol',this)" style="padding:12px 6px;border-radius:var(--radius-sm);border:1.5px solid var(--red-bd);background:var(--red-bg);cursor:pointer;font-family:'DM Sans',sans-serif;text-align:center;touch-action:manipulation;">
+          <div style="font-size:20px;margin-bottom:3px;">🍺</div>
+          <div style="font-size:12px;color:var(--red);font-weight:500;">술·안주</div>
+        </button>
       </div>
-
-      <div id="mm-quality-section" class="mfield">
-        <label class="mlabel">이 식사를 평가하면?</label>
-        <div style="font-size:10px;color:var(--text3);margin-bottom:4px;">클린: 샐러드·닭가슴살 &nbsp;|&nbsp; 일반: 된장찌개·파스타 &nbsp;|&nbsp; 치팅: 치트밀 &nbsp;|&nbsp; 금지: 폭식</div>
-        <div class="food-types" id="mm-quality-btns">
-          <div class="ftbtn" onclick="pickFT('green',this)" style="touch-action:manipulation;">✅ 클린</div>
-          <div class="ftbtn" onclick="pickFT('normal',this)" style="touch-action:manipulation;">🍚 일반</div>
-          <div class="ftbtn" onclick="pickFT('cheat',this)" style="touch-action:manipulation;" id="mm-cheat-btn">🎉 치팅</div>
-          <div class="ftbtn" onclick="pickFT('red',this)" style="touch-action:manipulation;">🚫 금지</div>
-        </div>
-        <div id="mm-cheat-quota-hint" style="display:none;font-size:11px;margin-top:6px;padding:5px 10px;border-radius:8px;background:var(--amber-bg);border:1px solid var(--amber-bd);color:var(--amber);"></div>
-      </div>
-
-      <button class="mbtn" id="mm-save-btn" onclick="saveMeal()" style="touch-action:manipulation;">식사 저장</button>
-      <button class="mbtn-ghost" onclick="closeModal('meal-modal')" style="touch-action:manipulation;">취소</button>
     </div>
 
+    <!-- 술·안주 치팅 블록 (alcohol 선택 시만 표시) -->
+    <div id="msn-alcohol-block" style="display:none;margin-bottom:12px;padding:12px 14px;background:var(--red-bg);border:1px solid var(--red-bd);border-radius:var(--radius-sm);">
+      <div style="font-size:13px;font-weight:700;color:var(--red);margin-bottom:8px;">🍺 술 · 안주 기록</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+        <div>
+          <div style="font-size:12px;color:var(--red);font-weight:600;">이번주 치팅으로 처리</div>
+          <div id="msn-alcohol-quota-hint" style="font-size:10px;color:var(--red);opacity:0.7;margin-top:1px;"></div>
+        </div>
+        <button id="msn-alcohol-cheat-toggle" onclick="toggleAlcoholCheat()" style="padding:5px 12px;border-radius:20px;border:1.5px solid var(--red-bd);background:transparent;color:var(--red);font-size:11px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">치팅 적용</button>
+      </div>
+      <div id="msn-alcohol-penalty-label" style="font-size:11px;color:var(--red);opacity:0.8;line-height:1.6;padding-top:6px;border-top:0.5px solid var(--red-bd);">고정 <strong>−30점</strong> 패널티 · Goggins가 실망합니다</div>
+    </div>
+
+    <!-- 음식 이름 -->
+    <div class="mfield">
+      <label class="mlabel">이름 <span style="color:var(--text3);font-weight:400;text-transform:none;letter-spacing:0;">(선택)</span></label>
+      <input class="minput" id="msn-name" placeholder="예: 아메리카노, 단백질바…"/>
+    </div>
+
+    <!-- 품질 (alcohol 제외) -->
+    <div id="msn-quality-section" class="mfield">
+      <label class="mlabel">평가 <span style="color:var(--red);font-weight:600;">*</span></label>
+      <div class="food-types" id="msn-quality-btns">
+        <div class="ftbtn" onclick="msnPickQuality('green',this)" style="touch-action:manipulation;">✅ 클린</div>
+        <div class="ftbtn" onclick="msnPickQuality('normal',this)" style="touch-action:manipulation;">🍚 일반</div>
+        <div class="ftbtn" onclick="msnPickQuality('cheat',this)" style="touch-action:manipulation;" id="msn-cheat-btn">🎉 치팅</div>
+        <div class="ftbtn" onclick="msnPickQuality('red',this)" style="touch-action:manipulation;">🚫 금지</div>
+      </div>
+      <div id="msn-cheat-hint" style="display:none;font-size:11px;margin-top:6px;padding:5px 10px;border-radius:8px;background:var(--amber-bg);border:1px solid var(--amber-bd);color:var(--amber);"></div>
+    </div>
+
+    <!-- 사진 첨부 -->
+    <div class="mfield">
+      <input type="file" accept="image/*" capture="environment" id="msn-photo-camera" style="display:none;" onchange="msnPreviewPhoto(this)">
+      <input type="file" accept="image/*" id="msn-photo-gallery" style="display:none;" onchange="msnPreviewPhoto(this)">
+      <div id="msn-photo-preview" style="display:none;margin-bottom:10px;position:relative;">
+        <img id="msn-photo-img" style="width:100%;height:130px;object-fit:cover;border-radius:10px;display:block;">
+        <button onclick="msnClearPhoto()" style="position:absolute;top:-6px;right:-6px;width:22px;height:22px;border-radius:50%;background:var(--red);border:none;color:#fff;font-size:11px;cursor:pointer;touch-action:manipulation;">✕</button>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button onclick="document.getElementById('msn-photo-camera').click()" style="flex:1;padding:11px 8px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;font-family:'DM Sans',sans-serif;text-align:center;touch-action:manipulation;">
+          <div style="font-size:18px;margin-bottom:3px;">📷</div>
+          <div style="font-size:11px;color:var(--text2);font-weight:500;">촬영</div>
+        </button>
+        <button onclick="document.getElementById('msn-photo-gallery').click()" style="flex:1;padding:11px 8px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;font-family:'DM Sans',sans-serif;text-align:center;touch-action:manipulation;">
+          <div style="font-size:18px;margin-bottom:3px;">🖼️</div>
+          <div style="font-size:11px;color:var(--text2);font-weight:500;">갤러리</div>
+        </button>
+      </div>
+    </div>
+
+    <button class="mbtn" id="msn-save-btn" onclick="saveSnackMeal()" style="touch-action:manipulation;">저장</button>
+    <button class="mbtn-ghost" onclick="closeModal('meal-modal-snack')" style="touch-action:manipulation;">취소</button>
   </div>
 </div>
 <!-- CHEAT SETTINGS MODAL -->
@@ -5464,7 +5481,7 @@ function renderMeals(){
       </div>`;
     } else {
       const hl=curSlot===key;
-      return`<div class="meal-empty-slot${hl?' highlight':''}" onclick="openAddMealModalForSlot('${key}')">
+      return`<div class="meal-empty-slot${hl?' highlight':''}" onclick="openSlotModal('${key}')">
         <span class="meal-empty-slot-icon">${icon}</span>
         <span class="meal-empty-slot-text">${key} 기록하기</span>
         ${hl?`<span class="meal-empty-slot-hint">지금 ↗</span>`:''}
@@ -5493,7 +5510,7 @@ function renderMeals(){
     }).join('');
   }
 
-  const addBtn=`<div class="add-snack-btn" onclick="openAddSnackModal()">
+  const addBtn=`<div class="add-snack-btn" onclick="openSnackModal()">
     <span style="font-size:13px;color:var(--text3);">＋</span>
     <span class="add-snack-btn-text">간식 / 음료 / 술·안주 추가</span>
   </div>`;
@@ -5514,9 +5531,400 @@ async function deleteMeal(i){
   saveNow();
 }
 
-let mealIdx=null,foodType=null,photoData=null,photoFile=null,mealTime=null,mealCategory=null;
+// ═══════════════════════════════════════════════════════
+// 식단 모달 — 공유 상태
+// ═══════════════════════════════════════════════════════
+let mealIdx=null;           // null=신규, number=수정
+let foodType=null;          // 품질: 'green'|'normal'|'cheat'|'red'|'alcohol'
+let photoData=null;         // base64 or url (preview)
+let photoFile=null;         // File object for upload
+let mealTime=null;          // '아침'|'점심'|'저녁'|'간식'
+let mealCategory=null;      // 'meal'|'snack'|'drink'|'alcohol'
 
-async function uploadPhotoToStorage(file){
+// ── 공통 유틸 ──
+function _msResetQualityBtns(container){
+  document.querySelectorAll('#'+container+' .ftbtn').forEach(b=>{
+    b.className='ftbtn';b.style.cssText='';
+  });
+}
+function _msSelectQualityBtn(container, type){
+  document.querySelectorAll('#'+container+' .ftbtn').forEach(b=>{
+    if(b.getAttribute('onclick')&&b.getAttribute('onclick').includes("'"+type+"'")){
+      b.classList.add('sel-'+type);
+    }
+  });
+}
+
+// ═══════════════════════════════════════════════════════
+// ① 끼니 모달 (meal-modal-slot)
+// ═══════════════════════════════════════════════════════
+function openSlotModal(slot, editIdx=null){
+  mealIdx=editIdx;
+  mealTime=slot;
+  mealCategory='meal';
+  foodType=null;
+  photoData=null;photoFile=null;
+
+  // 헤더
+  const icons={아침:'🌅',점심:'☀️',저녁:'🌙'};
+  document.getElementById('ms-title').textContent=(editIdx!==null?'수정 — ':'')+slot;
+  document.getElementById('ms-ctx-pill').textContent=icons[slot]||'🍽️'+' '+slot;
+  document.getElementById('ms-save-btn').textContent=editIdx!==null?'변경 저장':'저장';
+
+  // 삭제 버튼
+  document.getElementById('ms-delete-btn').style.display=editIdx!==null?'block':'none';
+
+  // 초기화
+  _msResetQualityBtns('ms-quality-btns');
+  document.getElementById('ms-name').value='';
+  document.getElementById('ms-cheat-hint').style.display='none';
+  _msClearPhotoUI();
+
+  // 수정 시 기존 데이터 복원
+  if(editIdx!==null){
+    const m=log.meals[editIdx];
+    document.getElementById('ms-name').value=m.name||'';
+    foodType=m.type||null;
+    if(foodType)_msSelectQualityBtn('ms-quality-btns',foodType);
+    if(m.photo){
+      photoData=m.photo;
+      _msShowPhoto(m.photo);
+    }
+  }
+
+  const c=document.getElementById('ms-photo-camera');const g=document.getElementById('ms-photo-gallery');
+  if(c)c.value='';if(g)g.value='';
+  openModal('meal-modal-slot');
+}
+
+function msPickQuality(type, el){
+  // 치팅 쿼터 체크
+  if(type==='cheat'){
+    const rem=getCheatRemaining();
+    const hint=document.getElementById('ms-cheat-hint');
+    if(rem<=0){
+      hint.style.display='block';
+      hint.textContent='이번주 치팅 소진 ('+getCheatUsed()+'/'+getCheatQuota()+'회). 다음주 월요일 초기화.';
+      hint.style.background='var(--red-bg)';hint.style.borderColor='var(--red-bd)';hint.style.color='var(--red)';
+      showToast('이번주 치팅 횟수를 모두 사용했어요 🚫');
+      return;
+    }
+    hint.style.display='block';
+    hint.style.background='var(--amber-bg)';hint.style.borderColor='var(--amber-bd)';hint.style.color='var(--amber)';
+    hint.textContent='저장 후 잔여 '+(rem-1)+'회 ('+getCheatUsed()+'/'+getCheatQuota()+'회 사용)';
+  } else {
+    document.getElementById('ms-cheat-hint').style.display='none';
+  }
+  foodType=type;
+  _msResetQualityBtns('ms-quality-btns');
+  el.classList.add('sel-'+type);
+}
+
+function msPreviewPhoto(inp){
+  const f=inp.files[0];if(!f)return;
+  photoFile=f;
+  const isCamera=inp.id==='ms-photo-camera';
+  const abReader=new FileReader();
+  abReader.onload=function(e){
+    const urlReader=new FileReader();
+    urlReader.onload=function(ev){
+      photoData=ev.target.result;
+      _msShowPhoto(ev.target.result);
+    };
+    urlReader.readAsDataURL(f);
+  };
+  abReader.readAsArrayBuffer(f);
+}
+
+function _msShowPhoto(src){
+  document.getElementById('ms-photo-img').src=src;
+  document.getElementById('ms-photo-preview').style.display='block';
+  document.getElementById('ms-photo-btns').style.display='none';
+}
+
+function _msClearPhotoUI(){
+  document.getElementById('ms-photo-preview').style.display='none';
+  document.getElementById('ms-photo-btns').style.display='flex';
+}
+
+function msClearPhoto(){
+  photoData=null;photoFile=null;
+  _msClearPhotoUI();
+  const c=document.getElementById('ms-photo-camera');const g=document.getElementById('ms-photo-gallery');
+  if(c)c.value='';if(g)g.value='';
+}
+
+let _slotSaving=false;
+async function saveSlotMeal(){
+  if(_slotSaving)return;
+  if(!foodType){showToast('식사 평가를 선택해주세요');return;}
+  _slotSaving=true;
+  const btn=document.getElementById('ms-save-btn');
+  if(btn)btn.disabled=true;
+  try{
+    const name=document.getElementById('ms-name').value.trim();
+    let finalPhoto=null;
+    if(photoFile){showToast('📷 사진 저장 중...');const url=await uploadPhotoToStorage(photoFile);finalPhoto=url||photoData;photoFile=null;}
+    else{finalPhoto=photoData;}
+
+    const entry={name,type:foodType,photo:finalPhoto,time:mealTime,category:'meal'};
+    if(!logCache[selectedKey])logCache[selectedKey]=log;
+    log=logCache[selectedKey];
+    const prevType=mealIdx!==null?log.meals[mealIdx]?.type:null;
+    if(mealIdx===null){log.meals.push(entry);}else{log.meals[mealIdx]=entry;}
+    closeModal('meal-modal-slot');renderMeals();
+
+    // 치팅 처리
+    const wasCheat=prevType==='cheat';const isCheat=foodType==='cheat';
+    if(!wasCheat&&isCheat){
+      const ok=await cheatUse();
+      if(!ok){addScore('diet_junk','',-10);showToast('💀 치팅 쿼터 소진! −10점 패널티');}
+      else{const rem=getCheatRemaining();showToast(rem<=0?'💀 치팅 사용! 이번주 치팅 소진됐어요':'💀 치팅 사용! 이번주 잔여 '+rem+'회');}
+    }else if(wasCheat&&!isCheat){await cheatReturn();}
+    renderCheatBadge();
+
+    const isNew=mealIdx===null;
+    applyMealScore(prevType,foodType,isNew,'meal');
+    saveNow();checkPerfectDay();
+  }finally{_slotSaving=false;if(btn)btn.disabled=false;}
+}
+
+// ═══════════════════════════════════════════════════════
+// ② 간식 모달 (meal-modal-snack)
+// ═══════════════════════════════════════════════════════
+function openSnackModal(editIdx=null){
+  mealIdx=editIdx;
+  mealCategory=null;
+  foodType=null;
+  photoData=null;photoFile=null;
+  _alcoholCheatOn=false;
+
+  document.getElementById('msn-save-btn').textContent=editIdx!==null?'변경 저장':'저장';
+  document.getElementById('msn-delete-btn').style.display=editIdx!==null?'block':'none';
+  _msnResetCatBtns();
+  _msResetQualityBtns('msn-quality-btns');
+  document.getElementById('msn-name').value='';
+  document.getElementById('msn-cheat-hint').style.display='none';
+  document.getElementById('msn-alcohol-block').style.display='none';
+  document.getElementById('msn-quality-section').style.display='';
+  _msnClearPhotoUI();
+
+  // 수정 시 복원
+  if(editIdx!==null){
+    const m=log.meals[editIdx];
+    mealCategory=m.category||'snack';
+    foodType=m.type||null;
+    document.getElementById('msn-name').value=m.name||'';
+    // 카테고리 버튼 선택
+    document.querySelectorAll('#msn-cat-btns button').forEach(b=>{
+      if(b.getAttribute('onclick')&&b.getAttribute('onclick').includes("'"+mealCategory+"'")){
+        _msnApplyCatStyle(b, mealCategory);
+      }
+    });
+    if(mealCategory==='alcohol'){
+      document.getElementById('msn-alcohol-block').style.display='block';
+      document.getElementById('msn-quality-section').style.display='none';
+      _alcoholCheatOn=m._alcoholCheat||false;
+      _updateAlcoholCheatUI();
+    } else if(foodType){
+      _msSelectQualityBtn('msn-quality-btns',foodType);
+    }
+    if(m.photo){photoData=m.photo;_msnShowPhoto(m.photo);}
+  }
+
+  const c=document.getElementById('msn-photo-camera');const g=document.getElementById('msn-photo-gallery');
+  if(c)c.value='';if(g)g.value='';
+  openModal('meal-modal-snack');
+}
+
+function _msnResetCatBtns(){
+  document.querySelectorAll('#msn-cat-btns button').forEach(b=>{
+    const isAlc=b.getAttribute('onclick')&&b.getAttribute('onclick').includes("'alcohol'");
+    b.style.borderColor=isAlc?'var(--red-bd)':'var(--border)';
+    b.style.background=isAlc?'var(--red-bg)':'var(--surface2)';
+    const lbl=b.querySelector('div:last-child');
+    if(lbl)lbl.style.color=isAlc?'var(--red)':'var(--text2)';
+  });
+}
+
+function _msnApplyCatStyle(el, cat){
+  if(cat==='alcohol'){
+    el.style.borderColor='var(--red)';el.style.background='rgba(248,113,113,0.25)';
+    const lbl=el.querySelector('div:last-child');if(lbl)lbl.style.color='var(--red)';
+  } else {
+    el.style.borderColor='var(--accent)';el.style.background='var(--accent-bg)';
+    const lbl=el.querySelector('div:last-child');if(lbl)lbl.style.color='var(--accent)';
+  }
+}
+
+function msnPickCat(cat, el){
+  mealCategory=cat;
+  _msnResetCatBtns();
+  _msnApplyCatStyle(el, cat);
+  if(cat==='alcohol'){
+    document.getElementById('msn-alcohol-block').style.display='block';
+    document.getElementById('msn-quality-section').style.display='none';
+    foodType='alcohol';_alcoholCheatOn=false;_updateAlcoholCheatUI();
+  } else {
+    document.getElementById('msn-alcohol-block').style.display='none';
+    document.getElementById('msn-quality-section').style.display='';
+    if(foodType==='alcohol')foodType=null;
+    _msResetQualityBtns('msn-quality-btns');
+  }
+}
+
+function msnPickQuality(type, el){
+  if(type==='cheat'){
+    const rem=getCheatRemaining();
+    const hint=document.getElementById('msn-cheat-hint');
+    if(rem<=0){
+      hint.style.display='block';
+      hint.textContent='이번주 치팅 소진. 다음주 월요일 초기화.';
+      hint.style.background='var(--red-bg)';hint.style.borderColor='var(--red-bd)';hint.style.color='var(--red)';
+      showToast('이번주 치팅 횟수를 모두 사용했어요 🚫');return;
+    }
+    const hint=document.getElementById('msn-cheat-hint');
+    hint.style.display='block';
+    hint.style.background='var(--amber-bg)';hint.style.borderColor='var(--amber-bd)';hint.style.color='var(--amber)';
+    hint.textContent='저장 후 잔여 '+(rem-1)+'회 ('+getCheatUsed()+'/'+getCheatQuota()+'회 사용)';
+  } else {
+    document.getElementById('msn-cheat-hint').style.display='none';
+  }
+  foodType=type;
+  _msResetQualityBtns('msn-quality-btns');
+  el.classList.add('sel-'+type);
+}
+
+function msnPreviewPhoto(inp){
+  const f=inp.files[0];if(!f)return;
+  photoFile=f;
+  const reader=new FileReader();
+  reader.onload=function(ev){
+    photoData=ev.target.result;
+    _msnShowPhoto(ev.target.result);
+  };
+  reader.readAsDataURL(f);
+}
+function _msnShowPhoto(src){
+  document.getElementById('msn-photo-img').src=src;
+  document.getElementById('msn-photo-preview').style.display='block';
+}
+function _msnClearPhotoUI(){
+  document.getElementById('msn-photo-preview').style.display='none';
+}
+function msnClearPhoto(){
+  photoData=null;photoFile=null;_msnClearPhotoUI();
+  const c=document.getElementById('msn-photo-camera');const g=document.getElementById('msn-photo-gallery');
+  if(c)c.value='';if(g)g.value='';
+}
+
+let _snackSaving=false;
+async function saveSnackMeal(){
+  if(_snackSaving)return;
+  if(!mealCategory){showToast('종류를 선택해주세요');return;}
+  if(mealCategory!=='alcohol'&&!foodType){showToast('평가를 선택해주세요');return;}
+  _snackSaving=true;
+  const btn=document.getElementById('msn-save-btn');
+  if(btn)btn.disabled=true;
+  try{
+    const name=document.getElementById('msn-name').value.trim();
+    let finalPhoto=null;
+    if(photoFile){showToast('📷 사진 저장 중...');const url=await uploadPhotoToStorage(photoFile);finalPhoto=url||photoData;photoFile=null;}
+    else{finalPhoto=photoData;}
+
+    const entry={name,type:mealCategory==='alcohol'?'alcohol':foodType,photo:finalPhoto,time:'간식',category:mealCategory};
+    if(mealCategory==='alcohol')entry._alcoholCheat=_alcoholCheatOn;
+
+    if(!logCache[selectedKey])logCache[selectedKey]=log;
+    log=logCache[selectedKey];
+    const prevType=mealIdx!==null?log.meals[mealIdx]?.type:null;
+    const prevCat=mealIdx!==null?log.meals[mealIdx]?.category:null;
+    if(mealIdx===null){log.meals.push(entry);}else{log.meals[mealIdx]=entry;}
+    closeModal('meal-modal-snack');renderMeals();
+
+    // 치팅 처리 (일반 음식 치팅)
+    if(mealCategory!=='alcohol'){
+      const wasCheat=prevType==='cheat';const isCheat=foodType==='cheat';
+      if(!wasCheat&&isCheat){
+        const ok=await cheatUse();
+        if(!ok){addScore('diet_junk','',-10);showToast('💀 치팅 쿼터 소진! −10점 패널티');}
+        else{const rem=getCheatRemaining();showToast(rem<=0?'💀 치팅 사용! 이번주 치팅 소진됐어요':'💀 치팅 사용! 이번주 잔여 '+rem+'회');}
+      }else if(wasCheat&&!isCheat){await cheatReturn();}
+    }
+    if(prevCat==='alcohol'&&mealCategory!=='alcohol'&&log.meals[mealIdx]?._alcoholCheat){
+      await alcoholCheatReturn();
+    }
+    renderCheatBadge();
+
+    const isNew=mealIdx===null;
+    applyMealScore(prevType,mealCategory==='alcohol'?'alcohol':foodType,isNew,mealCategory);
+    saveNow();checkPerfectDay();
+  }finally{_snackSaving=false;if(btn)btn.disabled=false;}
+}
+
+// ═══════════════════════════════════════════════════════
+// 수정/삭제 라우팅
+// ═══════════════════════════════════════════════════════
+function openEditMealModal(i){
+  const m=log.meals[i];
+  if(!m)return;
+  if(['아침','점심','저녁'].includes(m.time)||m.category==='meal'){
+    openSlotModal(m.time||'아침', i);
+  } else {
+    openSnackModal(i);
+  }
+}
+
+function deleteMealFromModal(which){
+  if(mealIdx===null)return;
+  if(which==='slot')closeModal('meal-modal-slot');
+  else closeModal('meal-modal-snack');
+  deleteMeal(mealIdx);
+}
+
+// ── 음주 치팅 UI 업데이트 (새 모달 ID 반영) ──
+function toggleAlcoholCheat(){
+  _alcoholCheatOn=!_alcoholCheatOn;
+  _updateAlcoholCheatUI();
+}
+
+function _updateAlcoholCheatUI(){
+  // 새 모달의 alcohol 관련 요소
+  const btn=document.getElementById('msn-alcohol-cheat-toggle');
+  const label=document.getElementById('msn-alcohol-penalty-label');
+  const hint=document.getElementById('msn-alcohol-quota-hint');
+  if(!btn||!label)return;
+  const remaining=getAlcoholRemaining();
+  if(_alcoholCheatOn){
+    if(remaining>0){
+      btn.style.background='var(--amber)';btn.style.borderColor='var(--amber)';btn.style.color='#fff';
+      btn.textContent='치팅 적용 중 ✓';
+      label.textContent='쿼터 내 음주 — ±0점 (잔여 '+(remaining-1)+'/'+getAlcoholQuota()+'회)';
+      label.style.opacity='1';
+      if(hint)hint.textContent='이번주 음주 쿼터 '+getAlcoholUsed()+'/'+getAlcoholQuota()+'회 사용 중';
+    } else {
+      _alcoholCheatOn=false;
+      btn.style.background='transparent';btn.style.borderColor='var(--red-bd)';btn.style.color='var(--red)';
+      btn.textContent='치팅 적용';
+      label.innerHTML='이번주 음주 쿼터 소진 — 고정 <strong>−30점</strong>';
+      if(hint)hint.textContent='다음주 월요일 초기화';
+    }
+  } else {
+    btn.style.background='transparent';btn.style.borderColor='var(--red-bd)';btn.style.color='var(--red)';
+    btn.textContent='치팅 적용';
+    label.innerHTML='고정 <strong>−30점</strong> 패널티 · Goggins가 실망합니다';
+    label.style.opacity='0.8';
+    if(hint)hint.textContent=remaining>0?'이번주 음주 쿼터 '+remaining+'회 남음':'이번주 음주 쿼터 소진';
+  }
+}
+
+// ── 레거시 호환 (다른 곳에서 호출되는 이름 유지) ──
+function openAddMealModal(){openSnackModal();}
+function openAddMealModalForSlot(slot){openSlotModal(slot);}
+function openAddSnackModal(){openSnackModal();}
+function saveMeal(){saveSlotMeal();}
+
+// ── 사진 업로드 ──
   if(!file||!CU)return null;
   try{
     const compressed=await compressImage(file,800,0.75);
@@ -5543,260 +5951,8 @@ function compressImage(file,maxPx,quality){
   });
 }
 
-// ── MEAL MODAL: 3-STEP FLOW ──
-function mmSetStep(step){
-  [1,2,3].forEach(s=>{
-    document.getElementById('mm-s'+s).style.display=s===step?'block':'none';
-    document.getElementById('mm-dot-'+s).style.background=s<=step?'var(--accent)':'var(--surface3)';
-  });
-  document.getElementById('mm-step-back').style.display=step>1?'block':'none';
-  const titles={1:'사진 추가 (선택)',2:'식사 종류 선택',3:'음식 정보 입력'};
-  document.getElementById('mm-title').textContent=mealIdx!==null?'식사 수정':titles[step];
-}
 
-function mmBack(){
-  const cur=[1,2,3].find(s=>document.getElementById('mm-s'+s).style.display!=='none');
-  if(cur>1)mmSetStep(cur-1);
-}
 
-function mmGoStep2(){
-  // Update small thumb in step 2
-  const thumb=document.getElementById('mm-s2-thumb');
-  if(photoData){
-    thumb.style.display='block';
-    thumb.innerHTML=`<img src="${photoData}" style="width:56px;height:56px;border-radius:8px;object-fit:cover;">`;
-  } else {
-    thumb.style.display='none';
-  }
-  // Show photo time suggestion if we have a detected time
-  const suggest=document.getElementById('mm-photo-suggest');
-  if(mealTime&&photoData){suggest.style.display='block';}else{suggest.style.display='none';}
-  mmSetStep(2);
-}
-
-function mmGoStep3(){
-  // Build context bar
-  const catLabels={meal:'🥗 식사',snack:'🍰 간식',drink:'🥤 음료'};
-  const timeLabels={아침:'🌅 아침',점심:'☀️ 점심',저녁:'🌙 저녁',간식:'🍎 간식'};
-  const bar=document.getElementById('mm-context-bar');
-  const parts=[];
-  if(photoData)parts.push('📷 사진');
-  if(mealCategory)parts.push(catLabels[mealCategory]||mealCategory);
-  if(mealTime)parts.push(timeLabels[mealTime]||mealTime);
-  bar.innerHTML=parts.length>0
-    ?parts.map(p=>`<span style="background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:2px 8px;font-size:11px;">${p}</span>`).join('')
-    :'<span style="color:var(--text3);">정보를 선택하세요</span>';
-  mmSetStep(3);
-}
-
-function openAddMealModal(){
-  mealIdx=null;foodType=null;photoData=null;photoFile=null;mealTime=null;mealCategory=null;
-  document.querySelectorAll('.ftbtn').forEach(b=>{b.className='ftbtn';b.style.cssText='';});
-  document.getElementById('mm-name').value='';
-  document.getElementById('mm-photo-wrap').style.display='none';
-  document.getElementById('mm-photo-time-hint').textContent='';
-  document.getElementById('mm-photo-suggest').style.display='none';
-  const c=document.getElementById('mm-photo-camera');const g=document.getElementById('mm-photo-gallery');
-  if(c)c.value='';if(g)g.value='';
-  document.getElementById('mm-save-btn').textContent='식사 저장';
-  mmSetStep(1);
-  openModal('meal-modal');
-}
-
-function openAddMealModalForSlot(slot){
-  mealIdx=null;foodType=null;photoData=null;photoFile=null;
-  mealTime=slot;mealCategory='meal';
-  document.querySelectorAll('.ftbtn').forEach(b=>{b.className='ftbtn';b.style.cssText='';});
-  _resetCategoryBtns();
-  // pre-select 식사 category
-  document.querySelectorAll('#mm-category-btns button').forEach(b=>{
-    if(b.getAttribute('onclick')&&b.getAttribute('onclick').includes("'meal'")){
-      b.style.borderColor='var(--accent)';b.style.background='var(--accent-bg)';
-      const lbl=b.querySelector('div:last-child');if(lbl)lbl.style.color='var(--accent)';
-    }
-  });
-  // pre-select time button
-  document.querySelectorAll('#mm-time-btns .ftbtn').forEach(b=>{
-    b.classList.remove('time-sel');
-    if(b.textContent.includes(slot))b.classList.add('time-sel');
-  });
-  document.getElementById('mm-name').value='';
-  document.getElementById('mm-photo-wrap').style.display='none';
-  document.getElementById('mm-photo-time-hint').textContent='';
-  document.getElementById('mm-photo-suggest').style.display='none';
-  const c=document.getElementById('mm-photo-camera');const g=document.getElementById('mm-photo-gallery');
-  if(c)c.value='';if(g)g.value='';
-  document.getElementById('mm-save-btn').textContent='식사 저장';
-  document.getElementById('mm-title').textContent=slot+' 기록';
-  // hide alcohol warning, show quality section
-  const aw=document.getElementById('mm-alcohol-warning');if(aw)aw.style.display='none';
-  const qs=document.getElementById('mm-quality-section');if(qs)qs.style.display='';
-  mmGoStep3();
-  openModal('meal-modal');
-}
-
-function openAddSnackModal(){
-  mealIdx=null;foodType=null;photoData=null;photoFile=null;mealTime='간식';mealCategory='snack';
-  document.querySelectorAll('.ftbtn').forEach(b=>{b.className='ftbtn';b.style.cssText='';});
-  _resetCategoryBtns();
-  // pre-select 간식 category
-  document.querySelectorAll('#mm-category-btns button').forEach(b=>{
-    if(b.getAttribute('onclick')&&b.getAttribute('onclick').includes("'snack'")){
-      b.style.borderColor='var(--accent)';b.style.background='var(--accent-bg)';
-      const lbl=b.querySelector('div:last-child');if(lbl)lbl.style.color='var(--accent)';
-    }
-  });
-  document.querySelectorAll('#mm-time-btns .ftbtn').forEach(b=>{
-    b.classList.remove('time-sel');
-    if(b.textContent.includes('간식'))b.classList.add('time-sel');
-  });
-  document.getElementById('mm-name').value='';
-  document.getElementById('mm-photo-wrap').style.display='none';
-  document.getElementById('mm-photo-time-hint').textContent='';
-  document.getElementById('mm-photo-suggest').style.display='none';
-  const c=document.getElementById('mm-photo-camera');const g=document.getElementById('mm-photo-gallery');
-  if(c)c.value='';if(g)g.value='';
-  document.getElementById('mm-save-btn').textContent='기록 저장';
-  document.getElementById('mm-title').textContent='간식 / 음료 / 술·안주 기록';
-  const aw=document.getElementById('mm-alcohol-warning');if(aw)aw.style.display='none';
-  const qs=document.getElementById('mm-quality-section');if(qs)qs.style.display='';
-  mmGoStep3();
-  openModal('meal-modal');
-}
-
-function _resetCategoryBtns(){
-  document.querySelectorAll('#mm-category-btns button').forEach(b=>{
-    const isAlc=b.getAttribute('onclick')&&b.getAttribute('onclick').includes("'alcohol'");
-    b.style.borderColor=isAlc?'var(--red-bd)':'var(--border)';
-    b.style.background=isAlc?'var(--red-bg)':'var(--surface2)';
-    const lbl=b.querySelector('div:last-child');
-    if(lbl)lbl.style.color=isAlc?'var(--red)':'var(--text2)';
-  });
-}
-
-function openEditMealModal(i){
-  mealIdx=i;
-  const m=log.meals[i];
-  foodType=m.type;photoData=m.photo;photoFile=null;mealTime=m.time||null;mealCategory=m.category||null;
-  // Reset buttons
-  document.querySelectorAll('.ftbtn').forEach(b=>{b.className='ftbtn';b.style.cssText='';});
-  document.querySelectorAll('#mm-category-btns button').forEach(b=>{
-    b.style.borderColor='var(--border)';b.style.background='var(--surface2)';
-    b.querySelector('div:last-child').style.color='var(--text2)';
-  });
-  document.getElementById('mm-name').value=m.name||'';
-  // Restore photo
-  const pw=document.getElementById('mm-photo-wrap');
-  if(photoData){document.getElementById('mm-photo-img').src=photoData;pw.style.display='block';}
-  else{pw.style.display='none';}
-  // Restore category
-  if(mealCategory){
-    document.querySelectorAll('#mm-category-btns button').forEach(b=>{
-      if(b.getAttribute('onclick')&&b.getAttribute('onclick').includes("'"+mealCategory+"'")){
-        b.style.borderColor='var(--accent)';b.style.background='var(--accent-bg)';
-        b.querySelector('div:last-child').style.color='var(--accent)';
-      }
-    });
-  }
-  // Restore time
-  document.querySelectorAll('#mm-time-btns .ftbtn').forEach(b=>b.classList.remove('time-sel'));
-  if(mealTime){
-    document.querySelectorAll('#mm-time-btns .ftbtn').forEach(b=>{
-      if(b.textContent.includes(mealTime))b.classList.add('time-sel');
-    });
-  }
-  // Restore quality — 버튼 순서: 0=클린, 1=일반, 2=치팅, 3=금지
-  if(foodType){
-    const mp={green:0,normal:1,cheat:2,red:3,skipped:1};
-    const idx=mp[foodType];
-    if(idx!==undefined){
-      const btns=document.querySelectorAll('#mm-quality-btns .ftbtn');
-      if(btns[idx])btns[idx].classList.add('sel-'+foodType);
-    }
-  }
-  document.getElementById('mm-save-btn').textContent='변경 저장';
-  // Skip to step 3 for edits
-  mmGoStep2();mmGoStep3();
-  openModal('meal-modal');
-}
-
-function pickMealCategory(cat,el){
-  mealCategory=cat;
-  // reset all buttons — preserve alcohol's red styling
-  document.querySelectorAll('#mm-category-btns button').forEach(b=>{
-    const isAlc=b.getAttribute('onclick')&&b.getAttribute('onclick').includes("'alcohol'");
-    b.style.borderColor=isAlc?'var(--red-bd)':'var(--border)';
-    b.style.background=isAlc?'var(--red-bg)':'var(--surface2)';
-    const lbl=b.querySelector('div:last-child');
-    if(lbl)lbl.style.color=isAlc?'var(--red)':'var(--text2)';
-  });
-  // selected state
-  if(cat==='alcohol'){
-    el.style.borderColor='var(--red)';el.style.background='rgba(248,113,113,0.25)';
-    const lbl=el.querySelector('div:last-child');if(lbl)lbl.style.color='var(--red)';
-    // hide quality, show alcohol warning, pre-set foodType
-    const qs=document.getElementById('mm-quality-section');if(qs)qs.style.display='none';
-    const aw=document.getElementById('mm-alcohol-warning');if(aw)aw.style.display='block';
-    foodType='alcohol';
-    _alcoholCheatOn=false;
-    _updateAlcoholCheatUI();
-    mealTime='간식';
-    document.querySelectorAll('#mm-time-btns .ftbtn').forEach(b=>{
-      b.classList.remove('time-sel');
-      if(b.textContent.includes('간식'))b.classList.add('time-sel');
-    });
-  } else {
-    el.style.borderColor='var(--accent)';el.style.background='var(--accent-bg)';
-    const lbl=el.querySelector('div:last-child');if(lbl)lbl.style.color='var(--accent)';
-    // show quality, hide alcohol warning
-    const qs=document.getElementById('mm-quality-section');if(qs)qs.style.display='';
-    const aw=document.getElementById('mm-alcohol-warning');if(aw)aw.style.display='none';
-    if(foodType==='alcohol')foodType=null;
-    // snack/drink → auto 간식 slot
-    if((cat==='snack'||cat==='drink')&&!mealTime){
-      mealTime='간식';
-      document.querySelectorAll('#mm-time-btns .ftbtn').forEach(b=>{
-        b.classList.remove('time-sel');
-        if(b.textContent.includes('간식'))b.classList.add('time-sel');
-      });
-    }
-  }
-}
-
-function pickMealTime(t,el){
-  if(mealTime===t){mealTime=null;}else{mealTime=t;}
-  document.querySelectorAll('#mm-time-btns .ftbtn').forEach(b=>b.classList.remove('time-sel'));
-  if(mealTime)el.classList.add('time-sel');
-  document.getElementById('mm-photo-suggest').style.display='none';
-}
-
-function pickFT(t, el){
-  if(t==='cheat'){
-    const remaining=getCheatRemaining();
-    const hint=document.getElementById('mm-cheat-quota-hint');
-    if(remaining<=0){
-      showToast('이번주 치팅 횟수를 모두 사용했어요 🚫');
-      if(hint){hint.style.display='block';hint.style.background='var(--red-bg)';hint.style.borderColor='var(--red-bd)';hint.style.color='var(--red)';hint.textContent='이번주 치팅 소진 ('+getCheatUsed()+'/'+getCheatQuota()+'회). 다음주 월요일 초기화.';}
-      return;
-    }
-    if(hint){
-      hint.style.display='block';
-      hint.style.background='var(--amber-bg)';hint.style.borderColor='var(--amber-bd)';hint.style.color='var(--amber)';
-      hint.textContent='저장 후 잔여 '+(remaining-1)+'회 ('+getCheatUsed()+'/'+getCheatQuota()+'회 사용)';
-    }
-  } else {
-    const hint=document.getElementById('mm-cheat-quota-hint');
-    if(hint)hint.style.display='none';
-  }
-  foodType=t;
-  document.querySelectorAll('#mm-quality-btns .ftbtn').forEach(b=>b.className='ftbtn');
-  el.classList.add('sel-'+t);
-}
-
-// ═══════════════════════════════════════════
-// 치팅 시스템 — 주간 해골 슬롯 + 절제 보너스
-// profiles 컬럼: cheat_quota, cheat_used, cheat_reset_week('YYYY-WNN')
-// ═══════════════════════════════════════════
 function getCheatQuota(){return 2;}
 function getCheatUsed(){return CP?.cheat_used||0;}
 function getCheatRemaining(){return Math.max(0,getCheatQuota()-getCheatUsed());}
@@ -5808,41 +5964,6 @@ function getAlcoholRemaining(){return Math.max(0,getAlcoholQuota()-getAlcoholUse
 
 // 음주 치팅 토글 상태 (모달 열려있는 동안만 유효)
 let _alcoholCheatOn=false;
-
-function toggleAlcoholCheat(){
-  _alcoholCheatOn=!_alcoholCheatOn;
-  _updateAlcoholCheatUI();
-}
-
-function _updateAlcoholCheatUI(){
-  const btn=document.getElementById('mm-alcohol-cheat-toggle');
-  const label=document.getElementById('mm-alcohol-penalty-label');
-  const hint=document.getElementById('mm-alcohol-quota-hint');
-  if(!btn||!label)return;
-  const remaining=getAlcoholRemaining();
-  if(_alcoholCheatOn){
-    if(remaining>0){
-      btn.style.background='var(--amber)';btn.style.borderColor='var(--amber)';btn.style.color='#fff';
-      btn.textContent='치팅 적용 중 ✓';
-      label.textContent='쿼터 내 음주 — ±0점 (잔여 '+(remaining-1)+'/'+(getAlcoholQuota())+'회)';
-      label.style.opacity='1';
-      if(hint)hint.textContent='이번주 음주 쿼터 '+getAlcoholUsed()+'/'+(getAlcoholQuota())+'회 사용 중';
-    } else {
-      // 쿼터 소진 — 치팅 불가, 강제 off
-      _alcoholCheatOn=false;
-      btn.style.background='transparent';btn.style.borderColor='var(--red-bd)';btn.style.color='var(--red)';
-      btn.textContent='치팅 적용';
-      label.innerHTML='이번주 음주 쿼터 소진 — 고정 <strong>−30점</strong>';
-      if(hint)hint.textContent='다음주 월요일 초기화';
-    }
-  } else {
-    btn.style.background='transparent';btn.style.borderColor='var(--red-bd)';btn.style.color='var(--red)';
-    btn.textContent='치팅 적용';
-    label.innerHTML='고정 <strong>−30점</strong> 패널티 · Goggins가 실망합니다';
-    label.style.opacity='0.8';
-    if(hint)hint.textContent=remaining>0?'이번주 음주 쿼터 '+remaining+'회 남음':'이번주 음주 쿼터 소진';
-  }
-}
 
 async function alcoholCheatUse(){
   if(getAlcoholRemaining()<=0)return false;
@@ -6185,6 +6306,7 @@ function delPhoto(){
   const c=document.getElementById('mm-photo-camera');const g=document.getElementById('mm-photo-gallery');
   if(c)c.value='';if(g)g.value='';
 }
+
 
 function renderWater(){
   const c=document.getElementById('water-cups');c.innerHTML='';
