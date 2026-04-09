@@ -219,14 +219,16 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 .meal-item-score{font-size:10px;font-weight:600;color:var(--green);}
 .meal-item-score.neg{color:var(--red);}
 .meal-item-score.neutral{color:var(--text3);}
-.meal-empty-slot{display:flex;align-items:center;gap:8px;padding:10px 10px;background:rgba(255,255,255,0.02);border-radius:10px;border:0.5px dashed var(--border2);margin-bottom:6px;cursor:pointer;touch-action:manipulation;}
-.meal-empty-slot:active{opacity:0.7;}
-.meal-empty-slot.highlight{border-color:var(--accent-bd);background:var(--accent-bg);}
-.meal-empty-slot-icon{font-size:16px;opacity:0.4;}
+.meal-empty-slot{display:flex;align-items:center;gap:8px;padding:11px 12px;background:var(--surface2);border-radius:10px;border:1px solid var(--border2);margin-bottom:6px;cursor:pointer;touch-action:manipulation;transition:all .15s;}
+.meal-empty-slot:active{opacity:0.7;transform:scale(0.98);}
+.meal-empty-slot.highlight{border-color:var(--accent-bd);background:var(--accent-bg);border-width:1.5px;}
+.meal-empty-slot-icon{font-size:16px;opacity:0.6;}
 .meal-empty-slot.highlight .meal-empty-slot-icon{opacity:1;}
-.meal-empty-slot-text{font-size:12px;color:var(--text3);}
-.meal-empty-slot.highlight .meal-empty-slot-text{color:var(--accent);}
-.meal-empty-slot-hint{font-size:10px;color:var(--accent);margin-left:auto;}
+.meal-empty-slot-text{font-size:13px;color:var(--text2);font-weight:500;}
+.meal-empty-slot.highlight .meal-empty-slot-text{color:var(--accent);font-weight:600;}
+.meal-empty-slot-hint{font-size:10px;color:var(--accent);margin-left:auto;font-weight:600;}
+.meal-empty-slot-arrow{font-size:14px;color:var(--text3);margin-left:auto;opacity:0.5;}
+.meal-empty-slot.highlight .meal-empty-slot-arrow{color:var(--accent);opacity:1;}
 .meal-section-divider{display:flex;align-items:center;gap:8px;margin:8px 0 6px;}
 .meal-section-divider-line{flex:1;height:0.5px;background:var(--border);}
 .meal-section-divider-text{font-size:10px;color:var(--text3);}
@@ -238,9 +240,9 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 .snack-item-name{font-size:11px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .snack-item-sub{font-size:10px;color:var(--text2);}
 .snack-item-delete{font-size:11px;color:var(--text3);background:none;border:none;cursor:pointer;padding:2px;touch-action:manipulation;flex-shrink:0;}
-.add-snack-btn{display:flex;align-items:center;justify-content:center;gap:6px;padding:9px;border:0.5px dashed var(--border2);border-radius:8px;cursor:pointer;margin-top:4px;touch-action:manipulation;}
-.add-snack-btn:active{opacity:0.7;}
-.add-snack-btn-text{font-size:11px;color:var(--text3);}
+.add-snack-btn{display:flex;align-items:center;justify-content:center;gap:6px;padding:11px;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;cursor:pointer;margin-top:6px;touch-action:manipulation;transition:all .15s;}
+.add-snack-btn:active{opacity:0.7;transform:scale(0.98);}
+.add-snack-btn-text{font-size:12px;color:var(--text2);font-weight:500;}
 
 /* WATER */
 .water-strip{display:flex;align-items:center;gap:10px;padding:12px 16px 14px;}
@@ -1733,18 +1735,22 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
     <!-- 카테고리 선택 -->
     <div class="mfield">
       <label class="mlabel">종류 <span style="color:var(--red);font-weight:600;">*</span></label>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;" id="msn-cat-btns">
-        <button onclick="msnPickCat('snack',this)" style="padding:12px 6px;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:var(--surface2);cursor:pointer;font-family:'DM Sans',sans-serif;text-align:center;touch-action:manipulation;">
-          <div style="font-size:20px;margin-bottom:3px;">🍰</div>
-          <div style="font-size:12px;color:var(--text2);font-weight:500;">간식</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px;" id="msn-cat-btns">
+        <button onclick="msnPickCat('snack',this)" style="padding:10px 4px;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:var(--surface2);cursor:pointer;font-family:'DM Sans',sans-serif;text-align:center;touch-action:manipulation;">
+          <div style="font-size:18px;margin-bottom:3px;">🍰</div>
+          <div style="font-size:11px;color:var(--text2);font-weight:500;">간식</div>
         </button>
-        <button onclick="msnPickCat('drink',this)" style="padding:12px 6px;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:var(--surface2);cursor:pointer;font-family:'DM Sans',sans-serif;text-align:center;touch-action:manipulation;">
-          <div style="font-size:20px;margin-bottom:3px;">☕</div>
-          <div style="font-size:12px;color:var(--text2);font-weight:500;">음료</div>
+        <button onclick="msnPickCat('drink',this)" style="padding:10px 4px;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:var(--surface2);cursor:pointer;font-family:'DM Sans',sans-serif;text-align:center;touch-action:manipulation;">
+          <div style="font-size:18px;margin-bottom:3px;">☕</div>
+          <div style="font-size:11px;color:var(--text2);font-weight:500;">음료</div>
         </button>
-        <button onclick="msnPickCat('alcohol',this)" style="padding:12px 6px;border-radius:var(--radius-sm);border:1.5px solid var(--red-bd);background:var(--red-bg);cursor:pointer;font-family:'DM Sans',sans-serif;text-align:center;touch-action:manipulation;">
-          <div style="font-size:20px;margin-bottom:3px;">🍺</div>
-          <div style="font-size:12px;color:var(--red);font-weight:500;">술·안주</div>
+        <button onclick="msnPickCat('alcohol',this)" style="padding:10px 4px;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:var(--surface2);cursor:pointer;font-family:'DM Sans',sans-serif;text-align:center;touch-action:manipulation;">
+          <div style="font-size:18px;margin-bottom:3px;">🍺</div>
+          <div style="font-size:11px;color:var(--text2);font-weight:500;">술</div>
+        </button>
+        <button onclick="msnPickCat('alcohol',this)" style="padding:10px 4px;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:var(--surface2);cursor:pointer;font-family:'DM Sans',sans-serif;text-align:center;touch-action:manipulation;">
+          <div style="font-size:18px;margin-bottom:3px;">🍗</div>
+          <div style="font-size:11px;color:var(--text2);font-weight:500;">안주</div>
         </button>
       </div>
     </div>
@@ -5583,7 +5589,10 @@ function renderMeals(){
       return`<div class="meal-empty-slot${hl?' highlight':''}" onclick="openSlotModal('${key}')">
         <span class="meal-empty-slot-icon">${icon}</span>
         <span class="meal-empty-slot-text">${key} 기록하기</span>
-        ${hl?`<span class="meal-empty-slot-hint">지금 ↗</span>`:''}
+        ${hl
+          ? `<span class="meal-empty-slot-hint">지금 ↗</span>`
+          : `<span class="meal-empty-slot-arrow">›</span>`
+        }
       </div>`;
     }
   }).join('');
@@ -5610,8 +5619,9 @@ function renderMeals(){
   }
 
   const addBtn=`<div class="add-snack-btn" onclick="openSnackModal()">
-    <span style="font-size:13px;color:var(--text3);">＋</span>
-    <span class="add-snack-btn-text">간식 / 음료 / 술·안주 추가</span>
+    <span style="font-size:14px;color:var(--text2);">＋</span>
+    <span class="add-snack-btn-text">간식 / 음료 / 술 / 안주 추가</span>
+    <span style="font-size:12px;color:var(--text3);margin-left:auto;">›</span>
   </div>`;
 
   document.getElementById('meal-rows').innerHTML=slotsHtml+extrasHtml+addBtn;
@@ -5814,7 +5824,7 @@ function openSnackModal(editIdx=null){
     mealCategory=m.category||'snack';
     foodType=m.type||null;
     document.getElementById('msn-name').value=m.name||'';
-    // 카테고리 버튼 선택
+    // 카테고리 버튼 선택 — alcohol이면 술/안주 둘 다 하이라이트
     document.querySelectorAll('#msn-cat-btns button').forEach(b=>{
       if(b.getAttribute('onclick')&&b.getAttribute('onclick').includes("'"+mealCategory+"'")){
         _msnApplyCatStyle(b, mealCategory);
@@ -5823,7 +5833,8 @@ function openSnackModal(editIdx=null){
     if(mealCategory==='alcohol'){
       document.getElementById('msn-alcohol-block').style.display='block';
       document.getElementById('msn-quality-section').style.display='none';
-      _alcoholCheatOn=m._alcoholCheat||false;
+      // 저장된 치팅 상태 OR 오늘 이미 치팅 사용했으면 ON
+      _alcoholCheatOn=m._alcoholCheat||isTodayAlcoholCheatUsed();
       _updateAlcoholCheatUI();
     } else if(foodType){
       _msSelectQualityBtn('msn-quality-btns',foodType);
@@ -5838,11 +5849,10 @@ function openSnackModal(editIdx=null){
 
 function _msnResetCatBtns(){
   document.querySelectorAll('#msn-cat-btns button').forEach(b=>{
-    const isAlc=b.getAttribute('onclick')&&b.getAttribute('onclick').includes("'alcohol'");
-    b.style.borderColor=isAlc?'var(--red-bd)':'var(--border)';
-    b.style.background=isAlc?'var(--red-bg)':'var(--surface2)';
+    b.style.borderColor='var(--border)';
+    b.style.background='var(--surface2)';
     const lbl=b.querySelector('div:last-child');
-    if(lbl)lbl.style.color=isAlc?'var(--red)':'var(--text2)';
+    if(lbl)lbl.style.color='var(--text2)';
   });
 }
 
@@ -5863,7 +5873,10 @@ function msnPickCat(cat, el){
   if(cat==='alcohol'){
     document.getElementById('msn-alcohol-block').style.display='block';
     document.getElementById('msn-quality-section').style.display='none';
-    foodType='alcohol';_alcoholCheatOn=false;_updateAlcoholCheatUI();
+    foodType='alcohol';
+    // 오늘 이미 음주 치팅 사용했으면 자동 ON
+    _alcoholCheatOn=isTodayAlcoholCheatUsed();
+    _updateAlcoholCheatUI();
   } else {
     document.getElementById('msn-alcohol-block').style.display='none';
     document.getElementById('msn-quality-section').style.display='';
@@ -5994,10 +6007,14 @@ function _updateAlcoholCheatUI(){
   if(!btn||!label)return;
   const remaining=getAlcoholRemaining();
   if(_alcoholCheatOn){
-    if(remaining>0){
+    if(remaining>0||isTodayAlcoholCheatUsed()){
       btn.style.background='var(--amber)';btn.style.borderColor='var(--amber)';btn.style.color='#fff';
       btn.textContent='치팅 적용 중 ✓';
-      label.textContent='쿼터 내 음주 — ±0점 (잔여 '+(remaining-1)+'/'+getAlcoholQuota()+'회)';
+      if(isTodayAlcoholCheatUsed()){
+        label.textContent='오늘 음주 치팅 이미 사용 중 — 이 기록도 ±0점';
+      } else {
+        label.textContent='쿼터 내 음주 — ±0점 (잔여 '+(remaining-1)+'/'+getAlcoholQuota()+'회)';
+      }
       label.style.opacity='1';
       if(hint)hint.textContent='이번주 음주 쿼터 '+getAlcoholUsed()+'/'+getAlcoholQuota()+'회 사용 중';
     } else {
@@ -6068,10 +6085,11 @@ async function alcoholCheatUse(){
   if(getAlcoholRemaining()<=0)return false;
   if(!CP)return false;
   CP.alcohol_used=(CP.alcohol_used||0)+1;
-  // profiles에 alcohol_used 컬럼이 없으면 localStorage로 주간 백업
   try{
     const weekKey=getCheatWeekKey();
     localStorage.setItem('alcohol_used_'+weekKey+'_'+(CU?.id||''), String(CP.alcohol_used));
+    // 당일 치팅 사용 기록 — 같은 날 추가 술/안주 자동 치팅 적용용
+    localStorage.setItem('alcohol_cheat_day_'+(CU?.id||''), TODAY);
   }catch(e){}
   return true;
 }
@@ -6082,7 +6100,17 @@ async function alcoholCheatReturn(){
   try{
     const weekKey=getCheatWeekKey();
     localStorage.setItem('alcohol_used_'+weekKey+'_'+(CU?.id||''), String(CP.alcohol_used));
+    // 당일 치팅 기록도 취소 (모든 음주 삭제 시)
+    const todayAlcohol=(log.meals||[]).filter(m=>m.category==='alcohol'&&m._alcoholCheat).length;
+    if(todayAlcohol<=0)localStorage.removeItem('alcohol_cheat_day_'+(CU?.id||''));
   }catch(e){}
+}
+
+// 오늘 이미 음주 치팅을 사용했는지 확인
+function isTodayAlcoholCheatUsed(){
+  try{
+    return localStorage.getItem('alcohol_cheat_day_'+(CU?.id||''))===TODAY;
+  }catch(e){return false;}
 }
 
 // 앱 로드 시 음주 쿼터 localStorage 복원
@@ -6202,16 +6230,21 @@ function applyMealScore(prevType,newType,isNew,category){
   if(newType==='alcohol'||category==='alcohol'){
     if(isNew){
       if(_alcoholCheatOn){
-        // 치팅 쿼터 내 → ±0, 쿼터 차감
-        alcoholCheatUse().then(ok=>{
-          if(ok){
-            showToast('🍺 음주 치팅 사용 — ±0점 (잔여 '+(getAlcoholRemaining())+'/'+(getAlcoholQuota())+'회)');
-          } else {
-            // 저장은 됐지만 쿼터 소진이었으면 −30 적용
-            addScore('diet_alcohol_register','',-30);
-            showRage();
-          }
-        });
+        // 오늘 이미 치팅 적용됐으면 쿼터 추가 차감 없이 ±0
+        if(isTodayAlcoholCheatUsed()){
+          showToast('🍺 오늘 음주 치팅 적용 중 — ±0점');
+        } else {
+          // 첫 번째 치팅: 쿼터 차감
+          alcoholCheatUse().then(ok=>{
+            if(ok){
+              showToast('🍺 음주 치팅 사용 — ±0점 (잔여 '+getAlcoholRemaining()+'/'+getAlcoholQuota()+'회)');
+            } else {
+              // 쿼터 소진 — −30점
+              addScore('diet_alcohol_register','',-30);
+              showRage();
+            }
+          });
+        }
       } else {
         addScore('diet_alcohol_register','',-30);
         setTimeout(()=>showRage(),300);
