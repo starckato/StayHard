@@ -5783,7 +5783,6 @@ function msnPickQuality(type, el){
       hint.style.background='var(--red-bg)';hint.style.borderColor='var(--red-bd)';hint.style.color='var(--red)';
       showToast('이번주 치팅 횟수를 모두 사용했어요 🚫');return;
     }
-    const hint=document.getElementById('msn-cheat-hint');
     hint.style.display='block';
     hint.style.background='var(--amber-bg)';hint.style.borderColor='var(--amber-bd)';hint.style.color='var(--amber)';
     hint.textContent='저장 후 잔여 '+(rem-1)+'회 ('+getCheatUsed()+'/'+getCheatQuota()+'회 사용)';
@@ -5925,6 +5924,7 @@ function openAddSnackModal(){openSnackModal();}
 function saveMeal(){saveSlotMeal();}
 
 // ── 사진 업로드 ──
+async function uploadPhotoToStorage(file){
   if(!file||!CU)return null;
   try{
     const compressed=await compressImage(file,800,0.75);
