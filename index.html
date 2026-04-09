@@ -923,6 +923,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
     <!-- ── STATS GRAPHS ── -->
 
 
+  </div>
 
   <!-- ══ STATS ══ -->
   <div class="view" id="view-stats" style="padding:0 0 80px;">
@@ -932,8 +933,8 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
         <div style="font-size:17px;font-weight:700;">📊 통계</div>
         <div style="display:flex;gap:4px;" id="st-period-btns">
-          <button class="stats-period-btn active" onclick="stSetPeriod(7,this)">1주</button>
-          <button class="stats-period-btn" onclick="stSetPeriod(30,this)">1달</button>
+          <button class="stats-period-btn" onclick="stSetPeriod(7,this)">1주</button>
+          <button class="stats-period-btn active" onclick="stSetPeriod(30,this)">1달</button>
           <button class="stats-period-btn" onclick="stSetPeriod(90,this)">3달</button>
           <button class="stats-period-btn" onclick="stSetPeriod(0,this)">전체</button>
         </div>
@@ -9280,7 +9281,7 @@ if('serviceWorker' in navigator){
 // STATS 탭 — 전체 구현
 // ══════════════════════════════════════════════════════
 let statsPeriod=30;
-let stPeriod=7;  // stats 탭 전용
+let stPeriod=30;  // stats 탭 전용 — 기본 1달
 let statsCharts={weight:null,vol:null,routine:null,score:null};
 let stCharts={weight:null,vol:null,routine:null,score:null};
 let _stData=null;  // 캐시
@@ -9312,32 +9313,51 @@ function stSetPeriod(days, btn){
   stPeriod=days;
   document.querySelectorAll('#st-period-btns .stats-period-btn').forEach(b=>b.classList.remove('active'));
   if(btn)btn.classList.add('active');
-  stRenderAll(_stData);
+  if(_stData)stRenderAll(_stData);
+  else loadStatsTab();
 }
 
 // ── stats 탭 데이터 로드 ──
 async function loadStatsTab(){
   if(!CU)return;
-  document.getElementById('st-loading').style.display='block';
+
+  // 로딩 표시
+  const loadEl=document.getElementById('st-loading');
+  if(loadEl)loadEl.style.display='block';
   ['st-kpi-section','st-insights-section','st-charts-section','st-empty'].forEach(id=>{
     const el=document.getElementById(id);if(el)el.style.display='none';
   });
 
-  // 최근 90일치 한 번 fetch — 기간 변경은 메모리 집계
-  const from=new Date(now);from.setDate(from.getDate()-89);
-  const fromKey=dkey(from);
-  const{data,error}=await sb.from('daily_logs')
-    .select('log_date,weight,water_cups,meals,workouts,mandatory,targets,points_log')
-    .eq('user_id',CU.id)
-    .gte('log_date',fromKey)
-    .order('log_date',{ascending:true});
+  try{
+    // 캐시가 있으면 재사용
+    if(!_stData){
+      const from=new Date(now);from.setDate(from.getDate()-89);
+      const fromKey=dkey(from);
+      const{data,error}=await sb.from('daily_logs')
+        .select('log_date,weight,water_cups,meals,workouts,mandatory,targets,points_log')
+        .eq('user_id',CU.id)
+        .gte('log_date',fromKey)
+        .order('log_date',{ascending:true});
 
-  document.getElementById('st-loading').style.display='none';
-  if(error||!data||data.length===0){
-    document.getElementById('st-empty').style.display='block';return;
+      if(error)throw error;
+      _stData=(data||[]).map(d=>({...d,_key:normKey(d.log_date)}));
+    }
+  }catch(e){
+    console.warn('[loadStatsTab] fetch error:', e.message);
+    if(loadEl)loadEl.style.display='none';
+    const emptyEl=document.getElementById('st-empty');
+    if(emptyEl){emptyEl.style.display='block';emptyEl.innerHTML='<div style="font-size:40px;margin-bottom:12px;">⚠️</div><div style="font-size:14px;font-weight:600;color:var(--text2);margin-bottom:4px;">데이터를 불러올 수 없어요</div><div style="font-size:12px;color:var(--text3);">네트워크 상태를 확인해주세요</div>';}
+    return;
   }
 
-  _stData=data.map(d=>({...d,_key:normKey(d.log_date)}));
+  if(loadEl)loadEl.style.display='none';
+
+  if(!_stData||_stData.length===0){
+    const emptyEl=document.getElementById('st-empty');
+    if(emptyEl)emptyEl.style.display='block';
+    return;
+  }
+
   stRenderAll(_stData);
 }
 
@@ -9346,7 +9366,8 @@ function stFilterRows(rows){
   if(!stPeriod)return rows;  // 0 = 전체
   const cutoff=new Date(now);cutoff.setDate(cutoff.getDate()-(stPeriod-1));
   const cutoffKey=dkey(cutoff);
-  return rows.filter(r=>r._key>=cutoffKey);
+  const filtered=rows.filter(r=>r._key>=cutoffKey);
+  return filtered.length>0?filtered:rows;  // 해당 기간 데이터 없으면 전체 반환
 }
 
 // ── 메인 렌더 ──
@@ -9365,13 +9386,13 @@ function stRenderAll(rows){
     const el=document.getElementById(id);if(el)el.style.display='';
   });
 
-  stRenderKPI(filtered);
-  stRenderInsights(filtered);
-  stRenderWeightChart(filtered);
-  stRenderVolChart(filtered);
-  stRenderRoutineChart(filtered);
-  stRenderMealHeatmap(filtered);
-  stRenderScoreChart(filtered);
+  try{stRenderKPI(filtered);}catch(e){console.warn('stRenderKPI error:',e);}
+  try{stRenderInsights(filtered);}catch(e){console.warn('stRenderInsights error:',e);}
+  try{stRenderWeightChart(filtered);}catch(e){console.warn('stRenderWeightChart error:',e);}
+  try{stRenderVolChart(filtered);}catch(e){console.warn('stRenderVolChart error:',e);}
+  try{stRenderRoutineChart(filtered);}catch(e){console.warn('stRenderRoutineChart error:',e);}
+  try{stRenderMealHeatmap(filtered);}catch(e){console.warn('stRenderMealHeatmap error:',e);}
+  try{stRenderScoreChart(filtered);}catch(e){console.warn('stRenderScoreChart error:',e);}
 }
 
 // ── KPI 카드 ──
