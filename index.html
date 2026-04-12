@@ -13,7 +13,6 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/vision_bundle.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -9406,14 +9405,14 @@ function cvBeep(){
   try{navigator.vibrate&&navigator.vibrate(40);}catch(e){}
 }
 
-// ── Init pose ──
+// ── Init pose (dynamic ESM import — no UMD available) ──
 async function cvInitPose(){
   if(_cvPose)return;
-  const statusEl=document.getElementById('cv-status');
-  if(statusEl)statusEl.textContent='모델 로딩 중…';
-  const vision=await self.FilesetResolver.forVisionTasks('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm');
+  if(_cvElStatus)_cvElStatus.textContent='모델 로딩 중…';
+  const {FilesetResolver,PoseLandmarker}=await import('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/vision_bundle.mjs');
+  const vision=await FilesetResolver.forVisionTasks('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm');
   const isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent);
-  _cvPose=await self.PoseLandmarker.createFromOptions(vision,{
+  _cvPose=await PoseLandmarker.createFromOptions(vision,{
     baseOptions:{modelAssetPath:'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task',delegate:isIOS?'CPU':'GPU'},
     runningMode:'VIDEO',numPoses:1
   });
