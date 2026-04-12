@@ -572,25 +572,43 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 #cv-overlay.open{display:flex;}
 #cv-video{display:none;}
 #cv-canvas{flex:1;width:100%;object-fit:cover;background:#111;}
-.cv-hud{position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:flex-start;padding:env(safe-area-inset-top,12px) 16px 0;z-index:2;}
+/* Top-left: exercise selector */
+.cv-hud-top{position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:flex-start;padding:env(safe-area-inset-top,12px) 16px 0;z-index:2;}
 .cv-hud-left{display:flex;flex-direction:column;gap:4px;}
-.cv-hud-right{display:flex;flex-direction:column;align-items:flex-end;gap:4px;}
-.cv-badge{background:rgba(0,0,0,.55);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:6px 12px;font-size:12px;color:#fff;font-weight:500;font-family:'DM Mono',monospace;}
-.cv-badge-big{background:rgba(0,0,0,.55);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:8px 16px;font-size:28px;color:#fff;font-weight:700;font-family:'DM Mono',monospace;letter-spacing:.02em;}
-.cv-status{font-size:11px;color:rgba(255,255,255,.6);text-align:center;padding:2px 8px;}
+.cv-badge{background:rgba(0,0,0,.55);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:6px 12px;font-size:14px;color:#fff;font-weight:500;font-family:'DM Mono',monospace;}
+/* Center: giant rep counter + ring gauge */
+.cv-hud-center{position:absolute;top:12%;left:50%;transform:translateX(-50%);z-index:2;display:flex;flex-direction:column;align-items:center;gap:2px;pointer-events:none;}
+.cv-set-label{font-size:clamp(16px,4.5vw,22px);color:rgba(255,255,255,.7);font-weight:600;font-family:'DM Mono',monospace;text-shadow:0 1px 8px rgba(0,0,0,.8);}
+.cv-ring-wrap{position:relative;display:flex;align-items:center;justify-content:center;}
+.cv-ring{width:clamp(140px,38vw,200px);height:clamp(140px,38vw,200px);}
+.cv-ring-bg{fill:none;stroke:rgba(255,255,255,.1);stroke-width:6;}
+.cv-ring-fill{fill:none;stroke:var(--green);stroke-width:6;stroke-linecap:round;stroke-dasharray:440;stroke-dashoffset:440;transition:stroke .2s;}
+.cv-rep-count{position:absolute;font-size:clamp(64px,18vw,110px);color:#fff;font-weight:800;font-family:'DM Mono',monospace;text-shadow:0 2px 16px rgba(0,0,0,.8);line-height:1;letter-spacing:-.02em;}
+.cv-rep-count.pop{animation:cv-pop .3s ease-out;}
+@keyframes cv-pop{0%{transform:scale(1)}50%{transform:scale(1.2)}100%{transform:scale(1)}}
+.cv-angle{font-size:clamp(16px,4.5vw,22px);color:rgba(255,255,255,.6);font-family:'DM Mono',monospace;text-shadow:0 1px 6px rgba(0,0,0,.7);}
+.cv-status{font-size:clamp(14px,3.5vw,18px);font-weight:600;font-family:'DM Sans',sans-serif;text-shadow:0 1px 6px rgba(0,0,0,.7);transition:color .2s;}
+/* State colors */
+.cv-state-idle .cv-status{color:rgba(255,255,255,.5);}
+.cv-state-idle .cv-ring-fill{stroke:rgba(255,255,255,.2);}
+.cv-state-down .cv-status{color:#fbbf24;}
+.cv-state-down .cv-ring-fill{stroke:#fbbf24;}
+.cv-state-down .cv-rep-count{color:#fbbf24;transition:color .2s;}
+.cv-state-up .cv-status{color:#4ade80;}
+.cv-state-up .cv-ring-fill{stroke:#4ade80;}
+.cv-state-up .cv-rep-count{color:#4ade80;transition:color .2s;}
+/* Controls */
 .cv-controls{position:absolute;bottom:0;left:0;right:0;display:flex;gap:8px;padding:0 16px env(safe-area-inset-bottom,16px);z-index:2;background:linear-gradient(transparent,rgba(0,0,0,.7));}
 .cv-btn{flex:1;padding:14px;border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;}
 .cv-btn-primary{background:var(--accent);color:#fff;}
 .cv-btn-danger{background:var(--red);color:#fff;}
 .cv-btn-secondary{background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.15);}
-.cv-exercise-select{background:rgba(0,0,0,.55);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.15);border-radius:10px;padding:7px 12px;font-size:13px;color:#fff;font-family:'DM Sans',sans-serif;outline:none;appearance:none;-webkit-appearance:none;}
+.cv-exercise-select{background:rgba(0,0,0,.55);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.15);border-radius:10px;padding:7px 12px;font-size:14px;color:#fff;font-family:'DM Sans',sans-serif;outline:none;appearance:none;-webkit-appearance:none;}
 .cv-exercise-select option{background:#1a1a1f;color:#fff;}
 .cv-guide{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,.6);backdrop-filter:blur(6px);border-radius:16px;padding:20px 28px;text-align:center;z-index:3;pointer-events:none;}
 .cv-guide-text{font-size:14px;color:rgba(255,255,255,.85);line-height:1.5;}
-.cv-rep-flash{position:absolute;inset:0;background:rgba(74,222,128,.12);pointer-events:none;opacity:0;transition:opacity .15s;z-index:1;}
+.cv-rep-flash{position:absolute;inset:0;background:rgba(74,222,128,.15);pointer-events:none;opacity:0;transition:opacity .25s;z-index:1;}
 .cv-rep-flash.flash{opacity:1;}
-.cv-progress-bar{position:absolute;bottom:80px;left:16px;right:16px;height:4px;background:rgba(255,255,255,.1);border-radius:2px;z-index:2;}
-.cv-progress-fill{height:100%;background:var(--green);border-radius:2px;transition:width .15s;}
 </style>
 </head>
 <body>
@@ -2255,20 +2273,28 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
   <video id="cv-video" autoplay playsinline muted></video>
   <canvas id="cv-canvas"></canvas>
   <div class="cv-rep-flash" id="cv-flash"></div>
-  <div class="cv-hud">
+  <!-- Top bar: exercise selector -->
+  <div class="cv-hud-top">
     <div class="cv-hud-left">
       <div class="cv-badge" id="cv-exercise-label">푸쉬업</div>
-      <div class="cv-badge" id="cv-set-label">세트 1</div>
     </div>
-    <div class="cv-hud-right">
-      <div class="cv-badge-big" id="cv-rep-count">0</div>
-      <div class="cv-status" id="cv-status">준비 중…</div>
+  </div>
+  <!-- Center: giant counter + ring gauge -->
+  <div class="cv-hud-center cv-state-idle" id="cv-hud-center">
+    <div class="cv-set-label" id="cv-set-label">세트 1</div>
+    <div class="cv-ring-wrap">
+      <svg class="cv-ring" viewBox="0 0 160 160">
+        <circle class="cv-ring-bg" cx="80" cy="80" r="70"/>
+        <circle class="cv-ring-fill" cx="80" cy="80" r="70" id="cv-ring-fill" stroke-dasharray="440" stroke-dashoffset="440" transform="rotate(-90 80 80)"/>
+      </svg>
+      <div class="cv-rep-count" id="cv-rep-count">0</div>
     </div>
+    <div class="cv-angle" id="cv-angle">--°</div>
+    <div class="cv-status" id="cv-status">준비 중…</div>
   </div>
   <div class="cv-guide" id="cv-guide">
     <div class="cv-guide-text">카메라에 전신이 보이게<br>핸드폰을 세워주세요 📱</div>
   </div>
-  <div class="cv-progress-bar" id="cv-progress"><div class="cv-progress-fill" id="cv-progress-fill" style="width:0%"></div></div>
   <div class="cv-controls">
     <button class="cv-btn cv-btn-secondary" onclick="cvFinishSet()">세트 완료</button>
     <button class="cv-btn cv-btn-danger" onclick="cvStop()">종료</button>
@@ -9358,7 +9384,9 @@ let _cvIdleStart=0;      // when user went idle (for auto-set)
 let _cvPersonVisible=false;
 let _cvFrameSkip=0;
 // Cached DOM refs (set in cvOpen, avoid per-frame getElementById)
-let _cvElVideo=null,_cvElCanvas=null,_cvElCtx=null,_cvElStatus=null,_cvElFlash=null,_cvElFill=null,_cvElGuide=null;
+let _cvElVideo=null,_cvElCanvas=null,_cvElCtx=null,_cvElStatus=null,_cvElFlash=null,_cvElGuide=null;
+let _cvElAngle=null,_cvElRingFill=null,_cvElRepCount=null,_cvElHudCenter=null;
+let _cvLastAngleDisplay=0; // debounce angle text updates
 
 // ── Angle math ──
 function cvAngle(a,b,c){
@@ -9441,8 +9469,12 @@ async function cvOpen(){
   _cvElCanvas=document.getElementById('cv-canvas');
   _cvElStatus=document.getElementById('cv-status');
   _cvElFlash=document.getElementById('cv-flash');
-  _cvElFill=document.getElementById('cv-progress-fill');
   _cvElGuide=document.getElementById('cv-guide');
+  _cvElAngle=document.getElementById('cv-angle');
+  _cvElRingFill=document.getElementById('cv-ring-fill');
+  _cvElRepCount=document.getElementById('cv-rep-count');
+  _cvElHudCenter=document.getElementById('cv-hud-center');
+  _cvLastAngleDisplay=0;
   if(_cvElCanvas)_cvElCtx=_cvElCanvas.getContext('2d');
   // Show overlay
   overlay.classList.add('open');
@@ -9524,6 +9556,12 @@ function cvProcessFrame(){
   cvDrawSkeleton(_cvElCtx,lm,_cvElCanvas.width,_cvElCanvas.height);
   const cfg=CV_EXERCISES[_cvExType];
   const angle=cvGetAngle(lm,cfg.joint);
+  // Update angle display (debounce: only when changed by >2°)
+  const rounded=Math.round(angle);
+  if(_cvElAngle&&Math.abs(rounded-_cvLastAngleDisplay)>=2){
+    _cvElAngle.textContent=rounded+'°';
+    _cvLastAngleDisplay=rounded;
+  }
   cvUpdateRepState(angle,cfg);
 }
 
@@ -9546,22 +9584,39 @@ function cvDrawSkeleton(ctx,lm,w,h){
   const activeIndices=cfg.joint==='elbow'?[13,14]:cfg.joint==='knee'?[25,26]:[23,24];
   lm.forEach((p,i)=>{
     if(i>28||p.visibility<0.5)return;
+    const px=(1-p.x)*w,py=p.y*h;
     const isActive=activeIndices.includes(i);
-    ctx.beginPath();
-    ctx.arc((1-p.x)*w,p.y*h,isActive?6:3,0,Math.PI*2);
-    ctx.fillStyle=isActive?'rgba(74,222,128,0.9)':'rgba(255,255,255,0.7)';
-    ctx.fill();
+    if(isActive){
+      // Glow ring
+      ctx.beginPath();ctx.arc(px,py,16,0,Math.PI*2);
+      ctx.fillStyle='rgba(74,222,128,0.15)';ctx.fill();
+      // Outer ring
+      ctx.beginPath();ctx.arc(px,py,11,0,Math.PI*2);
+      ctx.strokeStyle='rgba(74,222,128,0.5)';ctx.lineWidth=2;ctx.stroke();
+      // Inner dot
+      ctx.beginPath();ctx.arc(px,py,5,0,Math.PI*2);
+      ctx.fillStyle='rgba(74,222,128,1)';ctx.fill();
+    } else {
+      ctx.beginPath();ctx.arc(px,py,3,0,Math.PI*2);
+      ctx.fillStyle='rgba(255,255,255,0.6)';ctx.fill();
+    }
   });
+  ctx.lineWidth=2; // restore
 }
 
 // ── Rep state machine ──
 const CV_HYSTERESIS=8;  // degrees
 const CV_DEBOUNCE=300;  // ms
+function cvSetState(state){
+  _cvState=state;
+  if(!_cvElHudCenter)return;
+  _cvElHudCenter.className='cv-hud-center cv-state-'+state.toLowerCase();
+}
 function cvUpdateRepState(angle,cfg){
   const now=Date.now();
   if(_cvState==='IDLE'){
     if(angle<=cfg.downAngle+CV_HYSTERESIS){
-      _cvState='DOWN';_cvLastTransition=now;
+      cvSetState('DOWN');_cvLastTransition=now;
       if(_cvElStatus)_cvElStatus.textContent='⬇ 내려감';
       _cvIdleStart=0;
     } else {
@@ -9576,11 +9631,13 @@ function cvUpdateRepState(angle,cfg){
   } else if(_cvState==='DOWN'){
     _cvIdleStart=0;
     if(angle>=cfg.upAngle-CV_HYSTERESIS&&(now-_cvLastTransition)>CV_DEBOUNCE){
-      _cvState='UP';_cvLastTransition=now;
+      cvSetState('UP');_cvLastTransition=now;
       _cvReps++;
       cvBeep();
       cvUpdateHud();
-      if(_cvElFlash){_cvElFlash.classList.add('flash');setTimeout(()=>_cvElFlash.classList.remove('flash'),150);}
+      if(_cvElFlash){_cvElFlash.classList.add('flash');setTimeout(()=>_cvElFlash.classList.remove('flash'),300);}
+      // Pop animation on rep count
+      if(_cvElRepCount){_cvElRepCount.classList.remove('pop');void _cvElRepCount.offsetWidth;_cvElRepCount.classList.add('pop');}
       if(_cvElStatus)_cvElStatus.textContent='⬆ 올라감 — '+_cvReps+'회';
     } else {
       if(_cvElStatus)_cvElStatus.textContent='⬇ 내려감';
@@ -9588,15 +9645,19 @@ function cvUpdateRepState(angle,cfg){
   } else if(_cvState==='UP'){
     _cvIdleStart=0;
     if(angle<=cfg.downAngle+CV_HYSTERESIS&&(now-_cvLastTransition)>CV_DEBOUNCE){
-      _cvState='DOWN';_cvLastTransition=now;
+      cvSetState('DOWN');_cvLastTransition=now;
       if(_cvElStatus)_cvElStatus.textContent='⬇ 내려감';
     } else if(angle>=cfg.upAngle&&(now-_cvLastTransition)>CV_DEBOUNCE){
-      _cvState='IDLE';_cvIdleStart=now;
+      cvSetState('IDLE');_cvIdleStart=now;
     }
   }
+  // Drive ring gauge
   const range=cfg.upAngle-cfg.downAngle;
   const pct=Math.max(0,Math.min(100,100-(angle-cfg.downAngle)/range*100));
-  if(_cvElFill)_cvElFill.style.width=pct+'%';
+  if(_cvElRingFill){
+    const offset=440*(1-pct/100);
+    _cvElRingFill.style.strokeDashoffset=offset;
+  }
 }
 
 // ── HUD update ──
@@ -9604,8 +9665,7 @@ function cvUpdateHud(){
   const cfg=CV_EXERCISES[_cvExType];
   const el=document.getElementById('cv-exercise-label');
   if(el)el.textContent=cfg.label;
-  const rc=document.getElementById('cv-rep-count');
-  if(rc)rc.textContent=_cvReps;
+  if(_cvElRepCount)_cvElRepCount.textContent=_cvReps;
   const sl=document.getElementById('cv-set-label');
   if(sl)sl.textContent='세트 '+(_cvSets.length+1);
 }
@@ -9654,7 +9714,8 @@ function cvStop(){
   }
   // Reset
   _cvSets=[];_cvReps=0;_cvState='IDLE';
-  _cvElVideo=null;_cvElCanvas=null;_cvElCtx=null;_cvElStatus=null;_cvElFlash=null;_cvElFill=null;_cvElGuide=null;
+  _cvElVideo=null;_cvElCanvas=null;_cvElCtx=null;_cvElStatus=null;_cvElFlash=null;_cvElGuide=null;
+  _cvElAngle=null;_cvElRingFill=null;_cvElRepCount=null;_cvElHudCenter=null;
 }
 // ══════════════════════════════════════════════════
 // ── END CAMERA VISION ──
