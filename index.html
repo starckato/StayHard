@@ -13,6 +13,7 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/vision_bundle.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -566,6 +567,31 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 .wv-mm-cancel{background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text2);font-size:11px;padding:6px 8px;cursor:pointer;font-family:'DM Sans',sans-serif;}
 .wv-day-pill{width:22px;height:22px;border-radius:50%;border:1px solid var(--border);font-size:10px;font-weight:500;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text3);background:var(--surface2);}
 .wv-day-pill.on{background:var(--accent);border-color:var(--accent);color:#fff;}
+
+/* ── CAMERA VISION OVERLAY ── */
+#cv-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:#000;z-index:550;display:none;flex-direction:column;max-width:430px;left:50%;transform:translateX(-50%);}
+#cv-overlay.open{display:flex;}
+#cv-video{display:none;}
+#cv-canvas{flex:1;width:100%;object-fit:cover;background:#111;}
+.cv-hud{position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:flex-start;padding:env(safe-area-inset-top,12px) 16px 0;z-index:2;}
+.cv-hud-left{display:flex;flex-direction:column;gap:4px;}
+.cv-hud-right{display:flex;flex-direction:column;align-items:flex-end;gap:4px;}
+.cv-badge{background:rgba(0,0,0,.55);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:6px 12px;font-size:12px;color:#fff;font-weight:500;font-family:'DM Mono',monospace;}
+.cv-badge-big{background:rgba(0,0,0,.55);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:8px 16px;font-size:28px;color:#fff;font-weight:700;font-family:'DM Mono',monospace;letter-spacing:.02em;}
+.cv-status{font-size:11px;color:rgba(255,255,255,.6);text-align:center;padding:2px 8px;}
+.cv-controls{position:absolute;bottom:0;left:0;right:0;display:flex;gap:8px;padding:0 16px env(safe-area-inset-bottom,16px);z-index:2;background:linear-gradient(transparent,rgba(0,0,0,.7));}
+.cv-btn{flex:1;padding:14px;border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;}
+.cv-btn-primary{background:var(--accent);color:#fff;}
+.cv-btn-danger{background:var(--red);color:#fff;}
+.cv-btn-secondary{background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.15);}
+.cv-exercise-select{background:rgba(0,0,0,.55);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.15);border-radius:10px;padding:7px 12px;font-size:13px;color:#fff;font-family:'DM Sans',sans-serif;outline:none;appearance:none;-webkit-appearance:none;}
+.cv-exercise-select option{background:#1a1a1f;color:#fff;}
+.cv-guide{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,.6);backdrop-filter:blur(6px);border-radius:16px;padding:20px 28px;text-align:center;z-index:3;pointer-events:none;}
+.cv-guide-text{font-size:14px;color:rgba(255,255,255,.85);line-height:1.5;}
+.cv-rep-flash{position:absolute;inset:0;background:rgba(74,222,128,.12);pointer-events:none;opacity:0;transition:opacity .15s;z-index:1;}
+.cv-rep-flash.flash{opacity:1;}
+.cv-progress-bar{position:absolute;bottom:80px;left:16px;right:16px;height:4px;background:rgba(255,255,255,.1);border-radius:2px;z-index:2;}
+.cv-progress-fill{height:100%;background:var(--green);border-radius:2px;transition:width .15s;}
 </style>
 </head>
 <body>
@@ -2225,6 +2251,31 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
   </div>
 </div>
 
+<!-- CAMERA VISION OVERLAY -->
+<div id="cv-overlay">
+  <video id="cv-video" autoplay playsinline muted></video>
+  <canvas id="cv-canvas"></canvas>
+  <div class="cv-rep-flash" id="cv-flash"></div>
+  <div class="cv-hud">
+    <div class="cv-hud-left">
+      <div class="cv-badge" id="cv-exercise-label">푸쉬업</div>
+      <div class="cv-badge" id="cv-set-label">세트 1</div>
+    </div>
+    <div class="cv-hud-right">
+      <div class="cv-badge-big" id="cv-rep-count">0</div>
+      <div class="cv-status" id="cv-status">준비 중…</div>
+    </div>
+  </div>
+  <div class="cv-guide" id="cv-guide">
+    <div class="cv-guide-text">카메라에 전신이 보이게<br>핸드폰을 세워주세요 📱</div>
+  </div>
+  <div class="cv-progress-bar" id="cv-progress"><div class="cv-progress-fill" id="cv-progress-fill" style="width:0%"></div></div>
+  <div class="cv-controls">
+    <button class="cv-btn cv-btn-secondary" onclick="cvFinishSet()">세트 완료</button>
+    <button class="cv-btn cv-btn-danger" onclick="cvStop()">종료</button>
+  </div>
+</div>
+
 <!-- ROUTINE MANAGEMENT OVERLAY -->
 <div id="routine-modal-overlay">
   <div class="rt-header">
@@ -2920,6 +2971,9 @@ function renderSession(){
       </button>
       <button onclick="openAddExerciseModal('routine')" style="padding:13px 32px;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius);color:var(--text2);font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;max-width:280px;touch-action:manipulation;">
         📋 나의 루틴으로 시작
+      </button>
+      <button onclick="cvOpen()" style="padding:13px 32px;background:linear-gradient(135deg,rgba(124,106,247,.15),rgba(96,165,250,.15));border:1px solid var(--accent-bd);border-radius:var(--radius);color:var(--accent);font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;max-width:280px;touch-action:manipulation;">
+        📷 AI 카메라 카운트
       </button>
     </div>`;
     return;
@@ -9279,6 +9333,336 @@ document.addEventListener('mousedown',function(e){
     wvMmClose();
   }
 });
+
+// ══════════════════════════════════════════════════
+// ── CAMERA VISION SET COUNTER ──
+// ══════════════════════════════════════════════════
+const CV_EXERCISES={
+  pushup:  {joint:'elbow', downAngle:90,  upAngle:155, label:'푸쉬업',     icon:'🤸', muscle:'가슴',equip:'맨몸'},
+  squat:   {joint:'knee',  downAngle:95,  upAngle:155, label:'스쿼트',     icon:'🤸', muscle:'하체',equip:'맨몸'},
+  pullup:  {joint:'elbow', downAngle:75,  upAngle:150, label:'풀업',       icon:'🤸', muscle:'등',  equip:'맨몸'},
+  lunge:   {joint:'knee',  downAngle:95,  upAngle:150, label:'런지',       icon:'🤸', muscle:'하체',equip:'맨몸'},
+  situp:   {joint:'hip',   downAngle:60,  upAngle:120, label:'싯업',       icon:'🤸', muscle:'복근',equip:'맨몸'},
+  burpee:  {joint:'knee',  downAngle:90,  upAngle:155, label:'버피',       icon:'🤸', muscle:'전신',equip:'맨몸'},
+};
+let _cvPose=null;        // PoseLandmarker instance
+let _cvStream=null;      // MediaStream
+let _cvRunning=false;    // frame loop active
+let _cvExType='pushup';  // selected exercise key
+let _cvReps=0;           // reps in current set
+let _cvSets=[];          // [{reps:N},...] completed sets
+let _cvState='IDLE';     // IDLE | DOWN | UP
+let _cvLastTransition=0; // timestamp of last state change (debounce)
+let _cvFrameId=null;     // rAF id
+let _cvAudioCtx=null;    // Web Audio for beeps
+let _cvIdleStart=0;      // when user went idle (for auto-set)
+let _cvPersonVisible=false;
+
+// ── Angle math ──
+function cvAngle(a,b,c){
+  const ab={x:a.x-b.x,y:a.y-b.y,z:(a.z||0)-(b.z||0)};
+  const cb={x:c.x-b.x,y:c.y-b.y,z:(c.z||0)-(b.z||0)};
+  const dot=ab.x*cb.x+ab.y*cb.y+ab.z*cb.z;
+  const magA=Math.sqrt(ab.x*ab.x+ab.y*ab.y+ab.z*ab.z);
+  const magC=Math.sqrt(cb.x*cb.x+cb.y*cb.y+cb.z*cb.z);
+  if(magA===0||magC===0)return 180;
+  return Math.acos(Math.min(1,Math.max(-1,dot/(magA*magC))))*(180/Math.PI);
+}
+// Landmark indices (MediaPipe Pose)
+const CV_LM={lShoulder:11,rShoulder:12,lElbow:13,rElbow:14,lWrist:15,rWrist:16,lHip:23,rHip:24,lKnee:25,rKnee:26,lAnkle:27,rAnkle:28};
+
+function cvGetAngle(lm,joint){
+  if(joint==='elbow'){
+    const aL=cvAngle(lm[CV_LM.lShoulder],lm[CV_LM.lElbow],lm[CV_LM.lWrist]);
+    const aR=cvAngle(lm[CV_LM.rShoulder],lm[CV_LM.rElbow],lm[CV_LM.rWrist]);
+    return(aL+aR)/2;
+  }
+  if(joint==='knee'){
+    const aL=cvAngle(lm[CV_LM.lHip],lm[CV_LM.lKnee],lm[CV_LM.lAnkle]);
+    const aR=cvAngle(lm[CV_LM.rHip],lm[CV_LM.rKnee],lm[CV_LM.rAnkle]);
+    return(aL+aR)/2;
+  }
+  if(joint==='hip'){
+    const aL=cvAngle(lm[CV_LM.lShoulder],lm[CV_LM.lHip],lm[CV_LM.lKnee]);
+    const aR=cvAngle(lm[CV_LM.rShoulder],lm[CV_LM.rHip],lm[CV_LM.rKnee]);
+    return(aL+aR)/2;
+  }
+  return 180;
+}
+
+// ── Audio beep ──
+function cvBeep(){
+  try{
+    if(!_cvAudioCtx)_cvAudioCtx=new(window.AudioContext||window.webkitAudioContext)();
+    const osc=_cvAudioCtx.createOscillator();
+    const gain=_cvAudioCtx.createGain();
+    osc.connect(gain);gain.connect(_cvAudioCtx.destination);
+    osc.frequency.value=880;gain.gain.value=0.15;
+    osc.start();osc.stop(_cvAudioCtx.currentTime+0.06);
+  }catch(e){}
+  try{navigator.vibrate&&navigator.vibrate(40);}catch(e){}
+}
+
+// ── Init pose ──
+async function cvInitPose(){
+  if(_cvPose)return;
+  const statusEl=document.getElementById('cv-status');
+  if(statusEl)statusEl.textContent='모델 로딩 중…';
+  const vision=await self.FilesetResolver.forVisionTasks('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm');
+  _cvPose=await self.PoseLandmarker.createFromOptions(vision,{
+    baseOptions:{modelAssetPath:'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task',delegate:'GPU'},
+    runningMode:'VIDEO',numPoses:1
+  });
+}
+
+// ── Camera request ──
+async function cvRequestCamera(){
+  return navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:{ideal:640},height:{ideal:480},frameRate:{ideal:30}},audio:false});
+}
+
+// ── Open camera vision ──
+async function cvOpen(){
+  const overlay=document.getElementById('cv-overlay');
+  if(!overlay)return;
+  // Reset state
+  _cvReps=0;_cvSets=[];_cvState='IDLE';_cvLastTransition=0;_cvIdleStart=0;_cvPersonVisible=false;
+  _cvExType='pushup';
+  // Show overlay
+  overlay.classList.add('open');
+  document.body.style.overflow='hidden';
+  // Init audio on user gesture
+  if(!_cvAudioCtx){try{_cvAudioCtx=new(window.AudioContext||window.webkitAudioContext)();}catch(e){}}
+  // Update UI
+  cvUpdateHud();
+  document.getElementById('cv-guide').style.display='';
+  // Exercise selector — inject into hud-left if not already there
+  let sel=document.getElementById('cv-ex-select');
+  if(!sel){
+    sel=document.createElement('select');
+    sel.id='cv-ex-select';
+    sel.className='cv-exercise-select';
+    Object.entries(CV_EXERCISES).forEach(([k,v])=>{
+      const opt=document.createElement('option');opt.value=k;opt.textContent=v.label;sel.appendChild(opt);
+    });
+    sel.onchange=function(){_cvExType=this.value;_cvReps=0;_cvState='IDLE';cvUpdateHud();};
+    document.querySelector('.cv-hud-left').prepend(sel);
+  }
+  sel.value=_cvExType;
+  // Request camera
+  try{
+    _cvStream=await cvRequestCamera();
+  }catch(e){
+    showToast('카메라 접근이 거부되었어요');
+    cvStop();return;
+  }
+  const video=document.getElementById('cv-video');
+  video.srcObject=_cvStream;
+  await video.play();
+  // Init pose model
+  try{
+    await cvInitPose();
+  }catch(e){
+    showToast('포즈 감지를 불러올 수 없어요');
+    cvStop();return;
+  }
+  // Size canvas
+  const canvas=document.getElementById('cv-canvas');
+  canvas.width=video.videoWidth;
+  canvas.height=video.videoHeight;
+  // Start frame loop
+  _cvRunning=true;
+  cvProcessFrame();
+}
+
+// ── Frame loop ──
+let _cvFrameSkip=0;
+function cvProcessFrame(){
+  if(!_cvRunning)return;
+  _cvFrameId=requestAnimationFrame(cvProcessFrame);
+  // Process every other frame for performance (~15fps)
+  _cvFrameSkip++;
+  if(_cvFrameSkip%2!==0)return;
+  const video=document.getElementById('cv-video');
+  const canvas=document.getElementById('cv-canvas');
+  if(!video||!canvas||video.readyState<2)return;
+  const ctx=canvas.getContext('2d');
+  // Draw mirrored video
+  ctx.save();
+  ctx.scale(-1,1);
+  ctx.drawImage(video,-canvas.width,0,canvas.width,canvas.height);
+  ctx.restore();
+  // Detect pose
+  if(!_cvPose)return;
+  let results;
+  try{results=_cvPose.detectForVideo(video,performance.now());}catch(e){return;}
+  if(!results||!results.landmarks||results.landmarks.length===0){
+    // No person detected
+    if(_cvPersonVisible){
+      _cvPersonVisible=false;
+      const guide=document.getElementById('cv-guide');
+      if(guide)guide.style.display='';
+      document.getElementById('cv-status').textContent='사람이 감지되지 않아요';
+    }
+    return;
+  }
+  // Person detected
+  if(!_cvPersonVisible){
+    _cvPersonVisible=true;
+    const guide=document.getElementById('cv-guide');
+    if(guide)guide.style.display='none';
+  }
+  const lm=results.landmarks[0];
+  // Draw skeleton
+  cvDrawSkeleton(ctx,lm,canvas.width,canvas.height);
+  // Calculate angle
+  const cfg=CV_EXERCISES[_cvExType];
+  const angle=cvGetAngle(lm,cfg.joint);
+  // Update rep state machine
+  cvUpdateRepState(angle,cfg);
+}
+
+// ── Skeleton drawing ──
+const CV_CONNECTIONS=[[11,12],[11,13],[13,15],[12,14],[14,16],[11,23],[12,24],[23,24],[23,25],[25,27],[24,26],[26,28]];
+function cvDrawSkeleton(ctx,lm,w,h){
+  ctx.lineWidth=2;
+  // Draw connections
+  ctx.strokeStyle='rgba(124,106,247,0.6)';
+  CV_CONNECTIONS.forEach(([a,b])=>{
+    const pa=lm[a],pb=lm[b];
+    if(!pa||!pb||pa.visibility<0.5||pb.visibility<0.5)return;
+    ctx.beginPath();
+    ctx.moveTo((1-pa.x)*w,pa.y*h);
+    ctx.lineTo((1-pb.x)*w,pb.y*h);
+    ctx.stroke();
+  });
+  // Draw joints
+  const cfg=CV_EXERCISES[_cvExType];
+  const activeIndices=cfg.joint==='elbow'?[13,14]:cfg.joint==='knee'?[25,26]:[23,24];
+  lm.forEach((p,i)=>{
+    if(i>28||p.visibility<0.5)return;
+    const isActive=activeIndices.includes(i);
+    ctx.beginPath();
+    ctx.arc((1-p.x)*w,p.y*h,isActive?6:3,0,Math.PI*2);
+    ctx.fillStyle=isActive?'rgba(74,222,128,0.9)':'rgba(255,255,255,0.7)';
+    ctx.fill();
+  });
+}
+
+// ── Rep state machine ──
+const CV_HYSTERESIS=8;  // degrees
+const CV_DEBOUNCE=300;  // ms
+function cvUpdateRepState(angle,cfg){
+  const now=Date.now();
+  const statusEl=document.getElementById('cv-status');
+  if(_cvState==='IDLE'){
+    if(angle<=cfg.downAngle+CV_HYSTERESIS){
+      _cvState='DOWN';_cvLastTransition=now;
+      if(statusEl)statusEl.textContent='⬇ 내려감';
+      _cvIdleStart=0;
+    } else {
+      // Check auto-set completion (idle for 5s after reps)
+      if(_cvReps>0){
+        if(_cvIdleStart===0)_cvIdleStart=now;
+        else if(now-_cvIdleStart>5000){cvFinishSet();return;}
+        if(statusEl)statusEl.textContent='대기 중… ('+(5-Math.floor((now-_cvIdleStart)/1000))+'s)';
+      } else {
+        if(statusEl)statusEl.textContent='운동을 시작하세요';
+      }
+    }
+  } else if(_cvState==='DOWN'){
+    _cvIdleStart=0;
+    if(angle>=cfg.upAngle-CV_HYSTERESIS&&(now-_cvLastTransition)>CV_DEBOUNCE){
+      _cvState='UP';_cvLastTransition=now;
+      // Rep counted!
+      _cvReps++;
+      cvBeep();
+      cvUpdateHud();
+      // Flash
+      const flash=document.getElementById('cv-flash');
+      if(flash){flash.classList.add('flash');setTimeout(()=>flash.classList.remove('flash'),150);}
+      if(statusEl)statusEl.textContent='⬆ 올라감 — '+_cvReps+'회';
+    } else {
+      if(statusEl)statusEl.textContent='⬇ 내려감';
+    }
+  } else if(_cvState==='UP'){
+    _cvIdleStart=0;
+    if(angle<=cfg.downAngle+CV_HYSTERESIS&&(now-_cvLastTransition)>CV_DEBOUNCE){
+      _cvState='DOWN';_cvLastTransition=now;
+      if(statusEl)statusEl.textContent='⬇ 내려감';
+    } else if(angle>=cfg.upAngle){
+      // Returned to idle position
+      _cvState='IDLE';_cvIdleStart=now;
+    }
+  }
+  // Update progress bar (visual feedback)
+  const range=cfg.upAngle-cfg.downAngle;
+  const pct=Math.max(0,Math.min(100,100-(angle-cfg.downAngle)/range*100));
+  const fill=document.getElementById('cv-progress-fill');
+  if(fill)fill.style.width=pct+'%';
+}
+
+// ── HUD update ──
+function cvUpdateHud(){
+  const cfg=CV_EXERCISES[_cvExType];
+  const el=document.getElementById('cv-exercise-label');
+  if(el)el.textContent=cfg.label;
+  const rc=document.getElementById('cv-rep-count');
+  if(rc)rc.textContent=_cvReps;
+  const sl=document.getElementById('cv-set-label');
+  if(sl)sl.textContent='세트 '+(_cvSets.length+1);
+}
+
+// ── Finish current set ──
+function cvFinishSet(){
+  if(_cvReps===0){showToast('아직 횟수가 없어요');return;}
+  _cvSets.push({reps:_cvReps});
+  showToast(CV_EXERCISES[_cvExType].label+' '+_cvReps+'회 — 세트 '+_cvSets.length+' 완료!');
+  // Append to currentSession
+  cvAppendToSession(_cvExType,_cvReps);
+  // Reset for next set
+  _cvReps=0;_cvState='IDLE';_cvIdleStart=0;
+  cvUpdateHud();
+}
+
+// ── Append set to currentSession ──
+function cvAppendToSession(exType,reps){
+  const cfg=CV_EXERCISES[exType];
+  // Find or create exercise entry in currentSession
+  let idx=currentSession.findIndex(ex=>ex.name===cfg.label&&ex.equip===cfg.equip);
+  if(idx===-1){
+    currentSession.push({name:cfg.label,icon:cfg.icon,muscle:cfg.muscle,equip:cfg.equip,isStrength:true,sets:[],status:'done'});
+    idx=currentSession.length-1;
+  }
+  currentSession[idx].sets.push({kg:'',reps:String(reps),done:true});
+  saveSessionToLog();
+}
+
+// ── Stop camera ──
+function cvStop(){
+  _cvRunning=false;
+  if(_cvFrameId){cancelAnimationFrame(_cvFrameId);_cvFrameId=null;}
+  // Stop camera stream
+  if(_cvStream){_cvStream.getTracks().forEach(t=>t.stop());_cvStream=null;}
+  const video=document.getElementById('cv-video');
+  if(video)video.srcObject=null;
+  // Close overlay
+  const overlay=document.getElementById('cv-overlay');
+  if(overlay)overlay.classList.remove('open');
+  document.body.style.overflow='';
+  // If any sets were recorded, show summary
+  if(_cvSets.length>0){
+    const totalReps=_cvSets.reduce((a,s)=>a+s.reps,0);
+    const cfg=CV_EXERCISES[_cvExType];
+    showToast('📷 '+cfg.label+' '+_cvSets.length+'세트 '+totalReps+'회 기록 완료!');
+    // Ensure workout session overlay shows the logged sets
+    renderSession();
+  }
+  // Reset
+  _cvSets=[];_cvReps=0;_cvState='IDLE';
+}
+// ══════════════════════════════════════════════════
+// ── END CAMERA VISION ──
+// ══════════════════════════════════════════════════
 </script>
 
 <!-- WEEKLY VIEW MINI MODAL -->
