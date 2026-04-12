@@ -2273,11 +2273,12 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
   <video id="cv-video" autoplay playsinline muted></video>
   <canvas id="cv-canvas"></canvas>
   <div class="cv-rep-flash" id="cv-flash"></div>
-  <!-- Top bar: exercise selector -->
+  <!-- Top bar: exercise selector + audio toggle -->
   <div class="cv-hud-top">
     <div class="cv-hud-left">
       <div class="cv-badge" id="cv-exercise-label">푸쉬업</div>
     </div>
+    <button id="cv-audio-btn" onclick="cvToggleAudio()" style="background:rgba(0,0,0,.55);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:6px 12px;font-size:18px;cursor:pointer;touch-action:manipulation;color:#fff;">🔊</button>
   </div>
   <!-- Center: giant counter + ring gauge -->
   <div class="cv-hud-center cv-state-idle" id="cv-hud-center">
@@ -9420,8 +9421,12 @@ function cvGetAngle(lm,joint){
   return 180;
 }
 
-// ── Audio beep ──
+// ── Audio mode: 'voice' | 'beep' | 'silent' ──
+let _cvAudioMode='voice';
+try{const m=localStorage.getItem('cv_audio_mode');if(m)_cvAudioMode=m;}catch(e){}
+
 function cvBeep(){
+  if(_cvAudioMode==='silent')return;
   try{
     if(!_cvAudioCtx)_cvAudioCtx=new(window.AudioContext||window.webkitAudioContext)();
     const osc=_cvAudioCtx.createOscillator();
@@ -9431,6 +9436,43 @@ function cvBeep(){
     osc.start();osc.stop(_cvAudioCtx.currentTime+0.06);
   }catch(e){}
   try{navigator.vibrate&&navigator.vibrate(40);}catch(e){}
+}
+
+// ── Voice counting ──
+const CV_KO_NUMS=['','하나','둘','셋','넷','다섯','여섯','일곱','여덟','아홉','열',
+  '열하나','열둘','열셋','열넷','열다섯','열여섯','열일곱','열여덟','열아홉','스물',
+  '스물하나','스물둘','스물셋','스물넷','스물다섯','스물여섯','스물일곱','스물여덟','스물아홉','서른'];
+
+function cvSpeak(num){
+  if(_cvAudioMode!=='voice')return;
+  if(!window.speechSynthesis)return;
+  // Cancel any in-progress utterance
+  speechSynthesis.cancel();
+  const word=CV_KO_NUMS[num]||String(num);
+  const utt=new SpeechSynthesisUtterance(word);
+  utt.lang='ko-KR';
+  utt.rate=1.3;
+  utt.volume=1;
+  // Try to pick a Korean voice
+  const voices=speechSynthesis.getVoices();
+  const koVoice=voices.find(v=>v.lang.startsWith('ko'));
+  if(koVoice)utt.voice=koVoice;
+  speechSynthesis.speak(utt);
+}
+
+// Warm up voices list (needed on some browsers)
+if(window.speechSynthesis){speechSynthesis.getVoices();speechSynthesis.onvoiceschanged=()=>speechSynthesis.getVoices();}
+
+// ── Toggle audio mode ──
+function cvToggleAudio(){
+  const modes=['voice','beep','silent'];
+  const idx=(modes.indexOf(_cvAudioMode)+1)%modes.length;
+  _cvAudioMode=modes[idx];
+  try{localStorage.setItem('cv_audio_mode',_cvAudioMode);}catch(e){}
+  const btn=document.getElementById('cv-audio-btn');
+  if(btn)btn.textContent=_cvAudioMode==='voice'?'🔊':_cvAudioMode==='beep'?'🔔':'🔇';
+  const labels={voice:'음성 카운트',beep:'비프음만',silent:'무음'};
+  showToast(labels[_cvAudioMode]);
 }
 
 // ── Init pose (dynamic ESM import — no UMD available) ──
@@ -9481,6 +9523,11 @@ async function cvOpen(){
   document.body.style.overflow='hidden';
   // Init audio on user gesture
   if(!_cvAudioCtx){try{_cvAudioCtx=new(window.AudioContext||window.webkitAudioContext)();}catch(e){}}
+  // Warm up speechSynthesis on user gesture (required by iOS Safari)
+  if(window.speechSynthesis){speechSynthesis.cancel();speechSynthesis.getVoices();}
+  // Set audio button state
+  const audioBtn=document.getElementById('cv-audio-btn');
+  if(audioBtn)audioBtn.textContent=_cvAudioMode==='voice'?'🔊':_cvAudioMode==='beep'?'🔔':'🔇';
   // Update UI
   cvUpdateHud();
   if(_cvElGuide)_cvElGuide.style.display='';
@@ -9634,6 +9681,7 @@ function cvUpdateRepState(angle,cfg){
       cvSetState('UP');_cvLastTransition=now;
       _cvReps++;
       cvBeep();
+      cvSpeak(_cvReps);
       cvUpdateHud();
       if(_cvElFlash){_cvElFlash.classList.add('flash');setTimeout(()=>_cvElFlash.classList.remove('flash'),300);}
       // Pop animation on rep count
