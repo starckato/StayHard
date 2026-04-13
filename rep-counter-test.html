@@ -124,6 +124,17 @@
   .debug .entry { color: #666; }
   .debug .entry.rep { color: var(--accent); font-weight: 500; }
   .debug .entry.warn { color: #facc15; }
+  .btn.rec-active { background: var(--accent2); border-color: var(--accent2); color: #fff; animation: blink .8s infinite; }
+  .recordings { width: 100%; max-width: 480px; margin-bottom: 16px; }
+  .recordings-title { font-family: 'DM Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); margin-bottom: 8px; }
+  .rec-item { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 12px; margin-bottom: 8px; }
+  .rec-item video { width: 100%; border-radius: 6px; margin-bottom: 8px; }
+  .rec-meta { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); margin-bottom: 6px; }
+  .rec-log { font-family: 'DM Mono', monospace; font-size: 10px; color: #666; max-height: 120px; overflow-y: auto; line-height: 1.7; background: rgba(0,0,0,.3); border-radius: 4px; padding: 8px; }
+  .rec-log .rep { color: var(--accent); font-weight: 500; }
+  .rec-log .warn { color: #facc15; }
+  .rec-actions { display: flex; gap: 8px; margin-top: 8px; }
+  .rec-actions .btn { padding: 8px 12px; font-size: 11px; }
 </style>
 </head>
 <body>
@@ -174,6 +185,12 @@
   <button class="btn" id="resetBtn">Reset</button>
   <button class="btn" id="roiBtn">Set Zone</button>
   <button class="btn" id="flipBtn">Flip 📷</button>
+  <button class="btn" id="recBtn" style="grid-column:span 2;">⏺ Record Test</button>
+</div>
+
+<div class="recordings" id="recordings" style="display:none;">
+  <div class="recordings-title">Recorded Tests</div>
+  <div id="recList"></div>
 </div>
 
 <div class="settings">
@@ -526,6 +543,10 @@ function addTouch(canvas) {
 }
 addTouch(roiCanvas);
 
+// ── Logging (captures to recording if active) ──
+let _recLog = [];
+let _recActive = false;
+
 function log(msg, type='entry') {
   const el = document.createElement('div');
   el.className = 'entry ' + type;
@@ -534,7 +555,95 @@ function log(msg, type='entry') {
   debugLog.appendChild(el);
   debugLog.scrollTop = debugLog.scrollHeight;
   if (debugLog.children.length > 30) debugLog.removeChild(debugLog.firstChild);
+  // Capture to recording log
+  if (_recActive) _recLog.push({ time: t, msg, type });
 }
+
+// ── Video Recording ──
+let _mediaRecorder = null;
+let _recChunks = [];
+let _recStartRepCount = 0;
+let _recStartTime = null;
+let _recCount = 0;
+const recBtn = document.getElementById('recBtn');
+const recList = document.getElementById('recList');
+const recordingsEl = document.getElementById('recordings');
+
+recBtn.addEventListener('click', () => {
+  if (!_recActive) startRecording();
+  else stopRecording();
+});
+
+function startRecording() {
+  if (!state.running || !stream) { log('start camera first', 'warn'); return; }
+  _recChunks = [];
+  _recLog = [];
+  _recStartRepCount = state.repCount;
+  _recStartTime = new Date();
+  _recActive = true;
+  // Record the camera stream directly
+  const mimeTypes = ['video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm', 'video/mp4'];
+  let mime = '';
+  for (const m of mimeTypes) { if (MediaRecorder.isTypeSupported(m)) { mime = m; break; } }
+  if (!mime) { log('recording not supported on this browser', 'warn'); _recActive = false; return; }
+  _mediaRecorder = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 1500000 });
+  _mediaRecorder.ondataavailable = e => { if (e.data.size > 0) _recChunks.push(e.data); };
+  _mediaRecorder.onstop = () => finalizeRecording();
+  _mediaRecorder.start(500); // chunk every 500ms
+  recBtn.textContent = '⏹ Stop Recording';
+  recBtn.classList.add('rec-active');
+  log('recording started');
+}
+
+function stopRecording() {
+  if (!_mediaRecorder || _mediaRecorder.state === 'inactive') return;
+  _recActive = false;
+  _mediaRecorder.stop();
+  recBtn.textContent = '⏺ Record Test';
+  recBtn.classList.remove('rec-active');
+  log('recording stopped');
+}
+
+function finalizeRecording() {
+  const blob = new Blob(_recChunks, { type: _mediaRecorder.mimeType });
+  const url = URL.createObjectURL(blob);
+  _recCount++;
+  const repsInTest = state.repCount - _recStartRepCount;
+  const duration = ((Date.now() - _recStartTime.getTime()) / 1000).toFixed(1);
+  const params = `sens=${algo.sensitivity} gap=${algo.minGapMs}ms smooth=${algo.smoothing}`;
+  const timeStr = _recStartTime.toLocaleTimeString('en', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+  // Build log HTML
+  const logHtml = _recLog.map(e =>
+    `<div class="${e.type}">${e.time}  ${e.msg}</div>`
+  ).join('');
+
+  const item = document.createElement('div');
+  item.className = 'rec-item';
+  item.innerHTML = `
+    <video src="${url}" controls playsinline preload="metadata"></video>
+    <div class="rec-meta">
+      Test #${_recCount} — ${timeStr} — ${duration}s — ${repsInTest} reps detected<br>
+      ${params} | ${state.facingMode} cam${state.roi ? ' | ROI set' : ''}
+    </div>
+    <div class="rec-log">${logHtml || '<div>no events during recording</div>'}</div>
+    <div class="rec-actions">
+      <a class="btn" href="${url}" download="rep-test-${_recCount}.webm">Download</a>
+      <button class="btn" onclick="this.closest('.rec-item').remove()">Delete</button>
+    </div>
+  `;
+  recList.prepend(item);
+  recordingsEl.style.display = '';
+  _recChunks = [];
+  _recLog = [];
+}
+
+// Auto-stop recording when camera stops
+const _origStopCamera = stopCamera;
+stopCamera = function() {
+  if (_recActive) stopRecording();
+  _origStopCamera();
+};
 </script>
 </body>
 </html>
