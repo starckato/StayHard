@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Rep Counter — Pixel Motion Test</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;700;800&display=swap');
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0a0a0a; --surface: #111; --border: #222;
+    --accent: #c8f135; --accent2: #ff4d4d;
+    --text: #f0f0f0; --muted: #555; --muted2: #333;
+  }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: 'Syne', sans-serif;
+    min-height: 100vh; display: flex; flex-direction: column;
+    align-items: center; padding: 24px 16px 48px;
+  }
+  header {
+    width: 100%; max-width: 480px;
+    display: flex; align-items: baseline; justify-content: space-between;
+    margin-bottom: 28px;
+  }
+  .logo { font-size: 13px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); }
+  .version { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); }
+  .rep-display {
+    width: 100%; max-width: 480px;
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 20px;
+  }
+  .rep-count {
+    font-size: 96px; font-weight: 800; line-height: 1;
+    color: var(--accent); letter-spacing: -4px;
+    transition: transform .1s cubic-bezier(.17,.67,.35,1.4);
+  }
+  .rep-count.pulse { transform: scale(1.08); }
+  .rep-meta { text-align: right; }
+  .rep-label { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .1em; margin-bottom: 8px; }
+  .manual-btns { display: flex; gap: 8px; }
+  .manual-btn {
+    width: 40px; height: 40px; border-radius: 50%;
+    border: 1px solid var(--border); background: var(--surface);
+    color: var(--text); font-size: 20px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: background .15s, border-color .15s;
+  }
+  .manual-btn:hover { background: var(--muted2); border-color: var(--muted); }
+  .manual-btn:active { transform: scale(.92); }
+  .camera-wrap {
+    width: 100%; max-width: 480px; position: relative;
+    border-radius: 12px; overflow: hidden;
+    background: #050505; border: 1px solid var(--border);
+    aspect-ratio: 4/3; margin-bottom: 16px;
+  }
+  #video { width: 100%; height: 100%; object-fit: cover; display: block; }
+  #canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+  #roiCanvas { position: absolute; inset: 0; width: 100%; height: 100%; cursor: default; }
+  .camera-off-msg {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 12px; color: var(--muted);
+  }
+  .camera-off-msg .icon { font-size: 40px; opacity: .3; }
+  .camera-off-msg p { font-family: 'DM Mono', monospace; font-size: 12px; opacity: .5; }
+  .roi-hint {
+    position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%);
+    background: rgba(0,0,0,.7); color: var(--accent);
+    font-family: 'DM Mono', monospace; font-size: 11px;
+    padding: 5px 12px; border-radius: 99px; pointer-events: none;
+    white-space: nowrap; opacity: 0; transition: opacity .3s;
+  }
+  .roi-hint.show { opacity: 1; }
+  .status-bar {
+    width: 100%; max-width: 480px;
+    display: flex; align-items: center; gap: 10px; margin-bottom: 16px;
+  }
+  .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); flex-shrink: 0; transition: background .3s; }
+  .status-dot.active { background: var(--accent); box-shadow: 0 0 6px var(--accent); }
+  .status-dot.detecting { background: #facc15; box-shadow: 0 0 6px #facc15; animation: blink .6s infinite; }
+  @keyframes blink { 0%,100%{opacity:1}50%{opacity:.3} }
+  .status-text { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--muted); flex: 1; }
+  .motion-val { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); }
+  .waveform-wrap { width: 100%; max-width: 480px; margin-bottom: 20px; }
+  .waveform-label {
+    font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted);
+    text-transform: uppercase; letter-spacing: .08em; margin-bottom: 6px;
+    display: flex; justify-content: space-between;
+  }
+  #waveCanvas { width: 100%; height: 72px; border-radius: 8px; background: var(--surface); border: 1px solid var(--border); display: block; }
+  .controls { width: 100%; max-width: 480px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+  .btn {
+    padding: 14px; border-radius: 10px; border: 1px solid var(--border);
+    background: var(--surface); color: var(--text);
+    font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700;
+    cursor: pointer; letter-spacing: .04em; text-transform: uppercase;
+    transition: all .15s;
+  }
+  .btn:hover { background: var(--muted2); }
+  .btn:active { transform: scale(.97); }
+  .btn.primary { background: var(--accent); color: #000; border-color: var(--accent); grid-column: span 2; font-size: 15px; }
+  .btn.primary:hover { background: #d4f53c; }
+  .btn.primary.recording { background: var(--accent2); border-color: var(--accent2); color: #fff; }
+  .settings {
+    width: 100%; max-width: 480px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 16px; margin-bottom: 16px;
+  }
+  .settings-title { font-family: 'DM Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); margin-bottom: 14px; }
+  .setting-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .setting-row:last-child { margin-bottom: 0; }
+  .setting-label { font-family: 'DM Mono', monospace; font-size: 12px; color: #aaa; }
+  .setting-val { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--accent); min-width: 36px; text-align: right; }
+  input[type=range] { -webkit-appearance: none; width: 120px; height: 3px; background: var(--border); border-radius: 2px; outline: none; }
+  input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%; background: var(--accent); cursor: pointer; }
+  .debug {
+    width: 100%; max-width: 480px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; padding: 12px;
+    font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted);
+    max-height: 80px; overflow-y: auto; line-height: 1.8;
+  }
+  .debug .entry { color: #666; }
+  .debug .entry.rep { color: var(--accent); font-weight: 500; }
+  .debug .entry.warn { color: #facc15; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">StayHard — Rep Proto</div>
+  <div class="version">v0.1 / pixel motion</div>
+</header>
+
+<div class="rep-display">
+  <div class="rep-count" id="repCount">0</div>
+  <div class="rep-meta">
+    <div class="rep-label">Reps</div>
+    <div class="manual-btns">
+      <button class="manual-btn" id="minusBtn">−</button>
+      <button class="manual-btn" id="plusBtn">+</button>
+    </div>
+  </div>
+</div>
+
+<div class="camera-wrap">
+  <video id="video" autoplay muted playsinline></video>
+  <canvas id="canvas"></canvas>
+  <canvas id="roiCanvas"></canvas>
+  <div class="camera-off-msg" id="cameraMsg">
+    <div class="icon">⬡</div>
+    <p>tap START to activate camera</p>
+  </div>
+  <div class="roi-hint" id="roiHint">drag to set tracking zone</div>
+</div>
+
+<div class="status-bar">
+  <div class="status-dot" id="statusDot"></div>
+  <div class="status-text" id="statusText">idle</div>
+  <div class="motion-val" id="motionVal">Δ —</div>
+</div>
+
+<div class="waveform-wrap">
+  <div class="waveform-label">
+    <span>motion signal</span>
+    <span id="freqLabel">— hz</span>
+  </div>
+  <canvas id="waveCanvas"></canvas>
+</div>
+
+<div class="controls">
+  <button class="btn primary" id="mainBtn">Start</button>
+  <button class="btn" id="resetBtn">Reset</button>
+  <button class="btn" id="roiBtn">Set Zone</button>
+</div>
+
+<div class="settings">
+  <div class="settings-title">Detection Parameters</div>
+  <div class="setting-row">
+    <span class="setting-label">sensitivity</span>
+    <input type="range" id="sensitivitySlider" min="1" max="20" value="8">
+    <span class="setting-val" id="sensitivityVal">8</span>
+  </div>
+  <div class="setting-row">
+    <span class="setting-label">min rep gap (s)</span>
+    <input type="range" id="gapSlider" min="3" max="20" value="6">
+    <span class="setting-val" id="gapVal">0.6</span>
+  </div>
+  <div class="setting-row">
+    <span class="setting-label">smoothing</span>
+    <input type="range" id="smoothSlider" min="1" max="10" value="4">
+    <span class="setting-val" id="smoothVal">4</span>
+  </div>
+</div>
+
+<div class="debug" id="debugLog">
+  <div class="entry">— system ready —</div>
+</div>
+
+<script>
+const state = { running: false, repCount: 0, roiMode: false, roi: null, roiDrag: null };
+const algo = {
+  motionHistory: [], smoothedHistory: [], maxHistory: 300,
+  lastPeakTime: 0, inPeak: false, adaptiveThreshold: 0,
+  recentPeakAmplitudes: [], sensitivity: 8, minGapMs: 600,
+  smoothing: 4, lastFrameData: null,
+};
+
+const video     = document.getElementById('video');
+const canvas    = document.getElementById('canvas');
+const roiCanvas = document.getElementById('roiCanvas');
+const waveCanvas= document.getElementById('waveCanvas');
+const repCountEl= document.getElementById('repCount');
+const statusDot = document.getElementById('statusDot');
+const statusText= document.getElementById('statusText');
+const motionVal = document.getElementById('motionVal');
+const freqLabel = document.getElementById('freqLabel');
+const mainBtn   = document.getElementById('mainBtn');
+const resetBtn  = document.getElementById('resetBtn');
+const roiBtn    = document.getElementById('roiBtn');
+const cameraMsg = document.getElementById('cameraMsg');
+const roiHint   = document.getElementById('roiHint');
+const debugLog  = document.getElementById('debugLog');
+const ctx       = canvas.getContext('2d');
+const roiCtx    = roiCanvas.getContext('2d');
+const waveCtx   = waveCanvas.getContext('2d');
+
+document.getElementById('sensitivitySlider').addEventListener('input', e => {
+  algo.sensitivity = +e.target.value;
+  document.getElementById('sensitivityVal').textContent = e.target.value;
+});
+document.getElementById('gapSlider').addEventListener('input', e => {
+  algo.minGapMs = +e.target.value * 100;
+  document.getElementById('gapVal').textContent = (+e.target.value / 10).toFixed(1);
+});
+document.getElementById('smoothSlider').addEventListener('input', e => {
+  algo.smoothing = +e.target.value;
+  document.getElementById('smoothVal').textContent = e.target.value;
+});
+
+let stream = null, animId = null;
+
+async function startCamera() {
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: 'environment', width: { ideal: 640 }, height: { ideal: 480 } }
+    });
+    video.srcObject = stream;
+    cameraMsg.style.display = 'none';
+    await new Promise(r => video.onloadedmetadata = r);
+    canvas.width = roiCanvas.width = video.videoWidth;
+    canvas.height = roiCanvas.height = video.videoHeight;
+    log('camera ready — ' + video.videoWidth + '×' + video.videoHeight);
+    return true;
+  } catch(e) { log('camera error: ' + e.message, 'warn'); return false; }
+}
+
+function stopCamera() {
+  if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
+  if (animId) { cancelAnimationFrame(animId); animId = null; }
+  cameraMsg.style.display = 'flex';
+}
+
+function getROIPixels() {
+  const W = canvas.width, H = canvas.height;
+  if (state.roi) {
+    return {
+      rx: Math.round(state.roi.x * W), ry: Math.round(state.roi.y * H),
+      rw: Math.max(10, Math.round(state.roi.w * W)),
+      rh: Math.max(10, Math.round(state.roi.h * H)),
+    };
+  }
+  return { rx: 0, ry: 0, rw: W, rh: H };
+}
+
+function loop() {
+  if (!state.running) return;
+  animId = requestAnimationFrame(loop);
+  if (video.readyState < 2) return;
+
+  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+  const { rx, ry, rw, rh } = getROIPixels();
+  const imageData = ctx.getImageData(rx, ry, rw, rh);
+  const pixels = imageData.data;
+
+  let motionEnergy = 0;
+  if (algo.lastFrameData && algo.lastFrameData.length === pixels.length) {
+    let diff = 0;
+    for (let i = 0; i < pixels.length; i += 4) {
+      const gC = pixels[i]*.299 + pixels[i+1]*.587 + pixels[i+2]*.114;
+      const gP = algo.lastFrameData[i]*.299 + algo.lastFrameData[i+1]*.587 + algo.lastFrameData[i+2]*.114;
+      diff += Math.abs(gC - gP);
+    }
+    motionEnergy = diff / (pixels.length / 4);
+  }
+  algo.lastFrameData = new Uint8ClampedArray(pixels);
+
+  algo.motionHistory.push(motionEnergy);
+  if (algo.motionHistory.length > algo.maxHistory) algo.motionHistory.shift();
+
+  const win = algo.smoothing * 2 + 1;
+  const recent = algo.motionHistory.slice(-win);
+  const smoothed = recent.reduce((a,b) => a+b, 0) / recent.length;
+  algo.smoothedHistory.push(smoothed);
+  if (algo.smoothedHistory.length > algo.maxHistory) algo.smoothedHistory.shift();
+
+  const window60 = algo.smoothedHistory.slice(-60);
+  const sorted = [...window60].sort((a,b) => a-b);
+  const baseline = sorted[Math.floor(sorted.length * .3)] || 0;
+  const peakRef  = sorted[Math.floor(sorted.length * .85)] || 1;
+  algo.adaptiveThreshold = baseline + (peakRef - baseline) * (algo.sensitivity / 20);
+
+  const now = performance.now();
+  const gapOk = (now - algo.lastPeakTime) > algo.minGapMs;
+
+  if (smoothed > algo.adaptiveThreshold && !algo.inPeak && gapOk && algo.smoothedHistory.length > 20) {
+    algo.inPeak = true;
+  }
+  if (algo.inPeak && smoothed < algo.adaptiveThreshold * .6) {
+    if (gapOk) {
+      state.repCount++;
+      repCountEl.textContent = state.repCount;
+      repCountEl.classList.add('pulse');
+      setTimeout(() => repCountEl.classList.remove('pulse'), 150);
+      log('rep #' + state.repCount + '  Δ=' + smoothed.toFixed(1), 'rep');
+      algo.lastPeakTime = now;
+      algo.recentPeakAmplitudes.push(smoothed);
+      if (algo.recentPeakAmplitudes.length > 8) algo.recentPeakAmplitudes.shift();
+    }
+    algo.inPeak = false;
+  }
+
+  const isMoving = smoothed > algo.adaptiveThreshold;
+  statusDot.className = 'status-dot' + (isMoving ? ' detecting' : state.running ? ' active' : '');
+  statusText.textContent = isMoving ? 'motion detected' : 'monitoring...';
+  motionVal.textContent = 'Δ ' + smoothed.toFixed(1);
+
+  // ROI overlay
+  roiCtx.clearRect(0, 0, roiCanvas.width, roiCanvas.height);
+  if (state.roi) {
+    const { rx: x, ry: y, rw: w, rh: h } = getROIPixels();
+    roiCtx.strokeStyle = isMoving ? '#c8f135' : 'rgba(200,241,53,.4)';
+    roiCtx.lineWidth = 1.5; roiCtx.setLineDash([6,4]);
+    roiCtx.strokeRect(x, y, w, h);
+    roiCtx.setLineDash([]); roiCtx.lineWidth = 2.5;
+    roiCtx.strokeStyle = isMoving ? '#c8f135' : 'rgba(200,241,53,.6)';
+    const cs = 12;
+    [[x,y],[x+w,y],[x,y+h],[x+w,y+h]].forEach(([cx,cy]) => {
+      const sx = cx===x?1:-1, sy = cy===y?1:-1;
+      roiCtx.beginPath();
+      roiCtx.moveTo(cx+sx*cs,cy); roiCtx.lineTo(cx,cy); roiCtx.lineTo(cx,cy+sy*cs);
+      roiCtx.stroke();
+    });
+  }
+
+  // Waveform
+  const W = waveCanvas.width = waveCanvas.offsetWidth * devicePixelRatio;
+  const H = waveCanvas.height = waveCanvas.offsetHeight * devicePixelRatio;
+  waveCtx.clearRect(0,0,W,H);
+  const data = algo.smoothedHistory;
+  if (data.length >= 2) {
+    const maxVal = Math.max(...data, 1), pad = H*.1;
+    const tRatio = algo.adaptiveThreshold / maxVal;
+    const tY = H - pad - tRatio * (H - pad*2);
+    waveCtx.strokeStyle = 'rgba(200,241,53,.2)'; waveCtx.lineWidth = 1;
+    waveCtx.setLineDash([4,4]);
+    waveCtx.beginPath(); waveCtx.moveTo(0,tY); waveCtx.lineTo(W,tY); waveCtx.stroke();
+    waveCtx.setLineDash([]);
+    waveCtx.strokeStyle = '#c8f135'; waveCtx.lineWidth = 1.5 * devicePixelRatio;
+    waveCtx.shadowColor = '#c8f13560'; waveCtx.shadowBlur = 6;
+    waveCtx.beginPath();
+    data.forEach((v,i) => {
+      const x = (i/(data.length-1))*W, y = H-pad-(v/maxVal)*(H-pad*2);
+      i===0 ? waveCtx.moveTo(x,y) : waveCtx.lineTo(x,y);
+    });
+    waveCtx.stroke(); waveCtx.shadowBlur = 0;
+  }
+
+  // Freq
+  const r5 = algo.smoothedHistory.slice(-150);
+  let peaks = 0;
+  for (let i=1;i<r5.length-1;i++) {
+    if (r5[i]>r5[i-1]&&r5[i]>r5[i+1]&&r5[i]>algo.adaptiveThreshold) peaks++;
+  }
+  freqLabel.textContent = peaks > 0 ? (peaks/5).toFixed(1)+' hz' : '— hz';
+}
+
+mainBtn.addEventListener('click', async () => {
+  if (!state.running) {
+    const ok = await startCamera();
+    if (!ok) return;
+    state.running = true;
+    algo.lastFrameData = null;
+    algo.motionHistory = [];
+    algo.smoothedHistory = [];
+    mainBtn.textContent = 'Stop';
+    mainBtn.classList.add('recording');
+    log('tracking started');
+    loop();
+  } else {
+    state.running = false;
+    stopCamera();
+    mainBtn.textContent = 'Start';
+    mainBtn.classList.remove('recording');
+    statusDot.className = 'status-dot';
+    statusText.textContent = 'idle';
+    log('tracking stopped');
+  }
+});
+
+resetBtn.addEventListener('click', () => {
+  state.repCount = 0; repCountEl.textContent = '0';
+  algo.recentPeakAmplitudes = []; algo.lastPeakTime = 0; algo.inPeak = false;
+  log('reset');
+});
+
+roiBtn.addEventListener('click', () => {
+  if (!state.running) { log('start camera first', 'warn'); return; }
+  state.roiMode = !state.roiMode;
+  if (state.roiMode) {
+    roiCanvas.style.cursor = 'crosshair';
+    roiHint.classList.add('show');
+    roiBtn.textContent = 'Cancel Zone';
+    state.roi = null;
+    log('drag to set tracking zone');
+  } else {
+    roiCanvas.style.cursor = 'default';
+    roiHint.classList.remove('show');
+    roiBtn.textContent = 'Set Zone';
+  }
+});
+
+document.getElementById('minusBtn').addEventListener('click', () => {
+  if (state.repCount > 0) { state.repCount--; repCountEl.textContent = state.repCount; }
+});
+document.getElementById('plusBtn').addEventListener('click', () => {
+  state.repCount++; repCountEl.textContent = state.repCount;
+});
+
+function addTouch(canvas) {
+  canvas.addEventListener('touchstart', e => {
+    if (!state.roiMode) return; e.preventDefault();
+    const t = e.touches[0], r = canvas.getBoundingClientRect();
+    state.roiDrag = { sx:(t.clientX-r.left)/r.width, sy:(t.clientY-r.top)/r.height };
+  }, {passive:false});
+  canvas.addEventListener('touchmove', e => {
+    if (!state.roiDrag) return; e.preventDefault();
+    const t = e.touches[0], r = canvas.getBoundingClientRect();
+    const ex=(t.clientX-r.left)/r.width, ey=(t.clientY-r.top)/r.height;
+    const {sx,sy} = state.roiDrag;
+    state.roi = {x:Math.min(sx,ex),y:Math.min(sy,ey),w:Math.abs(ex-sx),h:Math.abs(ey-sy)};
+  }, {passive:false});
+  canvas.addEventListener('touchend', () => {
+    state.roiDrag = null;
+    if (state.roi && state.roi.w < .02) state.roi = null;
+    state.roiMode = false;
+    canvas.style.cursor = 'default';
+    roiHint.classList.remove('show');
+    roiBtn.textContent = 'Set Zone';
+  });
+  canvas.addEventListener('mousedown', e => {
+    if (!state.roiMode) return;
+    const r = canvas.getBoundingClientRect();
+    state.roiDrag = {sx:(e.clientX-r.left)/r.width, sy:(e.clientY-r.top)/r.height};
+  });
+  canvas.addEventListener('mousemove', e => {
+    if (!state.roiDrag) return;
+    const r = canvas.getBoundingClientRect();
+    const ex=(e.clientX-r.left)/r.width, ey=(e.clientY-r.top)/r.height;
+    const {sx,sy} = state.roiDrag;
+    state.roi = {x:Math.min(sx,ex),y:Math.min(sy,ey),w:Math.abs(ex-sx),h:Math.abs(ey-sy)};
+  });
+  canvas.addEventListener('mouseup', () => {
+    state.roiDrag = null;
+    if (state.roi && state.roi.w < .02) state.roi = null;
+    state.roiMode = false;
+    canvas.style.cursor = 'default';
+    roiHint.classList.remove('show');
+    roiBtn.textContent = 'Set Zone';
+    log('ROI set' + (state.roi ? ` — ${(state.roi.w*100).toFixed(0)}×${(state.roi.h*100).toFixed(0)}%` : ' cleared'));
+  });
+}
+addTouch(roiCanvas);
+
+function log(msg, type='entry') {
+  const el = document.createElement('div');
+  el.className = 'entry ' + type;
+  const t = new Date().toLocaleTimeString('en',{hour12:false,hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  el.textContent = t + '  ' + msg;
+  debugLog.appendChild(el);
+  debugLog.scrollTop = debugLog.scrollHeight;
+  if (debugLog.children.length > 30) debugLog.removeChild(debugLog.firstChild);
+}
+</script>
+</body>
+</html>

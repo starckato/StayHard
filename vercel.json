@@ -1,5 +1,8 @@
 {
-  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }],
+  "rewrites": [
+    { "source": "/rep-counter-test.html", "destination": "/rep-counter-test.html" },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ],
   "headers": [
     {
       "source": "/(.*)",
