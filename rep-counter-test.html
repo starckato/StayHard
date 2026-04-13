@@ -173,6 +173,7 @@
   <button class="btn primary" id="mainBtn">Start</button>
   <button class="btn" id="resetBtn">Reset</button>
   <button class="btn" id="roiBtn">Set Zone</button>
+  <button class="btn" id="flipBtn">Flip 📷</button>
 </div>
 
 <div class="settings">
@@ -199,13 +200,17 @@
 </div>
 
 <script>
-const state = { running: false, repCount: 0, roiMode: false, roi: null, roiDrag: null };
+const state = { running: false, repCount: 0, roiMode: false, roi: null, roiDrag: null, facingMode: 'environment' };
 const algo = {
   motionHistory: [], smoothedHistory: [], maxHistory: 300,
   lastPeakTime: 0, inPeak: false, adaptiveThreshold: 0,
   recentPeakAmplitudes: [], sensitivity: 8, minGapMs: 600,
   smoothing: 4, lastFrameData: null,
+  motionConfirmed: false, motionFrames: 0, lastMotionTime: 0,
 };
+const MIN_MOTION_FLOOR = 1.5; // absolute minimum energy to consider as real motion
+const MOTION_CONFIRM_FRAMES = 5; // frames above floor before counting starts
+const MOTION_TIMEOUT_MS = 3000; // reset motionConfirmed after this idle period
 
 const video     = document.getElementById('video');
 const canvas    = document.getElementById('canvas');
@@ -244,7 +249,7 @@ let stream = null, animId = null;
 async function startCamera() {
   try {
     stream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: 'environment', width: { ideal: 640 }, height: { ideal: 480 } }
+      video: { facingMode: state.facingMode, width: { ideal: 640 }, height: { ideal: 480 } }
     });
     video.srcObject = stream;
     cameraMsg.style.display = 'none';
@@ -314,16 +319,38 @@ function loop() {
   const now = performance.now();
   const gapOk = (now - algo.lastPeakTime) > algo.minGapMs;
 
-  if (smoothed > algo.adaptiveThreshold && !algo.inPeak && gapOk && algo.smoothedHistory.length > 20) {
+  // Motion confirmation gate — require sustained real motion before counting
+  if (smoothed > MIN_MOTION_FLOOR) {
+    algo.motionFrames++;
+    algo.lastMotionTime = now;
+    if (!algo.motionConfirmed && algo.motionFrames >= MOTION_CONFIRM_FRAMES) {
+      algo.motionConfirmed = true;
+      log('motion confirmed — counting active');
+    }
+  } else {
+    algo.motionFrames = Math.max(0, algo.motionFrames - 1);
+    if (algo.motionConfirmed && (now - algo.lastMotionTime) > MOTION_TIMEOUT_MS) {
+      algo.motionConfirmed = false;
+      algo.motionFrames = 0;
+      log('motion lost — counting paused');
+    }
+  }
+
+  // Only count reps when motion is confirmed AND signal exceeds both adaptive threshold and absolute floor
+  const effectiveThreshold = Math.max(algo.adaptiveThreshold, MIN_MOTION_FLOOR);
+  const signalRange = peakRef - baseline;
+
+  if (algo.motionConfirmed && signalRange > MIN_MOTION_FLOOR &&
+      smoothed > effectiveThreshold && !algo.inPeak && gapOk && algo.smoothedHistory.length > 20) {
     algo.inPeak = true;
   }
-  if (algo.inPeak && smoothed < algo.adaptiveThreshold * .6) {
+  if (algo.inPeak && smoothed < effectiveThreshold * .6) {
     if (gapOk) {
       state.repCount++;
       repCountEl.textContent = state.repCount;
       repCountEl.classList.add('pulse');
       setTimeout(() => repCountEl.classList.remove('pulse'), 150);
-      log('rep #' + state.repCount + '  Δ=' + smoothed.toFixed(1), 'rep');
+      log('rep #' + state.repCount + '  Δ=' + smoothed.toFixed(1) + ' thr=' + effectiveThreshold.toFixed(1), 'rep');
       algo.lastPeakTime = now;
       algo.recentPeakAmplitudes.push(smoothed);
       if (algo.recentPeakAmplitudes.length > 8) algo.recentPeakAmplitudes.shift();
@@ -331,9 +358,9 @@ function loop() {
     algo.inPeak = false;
   }
 
-  const isMoving = smoothed > algo.adaptiveThreshold;
+  const isMoving = smoothed > effectiveThreshold;
   statusDot.className = 'status-dot' + (isMoving ? ' detecting' : state.running ? ' active' : '');
-  statusText.textContent = isMoving ? 'motion detected' : 'monitoring...';
+  statusText.textContent = !algo.motionConfirmed ? 'waiting for motion...' : isMoving ? 'motion detected' : 'monitoring...';
   motionVal.textContent = 'Δ ' + smoothed.toFixed(1);
 
   // ROI overlay
@@ -361,7 +388,7 @@ function loop() {
   const data = algo.smoothedHistory;
   if (data.length >= 2) {
     const maxVal = Math.max(...data, 1), pad = H*.1;
-    const tRatio = algo.adaptiveThreshold / maxVal;
+    const tRatio = Math.max(algo.adaptiveThreshold, MIN_MOTION_FLOOR) / maxVal;
     const tY = H - pad - tRatio * (H - pad*2);
     waveCtx.strokeStyle = 'rgba(200,241,53,.2)'; waveCtx.lineWidth = 1;
     waveCtx.setLineDash([4,4]);
@@ -394,9 +421,11 @@ mainBtn.addEventListener('click', async () => {
     algo.lastFrameData = null;
     algo.motionHistory = [];
     algo.smoothedHistory = [];
+    algo.motionConfirmed = false;
+    algo.motionFrames = 0;
     mainBtn.textContent = 'Stop';
     mainBtn.classList.add('recording');
-    log('tracking started');
+    log('tracking started — waiting for motion...');
     loop();
   } else {
     state.running = false;
@@ -412,7 +441,21 @@ mainBtn.addEventListener('click', async () => {
 resetBtn.addEventListener('click', () => {
   state.repCount = 0; repCountEl.textContent = '0';
   algo.recentPeakAmplitudes = []; algo.lastPeakTime = 0; algo.inPeak = false;
+  algo.motionConfirmed = false; algo.motionFrames = 0;
   log('reset');
+});
+
+document.getElementById('flipBtn').addEventListener('click', async () => {
+  state.facingMode = state.facingMode === 'environment' ? 'user' : 'environment';
+  log('switching to ' + (state.facingMode === 'user' ? 'front' : 'rear') + ' camera');
+  if (state.running) {
+    stopCamera();
+    algo.lastFrameData = null;
+    algo.motionConfirmed = false; algo.motionFrames = 0;
+    const ok = await startCamera();
+    if (ok) { loop(); }
+    else { state.running = false; mainBtn.textContent = 'Start'; mainBtn.classList.remove('recording'); }
+  }
 });
 
 roiBtn.addEventListener('click', () => {
