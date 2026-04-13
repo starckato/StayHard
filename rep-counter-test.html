@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>Rep Counter — Pixel Motion Test</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.js"></script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;700;800&display=swap');
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -102,6 +103,7 @@
   .btn.primary { background: var(--accent); color: #000; border-color: var(--accent); grid-column: span 2; font-size: 15px; }
   .btn.primary:hover { background: #d4f53c; }
   .btn.primary.recording { background: var(--accent2); border-color: var(--accent2); color: #fff; }
+  .btn.primary:disabled { opacity: .7; font-size: 32px; cursor: default; }
   .settings {
     width: 100%; max-width: 480px;
     background: var(--surface); border: 1px solid var(--border);
@@ -185,7 +187,7 @@
   <button class="btn" id="resetBtn">Reset</button>
   <button class="btn" id="roiBtn">Set Zone</button>
   <button class="btn" id="flipBtn">Flip 📷</button>
-  <button class="btn" id="recBtn" style="grid-column:span 2;">⏺ Record Test</button>
+  <button class="btn" id="recBtn" style="display:none;">⏺ Record Test</button>
 </div>
 
 <div class="recordings" id="recordings" style="display:none;">
@@ -217,6 +219,11 @@
 </div>
 
 <script>
+// ── Supabase init ──
+const SB_URL='https://uvaosxhsjscigheyymus.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV2YW9zeGhzanNjaWdoZXl5bXVzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1ODExNjQsImV4cCI6MjA5MDE1NzE2NH0.aS1ZxN0ds8CUs3q_dMTFlEwjvNFgCH7JwY-tg4q0NA8';
+const sb=supabase.createClient(SB_URL,SB_KEY);
+
 const state = { running: false, repCount: 0, roiMode: false, roi: null, roiDrag: null, facingMode: 'environment' };
 const algo = {
   motionHistory: [], smoothedHistory: [], maxHistory: 300,
@@ -431,18 +438,32 @@ function loop() {
 }
 
 mainBtn.addEventListener('click', async () => {
+  if (mainBtn.disabled) return;
   if (!state.running) {
     const ok = await startCamera();
     if (!ok) return;
+    // Countdown 3-2-1
+    mainBtn.disabled = true;
+    mainBtn.textContent = '3';
+    mainBtn.classList.add('recording');
+    log('starting in 3...');
+    for (let i = 2; i >= 0; i--) {
+      await new Promise(r => setTimeout(r, 1000));
+      if (i > 0) { mainBtn.textContent = String(i); log('starting in ' + i + '...'); }
+    }
+    mainBtn.textContent = 'Stop';
+    mainBtn.disabled = false;
     state.running = true;
     algo.lastFrameData = null;
     algo.motionHistory = [];
     algo.smoothedHistory = [];
     algo.motionConfirmed = false;
     algo.motionFrames = 0;
-    mainBtn.textContent = 'Stop';
-    mainBtn.classList.add('recording');
+    state.repCount = 0;
+    repCountEl.textContent = '0';
     log('tracking started — waiting for motion...');
+    // Auto-start recording
+    startRecording();
     loop();
   } else {
     state.running = false;
@@ -604,7 +625,7 @@ function stopRecording() {
   log('recording stopped');
 }
 
-function finalizeRecording() {
+async function finalizeRecording() {
   const blob = new Blob(_recChunks, { type: _mediaRecorder.mimeType });
   const url = URL.createObjectURL(blob);
   _recCount++;
@@ -612,28 +633,69 @@ function finalizeRecording() {
   const duration = ((Date.now() - _recStartTime.getTime()) / 1000).toFixed(1);
   const params = `sens=${algo.sensitivity} gap=${algo.minGapMs}ms smooth=${algo.smoothing}`;
   const timeStr = _recStartTime.toLocaleTimeString('en', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  const dateStr = _recStartTime.toISOString().slice(0,10);
+  const ext = _mediaRecorder.mimeType.includes('mp4') ? 'mp4' : 'webm';
+  const fileName = `rep-test/${dateStr}/test-${_recCount}-${Date.now()}.${ext}`;
+  const logFileName = fileName.replace(`.${ext}`, '.json');
 
   // Build log HTML
   const logHtml = _recLog.map(e =>
     `<div class="${e.type}">${e.time}  ${e.msg}</div>`
   ).join('');
 
+  // Build log JSON for server
+  const logJson = {
+    testNumber: _recCount, date: dateStr, time: timeStr, duration: +duration,
+    repsDetected: repsInTest, params: { sensitivity: algo.sensitivity, minGapMs: algo.minGapMs, smoothing: algo.smoothing },
+    camera: state.facingMode, hasROI: !!state.roi,
+    events: _recLog,
+  };
+
+  // Show item immediately
   const item = document.createElement('div');
   item.className = 'rec-item';
+  item.id = 'rec-item-' + _recCount;
   item.innerHTML = `
     <video src="${url}" controls playsinline preload="metadata"></video>
     <div class="rec-meta">
       Test #${_recCount} — ${timeStr} — ${duration}s — ${repsInTest} reps detected<br>
-      ${params} | ${state.facingMode} cam${state.roi ? ' | ROI set' : ''}
+      ${params} | ${state.facingMode} cam${state.roi ? ' | ROI set' : ''}<br>
+      <span id="upload-status-${_recCount}" style="color:#facc15;">uploading...</span>
     </div>
     <div class="rec-log">${logHtml || '<div>no events during recording</div>'}</div>
     <div class="rec-actions">
-      <a class="btn" href="${url}" download="rep-test-${_recCount}.webm">Download</a>
+      <a class="btn" href="${url}" download="rep-test-${_recCount}.${ext}">Download</a>
       <button class="btn" onclick="this.closest('.rec-item').remove()">Delete</button>
     </div>
   `;
   recList.prepend(item);
   recordingsEl.style.display = '';
+
+  // Upload to Supabase Storage
+  const uploadStatus = document.getElementById('upload-status-' + _recCount);
+  try {
+    // Upload video
+    const { error: vErr } = await sb.storage.from('game-assets').upload(fileName, blob, { contentType: _mediaRecorder.mimeType, upsert: true });
+    if (vErr) throw vErr;
+    // Upload log JSON
+    const logBlob = new Blob([JSON.stringify(logJson, null, 2)], { type: 'application/json' });
+    const { error: lErr } = await sb.storage.from('game-assets').upload(logFileName, logBlob, { contentType: 'application/json', upsert: true });
+    if (lErr) throw lErr;
+    // Get public URL
+    const { data: urlData } = sb.storage.from('game-assets').getPublicUrl(fileName);
+    if (uploadStatus) {
+      uploadStatus.style.color = '#4ade80';
+      uploadStatus.textContent = 'uploaded ✓';
+    }
+    log('uploaded: ' + fileName);
+  } catch(e) {
+    if (uploadStatus) {
+      uploadStatus.style.color = '#f87171';
+      uploadStatus.textContent = 'upload failed: ' + (e.message || e);
+    }
+    log('upload error: ' + (e.message || e), 'warn');
+  }
+
   _recChunks = [];
   _recLog = [];
 }
