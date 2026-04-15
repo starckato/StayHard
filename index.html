@@ -716,9 +716,10 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
     <div id="daily-motto" style="font-size:10px;color:#f87171;margin-top:3px;font-weight:500;letter-spacing:.02em;font-family:'DM Sans',sans-serif;line-height:1.5;"></div>
   </div>
 
-  <!-- 상단 진행 스트립: 오늘 점수 + streak + 티어 (탭 시 캐릭터 룸 모달) -->
+  <!-- 상단 진행 스트립 (sticky): 오늘 점수 + streak + 티어 (탭 시 캐릭터 룸 모달) -->
+  <div id="top-strip-wrap" style="position:sticky;top:0;z-index:100;background:rgba(15,15,17,.92);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);padding:6px 16px 8px;border-bottom:1px solid var(--border);">
   <div id="top-strip" role="button" tabindex="0" aria-label="캐릭터 룸 열기" onclick="openRoomOverlay()"
-       style="margin:10px 16px 6px;padding:12px 14px;background:linear-gradient(135deg,rgba(124,106,247,.14),rgba(248,113,113,.10));border:1px solid var(--accent-bd);border-radius:14px;display:flex;align-items:center;justify-content:space-between;gap:10px;cursor:pointer;touch-action:manipulation;">
+       style="padding:10px 14px;background:linear-gradient(135deg,rgba(124,106,247,.18),rgba(248,113,113,.12));border:1px solid var(--accent-bd);border-radius:12px;display:flex;align-items:center;justify-content:space-between;gap:10px;cursor:pointer;touch-action:manipulation;">
     <div style="display:flex;align-items:baseline;gap:4px;flex-shrink:0;">
       <span style="font-size:10px;font-weight:700;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;">오늘</span>
       <span id="ts-today" style="font-size:18px;font-weight:800;color:var(--accent);font-family:'DM Mono',monospace;margin-left:4px;">+0pt</span>
@@ -732,6 +733,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
       <span style="font-size:11px;color:var(--text3);flex-shrink:0;">→</span>
     </div>
   </div>
+  </div><!-- /#top-strip-wrap -->
 
   <!-- ══ DAILY ROUTINE ══ -->
   <div class="view active" id="view-routine">
