@@ -96,6 +96,17 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 .stats-kpi-label{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;}
 .stats-kpi-value{font-size:28px;font-weight:800;font-family:'DM Mono',monospace;line-height:1.1;margin:6px 0 4px;}
 .stats-kpi-sub{font-size:10px;color:var(--text3);min-height:12px;}
+.stats-kpi-spark{height:28px;margin-top:6px;}
+.stats-kpi-spark canvas{display:block;width:100%;height:100%;}
+.stats-headline{display:flex;gap:14px;margin:2px 0 14px;}
+.stats-headline-cell{flex:1;min-width:0;}
+.stats-headline-label{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;font-weight:700;margin-bottom:3px;}
+.stats-headline-val{font-size:18px;font-weight:800;font-family:'DM Mono',monospace;line-height:1.1;color:var(--text);}
+.stats-headline-unit{font-size:11px;font-weight:600;color:var(--text3);margin-left:2px;}
+.stats-delta{display:inline-flex;align-items:center;gap:2px;font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;font-family:'DM Sans',sans-serif;margin-top:2px;}
+.stats-delta.up{background:rgba(74,222,128,.15);color:#4ade80;}
+.stats-delta.down{background:rgba(248,113,113,.15);color:#f87171;}
+.stats-delta.flat{background:rgba(136,136,136,.15);color:#888;}
 
 /* ── MICRO INTERACTIONS ── */
 
@@ -1079,21 +1090,25 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
             <div class="stats-kpi-label">✅ 루틴 완료율</div>
             <div class="stats-kpi-value" style="color:var(--green);" id="st-kpi-routine">—</div>
             <div class="stats-kpi-sub" id="st-kpi-routine-sub"></div>
+            <div class="stats-kpi-spark"><canvas id="st-spark-routine"></canvas></div>
           </div>
           <div class="stats-kpi kpi-amber">
             <div class="stats-kpi-label">🎯 할일 완료율</div>
             <div class="stats-kpi-value" style="color:var(--amber);" id="st-kpi-target">—</div>
             <div class="stats-kpi-sub" id="st-kpi-target-sub"></div>
+            <div class="stats-kpi-spark"><canvas id="st-spark-target"></canvas></div>
           </div>
           <div class="stats-kpi kpi-green">
             <div class="stats-kpi-label">🥗 클린식 비율</div>
             <div class="stats-kpi-value" style="color:var(--green);" id="st-kpi-clean">—</div>
             <div class="stats-kpi-sub" id="st-kpi-clean-sub"></div>
+            <div class="stats-kpi-spark"><canvas id="st-spark-clean"></canvas></div>
           </div>
           <div class="stats-kpi">
             <div class="stats-kpi-label">🏋️ 운동 횟수</div>
             <div class="stats-kpi-value" style="color:var(--accent);" id="st-kpi-workout">—</div>
             <div class="stats-kpi-sub" id="st-kpi-workout-sub"></div>
+            <div class="stats-kpi-spark"><canvas id="st-spark-workout"></canvas></div>
           </div>
         </div>
       </div>
@@ -11424,6 +11439,36 @@ function stRenderKPI(rows){
   document.getElementById('st-kpi-workout').textContent=woCnt+'회';
   document.getElementById('st-kpi-workout').style.color='var(--accent)';
   document.getElementById('st-kpi-workout-sub').textContent='주 평균 '+woPerWeek+'회';
+
+  // ── 스파크라인 ──
+  const routineDaily=rows.map(r=>{const m=r.mandatory||[];return m.length?Math.round(m.filter(x=>x.done).length/m.length*100):0;});
+  const targetDaily=rows.map(r=>{const t=r.targets||[];return t.length?Math.round(t.filter(x=>x.st==='done').length/t.length*100):0;});
+  const cleanDaily=rows.map(r=>{const ms=(r.meals||[]).filter(m=>['아침','점심','저녁'].includes(m.time)&&m.type);return ms.length?Math.round(ms.filter(m=>m.type==='green').length/ms.length*100):0;});
+  const workoutDaily=rows.map(r=>(r.workouts||[]).filter(w=>w.status==='done').length);
+  renderSparkline('st-spark-routine','spark_routine',routineDaily,'74,222,128');
+  renderSparkline('st-spark-target','spark_target',targetDaily,'251,191,36');
+  renderSparkline('st-spark-clean','spark_clean',cleanDaily,'74,222,128');
+  renderSparkline('st-spark-workout','spark_workout',workoutDaily,'124,106,247');
+}
+
+// ── 스파크라인 (mini) ──
+function renderSparkline(canvasId,key,data,rgb){
+  const canvas=document.getElementById(canvasId);if(!canvas)return;
+  if(stCharts[key]){try{stCharts[key].destroy();}catch(_){}stCharts[key]=null;}
+  if(!data||!data.length||data.every(v=>v===0))return;
+  stCharts[key]=new Chart(canvas,{
+    type:'line',
+    data:{labels:data.map((_,i)=>i),datasets:[{
+      data:data,borderColor:'rgb('+rgb+')',borderWidth:1.8,
+      backgroundColor:ctx=>stGradient(ctx.chart.ctx,rgb,[[0,0.35],[1,0.0]]),
+      pointRadius:0,fill:true,tension:0.4
+    }]},
+    options:{responsive:true,maintainAspectRatio:false,animation:{duration:400},
+      plugins:{legend:{display:false},tooltip:{enabled:false}},
+      scales:{x:{display:false},y:{display:false,min:0}},
+      elements:{line:{borderJoinStyle:'round'}}
+    }
+  });
 }
 
 // ── 인사이트 엔진 ──
@@ -11517,66 +11562,181 @@ function stDestroyChart(key){
 }
 const stChartCfg={responsive:true,maintainAspectRatio:false,animation:{duration:300},plugins:{legend:{display:false}}};
 
+// ── Dashboard-grade chart helpers ──
+function stGradient(ctx,color,stops){
+  // color: e.g. '124,106,247'; stops: [[0,0.35],[1,0.02]]
+  const g=ctx.createLinearGradient(0,0,0,ctx.canvas.height||200);
+  (stops||[[0,0.35],[1,0.02]]).forEach(([p,a])=>g.addColorStop(p,'rgba('+color+','+a+')'));
+  return g;
+}
+function stDashCfg(opts){
+  opts=opts||{};
+  const c=getChartColors();
+  return{
+    responsive:true,maintainAspectRatio:false,
+    animation:{duration:450,easing:'easeOutCubic'},
+    interaction:{mode:'index',intersect:false},
+    plugins:{
+      legend:{display:false},
+      tooltip:{
+        enabled:true,
+        backgroundColor:'rgba(20,20,26,0.95)',
+        borderColor:'rgba(255,255,255,0.08)',borderWidth:1,
+        titleColor:'#fff',titleFont:{size:11,weight:'600',family:'DM Sans'},
+        bodyColor:'#cbd5e1',bodyFont:{size:11,family:'DM Mono'},
+        padding:10,displayColors:false,cornerRadius:8,
+        callbacks:opts.tooltip||{}
+      }
+    },
+    scales:{
+      x:{ticks:{color:c.text,font:{size:9,family:'DM Mono'},maxTicksLimit:opts.xTicks||6,maxRotation:0},grid:{display:false},border:{display:false}},
+      y:{ticks:{color:c.text,font:{size:9,family:'DM Mono'},callback:opts.yCallback||null,maxTicksLimit:5},grid:{color:'rgba(255,255,255,0.04)',drawTicks:false},border:{display:false},...(opts.yScale||{})}
+    }
+  };
+}
+function stDelta(curr,prev,opts){
+  opts=opts||{};
+  if(prev==null||isNaN(prev)||prev===0){
+    if(curr>0)return '<span class="stats-delta up">new</span>';
+    return '<span class="stats-delta flat">—</span>';
+  }
+  const diff=curr-prev;
+  const pct=Math.round(diff/Math.abs(prev)*100);
+  const arrow=diff>0?'↑':(diff<0?'↓':'·');
+  const inverse=opts.inverse||false; // inverse=true means down is good (e.g., weight loss goal)
+  const good=inverse?diff<0:diff>0;
+  const neutral=diff===0;
+  const cls=neutral?'flat':(good?'up':'down');
+  return '<span class="stats-delta '+cls+'">'+arrow+' '+Math.abs(pct)+'%</span>';
+}
+function stPrevRows(rows){
+  if(!stPeriod)return [];
+  const period=stPeriod;
+  const end=new Date(now);end.setDate(end.getDate()-period);
+  const start=new Date(end);start.setDate(end.getDate()-(period-1));
+  const endK=dkey(end),startK=dkey(start);
+  return rows.filter(r=>r._key>=startK&&r._key<=endK);
+}
+function stHeadline(containerId,cells){
+  const el=document.getElementById(containerId);if(!el)return;
+  el.innerHTML='<div class="stats-headline">'+cells.map(c=>`
+    <div class="stats-headline-cell">
+      <div class="stats-headline-label">${c.label}</div>
+      <div class="stats-headline-val">${c.value}${c.unit?`<span class="stats-headline-unit">${c.unit}</span>`:''}</div>
+      ${c.delta||''}
+    </div>`).join('')+'</div>';
+}
+// Plugin: draw dashed horizontal target line
+const stTargetLinePlugin={
+  id:'stTargetLine',
+  afterDatasetsDraw(chart,args,opts){
+    if(opts==null||opts.value==null)return;
+    const{ctx,chartArea:{left,right},scales:{y}}=chart;
+    const yp=y.getPixelForValue(opts.value);
+    if(isNaN(yp))return;
+    ctx.save();
+    ctx.strokeStyle=opts.color||'rgba(251,191,36,0.5)';
+    ctx.lineWidth=1;ctx.setLineDash([4,4]);
+    ctx.beginPath();ctx.moveTo(left,yp);ctx.lineTo(right,yp);ctx.stroke();
+    if(opts.label){
+      ctx.setLineDash([]);ctx.fillStyle=opts.color||'rgba(251,191,36,0.8)';
+      ctx.font='10px DM Mono';ctx.textAlign='right';
+      ctx.fillText(opts.label,right-4,yp-4);
+    }
+    ctx.restore();
+  }
+};
+if(window.Chart&&Chart.register)Chart.register(stTargetLinePlugin);
+
 function stRenderWeightChart(rows){
   const pts=rows.filter(r=>r.weight!=null).map(r=>({x:r._key,y:parseFloat(r.weight)}));
   const empty=document.getElementById('st-weight-empty');
   const canvas=document.getElementById('st-chart-weight');
-  if(!pts.length){empty.style.display='block';canvas.style.display='none';document.getElementById('st-weight-meta').textContent='';return;}
+  const metaEl=document.getElementById('st-weight-meta');
+  if(!pts.length){empty.style.display='block';canvas.style.display='none';if(metaEl)metaEl.innerHTML='';return;}
   empty.style.display='none';canvas.style.display='block';
   const vals=pts.map(p=>p.y);
-  const diff=(vals[vals.length-1]-vals[0]);
-  const sign=diff>0?'+':'';
-  document.getElementById('st-weight-meta').textContent=
-    vals[0].toFixed(1)+'kg → '+vals[vals.length-1].toFixed(1)+'kg ('+sign+diff.toFixed(1)+'kg)';
+  const start=vals[0], current=vals[vals.length-1];
+  const diff=current-start;
+  const prevPts=stPrevRows(rows).filter(r=>r.weight!=null).map(r=>parseFloat(r.weight));
+  const prevCurrent=prevPts.length?prevPts[prevPts.length-1]:null;
+  const goal=(typeof CP!=='undefined'&&CP&&CP.weight_goal)?parseFloat(CP.weight_goal):null;
+  stHeadline('st-weight-meta',[
+    {label:'현재',value:current.toFixed(1),unit:'kg'},
+    {label:'시작 대비',value:(diff>0?'+':'')+diff.toFixed(1),unit:'kg'},
+    {label:'목표까지',value:goal?(Math.abs(current-goal).toFixed(1)):'—',unit:goal?'kg':'',delta:goal?stDelta(current,prevCurrent,{inverse:goal<start}):''}
+  ]);
   const c=getChartColors();
   stDestroyChart('weight');
   stCharts.weight=new Chart(canvas,{
     type:'line',
     data:{
       labels:pts.map(p=>p.x.slice(5).replace('-','/')),
-      datasets:[{data:vals,borderColor:c.blue,backgroundColor:'rgba(96,165,250,0.08)',borderWidth:2,
-        pointRadius:pts.length>20?0:3,pointBackgroundColor:c.blue,fill:true,tension:0.3}]
+      datasets:[{
+        data:vals,borderColor:'#60a5fa',borderWidth:2.5,
+        backgroundColor:ctx=>stGradient(ctx.chart.ctx,'96,165,250',[[0,0.32],[1,0.0]]),
+        pointRadius:0,pointHoverRadius:6,pointHoverBorderWidth:2,
+        pointHoverBackgroundColor:'#60a5fa',pointHoverBorderColor:'#fff',
+        fill:true,tension:0.4
+      }]
     },
-    options:{...stChartCfg,scales:{
-      x:{ticks:{color:c.text,font:{size:9},maxTicksLimit:8},grid:{color:c.grid}},
-      y:{ticks:{color:c.text,font:{size:9},callback:v=>v+'kg'},grid:{color:c.grid},
-        min:Math.floor(Math.min(...vals)-1),max:Math.ceil(Math.max(...vals)+1)}
-    }}
+    options:{...stDashCfg({
+      yCallback:v=>v+'kg',
+      yScale:{min:Math.floor(Math.min(...vals,goal||Infinity)-1),max:Math.ceil(Math.max(...vals,goal||-Infinity)+1)},
+      tooltip:{label:ctx=>ctx.parsed.y.toFixed(1)+' kg',title:items=>items[0].label}
+    }),plugins:{...stDashCfg().plugins,stTargetLine:goal?{value:goal,color:'rgba(251,191,36,0.7)',label:'목표 '+goal+'kg'}:null}}
   });
 }
 
 function stRenderVolChart(rows){
-  const weekMap={};
-  rows.forEach(r=>{
-    const d=new Date(r._key+'T00:00:00');
-    const mon=new Date(d);mon.setDate(d.getDate()-((d.getDay()+6)%7));
-    const wk=(mon.getMonth()+1)+'/'+mon.getDate();
-    const vol=(r.workouts||[]).filter(w=>w.type==='gym'&&w.status==='done').reduce((a,w)=>a+(w.totalVolume||0),0);
-    if(!weekMap[wk])weekMap[wk]=0;
-    weekMap[wk]+=vol;
-  });
+  const buildWeekly=(rs)=>{
+    const map={};
+    rs.forEach(r=>{
+      const d=new Date(r._key+'T00:00:00');
+      const mon=new Date(d);mon.setDate(d.getDate()-((d.getDay()+6)%7));
+      const wk=(mon.getMonth()+1)+'/'+mon.getDate();
+      const vol=(r.workouts||[]).filter(w=>w.type==='gym'&&w.status==='done').reduce((a,w)=>a+(w.totalVolume||0),0);
+      if(!map[wk])map[wk]=0;
+      map[wk]+=vol;
+    });
+    return map;
+  };
+  const weekMap=buildWeekly(rows);
   const labels=Object.keys(weekMap),vals=Object.values(weekMap);
   const empty=document.getElementById('st-vol-empty');
   const canvas=document.getElementById('st-chart-vol');
-  if(!vals.some(v=>v>0)){empty.style.display='block';canvas.style.display='none';document.getElementById('st-vol-meta').textContent='';return;}
+  const metaEl=document.getElementById('st-vol-meta');
+  if(!vals.some(v=>v>0)){empty.style.display='block';canvas.style.display='none';if(metaEl)metaEl.innerHTML='';return;}
   empty.style.display='none';canvas.style.display='block';
   const total=vals.reduce((a,v)=>a+v,0);
-  const avg=total/vals.filter(v=>v>0).length;
-  document.getElementById('st-vol-meta').textContent=
-    '총 '+(total>=1000?(total/1000).toFixed(1)+'t':total.toLocaleString()+'kg')+
-    ' · 주평균 '+(avg>=1000?(avg/1000).toFixed(1)+'t':Math.round(avg).toLocaleString()+'kg');
-  const c=getChartColors();
+  const nonZero=vals.filter(v=>v>0);
+  const avg=total/nonZero.length;
+  const peak=Math.max(...vals);
+  const prevMap=buildWeekly(stPrevRows(rows));
+  const prevTotal=Object.values(prevMap).reduce((a,v)=>a+v,0);
+  const fmt=v=>v>=1000?(v/1000).toFixed(1)+'t':Math.round(v).toLocaleString()+'kg';
+  stHeadline('st-vol-meta',[
+    {label:'총 볼륨',value:total>=1000?(total/1000).toFixed(1):Math.round(total).toLocaleString(),unit:total>=1000?'t':'kg',delta:stDelta(total,prevTotal)},
+    {label:'주 평균',value:avg>=1000?(avg/1000).toFixed(1):Math.round(avg).toLocaleString(),unit:avg>=1000?'t':'kg'},
+    {label:'최고주',value:peak>=1000?(peak/1000).toFixed(1):Math.round(peak).toLocaleString(),unit:peak>=1000?'t':'kg'}
+  ]);
   stDestroyChart('vol');
   stCharts.vol=new Chart(canvas,{
     type:'bar',
     data:{labels,datasets:[{
       data:vals.map(v=>v>=1000?(v/1000):v),
-      backgroundColor:vals.map(v=>v>0?'rgba(124,106,247,0.7)':'rgba(124,106,247,0.15)'),
-      borderRadius:4}]},
-    options:{...stChartCfg,scales:{
-      x:{ticks:{color:c.text,font:{size:9}},grid:{display:false}},
-      y:{ticks:{color:c.text,font:{size:9},callback:v=>v>=1?v+'t':v*1000+'kg'},grid:{color:c.grid}}
-    },plugins:{...stChartCfg.plugins,tooltip:{callbacks:{label:ctx=>{const v=ctx.parsed.y;return v>=1?v.toFixed(1)+'t':(v*1000).toLocaleString()+'kg';}}}}}
+      backgroundColor:ctx=>{
+        const v=ctx.raw;if(!v)return 'rgba(124,106,247,0.15)';
+        return stGradient(ctx.chart.ctx,'124,106,247',[[0,0.95],[1,0.25]]);
+      },
+      borderRadius:{topLeft:6,topRight:6,bottomLeft:0,bottomRight:0},
+      borderSkipped:false,
+      maxBarThickness:44
+    }]},
+    options:{...stDashCfg({
+      yCallback:v=>v>=1?v+'t':Math.round(v*1000)+'kg',
+      tooltip:{label:ctx=>{const v=ctx.parsed.y;return v>=1?v.toFixed(1)+'t':Math.round(v*1000).toLocaleString()+'kg';}}
+    }),plugins:{...stDashCfg().plugins,stTargetLine:nonZero.length>1?{value:avg>=1000?avg/1000:avg,color:'rgba(251,191,36,0.5)',label:'평균'}:null}}
   });
 }
 
@@ -11789,29 +11949,42 @@ function edmRender(){
 }
 
 function stRenderRoutineChart(rows){
-  const pts=rows.filter(r=>(r.mandatory||[]).length>0).map(r=>{
+  const buildPts=(rs)=>rs.filter(r=>(r.mandatory||[]).length>0).map(r=>{
     const m=r.mandatory||[];
     return{x:r._key,y:Math.round(m.filter(x=>x.done).length/m.length*100)};
   });
+  const pts=buildPts(rows);
   const empty=document.getElementById('st-routine-empty');
   const canvas=document.getElementById('st-chart-routine');
-  if(!pts.length){empty.style.display='block';canvas.style.display='none';document.getElementById('st-routine-meta').textContent='';return;}
+  const metaEl=document.getElementById('st-routine-meta');
+  if(!pts.length){empty.style.display='block';canvas.style.display='none';if(metaEl)metaEl.innerHTML='';return;}
   empty.style.display='none';canvas.style.display='block';
   const avg=Math.round(pts.reduce((a,p)=>a+p.y,0)/pts.length);
-  document.getElementById('st-routine-meta').textContent='평균 완료율 '+avg+'%';
-  const c=getChartColors();
+  const perfect=pts.filter(p=>p.y===100).length;
+  const prevPts=buildPts(stPrevRows(rows));
+  const prevAvg=prevPts.length?Math.round(prevPts.reduce((a,p)=>a+p.y,0)/prevPts.length):null;
+  stHeadline('st-routine-meta',[
+    {label:'평균 완료율',value:avg,unit:'%',delta:stDelta(avg,prevAvg)},
+    {label:'100% 달성일',value:perfect,unit:'일'},
+    {label:'기록일',value:pts.length,unit:'일'}
+  ]);
   stDestroyChart('routine');
   stCharts.routine=new Chart(canvas,{
     type:'line',
     data:{
       labels:pts.map(p=>p.x.slice(5).replace('-','/')),
-      datasets:[{data:pts.map(p=>p.y),borderColor:c.green,backgroundColor:'rgba(74,222,128,0.08)',
-        borderWidth:2,pointRadius:pts.length>20?0:3,fill:true,tension:0.3}]
+      datasets:[{
+        data:pts.map(p=>p.y),borderColor:'#4ade80',borderWidth:2.5,
+        backgroundColor:ctx=>stGradient(ctx.chart.ctx,'74,222,128',[[0,0.3],[1,0.0]]),
+        pointRadius:0,pointHoverRadius:6,pointHoverBorderColor:'#fff',pointHoverBackgroundColor:'#4ade80',
+        fill:true,tension:0.4
+      }]
     },
-    options:{...stChartCfg,scales:{
-      x:{ticks:{color:c.text,font:{size:9},maxTicksLimit:8},grid:{color:c.grid}},
-      y:{min:0,max:100,ticks:{color:c.text,font:{size:9},callback:v=>v+'%'},grid:{color:c.grid}}
-    }}
+    options:{...stDashCfg({
+      yCallback:v=>v+'%',
+      yScale:{min:0,max:100},
+      tooltip:{label:ctx=>ctx.parsed.y+'% 완료'}
+    }),plugins:{...stDashCfg().plugins,stTargetLine:{value:80,color:'rgba(74,222,128,0.55)',label:'목표 80%'}}}
   });
 }
 
@@ -11827,14 +12000,27 @@ function stRenderMealHeatmap(rows){
   if(!recent.length){empty.style.display='block';container.innerHTML='';document.getElementById('st-meal-meta').textContent='';return;}
   empty.style.display='none';
 
-  let totalMeals=0,cleanMeals=0;
+  let totalMeals=0,cleanMeals=0,normalMeals=0,cheatMeals=0,badMeals=0;
   rows.forEach(r=>{
     const ms=(r.meals||[]).filter(m=>slots.includes(m.time)&&m.type);
     totalMeals+=ms.length;
-    cleanMeals+=ms.filter(m=>m.type==='green').length;
+    ms.forEach(m=>{
+      if(m.type==='green')cleanMeals++;
+      else if(m.type==='cheat')cheatMeals++;
+      else if(m.type==='red'||m.type==='alcohol')badMeals++;
+      else normalMeals++;
+    });
   });
-  document.getElementById('st-meal-meta').textContent=
-    '최근 '+recent.length+'일 · 클린 '+(totalMeals>0?Math.round(cleanMeals/totalMeals*100):0)+'%';
+  const cleanPct=totalMeals>0?Math.round(cleanMeals/totalMeals*100):0;
+  const metaEl=document.getElementById('st-meal-meta');
+  if(metaEl)metaEl.innerHTML=`
+    <div class="stats-headline">
+      <div class="stats-headline-cell"><div class="stats-headline-label">클린</div><div class="stats-headline-val" style="color:#4ade80;">${cleanMeals}<span class="stats-headline-unit">끼</span></div></div>
+      <div class="stats-headline-cell"><div class="stats-headline-label">일반</div><div class="stats-headline-val" style="color:#888;">${normalMeals}<span class="stats-headline-unit">끼</span></div></div>
+      <div class="stats-headline-cell"><div class="stats-headline-label">치팅</div><div class="stats-headline-val" style="color:#fbbf24;">${cheatMeals}<span class="stats-headline-unit">끼</span></div></div>
+      <div class="stats-headline-cell"><div class="stats-headline-label">금지</div><div class="stats-headline-val" style="color:#f87171;">${badMeals}<span class="stats-headline-unit">끼</span></div></div>
+      <div class="stats-headline-cell"><div class="stats-headline-label">클린%</div><div class="stats-headline-val" style="color:#4ade80;">${cleanPct}<span class="stats-headline-unit">%</span></div></div>
+    </div>`;
 
   // 헤더
   let html='<div style="display:flex;gap:2px;margin-bottom:4px;">';
@@ -11861,44 +12047,41 @@ function stRenderMealHeatmap(rows){
 }
 
 function stRenderScoreChart(rows){
-  // 날짜별 당일 점수 합산
-  const pts=rows.map(r=>{
-    const dayPts=(r.points_log||[]).reduce((a,e)=>a+(e.pts||0),0);
-    return{x:r._key,y:dayPts};
-  }).filter(p=>p.y!==0);
-
+  const daily=rows.map(r=>({x:r._key,y:(r.points_log||[]).reduce((a,e)=>a+(e.pts||0),0)}));
+  const activePts=daily.filter(p=>p.y!==0);
   const empty=document.getElementById('st-score-empty');
   const canvas=document.getElementById('st-chart-score');
-  if(!pts.length){empty.style.display='block';canvas.style.display='none';document.getElementById('st-score-meta').textContent='';return;}
+  const metaEl=document.getElementById('st-score-meta');
+  if(!activePts.length){empty.style.display='block';canvas.style.display='none';if(metaEl)metaEl.innerHTML='';return;}
   empty.style.display='none';canvas.style.display='block';
-
-  // 누적 점수로 변환
   let cum=0;
-  const cumPts=rows.map(r=>{
-    const dayPts=(r.points_log||[]).reduce((a,e)=>a+(e.pts||0),0);
-    cum+=dayPts;
-    return{x:r._key,y:cum};
-  });
-
+  const cumPts=daily.map(p=>{cum+=p.y;return{x:p.x,y:cum};});
   const total=cumPts[cumPts.length-1]?.y||0;
-  const avg=pts.length?Math.round(pts.reduce((a,p)=>a+p.y,0)/pts.length):0;
-  document.getElementById('st-score-meta').textContent=
-    '기간 누적 '+(total>0?'+':'')+total+'점 · 활동일 평균 '+(avg>0?'+':'')+avg+'점';
-
-  const c=getChartColors();
+  const avg=activePts.length?Math.round(activePts.reduce((a,p)=>a+p.y,0)/activePts.length):0;
+  const best=activePts.reduce((m,p)=>p.y>m.y?p:m,{y:-Infinity});
+  const prevRows=stPrevRows(rows);
+  const prevTotal=prevRows.reduce((a,r)=>a+(r.points_log||[]).reduce((b,e)=>b+(e.pts||0),0),0);
+  stHeadline('st-score-meta',[
+    {label:'누적',value:(total>=0?'+':'')+total,unit:'pt',delta:stDelta(total,prevTotal)},
+    {label:'일평균',value:(avg>=0?'+':'')+avg,unit:'pt'},
+    {label:'최고일',value:(best.y>=0?'+':'')+best.y,unit:'pt'}
+  ]);
   stDestroyChart('score');
   stCharts.score=new Chart(canvas,{
     type:'line',
     data:{
       labels:cumPts.map(p=>p.x.slice(5).replace('-','/')),
-      datasets:[{data:cumPts.map(p=>p.y),borderColor:c.accent,
-        backgroundColor:'rgba(124,106,247,0.08)',borderWidth:2,
-        pointRadius:cumPts.length>20?0:3,fill:true,tension:0.3}]
+      datasets:[{
+        data:cumPts.map(p=>p.y),borderColor:'#7c6af7',borderWidth:2.8,
+        backgroundColor:ctx=>stGradient(ctx.chart.ctx,'124,106,247',[[0,0.45],[0.6,0.08],[1,0.0]]),
+        pointRadius:0,pointHoverRadius:7,pointHoverBorderColor:'#fff',pointHoverBorderWidth:2,pointHoverBackgroundColor:'#7c6af7',
+        fill:true,tension:0.4
+      }]
     },
-    options:{...stChartCfg,scales:{
-      x:{ticks:{color:c.text,font:{size:9},maxTicksLimit:8},grid:{color:c.grid}},
-      y:{ticks:{color:c.text,font:{size:9},callback:v=>v+'pt'},grid:{color:c.grid}}
-    }}
+    options:stDashCfg({
+      yCallback:v=>v+'pt',
+      tooltip:{label:ctx=>(ctx.parsed.y>=0?'+':'')+ctx.parsed.y+'pt (누적)'}
+    })
   });
 }
 
