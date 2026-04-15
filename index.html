@@ -71,7 +71,31 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 .stats-card-title{font-size:12px;font-weight:600;color:var(--text2);margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em;}
 .stats-meta{font-size:11px;color:var(--text3);margin-bottom:10px;min-height:14px;}
 .stats-empty{text-align:center;padding:24px 0;font-size:12px;color:var(--text3);}
-.stats-card canvas{display:block;max-height:160px;}
+.stats-card canvas{display:block;max-height:220px;}
+.stats-hero{margin:16px 16px 14px;padding:18px 18px 16px;border-radius:18px;background:linear-gradient(135deg,rgba(124,106,247,.22) 0%,rgba(248,113,113,.12) 100%);border:1px solid var(--accent-bd);}
+.stats-hero-top{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:10px;}
+.stats-hero-num{font-family:'DM Mono',monospace;font-weight:800;line-height:1;}
+.stats-hero-cell{flex:1;min-width:0;}
+.stats-hero-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;font-weight:600;margin-bottom:4px;}
+.stats-tier-bar{height:6px;border-radius:6px;background:rgba(255,255,255,.08);overflow:hidden;}
+.stats-tier-fill{height:100%;background:linear-gradient(90deg,var(--accent),#f87171);transition:width .4s ease;}
+.stats-sec-nav{display:flex;gap:6px;padding:0 16px 12px;overflow-x:auto;scrollbar-width:none;position:sticky;top:0;z-index:20;background:var(--bg);}
+.stats-sec-nav::-webkit-scrollbar{display:none;}
+.stats-sec-pill{flex-shrink:0;padding:7px 14px;border-radius:20px;border:1px solid var(--border2);background:transparent;color:var(--text3);font-size:12px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;touch-action:manipulation;transition:all .15s;white-space:nowrap;}
+.stats-sec-pill.active{background:var(--accent);border-color:var(--accent);color:#fff;}
+.stats-section-panel{padding:0 16px;}
+.stats-section-panel.hidden{display:none;}
+.stats-featured canvas{max-height:220px;}
+.stats-featured{padding:18px;}
+.stats-kpi-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
+.stats-kpi{padding:14px 14px 12px;border-radius:14px;background:var(--surface);border:1px solid var(--border);position:relative;overflow:hidden;}
+.stats-kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--accent);opacity:.7;}
+.stats-kpi.kpi-green::before{background:var(--green);}
+.stats-kpi.kpi-amber::before{background:var(--amber);}
+.stats-kpi.kpi-blue::before{background:#60a5fa;}
+.stats-kpi-label{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;}
+.stats-kpi-value{font-size:28px;font-weight:800;font-family:'DM Mono',monospace;line-height:1.1;margin:6px 0 4px;}
+.stats-kpi-sub{font-size:10px;color:var(--text3);min-height:12px;}
 
 /* ── MICRO INTERACTIONS ── */
 
@@ -1001,123 +1025,141 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
   <div class="view" id="view-stats" style="padding:0 0 80px;">
 
     <!-- 헤더 + 기간 선택 -->
-    <div style="padding:16px 16px 0;">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
-        <div style="font-size:17px;font-weight:700;">📊 통계</div>
-        <div style="display:flex;gap:4px;" id="st-period-btns">
-          <button class="stats-period-btn" onclick="stSetPeriod(7,this)">1주</button>
-          <button class="stats-period-btn active" onclick="stSetPeriod(30,this)">1달</button>
-          <button class="stats-period-btn" onclick="stSetPeriod(90,this)">3달</button>
-          <button class="stats-period-btn" onclick="stSetPeriod(0,this)">전체</button>
-        </div>
-      </div>
-
-      <!-- 로딩 -->
-      <div id="st-loading" style="text-align:center;padding:48px 0;color:var(--text3);font-size:13px;display:none;">
-        <div class="spinner" style="margin:0 auto 10px;"></div>데이터 불러오는 중…
+    <div style="padding:16px 16px 4px;display:flex;align-items:center;justify-content:space-between;">
+      <div style="font-size:18px;font-weight:800;letter-spacing:-.01em;">📊 통계</div>
+      <div style="display:flex;gap:4px;" id="st-period-btns">
+        <button class="stats-period-btn" onclick="stSetPeriod(7,this)">1주</button>
+        <button class="stats-period-btn active" onclick="stSetPeriod(30,this)">1달</button>
+        <button class="stats-period-btn" onclick="stSetPeriod(90,this)">3달</button>
+        <button class="stats-period-btn" onclick="stSetPeriod(0,this)">전체</button>
       </div>
     </div>
 
-    <!-- 핵심 지표 카드 4개 -->
-    <div id="st-kpi-section" style="padding:0 16px;display:none;">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;">
-        <div class="stats-card" style="margin:0;">
-          <div class="stats-card-title">루틴 완료율</div>
-          <div style="font-size:26px;font-weight:700;color:var(--green);margin:4px 0;" id="st-kpi-routine">—</div>
-          <div style="font-size:10px;color:var(--text3);" id="st-kpi-routine-sub"></div>
+    <!-- 로딩 -->
+    <div id="st-loading" style="text-align:center;padding:48px 0;color:var(--text3);font-size:13px;display:none;">
+      <div class="spinner" style="margin:0 auto 10px;"></div>데이터 불러오는 중…
+    </div>
+
+    <!-- 히어로 배너: 스트릭 / 오늘 점수 / 티어 -->
+    <div class="stats-hero" id="st-hero" style="display:none;">
+      <div class="stats-hero-top">
+        <div class="stats-hero-cell">
+          <div class="stats-hero-label">🔥 연속 달성</div>
+          <div class="stats-hero-num" style="font-size:34px;color:#f87171;"><span id="st-hero-streak">0</span><span style="font-size:14px;color:var(--text3);margin-left:3px;">일</span></div>
         </div>
-        <div class="stats-card" style="margin:0;">
-          <div class="stats-card-title">할일 완료율</div>
-          <div style="font-size:26px;font-weight:700;color:var(--amber);margin:4px 0;" id="st-kpi-target">—</div>
-          <div style="font-size:10px;color:var(--text3);" id="st-kpi-target-sub"></div>
+        <div class="stats-hero-cell" style="text-align:center;">
+          <div class="stats-hero-label">오늘</div>
+          <div class="stats-hero-num" style="font-size:28px;color:var(--accent);"><span id="st-hero-today">+0</span><span style="font-size:13px;color:var(--text3);margin-left:2px;">pt</span></div>
         </div>
-        <div class="stats-card" style="margin:0;">
-          <div class="stats-card-title">클린식 비율</div>
-          <div style="font-size:26px;font-weight:700;color:var(--green);margin:4px 0;" id="st-kpi-clean">—</div>
-          <div style="font-size:10px;color:var(--text3);" id="st-kpi-clean-sub"></div>
+        <div class="stats-hero-cell" style="text-align:right;">
+          <div class="stats-hero-label">티어</div>
+          <div style="font-size:14px;font-weight:700;color:var(--text);" id="st-hero-tier">😴 방관자</div>
         </div>
-        <div class="stats-card" style="margin:0;">
-          <div class="stats-card-title">운동 횟수</div>
-          <div style="font-size:26px;font-weight:700;color:var(--accent);margin:4px 0;" id="st-kpi-workout">—</div>
-          <div style="font-size:10px;color:var(--text3);" id="st-kpi-workout-sub"></div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:4px;">
+        <div style="font-size:10px;color:var(--text3);" id="st-hero-tier-from">0점</div>
+        <div style="font-size:10px;color:var(--text3);" id="st-hero-tier-to">다음까지 —</div>
+      </div>
+      <div class="stats-tier-bar"><div class="stats-tier-fill" id="st-hero-tier-fill" style="width:0%;"></div></div>
+    </div>
+
+    <!-- 섹션 핀 탭 -->
+    <div class="stats-sec-nav" id="st-sec-nav" style="display:none;">
+      <button class="stats-sec-pill active" data-sec="overview" onclick="statsSetSection('overview')">📊 종합</button>
+      <button class="stats-sec-pill" data-sec="training" onclick="statsSetSection('training')">💪 훈련</button>
+      <button class="stats-sec-pill" data-sec="nutrition" onclick="statsSetSection('nutrition')">🥗 식단</button>
+      <button class="stats-sec-pill" data-sec="habits" onclick="statsSetSection('habits')">✅ 습관</button>
+    </div>
+
+    <!-- 종합 -->
+    <div class="stats-section-panel" id="st-sec-overview">
+      <div id="st-kpi-section">
+        <div class="stats-kpi-grid">
+          <div class="stats-kpi kpi-green">
+            <div class="stats-kpi-label">✅ 루틴 완료율</div>
+            <div class="stats-kpi-value" style="color:var(--green);" id="st-kpi-routine">—</div>
+            <div class="stats-kpi-sub" id="st-kpi-routine-sub"></div>
+          </div>
+          <div class="stats-kpi kpi-amber">
+            <div class="stats-kpi-label">🎯 할일 완료율</div>
+            <div class="stats-kpi-value" style="color:var(--amber);" id="st-kpi-target">—</div>
+            <div class="stats-kpi-sub" id="st-kpi-target-sub"></div>
+          </div>
+          <div class="stats-kpi kpi-green">
+            <div class="stats-kpi-label">🥗 클린식 비율</div>
+            <div class="stats-kpi-value" style="color:var(--green);" id="st-kpi-clean">—</div>
+            <div class="stats-kpi-sub" id="st-kpi-clean-sub"></div>
+          </div>
+          <div class="stats-kpi">
+            <div class="stats-kpi-label">🏋️ 운동 횟수</div>
+            <div class="stats-kpi-value" style="color:var(--accent);" id="st-kpi-workout">—</div>
+            <div class="stats-kpi-sub" id="st-kpi-workout-sub"></div>
+          </div>
         </div>
+      </div>
+
+      <div id="st-insights-section" style="margin-bottom:14px;">
+        <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;">✨ 이번 기간 인사이트</div>
+        <div id="st-insights-list"></div>
+      </div>
+
+      <div class="stats-card stats-featured">
+        <div class="stats-card-title">🔥 점수 추이</div>
+        <div class="stats-meta" id="st-score-meta"></div>
+        <div style="position:relative;height:200px;"><canvas id="st-chart-score"></canvas></div>
+        <div id="st-score-empty" class="stats-empty" style="display:none;">점수 기록이 없어요</div>
       </div>
     </div>
 
-    <!-- 인사이트 카드 -->
-    <div id="st-insights-section" style="padding:0 16px;display:none;">
-      <div style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px;">이번 기간 인사이트</div>
-      <div id="st-insights-list"></div>
-    </div>
-
-    <!-- 차트 섹션 -->
-    <div id="st-charts-section" style="padding:0 16px;display:none;">
-
-      <!-- 체중 추이 -->
-      <div class="stats-card">
-        <div class="stats-card-title">⚖️ 체중 추이 (kg)</div>
-        <div class="stats-meta" id="st-weight-meta"></div>
-        <div style="position:relative;height:160px;"><canvas id="st-chart-weight"></canvas></div>
-        <div id="st-weight-empty" class="stats-empty" style="display:none;">체중 기록이 없어요</div>
-      </div>
-
-      <!-- 운동 볼륨 -->
-      <div class="stats-card">
+    <!-- 훈련 -->
+    <div class="stats-section-panel hidden" id="st-sec-training">
+      <div class="stats-card stats-featured">
         <div class="stats-card-title">🏋️ 운동 볼륨 (주별)</div>
         <div class="stats-meta" id="st-vol-meta"></div>
-        <div style="position:relative;height:140px;"><canvas id="st-chart-vol"></canvas></div>
+        <div style="position:relative;height:200px;"><canvas id="st-chart-vol"></canvas></div>
         <div id="st-vol-empty" class="stats-empty" style="display:none;">운동 볼륨 기록이 없어요</div>
       </div>
 
-      <!-- 운동별 추이 -->
       <div class="stats-card">
         <div class="stats-card-title">💪 운동별 추이</div>
         <div class="stats-meta" id="st-exlist-meta"></div>
         <div id="st-exlist" style="display:flex;flex-direction:column;gap:6px;"></div>
         <div id="st-exlist-empty" class="stats-empty" style="display:none;">운동 기록이 없어요</div>
       </div>
+    </div>
 
-      <!-- 루틴 완료율 추이 -->
-      <div class="stats-card">
-        <div class="stats-card-title">✅ 루틴 완료율 추이 (%)</div>
-        <div class="stats-meta" id="st-routine-meta"></div>
-        <div style="position:relative;height:130px;"><canvas id="st-chart-routine"></canvas></div>
-        <div id="st-routine-empty" class="stats-empty" style="display:none;">루틴 기록이 없어요</div>
-      </div>
-
-      <!-- 식단 품질 히트맵 -->
-      <div class="stats-card">
+    <!-- 식단 -->
+    <div class="stats-section-panel hidden" id="st-sec-nutrition">
+      <div class="stats-card stats-featured">
         <div class="stats-card-title">🥗 식단 품질 (끼니별)</div>
         <div class="stats-meta" id="st-meal-meta"></div>
         <div id="st-meal-heatmap"></div>
-        <div style="display:flex;gap:10px;margin-top:8px;flex-wrap:wrap;">
-          <div style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--text3);">
-            <div style="width:10px;height:10px;border-radius:2px;background:var(--green);opacity:0.8;"></div>클린
-          </div>
-          <div style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--text3);">
-            <div style="width:10px;height:10px;border-radius:2px;background:#888;opacity:0.6;"></div>일반
-          </div>
-          <div style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--text3);">
-            <div style="width:10px;height:10px;border-radius:2px;background:var(--amber);opacity:0.7;"></div>치팅
-          </div>
-          <div style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--text3);">
-            <div style="width:10px;height:10px;border-radius:2px;background:var(--red);opacity:0.6;"></div>금지/음주
-          </div>
-          <div style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--text3);">
-            <div style="width:10px;height:10px;border-radius:2px;background:var(--surface3);border:1px solid var(--border2);"></div>미기록
-          </div>
+        <div style="display:flex;gap:12px;margin-top:10px;flex-wrap:wrap;">
+          <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:var(--text3);"><div style="width:11px;height:11px;border-radius:3px;background:var(--green);opacity:0.8;"></div>클린</div>
+          <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:var(--text3);"><div style="width:11px;height:11px;border-radius:3px;background:#888;opacity:0.6;"></div>일반</div>
+          <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:var(--text3);"><div style="width:11px;height:11px;border-radius:3px;background:var(--amber);opacity:0.7;"></div>치팅</div>
+          <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:var(--text3);"><div style="width:11px;height:11px;border-radius:3px;background:var(--red);opacity:0.6;"></div>금지/음주</div>
+          <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:var(--text3);"><div style="width:11px;height:11px;border-radius:3px;background:var(--surface3);border:1px solid var(--border2);"></div>미기록</div>
         </div>
         <div id="st-meal-empty" class="stats-empty" style="display:none;">식단 기록이 없어요</div>
       </div>
+    </div>
 
-      <!-- 점수 추이 -->
-      <div class="stats-card">
-        <div class="stats-card-title">🔥 점수 추이</div>
-        <div class="stats-meta" id="st-score-meta"></div>
-        <div style="position:relative;height:140px;"><canvas id="st-chart-score"></canvas></div>
-        <div id="st-score-empty" class="stats-empty" style="display:none;">점수 기록이 없어요</div>
+    <!-- 습관 / 몸 -->
+    <div class="stats-section-panel hidden" id="st-sec-habits">
+      <div class="stats-card stats-featured">
+        <div class="stats-card-title">⚖️ 체중 추이 (kg)</div>
+        <div class="stats-meta" id="st-weight-meta"></div>
+        <div style="position:relative;height:200px;"><canvas id="st-chart-weight"></canvas></div>
+        <div id="st-weight-empty" class="stats-empty" style="display:none;">체중 기록이 없어요</div>
       </div>
 
+      <div class="stats-card">
+        <div class="stats-card-title">✅ 루틴 완료율 추이 (%)</div>
+        <div class="stats-meta" id="st-routine-meta"></div>
+        <div style="position:relative;height:160px;"><canvas id="st-chart-routine"></canvas></div>
+        <div id="st-routine-empty" class="stats-empty" style="display:none;">루틴 기록이 없어요</div>
+      </div>
     </div>
 
     <div id="st-empty" style="display:none;text-align:center;padding:60px 0 24px;">
@@ -11211,7 +11253,7 @@ async function loadStatsTab(){
   // 로딩 표시
   const loadEl=document.getElementById('st-loading');
   if(loadEl)loadEl.style.display='block';
-  ['st-kpi-section','st-insights-section','st-charts-section','st-empty'].forEach(id=>{
+  ['st-hero','st-sec-nav','st-empty'].forEach(id=>{
     const el=document.getElementById(id);if(el)el.style.display='none';
   });
 
@@ -11261,18 +11303,21 @@ function stFilterRows(rows){
 function stRenderAll(rows){
   if(!rows||!rows.length)return;
   const filtered=stFilterRows(rows);
+  const hero=document.getElementById('st-hero');
+  const nav=document.getElementById('st-sec-nav');
+  const panels=['st-sec-overview','st-sec-training','st-sec-nutrition','st-sec-habits'];
   if(!filtered.length){
     document.getElementById('st-empty').style.display='block';
-    ['st-kpi-section','st-insights-section','st-charts-section'].forEach(id=>{
-      const el=document.getElementById(id);if(el)el.style.display='none';
-    });
+    if(hero)hero.style.display='none';
+    if(nav)nav.style.display='none';
+    panels.forEach(id=>{const el=document.getElementById(id);if(el)el.classList.add('hidden');});
     return;
   }
   document.getElementById('st-empty').style.display='none';
-  ['st-kpi-section','st-insights-section','st-charts-section'].forEach(id=>{
-    const el=document.getElementById(id);if(el)el.style.display='';
-  });
+  if(hero)hero.style.display='';
+  if(nav)nav.style.display='';
 
+  try{stRenderHero(filtered);}catch(e){console.warn('stRenderHero error:',e);}
   try{stRenderKPI(filtered);}catch(e){console.warn('stRenderKPI error:',e);}
   try{stRenderInsights(filtered);}catch(e){console.warn('stRenderInsights error:',e);}
   try{stRenderWeightChart(filtered);}catch(e){console.warn('stRenderWeightChart error:',e);}
@@ -11281,6 +11326,54 @@ function stRenderAll(rows){
   try{stRenderRoutineChart(filtered);}catch(e){console.warn('stRenderRoutineChart error:',e);}
   try{stRenderMealHeatmap(filtered);}catch(e){console.warn('stRenderMealHeatmap error:',e);}
   try{stRenderScoreChart(filtered);}catch(e){console.warn('stRenderScoreChart error:',e);}
+
+  // Apply stored active section (default: overview)
+  const saved=localStorage.getItem('stats_section')||'overview';
+  statsSetSection(saved, true);
+}
+
+// ── 섹션 전환 ──
+function statsSetSection(key,skipSave){
+  const valid=['overview','training','nutrition','habits'];
+  if(!valid.includes(key))key='overview';
+  if(!skipSave)localStorage.setItem('stats_section',key);
+  document.querySelectorAll('#st-sec-nav .stats-sec-pill').forEach(b=>{
+    b.classList.toggle('active',b.dataset.sec===key);
+  });
+  valid.forEach(k=>{
+    const el=document.getElementById('st-sec-'+k);
+    if(el)el.classList.toggle('hidden',k!==key);
+  });
+  // Resize charts that became visible
+  setTimeout(()=>{
+    const chartMap={overview:['score'],training:['vol'],nutrition:[],habits:['weight','routine']};
+    (chartMap[key]||[]).forEach(k=>{if(stCharts[k]){try{stCharts[k].resize();}catch(_){}}});
+  },30);
+}
+
+// ── 히어로 렌더 ──
+function stRenderHero(rows){
+  try{
+    const streak=(typeof calcStreak==='function')?calcStreak():0;
+    document.getElementById('st-hero-streak').textContent=streak;
+    const todayLog=(typeof logCache!=='undefined'&&typeof TODAY!=='undefined')?logCache[TODAY]:null;
+    const todayPts=todayLog?(todayLog.points_log||[]).reduce((a,p)=>a+(p.pts||0),0):0;
+    document.getElementById('st-hero-today').textContent=(todayPts>=0?'+':'')+todayPts;
+    // Tier
+    let total=0;
+    rows.forEach(r=>{(r.points_log||[]).forEach(p=>total+=(p.pts||0));});
+    if(typeof getTier==='function'){
+      const t=getTier(total);
+      document.getElementById('st-hero-tier').textContent=(t.icon||'')+' '+(t.name||'');
+      const tiers=(typeof TIERS!=='undefined')?TIERS:null;
+      const next=tiers?tiers.find(x=>x.min>total):null;
+      const from=t.min||0, to=next?next.min:(t.max||(total+1));
+      const pct=Math.max(0,Math.min(100,(total-from)/Math.max(1,to-from)*100));
+      document.getElementById('st-hero-tier-fill').style.width=pct+'%';
+      document.getElementById('st-hero-tier-from').textContent=total+'점';
+      document.getElementById('st-hero-tier-to').textContent=next?('다음 '+next.name+' '+(next.min-total)+'pt'):'최고 티어';
+    }
+  }catch(e){console.warn('stRenderHero inner:',e);}
 }
 
 // ── KPI 카드 ──
