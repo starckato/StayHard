@@ -1069,6 +1069,14 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
         <div id="st-vol-empty" class="stats-empty" style="display:none;">운동 볼륨 기록이 없어요</div>
       </div>
 
+      <!-- 운동별 추이 -->
+      <div class="stats-card">
+        <div class="stats-card-title">💪 운동별 추이</div>
+        <div class="stats-meta" id="st-exlist-meta"></div>
+        <div id="st-exlist" style="display:flex;flex-direction:column;gap:6px;"></div>
+        <div id="st-exlist-empty" class="stats-empty" style="display:none;">운동 기록이 없어요</div>
+      </div>
+
       <!-- 루틴 완료율 추이 -->
       <div class="stats-card">
         <div class="stats-card-title">✅ 루틴 완료율 추이 (%)</div>
@@ -1612,6 +1620,28 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
       <button id="ssm-edit-btn" style="flex:1;padding:16px;background:var(--surface2);border:1px solid var(--border2);border-radius:14px;color:var(--text2);font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;cursor:pointer;touch-action:manipulation;">✎ 세션 수정</button>
       <button onclick="captureSessionSummary()" style="flex:1;padding:16px;background:var(--accent);border:none;border-radius:14px;color:#fff;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;cursor:pointer;touch-action:manipulation;">📸 공유하기</button>
     </div>
+  </div>
+
+  <!-- EXERCISE DETAIL MODAL -->
+  <div id="exercise-detail-modal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:var(--bg);z-index:560;flex-direction:column;">
+    <div style="display:flex;align-items:center;gap:10px;padding:52px 18px 14px;border-bottom:1px solid var(--border);flex-shrink:0;">
+      <button onclick="closeExerciseDetail()" style="background:none;border:none;color:var(--text2);font-size:22px;cursor:pointer;padding:0;touch-action:manipulation;">←</button>
+      <div style="flex:1;min-width:0;">
+        <div id="edm-title" style="font-size:17px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">—</div>
+        <div id="edm-sub" style="font-size:12px;color:var(--text3);margin-top:2px;"></div>
+      </div>
+      <div style="display:flex;gap:4px;" id="edm-period-btns">
+        <button class="stats-period-btn" onclick="edmSetPeriod(7,this)">1주</button>
+        <button class="stats-period-btn active" onclick="edmSetPeriod(30,this)">1달</button>
+        <button class="stats-period-btn" onclick="edmSetPeriod(90,this)">3달</button>
+      </div>
+    </div>
+    <div id="edm-prs" style="display:flex;border-bottom:1px solid var(--border);flex-shrink:0;"></div>
+    <div style="padding:14px 18px 4px;flex-shrink:0;">
+      <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;" id="edm-chart-label">볼륨 추이</div>
+      <div style="background:var(--surface2);border-radius:12px;padding:12px 6px;height:160px;position:relative;"><canvas id="edm-chart"></canvas></div>
+    </div>
+    <div id="edm-sessions" style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:10px 18px 30px;"></div>
   </div>
 
   <!-- ONBOARDING MODAL -->
@@ -11247,6 +11277,7 @@ function stRenderAll(rows){
   try{stRenderInsights(filtered);}catch(e){console.warn('stRenderInsights error:',e);}
   try{stRenderWeightChart(filtered);}catch(e){console.warn('stRenderWeightChart error:',e);}
   try{stRenderVolChart(filtered);}catch(e){console.warn('stRenderVolChart error:',e);}
+  try{stRenderExerciseList(filtered);}catch(e){console.warn('stRenderExerciseList error:',e);}
   try{stRenderRoutineChart(filtered);}catch(e){console.warn('stRenderRoutineChart error:',e);}
   try{stRenderMealHeatmap(filtered);}catch(e){console.warn('stRenderMealHeatmap error:',e);}
   try{stRenderScoreChart(filtered);}catch(e){console.warn('stRenderScoreChart error:',e);}
@@ -11454,6 +11485,214 @@ function stRenderVolChart(rows){
       y:{ticks:{color:c.text,font:{size:9},callback:v=>v>=1?v+'t':v*1000+'kg'},grid:{color:c.grid}}
     },plugins:{...stChartCfg.plugins,tooltip:{callbacks:{label:ctx=>{const v=ctx.parsed.y;return v>=1?v.toFixed(1)+'t':(v*1000).toLocaleString()+'kg';}}}}}
   });
+}
+
+// ── 운동별 집계 ──
+// Returns map: { name -> { kind:'gym'|'activity', icon, sessions:[{date, ...}], totalVol, sessionCount } }
+function buildExerciseIndex(rows){
+  const idx={};
+  rows.forEach(r=>{
+    const date=r._key;
+    (r.workouts||[]).forEach(w=>{
+      if(w.status&&w.status!=='done')return;
+      if(w.type==='gym'){
+        (w.exercises||[]).forEach(ex=>{
+          const name=ex.name;if(!name)return;
+          const doneSets=(ex.sets||[]).filter(s=>s.done);
+          if(!doneSets.length)return;
+          const isStr=ex.isStrength!==false&&doneSets.some(s=>s.kg!=null&&s.kg!=='');
+          let volume=0,topKg=0,topReps=0,bestE1=0,totalReps=0;
+          doneSets.forEach(s=>{
+            const kg=parseFloat(s.kg)||0;
+            const reps=parseInt(s.reps)||0;
+            totalReps+=reps;
+            if(isStr){
+              volume+=kg*reps;
+              if(kg>topKg||(kg===topKg&&reps>topReps)){topKg=kg;topReps=reps;}
+              const e1=reps>0?kg*(1+reps/30):0;
+              if(e1>bestE1)bestE1=e1;
+            }
+          });
+          if(!idx[name])idx[name]={kind:'gym',icon:ex.icon||'💪',isStr,sessions:[],totalVol:0,sessionCount:0};
+          idx[name].sessions.push({date,setCount:doneSets.length,volume,topKg,topReps,bestE1,totalReps,sets:doneSets.map(s=>({kg:parseFloat(s.kg)||0,reps:parseInt(s.reps)||0}))});
+          idx[name].totalVol+=volume;
+          idx[name].sessionCount++;
+        });
+      } else if(w.type==='activity'){
+        const name=w.name;if(!name)return;
+        const dist=parseFloat(w.distance)||0;
+        const time=parseFloat(w.time)||0;
+        if(!dist&&!time)return;
+        if(!idx[name])idx[name]={kind:'activity',icon:w.icon||'🏃',sessions:[],totalVol:0,sessionCount:0};
+        idx[name].sessions.push({date,distance:dist,time,pace:w.pace||null});
+        idx[name].totalVol+=(dist||time);
+        idx[name].sessionCount++;
+      }
+    });
+  });
+  Object.values(idx).forEach(e=>e.sessions.sort((a,b)=>a.date.localeCompare(b.date)));
+  return idx;
+}
+
+function stRenderExerciseList(rows){
+  const idx=buildExerciseIndex(rows);
+  const list=document.getElementById('st-exlist');
+  const empty=document.getElementById('st-exlist-empty');
+  const meta=document.getElementById('st-exlist-meta');
+  const entries=Object.entries(idx).sort((a,b)=>b[1].sessionCount-a[1].sessionCount);
+  if(!entries.length){list.innerHTML='';empty.style.display='block';meta.textContent='';return;}
+  empty.style.display='none';
+  meta.textContent=entries.length+'개 종목 · 탭하면 상세';
+  list.innerHTML=entries.slice(0,20).map(([name,e])=>{
+    const sub=e.kind==='gym'
+      ?(e.sessionCount+'회 · 누적 '+Math.round(e.totalVol).toLocaleString()+'kg')
+      :(e.sessionCount+'회 기록');
+    const lastSess=e.sessions[e.sessions.length-1];
+    const lastStr=e.kind==='gym'
+      ?(lastSess.topKg>0?'최근 '+lastSess.topKg+'kg×'+lastSess.topReps:'최근 '+lastSess.setCount+'세트')
+      :(lastSess.distance?'최근 '+lastSess.distance+'km':(lastSess.time?'최근 '+lastSess.time+'분':''));
+    return `<div onclick="openExerciseDetail('${name.replace(/'/g,"\\'")}')"
+      style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;cursor:pointer;touch-action:manipulation;">
+      <div style="font-size:20px;flex-shrink:0;">${e.icon}</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:13px;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${name}</div>
+        <div style="font-size:10px;color:var(--text3);margin-top:2px;">${sub}</div>
+      </div>
+      <div style="font-size:10px;color:var(--text2);font-family:'DM Mono',monospace;text-align:right;flex-shrink:0;">${lastStr}</div>
+      <div style="font-size:12px;color:var(--text3);flex-shrink:0;">›</div>
+    </div>`;
+  }).join('');
+}
+
+// ── 운동 상세 모달 ──
+let _edmState={name:null,period:30};
+function openExerciseDetail(name){
+  _edmState.name=name;_edmState.period=30;
+  document.querySelectorAll('#edm-period-btns .stats-period-btn').forEach((b,i)=>{b.classList.toggle('active',i===1);});
+  const modal=document.getElementById('exercise-detail-modal');
+  modal.style.display='flex';
+  edmRender();
+}
+function closeExerciseDetail(){
+  const modal=document.getElementById('exercise-detail-modal');
+  modal.style.display='none';
+  if(window._edmChart){try{_edmChart.destroy();}catch(_){}_edmChart=null;}
+}
+function edmSetPeriod(days,btn){
+  _edmState.period=days;
+  document.querySelectorAll('#edm-period-btns .stats-period-btn').forEach(b=>b.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+  edmRender();
+}
+function edmRender(){
+  const name=_edmState.name;const days=_edmState.period;
+  const rows=Object.values(logCache).map(l=>({...l,_key:l.date||Object.keys(logCache).find(k=>logCache[k]===l)}));
+  // fallback: rebuild _key from key if missing
+  const keyed=Object.keys(logCache).map(k=>({...logCache[k],_key:k}));
+  const cutoff=new Date();cutoff.setDate(cutoff.getDate()-days+1);
+  const cutKey=cutoff.toISOString().slice(0,10);
+  const filtered=keyed.filter(r=>r._key>=cutKey);
+  const idx=buildExerciseIndex(filtered);
+  const ex=idx[name];
+  document.getElementById('edm-title').textContent=(ex?.icon||'💪')+' '+name;
+  const prBox=document.getElementById('edm-prs');
+  const sessBox=document.getElementById('edm-sessions');
+  const chartLabel=document.getElementById('edm-chart-label');
+  const sub=document.getElementById('edm-sub');
+  if(!ex||!ex.sessions.length){
+    sub.textContent='기록 없음';
+    prBox.innerHTML='';
+    sessBox.innerHTML='<div style="text-align:center;color:var(--text3);font-size:12px;padding:24px 0;">이 기간 기록이 없어요</div>';
+    if(window._edmChart){try{_edmChart.destroy();}catch(_){}_edmChart=null;}
+    return;
+  }
+  sub.textContent=ex.sessionCount+'회 기록';
+  // PRs
+  if(ex.kind==='gym'){
+    const prKg=ex.sessions.reduce((m,s)=>s.topKg>m.topKg?s:m,{topKg:0,topReps:0});
+    const prVol=ex.sessions.reduce((m,s)=>s.volume>m.volume?s:m,{volume:0});
+    const prE1=ex.sessions.reduce((m,s)=>s.bestE1>m.bestE1?s:m,{bestE1:0});
+    prBox.innerHTML=`
+      <div style="flex:1;text-align:center;padding:14px 0;">
+        <div style="font-size:18px;font-weight:800;color:var(--accent);">${prKg.topKg||0}<span style="font-size:11px;color:var(--text3);">kg</span></div>
+        <div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-top:2px;">🏆 최고 중량 ${prKg.topReps?'×'+prKg.topReps:''}</div>
+      </div>
+      <div style="flex:1;text-align:center;padding:14px 0;border-left:1px solid var(--border);">
+        <div style="font-size:18px;font-weight:800;color:var(--green);">${Math.round(prE1.bestE1||0)}<span style="font-size:11px;color:var(--text3);">kg</span></div>
+        <div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-top:2px;">🏆 최고 e1RM</div>
+      </div>
+      <div style="flex:1;text-align:center;padding:14px 0;border-left:1px solid var(--border);">
+        <div style="font-size:18px;font-weight:800;color:var(--text);">${Math.round(prVol.volume||0).toLocaleString()}</div>
+        <div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-top:2px;">🏆 최고 볼륨</div>
+      </div>`;
+    chartLabel.textContent='세션 볼륨 (kg) · 최고 세트';
+  } else {
+    const prDist=ex.sessions.reduce((m,s)=>s.distance>m.distance?s:m,{distance:0});
+    const prTime=ex.sessions.reduce((m,s)=>s.time>m.time?s:m,{time:0});
+    prBox.innerHTML=`
+      <div style="flex:1;text-align:center;padding:14px 0;">
+        <div style="font-size:18px;font-weight:800;color:var(--accent);">${prDist.distance||0}<span style="font-size:11px;color:var(--text3);">km</span></div>
+        <div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-top:2px;">🏆 최장 거리</div>
+      </div>
+      <div style="flex:1;text-align:center;padding:14px 0;border-left:1px solid var(--border);">
+        <div style="font-size:18px;font-weight:800;color:var(--green);">${prTime.time||0}<span style="font-size:11px;color:var(--text3);">분</span></div>
+        <div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-top:2px;">🏆 최장 시간</div>
+      </div>
+      <div style="flex:1;text-align:center;padding:14px 0;border-left:1px solid var(--border);">
+        <div style="font-size:18px;font-weight:800;color:var(--text);">${ex.sessionCount}</div>
+        <div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-top:2px;">총 횟수</div>
+      </div>`;
+    chartLabel.textContent=ex.kind==='activity'?(ex.sessions.some(s=>s.distance>0)?'거리 (km)':'시간 (분)'):'기록';
+  }
+  // Chart
+  if(window._edmChart){try{_edmChart.destroy();}catch(_){}_edmChart=null;}
+  const canvas=document.getElementById('edm-chart');
+  const labels=ex.sessions.map(s=>s.date.slice(5));
+  let primaryData,secondaryData=null,primaryLabel,secondaryLabel;
+  if(ex.kind==='gym'){
+    primaryData=ex.sessions.map(s=>Math.round(s.volume));
+    secondaryData=ex.sessions.map(s=>s.topKg);
+    primaryLabel='볼륨';secondaryLabel='최고 세트(kg)';
+  } else {
+    const useDist=ex.sessions.some(s=>s.distance>0);
+    primaryData=ex.sessions.map(s=>useDist?s.distance:s.time);
+    primaryLabel=useDist?'거리(km)':'시간(분)';
+  }
+  const c=getChartColors();
+  const datasets=[{label:primaryLabel,data:primaryData,borderColor:'rgba(124,106,247,1)',backgroundColor:'rgba(124,106,247,0.2)',tension:0.3,yAxisID:'y',fill:true,pointRadius:3}];
+  if(secondaryData)datasets.push({label:secondaryLabel,data:secondaryData,borderColor:'rgba(248,113,113,1)',backgroundColor:'transparent',tension:0.3,yAxisID:'y1',pointRadius:3,borderDash:[4,4]});
+  window._edmChart=new Chart(canvas,{
+    type:'line',
+    data:{labels,datasets},
+    options:{...stChartCfg,scales:{
+      x:{ticks:{color:c.text,font:{size:9}},grid:{display:false}},
+      y:{position:'left',ticks:{color:c.text,font:{size:9}},grid:{color:c.grid}},
+      ...(secondaryData?{y1:{position:'right',ticks:{color:c.text,font:{size:9}},grid:{display:false}}}:{})
+    },plugins:{...stChartCfg.plugins,legend:{display:!!secondaryData,labels:{color:c.text,font:{size:10},boxWidth:10}}}}
+  });
+  // Sessions list (newest first)
+  const prKg=ex.kind==='gym'?ex.sessions.reduce((a,b)=>b.topKg>a?b.topKg:a,0):0;
+  const prVol=ex.kind==='gym'?ex.sessions.reduce((a,b)=>b.volume>a?b.volume:a,0):0;
+  const prDist=ex.kind!=='gym'?ex.sessions.reduce((a,b)=>b.distance>a?b.distance:a,0):0;
+  const prTime=ex.kind!=='gym'?ex.sessions.reduce((a,b)=>b.time>a?b.time:a,0):0;
+  sessBox.innerHTML='<div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;">세션 기록</div>'+
+    ex.sessions.slice().reverse().map(s=>{
+      const isPr=ex.kind==='gym'
+        ?(s.topKg===prKg&&prKg>0)||(s.volume===prVol&&prVol>0)
+        :(s.distance===prDist&&prDist>0)||(s.time===prTime&&prTime>0);
+      const mainLine=ex.kind==='gym'
+        ?`${s.setCount}세트 · ${Math.round(s.volume).toLocaleString()}kg 볼륨`
+        :`${s.distance?s.distance+'km':''}${s.distance&&s.time?' · ':''}${s.time?s.time+'분':''}${s.pace?' · '+s.pace+'/km':''}`;
+      const detail=ex.kind==='gym'&&s.topKg>0?`최고 ${s.topKg}kg×${s.topReps} · e1RM ${Math.round(s.bestE1)}kg`:'';
+      return `<div style="padding:10px 12px;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;margin-bottom:6px;">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div style="font-size:12px;font-weight:600;color:var(--text);">${s.date}</div>
+          ${isPr?'<div style="font-size:10px;padding:2px 6px;border-radius:10px;background:rgba(251,191,36,.2);color:#fbbf24;font-weight:700;">🏆 PR</div>':''}
+        </div>
+        <div style="font-size:11px;color:var(--text2);margin-top:3px;font-family:'DM Mono',monospace;">${mainLine}</div>
+        ${detail?`<div style="font-size:10px;color:var(--text3);margin-top:2px;">${detail}</div>`:''}
+      </div>`;
+    }).join('');
 }
 
 function stRenderRoutineChart(rows){
