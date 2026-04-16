@@ -3451,34 +3451,27 @@ function renderSession(){
     const doneSets=ex?ex.sets.filter(s=>s.done).length:0;
     const totalSets=ex?ex.sets.length:0;
     const allSetsDone=doneSets===totalSets&&totalSets>0;
-    const isOnLastSet=doneSets===totalSets-1&&totalSets>0; // one set away
-    if(isLastEx){
-      if(allSetsDone){
+    const isOnLastSet=doneSets===totalSets-1&&totalSets>0;
+    const label=isLastEx?'운동 종료':'다음 운동';
+
+    if(allSetsDone){
+      if(isLastEx){
         btn.textContent='운동 종료 ✓';
         btn.style.background='linear-gradient(135deg,#f87171,#fb923c)';
         btn.style.boxShadow='0 4px 18px rgba(248,113,113,.45)';
       } else {
-        btn.textContent='운동 종료 ✓';
-        btn.style.background='';
-        btn.style.boxShadow='';
-      }
-    } else {
-      if(allSetsDone){
-        // all sets done on a non-last exercise — reward state, ready to advance
         btn.textContent='다음 운동 → 🔥';
         btn.style.background='linear-gradient(135deg,var(--accent),#34d399)';
         btn.style.boxShadow='0 4px 18px rgba(52,211,153,.4)';
-      } else if(isOnLastSet){
-        // one set remaining — motivational nudge
-        btn.textContent=`마지막 세트! (${doneSets}/${totalSets})`;
-        btn.style.background='linear-gradient(135deg,var(--accent),#f59e0b)';
-        btn.style.boxShadow='0 4px 16px rgba(245,158,11,.35)';
-      } else {
-        // normal progress
-        btn.textContent=totalSets>0?`세트 완료 (${doneSets}/${totalSets})`:'다음 운동 →';
-        btn.style.background='';
-        btn.style.boxShadow='';
       }
+    } else if(isOnLastSet){
+      btn.textContent=`마지막 세트! (${doneSets}/${totalSets})`;
+      btn.style.background='linear-gradient(135deg,var(--accent),#f59e0b)';
+      btn.style.boxShadow='0 4px 16px rgba(245,158,11,.35)';
+    } else {
+      btn.textContent=totalSets>0?`세트 완료 (${doneSets}/${totalSets})`:'다음 운동 →';
+      btn.style.background='';
+      btn.style.boxShadow='';
     }
   } else if(btn){
     btn.textContent='운동 완료 ✓';
