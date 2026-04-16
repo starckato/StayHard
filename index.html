@@ -7898,7 +7898,7 @@ async function finishSession(){
     } else {
       const l=logCache[TODAY]||log;
       const alreadyScored=(l._ptsLog||[]).filter(e=>e.type==='workout_done').length>=1;
-      if(!alreadyScored)addScore('workout_done');
+      if(!alreadyScored){addScore('workout_done');renderRoutine();}
       setTimeout(()=>{showWin('workout',20,'운동 완료!');launchConfetti();checkPerfectDay();},300);
     }
   } else {
