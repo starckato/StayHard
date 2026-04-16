@@ -4134,7 +4134,7 @@ function getTodayScore(){
   return l._ptsLog.reduce((a,e)=>a+e.pts,0);
 }
 
-function addScore(type, note='', ptsOverride=null){
+function addScore(type, note='', ptsOverride=null, silent=false){
   const ev=SCORE_EVENTS[type];if(!ev)return;
   const pts=ptsOverride!==null?ptsOverride:ev.pts;
   // 1. 오늘 로그에 기록 (내역용)
@@ -4162,11 +4162,13 @@ function addScore(type, note='', ptsOverride=null){
   updateGogginsHeader();
   renderCharCard();
   const combined=COMBINED_SCORE_EVENTS[type];
-  if(combined){
-    showToast(combined.toast);
-  } else {
-    if(pts>0)showToast(ev.icon+' +'+pts+'점 — '+ev.label);
-    else if(pts<0)showToast(ev.icon+' '+pts+'점 — '+ev.label);
+  if(!silent){
+    if(combined){
+      showToast(combined.toast);
+    } else {
+      if(pts>0)showToast(ev.icon+' +'+pts+'점 — '+ev.label);
+      else if(pts<0)showToast(ev.icon+' '+pts+'점 — '+ev.label);
+    }
   }
 }
 
@@ -6471,7 +6473,7 @@ async function deleteMeal(i){
       else if(meal.type==='normal')scoreDelta=-1;
       // red/cheat = 0
     }
-    applyMealScore(meal.type,null,false,meal.category);
+    applyMealScore(meal.type,null,false,meal.category,true);
     if(meal.type==='cheat')await cheatReturn();
     if(meal.category==='alcohol'&&meal._alcoholCheat)await alcoholCheatReturn();
   }
@@ -6481,7 +6483,8 @@ async function deleteMeal(i){
   renderCheatBadge();
   renderRoutine();
   saveNow();
-  showToast('🗑️ '+mealName+' 삭제됨');
+  const scoreStr=scoreDelta<0?' ('+scoreDelta+'점)':scoreDelta>0?' (+'+scoreDelta+'점)':'';
+  showToast('🗑️ '+mealName+' 삭제됨'+scoreStr);
 }
 
 // ═══════════════════════════════════════════════════════
@@ -7056,7 +7059,7 @@ function openCheatSettings(){
   openModal('cheat-modal');
 }
 
-function applyMealScore(prevType,newType,isNew,category){
+function applyMealScore(prevType,newType,isNew,category,silent=false){
   // 음료: 점수 없음
   if(category==='drink')return;
 
@@ -7064,23 +7067,20 @@ function applyMealScore(prevType,newType,isNew,category){
   if(newType==='alcohol'||category==='alcohol'){
     if(isNew){
       if(_alcoholCheatOn){
-        // 오늘 이미 치팅 적용됐으면 쿼터 추가 차감 없이 ±0
         if(isTodayAlcoholCheatUsed()){
-          showToast('🍺 오늘 음주 치팅 적용 중 — ±0점');
+          if(!silent)showToast('🍺 오늘 음주 치팅 적용 중 — ±0점');
         } else {
-          // 첫 번째 치팅: 쿼터 차감
           alcoholCheatUse().then(ok=>{
             if(ok){
-              showToast('🍺 음주 치팅 사용 — ±0점 (잔여 '+getAlcoholRemaining()+'/'+getAlcoholQuota()+'회)');
+              if(!silent)showToast('🍺 음주 치팅 사용 — ±0점 (잔여 '+getAlcoholRemaining()+'/'+getAlcoholQuota()+'회)');
             } else {
-              // 쿼터 소진 — −30점
-              addScore('diet_alcohol_register');
+              addScore('diet_alcohol_register','',null,silent);
               showRage();
             }
           });
         }
       } else {
-        addScore('diet_alcohol_register');
+        addScore('diet_alcohol_register','',null,silent);
         setTimeout(()=>showRage(),300);
       }
     }
@@ -7088,22 +7088,21 @@ function applyMealScore(prevType,newType,isNew,category){
   }
   // 음주 기록 삭제 시 복구
   if(prevType==='alcohol'&&newType===null){
-    // 치팅으로 등록됐던 것인지 category 정보로 판단 불가 → 점수 롤백 시도만
     const meal=mealIdx!==null?log.meals[mealIdx]:null;
     if(meal&&meal._alcoholCheat){
       alcoholCheatReturn();
     } else {
-      addScore('diet_alcohol_cancel');
+      addScore('diet_alcohol_cancel','',null,silent);
     }
     return;
   }
 
   // ── DELETE path ──
   if(newType===null){
-    if(prevType==='green')addScore('diet_clean_delete');
-    else if(prevType==='red')addScore('diet_junk_cancel');
-    else if(prevType==='normal')addScore('diet_log_only_cancel');
-    else if(prevType&&prevType!=='cheat')addScore('diet_log_only_cancel');
+    if(prevType==='green')addScore('diet_clean_delete','',null,silent);
+    else if(prevType==='red')addScore('diet_junk_cancel','',null,silent);
+    else if(prevType==='normal')addScore('diet_log_only_cancel','',null,silent);
+    else if(prevType&&prevType!=='cheat')addScore('diet_log_only_cancel','',null,silent);
     return;
   }
 
@@ -7615,19 +7614,18 @@ function delWO(i){
   const netWo=pl.filter(e=>e.type==='workout_done').length-pl.filter(e=>e.type==='workout_delete').length;
   let scoreDelta=0;
   if(netWo>0){
-    // 채찍 징역 운동은 점수 영향 없음, 일반 완료 운동만 차감
     if(delWo.type==='gym'&&delWo.status==='done'){
-      addScore('workout_done_cancel');
+      addScore('workout_done_cancel','',null,true);
       scoreDelta=-20;
     }
-    // activity 완료분은 채찍이 아닐 때만 차감
     if(delWo.type==='activity'&&delWo.status==='done'&&!delWo._isChaek){
-      addScore('workout_done_cancel');
+      addScore('workout_done_cancel','',null,true);
       scoreDelta=-20;
     }
   }
   log.workouts.splice(i,1);renderWorkouts();renderRoutine();saveNow();
-  showToast('🗑️ '+name+' 삭제됨');
+  const scoreStr=scoreDelta<0?' ('+scoreDelta+'점)':'';
+  showToast('🗑️ '+name+' 삭제됨'+scoreStr);
 }
 
 // ── GYM SESSION ──
