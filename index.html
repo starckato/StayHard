@@ -1931,10 +1931,14 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
     <!-- 카테고리 선택 -->
     <div class="mfield">
       <label class="mlabel">종류 <span style="color:var(--red);font-weight:600;">*</span></label>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px;" id="msn-cat-btns">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr;gap:6px;" id="msn-cat-btns">
         <button onclick="msnPickCat('snack',this)" style="padding:10px 4px;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:var(--surface2);cursor:pointer;font-family:'DM Sans',sans-serif;text-align:center;touch-action:manipulation;">
           <div style="font-size:18px;margin-bottom:3px;">🍰</div>
           <div style="font-size:11px;color:var(--text2);font-weight:500;">간식</div>
+        </button>
+        <button onclick="msnPickCat('latenight',this)" style="padding:10px 4px;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:var(--surface2);cursor:pointer;font-family:'DM Sans',sans-serif;text-align:center;touch-action:manipulation;">
+          <div style="font-size:18px;margin-bottom:3px;">🌙</div>
+          <div style="font-size:11px;color:var(--text2);font-weight:500;">야식</div>
         </button>
         <button onclick="msnPickCat('drink',this)" style="padding:10px 4px;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:var(--surface2);cursor:pointer;font-family:'DM Sans',sans-serif;text-align:center;touch-action:manipulation;">
           <div style="font-size:18px;margin-bottom:3px;">☕</div>
@@ -6438,7 +6442,7 @@ function renderMeals(){
     extrasHtml+=`<div class="meal-section-divider"><div class="meal-section-divider-line"></div><div class="meal-section-divider-text">간식 · 음료 · 기타</div><div class="meal-section-divider-line"></div></div>`;
     extrasHtml+=extras.map(m=>{
       const catIcon=m.category==='snack'?'🍰':m.category==='drink'?'☕':m.category==='alcohol'?'🍺':'🍽️';
-      const catLabel=m.category==='snack'?'간식':m.category==='drink'?'음료':m.category==='alcohol'?'술·안주':'기타';
+      const catLabel=m.category==='snack'?'간식':m.category==='latenight'?'야식':m.category==='drink'?'음료':m.category==='alcohol'?'술·안주':'기타';
       const qPillCls=m.category==='alcohol'?'alcohol':(m.type||'normal');
       const qPillText=m.category==='alcohol'?'🍺 음주':(qualityLabel[m.type]||m.type||'');
       return`<div class="snack-item" onclick="openEditMealModal(${m._idx})">
@@ -6791,7 +6795,7 @@ async function saveSnackMeal(){
     if(photoFile){showToast('📷 사진 저장 중...');const url=await uploadPhotoToStorage(photoFile);finalPhoto=url||photoData;photoFile=null;}
     else{finalPhoto=photoData;}
 
-    const entry={name,type:mealCategory==='alcohol'?'alcohol':foodType,photo:finalPhoto,time:'간식',category:mealCategory};
+    const entry={name,type:mealCategory==='alcohol'?'alcohol':foodType,photo:finalPhoto,time:mealCategory==='latenight'?'야식':'간식',category:mealCategory};
     if(mealCategory==='alcohol')entry._alcoholCheat=_alcoholCheatOn;
 
     if(!logCache[selectedKey])logCache[selectedKey]=log;
