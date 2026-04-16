@@ -6481,7 +6481,9 @@ async function deleteMeal(i){
   log.meals.splice(i,1);
   renderMeals();
   renderCheatBadge();
-  renderRoutine();
+  renderCharCard();
+  updateGogginsHeader();
+  renderSummaryCard();
   saveNow();
   const scoreStr=scoreDelta<0?' ('+scoreDelta+'점)':scoreDelta>0?' (+'+scoreDelta+'점)':'';
   showToast('🗑️ '+mealName+' 삭제됨'+scoreStr);
@@ -7611,7 +7613,7 @@ function delWO(i){
   if(!delWo)return;
   // 오늘 실제로 workout 점수를 받은 경우에만 차감 (중복 차감 방지)
   const pl=(logCache[TODAY]||log)._ptsLog||[];
-  const netWo=pl.filter(e=>e.type==='workout_done').length-pl.filter(e=>e.type==='workout_delete').length;
+  const netWo=pl.filter(e=>e.type==='workout_done').length-pl.filter(e=>e.type==='workout_done_cancel').length;
   let scoreDelta=0;
   if(netWo>0){
     if(delWo.type==='gym'&&delWo.status==='done'){
@@ -7623,7 +7625,12 @@ function delWO(i){
       scoreDelta=-20;
     }
   }
-  log.workouts.splice(i,1);renderWorkouts();renderRoutine();saveNow();
+  log.workouts.splice(i,1);
+  renderWorkouts();
+  renderCharCard();
+  updateGogginsHeader();
+  renderSummaryCard();
+  saveNow();
   const scoreStr=scoreDelta<0?' ('+scoreDelta+'점)':'';
   showToast('🗑️ '+name+' 삭제됨'+scoreStr);
 }
