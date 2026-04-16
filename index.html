@@ -3354,6 +3354,16 @@ function addExerciseToSession(name,icon,muscle,equip){
 }
 function wsFooterAction(){
   const ei=_wsActiveExIdx;
+  const ex=currentSession[ei];
+  // If there are unchecked sets, check the next one instead of navigating
+  if(ex){
+    const nextUnchecked=ex.sets.findIndex(s=>!s.done);
+    if(nextUnchecked!==-1){
+      toggleSet(ei,nextUnchecked);
+      return;
+    }
+  }
+  // All sets done — navigate
   const isLast=ei>=currentSession.length-1;
   if(isLast){
     wsShowFinishSheet();
