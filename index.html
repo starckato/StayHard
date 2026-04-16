@@ -4160,6 +4160,7 @@ function addScore(type, note='', ptsOverride=null){
   // 4. profiles DB 업데이트 (디바운스 — 연속 addScore 시 1번만)
   _flushScoreUpdate();
   updateGogginsHeader();
+  renderCharCard();
   const combined=COMBINED_SCORE_EVENTS[type];
   if(combined){
     showToast(combined.toast);
@@ -6478,9 +6479,9 @@ async function deleteMeal(i){
   log.meals.splice(i,1);
   renderMeals();
   renderCheatBadge();
+  renderRoutine();
   saveNow();
-  const scoreStr=scoreDelta<0?' ('+scoreDelta+'점)':scoreDelta>0?' (+'+scoreDelta+'점)':'';
-  showToast('🗑️ '+mealName+' 삭제됨'+scoreStr);
+  showToast('🗑️ '+mealName+' 삭제됨');
 }
 
 // ═══════════════════════════════════════════════════════
@@ -7616,18 +7617,17 @@ function delWO(i){
   if(netWo>0){
     // 채찍 징역 운동은 점수 영향 없음, 일반 완료 운동만 차감
     if(delWo.type==='gym'&&delWo.status==='done'){
-      addScore('workout_delete');
+      addScore('workout_done_cancel');
       scoreDelta=-20;
     }
     // activity 완료분은 채찍이 아닐 때만 차감
     if(delWo.type==='activity'&&delWo.status==='done'&&!delWo._isChaek){
-      addScore('workout_delete');
+      addScore('workout_done_cancel');
       scoreDelta=-20;
     }
   }
-  log.workouts.splice(i,1);renderWorkouts();saveNow();
-  const scoreStr=scoreDelta<0?' ('+scoreDelta+'점)':'';
-  showToast('🗑️ '+name+' 삭제됨'+scoreStr);
+  log.workouts.splice(i,1);renderWorkouts();renderRoutine();saveNow();
+  showToast('🗑️ '+name+' 삭제됨');
 }
 
 // ── GYM SESSION ──
