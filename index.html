@@ -563,7 +563,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 /* ── WORKOUT SESSION (full-screen overlay) ── */
 #workout-session-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:var(--bg);z-index:500;display:none;flex-direction:column;max-width:430px;left:50%;transform:translateX(-50%);}
 #workout-session-overlay.open{display:flex;}
-.ws-done-btn{flex:1;padding:14px;background:var(--accent);border:none;border-radius:var(--radius-sm);font-size:17px;font-weight:700;color:#fff;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;min-height:52px;}
+.ws-done-btn{flex:1;padding:14px;background:var(--accent);border:none;border-radius:var(--radius-sm);font-size:17px;font-weight:700;color:#fff;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;min-height:52px;transition:background .4s ease,box-shadow .4s ease;}
 .ws-ex-chip{flex:0 0 auto;padding:4px 10px;border-radius:20px;font-size:10px;font-weight:600;white-space:nowrap;cursor:pointer;border:1px solid var(--border);background:var(--surface2);color:var(--text3);}
 .ws-ex-chip.add{background:rgba(124,106,247,0.15);color:var(--accent);border-color:rgba(124,106,247,0.4);}
 .ws-ex-chip.done{background:var(--green-bg);color:var(--green);border-color:var(--green-bd);padding-left:7px;}
@@ -3442,12 +3442,48 @@ function renderSession(){
     const titleEl=document.getElementById('ws-title');
     if(titleEl&&!titleEl.textContent)titleEl.textContent='운동 세션';
   }
-  // update footer button label
+  // update footer button label + style based on set progress
   const btn=document.getElementById('ws-done-btn');
-  if(btn){
+  if(btn&&currentSession.length>0){
     const ei=_wsActiveExIdx;
-    const isLast=ei>=currentSession.length-1||currentSession.length===0;
-    btn.textContent=isLast?'운동 종료 ✓':'다음 운동 →';
+    const ex=currentSession[ei];
+    const isLastEx=ei>=currentSession.length-1;
+    const doneSets=ex?ex.sets.filter(s=>s.done).length:0;
+    const totalSets=ex?ex.sets.length:0;
+    const allSetsDone=doneSets===totalSets&&totalSets>0;
+    const isOnLastSet=doneSets===totalSets-1&&totalSets>0; // one set away
+    if(isLastEx){
+      if(allSetsDone){
+        btn.textContent='운동 종료 ✓';
+        btn.style.background='linear-gradient(135deg,#f87171,#fb923c)';
+        btn.style.boxShadow='0 4px 18px rgba(248,113,113,.45)';
+      } else {
+        btn.textContent='운동 종료 ✓';
+        btn.style.background='';
+        btn.style.boxShadow='';
+      }
+    } else {
+      if(allSetsDone){
+        // all sets done on a non-last exercise — reward state, ready to advance
+        btn.textContent='다음 운동 → 🔥';
+        btn.style.background='linear-gradient(135deg,var(--accent),#34d399)';
+        btn.style.boxShadow='0 4px 18px rgba(52,211,153,.4)';
+      } else if(isOnLastSet){
+        // one set remaining — motivational nudge
+        btn.textContent=`마지막 세트! (${doneSets}/${totalSets})`;
+        btn.style.background='linear-gradient(135deg,var(--accent),#f59e0b)';
+        btn.style.boxShadow='0 4px 16px rgba(245,158,11,.35)';
+      } else {
+        // normal progress
+        btn.textContent=totalSets>0?`세트 완료 (${doneSets}/${totalSets})`:'다음 운동 →';
+        btn.style.background='';
+        btn.style.boxShadow='';
+      }
+    }
+  } else if(btn){
+    btn.textContent='운동 완료 ✓';
+    btn.style.background='';
+    btn.style.boxShadow='';
   }
   if(currentSession.length===0){
     body.innerHTML=`<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:48px 24px;gap:14px;text-align:center;">
@@ -7634,7 +7670,7 @@ function editGymSession(i){
   _wsStartTimer();
   renderSession();
   const btn=document.getElementById('ws-done-btn');
-  if(btn)btn.textContent='수정 완료 ✓';
+  if(btn){btn.textContent='수정 완료 ✓';btn.style.background='';btn.style.boxShadow='';}
 }
 
 
