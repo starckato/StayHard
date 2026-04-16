@@ -3321,11 +3321,18 @@ function closeSession(){
     _wsStopTimer();
     return;
   }
-  if(confirm('세션을 종료하시겠어요? 완료된 세트는 저장됩니다.')){
-    document.getElementById('workout-session-overlay').classList.remove('open');
-    document.body.style.overflow='';
-    _wsStopTimer();
-    clearInterval(_wsRestTimer);
+  const doneSets=currentSession.reduce((t,ex)=>t+ex.sets.filter(s=>s.done).length,0);
+  if(doneSets===0){
+    if(confirm('완료된 세트가 없어요. 세션을 취소하시겠어요?')){
+      document.getElementById('workout-session-overlay').classList.remove('open');
+      document.body.style.overflow='';
+      _wsStopTimer();
+      clearInterval(_wsRestTimer);
+    }
+    return;
+  }
+  if(confirm('세션을 종료하시겠어요? 완료된 '+doneSets+'세트가 저장됩니다.')){
+    finishSession();
   }
 }
 function findPrevSets(exName){
