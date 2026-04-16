@@ -6037,13 +6037,14 @@ function renderSummaryModal(){
   else{wEl.textContent='미기록';wEl.style.color='var(--text3)';}
   // 식단
   const meals=l.meals||[];
-  const tc={clean:0,normal:0,junk:0,cheat:0};
+  const tc={green:0,normal:0,red:0,cheat:0,alcohol:0};
   meals.forEach(m=>{if(m.type&&tc[m.type]!=null)tc[m.type]++;});
   const parts=[];
-  if(tc.clean) parts.push('<span style="color:var(--green)">클린 '+tc.clean+'</span>');
-  if(tc.normal)parts.push('<span style="color:var(--text2)">일반 '+tc.normal+'</span>');
-  if(tc.junk)  parts.push('<span style="color:var(--amber)">금지 '+tc.junk+'</span>');
-  if(tc.cheat) parts.push('<span style="color:var(--red)">치팅 '+tc.cheat+'</span>');
+  if(tc.green)  parts.push('<span style="color:var(--green)">클린 '+tc.green+'</span>');
+  if(tc.normal) parts.push('<span style="color:var(--text2)">일반 '+tc.normal+'</span>');
+  if(tc.red)    parts.push('<span style="color:var(--red)">금지 '+tc.red+'</span>');
+  if(tc.cheat)  parts.push('<span style="color:var(--amber)">치팅 '+tc.cheat+'</span>');
+  if(tc.alcohol)parts.push('<span style="color:var(--red)">음주 '+tc.alcohol+'</span>');
   document.getElementById('summ-d').innerHTML=parts.length?parts.join(' · '):'<span style="color:var(--text3)">미기록</span>';
   // 운동
   const doneWo=(l.workouts||[]).filter(w=>w.status==='done');
