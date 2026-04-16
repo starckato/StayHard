@@ -7405,7 +7405,7 @@ function renderWorkouts(){
       const volStr=vol>=1000?(vol/1000).toFixed(1)+'t':vol>0?vol.toLocaleString()+'kg':'';
       const totalSets=(w.exercises||[]).reduce((a,ex)=>a+(ex.sets||[]).filter(s=>s.done).length,0);
       return`<div style="overflow:hidden;border-bottom:1px solid var(--border);">
-        <div style="display:flex;align-items:center;gap:10px;padding:12px 13px;">
+        <div style="display:flex;align-items:center;gap:10px;padding:12px 13px;cursor:pointer;" onclick="openSessionSummary(${i})">
           <div style="width:28px;height:28px;border-radius:7px;background:rgba(124,106,247,0.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4v16M18 4v16M6 12h12"/><rect x="2" y="9" width="4" height="6" rx="1"/><rect x="18" y="9" width="4" height="6" rx="1"/></svg>
           </div>
