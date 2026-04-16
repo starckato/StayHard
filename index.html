@@ -4903,14 +4903,15 @@ async function doSignOut(){
 // ── LOAD / SAVE ──
 async function loadLog(key,force=false){
   if(!force&&logCache[key]){log=logCache[key];return;}
+  if(force&&(_dirtyKeys.has(key)||_saveInFlight)){log=logCache[key]||log;return;}
   // Timeout after 8s to prevent infinite loading
   const timeout=new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),8000));
   let data=null;try{const res=await Promise.race([sb.from('daily_logs').select('*').eq('user_id',CU.id).eq('log_date',key).maybeSingle(),timeout]);data=res.data;}catch(e){
     console.warn('loadLog timeout/error:',e);
-    // 에러 시 캐시에 빈 로그 저장하지 않음 — 재시도 가능하게
-    if(logCache[key])log=logCache[key]; // 이미 캐시가 있으면 사용
+    if(logCache[key])log=logCache[key];
     return;
   }
+  if(_dirtyKeys.has(key)){log=logCache[key]||log;return;}
   if(data){
     let meals=data.meals||[];
     if(!meals.length){
@@ -4948,28 +4949,32 @@ async function loadRoutineDefinitions(){
 let _saveTimer=null;
 let _saveInFlight=false;
 let _saveQueued=false;
+const _dirtyKeys=new Set();
 
 function queueSave(){
-  // 기존 타이머 취소하고 새로 시작 (마지막 변경만 저장)
+  _dirtyKeys.add(selectedKey);
   clearTimeout(_saveTimer);
   _saveTimer=setTimeout(_flushSave, 500);
 }
 
 let _flushRetryCount=0;
 async function _flushSave(){
-  _saveTimer=null; // 타이머 만료 — null로 리셋해야 prefetch 가드가 정확히 동작
+  _saveTimer=null;
   if(_saveInFlight){
     _saveQueued=true;
     return;
   }
   _saveInFlight=true;
   _saveQueued=false;
+  const keys=[..._dirtyKeys];
+  _dirtyKeys.clear();
   try{
-    await saveLog(selectedKey, true);
-    _flushRetryCount=0; // 성공 시 재시도 카운터 초기화
+    for(const k of keys){await saveLog(k, true);}
+    _flushRetryCount=0;
   }catch(e){
+    keys.forEach(k=>_dirtyKeys.add(k));
     _flushRetryCount++;
-    if(_flushRetryCount<=3){ // 최대 3회만 재시도
+    if(_flushRetryCount<=3){
       console.warn('save failed, retry '+_flushRetryCount+'/3:', e.message);
       setTimeout(_flushSave, 3000*_flushRetryCount);
     } else {
@@ -4987,12 +4992,12 @@ async function _flushSave(){
 
 // 페이지 떠날 때 강제 flush (데이터 유실 방지)
 window.addEventListener('beforeunload', ()=>{
-  // beforeunload에서 async DB 저장 불가 → localStorage 백업으로 다음 실행 시 복구
   if(CU&&CP)try{localStorage.setItem('score_'+CU.id,String(CP.total_score));}catch(e){}
-  if(_saveTimer&&CU){
+  if((_dirtyKeys.size>0||_saveTimer)&&CU){
     clearTimeout(_saveTimer);
-    // pendingSave 백업 → 다음 앱 실행 시 _recoverPendingSaves()에서 DB 저장
-    try{const l=logCache[selectedKey];if(l)localStorage.setItem('pendingSave_'+selectedKey,JSON.stringify(l));}catch(e){}
+    for(const k of _dirtyKeys){
+      try{const l=logCache[k];if(l)localStorage.setItem('pendingSave_'+k,JSON.stringify(l));}catch(e){}
+    }
   }
 });
 window.addEventListener('visibilitychange', ()=>{
