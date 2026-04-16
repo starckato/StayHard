@@ -10308,10 +10308,10 @@ function _isAnyOverlayOpen(){
   return false;
 }
 function _unlockScroll(){
-  // Self-heal: reset counter if no modals actually open
   const actualOpen=document.querySelectorAll('.modal-overlay.open').length;
   if(actualOpen===0)_openModalCount=0;
   if(_isAnyOverlayOpen())return;
+  _openModalCount=0;
   document.body.style.overflow='';
   document.body.style.position='';
   document.body.style.top='';
@@ -10344,7 +10344,7 @@ function closeModal(id){
   _openModalCount=Math.max(0,_openModalCount-1);
   if(_openModalCount===0)_unlockScroll();
 }
-document.querySelectorAll('.modal-overlay').forEach(m=>{m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open');});});
+document.querySelectorAll('.modal-overlay').forEach(m=>{m.addEventListener('click',e=>{if(e.target===m)closeModal(m.id);});});
 
 // ── Routine modal button listeners (avoid inline handler issues on iOS) ──
 
