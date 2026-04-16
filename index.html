@@ -94,7 +94,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 .stats-kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--accent);opacity:.8;}
 .stats-kpi.kpi-green::before{background:var(--green);}
 .stats-kpi.kpi-amber::before{background:var(--amber);}
-.stats-kpi.kpi-blue::before{background:#60a5fa;}
+.stats-kpi.kpi-blue::before{background:#38bdf8;}
 .stats-kpi-label{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;}
 .stats-kpi-value{font-size:28px;font-weight:800;font-family:'DM Mono',monospace;line-height:1.1;margin:6px 0 4px;}
 .stats-kpi-sub{font-size:10px;color:var(--text3);min-height:12px;}
@@ -106,8 +106,8 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 .stats-headline-val{font-size:18px;font-weight:800;font-family:'DM Mono',monospace;line-height:1.1;color:var(--text);}
 .stats-headline-unit{font-size:11px;font-weight:600;color:var(--text3);margin-left:2px;}
 .stats-delta{display:inline-flex;align-items:center;gap:2px;font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;font-family:'DM Sans',sans-serif;margin-top:2px;}
-.stats-delta.up{background:rgba(74,222,128,.15);color:#4ade80;}
-.stats-delta.down{background:rgba(248,113,113,.15);color:#f87171;}
+.stats-delta.up{background:rgba(52,211,153,.15);color:#34d399;}
+.stats-delta.down{background:rgba(255,77,77,.12);color:#ff4d4d;}
 .stats-delta.flat{background:rgba(136,136,136,.15);color:#888;}
 
 /* ── MICRO INTERACTIONS ── */
@@ -116,7 +116,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 #goggins-rage{position:fixed;inset:0;z-index:1000;display:none;flex-direction:column;align-items:center;justify-content:center;padding:32px;text-align:center;background:rgba(255,77,77,0.97);}
 #goggins-rage .rage-face{font-size:72px;margin-bottom:16px;animation:rageBounce .4s ease infinite alternate;}
 #goggins-rage .rage-msg{font-size:18px;font-weight:800;color:#fff;line-height:1.6;margin-bottom:24px;letter-spacing:-.3px;max-width:280px;word-break:keep-all;white-space:pre-line;}
-#goggins-rage .rage-close{padding:14px 40px;background:#fff;border:none;border-radius:30px;font-size:15px;font-weight:700;color:#f87171;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;}
+#goggins-rage .rage-close{padding:14px 40px;background:#fff;border:none;border-radius:30px;font-size:15px;font-weight:700;color:#ff4d4d;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;}
 @keyframes rageBounce{0%{transform:scale(1) rotate(-5deg);}100%{transform:scale(1.15) rotate(5deg);}}
 @keyframes rageFlash{0%,100%{opacity:1;}50%{opacity:.6;}}
 
@@ -142,7 +142,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 
 /* WATER GOAL BUTTONS */
 .wg-btn{padding:6px 10px;border-radius:8px;border:1px solid var(--border2);font-size:12px;cursor:pointer;font-weight:500;background:var(--surface3);color:var(--text2);transition:all .15s;}
-.wg-btn.active{background:var(--blue-bg);border-color:#60a5fa;color:#60a5fa;}
+.wg-btn.active{background:var(--blue-bg);border-color:#38bdf8;color:#38bdf8;}
 
 /* AUTH */
 #auth-screen{display:none;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:32px 24px;}
@@ -318,7 +318,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 /* WORKOUTS */
 .workout-rows{padding:4px 16px 4px;}
 .wo-row:last-child{border-bottom:none;}
-.wo-status.in_progress{background:rgba(251,191,36,.15);color:#fbbf24;border:1px solid rgba(251,191,36,.3);}
+.wo-status.in_progress{background:rgba(245,158,11,.15);color:#f59e0b;border:1px solid rgba(245,158,11,.3);}
 .wo-status.skip{background:var(--red-bg);color:var(--red);border:1px solid var(--red-bd);}
 .wo-empty{font-size:12px;color:var(--text3);font-style:italic;padding:8px 0;}
 .add-row{display:flex;align-items:center;gap:8px;padding:14px 16px;cursor:pointer;color:var(--text3);font-size:15px;border-top:1px solid var(--border);min-height:44px;touch-action:manipulation;}
@@ -351,8 +351,8 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 .tgt-btn.done{background:var(--green-bg);border-color:var(--green);color:var(--green);}
 .tgt-btn.fail{background:var(--red-bg);border-color:var(--red);color:var(--red);}
 /* Routine badge — makes "this is a recurring routine" unambiguous */
-.routine-pill{font-size:9px;font-weight:700;padding:2px 6px;border-radius:5px;background:rgba(248,113,113,.15);color:var(--goggins);border:0.5px solid rgba(248,113,113,.4);margin-left:6px;vertical-align:middle;letter-spacing:.04em;text-transform:uppercase;}
-.routine-pill.auto{background:rgba(124,106,247,.15);color:var(--accent);border-color:var(--accent-bd);}
+.routine-pill{font-size:9px;font-weight:700;padding:2px 6px;border-radius:5px;background:rgba(255,77,77,.12);color:var(--goggins);border:0.5px solid rgba(255,77,77,.4);margin-left:6px;vertical-align:middle;letter-spacing:.04em;text-transform:uppercase;}
+.routine-pill.auto{background:rgba(255,77,77,.12);color:var(--accent);border-color:var(--accent-bd);}
 .tgt-text.fail{text-decoration:line-through;color:var(--text3);}
 .tgt-text{font-size:16px;flex:1;}
 .tgt-text.done{text-decoration:line-through;color:var(--text2);}
@@ -398,7 +398,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 /* Tier ladder */
 .tier-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:10px;}
 .tier-row{display:flex;align-items:center;gap:10px;padding:9px 8px;border-radius:9px;margin-bottom:2px;}
-.tier-row.current{background:rgba(124,106,247,.08);border:1px solid var(--accent-bd);}
+.tier-row.current{background:rgba(255,77,77,.08);border:1px solid var(--accent-bd);}
 .tier-icon{font-size:18px;width:26px;text-align:center;flex-shrink:0;}
 .tier-info{flex:1;}
 .tier-name{font-size:13px;font-weight:500;}
@@ -422,15 +422,15 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 .wv-table th,.wv-table td{border:1px solid var(--border);text-align:center;padding:0;vertical-align:middle;font-family:'DM Sans',sans-serif;}
 .wv-table .row-sub{font-size:10px;color:var(--text2);text-align:right;padding:4px 8px;background:var(--surface);width:80px;border-right:1px solid var(--border2);}
 .wv-table .day-hd{font-size:10px;font-weight:600;padding:5px 4px;background:var(--surface);white-space:nowrap;min-width:52px;}
-.wv-table .day-hd.today-col{background:rgba(124,106,247,.15);color:var(--accent);}
+.wv-table .day-hd.today-col{background:rgba(255,77,77,.12);color:var(--accent);}
 .wv-table .day-hd .hd-name{font-size:9px;font-weight:400;color:var(--text3);display:block;}
 .wv-table .day-hd .hd-num{font-size:13px;font-weight:600;}
 .wv-table .dc{font-size:10px;padding:4px 3px;min-width:52px;max-width:72px;height:28px;cursor:pointer;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;}
-.wv-table .dc.today-col{background:rgba(124,106,247,.06);}
-.wv-table .dc.c-green{background:rgba(74,222,128,.18);color:#1a4a28;}
-.wv-table .dc.c-red{background:rgba(248,113,113,.18);color:#6b1f1f;}
-.wv-table .dc.c-amber{background:rgba(251,191,36,.18);color:#4a3006;}
-.wv-table .dc.c-purple{background:rgba(124,106,247,.18);color:#2d2470;}
+.wv-table .dc.today-col{background:rgba(255,77,77,.06);}
+.wv-table .dc.c-green{background:rgba(52,211,153,.18);color:#1a4a28;}
+.wv-table .dc.c-red{background:rgba(255,77,77,.18);color:#6b1f1f;}
+.wv-table .dc.c-amber{background:rgba(245,158,11,.18);color:#4a3006;}
+.wv-table .dc.c-purple{background:rgba(255,77,77,.14);color:#2d2470;}
 .wv-table .dc.c-empty{background:var(--surface);color:var(--text3);}
 .wv-table .dc.c-future{background:var(--surface);color:var(--text3);opacity:.4;}
 .wv-table .section-hdr-row td{background:var(--surface2);font-size:10px;font-weight:600;color:var(--text2);padding:4px 8px;text-align:left;letter-spacing:.04em;text-transform:uppercase;border-top:1px solid var(--border2);}
@@ -461,8 +461,8 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 .group-leaderboard{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:10px;}
 .lb-row{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--border);}
 .lb-row:last-child{border-bottom:none;}
-.lb-row.me{background:rgba(124,106,247,.06);}
-.lb-row.first{background:rgba(251,191,36,.05);}
+.lb-row.me{background:rgba(255,77,77,.06);}
+.lb-row.first{background:rgba(245,158,11,.05);}
 .lb-rank{font-size:15px;font-weight:700;width:22px;flex-shrink:0;text-align:center;}
 .lb-rank.r1{color:var(--amber);}
 .lb-rank.r2{color:#b4b2a9;}
@@ -571,7 +571,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 #workout-session-overlay.open{display:flex;}
 .ws-done-btn{flex:1;padding:14px;background:var(--accent);border:none;border-radius:var(--radius-sm);font-size:17px;font-weight:700;color:#fff;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;min-height:52px;transition:background .4s ease,box-shadow .4s ease;}
 .ws-ex-chip{flex:0 0 auto;padding:4px 10px;border-radius:20px;font-size:10px;font-weight:600;white-space:nowrap;cursor:pointer;border:1px solid var(--border);background:var(--surface2);color:var(--text3);}
-.ws-ex-chip.add{background:rgba(124,106,247,0.15);color:var(--accent);border-color:rgba(124,106,247,0.4);}
+.ws-ex-chip.add{background:rgba(255,77,77,.12);color:var(--accent);border-color:rgba(255,77,77,.30);}
 .ws-ex-chip.done{background:var(--green-bg);color:var(--green);border-color:var(--green-bd);padding-left:7px;}
 .ws-ex-chip.done::before{content:'✓ ';font-weight:800;}
 .ws-ex-chip.active{background:var(--accent);color:#fff;border-color:var(--accent);}
@@ -580,7 +580,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 #ws-next-sheet.open,#ws-finish-sheet.open{transform:translateX(-50%) translateY(0);}
 #ws-sheet-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:599;opacity:0;pointer-events:none;transition:opacity .25s;}
 #ws-sheet-backdrop.open{opacity:1;pointer-events:all;}
-.ws-vol-line{display:flex;align-items:center;gap:6px;background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.25);border-radius:7px;padding:5px 10px;margin-bottom:9px;}
+.ws-vol-line{display:flex;align-items:center;gap:6px;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.25);border-radius:7px;padding:5px 10px;margin-bottom:9px;}
 .ws-rest{background:var(--surface2);border-radius:8px;padding:7px 10px;margin:8px 0 0;display:flex;align-items:center;gap:8px;}
 .ws-rest-prog{height:3px;background:var(--surface3);border-radius:2px;overflow:hidden;flex:1;}
 .ws-rest-fill{height:100%;border-radius:2px;background:var(--accent);transition:width 1s linear;}
@@ -651,12 +651,12 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 /* State colors */
 .cv-state-idle .cv-status{color:rgba(255,255,255,.5);}
 .cv-state-idle .cv-ring-fill{stroke:rgba(255,255,255,.2);}
-.cv-state-down .cv-status{color:#fbbf24;}
-.cv-state-down .cv-ring-fill{stroke:#fbbf24;}
-.cv-state-down .cv-rep-count{color:#fbbf24;transition:color .2s;}
-.cv-state-up .cv-status{color:#4ade80;}
-.cv-state-up .cv-ring-fill{stroke:#4ade80;}
-.cv-state-up .cv-rep-count{color:#4ade80;transition:color .2s;}
+.cv-state-down .cv-status{color:#f59e0b;}
+.cv-state-down .cv-ring-fill{stroke:#f59e0b;}
+.cv-state-down .cv-rep-count{color:#f59e0b;transition:color .2s;}
+.cv-state-up .cv-status{color:#34d399;}
+.cv-state-up .cv-ring-fill{stroke:#34d399;}
+.cv-state-up .cv-rep-count{color:#34d399;transition:color .2s;}
 /* Controls */
 .cv-controls{position:absolute;bottom:0;left:0;right:0;display:flex;gap:8px;padding:14px 16px calc(env(safe-area-inset-bottom,16px) + 24px);z-index:2;background:linear-gradient(transparent,rgba(0,0,0,.85));}
 .cv-btn{flex:1;padding:14px;border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;}
@@ -669,7 +669,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 @keyframes cv-rec-pulse{0%,100%{opacity:1}50%{opacity:.3}}
 .cv-countdown{position:absolute;inset:0;z-index:5;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.55);backdrop-filter:blur(6px);font-family:'DM Mono',monospace;font-size:clamp(120px,40vw,260px);font-weight:800;color:#fff;text-shadow:0 4px 32px rgba(0,0,0,.9);animation:cv-cd-pop .9s ease-out;}
 @keyframes cv-cd-pop{0%{transform:scale(.4);opacity:0}30%{transform:scale(1.15);opacity:1}100%{transform:scale(1);opacity:1}}
-.cv-bicep-banner{position:absolute;top:calc(env(safe-area-inset-top,12px) + 56px);left:50%;transform:translateX(-50%);z-index:3;background:linear-gradient(135deg,rgba(124,106,247,.92),rgba(96,165,250,.92));color:#fff;font-size:11px;font-weight:600;padding:8px 14px;border-radius:18px;box-shadow:0 4px 16px rgba(0,0,0,.45);max-width:90%;text-align:center;animation:cv-banner-in .4s ease-out;}
+.cv-bicep-banner{position:absolute;top:calc(env(safe-area-inset-top,12px) + 56px);left:50%;transform:translateX(-50%);z-index:3;background:linear-gradient(135deg,rgba(255,77,77,.90),rgba(96,165,250,.92));color:#fff;font-size:11px;font-weight:600;padding:8px 14px;border-radius:18px;box-shadow:0 4px 16px rgba(0,0,0,.45);max-width:90%;text-align:center;animation:cv-banner-in .4s ease-out;}
 @keyframes cv-banner-in{from{opacity:0;transform:translate(-50%,-8px)}to{opacity:1;transform:translate(-50%,0)}}
 /* Persistent upload pill — survives cv-overlay close so user sees the outcome */
 #cv-upload-pill{position:fixed;top:calc(env(safe-area-inset-top,12px) + 8px);left:50%;transform:translateX(-50%);z-index:1000;background:rgba(0,0,0,.92);color:#fff;padding:10px 18px;border-radius:14px;font-size:13px;font-weight:600;font-family:'DM Sans',sans-serif;display:none;align-items:center;gap:10px;box-shadow:0 6px 24px rgba(0,0,0,.5);max-width:92%;backdrop-filter:blur(10px);}
@@ -679,7 +679,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 @keyframes cv-spin{to{transform:rotate(360deg)}}
 .cv-pill-icon{font-size:16px;line-height:1;}
 /* Workout-session badge */
-#cv-session-badge{background:linear-gradient(135deg,rgba(124,106,247,.18),rgba(96,165,250,.18));border:1px solid var(--accent-bd);color:var(--accent);border-radius:8px;padding:6px 11px;font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;touch-action:manipulation;display:none;}
+#cv-session-badge{background:linear-gradient(135deg,rgba(255,77,77,.14),rgba(96,165,250,.18));border:1px solid var(--accent-bd);color:var(--accent);border-radius:8px;padding:6px 11px;font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;touch-action:manipulation;display:none;}
 /* Recording list modal items */
 .cv-list-item{display:flex;gap:12px;padding:10px;border:1px solid var(--border);border-radius:12px;margin-bottom:10px;align-items:center;}
 .cv-list-thumb{width:64px;height:64px;border-radius:8px;background:#000;flex-shrink:0;object-fit:cover;}
@@ -690,10 +690,10 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 .cv-list-btn{padding:6px 10px;border-radius:8px;border:1px solid var(--border2);background:var(--surface2);color:var(--text2);font-size:11px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;white-space:nowrap;}
 .cv-list-btn.primary{background:var(--accent);border-color:var(--accent);color:#fff;}
 .cv-exercise-select{background:rgba(0,0,0,.55);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.15);border-radius:10px;padding:7px 12px;font-size:14px;color:#fff;font-family:'DM Sans',sans-serif;outline:none;appearance:none;-webkit-appearance:none;}
-.cv-exercise-select option{background:#1a1a1f;color:#fff;}
+.cv-exercise-select option{background:#141418;color:#fff;}
 .cv-guide{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,.6);backdrop-filter:blur(6px);border-radius:16px;padding:20px 28px;text-align:center;z-index:3;pointer-events:none;}
 .cv-guide-text{font-size:14px;color:rgba(255,255,255,.85);line-height:1.5;}
-.cv-rep-flash{position:absolute;inset:0;background:rgba(74,222,128,.15);pointer-events:none;opacity:0;transition:opacity .25s;z-index:1;}
+.cv-rep-flash{position:absolute;inset:0;background:rgba(52,211,153,.15);pointer-events:none;opacity:0;transition:opacity .25s;z-index:1;}
 .cv-rep-flash.flash{opacity:1;}
 </style>
 </head>
@@ -705,7 +705,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 <!-- ══ AUTH ══ -->
 <div id="auth-screen">
   <div class="auth-logo">📋</div>
-  <div class="auth-title" style="color:#f87171;letter-spacing:.5px;">Stay Hard</div>
+  <div class="auth-title" style="color:#ff4d4d;letter-spacing:.5px;">Stay Hard</div>
   <div class="auth-sub">루틴을 기록하고, 함께 성장하세요.</div>
   <div class="auth-tabs">
     <div class="auth-tab active" onclick="switchAuthTab('login')">로그인</div>
@@ -763,7 +763,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
     <!-- 2행: 유저명 -->
     <div class="hdr-sub" id="hdr-sub" style="margin-top:2px;">로딩 중…</div>
     <!-- 3행: 모토 (전체 너비, 줄바꿈 허용) -->
-    <div id="daily-motto" style="font-size:10px;color:#f87171;margin-top:3px;font-weight:500;letter-spacing:.02em;font-family:'DM Sans',sans-serif;line-height:1.5;"></div>
+    <div id="daily-motto" style="font-size:10px;color:#ff4d4d;margin-top:3px;font-weight:500;letter-spacing:.02em;font-family:'DM Sans',sans-serif;line-height:1.5;"></div>
   </div>
 
   <!-- ══ DAILY ROUTINE ══ -->
@@ -961,7 +961,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
         <div class="s-badge" id="wo-badge">오늘 없음</div>
       </div>
       <div class="workout-rows" id="workout-rows"></div>
-      <div id="wo-add-cta" onclick="openWorkoutStartScreen()" style="display:flex;align-items:center;justify-content:center;gap:8px;margin:8px 12px 12px;padding:14px;background:linear-gradient(135deg,rgba(124,106,247,0.12),rgba(248,113,113,0.08));border:1px solid rgba(124,106,247,0.32);border-radius:10px;cursor:pointer;touch-action:manipulation;">
+      <div id="wo-add-cta" onclick="openWorkoutStartScreen()" style="display:flex;align-items:center;justify-content:center;gap:8px;margin:8px 12px 12px;padding:14px;background:linear-gradient(135deg,rgba(255,77,77,.10),rgba(255,77,77,.08));border:1px solid rgba(255,77,77,.25);border-radius:10px;cursor:pointer;touch-action:manipulation;">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         <span id="wo-add-cta-lbl" style="font-size:15px;font-weight:700;color:var(--accent);">운동 추가하기</span>
       </div>
@@ -991,7 +991,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
       <div class="goggins-ring-wrap">
         <svg class="g-ring-svg" viewBox="0 0 120 120">
           <circle class="g-ring-track" cx="60" cy="60" r="50"/>
-          <circle class="g-ring-fill" id="g-ring-fill" cx="60" cy="60" r="50" stroke="#f87171" style="stroke-dashoffset:314;"/>
+          <circle class="g-ring-fill" id="g-ring-fill" cx="60" cy="60" r="50" stroke="#ff4d4d" style="stroke-dashoffset:314;"/>
         </svg>
         <div class="g-ring-center">
           <div class="g-score-num" id="g-score-num">0</div>
@@ -1068,7 +1068,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
       <div class="stats-hero-top">
         <div class="stats-hero-cell">
           <div class="stats-hero-label">🔥 연속 달성</div>
-          <div class="stats-hero-num" style="font-size:34px;color:#f87171;"><span id="st-hero-streak">0</span><span style="font-size:14px;color:var(--text3);margin-left:3px;">일</span></div>
+          <div class="stats-hero-num" style="font-size:34px;color:#ff4d4d;"><span id="st-hero-streak">0</span><span style="font-size:14px;color:var(--text3);margin-left:3px;">일</span></div>
         </div>
         <div class="stats-hero-cell" style="text-align:center;">
           <div class="stats-hero-label">오늘</div>
@@ -1200,7 +1200,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
   <div class="view" id="view-competition" style="padding:0 16px 80px;">
 
     <!-- 푸쉬업 챌린지 (최상단 — 사용자 선호) -->
-    <div id="puc-card" style="margin-top:16px;background:linear-gradient(135deg,rgba(124,106,247,.18) 0%,rgba(248,113,113,.12) 100%);border:1px solid var(--accent-bd);border-radius:18px;padding:18px;display:none;">
+    <div id="puc-card" style="margin-top:16px;background:linear-gradient(135deg,rgba(255,77,77,.14) 0%,rgba(255,77,77,.12) 100%);border:1px solid var(--accent-bd);border-radius:18px;padding:18px;display:none;">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
         <div style="font-size:22px;">💪</div>
         <div style="font-size:15px;font-weight:800;letter-spacing:-.2px;flex:1;">푸쉬업 챌린지</div>
@@ -1212,7 +1212,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
         <div><span id="puc-today" style="font-size:34px;font-weight:800;color:var(--goggins);font-family:'DM Mono',monospace;">0</span><span style="font-size:13px;color:var(--text3);"> / <span id="puc-goal">30</span>개</span></div>
       </div>
       <div style="height:8px;background:var(--surface2);border-radius:999px;overflow:hidden;margin-bottom:14px;">
-        <div id="puc-bar" style="height:100%;width:0%;background:linear-gradient(90deg,var(--accent),#f87171);border-radius:999px;transition:width .4s ease;"></div>
+        <div id="puc-bar" style="height:100%;width:0%;background:linear-gradient(90deg,var(--accent),#ff4d4d);border-radius:999px;transition:width .4s ease;"></div>
       </div>
 
       <!-- Stats: 2개로 축약 (이번 주 + 전체 누적) -->
@@ -1401,7 +1401,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
         <div style="font-size:11px;color:var(--text3);" id="room-subtitle"></div>
       </div>
       <button onclick="shareRoomCode()" style="background:var(--surface2);border:1px solid var(--border2);color:var(--text2);border-radius:8px;padding:7px 10px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">🔑 코드</button>
-      <button id="room-leave-btn" onclick="leaveOrCancelRoom()" style="background:rgba(248,113,113,0.08);border:1px solid rgba(248,113,113,0.22);color:#f87171;border-radius:8px;padding:7px 10px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">나가기</button>
+      <button id="room-leave-btn" onclick="leaveOrCancelRoom()" style="background:rgba(255,77,77,.08);border:1px solid rgba(255,77,77,.20);color:#ff4d4d;border-radius:8px;padding:7px 10px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">나가기</button>
     </div>
 
     <!-- Room Body -->
@@ -1614,7 +1614,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
         <div id="join-comp-meta" style="color:var(--text3);"></div>
       </div>
       <div class="mfield">
-        <label class="mlabel" id="join-wgoal-label" style="display:flex;align-items:center;gap:6px;">내 목표 체중 (kg) <span style="font-size:10px;font-weight:600;padding:1px 6px;border-radius:6px;background:rgba(248,113,113,0.12);color:#f87171;border:1px solid rgba(248,113,113,0.25);">필수</span></label>
+        <label class="mlabel" id="join-wgoal-label" style="display:flex;align-items:center;gap:6px;">내 목표 체중 (kg) <span style="font-size:10px;font-weight:600;padding:1px 6px;border-radius:6px;background:rgba(255,77,77,.10);color:#ff4d4d;border:1px solid rgba(255,77,77,.22);">필수</span></label>
         <div style="position:relative;">
           <input class="minput" id="join-wgoal" type="number" placeholder="예: 68.0" step="0.1" style="padding-right:40px;"/>
           <span style="position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:13px;color:var(--text3);">kg</span>
@@ -1721,11 +1721,11 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
         <!-- Step 1: 환영 -->
         <div id="ob-s1" style="padding:32px 24px 24px;text-align:center;">
           <div style="font-size:56px;margin-bottom:16px;">🔥</div>
-          <div style="font-size:22px;font-weight:800;color:#f87171;margin-bottom:8px;">Stay Hard</div>
+          <div style="font-size:22px;font-weight:800;color:#ff4d4d;margin-bottom:8px;">Stay Hard</div>
           <div style="font-size:15px;color:var(--text);font-weight:600;margin-bottom:6px;">안녕하세요, <span id="ob-name"></span>님!</div>
           <div style="font-size:13px;color:var(--text2);line-height:1.7;margin-bottom:20px;">자기 자신을 통제하는 삶을 시작해요.<br>식단, 운동, 루틴을 매일 기록하고<br>점수로 성장을 확인하세요.</div>
-          <div style="font-size:11px;color:#f87171;font-style:italic;margin-bottom:24px;">"고통은 일시적이다. 포기하면 영원히 남는다."</div>
-          <button onclick="obNext(2)" style="width:100%;padding:15px;background:#f87171;border:none;border-radius:14px;color:#fff;font-size:16px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">시작하기 →</button>
+          <div style="font-size:11px;color:#ff4d4d;font-style:italic;margin-bottom:24px;">"고통은 일시적이다. 포기하면 영원히 남는다."</div>
+          <button onclick="obNext(2)" style="width:100%;padding:15px;background:#ff4d4d;border:none;border-radius:14px;color:#fff;font-size:16px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">시작하기 →</button>
           <button onclick="obDismissWeek()" style="width:100%;padding:10px;background:none;border:none;color:var(--text3);font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;margin-top:6px;touch-action:manipulation;">1주일간 보이지 않기</button>
         </div>
 
@@ -1815,35 +1815,35 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
     <div class="win-emoji" id="win-emoji">🔥</div>
     <div id="win-title" style="display:none;font-size:13px;font-weight:700;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.1em;margin-top:14px;"></div>
     <div class="win-msg" id="win-msg"></div>
-    <div id="win-pts" style="display:none;font-weight:800;color:#4ade80;margin-top:8px;animation:winSlide .4s ease;"></div>
+    <div id="win-pts" style="display:none;font-weight:800;color:#34d399;margin-top:8px;animation:winSlide .4s ease;"></div>
   </div>
 
   <!-- SHARE CARD MODAL -->
   <div id="share-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:600;align-items:center;justify-content:center;padding:24px;">
     <div style="width:100%;max-width:380px;">
-      <div id="share-card" style="background:linear-gradient(135deg,#0f0f11 0%,#1a1a2e 100%);border:1px solid rgba(124,106,247,.3);border-radius:20px;padding:28px 24px;font-family:'DM Sans',sans-serif;">
+      <div id="share-card" style="background:linear-gradient(135deg,#0a0a0c 0%,#141418 100%);border:1px solid rgba(255,77,77,.25);border-radius:20px;padding:28px 24px;font-family:'DM Sans',sans-serif;">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
           <div>
-            <div style="font-size:18px;font-weight:700;color:#f87171;letter-spacing:.5px;">Stay Hard 🔥</div>
+            <div style="font-size:18px;font-weight:700;color:#ff4d4d;letter-spacing:.5px;">Stay Hard 🔥</div>
             <div style="font-size:11px;color:#888;margin-top:2px;" id="sc-date"></div>
           </div>
           <div style="text-align:right;">
             <div style="font-size:11px;color:#888;" id="sc-user"></div>
-            <div style="font-size:10px;color:#7c6af7;margin-top:2px;" id="sc-streak"></div>
+            <div style="font-size:10px;color:#ff4d4d;margin-top:2px;" id="sc-streak"></div>
           </div>
         </div>
         <div id="sc-exercises" style="margin-bottom:20px;"></div>
         <div style="display:flex;gap:12px;padding-top:16px;border-top:1px solid rgba(255,255,255,.07);">
           <div style="flex:1;text-align:center;">
-            <div style="font-size:20px;font-weight:700;color:#7c6af7;" id="sc-vol"></div>
+            <div style="font-size:20px;font-weight:700;color:#ff4d4d;" id="sc-vol"></div>
             <div style="font-size:9px;color:#888;text-transform:uppercase;letter-spacing:.06em;margin-top:2px;">총 볼륨</div>
           </div>
           <div style="flex:1;text-align:center;">
-            <div style="font-size:20px;font-weight:700;color:#4ade80;" id="sc-sets"></div>
+            <div style="font-size:20px;font-weight:700;color:#34d399;" id="sc-sets"></div>
             <div style="font-size:9px;color:#888;text-transform:uppercase;letter-spacing:.06em;margin-top:2px;">완료 세트</div>
           </div>
           <div style="flex:1;text-align:center;">
-            <div style="font-size:20px;font-weight:700;color:#fbbf24;" id="sc-excount"></div>
+            <div style="font-size:20px;font-weight:700;color:#f59e0b;" id="sc-excount"></div>
             <div style="font-size:9px;color:#888;text-transform:uppercase;letter-spacing:.06em;margin-top:2px;">운동 종목</div>
           </div>
         </div>
@@ -2037,7 +2037,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 
     <!-- 체중 -->
     <div class="mfield">
-      <label class="mlabel">체중 (kg) <span style="font-size:10px;font-weight:600;padding:1px 6px;border-radius:5px;background:rgba(248,113,113,0.12);color:#f87171;border:1px solid rgba(248,113,113,0.2);">필수</span></label>
+      <label class="mlabel">체중 (kg) <span style="font-size:10px;font-weight:600;padding:1px 6px;border-radius:5px;background:rgba(255,77,77,.10);color:#ff4d4d;border:1px solid rgba(255,77,77,.18);">필수</span></label>
       <input class="minput" id="wt-inp" type="number" step="0.1" placeholder="예: 74.0"/>
       <div id="wt-yesterday-hint" style="display:none;margin-top:7px;padding:7px 11px;background:var(--surface2);border-radius:8px;font-size:12px;color:var(--text2);display:flex;align-items:center;gap:6px;"></div>
     </div>
@@ -2351,7 +2351,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
       <button onclick="closeRoomOverlay()" style="width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.08);border:0.5px solid rgba(255,255,255,.15);color:var(--text2);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;touch-action:manipulation;">✕</button>
     </div>
     <div style="height:5px;background:rgba(255,255,255,.1);border-radius:3px;overflow:hidden;margin-bottom:5px;">
-      <div id="room-progress" style="height:100%;border-radius:3px;background:linear-gradient(90deg,#4ade80,#22d3ee);width:0%;transition:width .6s;"></div>
+      <div id="room-progress" style="height:100%;border-radius:3px;background:linear-gradient(90deg,#34d399,#22d3ee);width:0%;transition:width .6s;"></div>
     </div>
     <div id="room-progress-labels" style="display:flex;justify-content:space-between;font-size:11px;font-family:'DM Mono',monospace;color:var(--text3);margin-bottom:12px;"></div>
     <div id="room-roadmap" style="display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px;"></div>
@@ -2431,10 +2431,10 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
         <div id="ws-fs-sets" style="font-size:16px;font-weight:800;font-family:'DM Mono',monospace;color:var(--accent);">—</div>
       </div>
     </div>
-    <div id="ws-fs-incomplete-warn" style="display:none;background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.3);border-radius:8px;padding:8px 12px;font-size:12px;color:var(--amber);margin-bottom:12px;">⚠️ 완료하지 않은 세트가 있어요</div>
+    <div id="ws-fs-incomplete-warn" style="display:none;background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.3);border-radius:8px;padding:8px 12px;font-size:12px;color:var(--amber);margin-bottom:12px;">⚠️ 완료하지 않은 세트가 있어요</div>
     <div style="display:flex;gap:10px;">
       <button onclick="wsCloseSheets()" style="flex:1;padding:13px;background:var(--surface2);border:1px solid var(--border2);border-radius:12px;font-size:14px;font-weight:600;color:var(--text2);cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">취소</button>
-      <button onclick="wsConfirmFinish()" style="flex:2;padding:13px;background:linear-gradient(135deg,var(--accent),#f87171);border:none;border-radius:12px;font-size:15px;font-weight:700;color:#fff;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">운동 완료 ✓</button>
+      <button onclick="wsConfirmFinish()" style="flex:2;padding:13px;background:linear-gradient(135deg,var(--accent),#ff4d4d);border:none;border-radius:12px;font-size:15px;font-weight:700;color:#fff;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">운동 완료 ✓</button>
     </div>
   </div>
 </div>
@@ -2574,7 +2574,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
             <div style="font-size:14px;font-weight:600;">찬물 샤워</div>
             <div style="font-size:11px;color:var(--text3);">매일 아침 냉수 샤워. 의지력의 시작.</div>
           </div>
-          <div style="font-size:11px;font-weight:700;color:#fbbf24;background:rgba(251,191,36,.12);border:1px solid rgba(251,191,36,.3);border-radius:8px;padding:3px 8px;">+10점</div>
+          <div style="font-size:11px;font-weight:700;color:#f59e0b;background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.3);border-radius:8px;padding:3px 8px;">+10점</div>
         </div>
 
         <div onclick="pickRecommendedRoutine('🌅 새벽 6시 기상','early_rise')" style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:12px;cursor:pointer;touch-action:manipulation;">
@@ -2583,7 +2583,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
             <div style="font-size:14px;font-weight:600;">새벽 6시 기상</div>
             <div style="font-size:11px;color:var(--text3);">새벽 6시 전 기상. 세상이 달라 보인다.</div>
           </div>
-          <div style="font-size:11px;font-weight:700;color:#fbbf24;background:rgba(251,191,36,.12);border:1px solid rgba(251,191,36,.3);border-radius:8px;padding:3px 8px;">+10점</div>
+          <div style="font-size:11px;font-weight:700;color:#f59e0b;background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.3);border-radius:8px;padding:3px 8px;">+10점</div>
         </div>
 
 
@@ -3268,7 +3268,7 @@ function wsShowSaveRoutineSheet(exForRoutine){
     <input id="ws-routine-name-inp" style="width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:12px 14px;font-size:14px;color:var(--text);font-family:'DM Sans',sans-serif;margin-bottom:12px;" placeholder="루틴 이름 (예: 가슴데이)" value="오늘의 루틴"/>
     <div style="display:flex;gap:8px;">
       <button onclick="document.getElementById('ws-save-routine-sheet').remove()" style="flex:1;padding:13px;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;font-size:13px;font-weight:600;color:var(--text2);cursor:pointer;font-family:'DM Sans',sans-serif;">건너뛰기</button>
-      <button onclick="wsSaveRoutineFromSheet(${JSON.stringify(exForRoutine).replace(/"/g,'&quot;')})" style="flex:2;padding:13px;background:linear-gradient(135deg,#7c6af7,#f87171);border:none;border-radius:10px;font-size:14px;font-weight:700;color:#fff;cursor:pointer;font-family:'DM Sans',sans-serif;">저장하기</button>
+      <button onclick="wsSaveRoutineFromSheet(${JSON.stringify(exForRoutine).replace(/"/g,'&quot;')})" style="flex:2;padding:13px;background:linear-gradient(135deg,#ff4d4d,#ff4d4d);border:none;border-radius:10px;font-size:14px;font-weight:700;color:#fff;cursor:pointer;font-family:'DM Sans',sans-serif;">저장하기</button>
     </div>
   `;
   sheet.appendChild(inner);
@@ -3484,8 +3484,8 @@ function renderSession(){
     if(allSetsDone){
       if(isLastEx){
         btn.textContent='운동 종료 ✓';
-        btn.style.background='linear-gradient(135deg,#f87171,#fb923c)';
-        btn.style.boxShadow='0 4px 18px rgba(248,113,113,.45)';
+        btn.style.background='linear-gradient(135deg,#ff4d4d,#fb923c)';
+        btn.style.boxShadow='0 4px 18px rgba(255,77,77,.35)';
       } else {
         btn.textContent='다음 운동 → 🔥';
         btn.style.background='linear-gradient(135deg,var(--accent),#34d399)';
@@ -3582,7 +3582,7 @@ function renderSession(){
     </div>
     ${setsHtml}
     <div style="display:flex;gap:8px;margin-top:10px;align-items:center;">
-      <div onclick="addSet(${ei})" style="flex:1;font-size:12px;font-weight:700;color:var(--accent);padding:9px 12px;background:rgba(124,106,247,0.1);border:1px solid rgba(124,106,247,0.25);border-radius:8px;display:flex;align-items:center;justify-content:center;gap:5px;cursor:pointer;touch-action:manipulation;">
+      <div onclick="addSet(${ei})" style="flex:1;font-size:12px;font-weight:700;color:var(--accent);padding:9px 12px;background:rgba(255,77,77,.10);border:1px solid rgba(255,77,77,.22);border-radius:8px;display:flex;align-items:center;justify-content:center;gap:5px;cursor:pointer;touch-action:manipulation;">
         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> 세트 추가
       </div>
       ${isStr&&ex.sets.length>0?`<div onclick="wsCopyFirstSet(${ei})" style="font-size:11px;font-weight:600;color:var(--text3);padding:9px 10px;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;cursor:pointer;touch-action:manipulation;white-space:nowrap;">첫 세트 복사</div>`:''}
@@ -3619,7 +3619,7 @@ function _wsRenderFillBtn(ex,ei){
   const hasEmpty=ex.sets.slice(1).some(s=>!s.done&&(!(parseFloat(s.kg)>0)||!(parseInt(s.reps)>0)));
   if(!hasEmpty)return '';
   const displayKg=_wsUnit==='lb'?(firstKg*2.20462).toFixed(0):firstKg.toFixed(_wsUnit==='lb'?0:(firstKg%1===0?0:1));
-  return `<div onclick="wsFillRemainingSets(${ei})" style="margin-top:4px;padding:8px 12px;background:linear-gradient(135deg,rgba(124,106,247,.15),rgba(248,113,113,.1));border:1px dashed var(--accent-bd);border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;color:var(--accent);text-align:center;touch-action:manipulation;">
+  return `<div onclick="wsFillRemainingSets(${ei})" style="margin-top:4px;padding:8px 12px;background:linear-gradient(135deg,rgba(255,77,77,.12),rgba(255,77,77,.1));border:1px dashed var(--accent-bd);border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;color:var(--accent);text-align:center;touch-action:manipulation;">
     ↓ 나머지 세트 모두 <b>${displayKg}${_wsUnit} × ${firstReps}회</b>로 채우기
   </div>`;
 }
@@ -3987,10 +3987,10 @@ const WDAYS_STRIP=['월','화','수','목','금','토','일'];
 // 지배자=3500 (반년 이상), Goggins=7000 (1년+ 지속).
 const TIERS=[
   {min:0,    max:199,  icon:'😴',name:'방관자', desc:'자기 삶을 구경만 하는 자',       color:'#888'},
-  {min:200,  max:599,  icon:'👁️',name:'각성자', desc:'뭔가 달라져야 함을 느낀 자',     color:'#60a5fa'},
-  {min:600,  max:1499, icon:'⚔️',name:'저항자', desc:'나태함에 맞서 싸우기 시작한 자', color:'#fbbf24'},
-  {min:1500, max:3499, icon:'🔥',name:'수련자', desc:'고통을 선택하며 단련되는 자',    color:'#4ade80'},
-  {min:3500, max:6999, icon:'💎',name:'지배자', desc:'자신의 삶을 완전히 통제하는 자', color:'#f87171'},
+  {min:200,  max:599,  icon:'👁️',name:'각성자', desc:'뭔가 달라져야 함을 느낀 자',     color:'#38bdf8'},
+  {min:600,  max:1499, icon:'⚔️',name:'저항자', desc:'나태함에 맞서 싸우기 시작한 자', color:'#f59e0b'},
+  {min:1500, max:3499, icon:'🔥',name:'수련자', desc:'고통을 선택하며 단련되는 자',    color:'#34d399'},
+  {min:3500, max:6999, icon:'💎',name:'지배자', desc:'자신의 삶을 완전히 통제하는 자', color:'#ff4d4d'},
   {min:7000, max:99999,icon:'💀',name:'Goggins',desc:'타협 없음. 한계란 없음',         color:'#a855f7'},
 ];
 function getTier(score){return [...TIERS].reverse().find(t=>score>=t.min)||TIERS[0];}
@@ -4048,12 +4048,12 @@ function openRoomOverlay(){
   const roadmap=document.getElementById('room-roadmap');
   roadmap.innerHTML=TIERS.map((t,i)=>{
     const state=i<tierIdx?'done':i===tierIdx?'current':'future';
-    const bg=state==='current'?t.color+'33':state==='done'?'#4ade8022':'rgba(255,255,255,.04)';
-    const border=state==='current'?t.color:state==='done'?'#4ade8066':'rgba(255,255,255,.1)';
+    const bg=state==='current'?t.color+'33':state==='done'?'#34d39922':'rgba(255,255,255,.04)';
+    const border=state==='current'?t.color:state==='done'?'#34d39966':'rgba(255,255,255,.1)';
     const glow=state==='current'?`box-shadow:0 0 10px ${t.color}66;`:'';
     const nameColor=state==='current'?t.color:'var(--text3)';
     const connector=i<TIERS.length-1
-      ?`<div style="width:12px;height:1.5px;background:${i<tierIdx?'#4ade8044':'rgba(255,255,255,.08)'};margin-top:13px;flex-shrink:0;"></div>`:'';
+      ?`<div style="width:12px;height:1.5px;background:${i<tierIdx?'#34d39944':'rgba(255,255,255,.08)'};margin-top:13px;flex-shrink:0;"></div>`:'';
     return `<div style="display:flex;align-items:flex-start;"><div style="display:flex;flex-direction:column;align-items:center;gap:3px;"><div style="width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;background:${bg};border:1.5px solid ${border};${glow}">${t.icon}</div><div style="font-size:9px;color:${nameColor};font-family:'DM Mono',monospace;white-space:nowrap;">${t.name}</div></div>${connector}</div>`;
   }).join('');
   // 오버레이 먼저 표시 후 src 설정 (Safari: display:none 상태에서 img 로드 안 됨)
@@ -5172,7 +5172,7 @@ function obSelectGoal(goal){
     const el=document.getElementById('ob-goal-'+g);
     if(el){
       el.style.borderColor=g===goal?'var(--accent)':'var(--border)';
-      el.style.background=g===goal?'rgba(124,106,247,.1)':'var(--surface2)';
+      el.style.background=g===goal?'rgba(255,77,77,.10)':'var(--surface2)';
     }
   });
   // 다음 버튼 활성화
@@ -5906,7 +5906,7 @@ async function renderGogginsTab(){
   document.getElementById('streak-num').textContent=streak;
   document.getElementById('streak-best').textContent='최고: '+streak+'일';
   const barRow=document.getElementById('streak-bar-row');barRow.innerHTML='';
-  dates.forEach(d=>{const k=dkey(d),l=logCache[k];const s=l?calcGogginsScore(l).total:0;const bar=document.createElement('div');bar.className='streak-bar-day';bar.style.background=s>60?'#4ade80':s>30?'#fbbf24':s>0?'#f87171':'#2a2a32';barRow.appendChild(bar);});
+  dates.forEach(d=>{const k=dkey(d),l=logCache[k];const s=l?calcGogginsScore(l).total:0;const bar=document.createElement('div');bar.className='streak-bar-day';bar.style.background=s>60?'#34d399':s>30?'#f59e0b':s>0?'#ff4d4d':'#2a2a32';barRow.appendChild(bar);});
   const ladderEl=document.getElementById('tier-ladder');
   ladderEl.innerHTML=TIERS.map(t=>{const isCurrent=todayScores.total>=t.min&&todayScores.total<=t.max;return`<div class="tier-row ${isCurrent?'current':''}"><div class="tier-icon">${t.icon}</div><div class="tier-info"><div class="tier-name" style="${isCurrent?'color:'+t.color:''}">${t.name}</div><div class="tier-range">${t.min} – ${t.max}점</div></div>${isCurrent?`<div class="tier-you">현재</div>`:''}</div>`;}).join('');
   const nextTier=TIERS.find(t=>todayScores.total<t.min);
@@ -6723,7 +6723,7 @@ function _msnResetCatBtns(){
 
 function _msnApplyCatStyle(el, cat){
   if(cat==='alcohol'){
-    el.style.borderColor='var(--red)';el.style.background='rgba(248,113,113,0.25)';
+    el.style.borderColor='var(--red)';el.style.background='rgba(255,77,77,.22)';
     const lbl=el.querySelector('div:last-child');if(lbl)lbl.style.color='var(--red)';
   } else {
     el.style.borderColor='var(--accent)';el.style.background='var(--accent-bg)';
@@ -7066,7 +7066,7 @@ function openCheatSettings(){
     skullDisp.innerHTML=Array.from({length:2},(_,i)=>{
       const isUsed=i<used;
       return`<div style="text-align:center;">
-        <div style="font-size:36px;line-height:1;position:relative;display:inline-block;${isUsed?'opacity:0.22;':''}">💀${isUsed?`<span style="position:absolute;left:-10%;top:50%;width:120%;height:2.5px;background:#f87171;transform:translateY(-50%) rotate(-18deg);border-radius:2px;display:block;"></span>`:''}</div>
+        <div style="font-size:36px;line-height:1;position:relative;display:inline-block;${isUsed?'opacity:0.22;':''}">💀${isUsed?`<span style="position:absolute;left:-10%;top:50%;width:120%;height:2.5px;background:#ff4d4d;transform:translateY(-50%) rotate(-18deg);border-radius:2px;display:block;"></span>`:''}</div>
         <div style="font-size:10px;color:${isUsed?'var(--red)':'var(--text3)'};margin-top:3px;">${isUsed?'사용됨':'남음'}</div>
       </div>`;
     }).join('');
@@ -7343,9 +7343,9 @@ function closeWorkoutStartScreen(){
 function renderWssRoutineTiles(){
   const el=document.getElementById('wss-routine-tiles');
   if(!el)return;
-  const freeTile=`<div onclick="startGymSession()" style="flex:0 0 70px;min-width:70px;background:rgba(124,106,247,0.08);border:1px dashed rgba(124,106,247,0.45);border-radius:10px;padding:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;cursor:pointer;touch-action:manipulation;">
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7c6af7" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-    <span style="font-size:12px;color:#7c6af7;text-align:center;font-weight:600;line-height:1.3;">자유<br>운동</span>
+  const freeTile=`<div onclick="startGymSession()" style="flex:0 0 70px;min-width:70px;background:rgba(255,77,77,.08);border:1px dashed rgba(255,77,77,.35);border-radius:10px;padding:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;cursor:pointer;touch-action:manipulation;">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ff4d4d" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    <span style="font-size:12px;color:#ff4d4d;text-align:center;font-weight:600;line-height:1.3;">자유<br>운동</span>
   </div>`;
   const routineTiles=(userRoutines||[]).map(r=>{
     const exPreview=(r.exercises||[]).slice(0,3).map(e=>e.name).join(' · ');
@@ -7374,12 +7374,12 @@ function renderWssCardioTiles(){
   ];
   const catLabel={cardio:'유산소',sports:'스포츠',mindfulness:'마음챙김'};
   const tiles=CARDIO_QUICK.map(a=>`<div onclick="openActivityModalPreset(${a.idx})" style="flex:0 0 90px;min-width:90px;background:rgba(96,165,250,0.12);border:1px solid rgba(96,165,250,0.28);border-radius:12px;padding:12px 11px;cursor:pointer;touch-action:manipulation;">
-    <div style="font-size:11px;font-weight:700;letter-spacing:.04em;color:#60a5fa;text-transform:uppercase;margin-bottom:2px;">${catLabel[a.cat]||a.cat}</div>
-    <div style="font-size:15px;font-weight:600;color:#60a5fa;margin-bottom:2px;">${a.i} ${a.n}</div>
+    <div style="font-size:11px;font-weight:700;letter-spacing:.04em;color:#38bdf8;text-transform:uppercase;margin-bottom:2px;">${catLabel[a.cat]||a.cat}</div>
+    <div style="font-size:15px;font-weight:600;color:#38bdf8;margin-bottom:2px;">${a.i} ${a.n}</div>
   </div>`).join('');
   const moreTile=`<div onclick="openActivityModal('done')" style="flex:0 0 62px;min-width:62px;background:var(--surface2);border:1px solid rgba(96,165,250,0.35);border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;touch-action:manipulation;padding:8px 6px;">
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
-    <span style="font-size:10px;color:#60a5fa;font-weight:600;">더보기</span>
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+    <span style="font-size:10px;color:#38bdf8;font-weight:600;">더보기</span>
   </div>`;
   el.innerHTML=tiles+moreTile;
 }
@@ -7402,7 +7402,7 @@ function renderWorkouts(){
     b.textContent='완료';b.className='s-badge green';
   } else {
     b.textContent='진행 중';b.className='s-badge';
-    b.style.color='var(--amber)';b.style.background='rgba(251,191,36,0.1)';b.style.border='1px solid rgba(251,191,36,0.3)';
+    b.style.color='var(--amber)';b.style.background='rgba(245,158,11,0.1)';b.style.border='1px solid rgba(245,158,11,0.3)';
   }
   // CTA label changes after logging
   const ctaLbl=document.getElementById('wo-add-cta-lbl');
@@ -7422,7 +7422,7 @@ function renderWorkouts(){
       const totalSets=(w.exercises||[]).reduce((a,ex)=>a+(ex.sets||[]).filter(s=>s.done).length,0);
       return`<div style="overflow:hidden;border-bottom:1px solid var(--border);">
         <div style="display:flex;align-items:center;gap:10px;padding:12px 13px;cursor:pointer;" onclick="openSessionSummary(${i})">
-          <div style="width:28px;height:28px;border-radius:7px;background:rgba(124,106,247,0.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <div style="width:28px;height:28px;border-radius:7px;background:rgba(255,77,77,.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4v16M18 4v16M6 12h12"/><rect x="2" y="9" width="4" height="6" rx="1"/><rect x="18" y="9" width="4" height="6" rx="1"/></svg>
           </div>
           <div style="flex:1;min-width:0;">
@@ -7458,7 +7458,7 @@ function renderWorkouts(){
           <div style="text-align:center;padding:6px 0;"><div style="font-size:12px;font-weight:700;color:var(--blue);font-family:'DM Mono',monospace;">${w.pace||'—'}</div><div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.04em;">페이스</div></div>
         </div>`:''}
         ${isPlanned?`<div style="display:flex;gap:8px;padding:10px 14px;border-top:1px solid var(--border);">
-          <button onclick="event.stopPropagation();markActivityDone(${i})" style="flex:1;padding:10px;background:rgba(74,222,128,.15);border:1px solid rgba(74,222,128,.3);border-radius:10px;color:#4ade80;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">✓ 완료했어요</button>
+          <button onclick="event.stopPropagation();markActivityDone(${i})" style="flex:1;padding:10px;background:rgba(52,211,153,.15);border:1px solid rgba(52,211,153,.3);border-radius:10px;color:#34d399;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">✓ 완료했어요</button>
           <button onclick="event.stopPropagation();editActivity(${i})" style="flex:1;padding:10px;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;color:var(--text2);font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">✎ 수정</button>
         </div>`:''}
       </div>`;
@@ -7526,7 +7526,7 @@ async function captureSessionSummary(){
 
   try{
     const canvas=await html2canvas(el,{
-      backgroundColor:'#0f0f11',
+      backgroundColor:'#0a0a0c',
       scale:2,
       useCORS:true,
       logging:false,
@@ -8063,7 +8063,7 @@ function renderCustomMandRow(t,i,state,dow){
   const endBadge=t.end_date?`<span style="font-size:10px;color:var(--text3);margin-left:4px;">~${t.end_date.slice(5).replace('-','/')}</span>`:'';
   const isFail=!!state.fail;
   const isDone=!!state.done;
-  return`<div class="ck-row custom" style="${isFail?'background:rgba(248,113,113,0.06);':''}">
+  return`<div class="ck-row custom" style="${isFail?'background:rgba(255,77,77,0.06);':''}">
     <div style="min-width:44px;min-height:44px;display:flex;align-items:center;justify-content:center;cursor:pointer;touch-action:manipulation;"
       onclick="togMand(${i})"
       ontouchstart="mandTouchStart()"
@@ -8133,7 +8133,7 @@ function delMand(i){
     </div>
     <div style="display:flex;flex-direction:column;gap:8px;">
       <button id="del-mand-today" style="width:100%;padding:13px;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;font-size:14px;font-weight:600;color:var(--text);cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">오늘만 삭제</button>
-      <button id="del-mand-future" style="width:100%;padding:13px;background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.3);border-radius:10px;font-size:14px;font-weight:600;color:var(--red);cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">이후 일정 모두 삭제</button>
+      <button id="del-mand-future" style="width:100%;padding:13px;background:rgba(255,77,77,0.1);border:1px solid rgba(255,77,77,0.3);border-radius:10px;font-size:14px;font-weight:600;color:var(--red);cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">이후 일정 모두 삭제</button>
       <button id="del-mand-cancel" style="width:100%;padding:11px;background:transparent;border:none;font-size:13px;color:var(--text3);cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">취소</button>
     </div>
   `;
@@ -8348,7 +8348,7 @@ function renderTargets(){
       const isDone=t.st==='done';
       const isFail=t.st==='fail';
       const checkContent=isDone?'<span style="color:var(--green);font-size:14px;">✓</span>':isFail?'<span style="color:var(--red);font-size:12px;">✕</span>':'';
-      return`<div class="tgt-row" style="${isFail?'background:rgba(248,113,113,0.05);':''}">
+      return`<div class="tgt-row" style="${isFail?'background:rgba(255,77,77,0.05);':''}">
         <div class="tgt-btn ${t.st||''}"
           onclick="togTgt(${i})"
           style="cursor:pointer;-webkit-user-select:none;user-select:none;flex-shrink:0;">
@@ -8562,7 +8562,7 @@ function wvBuildGrid(){
     const dayIdx=(d.getDay()+6)%7;const isMon=dayIdx===0&&i>0;
     const dots=WV_CATS.map(c=>{
       const cls=wvCellClass(dl,c.key,isFuture);
-      const bg=isFuture?'rgba(255,255,255,0.05)':cls==='pass'?'#4ade80':cls==='fail'?'#f87171':cls==='partial'?'#fbbf24':'rgba(255,255,255,0.08)';
+      const bg=isFuture?'rgba(255,255,255,0.05)':cls==='pass'?'#34d399':cls==='fail'?'#ff4d4d':cls==='partial'?'#f59e0b':'rgba(255,255,255,0.08)';
       return'<div style="height:4px;border-radius:2px;background:'+bg+';margin:2px 0;"></div>';
     }).join('');
     r3+='<div onclick="wvShowDetail(\''+k+'\','+d.getTime()+')" style="'+dayBase+'cursor:pointer;border-bottom:1px solid rgba(255,255,255,0.07);'+(isMon?'border-left:1px solid rgba(255,255,255,0.1);':'')+
@@ -8581,9 +8581,9 @@ function wvBuildGrid(){
       const isFuture=d>now&&k!==TODAY;const isT=k===TODAY;
       const cls=wvCellClass(dl,cat.key,isFuture);
       const lbl=wvCellLabel(dl,cat.key,isFuture);
-      const bg=isFuture?'rgba(255,255,255,0.02)':cls==='pass'?'rgba(74,222,128,0.12)':cls==='fail'?'rgba(248,113,113,0.12)':cls==='partial'?'rgba(251,191,36,0.12)':'rgba(255,255,255,0.04)';
-      const col=isFuture?'transparent':cls==='pass'?'#4ade80':cls==='fail'?'#f87171':cls==='partial'?'#fbbf24':'var(--text3)';
-      const bd=isT?'var(--accent)':cls==='pass'?'rgba(74,222,128,0.3)':cls==='fail'?'rgba(248,113,113,0.28)':cls==='partial'?'rgba(251,191,36,0.28)':'rgba(255,255,255,0.07)';
+      const bg=isFuture?'rgba(255,255,255,0.02)':cls==='pass'?'rgba(52,211,153,0.12)':cls==='fail'?'rgba(255,77,77,.10)':cls==='partial'?'rgba(245,158,11,0.12)':'rgba(255,255,255,0.04)';
+      const col=isFuture?'transparent':cls==='pass'?'#34d399':cls==='fail'?'#ff4d4d':cls==='partial'?'#f59e0b':'var(--text3)';
+      const bd=isT?'var(--accent)':cls==='pass'?'rgba(52,211,153,0.3)':cls==='fail'?'rgba(255,77,77,0.28)':cls==='partial'?'rgba(245,158,11,0.28)':'rgba(255,255,255,0.07)';
       const dayIdx=(d.getDay()+6)%7;const isMon=dayIdx===0&&i>0;
       row+='<div onclick="wvShowDetail(\''+k+'\','+d.getTime()+')" style="'+dayBase+'border-bottom:1px solid rgba(255,255,255,0.05);'+(isMon?'border-left:1px solid rgba(255,255,255,0.1);':'')+'">'+
         '<div style="height:26px;border-radius:5px;background:'+bg+';border:1px solid '+bd+';display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;color:'+col+';cursor:pointer;">'+lbl+'</div></div>';
@@ -8824,9 +8824,9 @@ async function renderChallengeHome(){
 // 과거 챌린지(완료/실패) 카드 — 읽기 전용, dim 톤
 function buildHistoryCard(c){
   const isCompleted=c.status==='completed';
-  const ac=isCompleted?'#3dd68c':'#f87171';
-  const abg=isCompleted?'rgba(61,214,140,0.08)':'rgba(248,113,113,0.08)';
-  const abd=isCompleted?'rgba(61,214,140,0.2)':'rgba(248,113,113,0.2)';
+  const ac=isCompleted?'#3dd68c':'#ff4d4d';
+  const abg=isCompleted?'rgba(61,214,140,0.08)':'rgba(255,77,77,.08)';
+  const abd=isCompleted?'rgba(61,214,140,0.2)':'rgba(255,77,77,.18)';
   const label=isCompleted?'🏆 완주':'💀 실패';
   const cname=(c.name||'챌린지');
   return`<div style="background:var(--surface);border:1px solid ${abd};border-radius:12px;padding:12px 14px;opacity:.85;">
@@ -9000,7 +9000,7 @@ function switchGroupStatsTab(tab){
 }
 function renderGroupStats(profiles,mbs,allLogs,memberWgoals,chStart,chEnd,dayNum){
   if(!profiles||!allLogs)return;
-  const MEMBER_COLORS=['#7c6af7','#3dd68c','#f59e0b','#60a5fa','#f87171'];
+  const MEMBER_COLORS=['#ff4d4d','#3dd68c','#f59e0b','#38bdf8','#ff4d4d'];
   const sortedProfiles=[...profiles].sort((a,b)=>{
     if(a.id===CU.id)return -1;
     if(b.id===CU.id)return 1;
@@ -9508,11 +9508,11 @@ async function quitChallenge(){
 }
 
 const GRADE_MAP=[
-  {min:90,grade:'S',color:'#fbbf24',icon:'👑'},
-  {min:75,grade:'A',color:'#4ade80',icon:'💪'},
-  {min:60,grade:'B',color:'#60a5fa',icon:'✅'},
+  {min:90,grade:'S',color:'#f59e0b',icon:'👑'},
+  {min:75,grade:'A',color:'#34d399',icon:'💪'},
+  {min:60,grade:'B',color:'#38bdf8',icon:'✅'},
   {min:40,grade:'C',color:'#fb923c',icon:'😐'},
-  {min:0, grade:'F',color:'#f87171',icon:'💀'},
+  {min:0, grade:'F',color:'#ff4d4d',icon:'💀'},
 ];
 function getGrade(pct){return GRADE_MAP.find(g=>pct>=g.min)||GRADE_MAP[GRADE_MAP.length-1];}
 
@@ -9705,7 +9705,7 @@ async function renderChallengeRoom(){
       const ig2=memberInbodyGoals[p.id]||{};
       const inbodyStatsRow=isInbodyChallenge&&(curMuscle!=null||curFat!=null)?`
         <div style="display:flex;gap:8px;margin-bottom:8px;">
-          ${curMuscle!=null?`<div style="flex:1;background:rgba(74,222,128,0.08);border:1px solid rgba(74,222,128,0.2);border-radius:10px;padding:8px;text-align:center;">
+          ${curMuscle!=null?`<div style="flex:1;background:rgba(52,211,153,0.08);border:1px solid rgba(52,211,153,0.2);border-radius:10px;padding:8px;text-align:center;">
             <div style="font-size:13px;font-weight:700;font-family:'DM Mono',monospace;color:var(--green);">${curMuscle.toFixed(1)}kg</div>
             <div style="font-size:10px;color:var(--text3);margin-top:1px;">현재 골격근</div>
             ${ig2.muscle?`<div style="font-size:9px;color:var(--green);margin-top:1px;">목표 ${ig2.muscle}kg</div>`:''}
@@ -11268,7 +11268,7 @@ const CV_CONNECTIONS=[[11,12],[11,13],[13,15],[12,14],[14,16],[11,23],[12,24],[2
 function cvDrawSkeleton(ctx,lm,w,h){
   ctx.lineWidth=2;
   // Draw connections
-  ctx.strokeStyle='rgba(124,106,247,0.6)';
+  ctx.strokeStyle='rgba(255,77,77,.5)';
   CV_CONNECTIONS.forEach(([a,b])=>{
     const pa=lm[a],pb=lm[b];
     if(!pa||!pb||pa.visibility<0.5||pb.visibility<0.5)return;
@@ -11287,13 +11287,13 @@ function cvDrawSkeleton(ctx,lm,w,h){
     if(isActive){
       // Glow ring
       ctx.beginPath();ctx.arc(px,py,16,0,Math.PI*2);
-      ctx.fillStyle='rgba(74,222,128,0.15)';ctx.fill();
+      ctx.fillStyle='rgba(52,211,153,0.15)';ctx.fill();
       // Outer ring
       ctx.beginPath();ctx.arc(px,py,11,0,Math.PI*2);
-      ctx.strokeStyle='rgba(74,222,128,0.5)';ctx.lineWidth=2;ctx.stroke();
+      ctx.strokeStyle='rgba(52,211,153,0.5)';ctx.lineWidth=2;ctx.stroke();
       // Inner dot
       ctx.beginPath();ctx.arc(px,py,5,0,Math.PI*2);
-      ctx.fillStyle='rgba(74,222,128,1)';ctx.fill();
+      ctx.fillStyle='rgba(52,211,153,1)';ctx.fill();
     } else {
       ctx.beginPath();ctx.arc(px,py,3,0,Math.PI*2);
       ctx.fillStyle='rgba(255,255,255,0.6)';ctx.fill();
@@ -11516,7 +11516,7 @@ function destroyChart(key){
 }
 
 function getChartColors(){
-  return{grid:'rgba(255,255,255,0.05)',text:'#666',accent:'#7c6af7',green:'#4ade80',amber:'#fbbf24',red:'#f87171',blue:'#60a5fa'};
+  return{grid:'rgba(255,255,255,0.05)',text:'#6b6b78',accent:'#ff4d4d',green:'#34d399',amber:'#f59e0b',red:'#ff4d4d',blue:'#38bdf8'};
 }
 
 // ── stats 탭 기간 선택 ──
@@ -11712,10 +11712,10 @@ function stRenderKPI(rows){
   const targetDaily=rows.map(r=>{const t=r.targets||[];return t.length?Math.round(t.filter(x=>x.st==='done').length/t.length*100):0;});
   const cleanDaily=rows.map(r=>{const ms=(r.meals||[]).filter(m=>['아침','점심','저녁'].includes(m.time)&&m.type);return ms.length?Math.round(ms.filter(m=>m.type==='green').length/ms.length*100):0;});
   const workoutDaily=rows.map(r=>(r.workouts||[]).filter(w=>w.status==='done').length);
-  renderSparkline('st-spark-routine','spark_routine',routineDaily,'74,222,128');
-  renderSparkline('st-spark-target','spark_target',targetDaily,'251,191,36');
-  renderSparkline('st-spark-clean','spark_clean',cleanDaily,'74,222,128');
-  renderSparkline('st-spark-workout','spark_workout',workoutDaily,'124,106,247');
+  renderSparkline('st-spark-routine','spark_routine',routineDaily,'52,211,153');
+  renderSparkline('st-spark-target','spark_target',targetDaily,'245,158,11');
+  renderSparkline('st-spark-clean','spark_clean',cleanDaily,'52,211,153');
+  renderSparkline('st-spark-workout','spark_workout',workoutDaily,'255,77,77');
 }
 
 // ── 스파크라인 (mini) ──
@@ -11831,7 +11831,7 @@ const stChartCfg={responsive:true,maintainAspectRatio:false,animation:{duration:
 
 // ── Dashboard-grade chart helpers ──
 function stGradient(ctx,color,stops){
-  // color: e.g. '124,106,247'; stops: [[0,0.35],[1,0.02]]
+  // color: e.g. '255,77,77'; stops: [[0,0.35],[1,0.02]]
   const g=ctx.createLinearGradient(0,0,0,ctx.canvas.height||200);
   (stops||[[0,0.35],[1,0.02]]).forEach(([p,a])=>g.addColorStop(p,'rgba('+color+','+a+')'));
   return g;
@@ -11902,11 +11902,11 @@ const stTargetLinePlugin={
     const yp=y.getPixelForValue(opts.value);
     if(isNaN(yp))return;
     ctx.save();
-    ctx.strokeStyle=opts.color||'rgba(251,191,36,0.5)';
+    ctx.strokeStyle=opts.color||'rgba(245,158,11,0.5)';
     ctx.lineWidth=1;ctx.setLineDash([4,4]);
     ctx.beginPath();ctx.moveTo(left,yp);ctx.lineTo(right,yp);ctx.stroke();
     if(opts.label){
-      ctx.setLineDash([]);ctx.fillStyle=opts.color||'rgba(251,191,36,0.8)';
+      ctx.setLineDash([]);ctx.fillStyle=opts.color||'rgba(245,158,11,0.8)';
       ctx.font='10px DM Mono';ctx.textAlign='right';
       ctx.fillText(opts.label,right-4,yp-4);
     }
@@ -11940,10 +11940,10 @@ function stRenderWeightChart(rows){
     data:{
       labels:pts.map(p=>p.x.slice(5).replace('-','/')),
       datasets:[{
-        data:vals,borderColor:'#60a5fa',borderWidth:2.5,
+        data:vals,borderColor:'#38bdf8',borderWidth:2.5,
         backgroundColor:ctx=>stGradient(ctx.chart.ctx,'96,165,250',[[0,0.32],[1,0.0]]),
         pointRadius:0,pointHoverRadius:6,pointHoverBorderWidth:2,
-        pointHoverBackgroundColor:'#60a5fa',pointHoverBorderColor:'#fff',
+        pointHoverBackgroundColor:'#38bdf8',pointHoverBorderColor:'#fff',
         fill:true,tension:0.4
       }]
     },
@@ -11951,7 +11951,7 @@ function stRenderWeightChart(rows){
       yCallback:v=>v+'kg',
       yScale:{min:Math.floor(Math.min(...vals,goal||Infinity)-1),max:Math.ceil(Math.max(...vals,goal||-Infinity)+1)},
       tooltip:{label:ctx=>ctx.parsed.y.toFixed(1)+' kg',title:items=>items[0].label}
-    }),plugins:{...stDashCfg().plugins,stTargetLine:goal?{value:goal,color:'rgba(251,191,36,0.7)',label:'목표 '+goal+'kg'}:null}}
+    }),plugins:{...stDashCfg().plugins,stTargetLine:goal?{value:goal,color:'rgba(245,158,11,0.7)',label:'목표 '+goal+'kg'}:null}}
   });
 }
 
@@ -11993,8 +11993,8 @@ function stRenderVolChart(rows){
     data:{labels,datasets:[{
       data:vals.map(v=>v>=1000?(v/1000):v),
       backgroundColor:ctx=>{
-        const v=ctx.raw;if(!v)return 'rgba(124,106,247,0.15)';
-        return stGradient(ctx.chart.ctx,'124,106,247',[[0,0.95],[1,0.25]]);
+        const v=ctx.raw;if(!v)return 'rgba(255,77,77,.12)';
+        return stGradient(ctx.chart.ctx,'255,77,77',[[0,0.95],[1,0.25]]);
       },
       borderRadius:{topLeft:6,topRight:6,bottomLeft:0,bottomRight:0},
       borderSkipped:false,
@@ -12003,7 +12003,7 @@ function stRenderVolChart(rows){
     options:{...stDashCfg({
       yCallback:v=>v>=1?v+'t':Math.round(v*1000)+'kg',
       tooltip:{label:ctx=>{const v=ctx.parsed.y;return v>=1?v.toFixed(1)+'t':Math.round(v*1000).toLocaleString()+'kg';}}
-    }),plugins:{...stDashCfg().plugins,stTargetLine:nonZero.length>1?{value:avg>=1000?avg/1000:avg,color:'rgba(251,191,36,0.5)',label:'평균'}:null}}
+    }),plugins:{...stDashCfg().plugins,stTargetLine:nonZero.length>1?{value:avg>=1000?avg/1000:avg,color:'rgba(245,158,11,0.5)',label:'평균'}:null}}
   });
 }
 
@@ -12179,8 +12179,8 @@ function edmRender(){
     primaryLabel=useDist?'거리(km)':'시간(분)';
   }
   const c=getChartColors();
-  const datasets=[{label:primaryLabel,data:primaryData,borderColor:'rgba(124,106,247,1)',backgroundColor:'rgba(124,106,247,0.2)',tension:0.3,yAxisID:'y',fill:true,pointRadius:3}];
-  if(secondaryData)datasets.push({label:secondaryLabel,data:secondaryData,borderColor:'rgba(248,113,113,1)',backgroundColor:'transparent',tension:0.3,yAxisID:'y1',pointRadius:3,borderDash:[4,4]});
+  const datasets=[{label:primaryLabel,data:primaryData,borderColor:'rgba(255,77,77,1)',backgroundColor:'rgba(255,77,77,.15)',tension:0.3,yAxisID:'y',fill:true,pointRadius:3}];
+  if(secondaryData)datasets.push({label:secondaryLabel,data:secondaryData,borderColor:'rgba(255,77,77,1)',backgroundColor:'transparent',tension:0.3,yAxisID:'y1',pointRadius:3,borderDash:[4,4]});
   window._edmChart=new Chart(canvas,{
     type:'line',
     data:{labels,datasets},
@@ -12207,7 +12207,7 @@ function edmRender(){
       return `<div style="padding:10px 12px;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;margin-bottom:6px;">
         <div style="display:flex;align-items:center;gap:8px;">
           <div style="font-size:12px;font-weight:600;color:var(--text);">${s.date}</div>
-          ${isPr?'<div style="font-size:10px;padding:2px 6px;border-radius:10px;background:rgba(251,191,36,.2);color:#fbbf24;font-weight:700;">🏆 PR</div>':''}
+          ${isPr?'<div style="font-size:10px;padding:2px 6px;border-radius:10px;background:rgba(245,158,11,.2);color:#f59e0b;font-weight:700;">🏆 PR</div>':''}
         </div>
         <div style="font-size:11px;color:var(--text2);margin-top:3px;font-family:'DM Mono',monospace;">${mainLine}</div>
         ${detail?`<div style="font-size:10px;color:var(--text3);margin-top:2px;">${detail}</div>`:''}
@@ -12241,9 +12241,9 @@ function stRenderRoutineChart(rows){
     data:{
       labels:pts.map(p=>p.x.slice(5).replace('-','/')),
       datasets:[{
-        data:pts.map(p=>p.y),borderColor:'#4ade80',borderWidth:2.5,
-        backgroundColor:ctx=>stGradient(ctx.chart.ctx,'74,222,128',[[0,0.3],[1,0.0]]),
-        pointRadius:0,pointHoverRadius:6,pointHoverBorderColor:'#fff',pointHoverBackgroundColor:'#4ade80',
+        data:pts.map(p=>p.y),borderColor:'#34d399',borderWidth:2.5,
+        backgroundColor:ctx=>stGradient(ctx.chart.ctx,'52,211,153',[[0,0.3],[1,0.0]]),
+        pointRadius:0,pointHoverRadius:6,pointHoverBorderColor:'#fff',pointHoverBackgroundColor:'#34d399',
         fill:true,tension:0.4
       }]
     },
@@ -12251,14 +12251,14 @@ function stRenderRoutineChart(rows){
       yCallback:v=>v+'%',
       yScale:{min:0,max:100},
       tooltip:{label:ctx=>ctx.parsed.y+'% 완료'}
-    }),plugins:{...stDashCfg().plugins,stTargetLine:{value:80,color:'rgba(74,222,128,0.55)',label:'목표 80%'}}}
+    }),plugins:{...stDashCfg().plugins,stTargetLine:{value:80,color:'rgba(52,211,153,0.55)',label:'목표 80%'}}}
   });
 }
 
 function stRenderMealHeatmap(rows){
   const slots=['아침','점심','저녁'];
   const dayNames=['월','화','수','목','금','토','일'];
-  const colorMap={green:'rgba(74,222,128,0.75)',normal:'rgba(136,136,136,0.5)',cheat:'rgba(251,191,36,0.65)',red:'rgba(248,113,113,0.6)',alcohol:'rgba(248,113,113,0.6)',null:'rgba(42,42,50,0.8)'};
+  const colorMap={green:'rgba(52,211,153,0.75)',normal:'rgba(136,136,136,0.5)',cheat:'rgba(245,158,11,0.65)',red:'rgba(255,77,77,0.6)',alcohol:'rgba(255,77,77,0.6)',null:'rgba(42,42,50,0.8)'};
 
   // 최근 21일만 표시
   const recent=rows.slice(-21);
@@ -12282,11 +12282,11 @@ function stRenderMealHeatmap(rows){
   const metaEl=document.getElementById('st-meal-meta');
   if(metaEl)metaEl.innerHTML=`
     <div class="stats-headline">
-      <div class="stats-headline-cell"><div class="stats-headline-label">클린</div><div class="stats-headline-val" style="color:#4ade80;">${cleanMeals}<span class="stats-headline-unit">끼</span></div></div>
+      <div class="stats-headline-cell"><div class="stats-headline-label">클린</div><div class="stats-headline-val" style="color:#34d399;">${cleanMeals}<span class="stats-headline-unit">끼</span></div></div>
       <div class="stats-headline-cell"><div class="stats-headline-label">일반</div><div class="stats-headline-val" style="color:#888;">${normalMeals}<span class="stats-headline-unit">끼</span></div></div>
-      <div class="stats-headline-cell"><div class="stats-headline-label">치팅</div><div class="stats-headline-val" style="color:#fbbf24;">${cheatMeals}<span class="stats-headline-unit">끼</span></div></div>
-      <div class="stats-headline-cell"><div class="stats-headline-label">금지</div><div class="stats-headline-val" style="color:#f87171;">${badMeals}<span class="stats-headline-unit">끼</span></div></div>
-      <div class="stats-headline-cell"><div class="stats-headline-label">클린%</div><div class="stats-headline-val" style="color:#4ade80;">${cleanPct}<span class="stats-headline-unit">%</span></div></div>
+      <div class="stats-headline-cell"><div class="stats-headline-label">치팅</div><div class="stats-headline-val" style="color:#f59e0b;">${cheatMeals}<span class="stats-headline-unit">끼</span></div></div>
+      <div class="stats-headline-cell"><div class="stats-headline-label">금지</div><div class="stats-headline-val" style="color:#ff4d4d;">${badMeals}<span class="stats-headline-unit">끼</span></div></div>
+      <div class="stats-headline-cell"><div class="stats-headline-label">클린%</div><div class="stats-headline-val" style="color:#34d399;">${cleanPct}<span class="stats-headline-unit">%</span></div></div>
     </div>`;
 
   // 헤더
@@ -12339,9 +12339,9 @@ function stRenderScoreChart(rows){
     data:{
       labels:cumPts.map(p=>p.x.slice(5).replace('-','/')),
       datasets:[{
-        data:cumPts.map(p=>p.y),borderColor:'#7c6af7',borderWidth:2.8,
-        backgroundColor:ctx=>stGradient(ctx.chart.ctx,'124,106,247',[[0,0.45],[0.6,0.08],[1,0.0]]),
-        pointRadius:0,pointHoverRadius:7,pointHoverBorderColor:'#fff',pointHoverBorderWidth:2,pointHoverBackgroundColor:'#7c6af7',
+        data:cumPts.map(p=>p.y),borderColor:'#ff4d4d',borderWidth:2.8,
+        backgroundColor:ctx=>stGradient(ctx.chart.ctx,'255,77,77',[[0,0.45],[0.6,0.08],[1,0.0]]),
+        pointRadius:0,pointHoverRadius:7,pointHoverBorderColor:'#fff',pointHoverBorderWidth:2,pointHoverBackgroundColor:'#ff4d4d',
         fill:true,tension:0.4
       }]
     },
