@@ -3506,10 +3506,11 @@ function renderSession(){
     btn.style.boxShadow='';
   }
   if(currentSession.length===0){
-    body.innerHTML=`<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:48px 24px;gap:14px;text-align:center;">
-      <div style="font-size:44px;">🏋️</div>
-      <div style="font-size:15px;font-weight:600;">어떤 운동부터 시작할까요?</div>
-      <div style="font-size:12px;color:var(--text3);line-height:1.6;">위의 ＋ 종목 추가를 눌러 시작하세요</div>
+    body.innerHTML=`<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;min-height:calc(100vh - 200px);gap:16px;">
+      <div style="font-size:48px;">🏋️</div>
+      <div style="font-size:16px;font-weight:700;">어떤 운동부터 시작할까요?</div>
+      <div style="font-size:12px;color:var(--text3);line-height:1.6;margin-bottom:8px;">종목을 추가해서 시작하세요</div>
+      <button onclick="openExLibrary()" style="padding:12px 28px;background:var(--accent-grad);border:none;border-radius:var(--radius-sm);color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;box-shadow:0 4px 16px rgba(255,77,77,.25);">＋ 종목 추가</button>
     </div>`;
     return;
   }
