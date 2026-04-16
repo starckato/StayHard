@@ -566,8 +566,14 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 .ws-done-btn{flex:1;padding:14px;background:var(--accent);border:none;border-radius:var(--radius-sm);font-size:17px;font-weight:700;color:#fff;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;min-height:52px;}
 .ws-ex-chip{flex:0 0 auto;padding:4px 10px;border-radius:20px;font-size:10px;font-weight:600;white-space:nowrap;cursor:pointer;border:1px solid var(--border);background:var(--surface2);color:var(--text3);}
 .ws-ex-chip.add{background:rgba(124,106,247,0.15);color:var(--accent);border-color:rgba(124,106,247,0.4);}
-.ws-ex-chip.done{background:var(--green-bg);color:var(--green);border-color:var(--green-bd);}
+.ws-ex-chip.done{background:var(--green-bg);color:var(--green);border-color:var(--green-bd);padding-left:7px;}
+.ws-ex-chip.done::before{content:'✓ ';font-weight:800;}
 .ws-ex-chip.active{background:var(--accent);color:#fff;border-color:var(--accent);}
+/* ── WS Bottom Sheets ── */
+#ws-next-sheet,#ws-finish-sheet{position:fixed;bottom:0;left:50%;transform:translateX(-50%) translateY(110%);width:100%;max-width:430px;background:var(--surface);border-radius:20px 20px 0 0;border:1px solid var(--border);border-bottom:none;z-index:600;transition:transform .28s cubic-bezier(.32,1,.64,1);padding-bottom:env(safe-area-inset-bottom,16px);}
+#ws-next-sheet.open,#ws-finish-sheet.open{transform:translateX(-50%) translateY(0);}
+#ws-sheet-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:599;opacity:0;pointer-events:none;transition:opacity .25s;}
+#ws-sheet-backdrop.open{opacity:1;pointer-events:all;}
 .ws-vol-line{display:flex;align-items:center;gap:6px;background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.25);border-radius:7px;padding:5px 10px;margin-bottom:9px;}
 .ws-rest{background:var(--surface2);border-radius:8px;padding:7px 10px;margin:8px 0 0;display:flex;align-items:center;gap:8px;}
 .ws-rest-prog{height:3px;background:var(--surface3);border-radius:2px;overflow:hidden;flex:1;}
@@ -2364,6 +2370,65 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
   </div>
 </div>
 
+<!-- WS SHEET BACKDROP -->
+<div id="ws-sheet-backdrop" onclick="wsCloseSheets()"></div>
+
+<!-- WS NEXT EXERCISE SHEET -->
+<div id="ws-next-sheet">
+  <div style="width:36px;height:4px;background:var(--border2);border-radius:4px;margin:10px auto 0;"></div>
+  <div style="padding:18px 20px 20px;">
+    <div id="ws-next-sheet-done-label" style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
+      <div style="width:28px;height:28px;background:var(--green-bg);border:2px solid var(--green-bd);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:var(--green);flex-shrink:0;">✓</div>
+      <div>
+        <div id="ws-ns-ex-name" style="font-size:15px;font-weight:700;color:var(--green);"></div>
+        <div id="ws-ns-vol" style="font-size:11px;color:var(--text3);margin-top:1px;"></div>
+      </div>
+    </div>
+    <div style="background:var(--surface2);border:1px solid var(--border2);border-radius:12px;padding:12px 14px;margin-bottom:16px;">
+      <div style="font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px;">다음 운동</div>
+      <div id="ws-ns-next-name" style="font-size:16px;font-weight:700;color:var(--text);"></div>
+      <div id="ws-ns-next-sets" style="font-size:11px;color:var(--text3);margin-top:3px;"></div>
+    </div>
+    <div style="display:flex;gap:10px;">
+      <button onclick="wsCloseSheets()" style="flex:1;padding:13px;background:var(--surface2);border:1px solid var(--border2);border-radius:12px;font-size:14px;font-weight:600;color:var(--text2);cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">머무르기</button>
+      <button onclick="wsConfirmNext()" style="flex:2;padding:13px;background:var(--accent);border:none;border-radius:12px;font-size:15px;font-weight:700;color:#fff;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">다음 운동 →</button>
+    </div>
+  </div>
+</div>
+
+<!-- WS FINISH SESSION SHEET -->
+<div id="ws-finish-sheet">
+  <div style="width:36px;height:4px;background:var(--border2);border-radius:4px;margin:10px auto 0;"></div>
+  <div style="padding:18px 20px 20px;">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+      <div style="font-size:28px;line-height:1;">🏁</div>
+      <div>
+        <div style="font-size:17px;font-weight:800;">운동 종료</div>
+        <div style="font-size:12px;color:var(--text3);margin-top:2px;">오늘도 해냈어요!</div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px;">
+      <div style="background:var(--surface2);border-radius:10px;padding:10px 8px;text-align:center;">
+        <div style="font-size:10px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;">총 볼륨</div>
+        <div id="ws-fs-vol" style="font-size:16px;font-weight:800;font-family:'DM Mono',monospace;color:var(--accent);">—</div>
+      </div>
+      <div style="background:var(--surface2);border-radius:10px;padding:10px 8px;text-align:center;">
+        <div style="font-size:10px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;">운동 시간</div>
+        <div id="ws-fs-time" style="font-size:16px;font-weight:800;font-family:'DM Mono',monospace;color:var(--accent);">—</div>
+      </div>
+      <div style="background:var(--surface2);border-radius:10px;padding:10px 8px;text-align:center;">
+        <div style="font-size:10px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;">완료 세트</div>
+        <div id="ws-fs-sets" style="font-size:16px;font-weight:800;font-family:'DM Mono',monospace;color:var(--accent);">—</div>
+      </div>
+    </div>
+    <div id="ws-fs-incomplete-warn" style="display:none;background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.3);border-radius:8px;padding:8px 12px;font-size:12px;color:var(--amber);margin-bottom:12px;">⚠️ 완료하지 않은 세트가 있어요</div>
+    <div style="display:flex;gap:10px;">
+      <button onclick="wsCloseSheets()" style="flex:1;padding:13px;background:var(--surface2);border:1px solid var(--border2);border-radius:12px;font-size:14px;font-weight:600;color:var(--text2);cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">취소</button>
+      <button onclick="wsConfirmFinish()" style="flex:2;padding:13px;background:linear-gradient(135deg,var(--accent),#f87171);border:none;border-radius:12px;font-size:15px;font-weight:700;color:#fff;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">운동 완료 ✓</button>
+    </div>
+  </div>
+</div>
+
 <!-- WORKOUT START SCREEN -->
 <div id="workout-start-screen" style="display:none;position:fixed;top:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;height:100%;z-index:490;background:var(--bg);flex-direction:column;">
   <div style="display:flex;align-items:center;gap:10px;padding:14px 16px 12px;border-bottom:1px solid var(--border);flex-shrink:0;">
@@ -3239,6 +3304,7 @@ function openWorkoutSession(prefillExercises){
   if(titleEl)titleEl.textContent=currentSession.length>0?(currentSession[0]._routineName||'운동 세션'):'운동 세션';
 }
 function closeSession(){
+  wsCloseSheets();
   if(currentSession.length===0){
     document.getElementById('workout-session-overlay').classList.remove('open');
     document.body.style.overflow='';
@@ -3290,13 +3356,68 @@ function wsFooterAction(){
   const ei=_wsActiveExIdx;
   const isLast=ei>=currentSession.length-1;
   if(isLast){
-    finishSession();
+    wsShowFinishSheet();
   } else {
-    _wsActiveExIdx=ei+1;
-    renderSession();
-    const body=document.getElementById('ws-body');
-    if(body)body.scrollTop=0;
+    wsShowNextSheet(ei,true);
   }
+}
+
+function wsShowNextSheet(ei,isManual){
+  const ex=currentSession[ei];
+  const nextEx=currentSession[ei+1];
+  if(!nextEx)return;
+  // populate current exercise completion info
+  const vol=ex.sets.filter(s=>s.done).reduce((a,s)=>a+(parseFloat(s.kg)||0)*(parseInt(s.reps)||0),0);
+  document.getElementById('ws-ns-ex-name').textContent=ex.icon+' '+ex.name+' 완료!';
+  document.getElementById('ws-ns-vol').textContent=vol>0?'볼륨: '+_wsFormatVol(vol):'';
+  document.getElementById('ws-ns-next-name').textContent=nextEx.icon+' '+nextEx.name;
+  document.getElementById('ws-ns-next-sets').textContent=nextEx.sets.length+'세트 예정';
+  // store which exercise to advance to
+  document.getElementById('ws-next-sheet').dataset.targetEi=ei+1;
+  _wsOpenSheet('ws-next-sheet');
+}
+
+function wsShowFinishSheet(){
+  // compute stats
+  const totalVol=currentSession.reduce((t,ex)=>{
+    if(!ex.isStrength)return t;
+    return t+ex.sets.filter(s=>s.done).reduce((a,s)=>a+(parseFloat(s.kg)||0)*(parseInt(s.reps)||0),0);
+  },0);
+  const doneSets=currentSession.reduce((t,ex)=>t+ex.sets.filter(s=>s.done).length,0);
+  const totalSets=currentSession.reduce((t,ex)=>t+ex.sets.length,0);
+  const el=document.getElementById('ws-timer');
+  document.getElementById('ws-fs-vol').textContent=totalVol>0?_wsFormatVol(totalVol):'—';
+  document.getElementById('ws-fs-time').textContent=el?el.textContent:'—';
+  document.getElementById('ws-fs-sets').textContent=doneSets+'/'+totalSets;
+  const warn=document.getElementById('ws-fs-incomplete-warn');
+  if(warn)warn.style.display=doneSets<totalSets?'block':'none';
+  _wsOpenSheet('ws-finish-sheet');
+}
+
+function _wsOpenSheet(id){
+  document.getElementById('ws-sheet-backdrop').classList.add('open');
+  document.getElementById(id).classList.add('open');
+}
+
+function wsCloseSheets(){
+  document.getElementById('ws-sheet-backdrop').classList.remove('open');
+  document.getElementById('ws-next-sheet').classList.remove('open');
+  document.getElementById('ws-finish-sheet').classList.remove('open');
+}
+
+function wsConfirmNext(){
+  const sheet=document.getElementById('ws-next-sheet');
+  const targetEi=parseInt(sheet.dataset.targetEi||'0');
+  wsCloseSheets();
+  _wsActiveExIdx=targetEi;
+  renderSession();
+  const body=document.getElementById('ws-body');
+  if(body)body.scrollTop=0;
+}
+
+function wsConfirmFinish(){
+  wsCloseSheets();
+  finishSession();
 }
 
 function wsCopyFirstSet(ei){
@@ -3498,15 +3619,14 @@ function toggleSet(ei,si){
     saveSessionToLog();
     // start rest timer
     _wsStartRest();
-    // check if all sets done → complete animation then auto-advance
+    // check if all sets done → show next-exercise sheet (or finish sheet if last)
     const allDone=currentSession[ei].sets.every(s2=>s2.done);
     if(allDone&&ei<currentSession.length-1){
-      setTimeout(()=>{
-        _wsActiveExIdx=ei+1;
-        renderSession();
-        const body=document.getElementById('ws-body');
-        if(body)body.scrollTop=0;
-      },800);
+      renderSession();
+      setTimeout(()=>wsShowNextSheet(ei,false),900);
+    } else if(allDone&&ei>=currentSession.length-1){
+      renderSession();
+      setTimeout(()=>wsShowFinishSheet(),900);
     } else {
       renderSession();
     }
@@ -7722,6 +7842,7 @@ async function finishSession(){
 
   renderWorkouts();
   // UI 즉시 닫기 + 팡파레 즉시 (저장 기다리지 않음)
+  wsCloseSheets();
   document.getElementById('workout-session-overlay').classList.remove('open');
   document.body.style.overflow='';
   _wsStopTimer();
