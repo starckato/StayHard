@@ -2415,10 +2415,10 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
   <div id="mm-tooltip" style="display:none;position:absolute;bottom:100px;left:50%;transform:translateX(-50%);background:rgba(10,10,12,.95);border:1px solid var(--accent-bd);border-radius:10px;padding:8px 14px;font-size:12px;font-weight:600;color:var(--accent);z-index:10;pointer-events:none;"></div>
   <div id="mm-legend" style="padding:10px 16px 24px;flex-shrink:0;border-top:1px solid var(--border);">
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
-      <div style="display:flex;align-items:center;gap:4px;flex:1;"><div style="width:12px;height:12px;border-radius:3px;background:rgba(255,77,77,0.15);"></div><span style="font-size:10px;color:var(--text3);">워밍업</span></div>
-      <div style="display:flex;align-items:center;gap:4px;flex:1;"><div style="width:12px;height:12px;border-radius:3px;background:rgba(255,77,77,0.45);"></div><span style="font-size:10px;color:var(--text3);">자극됨</span></div>
-      <div style="display:flex;align-items:center;gap:4px;flex:1;"><div style="width:12px;height:12px;border-radius:3px;background:rgba(255,77,77,0.7);"></div><span style="font-size:10px;color:var(--text3);">집중 타격</span></div>
-      <div style="display:flex;align-items:center;gap:4px;flex:1;"><div style="width:12px;height:12px;border-radius:3px;background:rgba(255,77,77,0.95);"></div><span style="font-size:10px;color:var(--text3);">폭발</span></div>
+      <div style="display:flex;align-items:center;gap:4px;flex:1;"><div style="width:12px;height:12px;border-radius:3px;background:rgb(6,182,212);"></div><span style="font-size:10px;color:var(--text3);">워밍업</span></div>
+      <div style="display:flex;align-items:center;gap:4px;flex:1;"><div style="width:12px;height:12px;border-radius:3px;background:rgb(34,197,94);"></div><span style="font-size:10px;color:var(--text3);">자극됨</span></div>
+      <div style="display:flex;align-items:center;gap:4px;flex:1;"><div style="width:12px;height:12px;border-radius:3px;background:rgb(245,158,11);"></div><span style="font-size:10px;color:var(--text3);">집중 타격</span></div>
+      <div style="display:flex;align-items:center;gap:4px;flex:1;"><div style="width:12px;height:12px;border-radius:3px;background:rgb(255,60,60);box-shadow:0 0 6px rgba(255,60,60,0.5);"></div><span style="font-size:10px;color:var(--text3);">폭발</span></div>
     </div>
     <div id="mm-summary" style="font-size:11px;color:var(--text3);"></div>
   </div>
@@ -10555,21 +10555,35 @@ const MUSCLE_LABELS={chest:'가슴',upper_back:'상부 등',lats:'광배근',tra
 let _mmMode='today',_mmView='front',_mmSvgFront=null,_mmSvgBack=null;
 
 function computeMuscleActivation(workouts,mode){
-  const activation={};
+  const raw={},sets={};
   const wos=mode==='week'?getWeekWorkouts():workouts;
   wos.forEach(w=>{
     if(w.type!=='gym'||w.status!=='done')return;
     (w.exercises||[]).forEach(ex=>{
       const map=MUSCLE_MAP[ex.name];if(!map)return;
-      const vol=(ex.sets||[]).filter(s=>s.done).reduce((a,s)=>a+(parseFloat(s.kg)||0)*(parseInt(s.reps)||0),0);
+      const doneSets=(ex.sets||[]).filter(s=>s.done);
+      const vol=doneSets.reduce((a,s)=>a+(parseFloat(s.kg)||0)*(parseInt(s.reps)||0),0);
       if(vol<=0)return;
-      Object.entries(map).forEach(([m,pct])=>{activation[m]=(activation[m]||0)+vol*(pct/100);});
+      Object.entries(map).forEach(([m,pct])=>{
+        raw[m]=(raw[m]||0)+vol*(pct/100);
+        sets[m]=(sets[m]||0)+Math.round(doneSets.length*(pct/100));
+      });
     });
   });
-  const maxVal=Math.max(...Object.values(activation),1);
+  const maxVal=Math.max(...Object.values(raw),1);
   const norm={};
-  Object.entries(activation).forEach(([m,v])=>{norm[m]=Math.min(1,v/maxVal);});
+  Object.entries(raw).forEach(([m,v])=>{norm[m]={intensity:Math.min(1,v/maxVal),volume:Math.round(v),sets:sets[m]||0};});
   return norm;
+}
+
+function heatColor(t){
+  const stops=[[0,'42,42,60'],[0.2,'6,182,212'],[0.45,'34,197,94'],[0.65,'245,158,11'],[0.85,'249,115,22'],[1,'255,60,60']];
+  let lo=stops[0],hi=stops[stops.length-1];
+  for(let i=0;i<stops.length-1;i++){if(t>=stops[i][0]&&t<=stops[i+1][0]){lo=stops[i];hi=stops[i+1];break;}}
+  const r=(t-lo[0])/(hi[0]-lo[0]||1);
+  const lc=lo[1].split(',').map(Number),hc=hi[1].split(',').map(Number);
+  const c=lc.map((v,i)=>Math.round(v+(hc[i]-v)*r));
+  return `rgb(${c[0]},${c[1]},${c[2]})`;
 }
 function getWeekWorkouts(){
   const d=new Date(now);const day=d.getDay();const mon=new Date(d);mon.setDate(d.getDate()-((day+6)%7));
@@ -10624,51 +10638,42 @@ function renderMuscleMap(){
   svg.style.width='100%';svg.style.maxHeight='calc(100vh - 260px)';svg.style.height='auto';
   const wos=_mmMode==='today'?(log.workouts||[]):getWeekWorkouts();
   const activation=computeMuscleActivation(wos,_mmMode);
+  const fmtVol=v=>v>=1000?(v/1000).toFixed(1)+'t':Math.round(v).toLocaleString()+'kg';
+  const tierLabel=(v)=>v>=0.91?'폭발 💥':v>=0.61?'집중 타격 🔥':v>=0.31?'자극됨 ⚡':'워밍업';
   svg.querySelectorAll('path').forEach(p=>{
     const id=p.id;
     if(!id||id==='non_muscle'||id==='underlayer')return;
     const gId=p.closest('g')?.id;
     if(gId==='non_muscle'||gId==='face'||gId==='head'||gId==='hands'||gId==='neck')return;
-    let maxIntensity=0;let matchedMuscle=null;
+    let maxIntensity=0;let matchedMuscle=null;let matchedData=null;
     Object.entries(MUSCLE_SVG_MAP).forEach(([muscleId,svgIds])=>{
-      if(svgIds.includes(id)){const v=activation[muscleId]||0;if(v>maxIntensity){maxIntensity=v;matchedMuscle=muscleId;}}
+      if(svgIds.includes(id)){const d=activation[muscleId];if(d&&d.intensity>maxIntensity){maxIntensity=d.intensity;matchedMuscle=muscleId;matchedData=d;}}
     });
-    if(maxIntensity>0){
-      const alpha=0.15+maxIntensity*0.75;
-      p.style.fill=`rgba(255,77,77,${alpha.toFixed(2)})`;
-      p.style.transition='fill 0.3s';
-    } else {
-      p.style.fill='#2a2a32';p.style.transition='fill 0.3s';
-    }
+    p.style.fill=maxIntensity>0?heatColor(maxIntensity):'#2a2a32';
+    p.style.transition='fill 0.3s';
+    if(maxIntensity>=0.85)p.style.filter='brightness(1.2) drop-shadow(0 0 4px rgba(255,60,60,0.5))';
+    else p.style.filter='';
     p.style.cursor='pointer';
-    const tierLabel=(v)=>v>=0.91?'폭발 💥':v>=0.61?'집중 타격 🔥':v>=0.31?'자극됨 ⚡':'워밍업';
-    p.addEventListener('mouseenter',()=>{
-      if(matchedMuscle){
-        const label=MUSCLE_LABELS[matchedMuscle]||matchedMuscle;
-        const pct=Math.round(maxIntensity*100);
-        const tip=document.getElementById('mm-tooltip');
-        tip.textContent=label+' · '+tierLabel(maxIntensity)+' ('+pct+'%)';
-        tip.style.display='block';
-      }
-    });
+    const showTip=()=>{
+      if(!matchedMuscle||!matchedData)return;
+      const label=MUSCLE_LABELS[matchedMuscle]||matchedMuscle;
+      const tip=document.getElementById('mm-tooltip');
+      tip.innerHTML=`<div style="font-size:13px;font-weight:700;">${label}</div><div style="font-size:11px;color:var(--text2);margin-top:2px;">${tierLabel(maxIntensity)} — ${matchedData.sets}세트 · ${fmtVol(matchedData.volume)}</div>`;
+      tip.style.display='block';
+    };
+    p.addEventListener('mouseenter',showTip);
     p.addEventListener('mouseleave',()=>{document.getElementById('mm-tooltip').style.display='none';});
-    p.addEventListener('touchstart',()=>{
-      if(matchedMuscle){
-        const label=MUSCLE_LABELS[matchedMuscle]||matchedMuscle;
-        const pct=Math.round(maxIntensity*100);
-        const tip=document.getElementById('mm-tooltip');
-        tip.textContent=label+' · '+tierLabel(maxIntensity)+' ('+pct+'%)';
-        tip.style.display='block';
-        setTimeout(()=>tip.style.display='none',2000);
-      }
-    },{passive:true});
+    p.addEventListener('touchstart',()=>{showTip();setTimeout(()=>document.getElementById('mm-tooltip').style.display='none',2500);},{passive:true});
   });
-  const activeList=Object.entries(activation).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]);
+  const activeList=Object.entries(activation).filter(([,d])=>d.intensity>0).sort((a,b)=>b[1].intensity-a[1].intensity);
   const summary=document.getElementById('mm-summary');
   if(activeList.length){
-    const tl=(v)=>v>=0.91?'폭발':v>=0.61?'집중 타격':v>=0.31?'자극됨':'워밍업';
-    summary.innerHTML='<div style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:4px;">자극된 부위</div>'+
-      activeList.map(([m,v])=>`<span style="display:inline-block;padding:3px 8px;margin:2px;background:rgba(255,77,77,${(0.1+v*0.4).toFixed(2)});border-radius:6px;font-size:10px;color:var(--text);">${MUSCLE_LABELS[m]||m} <span style="opacity:.7;">${tl(v)}</span></span>`).join('');
+    summary.innerHTML='<div style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:6px;">자극된 부위</div>'+
+      activeList.map(([m,d])=>{
+        const col=heatColor(d.intensity);
+        return`<span style="display:inline-flex;align-items:center;gap:4px;padding:3px 10px;margin:2px;background:rgba(255,255,255,0.06);border-left:3px solid ${col};border-radius:6px;font-size:10px;color:var(--text);">
+          ${MUSCLE_LABELS[m]||m} <span style="color:var(--text3);font-family:'DM Mono',monospace;">${d.sets}세트 ${fmtVol(d.volume)}</span></span>`;
+      }).join('');
   } else {
     summary.innerHTML='<div style="font-size:12px;color:var(--text3);text-align:center;padding:12px 0;">'+(_mmMode==='today'?'오늘 운동 기록이 없어요 🏋️':'이번 주 운동 기록이 없어요 🏋️')+'</div>';
   }
