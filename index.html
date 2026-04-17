@@ -10732,11 +10732,31 @@ function renderMuscleMap(){
   const activeList=Object.entries(activation).filter(([,d])=>d.intensity>0).sort((a,b)=>b[1].intensity-a[1].intensity);
   const summary=document.getElementById('mm-summary');
   if(activeList.length){
-    summary.innerHTML='<div style="display:flex;flex-wrap:wrap;gap:4px;">'+
-      activeList.map(([m,d])=>{
-        const col=heatColor(d.intensity);
-        return`<span onclick="highlightMuscle('${m}')" style="display:inline-flex;align-items:center;gap:3px;padding:5px 10px;background:rgba(255,255,255,0.05);border-left:3px solid ${col};border:1px solid transparent;border-left:3px solid ${col};border-radius:6px;font-size:11px;color:var(--text);cursor:pointer;transition:all .15s;" id="mm-pill-${m}">${MUSCLE_LABELS[m]||m} <span style="color:var(--text3);font-family:'DM Mono',monospace;">${d.sets}세트</span></span>`;
-      }).join('')+'</div>';
+    if(_mmMode==='all'){
+      const GROUP_MAP={chest:'가슴',front_delt:'어깨',mid_delt:'어깨',rear_delt:'어깨',upper_back:'등',lats:'등',traps:'등',lower_back:'등',biceps:'팔',triceps:'팔',forearms:'팔',quads:'하체',hamstrings:'하체',glutes:'하체',calves:'하체',hip_flexors:'하체',abs:'복근',obliques:'복근'};
+      const groups={};
+      activeList.forEach(([m,d])=>{const g=GROUP_MAP[m]||'기타';if(!groups[g])groups[g]={vol:0,sets:0,muscles:[]};groups[g].vol+=d.volume;groups[g].sets+=d.sets;groups[g].muscles.push(m);});
+      const totalVol=Object.values(groups).reduce((a,g)=>a+g.vol,0)||1;
+      const sorted=Object.entries(groups).sort((a,b)=>b[1].vol-a[1].vol);
+      const fmtV=v=>v>=1000?(v/1000).toFixed(1)+'t':Math.round(v).toLocaleString()+'kg';
+      summary.innerHTML='<div style="display:flex;flex-direction:column;gap:4px;">'+
+        sorted.map(([g,d])=>{
+          const pct=Math.round(d.vol/totalVol*100);
+          const col=heatColor(pct/100);
+          return`<div onclick="highlightMuscle('${d.muscles[0]}')" style="display:flex;align-items:center;gap:8px;padding:5px 10px;background:rgba(255,255,255,0.05);border-radius:6px;cursor:pointer;" id="mm-pill-${d.muscles[0]}">
+            <div style="width:4px;height:20px;border-radius:2px;background:${col};flex-shrink:0;"></div>
+            <div style="flex:1;font-size:12px;font-weight:600;color:var(--text);">${g}</div>
+            <div style="font-size:12px;font-weight:700;color:var(--accent);font-family:'DM Mono',monospace;">${pct}%</div>
+            <div style="font-size:10px;color:var(--text3);font-family:'DM Mono',monospace;">${fmtV(d.vol)}</div>
+          </div>`;
+        }).join('')+'</div>';
+    } else {
+      summary.innerHTML='<div style="display:flex;flex-wrap:wrap;gap:4px;">'+
+        activeList.map(([m,d])=>{
+          const col=heatColor(d.intensity);
+          return`<span onclick="highlightMuscle('${m}')" style="display:inline-flex;align-items:center;gap:3px;padding:5px 10px;background:rgba(255,255,255,0.05);border:1px solid transparent;border-left:3px solid ${col};border-radius:6px;font-size:11px;color:var(--text);cursor:pointer;transition:all .15s;" id="mm-pill-${m}">${MUSCLE_LABELS[m]||m} <span style="color:var(--text3);font-family:'DM Mono',monospace;">${d.sets}세트</span></span>`;
+        }).join('')+'</div>';
+    }
     setTimeout(()=>highlightMuscle(activeList[0][0]),100);
   } else {
     summary.innerHTML='<div style="font-size:12px;color:var(--text3);text-align:center;padding:12px 0;">'+(_mmMode==='today'?'오늘 운동 기록이 없어요 🏋️':'이번 주 운동 기록이 없어요 🏋️')+'</div>';
