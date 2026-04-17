@@ -2451,20 +2451,19 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 </div>
 
 <div id="room-overlay" style="display:none;position:fixed;top:0;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;height:100%;z-index:900;flex-direction:column;background:#0a0a10;overflow:hidden;">
+  <!-- 닫기 버튼 (상단 우측) -->
+  <button onclick="closeRoomOverlay()" style="position:absolute;top:env(safe-area-inset-top,12px);right:12px;z-index:10;width:34px;height:34px;border-radius:50%;background:rgba(0,0,0,.5);backdrop-filter:blur(8px);border:0.5px solid rgba(255,255,255,.15);color:var(--text2);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;touch-action:manipulation;margin-top:8px;">✕</button>
   <!-- 캔버스 씬 (전체 채움) -->
   <div style="position:relative;width:100%;flex:1;overflow:hidden;">
     <canvas id="room-canvas" width="520" height="520" style="display:block;width:100%;height:100%;object-fit:contain;image-rendering:pixelated;cursor:default;"></canvas>
     <div id="room-toast" style="position:absolute;top:42%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.85);color:#FFD700;font-family:monospace;font-size:12px;padding:6px 16px;border-radius:6px;pointer-events:none;opacity:0;transition:opacity 0.3s;white-space:nowrap;z-index:10;text-align:center;"></div>
-    <div style="position:absolute;bottom:8px;right:12px;color:rgba(255,255,255,0.3);font-family:monospace;font-size:10px;pointer-events:none;">💪 덤벨 클릭</div>
+    <div style="position:absolute;bottom:40%;right:10%;color:rgba(255,255,255,0.35);font-family:monospace;font-size:10px;pointer-events:none;text-align:center;">💪<br>탭!</div>
   </div>
   <!-- 하단 정보 바 -->
   <div style="flex-shrink:0;padding:12px 20px 36px;background:rgba(10,10,16,0.98);">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-      <div>
-        <div id="room-tier-name" style="font-size:18px;font-weight:700;"></div>
-        <div id="room-tier-pts" style="font-size:12px;color:var(--text2);font-family:'DM Mono',monospace;margin-top:2px;"></div>
-      </div>
-      <button onclick="closeRoomOverlay()" style="width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.08);border:0.5px solid rgba(255,255,255,.15);color:var(--text2);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;touch-action:manipulation;">✕</button>
+    <div style="margin-bottom:10px;">
+      <div id="room-tier-name" style="font-size:18px;font-weight:700;"></div>
+      <div id="room-tier-pts" style="font-size:12px;color:var(--text2);font-family:'DM Mono',monospace;margin-top:2px;"></div>
     </div>
     <div style="height:5px;background:rgba(255,255,255,.1);border-radius:3px;overflow:hidden;margin-bottom:5px;">
       <div id="room-progress" style="height:100%;border-radius:3px;background:linear-gradient(90deg,#34d399,#22d3ee);width:0%;transition:width .6s;"></div>
