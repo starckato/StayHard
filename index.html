@@ -10672,15 +10672,10 @@ function renderMuscleMap(){
   const activeList=Object.entries(activation).filter(([,d])=>d.intensity>0).sort((a,b)=>b[1].intensity-a[1].intensity);
   const summary=document.getElementById('mm-summary');
   if(activeList.length){
-    summary.innerHTML='<div style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:6px;">자극된 부위</div><div style="display:flex;flex-direction:column;gap:4px;">'+
+    summary.innerHTML='<div style="display:flex;flex-wrap:wrap;gap:4px;">'+
       activeList.map(([m,d])=>{
         const col=heatColor(d.intensity);
-        const tl=d.intensity>=0.91?'폭발':d.intensity>=0.61?'집중 타격':d.intensity>=0.31?'자극됨':'워밍업';
-        return`<div style="display:flex;align-items:center;gap:8px;padding:6px 10px;background:rgba(255,255,255,0.04);border-radius:8px;">
-          <div style="width:6px;height:24px;border-radius:3px;background:${col};flex-shrink:0;${d.intensity>=0.85?'box-shadow:0 0 6px rgba(255,80,60,0.4);':''}"></div>
-          <div style="flex:1;min-width:0;"><div style="font-size:12px;font-weight:600;color:var(--text);">${MUSCLE_LABELS[m]||m}</div><div style="font-size:10px;color:var(--text3);">${tl}</div></div>
-          <div style="text-align:right;flex-shrink:0;font-family:'DM Mono',monospace;"><div style="font-size:12px;font-weight:700;color:var(--text);">${d.sets}세트</div><div style="font-size:10px;color:var(--text3);">${fmtVol(d.volume)}</div></div>
-        </div>`;
+        return`<span style="display:inline-flex;align-items:center;gap:3px;padding:3px 8px;background:rgba(255,255,255,0.05);border-left:3px solid ${col};border-radius:5px;font-size:10px;color:var(--text);">${MUSCLE_LABELS[m]||m} <span style="color:var(--text3);font-family:'DM Mono',monospace;">${d.sets}세트</span></span>`;
       }).join('')+'</div>';
   } else {
     summary.innerHTML='<div style="font-size:12px;color:var(--text3);text-align:center;padding:12px 0;">'+(_mmMode==='today'?'오늘 운동 기록이 없어요 🏋️':'이번 주 운동 기록이 없어요 🏋️')+'</div>';
