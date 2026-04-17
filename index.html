@@ -1131,6 +1131,8 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
         </div>
       </div>
 
+      <div id="st-report-card" style="margin-bottom:14px;"></div>
+
       <div id="st-insights-section" style="margin-bottom:14px;">
         <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;">✨ 이번 기간 인사이트</div>
         <div id="st-insights-list"></div>
@@ -1141,6 +1143,11 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
         <div class="stats-meta" id="st-score-meta"></div>
         <div style="position:relative;height:200px;"><canvas id="st-chart-score"></canvas></div>
         <div id="st-score-empty" class="stats-empty" style="display:none;">점수 기록이 없어요</div>
+      </div>
+
+      <div class="stats-card" id="st-pts-breakdown-card" style="display:none;">
+        <div class="stats-card-title">📊 점수 구성</div>
+        <div id="st-pts-breakdown"></div>
       </div>
     </div>
 
@@ -1186,6 +1193,12 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
           <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:var(--text3);"><div style="width:11px;height:11px;border-radius:3px;background:var(--surface3);border:1px solid var(--border2);"></div>미기록</div>
         </div>
         <div id="st-meal-empty" class="stats-empty" style="display:none;">식단 기록이 없어요</div>
+      </div>
+
+      <div class="stats-card stats-featured" id="st-meal-quality-card" style="display:none;">
+        <div class="stats-card-title">📈 식단 품질 추이</div>
+        <div class="stats-meta" id="st-meal-quality-meta"></div>
+        <div style="position:relative;height:160px;"><canvas id="st-chart-meal-quality"></canvas></div>
       </div>
     </div>
 
@@ -11609,6 +11622,9 @@ function stRenderAll(rows){
   try{stRenderHero(filtered);}catch(e){console.warn('stRenderHero error:',e);}
   try{stRenderKPI(filtered);}catch(e){console.warn('stRenderKPI error:',e);}
   try{stRenderInsights(filtered);}catch(e){console.warn('stRenderInsights error:',e);}
+  try{stRenderReportCard(filtered);}catch(e){console.warn('stRenderReportCard error:',e);}
+  try{stRenderPtsBreakdown(filtered);}catch(e){console.warn('stRenderPtsBreakdown error:',e);}
+  try{stRenderMealQuality(filtered);}catch(e){console.warn('stRenderMealQuality error:',e);}
   try{stRenderWeightChart(filtered);}catch(e){console.warn('stRenderWeightChart error:',e);}
   try{stRenderVolChart(filtered);}catch(e){console.warn('stRenderVolChart error:',e);}
   try{stRenderExerciseList(filtered);}catch(e){console.warn('stRenderExerciseList error:',e);}
@@ -11639,7 +11655,7 @@ function statsSetSection(key,skipSave){
   });
   // Resize charts that became visible
   setTimeout(()=>{
-    const chartMap={overview:['score'],training:['vol'],nutrition:[],habits:['weight','routine','bodycomp']};
+    const chartMap={overview:['score'],training:['vol'],nutrition:['mealquality'],habits:['weight','routine','bodycomp']};
     (chartMap[key]||[]).forEach(k=>{if(stCharts[k]){try{stCharts[k].resize();}catch(_){}}});
   },30);
 }
@@ -12272,6 +12288,124 @@ function stRenderRoutineChart(rows){
       yScale:{min:0,max:100},
       tooltip:{label:ctx=>ctx.parsed.y+'% 완료'}
     }),plugins:{...stDashCfg().plugins,stTargetLine:{value:80,color:'rgba(52,211,153,0.55)',label:'목표 80%'}}}
+  });
+}
+
+function stRenderReportCard(rows){
+  const container=document.getElementById('st-report-card');
+  if(!rows.length){container.innerHTML='';return;}
+  const calcPct=(arr,fn)=>{let d=0,t=0;arr.forEach(r=>{const a=fn(r);t+=a.total;d+=a.done;});return t>0?Math.round(d/t*100):null;};
+  const routinePct=calcPct(rows,r=>{const m=r.mandatory||[];return{total:m.length,done:m.filter(x=>x.done).length};});
+  const targetPct=calcPct(rows,r=>{const t=r.targets||[];return{total:t.length,done:t.filter(x=>x.st==='done').length};});
+  const mealRows=rows.flatMap(r=>(r.meals||[]).filter(m=>['아침','점심','저녁'].includes(m.time)&&m.type));
+  const cleanPct=mealRows.length?Math.round(mealRows.filter(m=>m.type==='green').length/mealRows.length*100):null;
+  let woCnt=0;rows.forEach(r=>{woCnt+=(r.workouts||[]).filter(w=>w.status==='done').length;});
+  const woPerWeek=rows.length>=7?(woCnt/(rows.length/7)).toFixed(1):woCnt;
+  const grade=(v,thresholds)=>{if(v===null)return{g:'-',c:'var(--text3)'};for(const[min,g,c]of thresholds)if(v>=min)return{g,c};return thresholds[thresholds.length-1]?{g:'F',c:'var(--red)'}:{g:'-',c:'var(--text3)'};};
+  const cats=[
+    {name:'훈련',icon:'🏋️',val:woPerWeek>=3?'A':woPerWeek>=2?'B':woPerWeek>=1?'C':'D',...grade(woPerWeek>=3?90:woPerWeek>=2?70:woPerWeek>=1?50:20,[[80,'A','var(--green)'],[60,'B','var(--blue)'],[40,'C','var(--amber)'],[0,'D','var(--red)']]),sub:'주 '+woPerWeek+'회'},
+    {name:'식단',icon:'🥗',...grade(cleanPct,[[70,'A','var(--green)'],[50,'B','var(--blue)'],[30,'C','var(--amber)'],[0,'D','var(--red)']]),sub:cleanPct!==null?'클린 '+cleanPct+'%':'데이터 없음'},
+    {name:'루틴',icon:'✅',...grade(routinePct,[[90,'A','var(--green)'],[70,'B','var(--blue)'],[50,'C','var(--amber)'],[0,'D','var(--red)']]),sub:routinePct!==null?'완료 '+routinePct+'%':'데이터 없음'},
+    {name:'할일',icon:'🎯',...grade(targetPct,[[80,'A','var(--green)'],[60,'B','var(--blue)'],[40,'C','var(--amber)'],[0,'D','var(--red)']]),sub:targetPct!==null?'완료 '+targetPct+'%':'데이터 없음'},
+  ];
+  const overall=cats.filter(c=>c.g!=='-');
+  const avgScore=overall.length?Math.round(overall.reduce((a,c)=>a+({A:4,B:3,C:2,D:1,F:0}[c.g]||0),0)/overall.length*25):0;
+  const overallGrade=avgScore>=90?'A':avgScore>=70?'B':avgScore>=50?'C':avgScore>=30?'D':'F';
+  const overallColor=avgScore>=90?'var(--green)':avgScore>=70?'var(--blue)':avgScore>=50?'var(--amber)':'var(--red)';
+  container.innerHTML=`<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:10px;">
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px;">
+      <div style="width:52px;height:52px;border-radius:14px;background:${overallColor};display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:900;color:#fff;font-family:'DM Mono',monospace;">${overallGrade}</div>
+      <div><div style="font-size:14px;font-weight:700;">이번 기간 성적표</div><div style="font-size:11px;color:var(--text3);margin-top:2px;">${rows.length}일 기준 종합 평가</div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+      ${cats.map(c=>`<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--surface2);border-radius:8px;">
+        <div style="font-size:14px;">${c.icon}</div>
+        <div style="flex:1;min-width:0;"><div style="font-size:11px;font-weight:600;color:var(--text);">${c.name}</div><div style="font-size:9px;color:var(--text3);">${c.sub}</div></div>
+        <div style="font-size:18px;font-weight:800;color:${c.c};font-family:'DM Mono',monospace;">${c.g}</div>
+      </div>`).join('')}
+    </div>
+  </div>`;
+}
+
+function stRenderPtsBreakdown(rows){
+  const card=document.getElementById('st-pts-breakdown-card');
+  const container=document.getElementById('st-pts-breakdown');
+  const catMap={};
+  rows.forEach(r=>{
+    (r.points_log||[]).forEach(p=>{
+      const t=p.type||'other';
+      let cat='기타';
+      if(t.startsWith('workout')||t==='pushup_challenge')cat='운동';
+      else if(t.startsWith('diet')||t.startsWith('cheat'))cat='식단';
+      else if(t.startsWith('routine'))cat='루틴';
+      else if(t.startsWith('target'))cat='할일';
+      else if(t.startsWith('weight'))cat='체중';
+      else if(t==='cold_shower'||t==='early_rise')cat='챌린지';
+      catMap[cat]=(catMap[cat]||0)+(p.pts||0);
+    });
+  });
+  const entries=Object.entries(catMap).filter(([,v])=>v!==0).sort((a,b)=>Math.abs(b[1])-Math.abs(a[1]));
+  if(!entries.length){card.style.display='none';return;}
+  card.style.display='';
+  const totalPos=entries.reduce((a,[,v])=>a+(v>0?v:0),0);
+  const colors={'운동':'#ff4d4d','식단':'#34d399','루틴':'#38bdf8','할일':'#f59e0b','체중':'#a78bfa','챌린지':'#fb923c','기타':'#6b6b78'};
+  let html='<div style="padding:12px 14px;">';
+  html+='<div style="display:flex;height:10px;border-radius:5px;overflow:hidden;margin-bottom:14px;gap:1px;">';
+  entries.filter(([,v])=>v>0).forEach(([name,v])=>{
+    const pct=Math.max(2,Math.round(v/totalPos*100));
+    html+=`<div style="width:${pct}%;background:${colors[name]||'#6b6b78'};"></div>`;
+  });
+  html+='</div><div style="display:flex;flex-direction:column;gap:6px;">';
+  entries.forEach(([name,v])=>{
+    const col=colors[name]||'#6b6b78';
+    const sign=v>0?'+':'';
+    html+=`<div style="display:flex;align-items:center;justify-content:space-between;">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div style="width:8px;height:8px;border-radius:2px;background:${col};flex-shrink:0;"></div>
+        <span style="font-size:12px;font-weight:600;color:var(--text);">${name}</span>
+      </div>
+      <span style="font-size:12px;font-weight:700;color:${v>=0?'var(--green)':'var(--red)'};font-family:'DM Mono',monospace;">${sign}${v}pt</span>
+    </div>`;
+  });
+  html+='</div></div>';
+  container.innerHTML=html;
+}
+
+function stRenderMealQuality(rows){
+  const card=document.getElementById('st-meal-quality-card');
+  const canvas=document.getElementById('st-chart-meal-quality');
+  const metaEl=document.getElementById('st-meal-quality-meta');
+  const scoreMap={green:3,normal:2,cheat:1,red:0,alcohol:0};
+  const pts=rows.map(r=>{
+    const meals=(r.meals||[]).filter(m=>['아침','점심','저녁'].includes(m.time)&&m.type);
+    if(!meals.length)return null;
+    const avg=meals.reduce((a,m)=>a+(scoreMap[m.type]??1),0)/meals.length;
+    return{x:r._key,y:Math.round(avg*100)/100};
+  }).filter(Boolean);
+  if(pts.length<3){card.style.display='none';return;}
+  card.style.display='';
+  const vals=pts.map(p=>p.y);
+  const avg=(vals.reduce((a,v)=>a+v,0)/vals.length).toFixed(1);
+  const recent7=vals.slice(-7);const recent7Avg=recent7.length?(recent7.reduce((a,v)=>a+v,0)/recent7.length).toFixed(1):'—';
+  stHeadline('st-meal-quality-meta',[
+    {label:'평균 품질',value:avg,unit:'/3'},
+    {label:'최근 7일',value:recent7Avg,unit:'/3'},
+    {label:'기록일',value:pts.length,unit:'일'}
+  ]);
+  stDestroyChart('mealquality');
+  stCharts.mealquality=new Chart(canvas,{
+    type:'line',
+    data:{labels:pts.map(p=>p.x.slice(5).replace('-','/')),datasets:[{
+      data:vals,borderColor:'#34d399',borderWidth:2.5,
+      backgroundColor:ctx=>stGradient(ctx.chart.ctx,'52,211,153',[[0,0.25],[1,0.0]]),
+      pointRadius:0,pointHoverRadius:6,pointHoverBorderColor:'#fff',pointHoverBackgroundColor:'#34d399',
+      fill:true,tension:0.4
+    }]},
+    options:{...stDashCfg({
+      yCallback:v=>v.toFixed(1),
+      yScale:{min:0,max:3},
+      tooltip:{label:ctx=>{const v=ctx.parsed.y;return v>=2.5?'클린 중심 ('+v.toFixed(1)+')':v>=1.5?'일반 수준 ('+v.toFixed(1)+')':'개선 필요 ('+v.toFixed(1)+')';}}
+    }),plugins:{...stDashCfg().plugins,stTargetLine:{value:2.0,color:'rgba(52,211,153,0.4)',label:'목표 2.0'}}}
   });
 }
 
