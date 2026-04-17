@@ -41,7 +41,8 @@ Stay Hard
 │   │   │   └── 💧 Water cups + goal
 │   │   ├── 💪 Workout Card
 │   │   │   ├── Session rows → Session Summary
-│   │   │   └── "운동 추가하기" → Workout Start Screen
+│   │   │   ├── "운동 추가" → Workout Start Screen
+│   │   │   └── "💥 자극 부위" → Muscle Map Overlay
 │   │   ├── ✅ 필수 루틴 Card → Mandatory Modal
 │   │   └── 🎯 오늘의 할일 Card → Inline input
 │   │
@@ -344,6 +345,7 @@ Workout Start Screen
 | ch-create-overlay | 700 | Create competition |
 | ch-join-overlay | 700 | Join competition |
 | onboarding-modal | 800 | First-time setup |
+| muscle-map-overlay | 750 | Muscle activation heatmap |
 | room-overlay | 900 | Character room scene |
 | score-guide-modal | 800 | Score rules + tier ladder |
 
@@ -466,7 +468,6 @@ User Action → logCache[key] update → renderRoutine()
 - Sprint 4: Report card + points breakdown + meal quality trend
 
 ### UX Improvements (3 Rounds)
-- Quick-entry meal buttons (inline on empty slots)
 - Mid-tier milestones (100pt celebrations)
 - First-use contextual tooltips (meal, workout, water)
 - Offline indicator + retry button
@@ -480,7 +481,83 @@ User Action → logCache[key] update → renderRoutine()
 ### New Features
 - 야식 (late night snack) category
 - Empty workout session centered add button
+- 💥 자극 부위 (Muscle Activation Heatmap)
+  - Full-screen overlay with anatomical SVG body model (front + back)
+  - Flutter Body Atlas assets (CC BY 4.0, Ryan Graves)
+  - ~120 individual muscle paths mapped to 18 muscle IDs
+  - MUSCLE_MAP: 129 exercises → specific muscle contributions (%)
+  - computeMuscleActivation(): volume × contribution, normalized 0-1
+  - Single-hue red ember color system (dark maroon → blood crimson)
+  - High-intensity muscles get dark glow effect
+  - Toggle: 오늘 (today) vs 이번 주 (week cumulative)
+  - Toggle: 전면 (front) vs 후면 (back) body view
+  - Tooltip: muscle name + tier label + sets + volume
+  - Summary pills with colored intensity bars
+  - Tier labels: 워밍업 → 자극됨 → 집중 타격 → 폭발
+  - Attribution footer for CC BY 4.0 license
+
+### Defaults & Content
+- Default mandatory routines updated to universal examples:
+  📖 독서 30분 (everyday), 🗂️ 책상 정리 (everyday),
+  💪 운동 (Mon-Fri), 🏃 러닝 (Mon/Wed/Fri/Sun), 👕 빨래 (Sunday)
+- Removed inline quick-entry meal buttons from empty slots
+  (reverted to clean single-tap design)
 
 ### Code Quality
 - Dead code removal (10 items, ~25 lines)
 - Zero old palette values remaining
+
+---
+
+## 14. Muscle Activation System (자극 부위)
+
+### Architecture
+```
+User logs workout → finishSession() → queueSave()
+  → User taps 💥 자극 부위 button
+  → openMuscleMap() → fetch SVG assets (cached after first load)
+  → computeMuscleActivation(workouts, mode)
+  → renderMuscleMap() → color SVG paths by intensity
+```
+
+### MUSCLE_MAP (129 exercises → 18 muscle IDs)
+Maps each exercise name (Korean) to percentage-based muscle contributions:
+```javascript
+'벤치프레스': { chest: 70, front_delt: 15, triceps: 15 }
+'스쿼트': { quads: 45, glutes: 30, hamstrings: 15, lower_back: 10 }
+```
+
+### 18 Muscle IDs
+chest, upper_back, lats, traps, front_delt, mid_delt, rear_delt,
+biceps, triceps, forearms, glutes, quads, hamstrings, calves,
+abs, obliques, lower_back, hip_flexors
+
+### MUSCLE_SVG_MAP (18 IDs → ~120 SVG path IDs)
+Bridges fitness-level muscle groups to anatomical SVG element IDs:
+```javascript
+chest → ['pectoralis_major_l', 'pectoralis_major_r']
+quads → ['rectus_femoris_l', 'vastus_lateralis_l', 'vastus_medialis_l', ...]
+```
+
+### Color System (Single-Hue Red Ember)
+```
+Inactive: #1a1a20 (blends with background)
+Low:      dark maroon — barely visible warm tint
+Mid:      visible dark red — clearly worked
+High:     deep saturated red — heavily used
+Max:      blood crimson + dark glow — destroyed
+```
+
+### SVG Assets
+- `/assets/body_front.svg` (186KB, 126 paths, 587×1137)
+- `/assets/body_back.svg` (133KB, 80 paths, 596×1133)
+- Source: Flutter Body Atlas by Ryan Graves (CC BY 4.0)
+
+### Korean Labels (MUSCLE_LABELS)
+```
+chest: 가슴, upper_back: 상부 등, lats: 광배근, traps: 승모근,
+front_delt: 전면 삼각근, mid_delt: 측면 삼각근, rear_delt: 후면 삼각근,
+biceps: 이두근, triceps: 삼두근, forearms: 전완근, glutes: 둔근,
+quads: 대퇴사두, hamstrings: 햄스트링, calves: 종아리, abs: 복근,
+obliques: 복사근, lower_back: 하부 등, hip_flexors: 고관절 굴곡근
+```
