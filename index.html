@@ -4359,12 +4359,11 @@ let sliderOffset=0,selectedDate=new Date(now),selectedKey=TODAY;
 let wvOffset=0,wvLogs={};
 const logCache={};
 const DEFAULT_MAND=[
-  {name:'🐱 고양이 화장실',done:false,days:[0,1,2,3,4,5,6]},
-  {name:'🦷 고양이 양치',done:false,days:[0,1,2,3,4,5,6]},
-  {name:'🧹 집 청소',done:false,days:[0,1,2,3,4,5,6]},
-  {name:'👕 빨래',done:false,days:[0,1,2,3,4,5,6]},
-  {name:'🪥 양치',done:false,days:[0,1,2,3,4,5,6]},
-  {name:'🧽 걸레질',done:false,days:[0,1,2,3,4,5,6]},
+  {name:'📖 독서 30분',done:false,days:[0,1,2,3,4,5,6]},
+  {name:'🗂️ 책상 정리',done:false,days:[0,1,2,3,4,5,6]},
+  {name:'💪 운동',done:false,days:[1,2,3,4,5]},
+  {name:'🏃 러닝',done:false,days:[1,3,5,0]},
+  {name:'👕 빨래',done:false,days:[0]},
 ];
 function emptyLog(isNew=false){return{weight:null,water_cups:0,meals:[],workouts:[],mandatory:isNew?[]:JSON.parse(JSON.stringify(DEFAULT_MAND)),targets:[]};}
 let log=emptyLog();
@@ -6544,18 +6543,13 @@ function renderMeals(){
       </div>`;
     } else {
       const hl=curSlot===key;
-      return`<div class="meal-empty-slot${hl?' highlight':''}" style="flex-wrap:wrap;">
-        <div onclick="openSlotModal('${key}')" style="display:flex;align-items:center;gap:8px;flex:1;min-width:0;">
-          <span class="meal-empty-slot-icon">${icon}</span>
-          <span class="meal-empty-slot-text">${key} 기록하기</span>
-          <span class="meal-empty-slot-arrow">›</span>
-        </div>
-        <div style="display:flex;gap:4px;margin-top:6px;width:100%;" onclick="event.stopPropagation()">
-          <button onclick="quickMeal('${key}','green')" style="flex:1;padding:6px 0;border:1px solid var(--green-bd);background:var(--green-bg);border-radius:6px;font-size:10px;font-weight:600;color:var(--green);cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">✅클린</button>
-          <button onclick="quickMeal('${key}','normal')" style="flex:1;padding:6px 0;border:1px solid var(--border2);background:var(--surface3);border-radius:6px;font-size:10px;font-weight:600;color:var(--text2);cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">🍚일반</button>
-          <button onclick="quickMeal('${key}','cheat')" style="flex:1;padding:6px 0;border:1px solid var(--amber-bd);background:var(--amber-bg);border-radius:6px;font-size:10px;font-weight:600;color:var(--amber);cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">🎉치팅</button>
-          <button onclick="quickMeal('${key}','red')" style="flex:1;padding:6px 0;border:1px solid var(--red-bd);background:var(--red-bg);border-radius:6px;font-size:10px;font-weight:600;color:var(--red);cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">🚫금지</button>
-        </div>
+      return`<div class="meal-empty-slot${hl?' highlight':''}" onclick="openSlotModal('${key}')">
+        <span class="meal-empty-slot-icon">${icon}</span>
+        <span class="meal-empty-slot-text">${key} 기록하기</span>
+        ${hl
+          ? `<span class="meal-empty-slot-hint">지금 ↗</span>`
+          : `<span class="meal-empty-slot-arrow">›</span>`
+        }
       </div>`;
     }
   }).join('');
