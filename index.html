@@ -10765,19 +10765,19 @@ function highlightMuscle(muscleId){
     const tl=(v)=>v>=0.91?'폭발 💥':v>=0.61?'집중 타격 🔥':v>=0.31?'자극됨 ⚡':'워밍업';
     tip.innerHTML=`<div style="font-size:12px;font-weight:700;">${MUSCLE_LABELS[muscleId]||muscleId}</div><div style="font-size:10px;color:var(--text2);margin-top:1px;">${tl(md.intensity)} — ${md.sets}세트 · ${fmtV(md.volume)}</div>`;
     tip.style.display='block';
-    const cRect=container.getBoundingClientRect();
-    const cx=(minX+maxX)/2-cRect.left;
-    const cy=(minY+maxY)/2-cRect.top;
-    const isRight=cx<cRect.width/2;
-    tip.style.top=(cy-20)+'px';
-    arrow.style.top=(cy-4)+'px';
+    const oRect=document.getElementById('muscle-map-overlay').getBoundingClientRect();
+    const mcx=(minX+maxX)/2-oRect.left;
+    const mcy=(minY+maxY)/2-oRect.top;
+    const isRight=mcx<oRect.width/2;
+    tip.style.top=mcy+'px';tip.style.transform='translateY(-50%)';
+    arrow.style.top=mcy+'px';arrow.style.transform='translateY(-50%) rotate(45deg)';
     if(isRight){
-      tip.style.left=Math.min(maxX-cRect.left+8, cRect.width-140)+'px';tip.style.right='auto';
-      arrow.style.left=Math.min(maxX-cRect.left+2, cRect.width-144)+'px';arrow.style.right='auto';
+      tip.style.left=Math.min(maxX-oRect.left+10,oRect.width-150)+'px';tip.style.right='auto';
+      arrow.style.left=(maxX-oRect.left+4)+'px';arrow.style.right='auto';
       arrow.style.borderRight='none';arrow.style.borderTop='none';arrow.style.borderLeft='1px solid var(--accent-bd)';arrow.style.borderBottom='1px solid var(--accent-bd)';
     } else {
-      tip.style.right=Math.min(cRect.right-minX+8, cRect.width-140)+'px';tip.style.left='auto';
-      arrow.style.right=Math.min(cRect.right-minX+2, cRect.width-144)+'px';arrow.style.left='auto';
+      tip.style.right=Math.min(oRect.right-minX+10,oRect.width-150)+'px';tip.style.left='auto';
+      arrow.style.right=(oRect.right-minX+4)+'px';arrow.style.left='auto';
       arrow.style.borderLeft='none';arrow.style.borderBottom='none';arrow.style.borderRight='1px solid var(--accent-bd)';arrow.style.borderTop='1px solid var(--accent-bd)';
     }
     arrow.style.display='block';
