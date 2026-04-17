@@ -10686,7 +10686,7 @@ function renderMuscleMap(){
   container.innerHTML=svgStr;
   const svg=container.querySelector('svg');
   if(!svg)return;
-  svg.style.width='100%';svg.style.maxHeight='calc(100vh - 260px)';svg.style.height='auto';
+  svg.style.width='85%';svg.style.maxHeight='calc(100vh - 280px)';svg.style.height='auto';svg.style.margin='0 auto';svg.style.display='block';
   const wos=_mmMode==='today'?(log.workouts||[]):getWeekWorkouts();
   const activation=computeMuscleActivation(wos,_mmMode);
   const fmtVol=v=>v>=1000?(v/1000).toFixed(1)+'t':Math.round(v).toLocaleString()+'kg';
@@ -10716,16 +10716,42 @@ function renderMuscleMap(){
     p.addEventListener('mouseleave',()=>{document.getElementById('mm-tooltip').style.display='none';});
     p.addEventListener('touchstart',()=>{showTip();setTimeout(()=>document.getElementById('mm-tooltip').style.display='none',2500);},{passive:true});
   });
+  _mmActivation=activation;
   const activeList=Object.entries(activation).filter(([,d])=>d.intensity>0).sort((a,b)=>b[1].intensity-a[1].intensity);
   const summary=document.getElementById('mm-summary');
   if(activeList.length){
     summary.innerHTML='<div style="display:flex;flex-wrap:wrap;gap:4px;">'+
       activeList.map(([m,d])=>{
         const col=heatColor(d.intensity);
-        return`<span style="display:inline-flex;align-items:center;gap:3px;padding:3px 8px;background:rgba(255,255,255,0.05);border-left:3px solid ${col};border-radius:5px;font-size:10px;color:var(--text);">${MUSCLE_LABELS[m]||m} <span style="color:var(--text3);font-family:'DM Mono',monospace;">${d.sets}세트</span></span>`;
+        return`<span onclick="highlightMuscle('${m}')" style="display:inline-flex;align-items:center;gap:3px;padding:5px 10px;background:rgba(255,255,255,0.05);border-left:3px solid ${col};border-radius:6px;font-size:11px;color:var(--text);cursor:pointer;transition:background .15s;" id="mm-pill-${m}">${MUSCLE_LABELS[m]||m} <span style="color:var(--text3);font-family:'DM Mono',monospace;">${d.sets}세트</span></span>`;
       }).join('')+'</div>';
+    setTimeout(()=>highlightMuscle(activeList[0][0]),100);
   } else {
     summary.innerHTML='<div style="font-size:12px;color:var(--text3);text-align:center;padding:12px 0;">'+(_mmMode==='today'?'오늘 운동 기록이 없어요 🏋️':'이번 주 운동 기록이 없어요 🏋️')+'</div>';
+  }
+}
+let _mmActivation={},_mmHighlighted=null;
+function highlightMuscle(muscleId){
+  const svgIds=MUSCLE_SVG_MAP[muscleId]||[];
+  const container=document.getElementById('mm-body');
+  const svg=container?.querySelector('svg');
+  if(!svg)return;
+  if(_mmHighlighted)svg.querySelectorAll('path').forEach(p=>{p.style.stroke='';p.style.strokeWidth='';});
+  _mmHighlighted=muscleId;
+  document.querySelectorAll('[id^="mm-pill-"]').forEach(el=>{el.style.background='rgba(255,255,255,0.05)';});
+  const pill=document.getElementById('mm-pill-'+muscleId);
+  if(pill)pill.style.background='rgba(255,255,255,0.15)';
+  svgIds.forEach(sid=>{
+    const el=svg.getElementById(sid);
+    if(el){el.style.stroke='#fff';el.style.strokeWidth='2';el.style.transition='stroke .2s';}
+  });
+  const d=_mmActivation[muscleId];
+  if(d){
+    const fmtVol=v=>v>=1000?(v/1000).toFixed(1)+'t':Math.round(v).toLocaleString()+'kg';
+    const tierLabel=(v)=>v>=0.91?'폭발 💥':v>=0.61?'집중 타격 🔥':v>=0.31?'자극됨 ⚡':'워밍업';
+    const tip=document.getElementById('mm-tooltip');
+    tip.innerHTML=`<div style="font-size:13px;font-weight:700;">${MUSCLE_LABELS[muscleId]||muscleId}</div><div style="font-size:11px;color:var(--text2);margin-top:2px;">${tierLabel(d.intensity)} — ${d.sets}세트 · ${fmtVol(d.volume)}</div>`;
+    tip.style.display='block';
   }
 }
 
