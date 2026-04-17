@@ -706,7 +706,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 </head>
 <body>
 
-<div class="loading-overlay" id="loading"><div class="spinner"></div><div class="loading-txt">로딩 중…</div></div>
+<div class="loading-overlay" id="loading"><div class="spinner"></div><div class="loading-txt">로딩 중…</div><button id="loading-retry" onclick="location.reload()" style="display:none;margin-top:16px;padding:10px 24px;background:var(--accent-grad);border:none;border-radius:var(--radius-sm);color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;">다시 시도</button></div>
 <div class="toast" id="toast">저장됨 ✓</div>
 
 <!-- ══ AUTH ══ -->
@@ -771,6 +771,12 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
     <div class="hdr-sub" id="hdr-sub" style="margin-top:2px;">로딩 중…</div>
     <!-- 3행: 모토 (전체 너비, 줄바꿈 허용) -->
     <div id="daily-motto" style="font-size:10px;color:#ff4d4d;margin-top:3px;font-weight:500;letter-spacing:.02em;font-family:'DM Sans',sans-serif;line-height:1.5;"></div>
+  </div>
+
+  <div id="offline-banner" style="display:none;margin:0 14px 6px;padding:8px 14px;background:var(--amber-bg);border:1px solid var(--amber-bd);border-radius:var(--radius-sm);display:none;align-items:center;gap:8px;">
+    <span style="font-size:14px;">📡</span>
+    <span style="flex:1;font-size:11px;font-weight:600;color:var(--amber);">오프라인 — 변경사항 저장 대기 중</span>
+    <button onclick="_retrySync()" style="padding:4px 10px;background:var(--amber);border:none;border-radius:6px;color:#000;font-size:10px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;">재시도</button>
   </div>
 
   <!-- ══ DAILY ROUTINE ══ -->
@@ -4575,8 +4581,19 @@ function goToYesterdayFromBanner(){
   sliderOffset=yesterday<weekStart(0)?-1:0;
   selectDay(yesterday,yKey);
 }
-function show(id){document.getElementById(id).style.display='block';}
-function hide(id){document.getElementById(id).style.display='none';}
+let _loadingTimeout=null;
+function show(id){
+  document.getElementById(id).style.display='block';
+  if(id==='loading'){
+    clearTimeout(_loadingTimeout);
+    const rb=document.getElementById('loading-retry');if(rb)rb.style.display='none';
+    _loadingTimeout=setTimeout(()=>{const rb=document.getElementById('loading-retry');if(rb)rb.style.display='block';},15000);
+  }
+}
+function hide(id){
+  document.getElementById(id).style.display='none';
+  if(id==='loading'){clearTimeout(_loadingTimeout);const rb=document.getElementById('loading-retry');if(rb)rb.style.display='none';}
+}
 
 function getWaterGoal(){return CP?.water_goal||6;}
 function toggleWaterGoalPanel(){
@@ -4860,7 +4877,7 @@ async function doLogin(){
   const email=document.getElementById('li-email').value.trim(),pw=document.getElementById('li-pw').value;
   if(!email||!pw){document.getElementById('li-err').textContent='이메일과 비밀번호를 입력하세요.';return;}
   const btn=document.getElementById('li-btn');
-  btn.disabled=true;btn.textContent='로그인 중…';
+  btn.disabled=true;btn.innerHTML='<span class="spinner" style="width:16px;height:16px;display:inline-block;vertical-align:middle;margin-right:6px;border-width:2px;"></span>로그인 중…';
   document.getElementById('li-err').textContent='';
   try{
     const timeout=new Promise((_,rej)=>setTimeout(()=>rej(new Error('서버 응답 지연 — 잠시 후 다시 시도해주세요')),20000));
@@ -4870,7 +4887,14 @@ async function doLogin(){
     show('loading');
     await onLogin(data.user);
   }catch(e){
-    document.getElementById('li-err').textContent=e.message||'로그인 실패';
+    let msg=e.message||'로그인 실패';
+    if(msg.includes('Invalid login')||msg.includes('invalid_credentials'))msg='이메일 또는 비밀번호가 틀렸어요.';
+    else if(msg.includes('Email not confirmed')||msg.includes('email_not_confirmed'))msg='이메일 인증이 필요합니다. 메일함을 확인해주세요.';
+    else if(msg.includes('Too many requests')||msg.includes('rate_limit'))msg='너무 많은 시도. 잠시 후 다시 시도해주세요.';
+    else if(msg.includes('network')||msg.includes('fetch')||msg.includes('서버 응답'))msg='네트워크 연결을 확인해주세요.';
+    const errEl=document.getElementById('li-err');
+    errEl.textContent=msg;
+    errEl.style.animation='none';setTimeout(()=>errEl.style.animation='suShake .3s ease',10);
     btn.disabled=false;btn.textContent='로그인';
   }
 }
@@ -10407,6 +10431,40 @@ function showTip(key,title,body){
 function tipMeal(){showTip('meal','식단 품질 가이드','✅ <b>클린</b> — 샐러드, 닭가슴살, 현미밥<br>🍚 <b>일반</b> — 한식, 백반, 찌개<br>🎉 <b>치팅</b> — 치트밀 (주 2회 허용)<br>🚫 <b>금지</b> — 폭식, 배달음식, 정크푸드');}
 function tipWorkout(){showTip('workout','운동 세션 사용법','무게와 반복 횟수를 입력하고 ✓ 체크하면 세트 완료!<br>＋ 버튼으로 종목 추가, 완료되면 아래 버튼 탭.');}
 function tipWater(){showTip('water','물 마시기','컵을 탭하면 채워져요.<br>같은 컵을 다시 탭하면 취소됩니다.<br>⚙️ 아이콘으로 목표량 설정 가능!');}
+
+// ── Offline detection ──
+let _isOffline=false;
+function _updateOffline(offline){
+  _isOffline=offline;
+  const b=document.getElementById('offline-banner');
+  if(b)b.style.display=offline?'flex':'none';
+}
+function _retrySync(){
+  _updateOffline(false);
+  _flushSave();
+  _saveScoreNow();
+  showToast('동기화 시도 중...');
+}
+window.addEventListener('online',()=>_updateOffline(false));
+window.addEventListener('offline',()=>_updateOffline(true));
+
+// ── Day slider swipe ──
+(function(){
+  let _sx=0,_sy=0,_swiping=false;
+  document.addEventListener('DOMContentLoaded',()=>{
+    const strip=document.getElementById('day-strip');
+    if(!strip)return;
+    strip.addEventListener('touchstart',e=>{_sx=e.touches[0].clientX;_sy=e.touches[0].clientY;_swiping=true;},{passive:true});
+    strip.addEventListener('touchend',e=>{
+      if(!_swiping)return;_swiping=false;
+      const dx=e.changedTouches[0].clientX-_sx;
+      const dy=e.changedTouches[0].clientY-_sy;
+      if(Math.abs(dx)>50&&Math.abs(dx)>Math.abs(dy)*1.5){
+        if(dx<0)shiftWeek(1);else shiftWeek(-1);
+      }
+    },{passive:true});
+  });
+})();
 
 init();
 
