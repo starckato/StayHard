@@ -665,6 +665,51 @@ obliques: 복사근, lower_back: 하부 등, hip_flexors: 고관절 굴곡근
 3. Update `EX_GIF` constant URLs → Supabase paths
 4. Done — fully licensed, self-hosted, zero external dependencies
 
+---
+
+## 16. Wearable Integration Roadmap
+
+### Phase 1: Strava API (Web — No Native App)
+**Status:** Backlog
+**Why Strava first:** Universal bridge — Garmin, Apple Watch, Samsung, Polar all sync to Strava. One integration covers all wearable users.
+
+**Integration plan:**
+1. Register StayHard as Strava API app (free, OAuth 2.0)
+2. User connects Strava account via OAuth web flow
+3. Pull workout data: activity type, duration, distance, heart rate, calories
+4. Map Strava activities → StayHard workout entries (auto-log)
+5. Store Strava access/refresh tokens in `profiles` table
+6. Webhook subscription for real-time activity push (no polling)
+
+**Data available from Strava:**
+- Activities: run, ride, swim, walk, workout, etc.
+- Duration, distance, elevation, calories
+- Heart rate zones (if watch provides)
+- GPS route (optional)
+- Splits and laps
+
+**What it enables:**
+- Auto-log cardio workouts from watch (달리기, 사이클, 수영, 걷기)
+- Heart rate data for workout intensity
+- Calories burned for daily tracking
+- No manual entry for outdoor activities
+
+**Limitations:**
+- Gym workouts (sets/reps/kg) not available from Strava — still manual
+- 15-min delay on free Strava API tier
+- Rate limit: 100 req/15min, 1000 req/day
+
+### Phase 2: Direct Wearable SDKs (Native App Required)
+**Status:** Future — requires native app (Capacitor/React Native/Flutter)
+
+| Platform | SDK | Data |
+|----------|-----|------|
+| **Apple Watch** | HealthKit | HR, workouts, steps, sleep, body metrics |
+| **Garmin** | Garmin Connect IQ / Health API | HR, workouts, body battery, stress, sleep |
+| **Samsung** | Samsung Health SDK | HR, workouts, steps, body composition |
+
+**Trigger:** When StayHard wraps as native app via Capacitor or rebuilds in Flutter/RN.
+
 ### Other Assets Requiring License Check
 - Body SVG: Flutter Body Atlas — CC BY 4.0 (commercial OK with attribution ✅)
 - Chart.js — MIT (commercial OK ✅)
