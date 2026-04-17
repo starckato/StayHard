@@ -3314,6 +3314,7 @@ function _wsStopTimer(){clearInterval(_wsTimerInterval);_wsTimerInterval=null;}
 function _wsRenderStrip(){
   const strip=document.getElementById('ws-ex-strip');
   if(!strip)return;
+  if(currentSession.length===0){strip.innerHTML='';return;}
   let html=`<div class="ws-ex-chip add" onclick="openAddExerciseModal()">
     <span style="font-size:10px;margin-right:3px;">＋</span>종목 추가
   </div>`;
