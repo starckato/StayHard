@@ -2415,10 +2415,16 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
   <div id="mm-tooltip" style="display:none;position:absolute;bottom:100px;left:50%;transform:translateX(-50%);background:rgba(10,10,12,.95);border:1px solid var(--accent-bd);border-radius:10px;padding:8px 14px;font-size:12px;font-weight:600;color:var(--accent);z-index:10;pointer-events:none;"></div>
   <div id="mm-legend" style="padding:10px 16px 24px;flex-shrink:0;border-top:1px solid var(--border);">
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
-      <div style="display:flex;align-items:center;gap:4px;flex:1;"><div style="width:12px;height:12px;border-radius:3px;background:rgb(6,182,212);"></div><span style="font-size:10px;color:var(--text3);">워밍업</span></div>
-      <div style="display:flex;align-items:center;gap:4px;flex:1;"><div style="width:12px;height:12px;border-radius:3px;background:rgb(34,197,94);"></div><span style="font-size:10px;color:var(--text3);">자극됨</span></div>
-      <div style="display:flex;align-items:center;gap:4px;flex:1;"><div style="width:12px;height:12px;border-radius:3px;background:rgb(245,158,11);"></div><span style="font-size:10px;color:var(--text3);">집중 타격</span></div>
-      <div style="display:flex;align-items:center;gap:4px;flex:1;"><div style="width:12px;height:12px;border-radius:3px;background:rgb(255,60,60);box-shadow:0 0 6px rgba(255,60,60,0.5);"></div><span style="font-size:10px;color:var(--text3);">폭발</span></div>
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;">
+        <div style="width:100%;height:10px;border-radius:5px;background:linear-gradient(90deg,#1a1a20,#5a1a1a,#b03020,#ff4d4d,#ff8c78);"></div>
+        <div style="display:flex;justify-content:space-between;width:100%;">
+          <span style="font-size:9px;color:var(--text3);">미사용</span>
+          <span style="font-size:9px;color:var(--text3);">워밍업</span>
+          <span style="font-size:9px;color:var(--text3);">자극됨</span>
+          <span style="font-size:9px;color:var(--text3);">집중 타격</span>
+          <span style="font-size:9px;color:var(--text3);">폭발 🔥</span>
+        </div>
+      </div>
     </div>
     <div id="mm-summary" style="font-size:11px;color:var(--text3);"></div>
   </div>
@@ -10577,13 +10583,10 @@ function computeMuscleActivation(workouts,mode){
 }
 
 function heatColor(t){
-  const stops=[[0,'42,42,60'],[0.2,'6,182,212'],[0.45,'34,197,94'],[0.65,'245,158,11'],[0.85,'249,115,22'],[1,'255,60,60']];
-  let lo=stops[0],hi=stops[stops.length-1];
-  for(let i=0;i<stops.length-1;i++){if(t>=stops[i][0]&&t<=stops[i+1][0]){lo=stops[i];hi=stops[i+1];break;}}
-  const r=(t-lo[0])/(hi[0]-lo[0]||1);
-  const lc=lo[1].split(',').map(Number),hc=hi[1].split(',').map(Number);
-  const c=lc.map((v,i)=>Math.round(v+(hc[i]-v)*r));
-  return `rgb(${c[0]},${c[1]},${c[2]})`;
+  const r=Math.round(42+(255-42)*t);
+  const g=Math.round(21+(140-21)*Math.pow(t,1.8));
+  const b=Math.round(21+(120-21)*Math.pow(t,2.2));
+  return `rgb(${r},${g},${b})`;
 }
 function getWeekWorkouts(){
   const d=new Date(now);const day=d.getDay();const mon=new Date(d);mon.setDate(d.getDate()-((day+6)%7));
@@ -10649,9 +10652,10 @@ function renderMuscleMap(){
     Object.entries(MUSCLE_SVG_MAP).forEach(([muscleId,svgIds])=>{
       if(svgIds.includes(id)){const d=activation[muscleId];if(d&&d.intensity>maxIntensity){maxIntensity=d.intensity;matchedMuscle=muscleId;matchedData=d;}}
     });
-    p.style.fill=maxIntensity>0?heatColor(maxIntensity):'#2a2a32';
-    p.style.transition='fill 0.3s';
-    if(maxIntensity>=0.85)p.style.filter='brightness(1.2) drop-shadow(0 0 4px rgba(255,60,60,0.5))';
+    p.style.fill=maxIntensity>0?heatColor(maxIntensity):'#1a1a20';
+    p.style.transition='fill 0.3s,filter 0.3s';
+    if(maxIntensity>=0.85)p.style.filter='brightness(1.3) drop-shadow(0 0 6px rgba(255,80,60,0.6))';
+    else if(maxIntensity>=0.6)p.style.filter='brightness(1.1)';
     else p.style.filter='';
     p.style.cursor='pointer';
     const showTip=()=>{
@@ -10668,12 +10672,16 @@ function renderMuscleMap(){
   const activeList=Object.entries(activation).filter(([,d])=>d.intensity>0).sort((a,b)=>b[1].intensity-a[1].intensity);
   const summary=document.getElementById('mm-summary');
   if(activeList.length){
-    summary.innerHTML='<div style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:6px;">자극된 부위</div>'+
+    summary.innerHTML='<div style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:6px;">자극된 부위</div><div style="display:flex;flex-direction:column;gap:4px;">'+
       activeList.map(([m,d])=>{
         const col=heatColor(d.intensity);
-        return`<span style="display:inline-flex;align-items:center;gap:4px;padding:3px 10px;margin:2px;background:rgba(255,255,255,0.06);border-left:3px solid ${col};border-radius:6px;font-size:10px;color:var(--text);">
-          ${MUSCLE_LABELS[m]||m} <span style="color:var(--text3);font-family:'DM Mono',monospace;">${d.sets}세트 ${fmtVol(d.volume)}</span></span>`;
-      }).join('');
+        const tl=d.intensity>=0.91?'폭발':d.intensity>=0.61?'집중 타격':d.intensity>=0.31?'자극됨':'워밍업';
+        return`<div style="display:flex;align-items:center;gap:8px;padding:6px 10px;background:rgba(255,255,255,0.04);border-radius:8px;">
+          <div style="width:6px;height:24px;border-radius:3px;background:${col};flex-shrink:0;${d.intensity>=0.85?'box-shadow:0 0 6px rgba(255,80,60,0.4);':''}"></div>
+          <div style="flex:1;min-width:0;"><div style="font-size:12px;font-weight:600;color:var(--text);">${MUSCLE_LABELS[m]||m}</div><div style="font-size:10px;color:var(--text3);">${tl}</div></div>
+          <div style="text-align:right;flex-shrink:0;font-family:'DM Mono',monospace;"><div style="font-size:12px;font-weight:700;color:var(--text);">${d.sets}세트</div><div style="font-size:10px;color:var(--text3);">${fmtVol(d.volume)}</div></div>
+        </div>`;
+      }).join('')+'</div>';
   } else {
     summary.innerHTML='<div style="font-size:12px;color:var(--text3);text-align:center;padding:12px 0;">'+(_mmMode==='today'?'오늘 운동 기록이 없어요 🏋️':'이번 주 운동 기록이 없어요 🏋️')+'</div>';
   }
