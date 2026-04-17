@@ -4122,20 +4122,6 @@ const SCORE_EVENTS={
   target_fail_cancel:   {pts:0,   label:'할일 실패 취소',     icon:'↩️'},
 };
 
-const COMBINED_SCORE_EVENTS={
-  diet_clean_register:{
-    toast:'🟢 +10점 — 클린 식단!',
-    win:{type:'diet_clean',pts:10,title:'클린 식단!'}
-  },
-  diet_clean_delete:{
-    toast:'🟢 −10점 — 클린 식단 취소',
-    win:null
-  },
-  diet_alcohol_register:{
-    toast:'🍺 음주 기록. 내일은 Stay Hard.',
-    win:null
-  },
-};
 
 // 점수 로그는 daily_logs.targets에 특수 항목으로 저장 (별도 컬럼 불필요)
 // 형식: {text:'__pts__', st:'done', _pts:[{type,pts,ts}]}
@@ -7995,14 +7981,6 @@ async function updateRoutineWeights(routineId,exForRoutine){
   await loadRoutines();
 }
 
-// Backward compat stubs
-function wmCat(){}
-function renderWMTypes(){}
-function wmType(){}
-function wmStep2(){}
-function wmBack(){}
-function pickSt(){}
-function saveWorkout(){}
 function editWorkout(i){
   const w=log.workouts[i];
   if(!w)return;
@@ -12353,9 +12331,6 @@ function stRenderScoreChart(rows){
   });
 }
 
-// ── weekly 뷰 하위 호환용 ──
-function renderWeightChart(rows){}
-function renderVolChart(rows){}
 
 
 </script>
