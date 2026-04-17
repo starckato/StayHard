@@ -522,6 +522,33 @@ User Action → logCache[key] update → renderRoutine()
   EZ바 컬, 리스트 컬, 앱 롤아웃, 토 터치, 데드 버그, 힐 터치,
   터키시 겟업, 파머스 워크, 박스 점프, 로잉 머신
 
+### Muscle Map UX (자극 부위)
+- 3-mode toggle: 오늘 | 이번 주 | 전체 (cumulative proportions)
+- 전체 mode shows grouped categories (가슴/등/하체/어깨/팔/복근) with %
+- Interactive muscle pills: tapping highlights SVG paths with triple-layer glow
+- Auto-selects highest-intensity muscle on render
+- Tooltip floats next to the actual muscle with arrow pointing at it
+- Muscles not on current view show "후면에서 확인하세요" message
+- Front/back toggle maintains selected muscle (continuous UX)
+- SVG underlayer hidden (no anatomical details showing through)
+- Legend area capped at 140px with scroll to preserve body space
+- Single-hue red ember color system (no fill change on highlight, glow only)
+
+### Character Card & Room
+- Character card redesigned: tier quote replaces duplicate score/tier info
+- TIER_QUOTES: 4 quotes per tier, randomly selected per render
+  - 😴 방관자: "일어나... 아직 늦지 않았어."
+  - 👁️ 각성자: "눈을 떴구나. 이제 시작이야."
+  - ⚔️ 저항자: "고통이 느껴지지? 그게 성장이야."
+  - 🔥 수련자: "멈추지 마. 넌 이미 다른 사람이야."
+  - 💎 지배자: "네 삶은 네가 통제한다. 계속해."
+  - 💀 Goggins: "They don't know me, son."
+- Quote color matches tier color
+- Progress bar shows "다음 Npt" (forward-looking, no score repeat)
+- Room overlay: close button moved to top-right with glass blur
+- Dumbbell hint "💪 탭!" positioned near actual dumbbells in scene
+- Dumbbell click zone adjusted to match visual position
+
 ### Code Quality
 - Dead code removal (10 items, ~25 lines)
 - Zero old palette values remaining
@@ -566,6 +593,30 @@ Mid:      visible dark red — clearly worked
 High:     deep saturated red — heavily used
 Max:      blood crimson + dark glow — destroyed
 ```
+
+### Highlight System
+- Tapping muscle pills highlights SVG paths with triple-layer glow
+  (6px bright + 12px medium + 20px ambient drop-shadows)
+- No fill change — original heat color preserved
+- Previous highlight auto-clears when new muscle selected
+- Muscles not visible on current view show centered "후면/전면에서 확인하세요"
+- Tooltip floats next to muscle with diamond arrow (left/right auto-positioned)
+
+### Modes
+| Mode | Subtitle | Data Source | Summary Format |
+|------|----------|-------------|----------------|
+| 오늘 | 오늘 어디를 때렸나 | Today's workouts | Individual muscle pills |
+| 이번 주 | 이번 주 훈련 분포 | This week | Individual muscle pills |
+| 전체 | 누적 근육 비율 | logCache + _stData | Grouped categories with % |
+
+### 전체 Mode Categories
+Groups 18 muscle IDs into 6 categories with volume percentages:
+- 가슴: chest
+- 등: upper_back, lats, traps, lower_back
+- 하체: quads, hamstrings, glutes, calves, hip_flexors
+- 어깨: front_delt, mid_delt, rear_delt
+- 팔: biceps, triceps, forearms
+- 복근: abs, obliques
 
 ### SVG Assets
 - `/assets/body_front.svg` (186KB, 126 paths, 587×1137)
