@@ -1153,6 +1153,17 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
         <div id="st-vol-empty" class="stats-empty" style="display:none;">운동 볼륨 기록이 없어요</div>
       </div>
 
+      <div class="stats-card" id="st-muscle-dist-card" style="display:none;">
+        <div class="stats-card-title">🎯 부위별 볼륨 분포</div>
+        <div id="st-muscle-dist"></div>
+      </div>
+
+      <div class="stats-card" id="st-pr-card" style="display:none;">
+        <div class="stats-card-title">🏆 개인 기록 (PR)</div>
+        <div class="stats-meta" id="st-pr-meta"></div>
+        <div id="st-pr-list" style="display:flex;flex-direction:column;gap:6px;"></div>
+      </div>
+
       <div class="stats-card">
         <div class="stats-card-title">💪 운동별 추이</div>
         <div class="stats-meta" id="st-exlist-meta"></div>
@@ -11601,6 +11612,8 @@ function stRenderAll(rows){
   try{stRenderWeightChart(filtered);}catch(e){console.warn('stRenderWeightChart error:',e);}
   try{stRenderVolChart(filtered);}catch(e){console.warn('stRenderVolChart error:',e);}
   try{stRenderExerciseList(filtered);}catch(e){console.warn('stRenderExerciseList error:',e);}
+  try{stRenderMuscleDist(filtered);}catch(e){console.warn('stRenderMuscleDist error:',e);}
+  try{stRenderPRDashboard(filtered);}catch(e){console.warn('stRenderPRDashboard error:',e);}
   try{stRenderRoutineChart(filtered);}catch(e){console.warn('stRenderRoutineChart error:',e);}
   try{stRenderBodyComp(filtered);}catch(e){console.warn('stRenderBodyComp error:',e);}
   try{stRenderRoutineBreakdown(filtered);}catch(e){console.warn('stRenderRoutineBreakdown error:',e);}
@@ -12260,6 +12273,80 @@ function stRenderRoutineChart(rows){
       tooltip:{label:ctx=>ctx.parsed.y+'% 완료'}
     }),plugins:{...stDashCfg().plugins,stTargetLine:{value:80,color:'rgba(52,211,153,0.55)',label:'목표 80%'}}}
   });
+}
+
+function stRenderMuscleDist(rows){
+  const card=document.getElementById('st-muscle-dist-card');
+  const container=document.getElementById('st-muscle-dist');
+  const muscleVol={};
+  rows.forEach(r=>{
+    (r.workouts||[]).filter(w=>w.type==='gym'&&w.status==='done').forEach(w=>{
+      (w.exercises||[]).forEach(ex=>{
+        const muscle=ex.muscle||'기타';
+        const vol=(ex.sets||[]).filter(s=>s.done).reduce((a,s)=>a+(parseFloat(s.kg)||0)*(parseInt(s.reps)||0),0);
+        if(vol>0){muscleVol[muscle]=(muscleVol[muscle]||0)+vol;}
+      });
+    });
+  });
+  const entries=Object.entries(muscleVol).sort((a,b)=>b[1]-a[1]);
+  if(!entries.length){card.style.display='none';return;}
+  card.style.display='';
+  const total=entries.reduce((a,[,v])=>a+v,0);
+  const colors={'가슴':'#ff4d4d','등':'#38bdf8','어깨':'#f59e0b','하체':'#34d399','팔':'#a78bfa','복근':'#fb923c','전신':'#6b6b78','유산소':'#22d3ee'};
+  let html='<div style="padding:12px 14px;display:flex;flex-direction:column;gap:6px;">';
+  entries.forEach(([name,vol])=>{
+    const pct=Math.round(vol/total*100);
+    const col=colors[name]||'var(--text2)';
+    const fmt=vol>=1000?(vol/1000).toFixed(1)+'t':Math.round(vol).toLocaleString()+'kg';
+    html+=`<div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:3px;">
+        <span style="font-size:12px;font-weight:600;color:var(--text);">${name}</span>
+        <span style="font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;">${fmt} · ${pct}%</span>
+      </div>
+      <div style="height:6px;background:var(--surface3);border-radius:3px;overflow:hidden;">
+        <div style="height:100%;width:${pct}%;background:${col};border-radius:3px;transition:width .4s ease;"></div>
+      </div>
+    </div>`;
+  });
+  html+='</div>';
+  container.innerHTML=html;
+}
+
+function stRenderPRDashboard(rows){
+  const card=document.getElementById('st-pr-card');
+  const list=document.getElementById('st-pr-list');
+  const meta=document.getElementById('st-pr-meta');
+  const allRows=(_stData||rows).slice();
+  const idx=buildExerciseIndex(allRows);
+  const prs=[];
+  Object.entries(idx).forEach(([name,ex])=>{
+    if(ex.kind!=='gym'||!ex.isStr)return;
+    let bestKg=0,bestE1=0,bestVol=0,bestDate='';
+    ex.sessions.forEach(s=>{
+      if(s.topKg>bestKg){bestKg=s.topKg;bestDate=s.date;}
+      if(s.bestE1>bestE1)bestE1=s.bestE1;
+      if(s.volume>bestVol)bestVol=s.volume;
+    });
+    if(bestKg>0)prs.push({name,icon:ex.icon,bestKg,bestE1,bestVol,bestDate,sessions:ex.sessionCount});
+  });
+  prs.sort((a,b)=>b.bestKg-a.bestKg);
+  if(!prs.length){card.style.display='none';return;}
+  card.style.display='';
+  meta.textContent=prs.length+'개 종목 · 전체 기간 기준';
+  list.innerHTML=prs.slice(0,15).map(pr=>{
+    const e1Str=pr.bestE1>0?'e1RM '+Math.round(pr.bestE1)+'kg':'';
+    return`<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);">
+      <div style="font-size:18px;flex-shrink:0;">${pr.icon}</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:13px;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${pr.name}</div>
+        <div style="font-size:10px;color:var(--text3);margin-top:1px;">${pr.sessions}회 수행${e1Str?' · '+e1Str:''}</div>
+      </div>
+      <div style="text-align:right;flex-shrink:0;">
+        <div style="font-size:16px;font-weight:800;color:var(--accent);font-family:'DM Mono',monospace;">${pr.bestKg}kg</div>
+        <div style="font-size:9px;color:var(--text3);font-family:'DM Mono',monospace;">${pr.bestDate.slice(5).replace('-','/')}</div>
+      </div>
+    </div>`;
+  }).join('');
 }
 
 function stRenderBodyComp(rows){
