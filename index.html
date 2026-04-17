@@ -10678,7 +10678,9 @@ function setMuscleView(view){
   document.getElementById('mm-view-front').style.color=view==='front'?'#fff':'var(--text3)';
   document.getElementById('mm-view-back').style.background=view==='back'?'var(--accent)':'var(--surface2)';
   document.getElementById('mm-view-back').style.color=view==='back'?'#fff':'var(--text3)';
+  const prev=_mmHighlighted;
   renderMuscleMap();
+  if(prev)setTimeout(()=>highlightMuscle(prev),150);
 }
 function renderMuscleMap(){
   const container=document.getElementById('mm-body');
@@ -10688,6 +10690,7 @@ function renderMuscleMap(){
   const svg=container.querySelector('svg');
   if(!svg)return;
   svg.style.width='85%';svg.style.maxHeight='calc(100vh - 280px)';svg.style.height='auto';svg.style.margin='0 auto';svg.style.display='block';
+  const ul=svg.getElementById('underlayer');if(ul)ul.style.fill='#0a0a0c';
   const wos=_mmMode==='today'?(log.workouts||[]):getWeekWorkouts();
   const activation=computeMuscleActivation(wos,_mmMode);
   const fmtVol=v=>v>=1000?(v/1000).toFixed(1)+'t':Math.round(v).toLocaleString()+'kg';
@@ -10769,12 +10772,12 @@ function highlightMuscle(muscleId){
     tip.style.top=(cy-20)+'px';
     arrow.style.top=(cy-4)+'px';
     if(isRight){
-      tip.style.left=(maxX-cRect.left+14)+'px';tip.style.right='auto';
-      arrow.style.left=(maxX-cRect.left+7)+'px';arrow.style.right='auto';
+      tip.style.left=Math.min(maxX-cRect.left+8, cRect.width-140)+'px';tip.style.right='auto';
+      arrow.style.left=Math.min(maxX-cRect.left+2, cRect.width-144)+'px';arrow.style.right='auto';
       arrow.style.borderRight='none';arrow.style.borderTop='none';arrow.style.borderLeft='1px solid var(--accent-bd)';arrow.style.borderBottom='1px solid var(--accent-bd)';
     } else {
-      tip.style.right=(cRect.right-minX+14)+'px';tip.style.left='auto';
-      arrow.style.right=(cRect.right-minX+7)+'px';arrow.style.left='auto';
+      tip.style.right=Math.min(cRect.right-minX+8, cRect.width-140)+'px';tip.style.left='auto';
+      arrow.style.right=Math.min(cRect.right-minX+2, cRect.width-144)+'px';arrow.style.left='auto';
       arrow.style.borderLeft='none';arrow.style.borderBottom='none';arrow.style.borderRight='1px solid var(--accent-bd)';arrow.style.borderTop='1px solid var(--accent-bd)';
     }
     arrow.style.display='block';
