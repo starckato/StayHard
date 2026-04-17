@@ -975,9 +975,15 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
         <div class="s-badge" id="wo-badge">오늘 없음</div>
       </div>
       <div class="workout-rows" id="workout-rows"></div>
-      <div id="wo-add-cta" onclick="openWorkoutStartScreen()" style="display:flex;align-items:center;justify-content:center;gap:8px;margin:8px 12px 12px;padding:14px;background:linear-gradient(135deg,rgba(255,77,77,.10),rgba(255,77,77,.08));border:1px solid rgba(255,77,77,.25);border-radius:10px;cursor:pointer;touch-action:manipulation;">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        <span id="wo-add-cta-lbl" style="font-size:15px;font-weight:700;color:var(--accent);">운동 추가하기</span>
+      <div style="display:flex;gap:8px;margin:8px 12px 12px;">
+        <div id="wo-add-cta" onclick="openWorkoutStartScreen()" style="flex:1;display:flex;align-items:center;justify-content:center;gap:8px;padding:14px;background:linear-gradient(135deg,rgba(255,77,77,.10),rgba(255,77,77,.08));border:1px solid rgba(255,77,77,.25);border-radius:10px;cursor:pointer;touch-action:manipulation;">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          <span id="wo-add-cta-lbl" style="font-size:14px;font-weight:700;color:var(--accent);">운동 추가</span>
+        </div>
+        <div onclick="openMuscleMap()" style="display:flex;align-items:center;justify-content:center;gap:6px;padding:14px 16px;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;cursor:pointer;touch-action:manipulation;">
+          <span style="font-size:14px;">🦴</span>
+          <span style="font-size:12px;font-weight:600;color:var(--text2);">근육맵</span>
+        </div>
       </div>
     </div>
     <div class="s-card">
@@ -2390,6 +2396,35 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 </div>
 
 <!-- ROOM OVERLAY -->
+<div id="muscle-map-overlay" style="display:none;position:fixed;top:0;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;height:100%;z-index:750;flex-direction:column;background:var(--bg);overflow:hidden;">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:52px 16px 10px;flex-shrink:0;border-bottom:1px solid var(--border);">
+    <div style="font-size:16px;font-weight:700;">🦴 근육 활성화</div>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <div id="mm-toggle" style="display:flex;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;overflow:hidden;">
+        <div onclick="setMuscleMode('today')" id="mm-btn-today" style="padding:5px 12px;font-size:11px;font-weight:700;cursor:pointer;color:#fff;background:var(--accent);">오늘</div>
+        <div onclick="setMuscleMode('week')" id="mm-btn-week" style="padding:5px 12px;font-size:11px;font-weight:700;cursor:pointer;color:var(--text3);">이번 주</div>
+      </div>
+      <button onclick="closeMuscleMap()" style="width:28px;height:28px;background:var(--surface2);border:1px solid var(--border2);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--text2);cursor:pointer;">✕</button>
+    </div>
+  </div>
+  <div style="display:flex;gap:10px;padding:10px 16px;flex-shrink:0;">
+    <div onclick="setMuscleView('front')" id="mm-view-front" style="flex:1;text-align:center;padding:6px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;background:var(--accent);color:#fff;">전면</div>
+    <div onclick="setMuscleView('back')" id="mm-view-back" style="flex:1;text-align:center;padding:6px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;background:var(--surface2);color:var(--text3);">후면</div>
+  </div>
+  <div id="mm-body" style="flex:1;overflow:auto;display:flex;align-items:center;justify-content:center;padding:10px;"></div>
+  <div id="mm-tooltip" style="display:none;position:absolute;bottom:100px;left:50%;transform:translateX(-50%);background:rgba(10,10,12,.95);border:1px solid var(--accent-bd);border-radius:10px;padding:8px 14px;font-size:12px;font-weight:600;color:var(--accent);z-index:10;pointer-events:none;"></div>
+  <div id="mm-legend" style="padding:10px 16px 24px;flex-shrink:0;border-top:1px solid var(--border);">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+      <div style="display:flex;align-items:center;gap:4px;flex:1;"><div style="width:12px;height:12px;border-radius:3px;background:rgba(255,77,77,0.15);"></div><span style="font-size:10px;color:var(--text3);">약함</span></div>
+      <div style="display:flex;align-items:center;gap:4px;flex:1;"><div style="width:12px;height:12px;border-radius:3px;background:rgba(255,77,77,0.5);"></div><span style="font-size:10px;color:var(--text3);">보통</span></div>
+      <div style="display:flex;align-items:center;gap:4px;flex:1;"><div style="width:12px;height:12px;border-radius:3px;background:rgba(255,77,77,0.9);"></div><span style="font-size:10px;color:var(--text3);">강함</span></div>
+      <div style="display:flex;align-items:center;gap:4px;flex:1;"><div style="width:12px;height:12px;border-radius:3px;background:var(--surface3);border:1px solid var(--border);"></div><span style="font-size:10px;color:var(--text3);">미활성</span></div>
+    </div>
+    <div id="mm-summary" style="font-size:11px;color:var(--text3);"></div>
+  </div>
+  <div style="padding:0 16px 8px;flex-shrink:0;font-size:9px;color:var(--text3);text-align:center;">Illustrations by Ryan Graves (CC BY 4.0)</div>
+</div>
+
 <div id="room-overlay" style="display:none;position:fixed;top:0;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;height:100%;z-index:900;flex-direction:column;background:#0a0a10;overflow:hidden;">
   <!-- 캔버스 씬 (전체 채움) -->
   <div style="position:relative;width:100%;flex:1;overflow:hidden;">
@@ -10434,6 +10469,206 @@ function showTip(key,title,body){
 function tipMeal(){showTip('meal','식단 품질 가이드','✅ <b>클린</b> — 샐러드, 닭가슴살, 현미밥<br>🍚 <b>일반</b> — 한식, 백반, 찌개<br>🎉 <b>치팅</b> — 치트밀 (주 2회 허용)<br>🚫 <b>금지</b> — 폭식, 배달음식, 정크푸드');}
 function tipWorkout(){showTip('workout','운동 세션 사용법','무게와 반복 횟수를 입력하고 ✓ 체크하면 세트 완료!<br>＋ 버튼으로 종목 추가, 완료되면 아래 버튼 탭.');}
 function tipWater(){showTip('water','물 마시기','컵을 탭하면 채워져요.<br>같은 컵을 다시 탭하면 취소됩니다.<br>⚙️ 아이콘으로 목표량 설정 가능!');}
+
+// ── Muscle Activation Map ──
+const MUSCLE_MAP={
+  // 가슴
+  '벤치프레스':{chest:70,front_delt:15,triceps:15},'인클라인 벤치프레스':{chest:60,front_delt:25,triceps:15},'디클라인 벤치프레스':{chest:75,front_delt:10,triceps:15},
+  '덤벨 벤치프레스':{chest:70,front_delt:15,triceps:15},'인클라인 덤벨 프레스':{chest:60,front_delt:25,triceps:15},'디클라인 덤벨 프레스':{chest:75,front_delt:10,triceps:15},
+  '덤벨 플라이':{chest:85,front_delt:15},'인클라인 덤벨 플라이':{chest:75,front_delt:25},'디클라인 덤벨 플라이':{chest:85,front_delt:15},
+  '케이블 크로스오버':{chest:80,front_delt:20},'하이 케이블 크로스오버':{chest:80,front_delt:20},'로우 케이블 크로스오버':{chest:80,front_delt:20},'케이블 체스트 프레스':{chest:70,front_delt:15,triceps:15},
+  '펙덱 플라이':{chest:90,front_delt:10},'머신 체스트 프레스':{chest:70,front_delt:15,triceps:15},'스미스 머신 벤치프레스':{chest:70,front_delt:15,triceps:15},
+  '슬로우 푸쉬업':{chest:60,front_delt:15,triceps:25},'스미스 인클라인 프레스':{chest:60,front_delt:25,triceps:15},'플라이 머신 (단측)':{chest:90,front_delt:10},
+  '푸쉬업':{chest:60,front_delt:15,triceps:25},'인클라인 푸쉬업':{chest:55,front_delt:20,triceps:25},'디클라인 푸쉬업':{chest:65,front_delt:10,triceps:25},
+  '와이드 푸쉬업':{chest:70,front_delt:15,triceps:15},'다이아몬드 푸쉬업':{chest:40,triceps:45,front_delt:15},'아처 푸쉬업':{chest:65,front_delt:15,triceps:20},
+  '플레이트 프레스':{chest:75,front_delt:15,triceps:10},
+  // 등
+  '데드리프트':{lower_back:30,glutes:25,hamstrings:20,upper_back:10,traps:10,forearms:5},'루마니안 데드리프트':{hamstrings:40,glutes:30,lower_back:25,forearms:5},
+  '스모 데드리프트':{glutes:30,quads:20,hamstrings:20,lower_back:15,upper_back:10,forearms:5},'랙 풀':{upper_back:30,traps:25,lower_back:20,glutes:15,forearms:10},
+  '바벨 로우':{lats:40,upper_back:25,rear_delt:10,biceps:15,forearms:10},'펜들레이 로우':{lats:40,upper_back:30,rear_delt:10,biceps:15,forearms:5},
+  '굿모닝':{hamstrings:40,lower_back:35,glutes:25},'덤벨 로우':{lats:45,upper_back:25,rear_delt:10,biceps:15,forearms:5},'원암 덤벨 로우':{lats:45,upper_back:25,rear_delt:10,biceps:15,forearms:5},
+  '리버스 플라이':{rear_delt:50,upper_back:30,traps:20},'케이블 로우':{lats:40,upper_back:30,biceps:20,forearms:10},'시티드 케이블 로우':{lats:40,upper_back:30,biceps:20,forearms:10},
+  '케이블 시티드 로우':{lats:40,upper_back:30,biceps:20,forearms:10},'어시스트 풀업':{lats:45,upper_back:20,biceps:25,forearms:10},'페이스풀':{rear_delt:45,upper_back:30,traps:25},
+  '랫풀다운':{lats:50,upper_back:20,biceps:20,forearms:10},'와이드 랫풀다운':{lats:55,upper_back:25,biceps:15,forearms:5},'리버스 그립 랫풀다운':{lats:45,biceps:30,upper_back:20,forearms:5},
+  '티바 로우':{lats:40,upper_back:30,biceps:15,rear_delt:10,forearms:5},'머신 로우':{lats:40,upper_back:30,biceps:20,rear_delt:10},'리버스 펙덱':{rear_delt:50,upper_back:30,traps:20},
+  '백 익스텐션':{lower_back:50,glutes:30,hamstrings:20},'풀업':{lats:45,upper_back:20,biceps:25,forearms:10},'친업':{biceps:35,lats:40,upper_back:15,forearms:10},
+  '와이드 풀업':{lats:55,upper_back:25,biceps:15,forearms:5},'클로즈 풀업':{lats:40,biceps:35,upper_back:15,forearms:10},'슈퍼맨':{lower_back:50,glutes:30,hamstrings:20},
+  // 하체
+  '스쿼트':{quads:45,glutes:30,hamstrings:15,lower_back:10},'프론트 스쿼트':{quads:60,glutes:20,abs:10,lower_back:10},'박스 스쿼트':{quads:40,glutes:35,hamstrings:20,lower_back:5},
+  '힙 쓰러스트':{glutes:65,hamstrings:25,lower_back:10},'고블렛 스쿼트':{quads:50,glutes:30,abs:10,forearms:10},'런지':{quads:40,glutes:35,hamstrings:20,calves:5},
+  '워킹 런지':{quads:40,glutes:35,hamstrings:20,calves:5},'리버스 런지':{glutes:40,quads:35,hamstrings:20,calves:5},'불가리안 스플릿 스쿼트':{quads:40,glutes:35,hamstrings:20,calves:5},
+  '스텝업':{quads:45,glutes:35,hamstrings:15,calves:5},'케이블 킥백':{glutes:70,hamstrings:30},'레그 프레스':{quads:50,glutes:30,hamstrings:15,calves:5},
+  '핵 스쿼트':{quads:55,glutes:25,hamstrings:15,calves:5},'스미스 스쿼트':{quads:45,glutes:30,hamstrings:20,lower_back:5},'레그 익스텐션':{quads:100},
+  '레그 컬':{hamstrings:85,calves:15},'시티드 레그 컬':{hamstrings:90,calves:10},'스탠딩 레그 컬':{hamstrings:85,calves:15},
+  '힙 어브덕션':{glutes:70,hip_flexors:30},'힙 어덕션':{hip_flexors:60,glutes:40},
+  '카프 레이즈':{calves:100},'스탠딩 카프 레이즈':{calves:100},'시티드 카프 레이즈':{calves:100},
+  '글루트 브릿지':{glutes:70,hamstrings:20,lower_back:10},'점프 스쿼트':{quads:45,glutes:30,hamstrings:15,calves:10},
+  // 어깨
+  '오버헤드 프레스':{front_delt:40,mid_delt:30,triceps:20,traps:10},'업라이트 로우':{mid_delt:40,traps:35,front_delt:15,biceps:10},'슈러그':{traps:90,mid_delt:10},
+  '덤벨 숄더 프레스':{front_delt:40,mid_delt:30,triceps:20,traps:10},'스탠딩 덤벨 숄더 프레스':{front_delt:40,mid_delt:30,triceps:20,abs:10},
+  '리버스 팩덱 플라이':{rear_delt:55,upper_back:25,traps:20},'아놀드 프레스':{front_delt:35,mid_delt:35,triceps:20,traps:10},
+  '레터럴 레이즈':{mid_delt:80,front_delt:10,traps:10},'프론트 레이즈':{front_delt:80,mid_delt:10,chest:10},'리어 델트 플라이':{rear_delt:60,upper_back:25,traps:15},
+  '덤벨 업라이트 로우':{mid_delt:40,traps:35,front_delt:15,biceps:10},'덤벨 슈러그':{traps:90,mid_delt:10},
+  '케이블 레터럴 레이즈':{mid_delt:80,front_delt:10,traps:10},'케이블 리어 델트 플라이':{rear_delt:60,upper_back:25,traps:15},
+  '스미스 숄더 프레스':{front_delt:40,mid_delt:30,triceps:20,traps:10},'머신 레터럴 레이즈':{mid_delt:85,traps:15},'리버스 펙덱 (어깨)':{rear_delt:55,upper_back:25,traps:20},
+  '플레이트 프론트 레이즈':{front_delt:80,mid_delt:10,chest:10},
+  // 팔
+  '바벨 컬':{biceps:80,forearms:20},'리버스 컬':{forearms:60,biceps:40},'스컬 크러셔':{triceps:85,chest:10,front_delt:5},'클로즈그립 벤치프레스':{triceps:60,chest:30,front_delt:10},
+  '덤벨 컬':{biceps:85,forearms:15},'해머 컬':{biceps:50,forearms:50},'컨센트레이션 컬':{biceps:90,forearms:10},
+  '오버헤드 트라이셉스 익스텐션':{triceps:90,front_delt:10},'덤벨 트라이셉스 킥백':{triceps:90,rear_delt:10},
+  '케이블 컬':{biceps:85,forearms:15},'트라이셉스 푸쉬다운':{triceps:90,forearms:10},'케이블 푸쉬다운':{triceps:90,forearms:10},'케이블 킥백 (팔)':{triceps:90,rear_delt:10},
+  '프리처 컬':{biceps:90,forearms:10},'딥스':{triceps:45,chest:35,front_delt:20},
+  // 복근
+  '크런치':{abs:80,obliques:20},'싯업':{abs:60,hip_flexors:30,obliques:10},'레그 레이즈':{abs:50,hip_flexors:40,obliques:10},
+  '행잉 레그 레이즈':{abs:55,hip_flexors:35,obliques:10},'행잉 니업':{abs:60,hip_flexors:30,obliques:10},'플랭크':{abs:40,obliques:20,lower_back:20,front_delt:10,glutes:10},
+  '사이드 플랭크':{obliques:60,abs:20,hip_flexors:10,mid_delt:10},'러시안 트위스트':{obliques:60,abs:30,hip_flexors:10},'바이시클 크런치':{abs:40,obliques:50,hip_flexors:10},
+  'V업':{abs:60,hip_flexors:30,obliques:10},'케이블 크런치':{abs:80,obliques:20},
+  // 전신
+  '버피':{quads:25,chest:20,front_delt:15,triceps:10,abs:15,glutes:15},'마운틴 클라이머':{abs:30,hip_flexors:25,quads:20,front_delt:15,glutes:10},
+  '클린':{quads:25,glutes:20,hamstrings:15,traps:15,front_delt:10,upper_back:10,forearms:5},'클린 앤 프레스':{quads:20,glutes:15,front_delt:20,traps:15,triceps:10,hamstrings:10,upper_back:10},
+  '스내치':{quads:20,glutes:20,hamstrings:15,traps:15,front_delt:15,upper_back:10,forearms:5},'쓰러스터':{quads:30,glutes:20,front_delt:20,triceps:15,abs:10,hamstrings:5},
+  '케틀벨 스윙':{glutes:35,hamstrings:25,lower_back:20,abs:10,front_delt:10}
+};
+
+const MUSCLE_SVG_MAP={
+  chest:['pectoralis_major_l','pectoralis_major_r'],
+  upper_back:['latissimus_dorsi_l','latissimus_dorsi_r','infraspinatus_l','infraspinatus_r'],
+  lats:['latissimus_dorsi_l','latissimus_dorsi_r'],
+  traps:['trapezius_upper_l','trapezius_upper_r','trapezius_middle_l','trapezius_middle_r','trapezius_lower_l','trapezius_lower_r'],
+  front_delt:['anterior_deltoid_l','anterior_deltoid_r'],
+  mid_delt:['lateral_deltoid_l','lateral_deltoid_r'],
+  rear_delt:['posterior_deltoid_l','posterior_deltoid_r'],
+  biceps:['biceps_brachii_caput_longum_l','biceps_brachii_caput_longum_r','biceps_brachii_caput_breve_l','biceps_brachii_caput_breve_r'],
+  triceps:['triceps_brachii_caput_laterale_l','triceps_brachii_caput_laterale_r','triceps_brachii_caput_longum_l','triceps_brachii_caput_longum_r','triceps_brachii_caput_mediale_l','triceps_brachii_caput_mediale_r'],
+  forearms:['brachioradialis_l','brachioradialis_r','flexor_carpi_radialis_l','flexor_carpi_radialis_r','palmaris_longus_l','palmaris_longus_r','pronator_teres_l','pronator_teres_r','extensor_carpi_radialis_longus_l','extensor_carpi_radialis_longus_r','extensor_digitorum_l','extensor_digitorum_r','extensor_carpi_ulnaris_l','extensor_carpi_ulnaris_r','flexor_carpi_ulnaris_l','flexor_carpi_ulnaris_r'],
+  glutes:['gluteus_maximus_l','gluteus_maximus_r','gluteus_medius_1_l','gluteus_medius_1_r','gluteus_medius_2_l','gluteus_medius_2_r'],
+  quads:['rectus_femoris_l','rectus_femoris_r','vastus_lateralis_l','vastus_lateralis_r','vastus_medialis_l','vastus_medialis_r'],
+  hamstrings:['biceps_femoris_l','biceps_femoris_r','semitendinosus_l','semitendinosus_r','semimembranosus_1_l','semimembranosus_1_r','semimembranosus_2_l','semimembranosus_2_r'],
+  calves:['gastrocnemius_l','gastrocnemius_r'],
+  abs:['rectus_abdominis_1','rectus_abdominis_2_l','rectus_abdominis_2_r','rectus_abdominis_3_l','rectus_abdominis_3_r','rectus_abdominis_4_l','rectus_abdominis_4_r'],
+  obliques:['external_oblique_1_l','external_oblique_1_r','external_oblique_2_l','external_oblique_2_r','external_oblique_3_l','external_oblique_3_r','external_oblique_4_l','external_oblique_4_r','external_oblique_5_l','external_oblique_5_r','external_oblique_6_l','external_oblique_6_r','external_oblique_7_l','external_oblique_7_r','external_oblique_8_l','external_oblique_8_r'],
+  lower_back:['latissimus_dorsi_l','latissimus_dorsi_r'],
+  hip_flexors:['pectineus_l','pectineus_r','adductor_longus_l','adductor_longus_r','gracilis_l','gracilis_r','sartoris_l','sartoris_r']
+};
+const MUSCLE_LABELS={chest:'가슴',upper_back:'상부 등',lats:'광배근',traps:'승모근',front_delt:'전면 삼각근',mid_delt:'측면 삼각근',rear_delt:'후면 삼각근',biceps:'이두근',triceps:'삼두근',forearms:'전완근',glutes:'둔근',quads:'대퇴사두',hamstrings:'햄스트링',calves:'종아리',abs:'복근',obliques:'복사근',lower_back:'하부 등',hip_flexors:'고관절 굴곡근'};
+
+let _mmMode='today',_mmView='front',_mmSvgFront=null,_mmSvgBack=null;
+
+function computeMuscleActivation(workouts,mode){
+  const activation={};
+  const wos=mode==='week'?getWeekWorkouts():workouts;
+  wos.forEach(w=>{
+    if(w.type!=='gym'||w.status!=='done')return;
+    (w.exercises||[]).forEach(ex=>{
+      const map=MUSCLE_MAP[ex.name];if(!map)return;
+      const vol=(ex.sets||[]).filter(s=>s.done).reduce((a,s)=>a+(parseFloat(s.kg)||0)*(parseInt(s.reps)||0),0);
+      if(vol<=0)return;
+      Object.entries(map).forEach(([m,pct])=>{activation[m]=(activation[m]||0)+vol*(pct/100);});
+    });
+  });
+  const maxVal=Math.max(...Object.values(activation),1);
+  const norm={};
+  Object.entries(activation).forEach(([m,v])=>{norm[m]=Math.min(1,v/maxVal);});
+  return norm;
+}
+function getWeekWorkouts(){
+  const d=new Date(now);const day=d.getDay();const mon=new Date(d);mon.setDate(d.getDate()-((day+6)%7));
+  const wos=[];
+  for(let i=0;i<7;i++){const dd=new Date(mon);dd.setDate(mon.getDate()+i);const k=dkey(dd);const l=logCache[k];if(l)(l.workouts||[]).forEach(w=>wos.push(w));}
+  return wos;
+}
+
+async function loadMuscleSvg(view){
+  const url=view==='front'?'/assets/body_front.svg':'/assets/body_back.svg';
+  const resp=await fetch(url);const text=await resp.text();return text;
+}
+
+async function openMuscleMap(){
+  const el=document.getElementById('muscle-map-overlay');
+  el.style.display='flex';
+  document.body.style.overflow='hidden';
+  if(!_mmSvgFront){try{_mmSvgFront=await loadMuscleSvg('front');}catch(e){console.warn(e);}}
+  if(!_mmSvgBack){try{_mmSvgBack=await loadMuscleSvg('back');}catch(e){console.warn(e);}}
+  _mmView='front';_mmMode='today';
+  renderMuscleMap();
+}
+function closeMuscleMap(){
+  document.getElementById('muscle-map-overlay').style.display='none';
+  document.body.style.overflow='';
+}
+function setMuscleMode(mode){
+  _mmMode=mode;
+  document.getElementById('mm-btn-today').style.background=mode==='today'?'var(--accent)':'transparent';
+  document.getElementById('mm-btn-today').style.color=mode==='today'?'#fff':'var(--text3)';
+  document.getElementById('mm-btn-week').style.background=mode==='week'?'var(--accent)':'transparent';
+  document.getElementById('mm-btn-week').style.color=mode==='week'?'#fff':'var(--text3)';
+  renderMuscleMap();
+}
+function setMuscleView(view){
+  _mmView=view;
+  document.getElementById('mm-view-front').style.background=view==='front'?'var(--accent)':'var(--surface2)';
+  document.getElementById('mm-view-front').style.color=view==='front'?'#fff':'var(--text3)';
+  document.getElementById('mm-view-back').style.background=view==='back'?'var(--accent)':'var(--surface2)';
+  document.getElementById('mm-view-back').style.color=view==='back'?'#fff':'var(--text3)';
+  renderMuscleMap();
+}
+function renderMuscleMap(){
+  const container=document.getElementById('mm-body');
+  const svgStr=_mmView==='front'?_mmSvgFront:_mmSvgBack;
+  if(!svgStr){container.innerHTML='<div style="color:var(--text3);font-size:13px;">SVG 로딩 실패</div>';return;}
+  container.innerHTML=svgStr;
+  const svg=container.querySelector('svg');
+  if(!svg)return;
+  svg.style.width='100%';svg.style.maxHeight='calc(100vh - 260px)';svg.style.height='auto';
+  const wos=_mmMode==='today'?(log.workouts||[]):getWeekWorkouts();
+  const activation=computeMuscleActivation(wos,_mmMode);
+  svg.querySelectorAll('path').forEach(p=>{
+    const id=p.id;
+    if(!id||id==='non_muscle'||id==='underlayer')return;
+    const gId=p.closest('g')?.id;
+    if(gId==='non_muscle'||gId==='face'||gId==='head'||gId==='hands'||gId==='neck')return;
+    let maxIntensity=0;let matchedMuscle=null;
+    Object.entries(MUSCLE_SVG_MAP).forEach(([muscleId,svgIds])=>{
+      if(svgIds.includes(id)){const v=activation[muscleId]||0;if(v>maxIntensity){maxIntensity=v;matchedMuscle=muscleId;}}
+    });
+    if(maxIntensity>0){
+      const alpha=0.15+maxIntensity*0.75;
+      p.style.fill=`rgba(255,77,77,${alpha.toFixed(2)})`;
+      p.style.transition='fill 0.3s';
+    } else {
+      p.style.fill='#2a2a32';p.style.transition='fill 0.3s';
+    }
+    p.style.cursor='pointer';
+    p.addEventListener('mouseenter',()=>{
+      if(matchedMuscle){
+        const label=MUSCLE_LABELS[matchedMuscle]||matchedMuscle;
+        const pct=Math.round(maxIntensity*100);
+        const tip=document.getElementById('mm-tooltip');
+        tip.textContent=label+' — '+pct+'%';
+        tip.style.display='block';
+      }
+    });
+    p.addEventListener('mouseleave',()=>{document.getElementById('mm-tooltip').style.display='none';});
+    p.addEventListener('touchstart',()=>{
+      if(matchedMuscle){
+        const label=MUSCLE_LABELS[matchedMuscle]||matchedMuscle;
+        const pct=Math.round(maxIntensity*100);
+        const tip=document.getElementById('mm-tooltip');
+        tip.textContent=label+' — '+pct+'%';
+        tip.style.display='block';
+        setTimeout(()=>tip.style.display='none',2000);
+      }
+    },{passive:true});
+  });
+  const activeList=Object.entries(activation).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]);
+  const summary=document.getElementById('mm-summary');
+  if(activeList.length){
+    summary.innerHTML='<div style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:4px;">활성화된 근육</div>'+
+      activeList.map(([m,v])=>`<span style="display:inline-block;padding:2px 8px;margin:2px;background:rgba(255,77,77,${(0.1+v*0.4).toFixed(2)});border-radius:5px;font-size:10px;color:var(--text);">${MUSCLE_LABELS[m]||m} ${Math.round(v*100)}%</span>`).join('');
+  } else {
+    summary.innerHTML='<div style="font-size:11px;color:var(--text3);text-align:center;padding:8px 0;">'+(_mmMode==='today'?'오늘 운동 기록이 없어요':'이번 주 운동 기록이 없어요')+'</div>';
+  }
+}
 
 // ── Swipe-to-dismiss modals ──
 (function(){
