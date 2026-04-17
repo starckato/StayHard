@@ -578,7 +578,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 #workout-session-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:var(--bg);z-index:500;display:none;flex-direction:column;max-width:430px;left:50%;transform:translateX(-50%);}
 #workout-session-overlay.open{display:flex;}
 .ws-done-btn{flex:1;padding:14px;background:var(--accent);border:none;border-radius:var(--radius-sm);font-size:17px;font-weight:700;color:#fff;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;min-height:52px;transition:background .4s ease,box-shadow .4s ease;}
-.ws-ex-chip{flex:0 0 auto;padding:4px 10px;border-radius:20px;font-size:10px;font-weight:600;white-space:nowrap;cursor:pointer;border:1px solid var(--border);background:var(--surface2);color:var(--text3);}
+.ws-ex-chip{flex:0 0 auto;padding:4px 10px;border-radius:10px;font-size:10px;font-weight:600;white-space:nowrap;cursor:pointer;border:1px solid var(--border);background:var(--surface2);color:var(--text3);display:flex;align-items:center;gap:5px;}
 .ws-ex-chip.add{background:rgba(255,77,77,.12);color:var(--accent);border-color:rgba(255,77,77,.30);}
 .ws-ex-chip.done{background:var(--green-bg);color:var(--green);border-color:var(--green-bd);padding-left:7px;}
 .ws-ex-chip.done::before{content:'✓ ';font-weight:800;}
@@ -598,21 +598,24 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 /* ── EXERCISE LIBRARY ── */
 #ex-library-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:var(--bg);z-index:700;display:none;flex-direction:column;max-width:430px;left:50%;transform:translateX(-50%);}
 #ex-library-overlay.open{display:flex;}
-.lib-header{display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid var(--border);flex-shrink:0;}
-.lib-search{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:8px 12px;font-size:13px;color:var(--text);font-family:'DM Sans',sans-serif;outline:none;}
+.lib-header{display:flex;flex-direction:column;gap:8px;padding:52px 16px 10px;flex-shrink:0;}
+.lib-header-top{display:flex;align-items:center;gap:8px;}
+.lib-search{flex:1;background:var(--surface2);border:1.5px solid var(--border);border-radius:10px;padding:11px 14px;font-size:14px;color:var(--text);font-family:'DM Sans',sans-serif;outline:none;transition:border-color .15s;}
+.lib-search:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(255,77,77,.06);}
 .lib-search::placeholder{color:var(--text3);}
 .lib-back{background:none;border:none;color:var(--text2);font-size:20px;cursor:pointer;padding:0;flex-shrink:0;}
-.lib-chips{display:flex;gap:6px;padding:10px 16px;overflow-x:auto;scrollbar-width:none;border-bottom:1px solid var(--border);flex-shrink:0;cursor:grab;user-select:none;-webkit-user-select:none;}
+.lib-chips{display:flex;gap:5px;overflow-x:auto;scrollbar-width:none;flex-shrink:0;cursor:grab;user-select:none;-webkit-user-select:none;padding-bottom:2px;}
 .lib-chips::-webkit-scrollbar{display:none;}
 .lib-chips.dragging{cursor:grabbing;}
-.lib-chip{padding:5px 12px;border-radius:14px;font-size:11px;font-weight:500;cursor:pointer;white-space:nowrap;background:var(--surface2);color:var(--text2);border:1px solid var(--border);transition:all .12s;flex-shrink:0;}
-.lib-chip.sel{background:var(--accent-bg);color:var(--accent);border-color:var(--accent);}
-.lib-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;}
-.lib-row{display:flex;align-items:center;gap:12px;padding:10px 16px;cursor:pointer;border-bottom:1px solid var(--border);min-height:76px;}
-.lib-icon{width:64px;height:64px;border-radius:12px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;overflow:hidden;}
-.lib-name{font-size:13px;font-weight:500;color:var(--text);}
-.lib-tags{font-size:10px;color:var(--text3);margin-top:1px;}
-.lib-muscle{font-size:10px;padding:2px 7px;border-radius:6px;background:var(--accent-bg);color:var(--accent);border:1px solid var(--accent-bd);flex-shrink:0;}
+.lib-chip{padding:6px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;background:var(--surface2);color:var(--text3);border:1px solid var(--border);transition:all .12s;flex-shrink:0;}
+.lib-chip.sel{background:var(--accent);color:#fff;border-color:var(--accent);box-shadow:0 2px 8px rgba(255,77,77,.18);}
+.lib-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:4px 0;}
+.lib-row{display:flex;align-items:center;gap:12px;padding:8px 16px;cursor:pointer;border-bottom:1px solid var(--border);min-height:80px;transition:background .1s;}
+.lib-row:active{background:var(--surface2);}
+.lib-icon{width:64px;height:64px;border-radius:10px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;overflow:hidden;border:1px solid var(--border);}
+.lib-name{font-size:14px;font-weight:600;color:var(--text);}
+.lib-tags{font-size:10px;color:var(--text3);margin-top:2px;}
+.lib-muscle{font-size:10px;padding:3px 8px;border-radius:6px;background:var(--accent-bg);color:var(--accent);border:1px solid var(--accent-bd);flex-shrink:0;font-weight:600;}
 
 /* ── ROUTINE MANAGEMENT ── */
 #routine-modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:var(--bg);z-index:600;display:none;flex-direction:column;max-width:430px;left:50%;transform:translateX(-50%);}
@@ -2146,19 +2149,21 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 <!-- EXERCISE LIBRARY OVERLAY -->
 <div id="ex-library-overlay">
   <div class="lib-header">
-    <button onclick="closeLibrary()" class="lib-close">←</button>
-    <input class="lib-search" id="lib-search" placeholder="🔍  운동 검색 (예: 스쿼트, 벤치…)" oninput="filterLibrary()"/>
-  </div>
-  <div class="lib-chips" id="lib-chips">
-    <div class="lib-chip sel" onclick="filterMuscle('전체',this)">전체</div>
-    <div class="lib-chip" onclick="filterMuscle('가슴',this)">가슴</div>
-    <div class="lib-chip" onclick="filterMuscle('등',this)">등</div>
-    <div class="lib-chip" onclick="filterMuscle('하체',this)">하체</div>
-    <div class="lib-chip" onclick="filterMuscle('어깨',this)">어깨</div>
-    <div class="lib-chip" onclick="filterMuscle('팔',this)">팔</div>
-    <div class="lib-chip" onclick="filterMuscle('복근',this)">복근</div>
-    <div class="lib-chip" onclick="filterMuscle('전신',this)">전신</div>
-    <div class="lib-chip" onclick="filterMuscle('유산소',this)">유산소</div>
+    <div class="lib-header-top">
+      <button onclick="closeLibrary()" style="width:32px;height:32px;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--text2);cursor:pointer;flex-shrink:0;">←</button>
+      <input class="lib-search" id="lib-search" placeholder="운동 검색 (예: 스쿼트, 벤치…)" oninput="filterLibrary()"/>
+    </div>
+    <div class="lib-chips" id="lib-chips">
+      <div class="lib-chip sel" onclick="filterMuscle('전체',this)">전체</div>
+      <div class="lib-chip" onclick="filterMuscle('가슴',this)">가슴</div>
+      <div class="lib-chip" onclick="filterMuscle('등',this)">등</div>
+      <div class="lib-chip" onclick="filterMuscle('하체',this)">하체</div>
+      <div class="lib-chip" onclick="filterMuscle('어깨',this)">어깨</div>
+      <div class="lib-chip" onclick="filterMuscle('팔',this)">팔</div>
+      <div class="lib-chip" onclick="filterMuscle('복근',this)">복근</div>
+      <div class="lib-chip" onclick="filterMuscle('전신',this)">전신</div>
+      <div class="lib-chip" onclick="filterMuscle('유산소',this)">유산소</div>
+    </div>
   </div>
   <div class="lib-body" id="lib-body"></div>
 </div>
@@ -3218,9 +3223,9 @@ function filterLibrary(){
         <div class="lib-icon">${exIcon(ex.n,64)}</div>
         <div style="flex:1;min-width:0;">
           <div class="lib-name">${ex.n}</div>
-          <div class="lib-tags">${ex.e} · ${ex.m}</div>
+          <div class="lib-tags"><span style="padding:1px 6px;border-radius:4px;background:var(--surface3);font-weight:500;">${ex.e}</span> ${ex.m}</div>
         </div>
-        <div class="lib-muscle">${ex.m}</div>
+        <div style="font-size:18px;color:var(--text3);flex-shrink:0;">›</div>
       </div>`).join('');
 }
 function selectExercise(name,icon,muscle,equip){
@@ -3273,7 +3278,7 @@ function _wsRenderStrip(){
   currentSession.forEach((ex,i)=>{
     const allDone=ex.sets.length>0&&ex.sets.every(s=>s.done);
     const cls=allDone?'done':i===_wsActiveExIdx?'active':'';
-    html+=`<div class="ws-ex-chip ${cls}" onclick="wsJumpTo(${i})">${ex.name}</div>`;
+    html+=`<div class="ws-ex-chip ${cls}" onclick="wsJumpTo(${i})">${exIcon(ex.name,22)} ${ex.name}</div>`;
   });
   strip.innerHTML=html;
 }
