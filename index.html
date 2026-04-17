@@ -66,6 +66,13 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 .toast{position:fixed;top:16px;left:50%;transform:translateX(-50%);background:rgba(20,20,24,.92);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid var(--border2);border-radius:10px;padding:8px 16px;font-size:12px;font-weight:500;color:var(--text);z-index:500;opacity:0;transition:opacity .2s,transform .2s;pointer-events:none;transform:translateX(-50%) translateY(-4px);box-shadow:0 4px 20px rgba(0,0,0,.4);}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 
+/* FIRST-USE TOOLTIP */
+.ux-tip{position:fixed;left:50%;transform:translateX(-50%);bottom:100px;max-width:340px;width:calc(100% - 40px);background:rgba(20,20,24,.95);backdrop-filter:blur(16px);border:1px solid var(--accent-bd);border-radius:14px;padding:14px 16px;z-index:450;box-shadow:0 8px 32px rgba(0,0,0,.5);animation:tipIn .3s ease;}
+.ux-tip-title{font-size:13px;font-weight:700;color:var(--accent);margin-bottom:6px;}
+.ux-tip-body{font-size:12px;color:var(--text2);line-height:1.6;}
+.ux-tip-close{position:absolute;top:10px;right:12px;background:none;border:none;color:var(--text3);font-size:16px;cursor:pointer;padding:4px;}
+@keyframes tipIn{from{opacity:0;transform:translateX(-50%) translateY(10px);}to{opacity:1;transform:translateX(-50%) translateY(0);}}
+
 /* STATS GRAPHS */
 .stats-period-btn{padding:4px 10px;border-radius:8px;border:1px solid var(--border2);background:transparent;color:var(--text3);font-size:11px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;}
 .stats-period-btn.active{background:var(--accent);border-color:var(--accent);color:#fff;}
@@ -3334,6 +3341,7 @@ async function wsSaveRoutineFromSheet(exForRoutine){
 }
 
 function openWorkoutSession(prefillExercises){
+  tipWorkout();
   currentSession=prefillExercises||[];
   currentGymIdx=-1;
   _wsActiveExIdx=0;
@@ -4199,6 +4207,8 @@ function addScore(type, note='', ptsOverride=null, silent=false){
       showWin('perfect',0,_newTier.icon+' '+_newTier.name+'\n티어 달성!');
       openRoomOverlay();
     },800);
+  } else if(pts>0&&Math.floor(CP.total_score/100)>Math.floor(_prevScore/100)){
+    setTimeout(()=>showWin('routine',0,CP.total_score+'점 돌파! 🎉'),600);
   }
   // 3. localStorage 즉시 백업 — DB flush 전 앱 종료돼도 점수 보존
   try{if(CU)localStorage.setItem('score_'+CU.id,String(CP.total_score));}catch(e){}
@@ -6466,13 +6476,18 @@ function renderMeals(){
       </div>`;
     } else {
       const hl=curSlot===key;
-      return`<div class="meal-empty-slot${hl?' highlight':''}" onclick="openSlotModal('${key}')">
-        <span class="meal-empty-slot-icon">${icon}</span>
-        <span class="meal-empty-slot-text">${key} 기록하기</span>
-        ${hl
-          ? `<span class="meal-empty-slot-hint">지금 ↗</span>`
-          : `<span class="meal-empty-slot-arrow">›</span>`
-        }
+      return`<div class="meal-empty-slot${hl?' highlight':''}" style="flex-wrap:wrap;">
+        <div onclick="openSlotModal('${key}')" style="display:flex;align-items:center;gap:8px;flex:1;min-width:0;">
+          <span class="meal-empty-slot-icon">${icon}</span>
+          <span class="meal-empty-slot-text">${key} 기록하기</span>
+          <span class="meal-empty-slot-arrow">›</span>
+        </div>
+        <div style="display:flex;gap:4px;margin-top:6px;width:100%;" onclick="event.stopPropagation()">
+          <button onclick="quickMeal('${key}','green')" style="flex:1;padding:6px 0;border:1px solid var(--green-bd);background:var(--green-bg);border-radius:6px;font-size:10px;font-weight:600;color:var(--green);cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">✅클린</button>
+          <button onclick="quickMeal('${key}','normal')" style="flex:1;padding:6px 0;border:1px solid var(--border2);background:var(--surface3);border-radius:6px;font-size:10px;font-weight:600;color:var(--text2);cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">🍚일반</button>
+          <button onclick="quickMeal('${key}','cheat')" style="flex:1;padding:6px 0;border:1px solid var(--amber-bd);background:var(--amber-bg);border-radius:6px;font-size:10px;font-weight:600;color:var(--amber);cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">🎉치팅</button>
+          <button onclick="quickMeal('${key}','red')" style="flex:1;padding:6px 0;border:1px solid var(--red-bd);background:var(--red-bg);border-radius:6px;font-size:10px;font-weight:600;color:var(--red);cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">🚫금지</button>
+        </div>
       </div>`;
     }
   }).join('');
@@ -6561,6 +6576,7 @@ function _msSelectQualityBtn(container, type){
 // ① 끼니 모달 (meal-modal-slot)
 // ═══════════════════════════════════════════════════════
 function openSlotModal(slot, editIdx=null){
+  if(editIdx===null)tipMeal();
   mealIdx=editIdx;
   mealTime=slot;
   mealCategory='meal';
@@ -6654,6 +6670,16 @@ function msClearPhoto(){
   _msClearPhotoUI();
   const c=document.getElementById('ms-photo-camera');const g=document.getElementById('ms-photo-gallery');
   if(c)c.value='';if(g)g.value='';
+}
+
+function quickMeal(time,type){
+  if(!logCache[selectedKey])logCache[selectedKey]=log;
+  log=logCache[selectedKey];
+  const entry={name:'',type,photo:null,time,category:'meal'};
+  log.meals.push(entry);
+  renderMeals();
+  applyMealScore(null,type,true,'meal');
+  saveNow();checkPerfectDay();
 }
 
 let _slotSaving=false;
@@ -7320,7 +7346,7 @@ function delPhoto(){
 
 function renderWater(){
   const c=document.getElementById('water-cups');c.innerHTML='';
-  for(let i=0;i<12;i++){const d=document.createElement('div');d.className='wc'+(i<log.water_cups?' on':'');d.onclick=()=>{log.water_cups=(log.water_cups===i+1)?i:i+1;renderWater();scheduleSave();};c.appendChild(d);}
+  for(let i=0;i<12;i++){const d=document.createElement('div');d.className='wc'+(i<log.water_cups?' on':'');d.onclick=()=>{tipWater();log.water_cups=(log.water_cups===i+1)?i:i+1;renderWater();scheduleSave();};c.appendChild(d);}
   const val=document.getElementById('water-val');
   const goal=CP?.water_goal||6;
   const met=log.water_cups>=goal;
@@ -10366,8 +10392,21 @@ function closeModal(id){
 }
 document.querySelectorAll('.modal-overlay').forEach(m=>{m.addEventListener('click',e=>{if(e.target===m)closeModal(m.id);});});
 
-// ── Routine modal button listeners (avoid inline handler issues on iOS) ──
-
+// ── First-use tooltips ──
+function showTip(key,title,body){
+  if(localStorage.getItem('tip_'+key))return;
+  localStorage.setItem('tip_'+key,'1');
+  const el=document.createElement('div');
+  el.className='ux-tip';
+  el.innerHTML=`<button class="ux-tip-close" onclick="this.parentElement.remove()">✕</button>
+    <div class="ux-tip-title">${title}</div>
+    <div class="ux-tip-body">${body}</div>`;
+  document.body.appendChild(el);
+  setTimeout(()=>{if(el.parentElement)el.remove();},8000);
+}
+function tipMeal(){showTip('meal','식단 품질 가이드','✅ <b>클린</b> — 샐러드, 닭가슴살, 현미밥<br>🍚 <b>일반</b> — 한식, 백반, 찌개<br>🎉 <b>치팅</b> — 치트밀 (주 2회 허용)<br>🚫 <b>금지</b> — 폭식, 배달음식, 정크푸드');}
+function tipWorkout(){showTip('workout','운동 세션 사용법','무게와 반복 횟수를 입력하고 ✓ 체크하면 세트 완료!<br>＋ 버튼으로 종목 추가, 완료되면 아래 버튼 탭.');}
+function tipWater(){showTip('water','물 마시기','컵을 탭하면 채워져요.<br>같은 컵을 다시 탭하면 취소됩니다.<br>⚙️ 아이콘으로 목표량 설정 가능!');}
 
 init();
 
