@@ -827,19 +827,19 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
     </div>
 
     <!-- CHAR CARD -->
-    <div id="char-card" onclick="openRoomOverlay()" style="margin:6px 14px 4px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:10px 14px;display:flex;align-items:center;gap:12px;cursor:pointer;min-height:68px;">
+    <div id="char-card" onclick="openRoomOverlay()" style="margin:6px 14px 4px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;display:flex;align-items:center;gap:12px;cursor:pointer;min-height:72px;">
       <canvas id="char-mini-canvas" width="44" height="52" style="flex-shrink:0;image-rendering:pixelated;"></canvas>
       <div style="flex:1;min-width:0;">
-        <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;">
-          <span id="char-tier-name" style="font-size:13px;font-weight:600;"></span>
-          <span id="char-pts" style="font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;"></span>
+        <div id="char-quote" style="font-size:12px;font-weight:600;color:var(--text);line-height:1.5;margin-bottom:6px;font-style:italic;"></div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div style="flex:1;height:4px;background:var(--surface3);border-radius:2px;overflow:hidden;">
+            <div id="char-progress" style="height:100%;border-radius:2px;background:var(--accent-grad);transition:width .6s ease;width:0%;box-shadow:0 0 6px rgba(255,77,77,.2);"></div>
+          </div>
+          <div id="char-progress-label" style="font-size:9px;color:var(--text3);font-family:'DM Mono',monospace;flex-shrink:0;"></div>
         </div>
-        <div style="height:4px;background:var(--surface3);border-radius:2px;overflow:hidden;margin-bottom:3px;">
-          <div id="char-progress" style="height:100%;border-radius:2px;background:var(--accent-grad);transition:width .6s ease;width:0%;box-shadow:0 0 6px rgba(255,77,77,.2);"></div>
-        </div>
-        <div id="char-progress-label" style="font-size:10px;color:var(--text3);font-family:'DM Mono',monospace;"></div>
       </div>
-      <span style="font-size:16px;color:var(--text3);flex-shrink:0;">›</span>
+      <span id="char-tier-name" style="display:none;"></span>
+      <span id="char-pts" style="display:none;"></span>
     </div>
 
     <div class="day-slider-wrap">
@@ -4164,26 +4164,32 @@ function getTierAssets(score){
   return TIER_ASSETS[idx]||TIER_ASSETS[0];
 }
 
+const TIER_QUOTES={
+  '방관자':['일어나... 아직 늦지 않았어.','언제까지 구경만 할 거야?','오늘이 시작하기 가장 좋은 날이야.','변하고 싶다며? 증명해.'],
+  '각성자':['눈을 떴구나. 이제 시작이야.','각성했어. 멈추지 마.','어제의 너는 죽었어. 오늘의 너를 만들어.','느꼈으면 움직여.'],
+  '저항자':['고통이 느껴지지? 그게 성장이야.','나태함과 싸우는 중이야. 이기고 있어.','포기하고 싶을 때가 진짜 시작이야.','불편함을 선택한 너는 이미 다르다.'],
+  '수련자':['멈추지 마. 넌 이미 다른 사람이야.','규율이 습관이 됐어. 이게 진짜 힘이야.','고통을 즐기기 시작했구나.','네가 걸어온 길을 돌아봐. 대단해.'],
+  '지배자':['네 삶은 네가 통제한다. 계속해.','약한 자신은 이미 죽었어.','이제 남들이 너를 보고 배운다.','통제. 규율. 반복. 이게 네 무기야.'],
+  'Goggins':["They don't know me, son.","Who's gonna carry the boats?","Stay hard. Always.","You are not done. Not even close."]
+};
 function renderCharCard(){
   const score=+(CP?.total_score)||0;
   const tier=getTier(score);
   const tierIdx=TIERS.indexOf(tier);
-  console.log('[renderCharCard] score='+score+' tier='+tier.name+' tierIdx='+tierIdx);
   const assets=getTierAssets(score);
   const next=TIERS[Math.min(tierIdx+1,TIERS.length-1)];
   const pct=tierIdx===TIERS.length-1?100:Math.round((score-tier.min)/(next.min-tier.min)*100);
   const card=document.getElementById('char-card');
   if(!card)return;
-  // char-mini-canvas: standing 프레임 애니메이션
   initMiniChar(tier.color);
-  const tn=document.getElementById('char-tier-name');
-  if(tn){tn.textContent=tier.icon+' '+tier.name;tn.style.color=tier.color;}
-  const pts=document.getElementById('char-pts');
-  if(pts)pts.textContent=score+'pt';
+  const quotes=TIER_QUOTES[tier.name]||TIER_QUOTES['방관자'];
+  const quote=quotes[Math.floor(Math.random()*quotes.length)];
+  const quoteEl=document.getElementById('char-quote');
+  if(quoteEl){quoteEl.textContent='"'+quote+'"';quoteEl.style.color=tier.color;}
   const prog=document.getElementById('char-progress');
   if(prog)prog.style.width=pct+'%';
   const lbl=document.getElementById('char-progress-label');
-  if(lbl)lbl.textContent=tierIdx===TIERS.length-1?'최고 티어 달성 🎉':'다음 티어까지 '+(next.min-score)+'pt';
+  if(lbl)lbl.textContent=tierIdx===TIERS.length-1?'🎉 최고 티어':'다음 '+(next.min-score)+'pt';
 }
 
 function openRoomOverlay(){
