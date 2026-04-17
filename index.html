@@ -525,7 +525,8 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
   99% {transform:translateX(-60px) scaleX(-1);}
   100%{transform:translateX(-60px) scaleX(1);}
 }
-.mhandle{width:28px;height:3px;background:var(--text3);border-radius:2px;margin:0 auto 16px;opacity:.5;}
+.mhandle{width:28px;height:3px;background:var(--text3);border-radius:2px;margin:0 auto 16px;opacity:.5;cursor:grab;}
+.mhandle-zone{width:100%;padding:10px 0 0;touch-action:none;}
 .mtitle{font-size:15px;font-weight:700;margin-bottom:14px;letter-spacing:-.01em;}
 .mfield{margin-bottom:13px;}
 .mlabel{font-size:12px;color:var(--text2);margin-bottom:7px;text-transform:uppercase;letter-spacing:.06em;display:block;font-weight:500;}
@@ -1144,6 +1145,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
         </div>
       </div>
 
+      <div id="st-score-sources" style="margin-bottom:10px;"></div>
       <div id="st-report-card" style="margin-bottom:14px;"></div>
 
       <div id="st-insights-section" style="margin-bottom:14px;">
@@ -3348,6 +3350,7 @@ async function wsSaveRoutineFromSheet(exForRoutine){
 
 function openWorkoutSession(prefillExercises){
   tipWorkout();
+  setTimeout(showWorkoutGuide,500);
   currentSession=prefillExercises||[];
   currentGymIdx=-1;
   _wsActiveExIdx=0;
@@ -10432,6 +10435,98 @@ function tipMeal(){showTip('meal','식단 품질 가이드','✅ <b>클린</b> �
 function tipWorkout(){showTip('workout','운동 세션 사용법','무게와 반복 횟수를 입력하고 ✓ 체크하면 세트 완료!<br>＋ 버튼으로 종목 추가, 완료되면 아래 버튼 탭.');}
 function tipWater(){showTip('water','물 마시기','컵을 탭하면 채워져요.<br>같은 컵을 다시 탭하면 취소됩니다.<br>⚙️ 아이콘으로 목표량 설정 가능!');}
 
+// ── Swipe-to-dismiss modals ──
+(function(){
+  document.addEventListener('touchstart',function(e){
+    const modal=e.target.closest('.modal');
+    if(!modal)return;
+    const overlay=modal.closest('.modal-overlay');
+    if(!overlay)return;
+    const isHandle=e.target.closest('.mhandle,.mhandle-zone');
+    const atTop=modal.scrollTop<=0;
+    if(!isHandle&&!atTop)return;
+    let sy=e.touches[0].clientY;
+    let dy=0;
+    const onMove=ev=>{
+      dy=ev.touches[0].clientY-sy;
+      if(dy<0)dy=0;
+      modal.style.transform='translateY('+dy+'px)';
+      modal.style.transition='none';
+    };
+    const onEnd=()=>{
+      document.removeEventListener('touchmove',onMove);
+      document.removeEventListener('touchend',onEnd);
+      modal.style.transition='transform .2s ease';
+      if(dy>80){
+        modal.style.transform='translateY(100%)';
+        setTimeout(()=>{closeModal(overlay.id);modal.style.transform='';modal.style.transition='';},200);
+      } else {
+        modal.style.transform='';
+      }
+    };
+    document.addEventListener('touchmove',onMove,{passive:true});
+    document.addEventListener('touchend',onEnd);
+  },{passive:true});
+})();
+
+// ── Today's score sources (consolidated view) ──
+function stRenderScoreSources(){
+  const container=document.getElementById('st-score-sources');
+  if(!container)return;
+  const l=logCache[TODAY]||log;
+  const ptsLog=l._ptsLog||[];
+  if(!ptsLog.length){container.innerHTML='';return;}
+  const catMap={};
+  ptsLog.forEach(p=>{
+    const t=p.type||'other';
+    let cat='기타';
+    if(t.startsWith('workout')||t==='pushup_challenge')cat='💪 운동';
+    else if(t.startsWith('diet')||t.startsWith('cheat'))cat='🥗 식단';
+    else if(t.startsWith('routine'))cat='✅ 루틴';
+    else if(t.startsWith('target'))cat='🎯 할일';
+    else if(t.startsWith('weight'))cat='⚖️ 체중';
+    else if(t==='cold_shower'||t==='early_rise')cat='🔥 챌린지';
+    catMap[cat]=(catMap[cat]||0)+(p.pts||0);
+  });
+  const entries=Object.entries(catMap).filter(([,v])=>v!==0).sort((a,b)=>Math.abs(b[1])-Math.abs(a[1]));
+  if(!entries.length){container.innerHTML='';return;}
+  const total=ptsLog.reduce((a,p)=>a+(p.pts||0),0);
+  container.innerHTML=`<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+      <span style="font-size:12px;font-weight:700;color:var(--text);">오늘 점수 구성</span>
+      <span style="font-size:14px;font-weight:800;color:${total>=0?'var(--green)':'var(--red)'};font-family:'DM Mono',monospace;">${total>=0?'+':''}${total}pt</span>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px;">
+      ${entries.map(([cat,v])=>`<div style="display:flex;align-items:center;gap:4px;padding:4px 10px;background:var(--surface2);border-radius:6px;font-size:11px;">
+        <span>${cat}</span>
+        <span style="font-weight:700;color:${v>=0?'var(--green)':'var(--red)'};font-family:'DM Mono',monospace;">${v>=0?'+':''}${v}</span>
+      </div>`).join('')}
+    </div>
+  </div>`;
+}
+
+// ── Workout guided mode ──
+function showWorkoutGuide(){
+  if(localStorage.getItem('tip_ws_guide'))return;
+  const allWo=Object.values(logCache).flatMap(l=>(l.workouts||[])).filter(w=>w.type==='gym');
+  if(allWo.length>0)return;
+  localStorage.setItem('tip_ws_guide','1');
+  const el=document.createElement('div');
+  el.style.cssText='position:fixed;inset:0;z-index:510;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;padding:24px;';
+  el.innerHTML=`<div style="background:var(--surface);border:1px solid var(--border2);border-radius:16px;padding:24px 20px;max-width:320px;text-align:center;">
+    <div style="font-size:36px;margin-bottom:12px;">🏋️</div>
+    <div style="font-size:16px;font-weight:700;color:var(--text);margin-bottom:12px;">운동 세션 가이드</div>
+    <div style="font-size:12px;color:var(--text2);line-height:1.7;text-align:left;margin-bottom:16px;">
+      <div style="margin-bottom:8px;"><b style="color:var(--text);">1.</b> <b style="color:var(--accent);">＋ 종목 추가</b>로 운동을 선택하세요</div>
+      <div style="margin-bottom:8px;"><b style="color:var(--text);">2.</b> 무게(kg)와 횟수(회)를 입력하세요</div>
+      <div style="margin-bottom:8px;"><b style="color:var(--text);">3.</b> <b style="color:var(--green);">✓ 체크</b>하면 세트 완료!</div>
+      <div><b style="color:var(--text);">4.</b> 다 했으면 아래 <b style="color:var(--accent);">운동 완료</b> 탭</div>
+    </div>
+    <button onclick="this.closest('div[style]').parentElement.remove()" style="width:100%;padding:12px;background:var(--accent-grad);border:none;border-radius:var(--radius-sm);color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;">알겠어요! 💪</button>
+  </div>`;
+  document.body.appendChild(el);
+}
+
 // ── Offline detection ──
 let _isOffline=false;
 function _updateOffline(offline){
@@ -11719,6 +11814,7 @@ function stRenderAll(rows){
   try{stRenderHero(filtered);}catch(e){console.warn('stRenderHero error:',e);}
   try{stRenderKPI(filtered);}catch(e){console.warn('stRenderKPI error:',e);}
   try{stRenderInsights(filtered);}catch(e){console.warn('stRenderInsights error:',e);}
+  try{stRenderScoreSources();}catch(e){console.warn('stRenderScoreSources error:',e);}
   try{stRenderReportCard(filtered);}catch(e){console.warn('stRenderReportCard error:',e);}
   try{stRenderPtsBreakdown(filtered);}catch(e){console.warn('stRenderPtsBreakdown error:',e);}
   try{stRenderMealQuality(filtered);}catch(e){console.warn('stRenderMealQuality error:',e);}
