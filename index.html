@@ -2429,7 +2429,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
     <div onclick="setMuscleView('back')" id="mm-view-back" style="flex:1;text-align:center;padding:6px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;background:var(--surface2);color:var(--text3);">후면</div>
   </div>
   <div id="mm-body" style="flex:1;overflow:auto;display:flex;align-items:center;justify-content:center;padding:10px;"></div>
-  <div id="mm-tooltip" style="display:none;position:absolute;bottom:100px;left:50%;transform:translateX(-50%);background:rgba(10,10,12,.95);border:1px solid var(--accent-bd);border-radius:10px;padding:8px 14px;font-size:12px;font-weight:600;color:var(--accent);z-index:10;pointer-events:none;"></div>
+  <div id="mm-tooltip" style="display:none;position:absolute;top:100px;left:50%;transform:translateX(-50%);background:rgba(10,10,12,.95);backdrop-filter:blur(8px);border:1px solid var(--accent-bd);border-radius:10px;padding:8px 14px;font-size:12px;font-weight:600;color:var(--accent);z-index:10;pointer-events:none;box-shadow:0 4px 16px rgba(0,0,0,.5);"></div>
   <div id="mm-legend" style="padding:10px 16px 24px;flex-shrink:0;border-top:1px solid var(--border);">
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
       <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;">
@@ -10723,7 +10723,7 @@ function renderMuscleMap(){
     summary.innerHTML='<div style="display:flex;flex-wrap:wrap;gap:4px;">'+
       activeList.map(([m,d])=>{
         const col=heatColor(d.intensity);
-        return`<span onclick="highlightMuscle('${m}')" style="display:inline-flex;align-items:center;gap:3px;padding:5px 10px;background:rgba(255,255,255,0.05);border-left:3px solid ${col};border-radius:6px;font-size:11px;color:var(--text);cursor:pointer;transition:background .15s;" id="mm-pill-${m}">${MUSCLE_LABELS[m]||m} <span style="color:var(--text3);font-family:'DM Mono',monospace;">${d.sets}세트</span></span>`;
+        return`<span onclick="highlightMuscle('${m}')" style="display:inline-flex;align-items:center;gap:3px;padding:5px 10px;background:rgba(255,255,255,0.05);border-left:3px solid ${col};border:1px solid transparent;border-left:3px solid ${col};border-radius:6px;font-size:11px;color:var(--text);cursor:pointer;transition:all .15s;" id="mm-pill-${m}">${MUSCLE_LABELS[m]||m} <span style="color:var(--text3);font-family:'DM Mono',monospace;">${d.sets}세트</span></span>`;
       }).join('')+'</div>';
     setTimeout(()=>highlightMuscle(activeList[0][0]),100);
   } else {
@@ -10736,21 +10736,24 @@ function highlightMuscle(muscleId){
   const container=document.getElementById('mm-body');
   const svg=container?.querySelector('svg');
   if(!svg)return;
-  if(_mmHighlighted)svg.querySelectorAll('path').forEach(p=>{p.style.stroke='';p.style.strokeWidth='';});
+  if(_mmHighlighted){
+    const prevIds=MUSCLE_SVG_MAP[_mmHighlighted]||[];
+    prevIds.forEach(sid=>{const el=svg.getElementById(sid);if(el){el.style.filter='';const d=_mmActivation[_mmHighlighted];el.style.fill=d?heatColor(d.intensity):'#1a1a20';}});
+  }
   _mmHighlighted=muscleId;
-  document.querySelectorAll('[id^="mm-pill-"]').forEach(el=>{el.style.background='rgba(255,255,255,0.05)';});
+  document.querySelectorAll('[id^="mm-pill-"]').forEach(el=>{el.style.background='rgba(255,255,255,0.05)';el.style.borderColor='transparent';});
   const pill=document.getElementById('mm-pill-'+muscleId);
-  if(pill)pill.style.background='rgba(255,255,255,0.15)';
+  if(pill){pill.style.background='rgba(255,255,255,0.12)';pill.style.borderColor='var(--accent)';}
+  const md=_mmActivation[muscleId];
   svgIds.forEach(sid=>{
     const el=svg.getElementById(sid);
-    if(el){el.style.stroke='#fff';el.style.strokeWidth='2';el.style.transition='stroke .2s';}
+    if(el){el.style.fill=md?heatColor(Math.min(1,md.intensity+0.3)):'rgba(255,77,77,0.4)';el.style.filter='brightness(1.6) drop-shadow(0 0 8px rgba(255,60,60,0.7))';el.style.transition='fill .2s,filter .2s';}
   });
-  const d=_mmActivation[muscleId];
-  if(d){
-    const fmtVol=v=>v>=1000?(v/1000).toFixed(1)+'t':Math.round(v).toLocaleString()+'kg';
-    const tierLabel=(v)=>v>=0.91?'폭발 💥':v>=0.61?'집중 타격 🔥':v>=0.31?'자극됨 ⚡':'워밍업';
+  if(md){
+    const fmtV=v=>v>=1000?(v/1000).toFixed(1)+'t':Math.round(v).toLocaleString()+'kg';
+    const tl=(v)=>v>=0.91?'폭발 💥':v>=0.61?'집중 타격 🔥':v>=0.31?'자극됨 ⚡':'워밍업';
     const tip=document.getElementById('mm-tooltip');
-    tip.innerHTML=`<div style="font-size:13px;font-weight:700;">${MUSCLE_LABELS[muscleId]||muscleId}</div><div style="font-size:11px;color:var(--text2);margin-top:2px;">${tierLabel(d.intensity)} — ${d.sets}세트 · ${fmtVol(d.volume)}</div>`;
+    tip.innerHTML=`<div style="font-size:13px;font-weight:700;">${MUSCLE_LABELS[muscleId]||muscleId}</div><div style="font-size:11px;color:var(--text2);margin-top:2px;">${tl(md.intensity)} — ${md.sets}세트 · ${fmtV(md.volume)}</div>`;
     tip.style.display='block';
   }
 }
