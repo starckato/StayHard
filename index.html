@@ -981,8 +981,8 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
           <span id="wo-add-cta-lbl" style="font-size:14px;font-weight:700;color:var(--accent);">운동 추가</span>
         </div>
         <div onclick="openMuscleMap()" style="display:flex;align-items:center;justify-content:center;gap:6px;padding:14px 16px;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;cursor:pointer;touch-action:manipulation;">
-          <span style="font-size:14px;">🦴</span>
-          <span style="font-size:12px;font-weight:600;color:var(--text2);">근육맵</span>
+          <span style="font-size:14px;">💥</span>
+          <span style="font-size:12px;font-weight:600;color:var(--text2);">자극 부위</span>
         </div>
       </div>
     </div>
@@ -2398,7 +2398,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 <!-- ROOM OVERLAY -->
 <div id="muscle-map-overlay" style="display:none;position:fixed;top:0;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;height:100%;z-index:750;flex-direction:column;background:var(--bg);overflow:hidden;">
   <div style="display:flex;align-items:center;justify-content:space-between;padding:52px 16px 10px;flex-shrink:0;border-bottom:1px solid var(--border);">
-    <div style="font-size:16px;font-weight:700;">🦴 근육 활성화</div>
+    <div><div style="font-size:16px;font-weight:700;">💥 자극 부위</div><div id="mm-subtitle" style="font-size:10px;color:var(--text3);margin-top:1px;">오늘 어디를 때렸나</div></div>
     <div style="display:flex;align-items:center;gap:10px;">
       <div id="mm-toggle" style="display:flex;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;overflow:hidden;">
         <div onclick="setMuscleMode('today')" id="mm-btn-today" style="padding:5px 12px;font-size:11px;font-weight:700;cursor:pointer;color:#fff;background:var(--accent);">오늘</div>
@@ -2415,10 +2415,10 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
   <div id="mm-tooltip" style="display:none;position:absolute;bottom:100px;left:50%;transform:translateX(-50%);background:rgba(10,10,12,.95);border:1px solid var(--accent-bd);border-radius:10px;padding:8px 14px;font-size:12px;font-weight:600;color:var(--accent);z-index:10;pointer-events:none;"></div>
   <div id="mm-legend" style="padding:10px 16px 24px;flex-shrink:0;border-top:1px solid var(--border);">
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
-      <div style="display:flex;align-items:center;gap:4px;flex:1;"><div style="width:12px;height:12px;border-radius:3px;background:rgba(255,77,77,0.15);"></div><span style="font-size:10px;color:var(--text3);">약함</span></div>
-      <div style="display:flex;align-items:center;gap:4px;flex:1;"><div style="width:12px;height:12px;border-radius:3px;background:rgba(255,77,77,0.5);"></div><span style="font-size:10px;color:var(--text3);">보통</span></div>
-      <div style="display:flex;align-items:center;gap:4px;flex:1;"><div style="width:12px;height:12px;border-radius:3px;background:rgba(255,77,77,0.9);"></div><span style="font-size:10px;color:var(--text3);">강함</span></div>
-      <div style="display:flex;align-items:center;gap:4px;flex:1;"><div style="width:12px;height:12px;border-radius:3px;background:var(--surface3);border:1px solid var(--border);"></div><span style="font-size:10px;color:var(--text3);">미활성</span></div>
+      <div style="display:flex;align-items:center;gap:4px;flex:1;"><div style="width:12px;height:12px;border-radius:3px;background:rgba(255,77,77,0.15);"></div><span style="font-size:10px;color:var(--text3);">워밍업</span></div>
+      <div style="display:flex;align-items:center;gap:4px;flex:1;"><div style="width:12px;height:12px;border-radius:3px;background:rgba(255,77,77,0.45);"></div><span style="font-size:10px;color:var(--text3);">자극됨</span></div>
+      <div style="display:flex;align-items:center;gap:4px;flex:1;"><div style="width:12px;height:12px;border-radius:3px;background:rgba(255,77,77,0.7);"></div><span style="font-size:10px;color:var(--text3);">집중 타격</span></div>
+      <div style="display:flex;align-items:center;gap:4px;flex:1;"><div style="width:12px;height:12px;border-radius:3px;background:rgba(255,77,77,0.95);"></div><span style="font-size:10px;color:var(--text3);">폭발</span></div>
     </div>
     <div id="mm-summary" style="font-size:11px;color:var(--text3);"></div>
   </div>
@@ -10602,6 +10602,8 @@ function setMuscleMode(mode){
   document.getElementById('mm-btn-today').style.color=mode==='today'?'#fff':'var(--text3)';
   document.getElementById('mm-btn-week').style.background=mode==='week'?'var(--accent)':'transparent';
   document.getElementById('mm-btn-week').style.color=mode==='week'?'#fff':'var(--text3)';
+  const sub=document.getElementById('mm-subtitle');
+  if(sub)sub.textContent=mode==='today'?'오늘 어디를 때렸나':'이번 주 훈련 분포';
   renderMuscleMap();
 }
 function setMuscleView(view){
@@ -10639,12 +10641,13 @@ function renderMuscleMap(){
       p.style.fill='#2a2a32';p.style.transition='fill 0.3s';
     }
     p.style.cursor='pointer';
+    const tierLabel=(v)=>v>=0.91?'폭발 💥':v>=0.61?'집중 타격 🔥':v>=0.31?'자극됨 ⚡':'워밍업';
     p.addEventListener('mouseenter',()=>{
       if(matchedMuscle){
         const label=MUSCLE_LABELS[matchedMuscle]||matchedMuscle;
         const pct=Math.round(maxIntensity*100);
         const tip=document.getElementById('mm-tooltip');
-        tip.textContent=label+' — '+pct+'%';
+        tip.textContent=label+' · '+tierLabel(maxIntensity)+' ('+pct+'%)';
         tip.style.display='block';
       }
     });
@@ -10654,7 +10657,7 @@ function renderMuscleMap(){
         const label=MUSCLE_LABELS[matchedMuscle]||matchedMuscle;
         const pct=Math.round(maxIntensity*100);
         const tip=document.getElementById('mm-tooltip');
-        tip.textContent=label+' — '+pct+'%';
+        tip.textContent=label+' · '+tierLabel(maxIntensity)+' ('+pct+'%)';
         tip.style.display='block';
         setTimeout(()=>tip.style.display='none',2000);
       }
@@ -10663,10 +10666,11 @@ function renderMuscleMap(){
   const activeList=Object.entries(activation).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]);
   const summary=document.getElementById('mm-summary');
   if(activeList.length){
-    summary.innerHTML='<div style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:4px;">활성화된 근육</div>'+
-      activeList.map(([m,v])=>`<span style="display:inline-block;padding:2px 8px;margin:2px;background:rgba(255,77,77,${(0.1+v*0.4).toFixed(2)});border-radius:5px;font-size:10px;color:var(--text);">${MUSCLE_LABELS[m]||m} ${Math.round(v*100)}%</span>`).join('');
+    const tl=(v)=>v>=0.91?'폭발':v>=0.61?'집중 타격':v>=0.31?'자극됨':'워밍업';
+    summary.innerHTML='<div style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:4px;">자극된 부위</div>'+
+      activeList.map(([m,v])=>`<span style="display:inline-block;padding:3px 8px;margin:2px;background:rgba(255,77,77,${(0.1+v*0.4).toFixed(2)});border-radius:6px;font-size:10px;color:var(--text);">${MUSCLE_LABELS[m]||m} <span style="opacity:.7;">${tl(v)}</span></span>`).join('');
   } else {
-    summary.innerHTML='<div style="font-size:11px;color:var(--text3);text-align:center;padding:8px 0;">'+(_mmMode==='today'?'오늘 운동 기록이 없어요':'이번 주 운동 기록이 없어요')+'</div>';
+    summary.innerHTML='<div style="font-size:12px;color:var(--text3);text-align:center;padding:12px 0;">'+(_mmMode==='today'?'오늘 운동 기록이 없어요 🏋️':'이번 주 운동 기록이 없어요 🏋️')+'</div>';
   }
 }
 
