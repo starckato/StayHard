@@ -2418,8 +2418,9 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
     <div><div style="font-size:16px;font-weight:700;">💥 자극 부위</div><div id="mm-subtitle" style="font-size:10px;color:var(--text3);margin-top:1px;">오늘 어디를 때렸나</div></div>
     <div style="display:flex;align-items:center;gap:10px;">
       <div id="mm-toggle" style="display:flex;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;overflow:hidden;">
-        <div onclick="setMuscleMode('today')" id="mm-btn-today" style="padding:5px 12px;font-size:11px;font-weight:700;cursor:pointer;color:#fff;background:var(--accent);">오늘</div>
-        <div onclick="setMuscleMode('week')" id="mm-btn-week" style="padding:5px 12px;font-size:11px;font-weight:700;cursor:pointer;color:var(--text3);">이번 주</div>
+        <div onclick="setMuscleMode('today')" id="mm-btn-today" style="padding:5px 10px;font-size:10px;font-weight:700;cursor:pointer;color:#fff;background:var(--accent);">오늘</div>
+        <div onclick="setMuscleMode('week')" id="mm-btn-week" style="padding:5px 10px;font-size:10px;font-weight:700;cursor:pointer;color:var(--text3);">이번 주</div>
+        <div onclick="setMuscleMode('all')" id="mm-btn-all" style="padding:5px 10px;font-size:10px;font-weight:700;cursor:pointer;color:var(--text3);">전체</div>
       </div>
       <button onclick="closeMuscleMap()" style="width:28px;height:28px;background:var(--surface2);border:1px solid var(--border2);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--text2);cursor:pointer;">✕</button>
     </div>
@@ -10611,7 +10612,7 @@ let _mmMode='today',_mmView='front',_mmSvgFront=null,_mmSvgBack=null;
 
 function computeMuscleActivation(workouts,mode){
   const raw={},sets={};
-  const wos=mode==='week'?getWeekWorkouts():workouts;
+  const wos=mode==='all'?getAllWorkouts():mode==='week'?getWeekWorkouts():workouts;
   wos.forEach(w=>{
     if(w.type!=='gym'||w.status!=='done')return;
     (w.exercises||[]).forEach(ex=>{
@@ -10643,6 +10644,12 @@ function getWeekWorkouts(){
   for(let i=0;i<7;i++){const dd=new Date(mon);dd.setDate(mon.getDate()+i);const k=dkey(dd);const l=logCache[k];if(l)(l.workouts||[]).forEach(w=>wos.push(w));}
   return wos;
 }
+function getAllWorkouts(){
+  const wos=[];
+  Object.values(logCache).forEach(l=>{(l.workouts||[]).forEach(w=>wos.push(w));});
+  if(_stData)_stData.forEach(r=>{(r.workouts||[]).forEach(w=>{if(!wos.includes(w))wos.push(w);});});
+  return wos;
+}
 
 async function loadMuscleSvg(view){
   const url=view==='front'?'/assets/body_front.svg':'/assets/body_back.svg';
@@ -10664,12 +10671,13 @@ function closeMuscleMap(){
 }
 function setMuscleMode(mode){
   _mmMode=mode;
-  document.getElementById('mm-btn-today').style.background=mode==='today'?'var(--accent)':'transparent';
-  document.getElementById('mm-btn-today').style.color=mode==='today'?'#fff':'var(--text3)';
-  document.getElementById('mm-btn-week').style.background=mode==='week'?'var(--accent)':'transparent';
-  document.getElementById('mm-btn-week').style.color=mode==='week'?'#fff':'var(--text3)';
+  ['today','week','all'].forEach(m=>{
+    const btn=document.getElementById('mm-btn-'+m);
+    if(btn){btn.style.background=m===mode?'var(--accent)':'transparent';btn.style.color=m===mode?'#fff':'var(--text3)';}
+  });
   const sub=document.getElementById('mm-subtitle');
-  if(sub)sub.textContent=mode==='today'?'오늘 어디를 때렸나':'이번 주 훈련 분포';
+  const labels={today:'오늘 어디를 때렸나',week:'이번 주 훈련 분포',all:'누적 근육 비율'};
+  if(sub)sub.textContent=labels[mode]||'';
   renderMuscleMap();
 }
 function setMuscleView(view){
