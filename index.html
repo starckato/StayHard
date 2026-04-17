@@ -1187,11 +1187,22 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
         <div id="st-weight-empty" class="stats-empty" style="display:none;">체중 기록이 없어요</div>
       </div>
 
+      <div class="stats-card stats-featured" id="st-bodycomp-card" style="display:none;">
+        <div class="stats-card-title">🏋️ 체성분 추이</div>
+        <div class="stats-meta" id="st-bodycomp-meta"></div>
+        <div style="position:relative;height:200px;"><canvas id="st-chart-bodycomp"></canvas></div>
+      </div>
+
       <div class="stats-card">
         <div class="stats-card-title">✅ 루틴 완료율 추이 (%)</div>
         <div class="stats-meta" id="st-routine-meta"></div>
         <div style="position:relative;height:160px;"><canvas id="st-chart-routine"></canvas></div>
         <div id="st-routine-empty" class="stats-empty" style="display:none;">루틴 기록이 없어요</div>
+      </div>
+
+      <div class="stats-card" id="st-routine-breakdown-card" style="display:none;">
+        <div class="stats-card-title">📊 루틴별 완료율 & 연속 기록</div>
+        <div id="st-routine-breakdown"></div>
       </div>
     </div>
 
@@ -11591,6 +11602,8 @@ function stRenderAll(rows){
   try{stRenderVolChart(filtered);}catch(e){console.warn('stRenderVolChart error:',e);}
   try{stRenderExerciseList(filtered);}catch(e){console.warn('stRenderExerciseList error:',e);}
   try{stRenderRoutineChart(filtered);}catch(e){console.warn('stRenderRoutineChart error:',e);}
+  try{stRenderBodyComp(filtered);}catch(e){console.warn('stRenderBodyComp error:',e);}
+  try{stRenderRoutineBreakdown(filtered);}catch(e){console.warn('stRenderRoutineBreakdown error:',e);}
   try{stRenderMealHeatmap(filtered);}catch(e){console.warn('stRenderMealHeatmap error:',e);}
   try{stRenderScoreChart(filtered);}catch(e){console.warn('stRenderScoreChart error:',e);}
 
@@ -11613,7 +11626,7 @@ function statsSetSection(key,skipSave){
   });
   // Resize charts that became visible
   setTimeout(()=>{
-    const chartMap={overview:['score'],training:['vol'],nutrition:[],habits:['weight','routine']};
+    const chartMap={overview:['score'],training:['vol'],nutrition:[],habits:['weight','routine','bodycomp']};
     (chartMap[key]||[]).forEach(k=>{if(stCharts[k]){try{stCharts[k].resize();}catch(_){}}});
   },30);
 }
@@ -12247,6 +12260,85 @@ function stRenderRoutineChart(rows){
       tooltip:{label:ctx=>ctx.parsed.y+'% 완료'}
     }),plugins:{...stDashCfg().plugins,stTargetLine:{value:80,color:'rgba(52,211,153,0.55)',label:'목표 80%'}}}
   });
+}
+
+function stRenderBodyComp(rows){
+  const card=document.getElementById('st-bodycomp-card');
+  const canvas=document.getElementById('st-chart-bodycomp');
+  const metaEl=document.getElementById('st-bodycomp-meta');
+  const musclePts=rows.filter(r=>r.muscle_mass!=null).map(r=>({x:r._key,y:parseFloat(r.muscle_mass)}));
+  const fatPts=rows.filter(r=>r.body_fat_pct!=null).map(r=>({x:r._key,y:parseFloat(r.body_fat_pct)}));
+  if(!musclePts.length&&!fatPts.length){card.style.display='none';return;}
+  card.style.display='';
+  const allDates=[...new Set([...musclePts.map(p=>p.x),...fatPts.map(p=>p.x)])].sort();
+  const muscleMap=Object.fromEntries(musclePts.map(p=>[p.x,p.y]));
+  const fatMap=Object.fromEntries(fatPts.map(p=>[p.x,p.y]));
+  const labels=allDates.map(d=>d.slice(5).replace('-','/'));
+  const muscleData=allDates.map(d=>muscleMap[d]??null);
+  const fatData=allDates.map(d=>fatMap[d]??null);
+  const parts=[];
+  if(musclePts.length){const v=musclePts[musclePts.length-1].y;const d=v-musclePts[0].y;parts.push({label:'골격근',value:v.toFixed(1),unit:'kg',delta:d!==0?('<span class="stats-delta '+(d>0?'up':'down')+'">'+(d>0?'▲':'▼')+Math.abs(d).toFixed(1)+'</span>'):''});}
+  if(fatPts.length){const v=fatPts[fatPts.length-1].y;const d=v-fatPts[0].y;parts.push({label:'체지방',value:v.toFixed(1),unit:'%',delta:d!==0?('<span class="stats-delta '+(d<0?'up':'down')+'">'+(d>0?'▲':'▼')+Math.abs(d).toFixed(1)+'</span>'):''});}
+  stHeadline('st-bodycomp-meta',parts);
+  stDestroyChart('bodycomp');
+  const datasets=[];
+  if(musclePts.length)datasets.push({label:'골격근 (kg)',data:muscleData,borderColor:'#38bdf8',borderWidth:2.5,backgroundColor:'transparent',pointRadius:3,pointBackgroundColor:'#38bdf8',tension:0.4,yAxisID:'y',spanGaps:true});
+  if(fatPts.length)datasets.push({label:'체지방 (%)',data:fatData,borderColor:'#f59e0b',borderWidth:2,borderDash:[4,3],backgroundColor:'transparent',pointRadius:3,pointBackgroundColor:'#f59e0b',tension:0.4,yAxisID:'y1',spanGaps:true});
+  const c=getChartColors();
+  stCharts.bodycomp=new Chart(canvas,{
+    type:'line',data:{labels,datasets},
+    options:{responsive:true,maintainAspectRatio:false,animation:{duration:400},
+      interaction:{mode:'index',intersect:false},
+      plugins:{legend:{display:true,position:'top',labels:{color:c.text,boxWidth:10,font:{size:11,family:"'DM Sans',sans-serif"}}},tooltip:{backgroundColor:'rgba(10,10,12,.9)',titleColor:'#eee',bodyColor:'#ccc',borderColor:c.grid,borderWidth:1,padding:10,bodyFont:{family:"'DM Sans',sans-serif"},titleFont:{family:"'DM Sans',sans-serif"}}},
+      scales:{x:{ticks:{color:c.text,font:{size:9,family:"'DM Sans',sans-serif"},maxRotation:0,autoSkip:true,maxTicksLimit:8},grid:{display:false}},
+        y:{position:'left',ticks:{color:'#38bdf8',font:{size:10},callback:v=>v+'kg'},grid:{color:c.grid}},
+        y1:{position:'right',ticks:{color:'#f59e0b',font:{size:10},callback:v=>v+'%'},grid:{display:false}}
+      }
+    }
+  });
+}
+
+function stRenderRoutineBreakdown(rows){
+  const card=document.getElementById('st-routine-breakdown-card');
+  const container=document.getElementById('st-routine-breakdown');
+  const itemMap={};
+  const sortedDates=rows.map(r=>r._key).sort();
+  rows.forEach(r=>{
+    (r.mandatory||[]).forEach(m=>{
+      if(!m.name)return;
+      if(!itemMap[m.name])itemMap[m.name]={done:0,total:0,dates:{}};
+      itemMap[m.name].total++;
+      if(m.done){itemMap[m.name].done++;itemMap[m.name].dates[r._key]=true;}
+    });
+  });
+  const items=Object.entries(itemMap).filter(([,v])=>v.total>=2).sort((a,b)=>b[1].total-a[1].total);
+  if(!items.length){card.style.display='none';return;}
+  card.style.display='';
+  let html='<div style="padding:12px 14px;display:flex;flex-direction:column;gap:8px;">';
+  items.forEach(([name,data])=>{
+    const pct=Math.round(data.done/data.total*100);
+    const col=pct>=80?'var(--green)':pct>=50?'var(--amber)':'var(--red)';
+    let streak=0,maxStreak=0;
+    sortedDates.forEach(d=>{
+      const dayItems=rows.find(r=>r._key===d)?.mandatory||[];
+      const item=dayItems.find(m=>m.name===name);
+      if(item){if(item.done){streak++;maxStreak=Math.max(maxStreak,streak);}else{streak=0;}}
+    });
+    html+=`<div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+        <span style="font-size:13px;font-weight:600;color:var(--text);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${name}</span>
+        <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
+          <span style="font-size:11px;color:var(--text3);">🔥${maxStreak>0?maxStreak:'-'}일</span>
+          <span style="font-size:12px;font-weight:700;color:${col};">${pct}%</span>
+        </div>
+      </div>
+      <div style="height:5px;background:var(--surface3);border-radius:3px;overflow:hidden;">
+        <div style="height:100%;width:${pct}%;background:${col};border-radius:3px;transition:width .4s ease;"></div>
+      </div>
+    </div>`;
+  });
+  html+='</div>';
+  container.innerHTML=html;
 }
 
 function stRenderMealHeatmap(rows){
