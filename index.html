@@ -1122,6 +1122,12 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
             <div class="stats-kpi-sub" id="st-kpi-workout-sub"></div>
             <div class="stats-kpi-spark"><canvas id="st-spark-workout"></canvas></div>
           </div>
+          <div class="stats-kpi kpi-blue">
+            <div class="stats-kpi-label">💧 수분 섭취</div>
+            <div class="stats-kpi-value" style="color:var(--blue);" id="st-kpi-water">—</div>
+            <div class="stats-kpi-sub" id="st-kpi-water-sub"></div>
+            <div class="stats-kpi-spark"><canvas id="st-spark-water"></canvas></div>
+          </div>
         </div>
       </div>
 
@@ -11521,10 +11527,10 @@ async function loadStatsTab(){
   try{
     // 캐시가 있으면 재사용
     if(!_stData){
-      const from=new Date(now);from.setDate(from.getDate()-89);
+      const from=new Date(now);from.setDate(from.getDate()-364);
       const fromKey=dkey(from);
       const{data,error}=await sb.from('daily_logs')
-        .select('log_date,weight,water_cups,meals,workouts,mandatory,targets,points_log')
+        .select('log_date,weight,muscle_mass,body_fat_pct,water_cups,meals,workouts,mandatory,targets,points_log')
         .eq('user_id',CU.id)
         .gte('log_date',fromKey)
         .order('log_date',{ascending:true});
@@ -11620,9 +11626,8 @@ function stRenderHero(rows){
     const todayLog=(typeof logCache!=='undefined'&&typeof TODAY!=='undefined')?logCache[TODAY]:null;
     const todayPts=todayLog?(todayLog._ptsLog||[]).reduce((a,p)=>a+(p.pts||0),0):0;
     document.getElementById('st-hero-today').textContent=(todayPts>=0?'+':'')+todayPts;
-    // Tier
-    let total=0;
-    rows.forEach(r=>{(r.points_log||[]).forEach(p=>total+=(p.pts||0));});
+    // Tier — always use cumulative profile score, not period-filtered
+    const total=+(CP?.total_score)||0;
     if(typeof getTier==='function'){
       const t=getTier(total);
       document.getElementById('st-hero-tier').textContent=(t.icon||'')+' '+(t.name||'');
@@ -11686,6 +11691,16 @@ function stRenderKPI(rows){
   document.getElementById('st-kpi-workout').style.color='var(--accent)';
   document.getElementById('st-kpi-workout-sub').textContent='주 평균 '+woPerWeek+'회';
 
+  // 수분 섭취
+  const waterGoal=+(CP?.water_goal)||8;
+  let waterTotal=0,waterDays=0,waterGoalDays=0;
+  rows.forEach(r=>{const w=r.water_cups||0;if(w>0){waterTotal+=w;waterDays++;if(w>=waterGoal)waterGoalDays++;}});
+  const waterAvg=waterDays>0?(waterTotal/waterDays).toFixed(1):'0';
+  const waterGoalPct=waterDays>0?Math.round(waterGoalDays/waterDays*100):0;
+  document.getElementById('st-kpi-water').textContent=waterAvg+'잔';
+  document.getElementById('st-kpi-water').style.color='var(--blue)';
+  document.getElementById('st-kpi-water-sub').textContent='목표 달성 '+waterGoalPct+'% ('+waterGoalDays+'/'+waterDays+'일)';
+
   // ── 스파크라인 ──
   const routineDaily=rows.map(r=>{const m=r.mandatory||[];return m.length?Math.round(m.filter(x=>x.done).length/m.length*100):0;});
   const targetDaily=rows.map(r=>{const t=r.targets||[];return t.length?Math.round(t.filter(x=>x.st==='done').length/t.length*100):0;});
@@ -11695,6 +11710,8 @@ function stRenderKPI(rows){
   renderSparkline('st-spark-target','spark_target',targetDaily,'245,158,11');
   renderSparkline('st-spark-clean','spark_clean',cleanDaily,'52,211,153');
   renderSparkline('st-spark-workout','spark_workout',workoutDaily,'255,77,77');
+  const waterDaily=rows.map(r=>r.water_cups||0);
+  renderSparkline('st-spark-water','spark_water',waterDaily,'56,189,248');
 }
 
 // ── 스파크라인 (mini) ──
@@ -12085,9 +12102,7 @@ function edmSetPeriod(days,btn){
 }
 function edmRender(){
   const name=_edmState.name;const days=_edmState.period;
-  const rows=Object.values(logCache).map(l=>({...l,_key:l.date||Object.keys(logCache).find(k=>logCache[k]===l)}));
-  // fallback: rebuild _key from key if missing
-  const keyed=Object.keys(logCache).map(k=>({...logCache[k],_key:k}));
+  const keyed=(_stData||Object.keys(logCache).map(k=>({...logCache[k],_key:k}))).slice();
   const cutoff=new Date();cutoff.setDate(cutoff.getDate()-days+1);
   const cutKey=cutoff.toISOString().slice(0,10);
   const filtered=keyed.filter(r=>r._key>=cutKey);
@@ -12239,8 +12254,8 @@ function stRenderMealHeatmap(rows){
   const dayNames=['월','화','수','목','금','토','일'];
   const colorMap={green:'rgba(52,211,153,0.75)',normal:'rgba(136,136,136,0.5)',cheat:'rgba(245,158,11,0.65)',red:'rgba(255,77,77,0.6)',alcohol:'rgba(255,77,77,0.6)',null:'rgba(42,42,50,0.8)'};
 
-  // 최근 21일만 표시
-  const recent=rows.slice(-21);
+  const maxCells=Math.min(rows.length, stPeriod||21);
+  const recent=rows.slice(-maxCells);
   const empty=document.getElementById('st-meal-empty');
   const container=document.getElementById('st-meal-heatmap');
   if(!recent.length){empty.style.display='block';container.innerHTML='';document.getElementById('st-meal-meta').textContent='';return;}
