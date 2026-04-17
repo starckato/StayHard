@@ -608,8 +608,8 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 .lib-chip{padding:5px 12px;border-radius:14px;font-size:11px;font-weight:500;cursor:pointer;white-space:nowrap;background:var(--surface2);color:var(--text2);border:1px solid var(--border);transition:all .12s;flex-shrink:0;}
 .lib-chip.sel{background:var(--accent-bg);color:var(--accent);border-color:var(--accent);}
 .lib-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;}
-.lib-row{display:flex;align-items:center;gap:10px;padding:12px 16px;cursor:pointer;border-bottom:1px solid var(--border);}
-.lib-icon{width:36px;height:36px;border-radius:9px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;overflow:hidden;}
+.lib-row{display:flex;align-items:center;gap:12px;padding:10px 16px;cursor:pointer;border-bottom:1px solid var(--border);min-height:76px;}
+.lib-icon{width:64px;height:64px;border-radius:12px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;overflow:hidden;}
 .lib-name{font-size:13px;font-weight:500;color:var(--text);}
 .lib-tags{font-size:10px;color:var(--text3);margin-top:1px;}
 .lib-muscle{font-size:10px;padding:2px 7px;border-radius:6px;background:var(--accent-bg);color:var(--accent);border:1px solid var(--accent-bd);flex-shrink:0;}
@@ -3077,7 +3077,7 @@ function renderAddRecentTab(){
       if(e.lastKg)metaParts.push(e.lastKg+'kg');
       if(e.lastSets)metaParts.push(e.lastSets+'세트');
       html+=`<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);">
-        <div style="width:30px;height:30px;border-radius:8px;background:var(--surface2);display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;">${exIcon(e.n||e.name,30)}</div>
+        <div style="width:32px;height:32px;border-radius:8px;background:var(--surface2);display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;">${exIcon(e.n||e.name,32)}</div>
         <div style="flex:1;min-width:0;">
           <div style="font-size:13px;font-weight:500;color:var(--text);">${e.name}</div>
           ${metaParts.length?`<div style="font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;margin-top:1px;">${metaParts.join(' · ')}</div>`:''}
@@ -3156,7 +3156,7 @@ function renderAddSearchResults(){
   if(!list.length){resultsEl.innerHTML=`<div style="padding:24px 0;text-align:center;font-size:13px;color:var(--text3);">검색 결과가 없습니다</div>`;return;}
   resultsEl.innerHTML=list.map(ex=>`
     <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);">
-      <div style="width:32px;height:32px;border-radius:8px;background:var(--surface2);display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;">${exIcon(ex.n,32)}</div>
+      <div style="width:56px;height:56px;border-radius:10px;background:var(--surface2);display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;">${exIcon(ex.n,56)}</div>
       <div style="flex:1;">
         <div style="font-size:13px;font-weight:500;color:var(--text);">${ex.n}</div>
         <div style="display:flex;gap:5px;margin-top:3px;">
@@ -3215,7 +3215,7 @@ function filterLibrary(){
     ?'<div style="padding:32px 16px;text-align:center;font-size:13px;color:var(--text3);">검색 결과가 없습니다</div>'
     :list.map(ex=>`
       <div class="lib-row" onclick="selectExercise('${ex.n}','${ex.i}','${ex.m}','${ex.e}')">
-        <div class="lib-icon">${exIcon(ex.n,36)}</div>
+        <div class="lib-icon">${exIcon(ex.n,64)}</div>
         <div style="flex:1;min-width:0;">
           <div class="lib-name">${ex.n}</div>
           <div class="lib-tags">${ex.e} · ${ex.m}</div>
@@ -3665,7 +3665,7 @@ function renderSession(){
 
   body.innerHTML=`
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-      <div style="display:flex;align-items:center;gap:8px;font-size:15px;font-weight:700;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${exIcon(ex.name,28)} ${ex.name}</div>
+      <div style="display:flex;align-items:center;gap:10px;font-size:15px;font-weight:700;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${exIcon(ex.name,48)} ${ex.name}</div>
       <div onclick="removeExercise(${ei})" style="width:28px;height:28px;background:var(--red-bg);border:1px solid var(--red-bd);border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;margin-left:8px;"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div>
     </div>
     ${isStr?volHtml:''}
@@ -3925,7 +3925,7 @@ function renderRoutineExList(exList){
   routineExercises=exList||[];
   document.getElementById('routine-ex-list').innerHTML=routineExercises.map((ex,i)=>`
     <div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);">
-      <div>${exIcon(ex.name,28)}</div>
+      <div>${exIcon(ex.name,48)}</div>
       <div style="flex:1;">
         <div style="font-size:13px;font-weight:500;">${ex.name}</div>
         <div style="font-size:10px;color:var(--text3);">${ex.muscle} · ${ex.equip}</div>
@@ -7608,7 +7608,7 @@ function openSessionSummary(i){
     }).join('');
     return'<div style="padding:10px 0;border-bottom:1px solid var(--border);">'
       +'<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">'
-      +'<span>'+exIcon(ex.name||ex.n,28)+'</span>'
+      +'<span>'+exIcon(ex.name||ex.n,48)+'</span>'
       +'<div style="flex:1;">'
       +'<div style="font-size:13px;font-weight:600;">'+ex.name+'</div>'
       +'<div style="font-size:10px;color:var(--text3);">'+doneSets.length+'세트 완료'+(exVol>0?' · '+exVol.toLocaleString()+'kg':'')+'</div>'
@@ -12548,7 +12548,7 @@ function stRenderExerciseList(rows){
       :(lastSess.distance?'최근 '+lastSess.distance+'km':(lastSess.time?'최근 '+lastSess.time+'분':''));
     return `<div onclick="openExerciseDetail('${name.replace(/'/g,"\\'")}')"
       style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;cursor:pointer;touch-action:manipulation;">
-      <div style="flex-shrink:0;">${exIcon(name,36)}</div>
+      <div style="flex-shrink:0;">${exIcon(name,48)}</div>
       <div style="flex:1;min-width:0;">
         <div style="font-size:13px;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${name}</div>
         <div style="font-size:10px;color:var(--text3);margin-top:2px;">${sub}</div>
@@ -12907,7 +12907,7 @@ function stRenderPRDashboard(rows){
   list.innerHTML=prs.slice(0,15).map(pr=>{
     const e1Str=pr.bestE1>0?'e1RM '+Math.round(pr.bestE1)+'kg':'';
     return`<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);">
-      <div style="flex-shrink:0;">${exIcon(pr.name,32)}</div>
+      <div style="flex-shrink:0;">${exIcon(pr.name,44)}</div>
       <div style="flex:1;min-width:0;">
         <div style="font-size:13px;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${pr.name}</div>
         <div style="font-size:10px;color:var(--text3);margin-top:1px;">${pr.sessions}회 수행${e1Str?' · '+e1Str:''}</div>
