@@ -485,7 +485,7 @@ User Action → logCache[key] update → renderRoutine()
   - Full-screen overlay with anatomical SVG body model (front + back)
   - Flutter Body Atlas assets (CC BY 4.0, Ryan Graves)
   - ~120 individual muscle paths mapped to 18 muscle IDs
-  - MUSCLE_MAP: 129 exercises → specific muscle contributions (%)
+  - MUSCLE_MAP: 158 exercises → specific muscle contributions (%)
   - computeMuscleActivation(): volume × contribution, normalized 0-1
   - Single-hue red ember color system (dark maroon → blood crimson)
   - High-intensity muscles get dark glow effect
@@ -502,6 +502,25 @@ User Action → logCache[key] update → renderRoutine()
   💪 운동 (Mon-Fri), 🏃 러닝 (Mon/Wed/Fri/Sun), 👕 빨래 (Sunday)
 - Removed inline quick-entry meal buttons from empty slots
   (reverted to clean single-tap design)
+
+### Exercise GIFs & Library
+- Animated GIF thumbnails for all 158 exercises (from exercises-dataset)
+- EX_GIF constant maps Korean exercise names → GitHub CDN GIF URLs
+- exIcon(name, size) helper renders GIF thumbnail with fallback to emoji
+- GIF sizes by context: library 64px, session 48px, stats 48px, chips 22px
+- Exercise library redesigned:
+  - Stacked header: search input + muscle filter chips + equipment filter chips
+  - Equipment secondary filter: 전체/바벨/덤벨/머신/케이블/맨몸
+  - Exercise rows: 64px GIF, equipment badge, muscle tag, chevron
+  - Active press feedback on rows
+- Exercise strip chips in workout session now include 22px GIF thumbnails
+- Empty workout session hides exercise strip (only center button visible)
+- 24 new exercises added (134→158): 디클라인 머신 프레스, 시티드 로우 머신,
+  스트레이트 암 풀다운, 덤벨 풀오버, 덤벨 카프 레이즈, 바벨 런지,
+  싱글 레그 프레스, 레그 프레스 (와이드), 덤벨 Y레이즈, 케이블 프론트 레이즈,
+  머신 숄더 프레스, 인클라인 덤벨 컬, 오버헤드 케이블 컬, 리버스 그립 푸쉬다운,
+  EZ바 컬, 리스트 컬, 앱 롤아웃, 토 터치, 데드 버그, 힐 터치,
+  터키시 겟업, 파머스 워크, 박스 점프, 로잉 머신
 
 ### Code Quality
 - Dead code removal (10 items, ~25 lines)
@@ -520,7 +539,7 @@ User logs workout → finishSession() → queueSave()
   → renderMuscleMap() → color SVG paths by intensity
 ```
 
-### MUSCLE_MAP (129 exercises → 18 muscle IDs)
+### MUSCLE_MAP (158 exercises → 18 muscle IDs)
 Maps each exercise name (Korean) to percentage-based muscle contributions:
 ```javascript
 '벤치프레스': { chest: 70, front_delt: 15, triceps: 15 }
@@ -561,3 +580,41 @@ biceps: 이두근, triceps: 삼두근, forearms: 전완근, glutes: 둔근,
 quads: 대퇴사두, hamstrings: 햄스트링, calves: 종아리, abs: 복근,
 obliques: 복사근, lower_back: 하부 등, hip_flexors: 고관절 굴곡근
 ```
+
+---
+
+## 15. Exercise GIF Licensing & Commercial Readiness
+
+### Current State (Beta)
+- GIFs sourced from `hasaneyldrm/exercises-dataset` (GitHub CDN)
+- License: **Educational/non-commercial only**
+- Acceptable for development, testing, and personal/free beta
+- **NOT safe for commercial release**
+
+### Commercial Migration Plan
+**ExerciseDB.io** — one-time purchase, perpetual license
+
+| Plan | Price | Sizes | Recommended |
+|------|-------|-------|-------------|
+| Mobile | $149 | 180px + 360px | ✅ Best for StayHard (430px mobile app) |
+| Desktop | $159 | 720px + 1080px | Web/desktop apps |
+| Cross-Platform | $179 | All 4 sizes | Future-proof |
+
+**License terms (from exercisedb.io FAQ):**
+- One-time purchase, perpetual license — use indefinitely
+- Commercial use allowed — display GIFs in your app
+- Self-hosting allowed — host on Supabase/your own servers
+- Can modify data — edit names, instructions, grouping
+- 1300+ exercises, every one has a GIF
+- Cannot resell/redistribute raw dataset as standalone library
+
+**Migration steps (30 min):**
+1. Purchase Mobile plan ($149) at exercisedb.io
+2. Upload GIFs to Supabase Storage `game-assets` bucket
+3. Update `EX_GIF` constant URLs → Supabase paths
+4. Done — fully licensed, self-hosted, zero external dependencies
+
+### Other Assets Requiring License Check
+- Body SVG: Flutter Body Atlas — CC BY 4.0 (commercial OK with attribution ✅)
+- Chart.js — MIT (commercial OK ✅)
+- Supabase JS — MIT (commercial OK ✅)
