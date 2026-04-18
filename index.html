@@ -2574,7 +2574,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
         <div onclick="setMuscleMode('week')" id="mm-btn-week" style="padding:5px 10px;font-size:10px;font-weight:700;cursor:pointer;color:var(--text3);">이번 주</div>
         <div onclick="setMuscleMode('all')" id="mm-btn-all" style="padding:5px 10px;font-size:10px;font-weight:700;cursor:pointer;color:var(--text3);">전체</div>
       </div>
-      <button onclick="shareMuscleMap()" id="mm-share-btn" style="width:28px;height:28px;background:linear-gradient(135deg,var(--accent),#ff6b35);border:1px solid rgba(255,77,77,0.4);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px;color:#fff;cursor:pointer;touch-action:manipulation;box-shadow:0 2px 8px rgba(255,77,77,0.25);" title="공유">↗</button>
+      <button onclick="shareMuscleMap()" id="mm-share-btn" style="width:32px;height:32px;background:linear-gradient(135deg,var(--accent),#ff6b35);border:1px solid rgba(255,77,77,0.4);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;cursor:pointer;touch-action:manipulation;box-shadow:0 2px 8px rgba(255,77,77,0.25);-webkit-tap-highlight-color:transparent;padding:0;" title="공유"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events:none;"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></button>
       <button onclick="closeMuscleMap()" style="width:28px;height:28px;background:var(--surface2);border:1px solid var(--border2);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--text2);cursor:pointer;">✕</button>
     </div>
   </div>
@@ -10130,13 +10130,14 @@ async function shareChallengResult(){
   }catch(err){showToast('캡쳐 실패. 스크린샷을 이용해주세요 📸');}
 }
 async function shareMuscleMap(){
+  showToast('📸 공유 카드 만드는 중...');
   if(typeof html2canvas==='undefined'){showToast('공유 준비 중... 잠시 후 다시 시도해주세요');return;}
   const bodyEl=document.getElementById('mm-body');
   const svgEl=bodyEl?.querySelector('svg');
   if(!svgEl){showToast('근육 맵이 준비되지 않았어요');return;}
-  showToast('📸 공유 카드 만드는 중...');
   const modeLabel=_mmMode==='today'?'오늘':_mmMode==='week'?'이번 주':'전체';
   const viewLabel=_mmView==='front'?'전면':'후면';
+  const punchline=_mmMode==='today'?'오늘도 조졌다 💪':_mmMode==='week'?'이번 주 조진 부위 🔥':'내가 집중하는 부위 💥';
   const entries=Object.entries(_mmActivation||{}).filter(([,d])=>d.intensity>0).sort((a,b)=>b[1].intensity-a[1].intensity);
   const fmtVol=v=>v>=1000?(v/1000).toFixed(1)+'t':Math.round(v).toLocaleString()+'kg';
   let top3Html='';
@@ -10161,12 +10162,30 @@ async function shareMuscleMap(){
     }).join('');
   }
   if(!top3Html)top3Html=`<div style="padding:14px;color:#6b6b78;text-align:center;font-size:13px;">아직 기록이 없어요 🏋️</div>`;
-  const svgClone=svgEl.cloneNode(true);
-  svgClone.querySelectorAll('path').forEach(p=>{p.style.cursor='';});
-  svgClone.removeAttribute('style');
-  svgClone.setAttribute('width','240');
-  svgClone.setAttribute('height','auto');
-  svgClone.style.cssText='width:240px;height:auto;display:block;margin:0 auto;';
+  // Rasterize SVG to PNG data URL first — avoids iOS Safari inline-SVG rendering bug in html2canvas
+  let svgImgSrc='';
+  try{
+    const clone=svgEl.cloneNode(true);
+    clone.removeAttribute('style');
+    clone.querySelectorAll('path').forEach(p=>{p.style.cursor='';p.style.transition='';});
+    if(!clone.getAttribute('xmlns'))clone.setAttribute('xmlns','http://www.w3.org/2000/svg');
+    const vb=clone.getAttribute('viewBox');
+    let vbW=600,vbH=1140;
+    if(vb){const parts=vb.split(/\s+/).map(Number);if(parts.length===4){vbW=parts[2];vbH=parts[3];}}
+    const sW=clone.getAttribute('width'),sH=clone.getAttribute('height');
+    if(sW&&!isNaN(parseFloat(sW)))vbW=parseFloat(sW);
+    if(sH&&!isNaN(parseFloat(sH)))vbH=parseFloat(sH);
+    const scale=2,outW=Math.round(260*scale),outH=Math.round(260*scale*vbH/vbW);
+    clone.setAttribute('width',outW);clone.setAttribute('height',outH);
+    const svgStr=new XMLSerializer().serializeToString(clone);
+    const svgBlob=new Blob([svgStr],{type:'image/svg+xml;charset=utf-8'});
+    const svgUrl=URL.createObjectURL(svgBlob);
+    const img=await new Promise((res,rej)=>{const im=new Image();im.onload=()=>res(im);im.onerror=rej;im.src=svgUrl;});
+    const c=document.createElement('canvas');c.width=outW;c.height=outH;
+    c.getContext('2d').drawImage(img,0,0,outW,outH);
+    URL.revokeObjectURL(svgUrl);
+    svgImgSrc=c.toDataURL('image/png');
+  }catch(e){console.error('[shareMuscleMap] svg rasterize',e);showToast('캡쳐 실패. 스크린샷을 이용해주세요 📸');return;}
   const comp=document.createElement('div');
   comp.style.cssText='position:fixed;left:-9999px;top:0;width:430px;background:linear-gradient(180deg,#0a0a0c 0%,#141418 55%,#1c1c22 100%);font-family:"DM Sans",sans-serif;padding:26px 22px 22px;box-sizing:border-box;';
   comp.innerHTML=`
@@ -10180,29 +10199,29 @@ async function shareMuscleMap(){
       </div>
       <div style="font-size:10px;color:#6b6b78;font-family:'DM Mono',monospace;">${new Date().toLocaleDateString('ko-KR',{month:'2-digit',day:'2-digit'})}</div>
     </div>
-    <div id="_shr-svg-slot" style="margin:12px 0 4px;padding:14px 10px 8px;background:radial-gradient(ellipse at center,rgba(255,77,77,0.08) 0%,rgba(255,77,77,0) 70%);border:1px solid rgba(255,77,77,0.12);border-radius:18px;"></div>
+    <div style="margin:12px 0 4px;padding:14px 10px 8px;background:radial-gradient(ellipse at center,rgba(255,77,77,0.08) 0%,rgba(255,77,77,0) 70%);border:1px solid rgba(255,77,77,0.12);border-radius:18px;text-align:center;">
+      <img src="${svgImgSrc}" style="width:240px;height:auto;display:block;margin:0 auto;" />
+    </div>
     <div style="margin-top:12px;">
       <div style="font-size:10px;color:#6b6b78;margin-bottom:8px;font-weight:700;letter-spacing:1.2px;">TOP 3 타격 부위</div>
       ${top3Html}
     </div>
     <div style="margin-top:16px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:space-between;">
       <div>
-        <div style="font-size:13px;font-weight:800;color:#ff4d4d;letter-spacing:0.2px;">너만이 너를 구원한다</div>
-        <div style="font-size:10px;color:#6b6b78;margin-top:2px;">stayhard.app · 나도 도전하기 →</div>
+        <div style="font-size:14px;font-weight:800;color:#ff4d4d;letter-spacing:0.2px;">${punchline}</div>
+        <div style="font-size:10px;color:#6b6b78;margin-top:2px;">stayhard.app · 나랑 같이 조질래? →</div>
       </div>
       <div style="padding:9px 13px;background:linear-gradient(135deg,#ff4d4d,#ff6b35);border-radius:10px;font-size:11px;font-weight:900;color:#fff;letter-spacing:0.5px;box-shadow:0 4px 12px rgba(255,77,77,0.3);">💪 STAY HARD</div>
     </div>
   `;
   document.body.appendChild(comp);
-  const slot=comp.querySelector('#_shr-svg-slot');
-  if(slot)slot.appendChild(svgClone);
   try{
-    const canvas=await html2canvas(comp,{backgroundColor:null,scale:2,useCORS:true,logging:false});
+    const canvas=await html2canvas(comp,{backgroundColor:null,scale:2,useCORS:true,logging:false,allowTaint:true});
     canvas.toBlob(async blob=>{
       try{document.body.removeChild(comp);}catch(e){}
       if(!blob){showToast('캡쳐 실패 😢');return;}
       const file=new File([blob],'stayhard-muscle-map.png',{type:'image/png'});
-      const shareText=`💥 오늘도 조졌다 · ${modeLabel} 자극 부위\n너도 해볼래? stayhard.app`;
+      const shareText=`${punchline}\n나랑 같이 조질래? stayhard.app`;
       if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){
         try{await navigator.share({files:[file],title:'Stay Hard — 자극 부위',text:shareText});return;}catch(e){if(e.name==='AbortError')return;}
       }
