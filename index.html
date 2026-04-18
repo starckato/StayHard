@@ -2571,23 +2571,23 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
 <div id="muscle-map-overlay" style="display:none;position:fixed;top:0;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;height:100%;z-index:750;flex-direction:column;background:var(--bg);overflow:hidden;">
   <div style="display:flex;align-items:center;justify-content:space-between;padding:52px 16px 10px;flex-shrink:0;border-bottom:1px solid var(--border);">
     <div><div style="font-size:16px;font-weight:700;">💥 자극 부위</div><div id="mm-subtitle" style="font-size:10px;color:var(--text3);margin-top:1px;">오늘 어디를 때렸나</div></div>
-    <div style="display:flex;align-items:center;gap:10px;">
+    <div style="display:flex;align-items:center;gap:8px;">
       <div id="mm-toggle" style="display:flex;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;overflow:hidden;">
         <div onclick="setMuscleMode('today')" id="mm-btn-today" style="padding:5px 10px;font-size:10px;font-weight:700;cursor:pointer;color:#fff;background:var(--accent);">오늘</div>
         <div onclick="setMuscleMode('week')" id="mm-btn-week" style="padding:5px 10px;font-size:10px;font-weight:700;cursor:pointer;color:var(--text3);">이번 주</div>
         <div onclick="setMuscleMode('all')" id="mm-btn-all" style="padding:5px 10px;font-size:10px;font-weight:700;cursor:pointer;color:var(--text3);">전체</div>
       </div>
-      <div role="button" tabindex="0" id="mm-share-btn" ontouchstart="this.style.transform='scale(0.88)';this.style.filter='brightness(1.3)';" ontouchend="this.style.transform='';this.style.filter='';event.preventDefault();shareMuscleMap();" onclick="shareMuscleMap();" style="width:40px;height:40px;background:linear-gradient(135deg,var(--accent),#ff6b35);border:1px solid rgba(255,77,77,0.4);border-radius:10px;display:flex;align-items:center;justify-content:center;color:#fff;cursor:pointer;box-shadow:0 2px 8px rgba(255,77,77,0.25);user-select:none;-webkit-user-select:none;transition:transform .1s, filter .1s;" title="공유"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events:none;display:block;"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></div>
       <button onclick="closeMuscleMap()" style="width:28px;height:28px;background:var(--surface2);border:1px solid var(--border2);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--text2);cursor:pointer;">✕</button>
     </div>
   </div>
-  <div id="mm-body" style="flex:1;overflow:auto;display:flex;align-items:stretch;justify-content:center;padding:6px 8px 4px;"></div>
-  <div id="mm-tooltip" style="display:none;position:absolute;background:rgba(10,10,12,.95);backdrop-filter:blur(8px);border:1px solid var(--accent-bd);border-radius:10px;padding:8px 12px;font-size:12px;font-weight:600;color:var(--accent);z-index:10;pointer-events:none;box-shadow:0 4px 16px rgba(0,0,0,.6);white-space:nowrap;"></div>
-  <div id="mm-tooltip-arrow" style="display:none;position:absolute;width:8px;height:8px;background:rgba(10,10,12,.95);border:1px solid var(--accent-bd);transform:rotate(45deg);z-index:9;pointer-events:none;"></div>
-  <div id="mm-legend" style="padding:10px 16px 14px;flex-shrink:0;border-top:1px solid var(--border);max-height:160px;overflow-y:auto;-webkit-overflow-scrolling:touch;">
-    <div style="display:flex;flex-direction:column;gap:4px;margin-bottom:8px;">
+  <div id="mm-body" style="flex:1;overflow:hidden;display:flex;align-items:center;justify-content:center;padding:4px 8px 0;min-height:0;"></div>
+  <!-- tooltip: 고정 중앙 상단 — 어느 근육을 선택해도 동일 위치에 나타남 -->
+  <div id="mm-tooltip" style="display:none;position:absolute;left:50%;transform:translateX(-50%);top:98px;background:rgba(10,10,12,.95);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid var(--accent-bd);border-radius:12px;padding:10px 16px;font-size:13px;font-weight:600;color:var(--accent);z-index:10;pointer-events:none;box-shadow:0 6px 24px rgba(0,0,0,.7);white-space:nowrap;text-align:center;"></div>
+  <!-- legend: 상단 스케일 sticky · 근육 리스트 스크롤 · 하단 공유 CTA -->
+  <div id="mm-legend" style="display:flex;flex-direction:column;flex-shrink:0;border-top:1px solid var(--border);background:var(--bg);max-height:260px;">
+    <div id="mm-scale" style="padding:10px 16px 6px;flex-shrink:0;background:var(--bg);">
       <div style="width:100%;height:8px;border-radius:4px;background:linear-gradient(90deg,#1a1a20,#3a1616,#6b1a1a,#a01818,#be1414);"></div>
-      <div style="display:flex;justify-content:space-between;align-items:center;width:100%;font-size:10px;color:var(--text3);font-weight:500;line-height:1;">
+      <div style="display:flex;justify-content:space-between;align-items:center;width:100%;font-size:10px;color:var(--text3);font-weight:500;line-height:1;margin-top:5px;">
         <span style="display:inline-flex;align-items:center;line-height:1;">미사용</span>
         <span style="display:inline-flex;align-items:center;line-height:1;">워밍업</span>
         <span style="display:inline-flex;align-items:center;line-height:1;">자극됨</span>
@@ -2595,9 +2595,15 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
         <span style="display:inline-flex;align-items:center;line-height:1;">폭발<span style="font-size:10px;line-height:1;display:inline-block;margin-left:2px;vertical-align:middle;">🔥</span></span>
       </div>
     </div>
-    <div id="mm-summary" style="font-size:11px;color:var(--text3);"></div>
+    <div id="mm-summary" style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:8px 16px 10px;font-size:11px;color:var(--text3);min-height:0;"></div>
+    <div style="flex-shrink:0;padding:8px 16px 10px;border-top:1px solid var(--border);">
+      <button id="mm-share-cta" onclick="shareMuscleMap()" style="width:100%;padding:12px;background:linear-gradient(135deg,#ff4d4d,#ff6b35);border:none;border-radius:10px;color:#fff;font-size:14px;font-weight:800;font-family:'DM Sans',sans-serif;cursor:pointer;box-shadow:0 6px 20px rgba(255,77,77,0.35);display:flex;align-items:center;justify-content:center;gap:8px;letter-spacing:-0.01em;touch-action:manipulation;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+        내 근육맵 자랑하기
+      </button>
+    </div>
   </div>
-  <div style="padding:0 16px 8px;flex-shrink:0;font-size:9px;color:var(--text3);text-align:center;">Illustrations by Ryan Graves (CC BY 4.0)</div>
+  <div style="padding:4px 16px 8px;flex-shrink:0;font-size:9px;color:var(--text3);text-align:center;background:var(--bg);">Illustrations by Ryan Graves (CC BY 4.0)</div>
 </div>
 
 <div id="room-overlay" style="display:none;position:fixed;top:0;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;height:100%;z-index:900;flex-direction:column;background:#0a0a10;overflow:hidden;">
@@ -11624,13 +11630,6 @@ async function openMuscleMap(){
   if(!_mmSvgBack){try{_mmSvgBack=await loadMuscleSvg('back');}catch(e){console.warn(e);}}
   _mmView='both';_mmMode='today'; // _mmView 는 analytics 용으로만 잔존
   renderMuscleMap();
-  const shareBtn=document.getElementById('mm-share-btn');
-  if(shareBtn&&!shareBtn._wired){
-    shareBtn._wired=true;
-    const handler=(e)=>{try{e.preventDefault();e.stopPropagation();}catch(_){}shareMuscleMap();};
-    shareBtn.addEventListener('click',handler);
-    shareBtn.addEventListener('touchend',handler,{passive:false});
-  }
 }
 function closeMuscleMap(){
   document.getElementById('muscle-map-overlay').style.display='none';
@@ -11651,26 +11650,22 @@ function setMuscleMode(mode){
 function renderMuscleMap(){
   const container=document.getElementById('mm-body');
   if(!_mmSvgFront||!_mmSvgBack){container.innerHTML='<div style="color:var(--text3);font-size:13px;">SVG 로딩 실패</div>';return;}
-  // 양쪽 SVG 를 나란히 렌더 (전면 | 후면). 동일 높이 + 바닥 정렬로 발 위치 맞춤.
-  container.innerHTML=`<div style="display:flex;gap:4px;justify-content:center;align-items:flex-end;width:100%;height:100%;">
-    <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;height:100%;min-width:0;">
-      <div style="font-size:10px;color:var(--text3);letter-spacing:0.12em;font-weight:700;flex-shrink:0;">FRONT</div>
-      <div class="mm-svg-wrap" data-view="front" style="flex:1;width:100%;display:flex;align-items:flex-end;justify-content:center;min-height:0;">${_mmSvgFront}</div>
-    </div>
-    <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;height:100%;min-width:0;">
-      <div style="font-size:10px;color:var(--text3);letter-spacing:0.12em;font-weight:700;flex-shrink:0;">BACK</div>
-      <div class="mm-svg-wrap" data-view="back" style="flex:1;width:100%;display:flex;align-items:flex-end;justify-content:center;min-height:0;">${_mmSvgBack}</div>
-    </div>
+  // 양쪽 SVG 를 나란히 렌더. 라벨은 제거 (상단 빈 공간 차지) — FRONT/BACK 는 시각적으로 자명.
+  // 몸통을 container 에 꽉 차게 하고 양쪽 같은 height 로 정렬.
+  container.innerHTML=`<div style="display:flex;gap:4px;justify-content:center;align-items:center;width:100%;height:100%;">
+    <div class="mm-svg-wrap" data-view="front" style="flex:1;height:100%;display:flex;align-items:center;justify-content:center;min-width:0;min-height:0;">${_mmSvgFront}</div>
+    <div class="mm-svg-wrap" data-view="back" style="flex:1;height:100%;display:flex;align-items:center;justify-content:center;min-width:0;min-height:0;">${_mmSvgBack}</div>
   </div>`;
   const svgs=container.querySelectorAll('svg');
   if(svgs.length<2)return;
-  // 양쪽 SVG 를 같은 height 로 제약 → width 는 aspect ratio 따라 자동 (두 body 세로 크기 일치)
+  // 양쪽 SVG 를 column 너비 기준으로 scale → 자연스러운 aspect 로 렌더, SVG 내부 dead-space 없음
+  // 최대 높이만 viewport 기준으로 제한해서 bottom navigation 등 다른 UI 가릴 일 없게.
   svgs.forEach(svg=>{
-    svg.style.height='100%';
-    svg.style.width='auto';
-    svg.style.maxWidth='100%';
+    svg.style.width='100%';
+    svg.style.height='auto';
+    svg.style.maxHeight='calc(100vh - 260px)';
     svg.style.display='block';
-    svg.setAttribute('preserveAspectRatio','xMidYMax meet'); // 아래쪽 기준 정렬
+    svg.setAttribute('preserveAspectRatio','xMidYMid meet');
     const ul=svg.getElementById('underlayer');if(ul)ul.style.fill='#0a0a0c';
   });
   const wos=_mmMode==='today'?(log.workouts||[]):getWeekWorkouts();
@@ -11701,8 +11696,8 @@ function renderMuscleMap(){
         tip.style.display='block';
       };
       p.addEventListener('mouseenter',showTip);
-      p.addEventListener('mouseleave',()=>{document.getElementById('mm-tooltip').style.display='none';document.getElementById('mm-tooltip-arrow').style.display='none';});
-      p.addEventListener('touchstart',()=>{showTip();setTimeout(()=>{document.getElementById('mm-tooltip').style.display='none';document.getElementById('mm-tooltip-arrow').style.display='none';},2500);},{passive:true});
+      p.addEventListener('mouseleave',()=>{const tipEl=document.getElementById('mm-tooltip');if(tipEl)tipEl.style.display='none';});
+      p.addEventListener('touchstart',()=>{showTip();setTimeout(()=>{const tipEl=document.getElementById('mm-tooltip');if(tipEl)tipEl.style.display='none';},2500);},{passive:true});
     });
   });
   _mmActivation=activation;
@@ -11767,74 +11762,35 @@ function highlightMuscle(muscleId){
   document.querySelectorAll('[id^="mm-pill-"]').forEach(el=>{el.style.background='rgba(255,255,255,0.05)';el.style.borderColor='transparent';});
   const pill=document.getElementById('mm-pill-'+muscleId);
   if(pill){pill.style.background='rgba(255,255,255,0.12)';pill.style.borderColor='var(--accent)';}
-  // 양쪽 SVG 각각의 bbox 를 별도로 추적 — 툴팁을 해당 column 의 바깥쪽으로 밀어내기 위함
-  const perCol={front:{minX:9999,minY:9999,maxX:0,maxY:0,found:false,area:0},
-                back: {minX:9999,minY:9999,maxX:0,maxY:0,found:false,area:0}};
+  // 양쪽 SVG 에서 해당 근육 path 찾아 glow 효과 (위치 계산은 필요 없음 — tooltip 은 고정)
+  let foundAny=false;
   svgs.forEach(svg=>{
-    const view=svg.closest('.mm-svg-wrap')?.dataset?.view;
-    if(view!=='front'&&view!=='back')return;
-    const box=perCol[view];
     svgIds.forEach(sid=>{
       const el=svg.getElementById(sid);
       if(el){
-        box.found=true;
+        foundAny=true;
         el.style.filter='drop-shadow(0 0 6px rgba(255,60,60,0.9)) drop-shadow(0 0 12px rgba(255,40,40,0.6)) drop-shadow(0 0 20px rgba(200,20,20,0.4))';
         el.style.transition='filter .2s';
-        try{const r=el.getBoundingClientRect();if(r.width>0){box.minX=Math.min(box.minX,r.left);box.minY=Math.min(box.minY,r.top);box.maxX=Math.max(box.maxX,r.right);box.maxY=Math.max(box.maxY,r.bottom);}}catch(e){}
       }
     });
-    if(box.found&&box.maxX>0)box.area=(box.maxX-box.minX)*(box.maxY-box.minY);
   });
-  const foundAny=perCol.front.found||perCol.back.found;
   const md=_mmActivation[muscleId];
   const tip=document.getElementById('mm-tooltip');
-  const arrow=document.getElementById('mm-tooltip-arrow');
   if(!foundAny){
-    tip.innerHTML=`<div style="font-size:12px;font-weight:700;">${MUSCLE_LABELS[muscleId]||muscleId}</div>`;
-    tip.style.display='block';tip.style.top='50%';tip.style.left='50%';tip.style.right='auto';tip.style.transform='translate(-50%,-50%)';
-    arrow.style.display='none';
+    tip.innerHTML=`<div style="font-size:13px;font-weight:700;">${MUSCLE_LABELS[muscleId]||muscleId}</div>`;
+    tip.style.display='block';
     return;
   }
-  // 양쪽에 모두 매칭되면 area 가 큰 쪽 선택 (시각적 주력 타겟). 한쪽만이면 그쪽.
-  let chosenView;
-  if(perCol.front.found&&perCol.back.found){
-    chosenView=perCol.front.area>=perCol.back.area?'front':'back';
-  } else {
-    chosenView=perCol.front.found?'front':'back';
-  }
-  const box=perCol[chosenView];
-  if(md&&box.maxX>0){
+  // Tooltip: 항상 overlay 중앙 상단 고정 (CSS 에 이미 left:50% / transform / top 지정됨)
+  // front/back 상관없이 동일 위치 — 유저가 어디 볼지 예측 가능
+  if(md){
     const fmtV=v=>v>=1000?(v/1000).toFixed(1)+'t':Math.round(v).toLocaleString()+'kg';
     const tl=(v)=>v>=0.91?'폭발 💥':v>=0.61?'집중 타격 🔥':v>=0.31?'자극됨 ⚡':'워밍업';
-    tip.innerHTML=`<div style="font-size:12px;font-weight:700;">${MUSCLE_LABELS[muscleId]||muscleId}</div><div style="font-size:10px;color:var(--text2);margin-top:1px;">${tl(md.intensity)} — ${md.sets}세트 · ${fmtV(md.volume)}</div>`;
+    tip.innerHTML=`<div style="font-size:13px;font-weight:800;">${MUSCLE_LABELS[muscleId]||muscleId}</div><div style="font-size:11px;color:var(--text2);margin-top:2px;font-weight:500;">${tl(md.intensity)} · ${md.sets}세트 · ${fmtV(md.volume)}</div>`;
     tip.style.display='block';
-    const oRect=document.getElementById('muscle-map-overlay').getBoundingClientRect();
-    // front column 은 overlay 왼쪽 절반 차지 → tooltip 을 왼쪽(column 바깥)으로,
-    // back  column 은 overlay 오른쪽 절반 차지 → tooltip 을 오른쪽(column 바깥)으로
-    const placeRight=(chosenView==='back');
-    // 세로 중심 clamp (header/legend 겹침 방지)
-    let mcy=(box.minY+box.maxY)/2-oRect.top;
-    mcy=Math.max(40,Math.min(mcy,oRect.height-60));
-    tip.style.top=mcy+'px';tip.style.transform='translateY(-50%)';
-    arrow.style.top=mcy+'px';arrow.style.transform='translateY(-50%) rotate(45deg)';
-    // tooltip width 측정 후 clamp (innerHTML 적용돼 display:block 상태라 측정 가능)
-    const tipW=Math.max(120,Math.ceil(tip.getBoundingClientRect().width));
-    if(placeRight){
-      // back 근육 → 근육 오른쪽 바깥에 tip. 화살표는 근육과 tip 사이.
-      const leftPos=Math.min(box.maxX-oRect.left+10, oRect.width-tipW-8);
-      tip.style.left=Math.max(8,leftPos)+'px';tip.style.right='auto';
-      arrow.style.left=Math.min(box.maxX-oRect.left+4, oRect.width-12)+'px';arrow.style.right='auto';
-      arrow.style.borderRight='none';arrow.style.borderTop='none';arrow.style.borderLeft='1px solid var(--accent-bd)';arrow.style.borderBottom='1px solid var(--accent-bd)';
-    } else {
-      // front 근육 → 근육 왼쪽 바깥에 tip.
-      const rightPos=Math.min(oRect.right-box.minX+10, oRect.width-tipW-8);
-      tip.style.right=Math.max(8,rightPos)+'px';tip.style.left='auto';
-      arrow.style.right=Math.min(oRect.right-box.minX+4, oRect.width-12)+'px';arrow.style.left='auto';
-      arrow.style.borderLeft='none';arrow.style.borderBottom='none';arrow.style.borderRight='1px solid var(--accent-bd)';arrow.style.borderTop='1px solid var(--accent-bd)';
-    }
-    arrow.style.display='block';
   } else {
-    tip.style.display='none';arrow.style.display='none';
+    tip.innerHTML=`<div style="font-size:13px;font-weight:700;">${MUSCLE_LABELS[muscleId]||muscleId}</div>`;
+    tip.style.display='block';
   }
 }
 
