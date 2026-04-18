@@ -396,7 +396,7 @@ function render(d){
   const excludedCount=users.filter(u=>u.is_excluded).length;
   html+=`<section><h2>users <span class="h2-sub">${users.length} total · ${excludedCount} excluded from metrics</span></h2><div class="table-wrap"><table><thead><tr>
     <th>email</th><th>name</th><th>signed_up</th><th>flags</th>
-    <th class="num">score</th><th class="num">log_days</th><th>last_login</th><th></th>
+    <th class="num">score</th><th class="num">log_days</th><th title="daily_logs.updated_at — real in-app activity, unaffected by long-lived sessions">last_activity</th><th></th>
   </tr></thead><tbody>${users.map(u=>{
     const flags=[];
     if(u.is_admin)flags.push('<span class="bonus-chip" style="background:#3a2a10;color:var(--warn);border:1px solid #5a3a20;">admin</span>');
@@ -404,6 +404,13 @@ function render(d){
     if(!u.onboarded)flags.push('<span class="bonus-chip" style="background:#3a1a1a;color:var(--neg);border:1px solid #5a2a2a;">no-onb</span>');
     const toggleLabel=u.is_excluded?'include':'exclude';
     const toggleBtn=`<button class="bonus-del" onclick="toggleExclude('${esc(u.id)}',${u.is_excluded?'false':'true'},this)">${toggleLabel}</button>`;
+    // Colour-code last_activity by recency
+    let actCell='<span class="muted">—</span>';
+    if(u.last_activity){
+      const hrs=(Date.now()-new Date(u.last_activity).getTime())/3600000;
+      const cls=hrs<=24?'pos':hrs<=72?'':hrs<=168?'muted':'neg';
+      actCell=`<span class="${cls}">${fmtTime(u.last_activity)}</span>`;
+    }
     return`<tr${u.is_excluded?' style="opacity:0.55;"':''}>
       <td>${esc(u.email||'—')}</td>
       <td>${esc(u.display_name||'—')}</td>
@@ -411,7 +418,7 @@ function render(d){
       <td>${flags.join(' ')||'<span class="muted">—</span>'}</td>
       <td class="num">${n(u.total_score)}</td>
       <td class="num">${n(u.log_days)}</td>
-      <td class="muted">${u.last_login?fmtTime(u.last_login):'—'}</td>
+      <td>${actCell}</td>
       <td>${toggleBtn}</td>
     </tr>`;
   }).join('')||'<tr><td colspan="8" class="muted" style="text-align:center;padding:14px;">no users</td></tr>'}</tbody></table></div></section>`;

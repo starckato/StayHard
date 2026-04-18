@@ -2581,11 +2581,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
       <button onclick="closeMuscleMap()" style="width:28px;height:28px;background:var(--surface2);border:1px solid var(--border2);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--text2);cursor:pointer;">✕</button>
     </div>
   </div>
-  <div style="display:flex;gap:10px;padding:10px 16px;flex-shrink:0;">
-    <div onclick="setMuscleView('front')" id="mm-view-front" style="flex:1;text-align:center;padding:6px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;background:var(--accent);color:#fff;">전면</div>
-    <div onclick="setMuscleView('back')" id="mm-view-back" style="flex:1;text-align:center;padding:6px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;background:var(--surface2);color:var(--text3);">후면</div>
-  </div>
-  <div id="mm-body" style="flex:1;overflow:auto;display:flex;align-items:center;justify-content:center;padding:10px;"></div>
+  <div id="mm-body" style="flex:1;overflow:auto;display:flex;align-items:flex-start;justify-content:center;padding:10px 8px;"></div>
   <div id="mm-tooltip" style="display:none;position:absolute;background:rgba(10,10,12,.95);backdrop-filter:blur(8px);border:1px solid var(--accent-bd);border-radius:10px;padding:8px 12px;font-size:12px;font-weight:600;color:var(--accent);z-index:10;pointer-events:none;box-shadow:0 4px 16px rgba(0,0,0,.6);white-space:nowrap;"></div>
   <div id="mm-tooltip-arrow" style="display:none;position:absolute;width:8px;height:8px;background:rgba(10,10,12,.95);border:1px solid var(--accent-bd);transform:rotate(45deg);z-index:9;pointer-events:none;"></div>
   <div id="mm-legend" style="padding:8px 16px 16px;flex-shrink:0;border-top:1px solid var(--border);max-height:140px;overflow-y:auto;-webkit-overflow-scrolling:touch;">
@@ -10394,10 +10390,10 @@ async function shareMuscleMap(){
   try{track('share_muscle_map',{mode:_mmMode,view:_mmView});}catch(e){}
   if(typeof html2canvas==='undefined'){showToast('공유 준비 중... 잠시 후 다시 시도해주세요');return;}
   const bodyEl=document.getElementById('mm-body');
-  const svgEl=bodyEl?.querySelector('svg');
-  if(!svgEl){showToast('근육 맵이 준비되지 않았어요');return;}
+  const svgEls=bodyEl?bodyEl.querySelectorAll('svg'):[];
+  if(!svgEls.length){showToast('근육 맵이 준비되지 않았어요');return;}
   const modeLabel=_mmMode==='today'?'오늘':_mmMode==='week'?'이번 주':'전체';
-  const viewLabel=_mmView==='front'?'전면':'후면';
+  const viewLabel='전신'; // 전면 + 후면 동시 표시
   const entries=Object.entries(_mmActivation||{}).filter(([,d])=>d.intensity>0).sort((a,b)=>b[1].intensity-a[1].intensity);
   const _MEME_GRP={chest:'chest',front_delt:'shoulder',mid_delt:'shoulder',rear_delt:'shoulder',upper_back:'back',lats:'back',traps:'back',lower_back:'back',biceps:'arm',triceps:'arm',forearms:'arm',quads:'leg',hamstrings:'leg',glutes:'leg',calves:'leg',hip_flexors:'leg',abs:'abs',obliques:'abs'};
   const _MEME_PUNCH={chest:'대흉근 만드는 중 💪',shoulder:'어깨뽕 세팅 중 🔥',back:'등판 넓히는 중 📐',arm:'팔뚝 펌핑 중 💪',leg:'레그데이 안 빼먹음 🦵',abs:'복근 새기는 중 🎯'};
@@ -10437,9 +10433,8 @@ async function shareMuscleMap(){
     }).join('');
   }
   if(!top3Html)top3Html=`<div style="padding:14px;color:#6b6b78;text-align:center;font-size:13px;">아직 기록이 없어요 🏋️</div>`;
-  // Rasterize SVG to PNG data URL first — avoids iOS Safari inline-SVG rendering bug in html2canvas
-  let svgImgSrc='';
-  try{
+  // Rasterize each SVG (front + back) to PNG data URL so html2canvas doesn't choke on inline SVG
+  const rasterizeSvg=async(svgEl,targetWidth)=>{
     const clone=svgEl.cloneNode(true);
     clone.removeAttribute('style');
     clone.querySelectorAll('path').forEach(p=>{p.style.cursor='';p.style.transition='';});
@@ -10450,7 +10445,7 @@ async function shareMuscleMap(){
     const sW=clone.getAttribute('width'),sH=clone.getAttribute('height');
     if(sW&&!isNaN(parseFloat(sW)))vbW=parseFloat(sW);
     if(sH&&!isNaN(parseFloat(sH)))vbH=parseFloat(sH);
-    const scale=2,outW=Math.round(260*scale),outH=Math.round(260*scale*vbH/vbW);
+    const scale=2,outW=Math.round(targetWidth*scale),outH=Math.round(targetWidth*scale*vbH/vbW);
     clone.setAttribute('width',outW);clone.setAttribute('height',outH);
     const svgStr=new XMLSerializer().serializeToString(clone);
     const svgBlob=new Blob([svgStr],{type:'image/svg+xml;charset=utf-8'});
@@ -10459,7 +10454,13 @@ async function shareMuscleMap(){
     const c=document.createElement('canvas');c.width=outW;c.height=outH;
     c.getContext('2d').drawImage(img,0,0,outW,outH);
     URL.revokeObjectURL(svgUrl);
-    svgImgSrc=c.toDataURL('image/png');
+    return c.toDataURL('image/png');
+  };
+  let svgFrontSrc='',svgBackSrc='';
+  try{
+    const tasks=Array.from(svgEls).slice(0,2).map(s=>rasterizeSvg(s,150));
+    const [f,b]=await Promise.all(tasks);
+    svgFrontSrc=f||'';svgBackSrc=b||'';
   }catch(e){console.error('[shareMuscleMap] svg rasterize',e);showToast('캡쳐 실패. 스크린샷을 이용해주세요 📸');return;}
   const comp=document.createElement('div');
   comp.style.cssText='position:fixed;left:-9999px;top:0;width:430px;background:linear-gradient(180deg,#0a0a0c 0%,#141418 55%,#1c1c22 100%);font-family:"DM Sans",sans-serif;padding:26px 22px 22px;box-sizing:border-box;';
@@ -10474,8 +10475,17 @@ async function shareMuscleMap(){
       </div>
       <div style="font-size:10px;color:#6b6b78;font-family:'DM Mono',monospace;">${new Date().toLocaleDateString('ko-KR',{month:'2-digit',day:'2-digit'})}</div>
     </div>
-    <div style="margin:12px 0 4px;padding:14px 10px 8px;background:radial-gradient(ellipse at center,rgba(255,77,77,0.08) 0%,rgba(255,77,77,0) 70%);border:1px solid rgba(255,77,77,0.12);border-radius:18px;text-align:center;">
-      <img src="${svgImgSrc}" style="width:240px;height:auto;display:block;margin:0 auto;" />
+    <div style="margin:12px 0 4px;padding:14px 8px 10px;background:radial-gradient(ellipse at center,rgba(255,77,77,0.08) 0%,rgba(255,77,77,0) 70%);border:1px solid rgba(255,77,77,0.12);border-radius:18px;">
+      <div style="display:flex;gap:6px;justify-content:center;align-items:flex-start;">
+        <div style="flex:1;max-width:50%;display:flex;flex-direction:column;align-items:center;gap:3px;">
+          <div style="font-size:8px;color:#6b6b78;letter-spacing:0.1em;font-weight:700;">FRONT</div>
+          <img src="${svgFrontSrc}" style="width:100%;height:auto;display:block;" />
+        </div>
+        <div style="flex:1;max-width:50%;display:flex;flex-direction:column;align-items:center;gap:3px;">
+          <div style="font-size:8px;color:#6b6b78;letter-spacing:0.1em;font-weight:700;">BACK</div>
+          <img src="${svgBackSrc}" style="width:100%;height:auto;display:block;" />
+        </div>
+      </div>
     </div>
     <div style="margin-top:12px;">
       <div style="font-size:10px;color:#6b6b78;margin-bottom:8px;font-weight:700;letter-spacing:1.2px;">TOP 3 타격 부위</div>
@@ -11614,7 +11624,7 @@ async function openMuscleMap(){
   document.body.style.overflow='hidden';
   if(!_mmSvgFront){try{_mmSvgFront=await loadMuscleSvg('front');}catch(e){console.warn(e);}}
   if(!_mmSvgBack){try{_mmSvgBack=await loadMuscleSvg('back');}catch(e){console.warn(e);}}
-  _mmView='front';_mmMode='today';
+  _mmView='both';_mmMode='today'; // _mmView 는 analytics 용으로만 잔존
   renderMuscleMap();
   const shareBtn=document.getElementById('mm-share-btn');
   if(shareBtn&&!shareBtn._wired){
@@ -11639,53 +11649,58 @@ function setMuscleMode(mode){
   if(sub)sub.textContent=labels[mode]||'';
   renderMuscleMap();
 }
-function setMuscleView(view){
-  _mmView=view;
-  document.getElementById('mm-view-front').style.background=view==='front'?'var(--accent)':'var(--surface2)';
-  document.getElementById('mm-view-front').style.color=view==='front'?'#fff':'var(--text3)';
-  document.getElementById('mm-view-back').style.background=view==='back'?'var(--accent)':'var(--surface2)';
-  document.getElementById('mm-view-back').style.color=view==='back'?'#fff':'var(--text3)';
-  const prev=_mmHighlighted;
-  renderMuscleMap();
-  if(prev)setTimeout(()=>highlightMuscle(prev),150);
-}
+// setMuscleView 제거 — 전/후 토글 폐기, 둘 다 동시 표시
 function renderMuscleMap(){
   const container=document.getElementById('mm-body');
-  const svgStr=_mmView==='front'?_mmSvgFront:_mmSvgBack;
-  if(!svgStr){container.innerHTML='<div style="color:var(--text3);font-size:13px;">SVG 로딩 실패</div>';return;}
-  container.innerHTML=svgStr;
-  const svg=container.querySelector('svg');
-  if(!svg)return;
-  svg.style.width='85%';svg.style.maxHeight='calc(100vh - 280px)';svg.style.height='auto';svg.style.margin='0 auto';svg.style.display='block';
-  const ul=svg.getElementById('underlayer');if(ul)ul.style.fill='#0a0a0c';
+  if(!_mmSvgFront||!_mmSvgBack){container.innerHTML='<div style="color:var(--text3);font-size:13px;">SVG 로딩 실패</div>';return;}
+  // 양쪽 SVG 를 나란히 렌더 (전면 | 후면)
+  container.innerHTML=`<div style="display:flex;gap:6px;justify-content:center;align-items:flex-start;width:100%;">
+    <div style="flex:1;max-width:50%;display:flex;flex-direction:column;align-items:center;gap:4px;">
+      <div style="font-size:9px;color:var(--text3);letter-spacing:0.08em;font-weight:600;">FRONT</div>
+      <div class="mm-svg-wrap" data-view="front" style="width:100%;">${_mmSvgFront}</div>
+    </div>
+    <div style="flex:1;max-width:50%;display:flex;flex-direction:column;align-items:center;gap:4px;">
+      <div style="font-size:9px;color:var(--text3);letter-spacing:0.08em;font-weight:600;">BACK</div>
+      <div class="mm-svg-wrap" data-view="back" style="width:100%;">${_mmSvgBack}</div>
+    </div>
+  </div>`;
+  const svgs=container.querySelectorAll('svg');
+  if(svgs.length<2)return;
+  svgs.forEach(svg=>{
+    svg.style.width='100%';svg.style.maxHeight='calc(100vh - 260px)';svg.style.height='auto';svg.style.display='block';
+    const ul=svg.getElementById('underlayer');if(ul)ul.style.fill='#0a0a0c';
+  });
   const wos=_mmMode==='today'?(log.workouts||[]):getWeekWorkouts();
   const activation=computeMuscleActivation(wos,_mmMode);
   const fmtVol=v=>v>=1000?(v/1000).toFixed(1)+'t':Math.round(v).toLocaleString()+'kg';
   const tierLabel=(v)=>v>=0.91?'폭발 💥':v>=0.61?'집중 타격 🔥':v>=0.31?'자극됨 ⚡':'워밍업';
-  svg.querySelectorAll('path').forEach(p=>{
-    const id=p.id;
-    if(!id||id==='non_muscle'||id==='underlayer')return;
-    const gId=p.closest('g')?.id;
-    if(gId==='non_muscle'||gId==='face'||gId==='head'||gId==='hands'||gId==='neck')return;
-    let maxIntensity=0;let matchedMuscle=null;let matchedData=null;
-    Object.entries(MUSCLE_SVG_MAP).forEach(([muscleId,svgIds])=>{
-      if(svgIds.includes(id)){const d=activation[muscleId];if(d&&d.intensity>maxIntensity){maxIntensity=d.intensity;matchedMuscle=muscleId;matchedData=d;}}
+  // 두 SVG 모두 path 칠하기 + 이벤트
+  svgs.forEach(svg=>{
+    svg.querySelectorAll('path').forEach(p=>{
+      const id=p.id;
+      if(!id||id==='non_muscle'||id==='underlayer')return;
+      const gId=p.closest('g')?.id;
+      if(gId==='non_muscle'||gId==='face'||gId==='head'||gId==='hands'||gId==='neck')return;
+      let maxIntensity=0;let matchedMuscle=null;let matchedData=null;
+      Object.entries(MUSCLE_SVG_MAP).forEach(([muscleId,svgIds])=>{
+        if(svgIds.includes(id)){const d=activation[muscleId];if(d&&d.intensity>maxIntensity){maxIntensity=d.intensity;matchedMuscle=muscleId;matchedData=d;}}
+      });
+      p.style.fill=maxIntensity>0?heatColor(maxIntensity):'#1a1a20';
+      p.style.transition='fill 0.3s,filter 0.3s';
+      if(maxIntensity>=0.85)p.style.filter='drop-shadow(0 0 5px rgba(180,20,20,0.6))';
+      else p.style.filter='';
+      p.style.cursor='pointer';
+      const showTip=()=>{
+        if(!matchedMuscle||!matchedData)return;
+        const label=MUSCLE_LABELS[matchedMuscle]||matchedMuscle;
+        const tip=document.getElementById('mm-tooltip');
+        tip.innerHTML=`<div style="font-size:13px;font-weight:700;">${label}</div><div style="font-size:11px;color:var(--text2);margin-top:2px;">${tierLabel(maxIntensity)} — ${matchedData.sets}세트 · ${fmtVol(matchedData.volume)}</div>`;
+        tip.style.display='block';
+      };
+      p.addEventListener('mouseenter',showTip);
+      p.addEventListener('mouseleave',()=>{document.getElementById('mm-tooltip').style.display='none';document.getElementById('mm-tooltip-arrow').style.display='none';});
+      p.addEventListener('touchstart',()=>{showTip();setTimeout(()=>{document.getElementById('mm-tooltip').style.display='none';document.getElementById('mm-tooltip-arrow').style.display='none';},2500);},{passive:true});
     });
-    p.style.fill=maxIntensity>0?heatColor(maxIntensity):'#1a1a20';
-    p.style.transition='fill 0.3s,filter 0.3s';
-    if(maxIntensity>=0.85)p.style.filter='drop-shadow(0 0 5px rgba(180,20,20,0.6))';
-    else p.style.filter='';
-    p.style.cursor='pointer';
-    const showTip=()=>{
-      if(!matchedMuscle||!matchedData)return;
-      const label=MUSCLE_LABELS[matchedMuscle]||matchedMuscle;
-      const tip=document.getElementById('mm-tooltip');
-      tip.innerHTML=`<div style="font-size:13px;font-weight:700;">${label}</div><div style="font-size:11px;color:var(--text2);margin-top:2px;">${tierLabel(maxIntensity)} — ${matchedData.sets}세트 · ${fmtVol(matchedData.volume)}</div>`;
-      tip.style.display='block';
-    };
-    p.addEventListener('mouseenter',showTip);
-    p.addEventListener('mouseleave',()=>{document.getElementById('mm-tooltip').style.display='none';document.getElementById('mm-tooltip-arrow').style.display='none';});
-    p.addEventListener('touchstart',()=>{showTip();setTimeout(()=>{document.getElementById('mm-tooltip').style.display='none';document.getElementById('mm-tooltip-arrow').style.display='none';},2500);},{passive:true});
   });
   _mmActivation=activation;
   const activeList=Object.entries(activation).filter(([,d])=>d.intensity>0).sort((a,b)=>b[1].intensity-a[1].intensity);
@@ -11736,33 +11751,39 @@ let _mmActivation={},_mmHighlighted=null;
 function highlightMuscle(muscleId){
   const svgIds=MUSCLE_SVG_MAP[muscleId]||[];
   const container=document.getElementById('mm-body');
-  const svg=container?.querySelector('svg');
-  if(!svg)return;
+  const svgs=container?container.querySelectorAll('svg'):[];
+  if(!svgs.length)return;
+  // 이전 highlight 양쪽 SVG 에서 모두 해제
   if(_mmHighlighted){
     const prevIds=MUSCLE_SVG_MAP[_mmHighlighted]||[];
-    prevIds.forEach(sid=>{const el=svg.getElementById(sid);if(el)el.style.filter=(_mmActivation[_mmHighlighted]?.intensity>=0.85)?'drop-shadow(0 0 5px rgba(180,20,20,0.6))':'';});
+    svgs.forEach(svg=>{
+      prevIds.forEach(sid=>{const el=svg.getElementById(sid);if(el)el.style.filter=(_mmActivation[_mmHighlighted]?.intensity>=0.85)?'drop-shadow(0 0 5px rgba(180,20,20,0.6))':'';});
+    });
   }
   _mmHighlighted=muscleId;
   document.querySelectorAll('[id^="mm-pill-"]').forEach(el=>{el.style.background='rgba(255,255,255,0.05)';el.style.borderColor='transparent';});
   const pill=document.getElementById('mm-pill-'+muscleId);
   if(pill){pill.style.background='rgba(255,255,255,0.12)';pill.style.borderColor='var(--accent)';}
+  // 양쪽 SVG 모두에서 해당 근육 찾기 + bounding box 합산
   let minX=9999,minY=9999,maxX=0,maxY=0;
-  let foundOnView=false;
-  svgIds.forEach(sid=>{
-    const el=svg.getElementById(sid);
-    if(el){
-      foundOnView=true;
-      el.style.filter='drop-shadow(0 0 6px rgba(255,60,60,0.9)) drop-shadow(0 0 12px rgba(255,40,40,0.6)) drop-shadow(0 0 20px rgba(200,20,20,0.4))';
-      el.style.transition='filter .2s';
-      try{const r=el.getBoundingClientRect();if(r.width>0){minX=Math.min(minX,r.left);minY=Math.min(minY,r.top);maxX=Math.max(maxX,r.right);maxY=Math.max(maxY,r.bottom);}}catch(e){}
-    }
+  let foundAny=false;
+  svgs.forEach(svg=>{
+    svgIds.forEach(sid=>{
+      const el=svg.getElementById(sid);
+      if(el){
+        foundAny=true;
+        el.style.filter='drop-shadow(0 0 6px rgba(255,60,60,0.9)) drop-shadow(0 0 12px rgba(255,40,40,0.6)) drop-shadow(0 0 20px rgba(200,20,20,0.4))';
+        el.style.transition='filter .2s';
+        try{const r=el.getBoundingClientRect();if(r.width>0){minX=Math.min(minX,r.left);minY=Math.min(minY,r.top);maxX=Math.max(maxX,r.right);maxY=Math.max(maxY,r.bottom);}}catch(e){}
+      }
+    });
   });
   const md=_mmActivation[muscleId];
   const tip=document.getElementById('mm-tooltip');
   const arrow=document.getElementById('mm-tooltip-arrow');
-  if(!foundOnView){
-    const viewLabel=_mmView==='front'?'후면':'전면';
-    tip.innerHTML=`<div style="font-size:12px;font-weight:700;">${MUSCLE_LABELS[muscleId]||muscleId}</div><div style="font-size:10px;color:var(--text3);margin-top:1px;">${viewLabel}에서 확인하세요</div>`;
+  if(!foundAny){
+    // MUSCLE_SVG_MAP 매핑이 없는 근육 — 중앙에 라벨만 표시
+    tip.innerHTML=`<div style="font-size:12px;font-weight:700;">${MUSCLE_LABELS[muscleId]||muscleId}</div>`;
     tip.style.display='block';tip.style.top='50%';tip.style.left='50%';tip.style.right='auto';tip.style.transform='translate(-50%,-50%)';
     arrow.style.display='none';
     return;
