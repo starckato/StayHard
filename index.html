@@ -3647,15 +3647,19 @@ function findPrevSets(exName){
 function addExerciseToSession(name,icon,muscle,equip){
   const isStrength=!['유산소'].includes(muscle)&&!['유산소'].includes(equip);
   let sets;
+  let prefillRef=null;
   if(isStrength){
     const prev=findPrevSets(name);
-    sets=prev&&prev.length>0
-      ?[{kg:prev[0].kg||'',reps:prev[0].reps||'',done:false}]
-      :[{kg:'',reps:'',done:false}];
+    if(prev&&prev.length>0){
+      sets=[{kg:prev[0].kg||'',reps:prev[0].reps||'',done:false,_prefill:true}];
+      prefillRef={kg:prev[0].kg,reps:prev[0].reps};
+    } else {
+      sets=[{kg:'',reps:'',done:false}];
+    }
   } else {
     sets=[{dist:'',time:'',done:false}];
   }
-  currentSession.push({name,icon,muscle,equip,isStrength,sets,status:'done'});
+  currentSession.push({name,icon,muscle,equip,isStrength,sets,status:'done',prefillRef});
   _wsActiveExIdx=currentSession.length-1;
   renderSession();
   // Auto-scroll to bottom so newly added exercise is visible
@@ -3827,16 +3831,20 @@ function renderSession(){
     ${canCompare?`<div style="font-size:10px;font-weight:700;color:${deltaColor};margin-left:auto;">${deltaStr} <span style="font-size:9px;font-weight:500;color:var(--text3);">vs 지난 기록</span></div>`:prevVol>0?`<div style="font-size:10px;font-weight:500;color:var(--text3);margin-left:auto;">지난 기록 <span style="color:var(--text2);font-weight:700;">${_wsFormatVol(prevVol)}</span></div>`:''}
   </div>`;
 
-  // sets
+  // sets — prefill 힌트 (첫 세트가 지난 기록에서 자동 입력된 상태면 표시)
+  const hasPrefill=isStr&&ex.prefillRef&&ex.sets[0]&&ex.sets[0]._prefill;
+  const prefillHintHtml=hasPrefill
+    ?`<div style="font-size:9px;color:var(--amber);font-weight:700;text-transform:uppercase;letter-spacing:.08em;padding:4px 2px 2px;opacity:.9;">↻ 지난 기록 자동 입력 · 그대로 OK, 수정도 가능</div>`
+    :'';
   const kgFactor=_wsUnit==='lb'?2.20462:1;
   const setsHtml=ex.sets.map((s,si)=>{
     const dispKg=s.kg?(parseFloat(s.kg)*kgFactor).toFixed(_wsUnit==='lb'?0:1):'';
     return`<div style="display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid var(--border);">
       <div style="font-size:11px;color:var(--text3);width:18px;text-align:center;flex-shrink:0;font-weight:600;">${si+1}</div>
       ${isStr?`
-        <input style="width:80px;flex-shrink:0;background:var(--surface2);border:1px solid ${s.done?'var(--accent)':'var(--border2)'};border-radius:6px;padding:7px 4px;font-size:14px;font-weight:700;color:var(--text);text-align:center;font-family:'DM Mono',monospace;" type="number" placeholder="0" value="${dispKg}" oninput="wsUpdateKg(${ei},${si},this.value)" min="0" step="${_wsUnit==='lb'?'1':'0.5'}"/>
+        <input style="width:80px;flex-shrink:0;background:var(--surface2);border:1px solid ${s.done?'var(--accent)':s._prefill?'rgba(245,158,11,.35)':'var(--border2)'};border-radius:6px;padding:7px 4px;font-size:14px;font-weight:700;color:${s._prefill&&!s.done?'var(--text2)':'var(--text)'};text-align:center;font-family:'DM Mono',monospace;" type="number" placeholder="0" value="${dispKg}" oninput="wsUpdateKg(${ei},${si},this.value)" onfocus="this.select()" min="0" step="${_wsUnit==='lb'?'1':'0.5'}"/>
         <div style="font-size:11px;color:var(--text3);flex-shrink:0;">×</div>
-        <input style="width:70px;flex-shrink:0;background:var(--surface2);border:1px solid ${s.done?'var(--accent)':'var(--border2)'};border-radius:6px;padding:7px 4px;font-size:14px;font-weight:700;color:var(--text);text-align:center;font-family:'DM Mono',monospace;" type="number" placeholder="0" value="${s.reps||''}" oninput="updateSet(${ei},${si},'reps',this.value)" min="0"/>
+        <input style="width:70px;flex-shrink:0;background:var(--surface2);border:1px solid ${s.done?'var(--accent)':s._prefill?'rgba(245,158,11,.35)':'var(--border2)'};border-radius:6px;padding:7px 4px;font-size:14px;font-weight:700;color:${s._prefill&&!s.done?'var(--text2)':'var(--text)'};text-align:center;font-family:'DM Mono',monospace;" type="number" placeholder="0" value="${s.reps||''}" oninput="updateSet(${ei},${si},'reps',this.value)" onfocus="this.select()" min="0"/>
       `:`
         <input style="width:80px;flex-shrink:0;background:var(--surface2);border:1px solid var(--border2);border-radius:6px;padding:7px 4px;font-size:14px;font-weight:700;color:var(--text);text-align:center;font-family:'DM Mono',monospace;" type="number" placeholder="km" value="${s.dist||''}" oninput="updateSet(${ei},${si},'dist',this.value)" step="0.1"/>
         <div style="font-size:11px;color:var(--text3);flex-shrink:0;">km</div>
@@ -3875,6 +3883,7 @@ function renderSession(){
       <div style="width:44px;"></div>
       <div style="width:32px;"></div>
     </div>
+    ${prefillHintHtml}
     ${setsHtml}
     <div style="display:flex;gap:8px;margin-top:10px;align-items:center;">
       <div onclick="addSet(${ei})" style="flex:1;font-size:12px;font-weight:700;color:var(--accent);padding:9px 12px;background:rgba(255,77,77,.10);border:1px solid rgba(255,77,77,.22);border-radius:8px;display:flex;align-items:center;justify-content:center;gap:5px;cursor:pointer;touch-action:manipulation;">
@@ -3899,6 +3908,8 @@ function wsUpdateKg(ei,si,val){
   const factor=_wsUnit==='lb'?(1/2.20462):1;
   const kg=(parseFloat(val)||0)*factor;
   currentSession[ei].sets[si].kg=kg>0?kg.toFixed(2):'';
+  // Sprint F: prefill 표시 해제 (사용자가 값 수정하면 더 이상 "지난 기록" 아님)
+  if(currentSession[ei].sets[si]._prefill)delete currentSession[ei].sets[si]._prefill;
   if(currentSession[ei].sets[si].done)saveSessionToLog();
 }
 
@@ -3954,6 +3965,8 @@ function wsFillRemainingSets(ei){
 }
 function updateSet(ei,si,field,val){
   currentSession[ei].sets[si][field]=val;
+  // Sprint F: prefill 표시 해제 (사용자가 값 수정하면 "지난 기록" 상태 해제)
+  if(currentSession[ei].sets[si]._prefill)delete currentSession[ei].sets[si]._prefill;
   // Auto-save to log if set is done
   if(currentSession[ei].sets[si].done)saveSessionToLog();
 }
