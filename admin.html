@@ -6,45 +6,100 @@
 <meta name="robots" content="noindex,nofollow">
 <title>Data</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
 <style>
-  html,body{margin:0;padding:0;background:#0c0c0c;color:#ddd;font-family:ui-monospace,'SF Mono',Menlo,Consolas,monospace;font-size:12px;line-height:1.5;}
-  .wrap{padding:16px 20px 40px;max-width:1400px;margin:0 auto;}
-  h1{margin:0 0 4px;font-size:13px;font-weight:600;color:#eee;}
-  .meta{color:#888;font-size:11px;margin-bottom:14px;}
-  .meta button{background:#222;border:1px solid #333;color:#aaa;padding:4px 10px;border-radius:3px;font-family:inherit;font-size:11px;cursor:pointer;margin-left:8px;}
-  .meta button:hover{background:#2a2a2a;}
-  section{margin-top:26px;}
-  section h2{font-size:11px;font-weight:600;color:#bbb;text-transform:uppercase;letter-spacing:0.8px;margin:0 0 6px;border-bottom:1px solid #2a2a2a;padding-bottom:4px;}
+  :root {
+    --bg:#0c0c0c; --panel:#141414; --panel2:#1a1a1a;
+    --border:#2a2a2a; --border2:#333;
+    --ink:#e5e5e5; --ink2:#a0a0a0; --ink3:#6b6b6b;
+    --pos:#34d399; --warn:#fbbf24; --neg:#f87171; --hl:#60a5fa;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:ui-monospace,'SF Mono',Menlo,Consolas,monospace;font-size:12px;line-height:1.5;-webkit-font-smoothing:antialiased;}
+  .wrap{padding:14px 20px 48px;max-width:1320px;margin:0 auto;}
+  .top{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding-bottom:10px;border-bottom:1px solid var(--border);margin-bottom:14px;flex-wrap:wrap;}
+  .top h1{margin:0;font-size:12px;font-weight:600;color:var(--ink);letter-spacing:0.3px;}
+  .top .gen{color:var(--ink3);font-size:11px;}
+  .top button{background:var(--panel2);border:1px solid var(--border);color:var(--ink2);padding:4px 10px;border-radius:3px;font-family:inherit;font-size:11px;cursor:pointer;margin-left:6px;}
+  .top button:hover{background:var(--border);}
+  /* KPI grid */
+  .kpi-row{display:grid;grid-template-columns:1.6fr 1fr 1fr 1fr;gap:10px;margin-bottom:14px;}
+  @media (max-width:900px){.kpi-row{grid-template-columns:1fr 1fr;}}
+  @media (max-width:480px){.kpi-row{grid-template-columns:1fr;}}
+  .kpi{background:var(--panel);border:1px solid var(--border);border-radius:4px;padding:12px 14px;position:relative;}
+  .kpi .k-label{font-size:10px;color:var(--ink3);text-transform:uppercase;letter-spacing:1px;font-weight:600;}
+  .kpi .k-hint{font-size:10px;color:var(--ink3);margin-top:2px;}
+  .kpi .k-val{font-size:38px;font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums;line-height:1.05;margin:6px 0 2px;font-family:ui-monospace,monospace;}
+  .kpi .k-val.small{font-size:22px;}
+  .kpi.north{border-color:#3a2828;}
+  .kpi.north .k-val{color:var(--ink);}
+  .triad{display:flex;justify-content:space-between;gap:8px;margin-top:4px;}
+  .triad>div{flex:1;}
+  .triad .tri-val{font-size:22px;font-variant-numeric:tabular-nums;font-weight:600;}
+  .triad .tri-label{font-size:10px;color:var(--ink3);text-transform:uppercase;letter-spacing:0.8px;}
+  .delta{display:inline-block;font-size:11px;font-variant-numeric:tabular-nums;margin-left:6px;}
+  .delta.pos{color:var(--pos);}
+  .delta.neg{color:var(--neg);}
+  .delta.flat{color:var(--ink3);}
+  /* Sections */
+  section{margin-top:18px;background:var(--panel);border:1px solid var(--border);border-radius:4px;padding:12px 14px;}
+  section h2{margin:0 0 10px;font-size:10px;color:var(--ink3);text-transform:uppercase;letter-spacing:1px;font-weight:600;display:flex;justify-content:space-between;align-items:baseline;}
+  section h2 .h2-sub{color:var(--ink3);font-size:10px;font-weight:400;letter-spacing:0.3px;text-transform:none;}
+  /* Funnel */
+  .funnel-row{display:grid;grid-template-columns:140px 50px 1fr 60px 60px;gap:8px;align-items:center;font-size:11px;margin-bottom:6px;font-variant-numeric:tabular-nums;}
+  .funnel-row .fn-label{color:var(--ink2);}
+  .funnel-row .fn-count{text-align:right;color:var(--ink);}
+  .funnel-row .fn-bar{height:16px;background:var(--panel2);border-radius:2px;overflow:hidden;position:relative;}
+  .funnel-row .fn-bar-fill{height:100%;background:var(--ink2);}
+  .funnel-row .fn-pct{text-align:right;color:var(--ink3);}
+  .funnel-row .fn-conv{text-align:right;color:var(--warn);}
+  /* Adoption bars */
+  .adopt-row{display:grid;grid-template-columns:120px 1fr 80px;gap:10px;align-items:center;font-size:11px;margin-bottom:5px;font-variant-numeric:tabular-nums;}
+  .adopt-row .a-label{color:var(--ink2);text-transform:uppercase;font-size:10px;letter-spacing:0.3px;}
+  .adopt-row .a-bar{height:10px;background:var(--panel2);border-radius:2px;overflow:hidden;}
+  .adopt-row .a-bar-fill{height:100%;background:var(--hl);}
+  .adopt-row .a-val{text-align:right;color:var(--ink3);}
+  /* Tables */
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  @media (max-width:700px){.grid2{grid-template-columns:1fr;}}
   .table-wrap{overflow-x:auto;}
   table{width:100%;border-collapse:collapse;font-size:11px;}
-  th{text-align:left;padding:6px 8px;color:#888;font-weight:500;border-bottom:1px solid #2a2a2a;background:#141414;white-space:nowrap;}
-  td{padding:5px 8px;border-bottom:1px solid #1a1a1a;color:#ccc;vertical-align:top;}
-  tr:hover td{background:#151515;}
+  th{text-align:left;padding:5px 8px;color:var(--ink3);font-weight:500;border-bottom:1px solid var(--border);background:var(--panel2);white-space:nowrap;font-size:10px;letter-spacing:0.3px;text-transform:uppercase;}
+  td{padding:4px 8px;border-bottom:1px solid var(--panel2);color:var(--ink);vertical-align:top;}
+  tr:hover td{background:var(--panel2);}
   td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;}
-  td.muted{color:#666;}
+  td.muted{color:var(--ink3);}
   td.wrap{white-space:normal;word-break:break-all;}
-  .pill{display:inline-block;padding:1px 6px;border-radius:3px;font-size:10px;background:#222;color:#888;margin-right:4px;}
-  .pill.ok{background:#1a3a1a;color:#8acc8a;}
+  td.pos{color:var(--pos);}
+  td.warn{color:var(--warn);}
+  td.neg{color:var(--neg);}
+  .chart-wrap{position:relative;height:180px;margin-top:4px;}
+  /* Auth screens */
   .err{background:#2a1010;border:1px solid #5a2020;color:#ffb3b3;padding:12px;border-radius:4px;font-size:11px;white-space:pre-wrap;margin:14px 0;}
-  .login-card{max-width:380px;margin:80px auto;padding:20px;border:1px solid #2a2a2a;border-radius:6px;background:#141414;}
-  .login-card p{color:#aaa;margin:0 0 14px;font-size:12px;line-height:1.6;}
-  .login-card input,.login-card button{width:100%;padding:9px 12px;margin-bottom:8px;background:#0c0c0c;border:1px solid #2a2a2a;border-radius:4px;color:#ddd;font-family:inherit;font-size:12px;box-sizing:border-box;}
-  .login-card button{background:#2a2a2a;cursor:pointer;}
-  .login-card button:hover{background:#333;}
-  .login-err{color:#ff8888;font-size:11px;margin-top:4px;min-height:14px;}
-  a{color:#8ab4ff;}
-  pre{margin:0;font:inherit;color:#888;white-space:pre-wrap;word-break:break-all;}
+  .card{max-width:380px;margin:80px auto;padding:20px;border:1px solid var(--border);border-radius:6px;background:var(--panel);}
+  .card p{color:var(--ink2);margin:0 0 12px;font-size:12px;line-height:1.6;}
+  .card input,.card button{width:100%;padding:9px 12px;margin-bottom:8px;background:var(--bg);border:1px solid var(--border);border-radius:4px;color:var(--ink);font-family:inherit;font-size:12px;box-sizing:border-box;}
+  .card button{background:var(--panel2);cursor:pointer;}
+  .card button:hover{background:var(--border);}
+  .card .e{color:#ff8888;font-size:11px;margin-top:4px;min-height:14px;}
+  pre{margin:0;font:inherit;color:var(--ink3);white-space:pre-wrap;word-break:break-all;}
+  a{color:var(--hl);}
 </style>
 </head>
 <body>
 
 <div id="boot"></div>
+
 <div id="app" class="wrap" style="display:none;">
-  <h1>Stay Hard · Data</h1>
-  <div class="meta">
-    <span id="gen-at">—</span>
-    <button id="refresh-btn">refresh</button>
-    <button id="logout-btn">logout</button>
+  <div class="top">
+    <div>
+      <h1>Stay Hard · Data</h1>
+      <div class="gen" id="gen-at">—</div>
+    </div>
+    <div>
+      <button id="refresh-btn">refresh</button>
+      <button id="logout-btn">logout</button>
+    </div>
   </div>
   <div id="content"></div>
 </div>
@@ -54,13 +109,27 @@ const SB_URL='https://uvaosxhsjscigheyymus.supabase.co';
 const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV2YW9zeGhzanNjaWdoZXl5bXVzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1ODExNjQsImV4cCI6MjA5MDE1NzE2NH0.aS1ZxN0ds8CUs3q_dMTFlEwjvNFgCH7JwY-tg4q0NA8';
 const sb=supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:true,autoRefreshToken:true}});
 
+let _trendChart=null;
+
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const fmtTime=t=>{if(!t)return'—';const d=new Date(t);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');};
 const fmtDate=d=>d?String(d).slice(0,10):'—';
+const n=v=>(v==null?0:v).toLocaleString();
+
+function delta(cur,prev){
+  const c=cur||0, p=prev||0;
+  if(p===0 && c===0) return '<span class="delta flat">—</span>';
+  if(p===0) return `<span class="delta pos">+${c} new</span>`;
+  const diff=c-p;
+  const pct=Math.round(diff/p*100);
+  const cls=diff>0?'pos':diff<0?'neg':'flat';
+  const sign=diff>0?'+':'';
+  return `<span class="delta ${cls}">${sign}${diff} (${sign}${pct}%)</span>`;
+}
 
 function showBoot(html){
   document.getElementById('app').style.display='none';
-  document.getElementById('boot').innerHTML=`<div class="login-card">${html}</div>`;
+  document.getElementById('boot').innerHTML=`<div class="card">${html}</div>`;
 }
 
 async function main(){
@@ -71,7 +140,7 @@ async function main(){
       <input id="e" type="email" placeholder="email" autocomplete="email">
       <input id="p" type="password" placeholder="password" autocomplete="current-password">
       <button id="lb">Sign in</button>
-      <div class="login-err" id="le"></div>
+      <div class="e" id="le"></div>
     `);
     document.getElementById('lb').onclick=async()=>{
       const e=document.getElementById('e').value.trim();
@@ -85,15 +154,14 @@ async function main(){
     return;
   }
   const {data:profile,error:pErr}=await sb.from('profiles').select('id,display_name,is_admin').eq('id',session.user.id).maybeSingle();
-  if(pErr){showBoot(`<p>Profile fetch error:</p><div class="err">${esc(pErr.message)}</div>`);return;}
+  if(pErr){showBoot(`<p>Profile fetch error</p><div class="err">${esc(pErr.message)}</div>`);return;}
   if(!profile||!profile.is_admin){
     showBoot(`
-      <p>Account <b>${esc(session.user.email)}</b> is not admin.</p>
-      <p style="color:#888;font-size:11px;">Run in Supabase SQL Editor:</p>
-      <pre style="background:#0c0c0c;padding:10px;border-radius:4px;border:1px solid #2a2a2a;color:#aaa;">UPDATE profiles SET is_admin = true
+      <p>Account <b>${esc(session.user.email)}</b> is not admin. Run in Supabase SQL Editor:</p>
+      <pre style="background:var(--bg);padding:10px;border-radius:4px;border:1px solid var(--border);color:var(--ink2);">UPDATE profiles SET is_admin = true
 WHERE id = '${session.user.id}';</pre>
       <button onclick="location.reload()" style="margin-top:10px;">Refresh</button>
-      <button onclick="(async()=>{await sb.auth.signOut();location.reload();})()" style="margin-top:4px;background:#1a1a1a;">Logout</button>
+      <button onclick="(async()=>{await sb.auth.signOut();location.reload();})()" style="margin-top:4px;background:var(--panel2);">Logout</button>
     `);
     return;
   }
@@ -104,59 +172,176 @@ WHERE id = '${session.user.id}';</pre>
 
 async function load(){
   const content=document.getElementById('content');
-  content.innerHTML='<div style="color:#666;padding:20px 0;">loading...</div>';
+  content.innerHTML='<div style="color:var(--ink3);padding:20px 0;">loading...</div>';
   const {data,error}=await sb.rpc('admin_dashboard');
   if(error){
     const missing=/does not exist/i.test(error.message||'');
-    const needs004=/all_users|recent_events|recent_logs/i.test(error.message||'')||(data&&!('all_users' in (data||{})));
     content.innerHTML=`<div class="err">admin_dashboard() failed: ${esc(error.message)}
 code: ${error.code||'—'}
-hint: ${error.hint||'—'}${missing?'\n\nRun migrations/003_analytics_events.sql in Supabase SQL Editor.':''}</div>`;
+hint: ${error.hint||'—'}${missing?'\n\nRun migrations/003 then 004 in Supabase SQL Editor.':''}</div>`;
     return;
   }
   if(!('all_users' in data)){
-    content.innerHTML=`<div class="err">admin_dashboard() needs update. Run migrations/004_admin_dashboard_full_data.sql in Supabase SQL Editor.
-Link: <a href="https://raw.githubusercontent.com/starckato/StayHard/main/migrations/004_admin_dashboard_full_data.sql" target="_blank">open raw SQL</a></div>`;
+    content.innerHTML=`<div class="err">admin_dashboard() needs migration 004. Open in Supabase SQL Editor:
+<a href="https://raw.githubusercontent.com/starckato/StayHard/main/migrations/004_admin_dashboard_full_data.sql" target="_blank">migrations/004_admin_dashboard_full_data.sql</a></div>`;
     return;
   }
   render(data);
 }
 
 function render(d){
-  document.getElementById('gen-at').textContent='@ '+fmtTime(d.generated_at);
+  document.getElementById('gen-at').textContent='generated '+fmtTime(d.generated_at);
   const users=d.all_users||[];
   const events=d.recent_events||[];
   const logs=d.recent_logs||[];
   const counts=Object.entries(d.event_counts_7d||{}).sort((a,b)=>b[1]-a[1]);
+  const act=d.activation||{};
+  const feat=d.feature_adoption_today||{};
+  const stickiness=d.mau?Math.round((d.dau||0)/d.mau*100):0;
+  const fpct=k=>feat.dau?Math.round((feat[k]||0)/feat.dau*100):0;
 
-  const totals=`
-    <span class="pill">users ${d.signups_total||0}</span>
-    <span class="pill">+7d ${d.signups_7d||0}</span>
-    <span class="pill">DAU ${d.dau||0}</span>
-    <span class="pill">WAU ${d.wau||0}</span>
-    <span class="pill">MAU ${d.mau||0}</span>
-    <span class="pill">events(7d) ${counts.reduce((a,[,c])=>a+c,0)}</span>
-    <span class="pill">comp-active ${d.competitions?.active||0}</span>`;
+  // ── KPI ROW ──
+  let html=`
+    <div class="kpi-row">
+      <div class="kpi north">
+        <div class="k-label">north star · wae</div>
+        <div class="k-hint">users with 3+ log days, rolling 7d window</div>
+        <div class="k-val">${n(d.wae)} ${delta(d.wae,d.wae_prev)}</div>
+        <div class="k-hint">prev week: ${n(d.wae_prev)}</div>
+      </div>
+      <div class="kpi">
+        <div class="k-label">DAU</div>
+        <div class="k-val small">${n(d.dau)} ${delta(d.dau,d.dau_7d_ago)}</div>
+        <div class="k-hint">7d ago: ${n(d.dau_7d_ago)}</div>
+      </div>
+      <div class="kpi">
+        <div class="k-label">WAU</div>
+        <div class="k-val small">${n(d.wau)} ${delta(d.wau,d.wau_prev)}</div>
+        <div class="k-hint">stickiness ${stickiness}%</div>
+      </div>
+      <div class="kpi">
+        <div class="k-label">MAU</div>
+        <div class="k-val small">${n(d.mau)} ${delta(d.mau,d.mau_prev)}</div>
+        <div class="k-hint">prev 30d: ${n(d.mau_prev)}</div>
+      </div>
+    </div>
 
-  let html=`<div style="margin-bottom:10px;">${totals}</div>`;
+    <div class="kpi-row" style="grid-template-columns:1fr 1fr 1fr;">
+      <div class="kpi">
+        <div class="k-label">signups · 7d</div>
+        <div class="k-val small">${n(d.signups_7d)} ${delta(d.signups_7d,d.signups_prev_7d)}</div>
+        <div class="k-hint">prev 7d: ${n(d.signups_prev_7d)}</div>
+      </div>
+      <div class="kpi">
+        <div class="k-label">signups · 30d</div>
+        <div class="k-val small">${n(d.signups_30d)}</div>
+      </div>
+      <div class="kpi">
+        <div class="k-label">signups · total</div>
+        <div class="k-val small">${n(d.signups_total)}</div>
+      </div>
+    </div>
+  `;
 
-  // Users
-  html+=`<section><h2>users · ${users.length}</h2><div class="table-wrap"><table><thead><tr>
+  // ── ACTIVATION FUNNEL ──
+  const funnelSteps=[
+    ['signups','1. signup'],
+    ['onboarded','2. onboarded'],
+    ['first_logged','3. first log'],
+    ['three_day_week1','4. 3+ days week1'],
+    ['activated','5. activated (100pt+)']
+  ];
+  const fMax=act.signups||1;
+  html+=`<section><h2>activation funnel <span class="h2-sub">signup → activated</span></h2>`;
+  funnelSteps.forEach((step,i)=>{
+    const v=act[step[0]]||0;
+    const pct=Math.round(v/fMax*100);
+    const prev=i>0?(act[funnelSteps[i-1][0]]||0):null;
+    const conv=(prev!==null&&prev>0)?Math.round(v/prev*100):null;
+    const convCls=conv===null?'':(conv>=60?'pos':conv>=30?'warn':'neg');
+    html+=`<div class="funnel-row">
+      <span class="fn-label">${step[1]}</span>
+      <span class="fn-count">${n(v)}</span>
+      <div class="fn-bar"><div class="fn-bar-fill" style="width:${pct}%;"></div></div>
+      <span class="fn-pct">${pct}%</span>
+      <span class="fn-conv ${convCls}">${conv===null?'':'→'+conv+'%'}</span>
+    </div>`;
+  });
+  html+=`</section>`;
+
+  // ── 14D TREND ──
+  html+=`<section><h2>active users · last 14 days</h2><div class="chart-wrap"><canvas id="trend-canvas"></canvas></div></section>`;
+
+  // ── TWO COLUMN: ADOPTION + COHORTS ──
+  html+=`<div class="grid2">`;
+
+  // Feature adoption
+  html+=`<section><h2>feature adoption <span class="h2-sub">today · DAU ${feat.dau||0}</span></h2>`;
+  ['meals','workouts','water','weight','mandatory','targets'].forEach(k=>{
+    const v=feat[k]||0, pct=fpct(k);
+    html+=`<div class="adopt-row">
+      <span class="a-label">${k}</span>
+      <div class="a-bar"><div class="a-bar-fill" style="width:${pct}%;"></div></div>
+      <span class="a-val">${v} · ${pct}%</span>
+    </div>`;
+  });
+  html+=`</section>`;
+
+  // D7 cohorts
+  html+=`<section><h2>D7 retention <span class="h2-sub">last 8 weeks</span></h2>`;
+  if(!(d.cohorts||[]).length){
+    html+=`<div style="color:var(--ink3);padding:10px 0;">insufficient signup history</div>`;
+  } else {
+    html+=`<div class="table-wrap"><table><thead><tr>
+      <th>cohort</th><th class="num">n</th><th class="num">D7</th><th class="num">rate</th>
+    </tr></thead><tbody>`;
+    (d.cohorts||[]).forEach(c=>{
+      const rate=c.cohort_size?Math.round(c.retained_d7/c.cohort_size*100):0;
+      const cls=rate>=40?'pos':rate>=20?'warn':(rate>0?'neg':'muted');
+      html+=`<tr><td class="muted">${fmtDate(c.cohort_week)}</td><td class="num">${c.cohort_size}</td><td class="num">${c.retained_d7}</td><td class="num ${cls}">${rate}%</td></tr>`;
+    });
+    html+=`</tbody></table></div>`;
+  }
+  html+=`</section>`;
+
+  html+=`</div>`;
+
+  // ── TWO COLUMN: EVENT COUNTS + COMPETITIONS ──
+  html+=`<div class="grid2">`;
+  html+=`<section><h2>event counts <span class="h2-sub">last 7d</span></h2>`;
+  if(!counts.length){
+    html+=`<div style="color:var(--ink3);padding:10px 0;">no events tracked yet</div>`;
+  } else {
+    html+=`<div class="table-wrap"><table><thead><tr><th>event</th><th class="num">count</th></tr></thead><tbody>`;
+    counts.forEach(([name,cnt])=>{html+=`<tr><td>${esc(name)}</td><td class="num">${cnt}</td></tr>`;});
+    html+=`</tbody></table></div>`;
+  }
+  html+=`</section>`;
+
+  html+=`<section><h2>competitions</h2><div class="table-wrap"><table><thead><tr><th>status</th><th class="num">count</th></tr></thead><tbody>
+    <tr><td class="pos">active</td><td class="num">${d.competitions?.active||0}</td></tr>
+    <tr><td class="muted">completed</td><td class="num">${d.competitions?.completed||0}</td></tr>
+    <tr><td class="muted">waiting</td><td class="num">${d.competitions?.waiting||0}</td></tr>
+  </tbody></table></div></section>`;
+  html+=`</div>`;
+
+  // ── USERS TABLE ──
+  html+=`<section><h2>users <span class="h2-sub">${users.length} total</span></h2><div class="table-wrap"><table><thead><tr>
     <th>email</th><th>name</th><th>signed_up</th><th>onboarded</th><th>admin</th>
     <th class="num">score</th><th class="num">log_days</th><th>last_log</th>
   </tr></thead><tbody>${users.map(u=>`<tr>
     <td>${esc(u.email||'—')}</td>
     <td>${esc(u.display_name||'—')}</td>
     <td class="muted">${fmtDate(u.signed_up)}</td>
-    <td>${u.onboarded?'<span class="pill ok">yes</span>':'<span class="pill">no</span>'}</td>
-    <td>${u.is_admin?'<span class="pill ok">admin</span>':''}</td>
-    <td class="num">${(u.total_score||0).toLocaleString()}</td>
-    <td class="num">${u.log_days||0}</td>
+    <td class="${u.onboarded?'pos':'neg'}">${u.onboarded?'yes':'no'}</td>
+    <td class="${u.is_admin?'warn':'muted'}">${u.is_admin?'admin':''}</td>
+    <td class="num">${n(u.total_score)}</td>
+    <td class="num">${n(u.log_days)}</td>
     <td class="muted">${fmtDate(u.last_log)}</td>
   </tr>`).join('')||'<tr><td colspan="8" class="muted" style="text-align:center;padding:14px;">no users</td></tr>'}</tbody></table></div></section>`;
 
-  // Events
-  html+=`<section><h2>events · last ${events.length}</h2><div class="table-wrap"><table><thead><tr>
+  // ── RECENT EVENTS ──
+  html+=`<section><h2>events <span class="h2-sub">last ${events.length}</h2><div class="table-wrap"><table><thead><tr>
     <th>time</th><th>user</th><th>event</th><th>meta</th>
   </tr></thead><tbody>${events.map(e=>`<tr>
     <td class="muted">${fmtTime(e.created_at)}</td>
@@ -165,8 +350,8 @@ function render(d){
     <td class="muted wrap"><pre>${esc(JSON.stringify(e.meta||{}))}</pre></td>
   </tr>`).join('')||'<tr><td colspan="4" class="muted" style="text-align:center;padding:14px;">no events yet</td></tr>'}</tbody></table></div></section>`;
 
-  // Daily logs
-  html+=`<section><h2>daily_logs · last ${logs.length}</h2><div class="table-wrap"><table><thead><tr>
+  // ── RECENT DAILY LOGS ──
+  html+=`<section><h2>daily_logs <span class="h2-sub">last ${logs.length}</h2><div class="table-wrap"><table><thead><tr>
     <th>date</th><th>user</th><th class="num">weight</th><th class="num">water</th><th class="num">meals</th><th class="num">workouts</th><th class="num">mandatory</th><th class="num">targets</th>
   </tr></thead><tbody>${logs.map(l=>`<tr>
     <td class="muted">${fmtDate(l.log_date)}</td>
@@ -179,23 +364,21 @@ function render(d){
     <td class="num">${l.targets_count||0}</td>
   </tr>`).join('')||'<tr><td colspan="8" class="muted" style="text-align:center;padding:14px;">no logs yet</td></tr>'}</tbody></table></div></section>`;
 
-  // Event counts (sidebar-style small table)
-  html+=`<section><h2>event counts · last 7d</h2><div class="table-wrap"><table><thead><tr>
-    <th>event</th><th class="num">count</th>
-  </tr></thead><tbody>${counts.map(([n,c])=>`<tr>
-    <td>${esc(n)}</td><td class="num">${c}</td>
-  </tr>`).join('')||'<tr><td colspan="2" class="muted" style="text-align:center;padding:14px;">no events tracked yet</td></tr>'}</tbody></table></div></section>`;
-
-  // Competitions
-  html+=`<section><h2>competitions</h2><div class="table-wrap"><table><thead><tr>
-    <th>status</th><th class="num">count</th>
-  </tr></thead><tbody>
-    <tr><td>active</td><td class="num">${d.competitions?.active||0}</td></tr>
-    <tr><td>completed</td><td class="num">${d.competitions?.completed||0}</td></tr>
-    <tr><td>waiting</td><td class="num">${d.competitions?.waiting||0}</td></tr>
-  </tbody></table></div></section>`;
-
   document.getElementById('content').innerHTML=html;
+  setTimeout(()=>renderTrend(d.trend_14d||[]),50);
+}
+
+function renderTrend(trend){
+  const canvas=document.getElementById('trend-canvas');
+  if(!canvas||typeof Chart==='undefined')return;
+  if(_trendChart){try{_trendChart.destroy();}catch(e){}}
+  const labels=trend.map(t=>{const d=new Date(t.day);return `${d.getMonth()+1}/${d.getDate()}`;});
+  const vals=trend.map(t=>t.active||0);
+  _trendChart=new Chart(canvas,{
+    type:'line',
+    data:{labels,datasets:[{label:'DAU',data:vals,borderColor:'#60a5fa',backgroundColor:'rgba(96,165,250,0.08)',fill:true,tension:0.25,pointRadius:2.5,pointBackgroundColor:'#60a5fa',borderWidth:1.5}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#6b6b6b',font:{size:10}},grid:{display:false}},y:{beginAtZero:true,ticks:{color:'#6b6b6b',font:{size:10},precision:0},grid:{color:'rgba(255,255,255,0.04)'}}}}
+  });
 }
 
 document.getElementById('refresh-btn').onclick=load;
