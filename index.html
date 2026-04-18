@@ -77,7 +77,8 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 .stats-period-btn{padding:4px 10px;border-radius:8px;border:1px solid var(--border2);background:transparent;color:var(--text3);font-size:11px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;}
 .stats-period-btn.active{background:var(--accent);border-color:var(--accent);color:#fff;}
 .stats-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:10px;}
-.stats-card-title{font-size:12px;font-weight:600;color:var(--text2);margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em;}
+.stats-card-title{font-size:12px;font-weight:600;color:var(--text2);margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em;display:flex;align-items:center;gap:6px;}
+.stats-card-title svg{flex-shrink:0;opacity:.9;}
 .stats-meta{font-size:11px;color:var(--text3);margin-bottom:10px;min-height:14px;}
 .stats-empty{text-align:center;padding:24px 0;font-size:12px;color:var(--text3);}
 .stats-card canvas{display:block;max-height:220px;}
@@ -90,7 +91,8 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 .stats-tier-fill{height:100%;background:var(--accent-grad);transition:width .4s ease;box-shadow:0 0 6px rgba(255,77,77,.3);}
 .stats-sec-nav{display:flex;gap:6px;padding:0 16px 12px;overflow-x:auto;scrollbar-width:none;position:sticky;top:0;z-index:20;background:var(--bg);}
 .stats-sec-nav::-webkit-scrollbar{display:none;}
-.stats-sec-pill{flex-shrink:0;padding:6px 14px;border-radius:8px;border:1px solid var(--border2);background:transparent;color:var(--text3);font-size:12px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;touch-action:manipulation;transition:all .15s;white-space:nowrap;}
+.stats-sec-pill{flex-shrink:0;padding:6px 12px;border-radius:8px;border:1px solid var(--border2);background:transparent;color:var(--text3);font-size:12px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;touch-action:manipulation;transition:all .15s;white-space:nowrap;display:inline-flex;align-items:center;gap:6px;}
+.stats-sec-pill svg{flex-shrink:0;}
 .stats-sec-pill.active{background:var(--accent);border-color:var(--accent);color:#fff;box-shadow:0 2px 8px rgba(255,77,77,.2);}
 .stats-section-panel{padding:0 16px;}
 .stats-section-panel.hidden{display:none;}
@@ -102,7 +104,8 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 .stats-kpi.kpi-green::before{background:var(--green);}
 .stats-kpi.kpi-amber::before{background:var(--amber);}
 .stats-kpi.kpi-blue::before{background:#38bdf8;}
-.stats-kpi-label{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;}
+.stats-kpi-label{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;display:flex;align-items:center;gap:5px;}
+.stats-kpi-label svg{flex-shrink:0;opacity:.9;}
 .stats-kpi-value{font-size:28px;font-weight:800;font-family:'DM Mono',monospace;line-height:1.1;margin:6px 0 4px;}
 .stats-kpi-sub{font-size:10px;color:var(--text3);min-height:12px;}
 .stats-kpi-spark{height:28px;margin-top:6px;}
@@ -293,7 +296,8 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
 .s-card{margin:0 14px 8px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;transition:border-color .15s;}
 .s-card:active{border-color:var(--border2);}
 .s-card-hdr{display:flex;justify-content:space-between;align-items:center;padding:14px 16px 10px;}
-.s-card-title{font-size:15px;font-weight:700;letter-spacing:-.01em;}
+.s-card-title{font-size:15px;font-weight:700;letter-spacing:-.01em;display:flex;align-items:center;gap:8px;}
+.s-card-title svg{color:var(--accent);flex-shrink:0;}
 .s-badge{font-family:'DM Mono',monospace;font-size:12px;font-weight:600;color:var(--text2);}
 .s-badge.green{color:var(--green);}
 .s-divider{height:1px;background:var(--border);}
@@ -934,7 +938,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
     <div class="s-card" style="margin-bottom:10px;">
       <div class="s-card-hdr">
         <div style="display:flex;align-items:center;gap:6px;">
-          <div class="s-card-title">⚖️ 체중</div>
+          <div class="s-card-title"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="14" width="18" height="6" rx="1.5"/><path d="M8 14v-2a4 4 0 0 1 8 0v2"/><circle cx="12" cy="18" r=".9" fill="currentColor"/></svg>체중</div>
           <div id="wt-info-btn" onclick="toggleWeightInfo()" style="width:18px;height:18px;border-radius:50%;border:1.5px solid var(--text3);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--text3);cursor:pointer;flex-shrink:0;touch-action:manipulation;">i</div>
         </div>
         <div class="wt2-settings-btn" onclick="openWeightModal()" title="목표 체중 설정">⚙️</div>
@@ -1008,7 +1012,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
     <!-- 식단 카드 -->
     <div class="s-card">
       <div class="s-card-hdr">
-        <div class="s-card-title">🥗 식단</div>
+        <div class="s-card-title"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20C4 10 10 4 20 4c0 10-6 16-16 16z"/><path d="M4 20L13 11"/></svg>식단</div>
         <div style="display:flex;align-items:center;gap:6px;">
           <div id="cheat-quota-badge" style="display:none;font-size:11px;font-weight:600;padding:3px 8px;border-radius:10px;background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-bd);cursor:pointer;" onclick="openCheatSettings()"></div>
           <div class="s-badge" id="diet-badge">0끼 기록</div>
@@ -1021,7 +1025,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
     <!-- 💧 물 카드 (식단에서 분리됨) -->
     <div class="s-card">
       <div class="s-card-hdr">
-        <div class="s-card-title">💧 물</div>
+        <div class="s-card-title"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3s7 7 7 12a7 7 0 0 1-14 0c0-5 7-12 7-12z"/></svg>물</div>
         <div style="display:flex;align-items:center;gap:8px;">
           <div class="s-badge" id="water-val"></div>
           <button onclick="toggleWaterGoalPanel()" id="water-gear-btn" style="background:none;border:none;cursor:pointer;font-size:14px;color:var(--text3);padding:4px;touch-action:manipulation;" title="물 목표 설정">⚙️</button>
@@ -1052,7 +1056,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
 
     <div class="s-card">
       <div class="s-card-hdr">
-        <div class="s-card-title">운동</div>
+        <div class="s-card-title"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10v4M7 7v10M17 7v10M21 10v4"/><path d="M7 12h10"/></svg>운동</div>
         <div class="s-badge" id="wo-badge">오늘 없음</div>
       </div>
       <div class="workout-rows" id="workout-rows"></div>
@@ -1070,7 +1074,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
     <!-- ✅ 오늘 할 일 — 필수 루틴 + 오늘의 할일 통합 카드 -->
     <div class="s-card todo-card">
       <div class="s-card-hdr">
-        <div class="s-card-title">✅ 오늘 할 일</div>
+        <div class="s-card-title"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 12l3 3 5-5"/></svg>오늘 할 일</div>
       </div>
       <div class="s-divider"></div>
 
@@ -1205,10 +1209,10 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
 
     <!-- 섹션 핀 탭 -->
     <div class="stats-sec-nav" id="st-sec-nav" style="display:none;">
-      <button class="stats-sec-pill active" data-sec="overview" onclick="statsSetSection('overview')">📊 종합</button>
-      <button class="stats-sec-pill" data-sec="training" onclick="statsSetSection('training')">💪 훈련</button>
-      <button class="stats-sec-pill" data-sec="nutrition" onclick="statsSetSection('nutrition')">🥗 식단</button>
-      <button class="stats-sec-pill" data-sec="habits" onclick="statsSetSection('habits')">✅ 습관</button>
+      <button class="stats-sec-pill active" data-sec="overview" onclick="statsSetSection('overview')"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16"/><path d="M7 20v-6"/><path d="M12 20V8"/><path d="M17 20v-3"/></svg>종합</button>
+      <button class="stats-sec-pill" data-sec="training" onclick="statsSetSection('training')"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10v4M7 7v10M17 7v10M21 10v4"/><path d="M7 12h10"/></svg>훈련</button>
+      <button class="stats-sec-pill" data-sec="nutrition" onclick="statsSetSection('nutrition')"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20C4 10 10 4 20 4c0 10-6 16-16 16z"/><path d="M4 20L13 11"/></svg>식단</button>
+      <button class="stats-sec-pill" data-sec="habits" onclick="statsSetSection('habits')"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7H8a4 4 0 0 0-4 4"/><path d="M7 4L4 7l3 3"/><path d="M4 17h12a4 4 0 0 0 4-4"/><path d="M17 20l3-3-3-3"/></svg>습관</button>
     </div>
 
     <!-- 종합 -->
@@ -1216,31 +1220,31 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
       <div id="st-kpi-section">
         <div class="stats-kpi-grid">
           <div class="stats-kpi kpi-green">
-            <div class="stats-kpi-label">✅ 루틴 완료율</div>
+            <div class="stats-kpi-label"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-5"/></svg>루틴 완료율</div>
             <div class="stats-kpi-value" style="color:var(--green);" id="st-kpi-routine">—</div>
             <div class="stats-kpi-sub" id="st-kpi-routine-sub"></div>
             <div class="stats-kpi-spark"><canvas id="st-spark-routine"></canvas></div>
           </div>
           <div class="stats-kpi kpi-amber">
-            <div class="stats-kpi-label">🎯 할일 완료율</div>
+            <div class="stats-kpi-label"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/></svg>할일 완료율</div>
             <div class="stats-kpi-value" style="color:var(--amber);" id="st-kpi-target">—</div>
             <div class="stats-kpi-sub" id="st-kpi-target-sub"></div>
             <div class="stats-kpi-spark"><canvas id="st-spark-target"></canvas></div>
           </div>
           <div class="stats-kpi kpi-green">
-            <div class="stats-kpi-label">🥗 클린식 비율</div>
+            <div class="stats-kpi-label"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20C4 10 10 4 20 4c0 10-6 16-16 16z"/><path d="M4 20L13 11"/></svg>클린식 비율</div>
             <div class="stats-kpi-value" style="color:var(--green);" id="st-kpi-clean">—</div>
             <div class="stats-kpi-sub" id="st-kpi-clean-sub"></div>
             <div class="stats-kpi-spark"><canvas id="st-spark-clean"></canvas></div>
           </div>
           <div class="stats-kpi">
-            <div class="stats-kpi-label">🏋️ 운동 횟수</div>
+            <div class="stats-kpi-label"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10v4M7 7v10M17 7v10M21 10v4"/><path d="M7 12h10"/></svg>운동 횟수</div>
             <div class="stats-kpi-value" style="color:var(--accent);" id="st-kpi-workout">—</div>
             <div class="stats-kpi-sub" id="st-kpi-workout-sub"></div>
             <div class="stats-kpi-spark"><canvas id="st-spark-workout"></canvas></div>
           </div>
           <div class="stats-kpi kpi-blue">
-            <div class="stats-kpi-label">💧 수분 섭취</div>
+            <div class="stats-kpi-label"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3s7 7 7 12a7 7 0 0 1-14 0c0-5 7-12 7-12z"/></svg>수분 섭취</div>
             <div class="stats-kpi-value" style="color:var(--blue);" id="st-kpi-water">—</div>
             <div class="stats-kpi-sub" id="st-kpi-water-sub"></div>
             <div class="stats-kpi-spark"><canvas id="st-spark-water"></canvas></div>
@@ -1272,7 +1276,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
     <!-- 훈련 -->
     <div class="stats-section-panel hidden" id="st-sec-training">
       <div class="stats-card stats-featured">
-        <div class="stats-card-title">🏋️ 운동 볼륨 (주별)</div>
+        <div class="stats-card-title"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10v4M7 7v10M17 7v10M21 10v4"/><path d="M7 12h10"/></svg>운동 볼륨 (주별)</div>
         <div class="stats-meta" id="st-vol-meta"></div>
         <div style="position:relative;height:200px;"><canvas id="st-chart-vol"></canvas></div>
         <div id="st-vol-empty" class="stats-empty" style="display:none;">운동 볼륨 기록이 없어요</div>
@@ -1300,7 +1304,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
     <!-- 식단 -->
     <div class="stats-section-panel hidden" id="st-sec-nutrition">
       <div class="stats-card stats-featured">
-        <div class="stats-card-title">🥗 식단 품질 (끼니별)</div>
+        <div class="stats-card-title"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20C4 10 10 4 20 4c0 10-6 16-16 16z"/><path d="M4 20L13 11"/></svg>식단 품질 (끼니별)</div>
         <div class="stats-meta" id="st-meal-meta"></div>
         <div id="st-meal-heatmap"></div>
         <div style="display:flex;gap:12px;margin-top:10px;flex-wrap:wrap;">
@@ -1323,7 +1327,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
     <!-- 습관 / 몸 -->
     <div class="stats-section-panel hidden" id="st-sec-habits">
       <div class="stats-card stats-featured">
-        <div class="stats-card-title">⚖️ 체중 추이 (kg)</div>
+        <div class="stats-card-title"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="14" width="18" height="6" rx="1.5"/><path d="M8 14v-2a4 4 0 0 1 8 0v2"/><circle cx="12" cy="18" r=".9" fill="currentColor"/></svg>체중 추이 (kg)</div>
         <div class="stats-meta" id="st-weight-meta"></div>
         <div style="position:relative;height:200px;"><canvas id="st-chart-weight"></canvas></div>
         <div id="st-weight-empty" class="stats-empty" style="display:none;">체중 기록이 없어요</div>
@@ -1336,7 +1340,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
       </div>
 
       <div class="stats-card">
-        <div class="stats-card-title">✅ 루틴 완료율 추이 (%)</div>
+        <div class="stats-card-title"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-5"/></svg>루틴 완료율 추이 (%)</div>
         <div class="stats-meta" id="st-routine-meta"></div>
         <div style="position:relative;height:160px;"><canvas id="st-chart-routine"></canvas></div>
         <div id="st-routine-empty" class="stats-empty" style="display:none;">루틴 기록이 없어요</div>
@@ -4364,6 +4368,25 @@ function closeRoomOverlay(){
 //   • 긍정 행동만 점수 부여. "실패"/"금지"/"음주" 등 패널티 이벤트는 0점.
 //   • 취소(_cancel / _delete) 이벤트는 원래 부여된 점수를 그대로 차감 (장부 기록용).
 //   • lifetime total은 Math.max(0, …)으로 바닥 보호.
+// ─── 공용 SVG 아이콘 셋 (카드 제목 / 주간 라벨 / 통계 KPI 등) ───
+// 24x24 viewBox, 1.8px stroke, currentColor — bottom nav 아이콘과 톤 통일
+const ICO_PATHS={
+  scale:       '<rect x="3" y="14" width="18" height="6" rx="1.5"/><path d="M8 14v-2a4 4 0 0 1 8 0v2"/><circle cx="12" cy="18" r=".9" fill="currentColor"/>',
+  drop:        '<path d="M12 3s7 7 7 12a7 7 0 0 1-14 0c0-5 7-12 7-12z"/>',
+  leaf:        '<path d="M4 20C4 10 10 4 20 4c0 10-6 16-16 16z"/><path d="M4 20L13 11"/>',
+  dumbbell:    '<path d="M3 10v4M7 7v10M17 7v10M21 10v4"/><path d="M7 12h10"/>',
+  target:      '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/>',
+  checkSq:     '<rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 12l3 3 5-5"/>',
+  checkCircle: '<circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-5"/>',
+  chart:       '<path d="M4 20h16"/><path d="M7 20v-6"/><path d="M12 20V8"/><path d="M17 20v-3"/>',
+  repeat:      '<path d="M20 7H8a4 4 0 0 0-4 4"/><path d="M7 4L4 7l3 3"/><path d="M4 17h12a4 4 0 0 0 4-4"/><path d="M17 20l3-3-3-3"/>'
+};
+function ico(name, size){
+  const d=ICO_PATHS[name]||'';
+  const s=size||14;
+  return '<svg viewBox="0 0 24 24" width="'+s+'" height="'+s+'" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;vertical-align:-2px;">'+d+'</svg>';
+}
+
 const SCORE_EVENTS={
   // 물리적 단련 (가장 무거움)
   workout_done:         {pts:20, label:'운동 완료',           icon:'💪'},
@@ -8897,11 +8920,11 @@ const MLABELS=['체중 (kg)','아침','점심','저녁','운동','필수'];
 function wvWeekDates(offset){const d=new Date(now);d.setDate(d.getDate()-((d.getDay()+6)%7)+offset*7);d.setHours(0,0,0,0);return Array.from({length:7},(_,i)=>{const x=new Date(d);x.setDate(d.getDate()+i);return x;});}
 
 const WV_CATS=[
-  {key:'weight',ico:'⚖️',lbl:'체중'},
-  {key:'meal',  ico:'🥗',lbl:'식단'},
-  {key:'workout',ico:'💪',lbl:'운동'},
-  {key:'routine',ico:'✅',lbl:'루틴'},
-  {key:'tasks', ico:'🎯',lbl:'할일'},
+  {key:'weight', ico:ico('scale',13),      lbl:'체중'},
+  {key:'meal',   ico:ico('leaf',13),       lbl:'식단'},
+  {key:'workout',ico:ico('dumbbell',13),   lbl:'운동'},
+  {key:'routine',ico:ico('checkCircle',13),lbl:'루틴'},
+  {key:'tasks',  ico:ico('target',13),     lbl:'할일'},
 ];
 let wvLoadedOffsets=new Set();
 let wvLoadingMore=false;
@@ -8989,7 +9012,7 @@ function wvBuildGrid(){
   const catRows=WV_CATS.map(cat=>{
     let row='<div style="display:table-row;">';
     row+='<div style="'+labelBase+'padding:3px 6px;border-bottom:1px solid rgba(255,255,255,0.05);">'+
-      '<div style="display:flex;align-items:center;gap:3px;"><span style="font-size:11px;">'+cat.ico+'</span>'+
+      '<div style="display:flex;align-items:center;gap:5px;color:var(--text2);">'+cat.ico+
       '<span style="font-size:9px;color:var(--text3);font-weight:500;white-space:nowrap;">'+cat.lbl+'</span></div></div>';
     wvAllDates.forEach((d,i)=>{
       const k=dkey(d);const dl=wvLogs[k];
