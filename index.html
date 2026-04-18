@@ -3469,37 +3469,37 @@ function wsJumpTo(i){
   if(body)body.scrollTop=0;
 }
 
-function _wsPrevSession(){
-  // find last session's total volume for comparison
+// 현재 활성 종목 기준 "지난 기록" — 같은 종목(exName)의 가장 최근 세션 볼륨을 찾음
+function _wsPrevExerciseVol(exName){
+  if(!exName)return 0;
   const keys=Object.keys(logCache).sort((a,b)=>b.localeCompare(a));
-  let prevVol=0;
   for(const k of keys){
     if(k===selectedKey)continue;
     const dayLog=logCache[k];
-    for(const w of(dayLog.workouts||[])){
-      if(w.type==='gym'&&w.status==='done'&&(w.totalVolume||0)>0){
-        prevVol=w.totalVolume;
-        break;
-      }
+    if(!dayLog||!dayLog.workouts)continue;
+    for(const w of dayLog.workouts){
+      if(w.type!=='gym'||w.status!=='done')continue;
+      const match=(w.exercises||[]).find(e=>e.name===exName);
+      if(!match)continue;
+      const vol=(match.sets||[]).filter(s=>s.done)
+        .reduce((a,s)=>a+(parseFloat(s.kg)||0)*(parseInt(s.reps)||0),0);
+      if(vol>0)return vol;
     }
-    if(prevVol>0)break;
   }
-  return prevVol;
+  return 0;
 }
 
-function _wsEstimatedVol(){
-  return currentSession.reduce((total,ex)=>{
-    if(!ex.isStrength)return total;
-    const doneSets=ex.sets.filter(s=>s.done);
-    const pendingSets=ex.sets.filter(s=>!s.done);
-    const doneVol=doneSets.reduce((a,s)=>a+(parseFloat(s.kg)||0)*(parseInt(s.reps)||0),0);
-    // estimate pending sets using last done set weight, or first set weight
-    const refSet=doneSets.length>0?doneSets[doneSets.length-1]:ex.sets[0];
-    const refKg=parseFloat(refSet?.kg)||0;
-    const refReps=parseInt(refSet?.reps)||0;
-    const pendingVol=pendingSets.length*refKg*refReps;
-    return total+doneVol+pendingVol;
-  },0);
+// 현재 활성 종목 하나의 예상 볼륨 (세션 전체가 아니라 종목 단위)
+function _wsEstimatedVolForExercise(ex){
+  if(!ex||!ex.isStrength)return 0;
+  const doneSets=(ex.sets||[]).filter(s=>s.done);
+  const pendingSets=(ex.sets||[]).filter(s=>!s.done);
+  const doneVol=doneSets.reduce((a,s)=>a+(parseFloat(s.kg)||0)*(parseInt(s.reps)||0),0);
+  const refSet=doneSets.length>0?doneSets[doneSets.length-1]:ex.sets[0];
+  const refKg=parseFloat(refSet?.kg)||0;
+  const refReps=parseInt(refSet?.reps)||0;
+  const pendingVol=pendingSets.length*refKg*refReps;
+  return doneVol+pendingVol;
 }
 
 function _wsFormatVol(v){
@@ -3808,19 +3808,18 @@ function renderSession(){
   const isStr=ex.isStrength;
   const unitLabel=_wsUnit;
 
-  // volume line — 델타는 "어느 정도 진행됐을 때"만 의미있음
-  //  - prevVol이 없거나 estVol이 없으면 비교 불가
-  //  - 현재 세션이 지난 세션의 40% 미만이면 '미완 비교'라 델타 대신 baseline만 노출
-  const prevVol=_wsPrevSession();
-  const estVol=_wsEstimatedVol();
+  // volume line — 현재 활성 종목(ex) 기준. "지난 기록"도 같은 종목의 최근 볼륨만 매칭
+  const prevVol=_wsPrevExerciseVol(ex.name);
+  const estVol=_wsEstimatedVolForExercise(ex);
   const delta=estVol-prevVol;
   const deltaStr=delta===0?'':delta>0?'▲ +'+_wsFormatVol(Math.abs(delta)):' ▼ -'+_wsFormatVol(Math.abs(delta));
   const deltaColor=delta>=0?'var(--green)':'var(--red)';
-  const canCompare=prevVol>0&&estVol>0&&(estVol>=prevVol*0.4||estVol>=prevVol);
+  // 델타는 충분히 진행됐을 때만 표시 (지난 세션의 40% 이상 혹은 초과 진행)
+  const canCompare=prevVol>0&&estVol>0&&(estVol>=prevVol*0.4);
   const volHtml=`<div class="ws-vol-line">
     <div style="font-size:10px;color:var(--amber);font-weight:600;opacity:.8;">예상 볼륨</div>
     <div style="font-size:14px;font-weight:700;color:var(--amber);font-family:'DM Mono',monospace;">${_wsFormatVol(estVol)}</div>
-    ${canCompare?`<div style="font-size:10px;font-weight:700;color:${deltaColor};margin-left:auto;">${deltaStr} <span style="font-size:9px;font-weight:500;color:var(--text3);">vs 지난 세션</span></div>`:prevVol>0?`<div style="font-size:10px;font-weight:500;color:var(--text3);margin-left:auto;">지난 기록 <span style="color:var(--text2);font-weight:700;">${_wsFormatVol(prevVol)}</span></div>`:''}
+    ${canCompare?`<div style="font-size:10px;font-weight:700;color:${deltaColor};margin-left:auto;">${deltaStr} <span style="font-size:9px;font-weight:500;color:var(--text3);">vs 지난 기록</span></div>`:prevVol>0?`<div style="font-size:10px;font-weight:500;color:var(--text3);margin-left:auto;">지난 기록 <span style="color:var(--text2);font-weight:700;">${_wsFormatVol(prevVol)}</span></div>`:''}
   </div>`;
 
   // sets
