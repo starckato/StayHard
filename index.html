@@ -11460,9 +11460,9 @@ function renderMuscleMap(){
     setTimeout(()=>highlightMuscle(activeList[0][0]),100);
   } else {
     const EMPTY_COPY={
-      today:{title:'오늘 아직 훈련 안 했네요',body:'운동을 시작하면 자극한 부위가<br>여기에 빨갛게 불타올라요 🔥',cta:'운동 시작하기'},
-      week:{title:'이번 주 훈련 기록이 없어요',body:'이번 주 한 번이라도 운동하면<br>자극 부위 분포가 나타나요 💪',cta:'지금 시작하기'},
-      all:{title:'아직 훈련 기록이 없어요',body:'첫 운동을 시작해봐요.<br>모든 기록이 여기에 쌓여요 📊',cta:'첫 운동 시작하기'}
+      today:{title:'오늘 훈련 전이에요',body:'운동을 시작하면 타격 부위가<br>이 지도에 기록돼요 🔥',cta:'운동 시작하기'},
+      week:{title:'이번 주 기록이 없어요',body:'한 번의 세션부터<br>주간 분포가 쌓여요 💪',cta:'지금 시작하기'},
+      all:{title:'아직 훈련 기록이 없어요',body:'첫 세션부터 모든 기록이<br>이 지도에 누적돼요 📊',cta:'첫 세션 시작하기'}
     };
     const c=EMPTY_COPY[_mmMode]||EMPTY_COPY.today;
     summary.innerHTML=`<div style="padding:14px 12px;background:linear-gradient(135deg,rgba(255,77,77,0.08) 0%,rgba(255,77,77,0.02) 100%);border:1px solid rgba(255,77,77,0.15);border-radius:12px;text-align:center;">
