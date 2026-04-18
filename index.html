@@ -4421,12 +4421,13 @@ function ico(name, size){
 }
 
 const SCORE_EVENTS={
-  // 물리적 단련 (가장 무거움)
-  workout_done:         {pts:20, label:'운동 완료',           icon:'💪'},
+  // 물리적 단련 — 30점 기준 (하루 최대 근력+유산소=60)
+  workout_done:         {pts:30, label:'근력 운동 완료',       icon:'💪'},
+  workout_cardio_done:  {pts:30, label:'유산소 운동 완료',     icon:'🏃'},
   cold_shower:          {pts:10, label:'찬물 샤워',           icon:'🚿'},
   early_rise:           {pts:10, label:'새벽 기상',           icon:'🌅'},
   goggins_4x4x48:       {pts:100,label:'4x4x48 챌린지',       icon:'🏃'},
-  pushup_challenge:     {pts:1,  label:'푸쉬업 챌린지',       icon:'💪'}, // 동적 ptsOverride 사용 (5회당 1점)
+  pushup_challenge:     {pts:1,  label:'푸쉬업 챌린지',       icon:'💪'}, // 동적 ptsOverride: 오늘 누적 30회까지 1점/회, 이후 5회당 1점
 
   // 체중
   weight_record:        {pts:1,  label:'공복체중 기록',       icon:'⚖️'},
@@ -4434,38 +4435,51 @@ const SCORE_EVENTS={
   weight_goal:          {pts:30, label:'목표 체중 달성',      icon:'🎯'},
 
   // 습관 구조 (작지만 꾸준히)
-  routine_done:         {pts:2,  label:'필수 루틴 완료',      icon:'✅'},
+  routine_done:         {pts:1,  label:'필수 루틴 완료',      icon:'✅'},
   target_done:          {pts:2,  label:'할일 완료',           icon:'📋'},
 
-  // 식단 (물리보다 가벼움)
+  // 식단
   diet_log:             {pts:1,  label:'식단 등록',           icon:'🥗'},
   diet_log_only:        {pts:1,  label:'식단 등록',           icon:'🥗'}, // alias (레거시)
   diet_clean:           {pts:10, label:'클린 식단',           icon:'🟢'},
   diet_clean_register:  {pts:10, label:'클린 식단 등록',      icon:'🟢'},
   cheat_bonus:          {pts:20, label:'치팅 절제 보너스',    icon:'💀'},
 
-  // 패널티 → 0 (라벨은 유지, 점수만 0)
-  diet_junk:            {pts:0,  label:'금지 식단',           icon:'🔴'},
+  // 패널티
+  diet_junk:            {pts:-30,label:'금지 식단',           icon:'🔴'},
   diet_alcohol_register:{pts:0,  label:'음주 기록',           icon:'🍺'},
-  routine_fail:         {pts:0,  label:'필수 루틴 실패',      icon:'❌'},
-  target_fail:          {pts:0,  label:'할일 실패',           icon:'💢'},
+  routine_fail:         {pts:-1, label:'필수 루틴 실패',      icon:'❌'},
+  routine_skip:         {pts:-1, label:'필수 루틴 스킵',      icon:'⏭️'},
+  target_fail:          {pts:-2, label:'할일 실패',           icon:'💢'},
   workout_delete:       {pts:0,  label:'운동 취소',           icon:'🗑️'},
   workout_deleted:      {pts:0,  label:'운동 삭제',           icon:'🗑️'}, // alias (레거시)
 
-  // 취소 — 원래 부여분 차감 (장부 기록)
-  workout_done_cancel:  {pts:-20, label:'운동 완료 취소',     icon:'↩️'},
-  routine_done_cancel:  {pts:-2,  label:'루틴 완료 취소',     icon:'↩️'},
+  // 취소 — 원래 부여분 반환 (장부 기록)
+  workout_done_cancel:  {pts:-30, label:'근력 운동 취소',     icon:'↩️'},
+  workout_cardio_done_cancel:{pts:-30,label:'유산소 운동 취소',icon:'↩️'},
+  routine_done_cancel:  {pts:-1,  label:'루틴 완료 취소',     icon:'↩️'},
   target_done_cancel:   {pts:-2,  label:'할일 완료 취소',     icon:'↩️'},
   diet_clean_delete:    {pts:-10, label:'클린 식단 삭제',     icon:'🟢'},
   diet_clean_cancel:    {pts:-10, label:'클린 식단 취소',     icon:'🟢'},
   diet_log_cancel:      {pts:-1,  label:'식단 등록 취소',     icon:'🥗'},
   diet_log_only_cancel: {pts:-1,  label:'식단 등록 취소',     icon:'🥗'},
-  // 패널티 취소 — 패널티가 0이니 복구도 0
-  diet_junk_cancel:     {pts:0,   label:'금지 식단 취소',     icon:'🔴'},
+  // 패널티 취소 — 패널티만큼 회복
+  diet_junk_cancel:     {pts:30,  label:'금지 식단 만회',     icon:'🔴'},
   diet_alcohol_cancel:  {pts:0,   label:'음주 기록 취소',     icon:'🍺'},
-  routine_fail_cancel:  {pts:0,   label:'루틴 실패 취소',     icon:'↩️'},
-  target_fail_cancel:   {pts:0,   label:'할일 실패 취소',     icon:'↩️'},
+  routine_fail_cancel:  {pts:1,   label:'루틴 실패 취소',     icon:'↩️'},
+  routine_skip_cancel:  {pts:1,   label:'루틴 스킵 취소',     icon:'↩️'},
+  target_fail_cancel:   {pts:2,   label:'할일 실패 취소',     icon:'↩️'},
 };
+
+// 금지식단 만회 가드: 오늘 -30 페널티 개수 > 회복 개수일 때만 +30 회복 허용 (중복 회복 방지)
+function _canRefundJunk(){
+  const pl=(logCache[TODAY]||log||{})._ptsLog||[];
+  const junks=pl.filter(e=>e.type==='diet_junk').length;
+  const cancels=pl.filter(e=>e.type==='diet_junk_cancel').length;
+  return junks>cancels;
+}
+// 푸쉬업 점수 함수: 30회까지 1점/회, 이후 5회당 1점
+function _pushupPtsFor(n){n=Math.max(0,+n||0);return n<=30?n:30+Math.floor((n-30)/5);}
 
 
 // 점수 로그는 daily_logs.targets에 특수 항목으로 저장 (별도 컬럼 불필요)
@@ -4761,6 +4775,15 @@ async function checkYesterdayReminder(){
   const mandTotal=yMand.length;
   const mandDone=yMand.filter(m=>m.done).length;
   if(mandTotal>0&&mandDone<mandTotal)missing.push(`필수 루틴 ${mandDone}/${mandTotal}`);
+
+  // 체크 안 하고 넘어간 어제 루틴 → -1점 자동 스킵 페널티 (1회만)
+  // custom 타입만 대상, 명시적 실패 제외, _autoSkipped 플래그로 중복 방지
+  const unskipped=yMand.filter(m=>m&&m.type==='custom'&&!m.done&&!m.fail&&!m._autoSkipped);
+  if(unskipped.length>0){
+    unskipped.forEach(m=>{m._autoSkipped=true;});
+    try{await sb.from('daily_logs').update({mandatory:yl.mandatory}).eq('user_id',CU.id).eq('log_date',yk);}catch(e){console.warn('[skip-penalty] save failed',e);}
+    unskipped.forEach(m=>{try{addScore('routine_skip','어제 스킵: '+(m.name||''),null,true);}catch(e){}});
+  }
 
   // If there are undone tasks — show carry-over modal
   if(undoneTasks.length>0){
@@ -6111,12 +6134,12 @@ function showChaekpipty(mealName) {
       escBtn.style.cssText = 'margin-top:8px;background:transparent;color:rgba(255,255,255,.5);border:1px solid rgba(255,255,255,.2);font-size:13px;padding:10px 28px;';
       closeBtn.after(escBtn);
     }
-    escBtn.textContent = '도망갈게요 (겁쟁이 -10점)';
+    escBtn.textContent = '도망갈게요 (형량 거부)';
     escBtn.onclick = () => {
-      // 의도적 동작: 도망은 점수 차감만(-10pts), cheat quota 소모 없음
-      // (운동 형량을 거부한 것 — 치팅 사용과 무관)
-      addScore('diet_junk'); // 도망 → -10점
+      // 금지식단 로그 시점에 이미 -30 차감됨. 도망은 추가 페널티 없이 그 -30 유지만.
+      // (형량 수락 후 완료하면 +30 회복, 거부하면 -30 그대로)
       closeRage();
+      showToast('형량 거부 — -30점 유지');
     };
     escBtn.style.display = 'block';
   }
@@ -7705,7 +7728,7 @@ function applyMealScore(prevType,newType,isNew,category,silent=false){
   // ── DELETE path ──
   if(newType===null){
     if(prevType==='green')addScore('diet_clean_delete','',null,silent);
-    else if(prevType==='red')addScore('diet_junk_cancel','',null,silent);
+    else if(prevType==='red'){if(_canRefundJunk())addScore('diet_junk_cancel','',null,silent);}
     else if(prevType==='normal')addScore('diet_log_only_cancel','',null,silent);
     else if(prevType&&prevType!=='cheat')addScore('diet_log_only_cancel','',null,silent);
     return;
@@ -7714,7 +7737,7 @@ function applyMealScore(prevType,newType,isNew,category,silent=false){
   // ── EDIT path (type changed) ──
   if(!isNew&&prevType!==newType){
     if(prevType==='green')addScore('diet_clean_cancel');
-    else if(prevType==='red')addScore('diet_junk_cancel');
+    else if(prevType==='red'){if(_canRefundJunk())addScore('diet_junk_cancel');}
     else if(prevType==='normal')addScore('diet_log_only_cancel');
     if(newType==='green'){addScore('diet_clean_register');showWin('diet_clean',SCORE_EVENTS.diet_clean.pts,'클린 식단!');}
     else if(newType==='normal'){addScore('diet_log_only');showWin('diet',SCORE_EVENTS.diet_log.pts,'식단 등록!');}
@@ -7765,9 +7788,9 @@ async function _doSaveMeal(){
   if(!wasCheat&&isCheat){
     const ok=await cheatUse();
     if(!ok){
-      // 쿼터 소진 — 저장은 되지만 -10점 패널티
+      // 쿼터 소진 — 저장은 되지만 -30점 패널티
       addScore('diet_junk');
-      showToast('💀 치팅 쿼터 소진! −10점 패널티');
+      showToast('💀 치팅 쿼터 소진! −30점 패널티');
     } else {
       const rem=getCheatRemaining();
       showToast(rem<=0?'💀 치팅 사용! 이번주 치팅 소진됐어요':'💀 치팅 사용! 이번주 잔여 '+rem+'회');
@@ -8164,8 +8187,8 @@ function markWorkoutDone(i){
   const todayPtsLog=(logCache[TODAY]||log)._ptsLog||[];
   const alreadyScored=todayPtsLog.some(e=>e.type==='workout_done');
   if(!alreadyScored){
-    addScore('workout_done');
-    setTimeout(()=>{showWin('workout',SCORE_EVENTS.workout_done.pts,'운동 완료!');launchConfetti();},200);
+    addScore('workout_done'); // 근력 운동 — 하루 1회
+    setTimeout(()=>{showWin('workout',SCORE_EVENTS.workout_done.pts,'근력 운동 완료!');launchConfetti();},200);
   }
   queueSave();
 }
@@ -8185,8 +8208,8 @@ function markActivityDone(i){
   w.status='done';
   renderWorkouts();
   if(w._isChaek){
-    // 징역 완료 — +10점 만회 + 고긴스 격려
-    addScore('diet_junk_cancel','형량 완료 만회');
+    // 징역 완료 — 금지식단 -30 → +30 만회 (중복 회복 가드)
+    if(_canRefundJunk())addScore('diet_junk_cancel','형량 완료 만회');
     const msg=GOGGINS_ENCOURAGE[Math.floor(Math.random()*GOGGINS_ENCOURAGE.length)];
     const faceEl=document.getElementById('rage-face');
     const msgEl=document.getElementById('rage-msg');
@@ -8199,9 +8222,10 @@ function markActivityDone(i){
     document.getElementById('goggins-rage').style.display='flex';
     if(navigator.vibrate)navigator.vibrate([100,50,200]);
   } else {
+    // activity는 유산소 계열 — 별도 버킷 (하루 1회)
     const todayPtsLog=(logCache[TODAY]||log)._ptsLog||[];
-    const alreadyScored=todayPtsLog.some(e=>e.type==='workout_done');
-    if(!alreadyScored){addScore('workout_done');setTimeout(()=>{showWin('workout',SCORE_EVENTS.workout_done.pts,'운동 완료!');launchConfetti();},200);}
+    const alreadyScored=todayPtsLog.some(e=>e.type==='workout_cardio_done');
+    if(!alreadyScored){addScore('workout_cardio_done');setTimeout(()=>{showWin('workout',SCORE_EVENTS.workout_cardio_done.pts,'유산소 완료!');launchConfetti();},200);}
   }
   queueSave();
 }
@@ -8218,19 +8242,21 @@ function delWO(i){
   _delWOTs=Date.now();
   const delWo=log.workouts[i];
   if(!delWo)return;
-  // 오늘 실제로 workout 점수를 받은 경우에만 차감 (중복 차감 방지)
+  // 오늘 받은 근력/유산소 점수 잔여 판정 (중복 차감 방지)
   const pl=(logCache[TODAY]||log)._ptsLog||[];
-  const netWo=pl.filter(e=>e.type==='workout_done').length-pl.filter(e=>e.type==='workout_done_cancel').length;
+  const netStrength=pl.filter(e=>e.type==='workout_done').length-pl.filter(e=>e.type==='workout_done_cancel').length;
+  const netCardio=pl.filter(e=>e.type==='workout_cardio_done').length-pl.filter(e=>e.type==='workout_cardio_done_cancel').length;
   let scoreDelta=0;
-  if(netWo>0){
-    if(delWo.type==='gym'&&delWo.status==='done'){
-      addScore('workout_done_cancel','',null,true);
-      scoreDelta=-20;
-    }
-    if(delWo.type==='activity'&&delWo.status==='done'&&!delWo._isChaek){
-      addScore('workout_done_cancel','',null,true);
-      scoreDelta=-20;
-    }
+  // 삭제 후 남는 카운트 — 0이면 해당 버킷 점수 회수
+  const afterGymDone=(log.workouts||[]).filter((w,idx)=>idx!==i&&w.type==='gym'&&w.status==='done').length;
+  const afterActDone=(log.workouts||[]).filter((w,idx)=>idx!==i&&w.type==='activity'&&w.status==='done'&&!w._isChaek).length;
+  if(delWo.type==='gym'&&delWo.status==='done'&&netStrength>0&&afterGymDone===0){
+    addScore('workout_done_cancel','',null,true);
+    scoreDelta=-30;
+  }
+  if(delWo.type==='activity'&&delWo.status==='done'&&!delWo._isChaek&&netCardio>0&&afterActDone===0){
+    addScore('workout_cardio_done_cancel','',null,true);
+    scoreDelta=-30;
   }
   log.workouts.splice(i,1);
   renderWorkouts();
@@ -8404,10 +8430,11 @@ function saveActivity(){
     if(cta)cta.scrollIntoView({behavior:'smooth',block:'center'});
   },150);
   if(!isEdit&&status==='done'){
+    // activity = 유산소 버킷 (하루 1회)
     const todayPtsLog=(logCache[TODAY]||log)._ptsLog||[];
-    const alreadyScored=todayPtsLog.some(e=>e.type==='workout_done');
-    if(!alreadyScored)addScore('workout_done');
-    setTimeout(()=>{showWin('workout',SCORE_EVENTS.workout_done.pts,'운동 완료!');launchConfetti();},300);
+    const alreadyScored=todayPtsLog.some(e=>e.type==='workout_cardio_done');
+    if(!alreadyScored)addScore('workout_cardio_done');
+    setTimeout(()=>{showWin('workout',SCORE_EVENTS.workout_cardio_done.pts,'유산소 완료!');launchConfetti();},300);
   }
   saveNow(status==='planned'?'📅 운동 일정 등록됨':'💪 운동 저장됨');
 }
@@ -8511,8 +8538,8 @@ async function finishSession(){
     } else {
       const l=logCache[TODAY]||log;
       const alreadyScored=(l._ptsLog||[]).filter(e=>e.type==='workout_done').length>=1;
-      if(!alreadyScored){addScore('workout_done');renderRoutine();}
-      setTimeout(()=>{showWin('workout',SCORE_EVENTS.workout_done.pts,'운동 완료!');launchConfetti();checkPerfectDay();},300);
+      if(!alreadyScored){addScore('workout_done');renderRoutine();} // 근력 — 하루 1회
+      setTimeout(()=>{showWin('workout',SCORE_EVENTS.workout_done.pts,'근력 운동 완료!');launchConfetti();checkPerfectDay();},300);
     }
   } else {
     showToast('✓ 세션이 수정됐어요');
@@ -8648,7 +8675,7 @@ function renderCustomMandRow(t,i,state,dow){
   const endBadge=t.end_date?`<span style="font-size:10px;color:var(--text3);margin-left:4px;">~${t.end_date.slice(5).replace('-','/')}</span>`:'';
   const isFail=!!state.fail;
   const isDone=!!state.done;
-  return`<div class="ck-row custom" style="${isFail?'background:rgba(255,77,77,0.06);':''}">
+  return`<div class="ck-row custom" data-ridx="${i}" style="${isFail?'background:rgba(255,77,77,0.06);':''}">
     <div style="min-width:44px;min-height:44px;display:flex;align-items:center;justify-content:center;cursor:pointer;touch-action:manipulation;"
       onclick="togMand(${i})"
       ontouchstart="mandTouchStart()"
@@ -8679,7 +8706,8 @@ function togMand(i){
   const wasDone=m.done;
   const wasFail=m.fail;
   // 토글 전에 origin 박스 좌표 캡처 (렌더 후에는 DOM이 재생성됨)
-  const _origin=document.querySelectorAll('#check-rows .ck-row')[i]?.querySelector('.ck-box')||null;
+  // log.mandatory 는 요일 필터로 일부만 렌더되므로 data-ridx 속성으로 정확히 매칭해야 함
+  const _origin=document.querySelector('#check-rows .ck-row[data-ridx="'+i+'"] .ck-box')||null;
   const _originRect=_origin?_origin.getBoundingClientRect():null;
   log.mandatory[i].done=!wasDone;
   if(wasFail&&!wasDone){log.mandatory[i].fail=false;} // 실패→완료 시 실패 해제
@@ -8700,9 +8728,9 @@ function togMand(i){
       showScoreGain(earnedPts,proxy);
     }
     setTimeout(()=>{
-      // 방금 완료한 항목만 bounce (인덱스로 직접 찾기)
-      const rows=document.querySelectorAll('#check-rows .ck-row');
-      if(rows[_bounceIdx]){const box=rows[_bounceIdx].querySelector('.ck-box');if(box)bounceEl(box);}
+      // 방금 완료한 항목만 bounce (data-ridx 매칭으로 정확한 행만 선택)
+      const box=document.querySelector('#check-rows .ck-row[data-ridx="'+_bounceIdx+'"] .ck-box');
+      if(box)bounceEl(box);
       if(earnedPts<100)showWin('routine',earnedPts,'루틴 완료!');
       else showWin('routine',100);
       checkPerfectDay();
@@ -8978,8 +9006,9 @@ function togTgt(i){
       showScoreGain(SCORE_EVENTS.target_done.pts,proxy);
     }
     setTimeout(()=>{
-      const btns=document.querySelectorAll('.tgt-btn.done');
-      if(btns[btns.length-1])bounceEl(btns[btns.length-1]);
+      // 방금 완료한 할일만 bounce (인덱스로 정확히 매칭 — 마지막 done 전체 bounce 되던 버그 수정)
+      const btn=document.querySelectorAll('#tgt-rows .tgt-btn')[i];
+      if(btn)bounceEl(btn);
       showWin('task',SCORE_EVENTS.target_done.pts,'할일 완료!');
       checkPerfectDay();
     },50);
@@ -12172,8 +12201,20 @@ async function cvLogChallengeReps(totalReps,exerciseName,bodyPart){
       created_at:new Date().toISOString()
     });
     if(error)throw error;
-    // Award score: 1pt per 5 reps (Q6 decision)
-    const earnedPts=Math.floor((totalReps||0)/5);
+    // Award score: 오늘 누적 30회까지 1점/회, 이후 5회당 1점 (step function)
+    // 세션별 delta = f(total) - f(prev), 중복 지급 방지
+    let earnedPts=0;
+    try{
+      const _start=new Date();_start.setHours(0,0,0,0);
+      const {data:_td}=await sb.from('workout_uploads')
+        .select('rep_count').eq('user_id',CU.id).eq('exercise_name','푸쉬업')
+        .gte('created_at',_start.toISOString());
+      const totalToday=(_td||[]).reduce((a,r)=>a+(+r.rep_count||0),0);
+      const prevToday=Math.max(0,totalToday-totalReps);
+      earnedPts=Math.max(0,_pushupPtsFor(totalToday)-_pushupPtsFor(prevToday));
+    }catch(e){
+      earnedPts=_pushupPtsFor(totalReps);
+    }
     if(earnedPts>0){
       try{addScore('pushup_challenge',`${totalReps}개`,earnedPts);}catch(e){console.warn('[PUC] score add failed',e);}
     }
