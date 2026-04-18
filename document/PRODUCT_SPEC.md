@@ -1,7 +1,8 @@
 # Stay Hard — Product Specification
-> Last Updated: 2026-04-18
-> Version: 2.1 (Sprint A/B/C — 기록 탭 정보 계층 재편)
-> File: `/Users/KWAN/StayHard/index.html` (13,575 lines | 778KB)
+> Last Updated: 2026-04-18 (later)
+> Version: 2.2 (Sprint A–H — IA + 아이콘셋 + UX 평가 후속 + RLS 강화)
+> File: `/Users/KWAN/StayHard/index.html` (13,991 lines | 798KB)
+> Migrations: `migrations/001_competition_recent_activity.sql`, `migrations/002_tighten_competitions_rls.sql`
 
 ---
 
@@ -452,7 +453,48 @@ User Action → logCache[key] update → renderRoutine()
 
 ---
 
-## 13. Development Changelog (2026-04-18 — v2.1 Info-Hierarchy Redesign)
+## 13. Development Changelog (2026-04-18 — v2.2 UX-Evaluation Follow-up + RLS Hardening)
+
+Built on top of v2.1 after a structured UX evaluation (4 personas × 6 use cases × 18 UX values). Each sprint targets a specific under-delivered value.
+
+### Sprint D — Action-oriented Review (UC4)
+- **#st-hero-focus banner** under stats hero. `_stFocusSentence(g, rows)` picks the lowest-scoring category from `stCalcOverallGrade` output and returns one Goggins-voice next-week directive. 4 category templates (훈련/식단/루틴/할일) × 3 variants; stable within a week via `rows[0]._key` seed. All-A grades get a congratulation + maintain message with green border.
+- **Period-over-period delta insights** (`_stPeriodDeltaInsights`). Compares current filtered window against same-length window before it, pulled from `_stData`. Surfaces clean%, routine%, volume, and workout-count changes above the ±8/10/15/2 thresholds. Gated by `prev.length >= max(3, stPeriod/4)` — silently skipped when comparison data insufficient.
+
+### Sprint E — Returner Mode (UC6)
+- **`_daysSinceLastActivity()`** walks `logCache` back 21 days; falls back to a 90-day Supabase fetch if cache is empty. Returns 999 for users with no recorded activity.
+- **`showReturnerRibbon(gapDays)`** replaces the rage-voice carry-over ribbon when gap ≥ 3 days: 🌱 icon, 3-tier severity copy (3-6d / 7-13d / 14+d), a single "오늘 이것만" spotlight card with the user's shortest-named applicable mandatory routine (or "물 2잔 마시기" fallback), and a single "다시 시작 →" CTA.
+- **`_consumeReturnerFirstAction()`** consumes a `sessionStorage` flag so the first mandatory/target completion after returning triggers a "돌아왔어 🌱" toast in addition to the score-gain chip. Goggins rage voice resumes day 2+.
+
+### Sprint F — Workout Session Prefill (UC2)
+- `addExerciseToSession` now flags set 1 with `_prefill: true` and stores `prefillRef` on the exercise when `findPrevSets` returns data.
+- **Set input rendering** differentiates prefilled state: amber border (`rgba(245,158,11,.35)`), subtle `color: var(--text2)`, `onfocus="this.select()"` for one-tap overwrite.
+- **"↻ 지난 기록 자동 입력 · 그대로 OK, 수정도 가능"** 9px amber label above the first set.
+- Flag clears automatically in `wsUpdateKg` / `updateSet` once the user edits — style snaps back to normal.
+
+### Sprint G — Challenge Activity Feed (UC5)
+- **Migration `001_competition_recent_activity.sql`**: `ALTER TABLE competitions ADD COLUMN IF NOT EXISTS recent_activity jsonb DEFAULT '[]'::jsonb`. Rides existing competitions RLS.
+- **`_appendCompActivity(type, pts)`** hooked into `addScore` (fire-and-forget for `pts > 0` when an active competition exists). Read-modify-write pattern with client-side cap at 20 most recent entries.
+- **Polling loop**: `_startActivityPoll` / `_stopActivityPoll` run on 60s interval bound to `openChallengeRoom` / `closeChallengeRoom`.
+- **`#room-activity-section` UI** between D-Day progress and 그룹 통계. Green pulsing dot + metadata + scrollable list (max 220px, 15 entries). Self-entries highlighted with accent red border. `_formatActivityTime` produces 방금 / N분 전 / N시간 전 / N일 전.
+- **Graceful degradation**: If column missing (pre-migration deploy), `sessionStorage` flag disables the feature for the session; section auto-hides. No crashes.
+
+### Sprint H — Competitions RLS Hardening (Security)
+- **Problem**: Pre-existing RLS on `competitions` allowed any authenticated user to UPDATE any row — members could be booted, weight goals rewritten, activity feed spammed. Sprint G's write surface made this more exploitable.
+- **Migration `002_tighten_competitions_rls.sql`**:
+  - `join_competition_by_code(code, weight_goal, inbody_goals)` — SECURITY DEFINER PL/pgSQL RPC. Validates code, checks membership/capacity, performs atomic member append under `FOR UPDATE` lock. Grants execute to `authenticated`.
+  - Drops existing policies via a `DO` block, then creates four strict replacements:
+    - SELECT: any authenticated (needed for code lookup; codes are 8-char secrets)
+    - INSERT: `creator_id = auth.uid()` enforced
+    - UPDATE: creator or current member of THIS row only (`members::jsonb ? auth.uid()::text`)
+    - DELETE: creator only
+  - Rollback snippet included (commented) for emergency revert.
+- **Client patch**: `_doJoinComp` now calls `sb.rpc('join_competition_by_code', {...})` first and falls back to direct UPDATE only if the RPC is not yet deployed (pre-migration environments).
+- **Verified post-migration**: Non-member UPDATE attempts on competitions silently return 0 rows; actual data unchanged. RPC responds correctly to invalid/missing codes. Existing member flows (leaderboard, activity append, weight goal updates, leave) unaffected.
+
+---
+
+## 14. Development Changelog (2026-04-18 — v2.1 Info-Hierarchy Redesign)
 
 ### Sprint A — 기록 탭 정보 계층 재편
 - **Status Band hero**: header의 압축 goggins-badge + tiny summary pill + character card를 단일 tinted-gradient 히어로 카드로 통합. Archivo Black 대형 점수, 티어 pill, 스트릭, 오늘 Δ, 인용구, 다음 티어 진행 바, '오늘 기록 요약' 일차 CTA가 한 zone에 수직으로 배치됨.
@@ -494,7 +536,7 @@ User Action → logCache[key] update → renderRoutine()
 
 ---
 
-## 14. Development Changelog (2026-04-17)
+## 15. Development Changelog (2026-04-17)
 
 ### Bug Fixes
 - Meal save race condition (dirty key tracking)
@@ -608,7 +650,7 @@ User Action → logCache[key] update → renderRoutine()
 
 ---
 
-## 15. Muscle Activation System (자극 부위)
+## 16. Muscle Activation System (자극 부위)
 
 ### Architecture
 ```
@@ -687,7 +729,7 @@ obliques: 복사근, lower_back: 하부 등, hip_flexors: 고관절 굴곡근
 
 ---
 
-## 16. Exercise GIF Licensing & Commercial Readiness
+## 17. Exercise GIF Licensing & Commercial Readiness
 
 ### Current State (Beta)
 - GIFs sourced from `hasaneyldrm/exercises-dataset` (GitHub CDN)
@@ -720,7 +762,7 @@ obliques: 복사근, lower_back: 하부 등, hip_flexors: 고관절 굴곡근
 
 ---
 
-## 17. Wearable Integration Roadmap
+## 18. Wearable Integration Roadmap
 
 ### Phase 1: Strava API (Web — No Native App)
 **Status:** Backlog
