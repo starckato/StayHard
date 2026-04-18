@@ -10800,15 +10800,38 @@ async function _doJoinComp(comp){
     }
   }
 
-  const updateData={
-    members:newMembers,status:'active',
-    start_date:comp.start_date||today,
-    member_wgoals:memberWgoals,
-  };
-  if(isInbody)updateData.member_inbody_goals=Object.keys(memberInbodyGoals).length?memberInbodyGoals:null;
+  // Sprint H: 새 RLS(members-only UPDATE) 하에선 non-member가 direct update 불가.
+  // SECURITY DEFINER RPC를 우선 시도하고, 없으면 legacy direct update로 폴백.
+  let upd=null, upErr=null;
+  try{
+    const inbodyGoalsForRpc=(isInbody && Object.keys(memberInbodyGoals).length)
+      ? {[CU.id]:memberInbodyGoals[CU.id]}
+      : null;
+    const{data:rpcData, error:rpcErr}=await sb.rpc('join_competition_by_code',{
+      p_code: comp.code,
+      p_weight_goal: joinWgoal,
+      p_inbody_goals: inbodyGoalsForRpc
+    });
+    if(rpcErr){
+      const msg=(rpcErr.message||'').toLowerCase();
+      // 함수 부재(마이그레이션 전) → legacy 경로 폴백
+      if(msg.includes('does not exist')||msg.includes('404')||msg.includes('pgrst')){
+        const updateData={
+          members:newMembers,status:'active',
+          start_date:comp.start_date||today,
+          member_wgoals:memberWgoals,
+        };
+        if(isInbody)updateData.member_inbody_goals=Object.keys(memberInbodyGoals).length?memberInbodyGoals:null;
+        const res=await sb.from('competitions').update(updateData).eq('id',comp.id).select().single();
+        upd=res.data; upErr=res.error;
+      } else {
+        upErr=rpcErr;
+      }
+    } else {
+      upd=rpcData;
+    }
+  }catch(e){upErr=e;}
 
-  const{data:upd,error:upErr}=await sb.from('competitions')
-    .update(updateData).eq('id',comp.id).select().single();
   if(upErr||!upd){
     errEl.textContent='오류가 발생했습니다. 다시 시도해주세요.';
     jbtn.disabled=false;return;
