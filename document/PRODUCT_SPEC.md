@@ -1,8 +1,18 @@
 # Stay Hard — Product Specification
-> Last Updated: 2026-04-18 (later)
-> Version: 2.2 (Sprint A–H — IA + 아이콘셋 + UX 평가 후속 + RLS 강화)
-> File: `/Users/KWAN/StayHard/index.html` (13,991 lines | 798KB)
-> Migrations: `migrations/001_competition_recent_activity.sql`, `migrations/002_tighten_competitions_rls.sql`
+> Last Updated: 2026-04-18 (evening)
+> Version: 2.3 (+ Sprint I — Muscle-map Share + PM Admin Dashboard)
+> Files: `/Users/KWAN/StayHard/index.html` (14,161 lines), `/Users/KWAN/StayHard/admin.html` (390 lines)
+> Migrations:
+> - `migrations/001_competition_recent_activity.sql`
+> - `migrations/002_tighten_competitions_rls.sql`
+> - `migrations/003_analytics_events.sql` — events table + is_admin() + profiles.is_admin
+> - `migrations/004_admin_dashboard_full_data.sql` — admin_dashboard() RPC with full KPIs + row data
+>
+> Deployment (Vercel): all aliases below point to the same project
+> - Primary: `https://stay-hard-rouge.vercel.app` ← use this
+> - Admin dashboard: `https://stay-hard-rouge.vercel.app/admin.html`
+> - Alternates: `stay-hard-starckato-3038s-projects.vercel.app`, `stay-hard-git-main-...`
+> - (Domain `stayhard.app` is NOT owned by this project — belongs to a different company)
 
 ---
 
@@ -453,7 +463,101 @@ User Action → logCache[key] update → renderRoutine()
 
 ---
 
-## 13. Development Changelog (2026-04-18 — v2.2 UX-Evaluation Follow-up + RLS Hardening)
+## 13. Development Changelog (2026-04-18 evening — v2.3 Sprint I: Share + PM Admin Dashboard)
+
+### Sprint I-A — Muscle Map Share Feature
+- **↗ Share button** in `#muscle-map-overlay` header (next to ✕). Universal 3-node share SVG icon (Android-style, 15×15 stroke 2.2), 40×40 tap target, accent gradient background.
+- **`shareMuscleMap()`** composes an offscreen share card (430px wide) and captures via html2canvas:
+  - Header: STAY HARD logo + "자극 부위 · {mode} · {view}" + date
+  - Body: Rasterized SVG of current muscle map (serialized to Blob URL → Image preload → canvas.drawImage to PNG data URL → `<img>` in composition). This avoids iOS Safari's inline-SVG rendering bug in html2canvas.
+  - TOP 3 타격 부위 (mode-aware): today/week show muscle + sets + volume; all-mode shows grouped % distribution.
+  - Footer: mode + muscle-group-aware gym meme copy + "stayhard.app · {tease}" + STAY HARD badge.
+- **Muscle-group-specific meme copy** (professional Korean fitness tone):
+  - chest → "대흉근 만드는 중 💪" · tease "너도 대흉근 증명해봐 →"
+  - shoulder → "어깨뽕 세팅 중 🔥" · "너도 어깨각 자랑해봐 →"
+  - back → "등판 넓히는 중 📐" · "등은 거울에 안 보임 👀"
+  - arm → "팔뚝 펌핑 중 💪" · "너도 팔뚝 자랑해봐 →"
+  - leg → "레그데이 안 빼먹음 🦵" · "하체 빼먹지 마라 👀"
+  - abs → "복근 새기는 중 🎯" · "너도 복근 새겨봐 →"
+  - week (generic) → "이번 주 쇠질 완료 🔥" · "너도 일주일 찍어봐 →"
+  - all (generic) → "내 훈련 분포 📊" · "너도 루틴 공개해봐 →"
+- **Share transport:** Web Share API first (`navigator.share({files})`), auto-surfaces native share sheet (KakaoTalk, Instagram, 메시지). Falls back to PNG download with toast. Body overflow temporarily restored before `navigator.share` call (iOS Safari otherwise fails to animate the share sheet while scroll is locked).
+- **iOS mobile tap fix** (after multiple iterations):
+  - Converted share button from `<button>` → `<div role="button" tabindex="0">`. Reason: known WebKit bug where `<button>` with only SVG children inside flex containers drops tap events.
+  - Event listeners attached programmatically via `addEventListener('click')` + `addEventListener('touchend', ..., {passive:false})` in `openMuscleMap()` rather than inline HTML attributes.
+  - `_mmShareBusy` debounce flag prevents touchend+click double-fire.
+- **Empty state encouragement** in `renderMuscleMap()` when `activeList.length === 0`:
+  - Accent-gradient bordered card with 💪 icon
+  - Mode-aware copy:
+    - today: "오늘 훈련 전이에요" · "운동을 시작하면 타격 부위가 근육맵에 기록돼요 🔥"
+    - week: "이번 주 기록이 없어요" · "한 번의 세션부터 주간 근육맵이 채워져요 💪"
+    - all: "아직 훈련 기록이 없어요" · "첫 세션부터 모든 기록이 근육맵에 누적돼요 📊"
+  - CTA "🔥 {운동 시작하기|지금 시작하기|첫 세션 시작하기}" → `closeMuscleMap()` → `setTimeout(openWorkoutModal, 50)` for clean sequence
+- **Terminology consistency:** switched "지도" → "근육맵" throughout empty state copy. Dropped metaphors that read awkwardly in Korean (차올라요 / 달아올라요 / 불타올라요) in favor of neutral verbs (기록돼요 / 쌓여요 / 누적돼요).
+
+### Sprint I-B — Analytics Events & Client-Side Tracking
+- **`migrations/003_analytics_events.sql`**:
+  - `profiles.is_admin boolean NOT NULL DEFAULT false` column
+  - `is_admin()` SECURITY DEFINER helper — reads current user's profile flag
+  - `events` table: `id bigserial`, `user_id uuid` (FK auth.users ON DELETE CASCADE), `event_name text`, `meta jsonb DEFAULT '{}'`, `created_at timestamptz DEFAULT now()`
+  - Indexes on `user_id`, `event_name`, `created_at DESC`, `(event_name, created_at DESC)`
+  - RLS: `events_insert_self` (INSERT with `user_id = auth.uid()`), `events_select_self_or_admin` (SELECT own or admin)
+- **`track(eventName, meta)`** client helper in `index.html`: fire-and-forget INSERT to events. No-op if `CU.id` is not set. Silent on failure (e.g., migration not yet run, offline).
+- **Events instrumented:**
+  - `signup` (after `sb.auth.signUp`) with `email_domain`
+  - `onboard_complete` (both `obDismissForever` and full flow) with `path`, `goal`, `routines` count
+  - `share_muscle_map` (start of `shareMuscleMap`) with `mode`, `view`
+  - `workout_complete` (end of `finishSession`, non-edit case) with `exercises`, `volume`, `status`
+  - `competition_create` (after createComp success) with `measure_type`, `duration`
+  - `competition_join` (after `_doJoinComp` success) with `comp_id`, `measure_type`
+
+### Sprint I-C — PM Admin Dashboard (standalone admin.html)
+- **Architecture decision:** admin lives outside consumer app to avoid bundling admin logic into user-facing code, and to keep consumer styling separate from ops tooling.
+- **`admin.html`** (390 lines, standalone at `/admin.html`):
+  - Supabase auth — reuses existing session from main app (same origin). If no session, shows inline login form. If not admin, shows self-fixing SQL snippet.
+  - **KPI row** (38px big numbers, tabular):
+    - WAE (north star) + Δ vs prev week
+    - DAU + Δ vs 7 days ago
+    - WAU + Δ vs prev 7d window
+    - MAU + Δ vs prev 30d window
+    - Stickiness (DAU/MAU %)
+    - Signups 7d/30d/total with 7d Δ
+  - **Activation funnel** (5 steps): signup → onboarded → first_log → 3+ days week 1 → activated (100pt+). Each step shows count, % of signups, and step-over-step conversion %. Conversion color-coded: ≥60% green / 30-60% yellow / <30% red.
+  - **14-day DAU line chart** (Chart.js, cyan line on dark background)
+  - **Feature adoption bars** (today's DAU): meals / workouts / water / weight / mandatory / targets
+  - **D7 retention cohort table** (last 8 weeks): cohort_week | signups | retained | rate, rate color-coded ≥40%/20-40%/<20%
+  - **Tables:** users (all), events (last 100), daily_logs (last 50), event counts 7d, competitions by status
+- **Design principles** (corrected after iteration — earlier attempts veered into marketing territory):
+  - Monospace everywhere (SF Mono / ui-monospace)
+  - Black #0c0c0c background, 3-color threshold coding (green/yellow/red), cyan accent for charts
+  - No emojis, no gradients, no hero layouts, no marketing copy
+  - Data density prioritized; tables dense, deltas explicit
+  - Feels like Metabase/Amplitude, not like a product landing page
+- **`migrations/004_admin_dashboard_full_data.sql`** — extends `admin_dashboard()` RPC (SECURITY DEFINER, gated by `is_admin()`). Single call returns:
+  - Current KPIs: dau, wau, mau, wae, signups_{7d,30d,total}
+  - Previous period: dau_7d_ago, wau_prev, mau_prev, wae_prev, signups_prev_7d (all for delta computation)
+  - Activation funnel counts
+  - feature_adoption_today
+  - trend_14d (14 daily DAU values)
+  - cohorts (D7 retention, last 8 weeks)
+  - event_counts_7d (aggregated)
+  - competitions by status
+  - all_users (full profiles × auth.users with email + log_days + last_log)
+  - recent_events (100)
+  - recent_logs (50)
+
+### Access
+- **App:** `https://stay-hard-rouge.vercel.app`
+- **Admin dashboard:** `https://stay-hard-rouge.vercel.app/admin.html`
+- **Admin provisioning (one-time, Supabase SQL Editor):**
+  ```sql
+  UPDATE profiles SET is_admin = true
+  WHERE id = (SELECT id FROM auth.users WHERE email = 'starckato@gmail.com');
+  ```
+
+---
+
+## 14. Development Changelog (2026-04-18 — v2.2 UX-Evaluation Follow-up + RLS Hardening)
 
 Built on top of v2.1 after a structured UX evaluation (4 personas × 6 use cases × 18 UX values). Each sprint targets a specific under-delivered value.
 
@@ -494,7 +598,7 @@ Built on top of v2.1 after a structured UX evaluation (4 personas × 6 use cases
 
 ---
 
-## 14. Development Changelog (2026-04-18 — v2.1 Info-Hierarchy Redesign)
+## 15. Development Changelog (2026-04-18 — v2.1 Info-Hierarchy Redesign)
 
 ### Sprint A — 기록 탭 정보 계층 재편
 - **Status Band hero**: header의 압축 goggins-badge + tiny summary pill + character card를 단일 tinted-gradient 히어로 카드로 통합. Archivo Black 대형 점수, 티어 pill, 스트릭, 오늘 Δ, 인용구, 다음 티어 진행 바, '오늘 기록 요약' 일차 CTA가 한 zone에 수직으로 배치됨.
@@ -536,7 +640,7 @@ Built on top of v2.1 after a structured UX evaluation (4 personas × 6 use cases
 
 ---
 
-## 15. Development Changelog (2026-04-17)
+## 16. Development Changelog (2026-04-17)
 
 ### Bug Fixes
 - Meal save race condition (dirty key tracking)
@@ -650,7 +754,7 @@ Built on top of v2.1 after a structured UX evaluation (4 personas × 6 use cases
 
 ---
 
-## 16. Muscle Activation System (자극 부위)
+## 17. Muscle Activation System (자극 부위)
 
 ### Architecture
 ```
@@ -729,7 +833,7 @@ obliques: 복사근, lower_back: 하부 등, hip_flexors: 고관절 굴곡근
 
 ---
 
-## 17. Exercise GIF Licensing & Commercial Readiness
+## 18. Exercise GIF Licensing & Commercial Readiness
 
 ### Current State (Beta)
 - GIFs sourced from `hasaneyldrm/exercises-dataset` (GitHub CDN)
@@ -762,7 +866,7 @@ obliques: 복사근, lower_back: 하부 등, hip_flexors: 고관절 굴곡근
 
 ---
 
-## 18. Wearable Integration Roadmap
+## 19. Wearable Integration Roadmap
 
 ### Phase 1: Strava API (Web — No Native App)
 **Status:** Backlog
