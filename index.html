@@ -4658,6 +4658,44 @@ function showAuth(){
 function showApp(){hide('loading');hide('auth-screen');show('app-screen');}
 
 let _yesterdayUndoneTasks=[];
+// Sprint E: Returner mode state — set on each checkYesterdayReminder run
+let _returnerGap=0; // 일 수. 0이면 일반 모드, 3 이상이면 returner
+
+// 사용자가 마지막으로 활동한 날짜(오늘 제외)로부터 경과한 일 수 계산
+// 활동 = 루틴 done, 할일 done, 운동 done, 끼니 type 기록, 체중 기록 중 하나
+async function _daysSinceLastActivity(){
+  const hasAct=(l)=>!!l&&(
+    (l.workouts||[]).some(w=>w.status==='done')||
+    (l.meals||[]).some(m=>m.type)||
+    l.weight!=null||
+    (l.water_cups||0)>0||
+    (l.mandatory||[]).some(m=>m.done)||
+    (l.targets||[]).some(t=>t.st==='done')
+  );
+  // 1) 로컬 캐시 기반으로 먼저 찾기
+  const d=new Date(now);
+  for(let i=1;i<=21;i++){
+    d.setDate(d.getDate()-1);
+    const k=dkey(d);
+    if(hasAct(logCache[k]))return i-1;
+  }
+  // 2) 캐시에 21일 모두 비어있으면 Supabase에서 최근 활동 1건 조회 (fallback)
+  try{
+    const from=new Date(now);from.setDate(from.getDate()-90);
+    const{data}=await sb.from('daily_logs').select('log_date,weight,water_cups,meals,workouts,mandatory,targets')
+      .eq('user_id',CU.id).gte('log_date',dkey(from)).lt('log_date',TODAY)
+      .order('log_date',{ascending:false}).limit(30);
+    if(data&&data.length){
+      for(const row of data){
+        if(hasAct(row)){
+          const elapsed=Math.round((now-new Date(row.log_date+'T00:00:00'))/86400000);
+          return Math.max(0,elapsed);
+        }
+      }
+    }
+  }catch(e){console.warn('returner detect fetch failed',e.message);}
+  return 999; // 어떤 활동도 찾지 못함 → 완전 신규 혹은 매우 오래 쉼
+}
 
 async function checkYesterdayReminder(){
   const yest=new Date(now);yest.setDate(yest.getDate()-1);
@@ -4666,6 +4704,13 @@ async function checkYesterdayReminder(){
   // Skip if already handled today
   const handled=localStorage.getItem('carryover_handled');
   if(handled===TODAY)return;
+
+  // Sprint E: 복귀 모드 감지 — 3일 이상 공백이면 soft welcome-back으로 분기
+  _returnerGap=await _daysSinceLastActivity();
+  if(_returnerGap>=3&&_returnerGap<999){
+    showReturnerRibbon(_returnerGap);
+    return;
+  }
 
   // Load yesterday's log
   let yl=logCache[yk];
@@ -4761,6 +4806,68 @@ function dismissYesterdayRibbon(){
   if(r)r.style.display='none';
   localStorage.setItem('carryover_handled',TODAY);
   _yesterdayUndoneTasks=[];
+}
+
+// Sprint E2: 복귀 사용자 전용 soft ribbon (rage 대신 warmth)
+// N일 공백 감지 시 호출. 쉬운 루틴 1개 스포트라이트 + 완만한 Goggins 톤.
+function showReturnerRibbon(gapDays){
+  const ribbon=document.getElementById('yesterday-ribbon');
+  if(!ribbon)return;
+  // gap 기반 문구 (3-6일: 가벼움 / 7-13일: 중간 / 14+: 진지)
+  const titleMap=[
+    [3,'다시 왔네. 오늘은 하나만.'],
+    [7,'일주일만이야. 가볍게 시작하자.'],
+    [14,'돌아와줘서 고마워. 다시 쌓자.']
+  ];
+  const subMap=[
+    [3,`${gapDays}일 쉬었어. 꾸준함은 재시작에서 다시 시작돼.`],
+    [7,`${gapDays}일 만에 복귀. 완벽할 필요 없어.`],
+    [14,`${gapDays}일 공백. 천천히, 하지만 매일.`]
+  ];
+  const pick=(map)=>{for(const[d,t]of map){if(gapDays<=d||d===map[map.length-1][0])return t;}return map[0][1];};
+  document.getElementById('yr-icon').textContent='🌱';
+  document.getElementById('yr-title').textContent=pick(titleMap);
+  document.getElementById('yr-sub').textContent=pick(subMap);
+
+  const list=document.getElementById('co-task-list');
+  const hint=document.getElementById('co-selection-hint');
+  const actions=document.getElementById('yr-actions');
+  list.style.display='none';
+  hint.style.display='none';
+
+  // 가장 쉬운 루틴 한 개 스포트라이트 — 오늘 해당 요일에 적용되는 매일 루틴 중
+  // 이름이 짧은 것(부담 낮음) 우선. 없으면 그냥 '물 2잔' 제안.
+  const dow=(new Date(now).getDay()+6)%7;
+  const todayMand=(logCache[TODAY]?.mandatory||log.mandatory||[])
+    .filter(m=>!m.done&&!(m.days&&!m.days.includes(dow)))
+    .sort((a,b)=>(a.name||'').length-(b.name||'').length);
+  const suggestion=todayMand[0]?.name||'물 2잔 마시기';
+  const hasRoutineSuggestion=!!todayMand[0];
+
+  actions.innerHTML=`
+    <div style="padding:12px 14px;background:rgba(255,255,255,.08);border-radius:10px;margin-bottom:2px;display:flex;align-items:center;gap:10px;">
+      <span style="font-size:18px;flex-shrink:0;">✦</span>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:10px;font-weight:700;color:rgba(255,255,255,.65);text-transform:uppercase;letter-spacing:.08em;margin-bottom:2px;">오늘 이것만</div>
+        <div style="font-size:14px;font-weight:700;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${suggestion}</div>
+      </div>
+    </div>
+    <button class="yr-btn yr-btn-primary" onclick="dismissYesterdayRibbon()">다시 시작 →</button>
+  `;
+  ribbon.style.display='block';
+
+  // 복귀 모드 플래그 (첫 액션 amp용)
+  try{sessionStorage.setItem('returner_mode',String(gapDays));}catch(e){}
+}
+
+// Sprint E3: 복귀 후 첫 액션에서 부드러운 반응 (rage 차단 + 환영 토스트 1회)
+function _consumeReturnerFirstAction(){
+  try{
+    const mode=sessionStorage.getItem('returner_mode');
+    if(!mode)return false;
+    sessionStorage.removeItem('returner_mode'); // 1회성
+    return true;
+  }catch(e){return false;}
 }
 
 // Legacy entry points — route to unified ribbon
@@ -8535,6 +8642,10 @@ function togMand(i){
     else{addScore('routine_done');}
     const earnedPts=specialType?(SCORE_EVENTS[specialType]?.pts||1):(SCORE_EVENTS.routine_done?.pts||1);
     const _bounceIdx=i;
+    // Sprint E3: 복귀 후 첫 액션이면 환영 토스트로 부드럽게 맞이
+    if(_consumeReturnerFirstAction()){
+      showToast('돌아왔어 🌱 계속 가자');
+    }
     // score-gain chip: origin 좌표를 프록시 엘리먼트로 전달
     if(_originRect){
       const proxy={getBoundingClientRect:()=>_originRect};
