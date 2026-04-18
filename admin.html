@@ -414,7 +414,15 @@ function render(d){
       <td class="muted">${fmtDate(u.last_log)}</td>
       <td>${toggleBtn}</td>
     </tr>`;
-  }).join('')||'<tr><td colspan="8" class="muted" style="text-align:center;padding:14px;">no users</td></tr>'}</tbody></table></div></section>`;
+  }).join('')||'<tr><td colspan="8" class="muted" style="text-align:center;padding:14px;">no users</td></tr>'}</tbody></table></div>${
+    users.some(u=>u.future_logs>0)
+      ? `<div style="margin-top:10px;padding:8px 12px;background:#2a1a10;border:1px solid #5a3a20;border-radius:3px;color:var(--warn);font-size:11px;">
+          ⚠ ${users.filter(u=>u.future_logs>0).length}명이 미래 날짜로 로깅한 기록이 있습니다
+          (총 ${users.reduce((a,u)=>a+(u.future_logs||0),0)} rows).
+          대시보드 집계에서는 제외됨. 실제 데이터 삭제하려면 <code>DELETE FROM daily_logs WHERE log_date &gt; current_date;</code>
+        </div>`
+      : ''
+  }</section>`;
 
   // ── RECENT EVENTS ──
   html+=`<section><h2>events <span class="h2-sub">last ${events.length}</h2><div class="table-wrap"><table><thead><tr>
