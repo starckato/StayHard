@@ -1605,6 +1605,18 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
 
       <div id="room-today-checks" style="display:none;"></div>
 
+      <!-- Sprint G: 멤버 활동 피드 (실시간에 가까운 ticker, 60s poll) -->
+      <div id="room-activity-section" style="display:none;padding:12px 16px 0;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+          <div style="font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;display:flex;align-items:center;gap:6px;">
+            <span id="room-activity-dot" style="width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green);display:inline-block;"></span>
+            활동
+          </div>
+          <div id="room-activity-meta" style="font-size:10px;color:var(--text3);font-family:'DM Mono',monospace;"></div>
+        </div>
+        <div id="room-activity-list" style="display:flex;flex-direction:column;gap:4px;max-height:220px;overflow-y:auto;"></div>
+      </div>
+
       <!-- 그룹 통계 섹션 -->
       <div id="group-stats-section" style="padding:0 16px 4px;">
         <div onclick="toggleGroupStats()" id="group-stats-header" style="display:flex;justify-content:space-between;align-items:center;padding:12px 0 8px;cursor:pointer;touch-action:manipulation;">
@@ -4502,6 +4514,8 @@ function addScore(type, note='', ptsOverride=null, silent=false){
   _saveTimer=setTimeout(_flushSave, 500);
   updateGogginsHeader();
   renderCharCard();
+  // Sprint G: 활성 챌린지에 활동 기록 (pts>0만, fire-and-forget, 실패 시 silent)
+  if(pts>0&&typeof _appendCompActivity==='function'){_appendCompActivity(type,pts);}
 }
 
 // 점수 DB 저장 디바운스 (300ms)
@@ -9541,6 +9555,123 @@ function openChallengeRoom(){
   const mbs=Array.isArray(activeComp.members)?activeComp.members:JSON.parse(activeComp.members||'[]');
   fixMemberDisplayNames(mbs);
   renderChallengeRoom();
+  // Sprint G: 활동 피드 로드 + 60s 폴링
+  _startActivityPoll();
+}
+
+// ═════ Sprint G: 활동 피드 (competitions.recent_activity) ═════
+let _activityPollTimer=null;
+const _ACTIVITY_FEED_DISABLED_KEY='activity_feed_unavailable';
+
+async function _appendCompActivity(scoreType, pts){
+  // 가드: pts>0, active comp 있음, 컬럼 부재 감지로 비활성화된 상태 아님
+  if(!(pts>0)||!activeComp||!CU||!CP)return;
+  if(sessionStorage.getItem(_ACTIVITY_FEED_DISABLED_KEY)==='1')return;
+  const ev=SCORE_EVENTS[scoreType];if(!ev)return;
+  const entry={
+    user_id:CU.id,
+    display_name:CP.display_name||CP.username||'유저',
+    pts,
+    type:scoreType,
+    icon:ev.icon||'',
+    label:ev.label||'',
+    ts:new Date().toISOString()
+  };
+  try{
+    const{data,error:fetchErr}=await sb.from('competitions')
+      .select('recent_activity').eq('id',activeComp.id).maybeSingle();
+    if(fetchErr){
+      // 컬럼 부재 시 PGRST 관련 에러 → 세션 비활성화
+      if(/column|recent_activity/i.test(fetchErr.message||'')){
+        sessionStorage.setItem(_ACTIVITY_FEED_DISABLED_KEY,'1');
+        console.info('[activity] recent_activity column 없음 — 마이그레이션 대기 중');
+      }
+      return;
+    }
+    const current=Array.isArray(data?.recent_activity)?data.recent_activity:[];
+    const updated=[entry,...current].slice(0,20);
+    const{error:updErr}=await sb.from('competitions')
+      .update({recent_activity:updated}).eq('id',activeComp.id);
+    if(updErr&&/column|recent_activity/i.test(updErr.message||'')){
+      sessionStorage.setItem(_ACTIVITY_FEED_DISABLED_KEY,'1');
+    }
+  }catch(e){console.warn('[activity] append failed',e.message);}
+}
+
+async function _fetchActivityFeed(){
+  if(!activeComp)return null;
+  if(sessionStorage.getItem(_ACTIVITY_FEED_DISABLED_KEY)==='1')return null;
+  try{
+    const{data,error}=await sb.from('competitions')
+      .select('recent_activity').eq('id',activeComp.id).maybeSingle();
+    if(error){
+      if(/column|recent_activity/i.test(error.message||'')){
+        sessionStorage.setItem(_ACTIVITY_FEED_DISABLED_KEY,'1');
+      }
+      return null;
+    }
+    return Array.isArray(data?.recent_activity)?data.recent_activity:[];
+  }catch(e){return null;}
+}
+
+function _formatActivityTime(isoTs){
+  const then=new Date(isoTs).getTime();
+  const diff=Math.max(0,Date.now()-then);
+  const mins=Math.floor(diff/60000);
+  if(mins<1)return '방금';
+  if(mins<60)return mins+'분 전';
+  const hrs=Math.floor(mins/60);
+  if(hrs<24)return hrs+'시간 전';
+  const days=Math.floor(hrs/24);
+  return days+'일 전';
+}
+
+function _renderActivityFeed(activity){
+  const section=document.getElementById('room-activity-section');
+  const list=document.getElementById('room-activity-list');
+  const meta=document.getElementById('room-activity-meta');
+  if(!section||!list)return;
+  // 컬럼 없거나 데이터 없으면 섹션 숨김
+  if(!activity){section.style.display='none';return;}
+  if(!activity.length){
+    section.style.display='block';
+    list.innerHTML='<div style="font-size:12px;color:var(--text3);padding:12px 0;text-align:center;font-style:italic;">아직 활동 없음. 네가 먼저 움직여.</div>';
+    if(meta)meta.textContent='';
+    return;
+  }
+  section.style.display='block';
+  if(meta)meta.textContent=activity.length+'개 · 최근 '+_formatActivityTime(activity[0].ts);
+  list.innerHTML=activity.slice(0,15).map(e=>{
+    const name=e.display_name||'유저';
+    const me=e.user_id===CU?.id;
+    const icon=e.icon||'•';
+    return `<div style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:${me?'rgba(255,77,77,.08)':'var(--surface2)'};border:1px solid ${me?'rgba(255,77,77,.20)':'var(--border)'};border-radius:9px;">
+      <span style="font-size:16px;flex-shrink:0;">${icon}</span>
+      <div style="flex:1;min-width:0;overflow:hidden;">
+        <div style="font-size:12px;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+          <span style="color:${me?'var(--accent)':'var(--text)'};">${name}${me?' (나)':''}</span>
+          <span style="color:var(--text3);font-weight:500;"> · ${e.label||e.type}</span>
+        </div>
+        <div style="font-size:10px;color:var(--text3);font-family:'DM Mono',monospace;">${_formatActivityTime(e.ts)}</div>
+      </div>
+      <div style="font-size:11px;font-weight:800;color:var(--accent);font-family:'DM Mono',monospace;flex-shrink:0;">+${e.pts}</div>
+    </div>`;
+  }).join('');
+}
+
+async function _refreshActivityFeed(){
+  const activity=await _fetchActivityFeed();
+  _renderActivityFeed(activity);
+}
+
+function _startActivityPoll(){
+  _stopActivityPoll();
+  _refreshActivityFeed(); // 즉시 1회
+  _activityPollTimer=setInterval(_refreshActivityFeed,60000);
+}
+
+function _stopActivityPoll(){
+  if(_activityPollTimer){clearInterval(_activityPollTimer);_activityPollTimer=null;}
 }
 
 let _groupStatsOpen=true;
@@ -9801,6 +9932,7 @@ function renderGroupStats(profiles,mbs,allLogs,memberWgoals,chStart,chEnd,dayNum
 function closeChallengeRoom(){
   document.getElementById('challenge-room').style.display='none';
   document.body.style.overflow='';
+  _stopActivityPoll(); // Sprint G: 폴링 중단
   renderChallengeHome();
 }
 
