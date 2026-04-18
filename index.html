@@ -2603,25 +2603,6 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
   <div style="padding:0 16px 8px;flex-shrink:0;font-size:9px;color:var(--text3);text-align:center;">Illustrations by Ryan Graves (CC BY 4.0)</div>
 </div>
 
-<!-- ═══════════════════════════════════════════════
-     ADMIN DASHBOARD OVERLAY (admin-only)
-     ═══════════════════════════════════════════════ -->
-<div id="admin-dashboard-overlay" style="display:none;position:fixed;top:0;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;height:100%;z-index:850;flex-direction:column;background:var(--bg);overflow:hidden;">
-  <div style="display:flex;align-items:center;justify-content:space-between;padding:52px 16px 10px;flex-shrink:0;border-bottom:1px solid var(--border);">
-    <div>
-      <div style="font-size:16px;font-weight:700;">📊 Admin Dashboard</div>
-      <div id="admin-as-of" style="font-size:10px;color:var(--text3);margin-top:1px;">—</div>
-    </div>
-    <div style="display:flex;gap:8px;">
-      <div role="button" tabindex="0" onclick="loadAdminDashboard()" ontouchend="event.preventDefault();loadAdminDashboard();" style="width:32px;height:32px;background:var(--surface2);border:1px solid var(--border2);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--text2);cursor:pointer;user-select:none;-webkit-user-select:none;" title="새로고침">↻</div>
-      <div role="button" tabindex="0" onclick="closeAdminDashboard()" ontouchend="event.preventDefault();closeAdminDashboard();" style="width:32px;height:32px;background:var(--surface2);border:1px solid var(--border2);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--text2);cursor:pointer;user-select:none;-webkit-user-select:none;">✕</div>
-    </div>
-  </div>
-  <div id="admin-body" style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px 14px 40px;">
-    <div style="text-align:center;padding:40px;color:var(--text3);">로딩 대기...</div>
-  </div>
-</div>
-
 <div id="room-overlay" style="display:none;position:fixed;top:0;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;height:100%;z-index:900;flex-direction:column;background:#0a0a10;overflow:hidden;">
   <!-- 닫기 버튼 (상단 우측) -->
   <button onclick="closeRoomOverlay()" style="position:absolute;top:env(safe-area-inset-top,12px);right:12px;z-index:10;width:34px;height:34px;border-radius:50%;background:rgba(0,0,0,.5);backdrop-filter:blur(8px);border:0.5px solid rgba(255,255,255,.15);color:var(--text2);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;touch-action:manipulation;margin-top:8px;">✕</button>
@@ -2921,9 +2902,6 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
       <div><div class="pname" id="p-name"></div><div class="pemail" id="p-email"></div><div style="font-size:10px;color:var(--text3);margin-top:1px;" id="p-username"></div></div>
     </div>
 
-    <div id="p-admin-section" style="display:none;margin:10px 0 4px;">
-      <div role="button" tabindex="0" onclick="closeModal('profile-modal');openAdminDashboard();" ontouchend="event.preventDefault();closeModal('profile-modal');openAdminDashboard();" style="padding:11px;background:linear-gradient(135deg,rgba(255,77,77,0.15),rgba(255,77,77,0.04));border:1px solid rgba(255,77,77,0.3);border-radius:10px;font-size:13px;font-weight:700;color:#ff4d4d;text-align:center;cursor:pointer;user-select:none;-webkit-user-select:none;">📊 Admin Dashboard</div>
-    </div>
     <button class="signout-btn" onclick="doSignOut()">로그아웃</button>
     <button class="mbtn-ghost" onclick="closeModal('profile-modal')">닫기</button>
   </div>
@@ -5166,12 +5144,6 @@ async function onLogin(user){
     // Check yesterday's completion and show reminder banner
     setTimeout(checkYesterdayReminder, 800);
   }
-  // ?admin=1 URL param auto-opens the admin dashboard for admin users
-  try{
-    if(CP?.is_admin && new URLSearchParams(location.search).get('admin')==='1'){
-      setTimeout(openAdminDashboard, 600);
-    }
-  }catch(e){}
 }
 
 // ── INITIAL UI PAINT HELPER ──
@@ -5383,8 +5355,6 @@ async function doSignup(){
 function openProfileModal(){
   const inp=document.getElementById('p-nickname-inp');
   if(inp)inp.value=CP?.display_name||'';
-  const adminSec=document.getElementById('p-admin-section');
-  if(adminSec)adminSec.style.display=CP?.is_admin?'block':'none';
   openModal('profile-modal');
 }
 async function saveNickname(){
@@ -6318,174 +6288,6 @@ function track(eventName,meta){
     sb.from('events').insert({user_id:CU.id,event_name:eventName,meta:meta||{}})
       .then(()=>{},(e)=>{if(!String(e?.message||'').includes('events'))console.warn('[track]',eventName,e);});
   }catch(e){}
-}
-
-// ═══════════════════════════════════════════════
-// ADMIN DASHBOARD
-// ═══════════════════════════════════════════════
-let _adminChart=null;
-
-async function openAdminDashboard(){
-  if(!CP?.is_admin){showToast('admin 권한이 없어요');return;}
-  const el=document.getElementById('admin-dashboard-overlay');
-  if(!el)return;
-  el.style.display='flex';
-  document.body.style.overflow='hidden';
-  await loadAdminDashboard();
-}
-
-function closeAdminDashboard(){
-  const el=document.getElementById('admin-dashboard-overlay');
-  if(el)el.style.display='none';
-  document.body.style.overflow='';
-}
-
-async function loadAdminDashboard(){
-  const body=document.getElementById('admin-body');
-  if(!body)return;
-  body.innerHTML='<div style="text-align:center;padding:40px;color:var(--text3);">📊 불러오는 중...</div>';
-  const {data,error}=await sb.rpc('admin_dashboard');
-  if(error){
-    body.innerHTML=`<div style="padding:20px;">
-      <div style="color:#ff4d4d;font-size:13px;font-weight:700;margin-bottom:8px;">⚠️ 불러오기 실패</div>
-      <div style="color:var(--text3);font-size:11px;font-family:'DM Mono',monospace;padding:10px;background:var(--surface2);border-radius:8px;word-break:break-all;">${error.message||error}</div>
-      <div style="color:var(--text3);font-size:11px;margin-top:12px;line-height:1.5;">migrations/003_analytics_events.sql 을 Supabase SQL Editor에서 실행했는지, 그리고 프로필에 is_admin=true 인지 확인해주세요.</div>
-    </div>`;
-    return;
-  }
-  _renderAdminDashboard(data);
-}
-
-function _renderAdminDashboard(d){
-  const asOf=document.getElementById('admin-as-of');
-  if(asOf)asOf.textContent=`${d.as_of} · ${new Date(d.generated_at).toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit',second:'2-digit'})}`;
-  const body=document.getElementById('admin-body');
-  if(!body)return;
-  const act=d.activation||{};
-  const feat=d.feature_adoption_today||{};
-  const fpct=k=>feat.dau?Math.round((feat[k]||0)/feat.dau*100):0;
-  const stickiness=d.mau?Math.round((d.dau||0)/d.mau*100):0;
-  body.innerHTML=`
-    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:14px;">
-      <div style="padding:12px;background:linear-gradient(135deg,rgba(255,77,77,0.18),rgba(255,77,77,0.04));border:1px solid rgba(255,77,77,0.35);border-radius:12px;">
-        <div style="font-size:9px;color:var(--text3);font-weight:700;letter-spacing:0.8px;">NORTH STAR · WAE</div>
-        <div style="font-size:28px;font-weight:900;font-family:'Archivo Black',sans-serif;color:#ff4d4d;margin-top:3px;line-height:1;">${d.wae||0}</div>
-        <div style="font-size:9px;color:var(--text3);margin-top:3px;">3+ log days / 7d</div>
-      </div>
-      <div style="padding:12px;background:var(--surface2);border:1px solid var(--border);border-radius:12px;">
-        <div style="font-size:9px;color:var(--text3);font-weight:700;letter-spacing:0.8px;">DAU · WAU · MAU</div>
-        <div style="font-size:16px;font-weight:800;font-family:'DM Mono',monospace;margin-top:4px;color:var(--text);line-height:1.2;">
-          ${d.dau||0} · ${d.wau||0} · ${d.mau||0}
-        </div>
-        <div style="font-size:9px;color:var(--text3);margin-top:2px;">stickiness ${stickiness}%</div>
-      </div>
-    </div>
-    <div style="padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;margin-bottom:14px;">
-      <div style="font-size:10px;color:var(--text3);font-weight:700;letter-spacing:0.5px;margin-bottom:6px;">📥 SIGNUPS</div>
-      <div style="display:flex;justify-content:space-around;">
-        <div style="text-align:center;"><div style="font-size:20px;font-weight:800;color:#ff4d4d;font-family:'Archivo Black',sans-serif;">${d.signups_7d||0}</div><div style="font-size:9px;color:var(--text3);">7d</div></div>
-        <div style="text-align:center;"><div style="font-size:20px;font-weight:800;color:var(--text);font-family:'Archivo Black',sans-serif;">${d.signups_30d||0}</div><div style="font-size:9px;color:var(--text3);">30d</div></div>
-        <div style="text-align:center;"><div style="font-size:20px;font-weight:800;color:var(--text2);font-family:'Archivo Black',sans-serif;">${d.signups_total||0}</div><div style="font-size:9px;color:var(--text3);">all-time</div></div>
-      </div>
-    </div>
-    <div style="padding:12px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;margin-bottom:14px;">
-      <div style="font-size:10px;color:var(--text3);font-weight:700;letter-spacing:0.8px;margin-bottom:10px;">🔥 ACTIVATION FUNNEL</div>
-      ${_renderAdminFunnel(act)}
-    </div>
-    <div style="padding:12px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;margin-bottom:14px;">
-      <div style="font-size:10px;color:var(--text3);font-weight:700;letter-spacing:0.8px;margin-bottom:8px;">📈 14-DAY ACTIVE TREND</div>
-      <div style="height:160px;"><canvas id="admin-trend-canvas"></canvas></div>
-    </div>
-    <div style="padding:12px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;margin-bottom:14px;">
-      <div style="font-size:10px;color:var(--text3);font-weight:700;letter-spacing:0.8px;margin-bottom:8px;">🎯 FEATURE ADOPTION (TODAY · DAU ${feat.dau||0})</div>
-      ${['meals','workouts','water','weight','mandatory','targets'].map(k=>{
-        const v=feat[k]||0,pct=fpct(k);
-        return `<div style="margin-bottom:7px;"><div style="display:flex;justify-content:space-between;font-size:10px;margin-bottom:3px;"><span style="color:var(--text2);text-transform:uppercase;letter-spacing:0.3px;">${k}</span><span style="color:var(--accent);font-family:'DM Mono',monospace;">${v} · ${pct}%</span></div><div style="height:5px;background:rgba(255,255,255,0.05);border-radius:2.5px;overflow:hidden;"><div style="height:100%;width:${pct}%;background:linear-gradient(90deg,#ff4d4d,#ff6b35);transition:width .4s;"></div></div></div>`;
-      }).join('')}
-    </div>
-    <div style="padding:12px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;margin-bottom:14px;">
-      <div style="font-size:10px;color:var(--text3);font-weight:700;letter-spacing:0.8px;margin-bottom:8px;">📅 D7 RETENTION (LAST 8 WEEKS)</div>
-      ${_renderAdminCohorts(d.cohorts||[])}
-    </div>
-    <div style="padding:12px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;margin-bottom:14px;">
-      <div style="font-size:10px;color:var(--text3);font-weight:700;letter-spacing:0.8px;margin-bottom:8px;">📊 EVENT COUNTS (7D)</div>
-      ${_renderAdminEventCounts(d.event_counts_7d||{})}
-    </div>
-    <div style="padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;margin-bottom:14px;">
-      <div style="font-size:10px;color:var(--text3);font-weight:700;letter-spacing:0.8px;margin-bottom:6px;">🏆 COMPETITIONS</div>
-      <div style="display:flex;justify-content:space-around;">
-        <div style="text-align:center;"><div style="font-size:18px;font-weight:800;color:#34d399;font-family:'Archivo Black',sans-serif;">${d.competitions?.active||0}</div><div style="font-size:9px;color:var(--text3);">active</div></div>
-        <div style="text-align:center;"><div style="font-size:18px;font-weight:800;color:var(--text);font-family:'Archivo Black',sans-serif;">${d.competitions?.completed||0}</div><div style="font-size:9px;color:var(--text3);">done</div></div>
-        <div style="text-align:center;"><div style="font-size:18px;font-weight:800;color:var(--text2);font-family:'Archivo Black',sans-serif;">${d.competitions?.waiting||0}</div><div style="font-size:9px;color:var(--text3);">waiting</div></div>
-      </div>
-    </div>
-    <div style="padding:12px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;margin-bottom:14px;">
-      <div style="font-size:10px;color:var(--text3);font-weight:700;letter-spacing:0.8px;margin-bottom:8px;">👑 TOP 10 USERS</div>
-      ${(d.top_users||[]).map((u,i)=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.04);font-size:12px;"><div style="color:var(--text);"><span style="color:var(--text3);margin-right:6px;font-family:'DM Mono',monospace;">${String(i+1).padStart(2,'0')}</span>${u.name||'—'}</div><div style="font-family:'DM Mono',monospace;font-weight:700;color:var(--accent);">${(u.score||0).toLocaleString()}</div></div>`).join('')||'<div style="color:var(--text3);font-size:11px;text-align:center;padding:8px;">no users</div>'}
-    </div>
-    <div style="padding:12px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;margin-bottom:20px;">
-      <div style="font-size:10px;color:var(--text3);font-weight:700;letter-spacing:0.8px;margin-bottom:8px;">📤 RECENT SHARES</div>
-      ${((d.recent_shares||[]).length)?(d.recent_shares||[]).map(s=>`<div style="padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.04);font-size:11px;"><div style="display:flex;justify-content:space-between;"><span style="color:var(--text);">${s.name||'—'}</span><span style="color:var(--text3);font-family:'DM Mono',monospace;font-size:10px;">${new Date(s.created_at).toLocaleString('ko-KR',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'})}</span></div><div style="color:var(--text3);font-size:9px;margin-top:2px;font-family:'DM Mono',monospace;">mode=${s.meta?.mode||'?'} · view=${s.meta?.view||'?'}</div></div>`).join(''):'<div style="color:var(--text3);font-size:11px;text-align:center;padding:8px;">no shares yet</div>'}
-    </div>`;
-  setTimeout(()=>_renderAdminTrendChart(d.trend_14d||[]),50);
-}
-
-function _renderAdminFunnel(act){
-  const steps=[
-    {key:'signups',label:'① 가입'},
-    {key:'onboarded',label:'② 온보딩 완료'},
-    {key:'first_logged',label:'③ 첫 기록'},
-    {key:'three_day_week1',label:'④ 첫 주 3일+ 기록'},
-    {key:'activated',label:'⑤ 활성화 (100pt+)'}
-  ];
-  const max=act.signups||1;
-  return steps.map((s,i)=>{
-    const v=act[s.key]||0;
-    const pct=Math.round(v/max*100);
-    const prev=i>0?(act[steps[i-1].key]||0):null;
-    const conv=(prev!==null&&prev>0)?Math.round(v/prev*100):null;
-    return `<div style="margin-bottom:8px;"><div style="display:flex;justify-content:space-between;font-size:10px;margin-bottom:3px;"><span style="color:var(--text2);">${s.label}</span><span style="font-family:'DM Mono',monospace;color:var(--text);">${v} <span style="color:var(--text3);">· ${pct}%</span>${conv!==null?` <span style="color:#f59e0b;">· conv ${conv}%</span>`:''}</span></div><div style="height:10px;background:rgba(255,255,255,0.05);border-radius:5px;overflow:hidden;"><div style="height:100%;width:${pct}%;background:linear-gradient(90deg,#ff4d4d,#ff6b35);transition:width .4s;"></div></div></div>`;
-  }).join('');
-}
-
-function _renderAdminCohorts(cohorts){
-  if(!cohorts||!cohorts.length)return '<div style="color:var(--text3);font-size:11px;text-align:center;padding:10px;">데이터 부족</div>';
-  return `<table style="width:100%;font-size:10px;border-collapse:collapse;">
-    <thead><tr style="color:var(--text3);border-bottom:1px solid var(--border);">
-      <th style="text-align:left;padding:5px 4px;font-weight:700;letter-spacing:0.3px;">COHORT</th>
-      <th style="text-align:right;padding:5px 4px;">n</th>
-      <th style="text-align:right;padding:5px 4px;">D7</th>
-      <th style="text-align:right;padding:5px 4px;">%</th>
-    </tr></thead><tbody>
-      ${cohorts.map(c=>{
-        const rate=c.cohort_size?Math.round(c.retained_d7/c.cohort_size*100):0;
-        const color=rate>=40?'#34d399':rate>=20?'#f59e0b':(rate>0?'#ff4d4d':'var(--text3)');
-        return `<tr style="border-bottom:1px solid rgba(255,255,255,0.03);"><td style="padding:5px 4px;color:var(--text);font-family:'DM Mono',monospace;">${c.cohort_week}</td><td style="text-align:right;padding:5px 4px;color:var(--text2);font-family:'DM Mono',monospace;">${c.cohort_size}</td><td style="text-align:right;padding:5px 4px;color:var(--text2);font-family:'DM Mono',monospace;">${c.retained_d7}</td><td style="text-align:right;padding:5px 4px;color:${color};font-family:'DM Mono',monospace;font-weight:700;">${rate}%</td></tr>`;
-      }).join('')}
-    </tbody></table>`;
-}
-
-function _renderAdminEventCounts(counts){
-  const entries=Object.entries(counts||{}).sort((a,b)=>b[1]-a[1]);
-  if(!entries.length)return '<div style="color:var(--text3);font-size:11px;text-align:center;padding:10px;">아직 이벤트 없음</div>';
-  const max=entries[0][1]||1;
-  return entries.map(([name,cnt])=>{
-    const pct=Math.round(cnt/max*100);
-    return `<div style="margin-bottom:6px;"><div style="display:flex;justify-content:space-between;font-size:10px;margin-bottom:2px;"><span style="color:var(--text2);font-family:'DM Mono',monospace;">${name}</span><span style="color:var(--accent);font-family:'DM Mono',monospace;font-weight:700;">${cnt}</span></div><div style="height:4px;background:rgba(255,255,255,0.05);border-radius:2px;overflow:hidden;"><div style="height:100%;width:${pct}%;background:linear-gradient(90deg,#ff4d4d,#ff6b35);"></div></div></div>`;
-  }).join('');
-}
-
-function _renderAdminTrendChart(trend){
-  const canvas=document.getElementById('admin-trend-canvas');
-  if(!canvas||typeof Chart==='undefined')return;
-  if(_adminChart){try{_adminChart.destroy();}catch(e){}}
-  const labels=trend.map(t=>{const d=new Date(t.day);return `${d.getMonth()+1}/${d.getDate()}`;});
-  const vals=trend.map(t=>t.active||0);
-  _adminChart=new Chart(canvas,{
-    type:'line',
-    data:{labels,datasets:[{label:'Active',data:vals,borderColor:'#ff4d4d',backgroundColor:'rgba(255,77,77,0.12)',fill:true,tension:0.3,pointRadius:3,pointBackgroundColor:'#ff4d4d',borderWidth:2}]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#6b6b78',font:{size:9}},grid:{display:false}},y:{beginAtZero:true,ticks:{color:'#6b6b78',font:{size:9},precision:0},grid:{color:'rgba(255,255,255,0.04)'}}}}
-  });
 }
 
 let _toastQueue=[];
