@@ -214,6 +214,21 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 .sb-summary-dot{width:7px;height:7px;border-radius:50%;background:var(--amber);flex-shrink:0;box-shadow:0 0 6px currentColor;}
 .sb-summary-label{flex:1;text-align:left;letter-spacing:-.01em;}
 .sb-summary-arrow{font-size:15px;color:var(--text3);font-weight:700;}
+/* Status Band reveal sequence — 최초 렌더 시 1회 */
+.sb-reveal{animation:sbFadeIn .45s cubic-bezier(.2,.9,.3,1);}
+.sb-reveal .sb-tier{animation:sbStamp .55s .12s cubic-bezier(.2,.9,.3,1) backwards;display:inline-block;}
+.sb-reveal .sb-streak{animation:sbFadeIn .45s .22s cubic-bezier(.2,.9,.3,1) backwards;}
+.sb-reveal .sb-today-cell{animation:sbSlide .45s .28s cubic-bezier(.2,.9,.3,1) backwards;}
+.sb-reveal .sb-score-row{animation:sbFadeIn .5s .08s cubic-bezier(.2,.9,.3,1) backwards;}
+.sb-reveal .sb-quote{animation:sbFadeIn .45s .38s cubic-bezier(.2,.9,.3,1) backwards;}
+.sb-reveal .sb-progress-wrap{animation:sbFadeIn .45s .46s cubic-bezier(.2,.9,.3,1) backwards;}
+.sb-reveal .sb-summary-btn{animation:sbSlide .45s .54s cubic-bezier(.2,.9,.3,1) backwards;}
+@keyframes sbFadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+@keyframes sbStamp{0%{opacity:0;transform:scale(.6);}60%{transform:scale(1.08);}100%{opacity:1;transform:scale(1);}}
+@keyframes sbSlide{from{opacity:0;transform:translateX(12px);}to{opacity:1;transform:translateX(0);}}
+@media (prefers-reduced-motion: reduce){
+  .sb-reveal,.sb-reveal *{animation:none!important;}
+}
 
 /* ═════ YESTERDAY RIBBON — 어제 미완료/이월 할일 통합 ═════ */
 .yr{margin:8px 14px 0;border-radius:14px;overflow:hidden;animation:yrSlideIn .35s cubic-bezier(.2,.9,.3,1);}
@@ -253,7 +268,10 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 .bni{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:8px 0;color:var(--text3);font-size:10px;font-weight:600;letter-spacing:.02em;transition:color .15s;touch-action:manipulation;position:relative;}
 .bni.active{color:var(--accent);}
 .bni.active::after{content:'';position:absolute;top:4px;left:50%;transform:translateX(-50%);width:4px;height:4px;border-radius:50%;background:var(--accent);box-shadow:0 0 8px var(--accent);}
-.bni-icon{font-size:22px;}
+.bni-icon{font-size:22px;width:22px;height:22px;display:block;}
+svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.9,.3,1);}
+.bni:active svg.bni-icon{transform:scale(.88);}
+.bni.active svg.bni-icon{transform:scale(1.05);}
 
 /* VIEWS */
 .view{display:none;padding:0 0 8px;}
@@ -1983,11 +2001,41 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
   </div>
 
   <div class="bnav">
-    <div class="bni active" onclick="switchTab('routine',0)"><div class="bni-icon">📋</div><div>기록</div></div>
-    <!-- goggins bnav hidden phase2 -->
-    <div class="bni" onclick="switchTab('weekly',1)"><div class="bni-icon">📅</div><div>주간</div></div>
-    <div class="bni" onclick="switchTab('stats',2)"><div class="bni-icon">📊</div><div>통계</div></div>
-    <div class="bni" onclick="switchTab('competition',3)"><div class="bni-icon">🏆</div><div>챌린지</div></div>
+    <div class="bni active" onclick="switchTab('routine',0)">
+      <svg class="bni-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <rect x="5" y="5" width="14" height="16" rx="2"/>
+        <path d="M9 3h6a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/>
+        <path d="M9 13.5l2 2 4-4"/>
+      </svg>
+      <div>기록</div>
+    </div>
+    <div class="bni" onclick="switchTab('weekly',1)">
+      <svg class="bni-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <rect x="4" y="6" width="16" height="14" rx="2"/>
+        <path d="M4 11h16M8 3v4M16 3v4"/>
+        <circle cx="12" cy="15" r="1.1" fill="currentColor" stroke="none"/>
+      </svg>
+      <div>주간</div>
+    </div>
+    <div class="bni" onclick="switchTab('stats',2)">
+      <svg class="bni-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M4 20h16"/>
+        <path d="M7 20v-6"/>
+        <path d="M12 20V9"/>
+        <path d="M17 20v-3"/>
+      </svg>
+      <div>통계</div>
+    </div>
+    <div class="bni" onclick="switchTab('competition',3)">
+      <svg class="bni-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M7 4h10v6a5 5 0 0 1-10 0V4z"/>
+        <path d="M7 7H4v1a3 3 0 0 0 3 3"/>
+        <path d="M17 7h3v1a3 3 0 0 1-3 3"/>
+        <path d="M10.5 15h3v3h-3z"/>
+        <path d="M8 20h8"/>
+      </svg>
+      <div>챌린지</div>
+    </div>
   </div>
 </div>
 
@@ -6071,6 +6119,43 @@ function switchTab(name,idx){
 
 // ── GOGGINS ──
 // mottos already declared above
+// Status Band reveal state
+let _statusBandRevealed=false;
+let _scoreCountingUp=false;
+
+function countUpScore(el, target, duration=650){
+  if(!el)return;
+  const startVal=parseInt((el.textContent||'0').replace(/[^\d-]/g,''))||0;
+  if(startVal===target){el.textContent=target.toLocaleString();return;}
+  _scoreCountingUp=true;
+  const start=performance.now();
+  function tick(ts){
+    const p=Math.min((ts-start)/duration,1);
+    const eased=1-Math.pow(1-p,3); // easeOutCubic
+    el.textContent=Math.round(startVal+(target-startVal)*eased).toLocaleString();
+    if(p<1)requestAnimationFrame(tick);
+    else{el.textContent=target.toLocaleString();_scoreCountingUp=false;}
+  }
+  requestAnimationFrame(tick);
+}
+
+function revealStatusBand(){
+  if(_statusBandRevealed)return;
+  const sb=document.querySelector('.sb');
+  if(!sb)return;
+  _statusBandRevealed=true;
+  sb.classList.add('sb-reveal');
+  // score count-up — hdr-score already has target value from updateGogginsHeader
+  const scoreEl=document.getElementById('hdr-score');
+  if(scoreEl){
+    const target=+(CP?.total_score)||0;
+    scoreEl.textContent='0';
+    countUpScore(scoreEl,target);
+  }
+  // remove reveal class after animation completes so re-renders don't replay
+  setTimeout(()=>{sb&&sb.classList.remove('sb-reveal');},1100);
+}
+
 function updateGogginsHeader(){
   const total=getAccumulatedScore();
   const todayPts=getTodayScore();
@@ -6079,7 +6164,7 @@ function updateGogginsHeader(){
   const streakEl=document.getElementById('hdr-streak');
   if(streakEl)streakEl.textContent=streak+'일';
   const scoreEl=document.getElementById('hdr-score');
-  if(scoreEl)scoreEl.textContent=total.toLocaleString();
+  if(scoreEl&&!_scoreCountingUp)scoreEl.textContent=total.toLocaleString();
   const tierEl=document.getElementById('hdr-tier');
   if(tierEl){
     tierEl.textContent=tier.icon+' '+tier.name;
@@ -6363,7 +6448,7 @@ function scrollToSection(s){
   const el=document.getElementById(map[s]);
   if(el)el.scrollIntoView({behavior:'smooth',block:'center'});
 }
-function renderRoutine(){renderCharCard();renderSummaryCard();renderWeight();renderMeals();renderCheatBadge();renderWater();renderWorkouts();renderMandatory();renderTargets();updateGogginsHeader();}
+function renderRoutine(){renderCharCard();renderSummaryCard();renderWeight();renderMeals();renderCheatBadge();renderWater();renderWorkouts();renderMandatory();renderTargets();updateGogginsHeader();revealStatusBand();}
 
 // WEIGHT
 function toggleWeightInfo(){
