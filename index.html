@@ -1205,6 +1205,11 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
         <div style="font-size:10px;color:var(--text3);" id="st-hero-tier-to">다음까지 —</div>
       </div>
       <div class="stats-tier-bar"><div class="stats-tier-fill" id="st-hero-tier-fill" style="width:0%;"></div></div>
+      <!-- Sprint D1: 약점 → 다음 주 집중 포인트 -->
+      <div id="st-hero-focus" style="display:none;margin-top:12px;padding:11px 13px;background:rgba(10,10,12,.4);border:1px solid rgba(255,77,77,.22);border-radius:11px;display:flex;align-items:flex-start;gap:10px;">
+        <span id="st-hero-focus-tag" style="font-size:9px;font-weight:800;color:var(--accent);text-transform:uppercase;letter-spacing:.1em;padding:3px 7px;background:rgba(255,77,77,.12);border-radius:5px;flex-shrink:0;margin-top:1px;">다음 주</span>
+        <span id="st-hero-focus-msg" style="font-size:12px;font-weight:600;color:var(--text);line-height:1.5;letter-spacing:-.01em;word-break:keep-all;"></span>
+      </div>
     </div>
 
     <!-- 섹션 핀 탭 -->
@@ -12544,6 +12549,57 @@ function stCalcOverallGrade(rows){
   return{grade,color,avgScore,sub:rows.length+'일 기준',woPerWeek,cleanPct,routinePct,targetPct};
 }
 
+// ── 약점 카테고리 → 다음 주 집중 포인트 문장 (Goggins voice) ──
+// 입력: stCalcOverallGrade 결과 g, rows — 출력: {text, tag, borderColor} or null
+function _stFocusSentence(g, rows){
+  if(!g||!rows||!rows.length)return null;
+  if(g.grade==='—')return null;
+  // 전체 A면 축하 + 유지 메시지
+  if(g.grade==='A'){
+    return {tag:'이번 주', text:'완벽에 가까워. 다음 주도 그대로 가.', borderColor:'rgba(52,211,153,.3)'};
+  }
+  // 카테고리 점수 맵 (stCalcOverallGrade에서 계산된 값 재사용)
+  const scores={
+    훈련:g.woPerWeek>=3?90:g.woPerWeek>=2?70:g.woPerWeek>=1?50:20,
+    식단:g.cleanPct,
+    루틴:g.routinePct,
+    할일:g.targetPct
+  };
+  // 가장 낮은 점수 카테고리 선택 (null은 제외)
+  let worst=null,worstScore=Infinity;
+  Object.entries(scores).forEach(([k,v])=>{if(v!==null&&v!==undefined&&v<worstScore){worst=k;worstScore=v;}});
+  if(!worst)return null;
+  // 카테고리별 Goggins voice 템플릿
+  const templates={
+    훈련:[
+      '훈련이 약해. 다음 주 1회만 더.',
+      '체육관이 너를 기다린다. 주 3회부터.',
+      '볼륨이 부족해. 몸에 기억시켜.'
+    ],
+    식단:[
+      '클린식이 무너졌어. 한 끼만 클린으로 바꿔.',
+      '입으로 들어가는 걸 통제해. 한 끼씩.',
+      '식단이 약점이야. 아침 하나만 정리해.'
+    ],
+    루틴:[
+      '루틴이 흔들려. 가장 작은 것부터 지켜.',
+      '매일의 약속을 깨지 마. 하나라도.',
+      '루틴을 줄이고 완주율을 올려.'
+    ],
+    할일:[
+      '할일이 밀리고 있어. 목록을 3개로 줄여.',
+      '끝내지 못할 할일은 쓰지 마.',
+      '할일 완료율을 올려. 적게, 확실하게.'
+    ]
+  };
+  const pool=templates[worst]||[];
+  if(!pool.length)return null;
+  // 기간 키로 안정적인 랜덤 (동일 주에는 같은 문장)
+  const seed=(rows[0]?._key||'').split('-').join('')|0;
+  const pick=pool[seed%pool.length];
+  return {tag:'다음 주', text:pick, borderColor:'rgba(255,77,77,.22)'};
+}
+
 // ── 히어로 렌더 ──
 function stRenderHero(rows){
   try{
@@ -12559,6 +12615,22 @@ function stRenderHero(rows){
     const gradeSub=document.getElementById('st-hero-grade-sub');
     if(gradeEl){gradeEl.textContent=g.grade;gradeEl.style.color=g.color;}
     if(gradeSub)gradeSub.textContent=g.sub;
+
+    // Sprint D1: 약점 카테고리 → 한 줄 집중 포인트 (Goggins 톤)
+    const focusEl=document.getElementById('st-hero-focus');
+    const focusMsg=document.getElementById('st-hero-focus-msg');
+    const focusTag=document.getElementById('st-hero-focus-tag');
+    if(focusEl&&focusMsg){
+      const msg=_stFocusSentence(g,rows);
+      if(msg){
+        focusMsg.textContent=msg.text;
+        if(focusTag)focusTag.textContent=msg.tag;
+        focusEl.style.display='flex';
+        focusEl.style.borderColor=msg.borderColor||'rgba(255,77,77,.22)';
+      } else {
+        focusEl.style.display='none';
+      }
+    }
 
     // Tier progress bar below — cumulative profile tier (여전히 유용한 컨텍스트)
     const total=+(CP?.total_score)||0;
@@ -12667,10 +12739,75 @@ function renderSparkline(canvasId,key,data,rgb){
   });
 }
 
+// ── Sprint D2: 기간 대비 변화 인사이트 (delta-first) ──
+// rows vs _stData 전체에서 이전 기간을 분리해 주요 지표의 변화 추출
+function _stPeriodDeltaInsights(rows){
+  const out=[];
+  if(!_stData||!rows||!rows.length||!stPeriod)return out;
+  // rows는 filtered 현재 기간. 이전 기간은 _stData 전체에서 시간 창만 바꿔 필터
+  const endPrev=new Date(now);endPrev.setDate(endPrev.getDate()-stPeriod);
+  const startPrev=new Date(endPrev);startPrev.setDate(endPrev.getDate()-(stPeriod-1));
+  const sK=dkey(startPrev),eK=dkey(endPrev);
+  const prev=_stData.filter(r=>r._key>=sK&&r._key<=eK);
+  if(prev.length<Math.max(3,Math.floor(stPeriod/4)))return out; // 비교군 너무 적으면 skip
+
+  const calcClean=arr=>{
+    const ms=arr.flatMap(r=>(r.meals||[]).filter(m=>['아침','점심','저녁'].includes(m.time)&&m.type));
+    return ms.length?Math.round(ms.filter(m=>m.type==='green').length/ms.length*100):null;
+  };
+  const calcRoutine=arr=>{let d=0,t=0;arr.forEach(r=>{const m=r.mandatory||[];t+=m.length;d+=m.filter(x=>x.done).length;});return t>0?Math.round(d/t*100):null;};
+  const calcVol=arr=>arr.reduce((a,r)=>a+(r.workouts||[]).filter(w=>w.type==='gym'&&w.status==='done').reduce((b,w)=>b+(w.totalVolume||0),0),0);
+  const calcWoCnt=arr=>arr.reduce((a,r)=>a+(r.workouts||[]).filter(w=>w.type==='gym'&&w.status==='done').length,0);
+
+  // 클린식 변화
+  const cur1=calcClean(rows),prev1=calcClean(prev);
+  if(cur1!==null&&prev1!==null&&Math.abs(cur1-prev1)>=8){
+    const d=cur1-prev1;
+    out.push(d>0
+      ?{icon:'▲',text:`클린식 비율 +${d}% (${prev1}% → ${cur1}%). 잘 가고 있어.`,color:'var(--green)'}
+      :{icon:'▼',text:`클린식 비율 ${d}% (${prev1}% → ${cur1}%). 무너지는 중.`,color:'var(--red)'});
+  }
+
+  // 루틴 완료율 변화
+  const cur2=calcRoutine(rows),prev2=calcRoutine(prev);
+  if(cur2!==null&&prev2!==null&&Math.abs(cur2-prev2)>=10){
+    const d=cur2-prev2;
+    out.push(d>0
+      ?{icon:'▲',text:`루틴 완료율 +${d}% (${prev2}% → ${cur2}%). 꾸준함이 이긴다.`,color:'var(--green)'}
+      :{icon:'▼',text:`루틴 완료율 ${d}% (${prev2}% → ${cur2}%). 약속을 지켜.`,color:'var(--red)'});
+  }
+
+  // 운동 볼륨 변화
+  const cur3=calcVol(rows),prev3=calcVol(prev);
+  if(prev3>0&&cur3>0){
+    const pct=Math.round((cur3-prev3)/prev3*100);
+    if(Math.abs(pct)>=15){
+      out.push(pct>0
+        ?{icon:'▲',text:`운동 볼륨 +${pct}% vs 지난 기간. 더 들어.`,color:'var(--green)'}
+        :{icon:'▼',text:`운동 볼륨 ${pct}% vs 지난 기간. 회복하고 돌아와.`,color:'var(--red)'});
+    }
+  }
+
+  // 운동 빈도 변화 (볼륨과 구분)
+  const cur4=calcWoCnt(rows),prev4=calcWoCnt(prev);
+  if(Math.abs(cur4-prev4)>=2){
+    const d=cur4-prev4;
+    out.push(d>0
+      ?{icon:'▲',text:`운동 횟수 +${d}회 vs 지난 기간. 관성을 유지해.`,color:'var(--green)'}
+      :{icon:'▼',text:`운동 횟수 ${d}회 vs 지난 기간. 체육관 한 번 더.`,color:'var(--red)'});
+  }
+
+  return out;
+}
+
 // ── 인사이트 엔진 ──
 function stRenderInsights(rows){
   const insights=[];
   const c=getChartColors();
+
+  // Sprint D2: 기간 대비 변화가 먼저 보이도록 맨 앞에 삽입 (최대 2개)
+  const deltas=_stPeriodDeltaInsights(rows);
+  deltas.slice(0,2).forEach(d=>insights.push(d));
 
   // 스트릭
   const streak=calcStreak();
