@@ -3457,7 +3457,7 @@ function _wsRenderStrip(){
   currentSession.forEach((ex,i)=>{
     const allDone=ex.sets.length>0&&ex.sets.every(s=>s.done);
     const cls=allDone?'done':i===_wsActiveExIdx?'active':'';
-    html+=`<div class="ws-ex-chip ${cls}" onclick="wsJumpTo(${i})">${exIcon(ex.name,22)} ${ex.name}</div>`;
+    html+=`<div class="ws-ex-chip ${cls}" onclick="wsJumpTo(${i})">${ex.name}</div>`;
   });
   strip.innerHTML=html;
 }
@@ -3808,16 +3808,19 @@ function renderSession(){
   const isStr=ex.isStrength;
   const unitLabel=_wsUnit;
 
-  // volume line
+  // volume line — 델타는 "어느 정도 진행됐을 때"만 의미있음
+  //  - prevVol이 없거나 estVol이 없으면 비교 불가
+  //  - 현재 세션이 지난 세션의 40% 미만이면 '미완 비교'라 델타 대신 baseline만 노출
   const prevVol=_wsPrevSession();
   const estVol=_wsEstimatedVol();
   const delta=estVol-prevVol;
   const deltaStr=delta===0?'':delta>0?'▲ +'+_wsFormatVol(Math.abs(delta)):' ▼ -'+_wsFormatVol(Math.abs(delta));
   const deltaColor=delta>=0?'var(--green)':'var(--red)';
+  const canCompare=prevVol>0&&estVol>0&&(estVol>=prevVol*0.4||estVol>=prevVol);
   const volHtml=`<div class="ws-vol-line">
     <div style="font-size:10px;color:var(--amber);font-weight:600;opacity:.8;">예상 볼륨</div>
     <div style="font-size:14px;font-weight:700;color:var(--amber);font-family:'DM Mono',monospace;">${_wsFormatVol(estVol)}</div>
-    ${prevVol>0&&estVol>0?`<div style="font-size:10px;font-weight:700;color:${deltaColor};margin-left:auto;">${deltaStr} <span style="font-size:9px;font-weight:500;color:var(--text3);">vs 지난 세션</span></div>`:prevVol>0?`<div style="font-size:10px;font-weight:500;color:var(--text3);margin-left:auto;">지난 기록 <span style="color:var(--text2);font-weight:700;">${_wsFormatVol(prevVol)}</span></div>`:''}
+    ${canCompare?`<div style="font-size:10px;font-weight:700;color:${deltaColor};margin-left:auto;">${deltaStr} <span style="font-size:9px;font-weight:500;color:var(--text3);">vs 지난 세션</span></div>`:prevVol>0?`<div style="font-size:10px;font-weight:500;color:var(--text3);margin-left:auto;">지난 기록 <span style="color:var(--text2);font-weight:700;">${_wsFormatVol(prevVol)}</span></div>`:''}
   </div>`;
 
   // sets
