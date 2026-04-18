@@ -393,19 +393,28 @@ function render(d){
   html+=`</div>`;
 
   // ── USERS TABLE ──
-  html+=`<section><h2>users <span class="h2-sub">${users.length} total</span></h2><div class="table-wrap"><table><thead><tr>
-    <th>email</th><th>name</th><th>signed_up</th><th>onboarded</th><th>admin</th>
-    <th class="num">score</th><th class="num">log_days</th><th>last_log</th>
-  </tr></thead><tbody>${users.map(u=>`<tr>
-    <td>${esc(u.email||'—')}</td>
-    <td>${esc(u.display_name||'—')}</td>
-    <td class="muted">${fmtDate(u.signed_up)}</td>
-    <td class="${u.onboarded?'pos':'neg'}">${u.onboarded?'yes':'no'}</td>
-    <td class="${u.is_admin?'warn':'muted'}">${u.is_admin?'admin':''}</td>
-    <td class="num">${n(u.total_score)}</td>
-    <td class="num">${n(u.log_days)}</td>
-    <td class="muted">${fmtDate(u.last_log)}</td>
-  </tr>`).join('')||'<tr><td colspan="8" class="muted" style="text-align:center;padding:14px;">no users</td></tr>'}</tbody></table></div></section>`;
+  const excludedCount=users.filter(u=>u.is_excluded).length;
+  html+=`<section><h2>users <span class="h2-sub">${users.length} total · ${excludedCount} excluded from metrics</span></h2><div class="table-wrap"><table><thead><tr>
+    <th>email</th><th>name</th><th>signed_up</th><th>flags</th>
+    <th class="num">score</th><th class="num">log_days</th><th>last_log</th><th></th>
+  </tr></thead><tbody>${users.map(u=>{
+    const flags=[];
+    if(u.is_admin)flags.push('<span class="bonus-chip" style="background:#3a2a10;color:var(--warn);border:1px solid #5a3a20;">admin</span>');
+    if(u.is_excluded)flags.push('<span class="bonus-chip" style="background:#2a1a3a;color:#c084fc;border:1px solid #4a2a5a;">excluded</span>');
+    if(!u.onboarded)flags.push('<span class="bonus-chip" style="background:#3a1a1a;color:var(--neg);border:1px solid #5a2a2a;">no-onb</span>');
+    const toggleLabel=u.is_excluded?'include':'exclude';
+    const toggleBtn=`<button class="bonus-del" onclick="toggleExclude('${esc(u.id)}',${u.is_excluded?'false':'true'},this)">${toggleLabel}</button>`;
+    return`<tr${u.is_excluded?' style="opacity:0.55;"':''}>
+      <td>${esc(u.email||'—')}</td>
+      <td>${esc(u.display_name||'—')}</td>
+      <td class="muted">${fmtDate(u.signed_up)}</td>
+      <td>${flags.join(' ')||'<span class="muted">—</span>'}</td>
+      <td class="num">${n(u.total_score)}</td>
+      <td class="num">${n(u.log_days)}</td>
+      <td class="muted">${fmtDate(u.last_log)}</td>
+      <td>${toggleBtn}</td>
+    </tr>`;
+  }).join('')||'<tr><td colspan="8" class="muted" style="text-align:center;padding:14px;">no users</td></tr>'}</tbody></table></div></section>`;
 
   // ── RECENT EVENTS ──
   html+=`<section><h2>events <span class="h2-sub">last ${events.length}</h2><div class="table-wrap"><table><thead><tr>
@@ -603,6 +612,35 @@ async function loadRecentGrants(){
     box.innerHTML=html;
   }catch(e){
     box.innerHTML=`<div class="err" style="margin:6px 0;">load failed: ${esc(e.message||e)}</div>`;
+  }
+}
+
+async function toggleExclude(userId,nextValue,btn){
+  const was=btn.textContent;
+  btn.disabled=true;btn.textContent='…';
+  try{
+    const {data,error}=await sb.rpc('set_user_excluded',{p_user_id:userId,p_excluded:nextValue});
+    if(error){
+      if(/function.*does not exist|set_user_excluded/i.test(error.message||'')){
+        alert('set_user_excluded() RPC가 없습니다. migrations/006_exclude_users_from_dashboard.sql 먼저 실행하세요.');
+      } else {
+        alert('toggle failed: '+error.message);
+      }
+      btn.disabled=false;btn.textContent=was;return;
+    }
+    if(data&&data.ok){
+      // Refresh dashboard so KPIs/trends re-aggregate without this user
+      load();
+    } else if(data&&data.error==='not_admin'){
+      alert('세션이 admin 이 아닙니다.');
+      btn.disabled=false;btn.textContent=was;
+    } else {
+      alert('unknown: '+JSON.stringify(data));
+      btn.disabled=false;btn.textContent=was;
+    }
+  }catch(e){
+    alert('toggle failed: '+(e.message||e));
+    btn.disabled=false;btn.textContent=was;
   }
 }
 
