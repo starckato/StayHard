@@ -396,7 +396,7 @@ function render(d){
   const excludedCount=users.filter(u=>u.is_excluded).length;
   html+=`<section><h2>users <span class="h2-sub">${users.length} total · ${excludedCount} excluded from metrics</span></h2><div class="table-wrap"><table><thead><tr>
     <th>email</th><th>name</th><th>signed_up</th><th>flags</th>
-    <th class="num">score</th><th class="num">log_days</th><th>last_log</th><th></th>
+    <th class="num">score</th><th class="num">log_days</th><th>last_login</th><th></th>
   </tr></thead><tbody>${users.map(u=>{
     const flags=[];
     if(u.is_admin)flags.push('<span class="bonus-chip" style="background:#3a2a10;color:var(--warn);border:1px solid #5a3a20;">admin</span>');
@@ -411,18 +411,10 @@ function render(d){
       <td>${flags.join(' ')||'<span class="muted">—</span>'}</td>
       <td class="num">${n(u.total_score)}</td>
       <td class="num">${n(u.log_days)}</td>
-      <td class="muted">${fmtDate(u.last_log)}</td>
+      <td class="muted">${u.last_login?fmtTime(u.last_login):'—'}</td>
       <td>${toggleBtn}</td>
     </tr>`;
-  }).join('')||'<tr><td colspan="8" class="muted" style="text-align:center;padding:14px;">no users</td></tr>'}</tbody></table></div>${
-    users.some(u=>u.future_logs>0)
-      ? `<div style="margin-top:10px;padding:8px 12px;background:#2a1a10;border:1px solid #5a3a20;border-radius:3px;color:var(--warn);font-size:11px;">
-          ⚠ ${users.filter(u=>u.future_logs>0).length}명이 미래 날짜로 로깅한 기록이 있습니다
-          (총 ${users.reduce((a,u)=>a+(u.future_logs||0),0)} rows).
-          대시보드 집계에서는 제외됨. 실제 데이터 삭제하려면 <code>DELETE FROM daily_logs WHERE log_date &gt; current_date;</code>
-        </div>`
-      : ''
-  }</section>`;
+  }).join('')||'<tr><td colspan="8" class="muted" style="text-align:center;padding:14px;">no users</td></tr>'}</tbody></table></div></section>`;
 
   // ── RECENT EVENTS ──
   html+=`<section><h2>events <span class="h2-sub">last ${events.length}</h2><div class="table-wrap"><table><thead><tr>
