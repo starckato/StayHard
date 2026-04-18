@@ -230,6 +230,18 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
   .sb-reveal,.sb-reveal *{animation:none!important;}
 }
 
+/* ═════ SCORE GAIN CHIP — 액션 위치 → Status Band 점수 비행 ═════ */
+.score-chip{position:fixed;padding:5px 11px;border-radius:20px;background:var(--accent);color:#fff;font-weight:800;font-family:'DM Mono',monospace;font-size:13px;z-index:600;pointer-events:none;box-shadow:0 4px 16px rgba(255,77,77,.45),0 0 0 2px rgba(255,77,77,.25);letter-spacing:-.01em;white-space:nowrap;will-change:transform,opacity;}
+.score-chip.neg{background:var(--red);}
+.score-chip.init{transition:none;opacity:1;transform:translate(-50%,-50%) scale(1);}
+.score-chip.fly{transition:transform .7s cubic-bezier(.22,.9,.3,1),opacity .7s cubic-bezier(.22,.9,.3,1);opacity:0;}
+@keyframes scorePulse{0%{transform:scale(1);}35%{transform:scale(1.16);color:var(--accent);text-shadow:0 0 12px rgba(255,77,77,.6);}100%{transform:scale(1);}}
+#hdr-score.score-pulse{animation:scorePulse .45s cubic-bezier(.2,.9,.3,1);}
+@media (prefers-reduced-motion: reduce){
+  .score-chip.fly{transition:opacity .2s ease!important;}
+  #hdr-score.score-pulse{animation:none!important;}
+}
+
 /* ═════ YESTERDAY RIBBON — 어제 미완료/이월 할일 통합 ═════ */
 .yr{margin:8px 14px 0;border-radius:14px;overflow:hidden;animation:yrSlideIn .35s cubic-bezier(.2,.9,.3,1);}
 .yr-inner{background:linear-gradient(135deg,rgba(255,77,77,.96) 0%,rgba(255,107,53,.94) 100%);padding:13px 14px 14px;box-shadow:0 6px 20px rgba(255,77,77,.25);}
@@ -4299,7 +4311,7 @@ function renderCharCard(){
   const pct=tierIdx===TIERS.length-1?100:Math.round((score-tier.min)/(next.min-tier.min)*100);
   // Status Band 렌더: 캔버스는 hdr-score 존재 여부로 가드 (char-card 제거됨)
   if(!document.getElementById('hdr-score'))return;
-  initMiniChar(tier.color);
+  if(typeof initMiniChar==='function')initMiniChar(tier.color);
   const quotes=TIER_QUOTES[tier.name]||TIER_QUOTES['방관자'];
   const quote=quotes[Math.floor(Math.random()*quotes.length)];
   const quoteEl=document.getElementById('char-quote');
@@ -4638,12 +4650,18 @@ async function checkYesterdayReminder(){
   const undoneTasks=(yl.targets||[]).filter(t=>t.st!=='done'&&t.st!=='fail'&&t.text);
   
   // Check general missing items for banner
+  // (a) 어제의 요일 기준으로 루틴 필터링 — days 필드 없는 건 매일, 있으면 해당 요일에만 카운트
+  const yDow=(yest.getDay()+6)%7;
+  const yMand=(yl.mandatory||[]).filter(t=>!(t.days&&!t.days.includes(yDow)));
   const missing=[];
-  const mandTotal=(yl.mandatory||[]).length;
-  const mandDone=(yl.mandatory||[]).filter(m=>m.done).length;
+  const mandTotal=yMand.length;
+  const mandDone=yMand.filter(m=>m.done).length;
   if(mandTotal>0&&mandDone<mandTotal)missing.push(`필수 루틴 ${mandDone}/${mandTotal}`);
-  if(!(yl.workouts||[]).some(w=>w.type==='session'&&w.status==='done'))missing.push('운동');
-  if(!(yl.meals||[]).length)missing.push('식단');
+  // (b) workout type 호환 — 'gym' / 'session' / 'activity' 모두 유효, status done 또는 recorded
+  const hadWorkout=(yl.workouts||[]).some(w=>(w.type==='gym'||w.type==='session'||w.type==='activity')&&(w.status==='done'||w.status==='recorded'));
+  if(!hadWorkout)missing.push('운동');
+  // (c) 식단: 품질 태그(type)가 있는 끼니 최소 1개 이상
+  if(!(yl.meals||[]).some(m=>m.type))missing.push('식단');
 
   // If there are undone tasks — show carry-over modal
   if(undoneTasks.length>0){
@@ -6168,6 +6186,37 @@ function revealStatusBand(){
   }
   // remove reveal class after animation completes so re-renders don't replay
   setTimeout(()=>{sb&&sb.classList.remove('sb-reveal');},1100);
+}
+
+// 액션 위치 → Status Band 점수로 +N pt chip 비행 애니메이션
+function showScoreGain(pts, originEl){
+  if(!pts||!originEl)return;
+  const target=document.getElementById('hdr-score');
+  if(!target)return;
+  const oRect=originEl.getBoundingClientRect();
+  const tRect=target.getBoundingClientRect();
+  const ox=oRect.left+oRect.width/2, oy=oRect.top+oRect.height/2;
+  const tx=tRect.left+tRect.width/2, ty=tRect.top+tRect.height/2;
+  const chip=document.createElement('div');
+  chip.className='score-chip init'+(pts<0?' neg':'');
+  chip.textContent=(pts>0?'+':'')+pts+'pt';
+  chip.style.left=ox+'px';
+  chip.style.top=oy+'px';
+  document.body.appendChild(chip);
+  // 2 RAF로 확실히 init 상태 페인트 후 fly로 전환 (Safari 호환)
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    const dx=tx-ox, dy=ty-oy;
+    chip.classList.remove('init');
+    chip.classList.add('fly');
+    chip.style.transform=`translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px)) scale(.65)`;
+  }));
+  setTimeout(()=>{
+    chip.remove();
+    if(pts>0){
+      target.classList.add('score-pulse');
+      setTimeout(()=>target.classList.remove('score-pulse'),450);
+    }
+  },720);
 }
 
 function updateGogginsHeader(){
@@ -8443,6 +8492,9 @@ function togMand(i){
   if(!m||m.type!=='custom'){return;} // derived routines auto-complete, not togglable
   const wasDone=m.done;
   const wasFail=m.fail;
+  // 토글 전에 origin 박스 좌표 캡처 (렌더 후에는 DOM이 재생성됨)
+  const _origin=document.querySelectorAll('#check-rows .ck-row')[i]?.querySelector('.ck-box')||null;
+  const _originRect=_origin?_origin.getBoundingClientRect():null;
   log.mandatory[i].done=!wasDone;
   if(wasFail&&!wasDone){log.mandatory[i].fail=false;} // 실패→완료 시 실패 해제
   renderMandatory();saveNow();
@@ -8452,6 +8504,11 @@ function togMand(i){
     else{addScore('routine_done');}
     const earnedPts=specialType?(SCORE_EVENTS[specialType]?.pts||1):1;
     const _bounceIdx=i;
+    // score-gain chip: origin 좌표를 프록시 엘리먼트로 전달
+    if(_originRect){
+      const proxy={getBoundingClientRect:()=>_originRect};
+      showScoreGain(earnedPts,proxy);
+    }
     setTimeout(()=>{
       // 방금 완료한 항목만 bounce (인덱스로 직접 찾기)
       const rows=document.querySelectorAll('#check-rows .ck-row');
@@ -8719,10 +8776,17 @@ function renderTargets(){
 function togTgt(i){
   const s=log.targets[i].st||'';
   const nowDone=s!=='done';
+  // 토글 전에 origin 좌표 캡처
+  const _origin=document.querySelectorAll('#tgt-rows .tgt-btn')[i]||null;
+  const _originRect=_origin?_origin.getBoundingClientRect():null;
   log.targets[i].st=nowDone?'done':'';
   renderTargets();saveNow();
   if(nowDone){
     addScore('target_done');
+    if(_originRect){
+      const proxy={getBoundingClientRect:()=>_originRect};
+      showScoreGain(SCORE_EVENTS.target_done.pts,proxy);
+    }
     setTimeout(()=>{
       const btns=document.querySelectorAll('.tgt-btn.done');
       if(btns[btns.length-1])bounceEl(btns[btns.length-1]);
