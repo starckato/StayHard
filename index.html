@@ -188,6 +188,60 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 .avatar-btn{width:30px;height:30px;border-radius:50%;background:var(--surface2);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:13px;cursor:pointer;margin-left:6px;transition:border-color .15s;}
 .avatar-btn:active{border-color:var(--accent);}
 
+/* ═════ STATUS BAND — 기록 탭 히어로 (점수/티어/스트릭/오늘 Δ/요약) ═════ */
+.sb{margin:8px 14px 12px;padding:16px 18px 14px;border-radius:16px;background:linear-gradient(140deg,rgba(255,77,77,.12) 0%,rgba(255,107,53,.04) 55%,rgba(255,77,77,.08) 100%);border:1px solid var(--accent-bd);position:relative;overflow:hidden;}
+.sb::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 88% -10%,rgba(255,77,77,.22) 0%,transparent 50%);pointer-events:none;}
+.sb>*{position:relative;}
+.sb-head{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
+.sb-canvas{flex-shrink:0;cursor:pointer;image-rendering:pixelated;touch-action:manipulation;}
+.sb-meta{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;}
+.sb-tier{font-size:13px;font-weight:700;color:var(--text);cursor:pointer;letter-spacing:-.01em;width:fit-content;touch-action:manipulation;}
+.sb-streak{font-size:11px;color:var(--text2);font-family:'DM Mono',monospace;font-weight:600;display:flex;align-items:center;gap:5px;}
+.sb-today-cell{text-align:right;flex-shrink:0;cursor:pointer;touch-action:manipulation;}
+.sb-today-label{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;font-weight:700;margin-bottom:2px;}
+.sb-today-val{font-size:18px;font-weight:800;font-family:'DM Mono',monospace;color:var(--accent);line-height:1;}
+.sb-today-unit{font-size:10px;color:var(--text3);margin-left:1px;font-weight:600;}
+.sb-score-row{display:flex;align-items:flex-end;gap:6px;margin-bottom:8px;cursor:pointer;touch-action:manipulation;}
+.sb-score{font-family:'Archivo Black','DM Mono',monospace;font-size:52px;line-height:.9;color:var(--text);letter-spacing:-2.5px;font-weight:normal;}
+.sb-score-unit{font-size:15px;color:var(--text3);font-weight:600;padding-bottom:6px;}
+.sb-quote{font-size:12px;font-weight:600;font-style:italic;line-height:1.55;color:var(--text2);margin-bottom:14px;min-height:18px;word-break:keep-all;}
+.sb-progress-wrap{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+.sb-progress-track{flex:1;height:5px;background:rgba(255,255,255,.07);border-radius:999px;overflow:hidden;}
+.sb-progress-fill{height:100%;border-radius:999px;background:var(--accent-grad);transition:width .6s cubic-bezier(.4,0,.2,1);width:0%;box-shadow:0 0 8px rgba(255,77,77,.4);}
+.sb-progress-label{font-size:10px;color:var(--text3);font-family:'DM Mono',monospace;flex-shrink:0;font-weight:600;}
+.sb-summary-btn{width:100%;display:flex;align-items:center;gap:10px;padding:12px 14px;background:rgba(10,10,12,.5);border:1px solid rgba(255,255,255,.08);border-radius:12px;color:var(--text);font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;transition:all .15s;}
+.sb-summary-btn:active{transform:scale(.98);background:rgba(255,77,77,.12);border-color:var(--accent-bd);}
+.sb-summary-dot{width:7px;height:7px;border-radius:50%;background:var(--amber);flex-shrink:0;box-shadow:0 0 6px currentColor;}
+.sb-summary-label{flex:1;text-align:left;letter-spacing:-.01em;}
+.sb-summary-arrow{font-size:15px;color:var(--text3);font-weight:700;}
+
+/* ═════ YESTERDAY RIBBON — 어제 미완료/이월 할일 통합 ═════ */
+.yr{margin:8px 14px 0;border-radius:14px;overflow:hidden;animation:yrSlideIn .35s cubic-bezier(.2,.9,.3,1);}
+.yr-inner{background:linear-gradient(135deg,rgba(255,77,77,.96) 0%,rgba(255,107,53,.94) 100%);padding:13px 14px 14px;box-shadow:0 6px 20px rgba(255,77,77,.25);}
+.yr-head{display:flex;align-items:flex-start;gap:10px;}
+.yr-icon{font-size:24px;flex-shrink:0;line-height:1;padding-top:1px;}
+.yr-head-txt{flex:1;min-width:0;}
+.yr-title{font-size:13px;font-weight:800;color:#fff;margin-bottom:2px;letter-spacing:-.01em;}
+.yr-sub{font-size:11.5px;color:rgba(255,255,255,.85);line-height:1.45;word-break:keep-all;}
+.yr-close{background:rgba(255,255,255,.18);border:none;color:#fff;border-radius:8px;width:26px;height:26px;font-size:11px;cursor:pointer;flex-shrink:0;touch-action:manipulation;font-weight:800;display:flex;align-items:center;justify-content:center;line-height:1;padding:0;}
+.yr-close:active{background:rgba(255,255,255,.32);}
+.yr-task-list{margin-top:12px;flex-direction:column;gap:5px;max-height:180px;overflow-y:auto;}
+.yr-task-item{display:flex;align-items:center;gap:10px;padding:9px 11px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.24);border-radius:9px;cursor:pointer;touch-action:manipulation;transition:all .15s;}
+.yr-task-item[data-selected="false"]{background:rgba(0,0,0,.18);border-color:rgba(255,255,255,.12);opacity:.72;}
+.yr-task-chk{width:17px;height:17px;border-radius:5px;background:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:11px;color:#ff4d4d;font-weight:900;line-height:1;}
+.yr-task-item[data-selected="false"] .yr-task-chk{background:transparent;color:transparent;border:2px solid rgba(255,255,255,.45);width:17px;height:17px;}
+.yr-task-text{flex:1;font-size:13px;color:#fff;font-weight:500;line-height:1.35;overflow:hidden;text-overflow:ellipsis;}
+.yr-task-tag{font-size:10px;color:#fff;font-weight:800;letter-spacing:.02em;}
+.yr-task-item[data-selected="false"] .yr-task-tag{color:rgba(255,255,255,.5);}
+.yr-hint{font-size:11px;color:rgba(255,255,255,.82);text-align:center;margin-top:10px;font-weight:500;}
+.yr-actions{display:flex;flex-direction:column;gap:7px;margin-top:12px;}
+.yr-btn{padding:12px;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;letter-spacing:-.01em;width:100%;}
+.yr-btn-primary{background:#fff;color:#ff4d4d;}
+.yr-btn-primary:active{opacity:.85;transform:scale(.98);}
+.yr-btn-ghost{background:rgba(255,255,255,.14);color:#fff;border:1px solid rgba(255,255,255,.28);}
+.yr-btn-ghost:active{background:rgba(255,255,255,.24);}
+@keyframes yrSlideIn{from{opacity:0;transform:translateY(-10px);}to{opacity:1;transform:translateY(0);}}
+
 /* TAB BAR */
 .tab-bar{display:flex;gap:5px;padding:4px 16px 8px;overflow-x:auto;scrollbar-width:none;position:sticky;top:0;z-index:100;background:rgba(10,10,12,.94);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--border);}
 .tab-bar::-webkit-scrollbar{display:none;}
@@ -760,20 +814,10 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 <!-- ══ APP ══ -->
 <div id="app-screen">
   <div class="hdr">
-    <!-- 1행: 타이틀 + 점수배지 + 아바타 -->
+    <!-- 1행: 타이틀 + 아바타 (점수/티어/스트릭은 Status Band로 이관) -->
     <div style="display:flex;align-items:center;justify-content:space-between;width:100%;">
       <div class="hdr-title" style="color:var(--accent);">Stay Hard</div>
-      <div style="display:flex;align-items:center;gap:8px;">
-        <div class="goggins-badge" id="goggins-badge" onclick="openScoreGuide()" style="cursor:pointer;">
-          <span class="goggins-flame streak-fire">🔥</span>
-          <span class="goggins-streak" id="hdr-streak">0</span>
-          <span class="goggins-dot"></span>
-          <span class="goggins-score" id="hdr-score">0점</span>
-          <span class="goggins-dot"></span>
-          <span class="goggins-tier" id="hdr-tier">😴 방관자</span>
-        </div>
-        <div class="avatar-btn" onclick="openProfileModal()">👤</div>
-      </div>
+      <div class="avatar-btn" onclick="openProfileModal()">👤</div>
     </div>
     <!-- 2행: 유저명 -->
     <div class="hdr-sub" id="hdr-sub" style="margin-top:2px;">로딩 중…</div>
@@ -790,54 +834,57 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
   <!-- ══ DAILY ROUTINE ══ -->
   <div class="view active" id="view-routine">
 
-    <!-- YESTERDAY REMINDER BANNER -->
-    <div id="reminder-banner" style="display:none;margin:8px 12px 0;border-radius:14px;overflow:hidden;">
-      <div style="background:linear-gradient(135deg,#ff4d4d,#ff6b35);padding:14px 16px;">
-        <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">
-          <div style="font-size:26px;flex-shrink:0;" id="reminder-icon">😤</div>
-          <div style="flex:1;min-width:0;">
-            <div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:2px;" id="reminder-title">어제 못 끝낸 게 있어</div>
-            <div style="font-size:12px;color:rgba(255,255,255,.8);line-height:1.4;" id="reminder-body"></div>
+    <!-- YESTERDAY RIBBON — 어제 미완료 / 이월 할일 통합 표시 -->
+    <div id="yesterday-ribbon" class="yr" style="display:none;">
+      <div class="yr-inner">
+        <div class="yr-head">
+          <span class="yr-icon" id="yr-icon">😤</span>
+          <div class="yr-head-txt">
+            <div class="yr-title" id="yr-title">어제 못 끝낸 게 있어</div>
+            <div class="yr-sub" id="yr-sub"></div>
           </div>
-          <button onclick="dismissReminder()" style="background:rgba(255,255,255,.2);border:none;color:#fff;border-radius:8px;padding:6px 11px;font-size:12px;cursor:pointer;flex-shrink:0;font-family:'DM Sans',sans-serif;touch-action:manipulation;">닫기</button>
+          <button class="yr-close" onclick="dismissYesterdayRibbon()" aria-label="닫기">✕</button>
         </div>
-        <button onclick="goToYesterdayFromBanner()" style="width:100%;padding:10px;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);border-radius:10px;color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;display:flex;align-items:center;justify-content:center;gap:6px;">
-          📅 어제 기록 확인하러 가기 →
-        </button>
+        <div class="yr-task-list" id="co-task-list" style="display:none;"></div>
+        <div class="yr-hint" id="co-selection-hint" style="display:none;"></div>
+        <div class="yr-actions" id="yr-actions"></div>
       </div>
     </div>
 
-    <!-- CARRY-OVER MODAL -->
-    <div id="carryover-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:900;align-items:flex-end;justify-content:center;">
-      <div style="width:100%;max-width:430px;background:var(--surface);border-radius:20px 20px 0 0;padding:20px 20px 36px;">
-        <div style="width:36px;height:3px;background:var(--border2);border-radius:2px;margin:0 auto 16px;"></div>
-        <div style="font-size:20px;text-align:center;margin-bottom:6px;" id="co-icon">📋</div>
-        <div style="font-size:16px;font-weight:700;text-align:center;margin-bottom:4px;" id="co-title">어제 못 한 할일이 있어요</div>
-        <div style="font-size:13px;color:var(--text2);text-align:center;margin-bottom:16px;line-height:1.5;" id="co-body"></div>
-        <!-- 항목별 선택 리스트 -->
-        <div id="co-task-list" style="margin-bottom:16px;max-height:200px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;"></div>
-        <!-- 선택 요약 -->
-        <div id="co-selection-hint" style="font-size:11px;color:var(--text3);text-align:center;margin-bottom:12px;"></div>
-        <div style="display:flex;flex-direction:column;gap:8px;">
-          <button onclick="carryOverSelectedTasks()" id="co-carry-btn" style="width:100%;padding:15px;background:var(--accent);border:none;border-radius:12px;color:#fff;font-size:15px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">선택 항목 오늘로 이월</button>
-          <button onclick="skipCarryOver()" style="width:100%;padding:13px;background:var(--surface2);border:1px solid var(--border);border-radius:12px;color:var(--text2);font-size:14px;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">어제 다 했어요 ✓</button>
-          <button onclick="dismissCarryOver()" style="width:100%;padding:10px;background:none;border:none;color:var(--text3);font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">그냥 넘어갈게요</button>
+    <!-- STATUS BAND — unified hero: score/tier/streak/today Δ/quote/progress/summary -->
+    <div class="sb">
+      <div class="sb-head">
+        <canvas id="char-mini-canvas" class="sb-canvas" width="44" height="52" onclick="openRoomOverlay()"></canvas>
+        <div class="sb-meta">
+          <div class="sb-tier" id="hdr-tier" onclick="openScoreGuide()">😴 방관자</div>
+          <div class="sb-streak"><span class="streak-fire">🔥</span> <span id="hdr-streak">0일</span></div>
+        </div>
+        <div class="sb-today-cell" onclick="openScoreGuide()">
+          <div class="sb-today-label">오늘</div>
+          <div class="sb-today-val" id="sb-today">+0<span class="sb-today-unit">pt</span></div>
         </div>
       </div>
-    </div>
 
-    <!-- CHAR CARD -->
-    <div id="char-card" onclick="openRoomOverlay()" style="margin:6px 14px 4px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;display:flex;align-items:center;gap:12px;cursor:pointer;min-height:72px;">
-      <canvas id="char-mini-canvas" width="44" height="52" style="flex-shrink:0;image-rendering:pixelated;"></canvas>
-      <div style="flex:1;min-width:0;">
-        <div id="char-quote" style="font-size:12px;font-weight:600;color:var(--text);line-height:1.5;margin-bottom:6px;font-style:italic;"></div>
-        <div style="display:flex;align-items:center;gap:8px;">
-          <div style="flex:1;height:4px;background:var(--surface3);border-radius:2px;overflow:hidden;">
-            <div id="char-progress" style="height:100%;border-radius:2px;background:var(--accent-grad);transition:width .6s ease;width:0%;box-shadow:0 0 6px rgba(255,77,77,.2);"></div>
-          </div>
-          <div id="char-progress-label" style="font-size:9px;color:var(--text3);font-family:'DM Mono',monospace;flex-shrink:0;"></div>
-        </div>
+      <div class="sb-score-row" onclick="openScoreGuide()">
+        <div class="sb-score" id="hdr-score">0</div>
+        <div class="sb-score-unit">점</div>
       </div>
+
+      <div class="sb-quote" id="char-quote"></div>
+
+      <div class="sb-progress-wrap">
+        <div class="sb-progress-track">
+          <div class="sb-progress-fill" id="char-progress"></div>
+        </div>
+        <div class="sb-progress-label" id="char-progress-label">—</div>
+      </div>
+
+      <button class="sb-summary-btn" id="summary-open-btn" onclick="openSummaryModal()">
+        <span class="sb-summary-dot" id="summary-btn-dot"></span>
+        <span class="sb-summary-label">오늘 기록 요약</span>
+        <span class="sb-summary-arrow">›</span>
+      </button>
+
       <span id="char-tier-name" style="display:none;"></span>
       <span id="char-pts" style="display:none;"></span>
     </div>
@@ -852,15 +899,6 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
       </div>
       <div class="day-strip" id="day-strip"></div>
       <div class="sel-day-label" id="sel-day-label" onclick="jumpToToday()" title="오늘로 돌아가기"></div>
-    </div>
-
-    <div style="padding:4px 16px 8px;display:flex;justify-content:flex-end;">
-      <button id="summary-open-btn" onclick="openSummaryModal()"
-        style="display:flex;align-items:center;gap:6px;padding:5px 12px;background:var(--surface2);border:0.5px solid var(--border2);border-radius:18px;color:var(--text2);font-size:11px;font-weight:500;font-family:'DM Sans',sans-serif;cursor:pointer;touch-action:manipulation;">
-        <div id="summary-btn-dot" style="width:6px;height:6px;border-radius:50%;background:var(--amber);flex-shrink:0;"></div>
-        요약 보기
-        <span style="font-size:10px;color:var(--text3);">›</span>
-      </button>
     </div>
 
     <div class="s-card" style="margin-bottom:10px;">
@@ -948,14 +986,19 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
       </div>
       <div class="s-divider"></div>
       <div class="meal-rows" id="meal-rows"></div>
+    </div>
+
+    <!-- 💧 물 카드 (식단에서 분리됨) -->
+    <div class="s-card">
+      <div class="s-card-hdr">
+        <div class="s-card-title">💧 물</div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div class="s-badge" id="water-val"></div>
+          <button onclick="toggleWaterGoalPanel()" id="water-gear-btn" style="background:none;border:none;cursor:pointer;font-size:14px;color:var(--text3);padding:4px;touch-action:manipulation;" title="물 목표 설정">⚙️</button>
+        </div>
+      </div>
       <div class="s-divider"></div>
       <div style="padding:12px 16px 14px;">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
-          <div style="font-size:16px;">💧</div>
-          <div style="font-size:14px;font-weight:600;color:var(--text);">물</div>
-          <div class="water-val" id="water-val" style="font-size:13px;color:var(--blue);margin-left:auto;"></div>
-          <button onclick="toggleWaterGoalPanel()" id="water-gear-btn" style="background:none;border:none;cursor:pointer;font-size:16px;color:var(--text3);padding:4px;touch-action:manipulation;" title="물 목표 설정">⚙️</button>
-        </div>
         <div class="water-cups" id="water-cups" style="display:flex;gap:4px;flex-wrap:nowrap;overflow:hidden;"></div>
       </div>
       <div id="water-goal-panel" style="display:none;padding:10px 14px 14px;border-top:1px solid var(--border);animation:fadeIn .15s ease;">
@@ -976,6 +1019,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
         </div>
       </div>
     </div>
+
     <div class="s-card">
       <div class="s-card-hdr">
         <div class="s-card-title">운동</div>
@@ -993,15 +1037,28 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
         </div>
       </div>
     </div>
-    <div class="s-card">
-      <div class="s-card-hdr"><div class="s-card-title">필수 루틴</div><div class="s-badge" id="mand-badge">0/0</div></div>
+    <!-- ✅ 오늘 할 일 — 필수 루틴 + 오늘의 할일 통합 카드 -->
+    <div class="s-card todo-card">
+      <div class="s-card-hdr">
+        <div class="s-card-title">✅ 오늘 할 일</div>
+      </div>
       <div class="s-divider"></div>
+
+      <!-- SECTION: 필수 루틴 -->
+      <div class="tasks-sec-label">
+        <span>필수 루틴</span>
+        <span class="s-badge" id="mand-badge">0/0</span>
+      </div>
       <div class="check-rows" id="check-rows"></div>
       <div class="add-row" onclick="openAddMandatoryModal()" style="color:var(--accent);font-weight:500;"><span style="font-size:16px;margin-right:6px;">＋</span> 루틴 추가</div>
-    </div>
-    <div class="s-card">
-      <div class="s-card-hdr"><div class="s-card-title">오늘의 할일</div><div class="s-badge" id="tgt-badge">0/0</div></div>
+
       <div class="s-divider"></div>
+
+      <!-- SECTION: 오늘의 할일 -->
+      <div class="tasks-sec-label">
+        <span>오늘의 할일</span>
+        <span class="s-badge" id="tgt-badge">0/0</span>
+      </div>
       <div class="check-rows" id="tgt-rows"></div>
       <div class="add-tgt" onclick="toggleAddTgt()" style="color:var(--accent);font-weight:500;"><span style="font-size:16px;margin-right:6px;">＋</span> 오늘의 할일 추가</div>
       <div class="add-tgt-input" id="add-tgt-input">
@@ -4178,8 +4235,8 @@ function renderCharCard(){
   const assets=getTierAssets(score);
   const next=TIERS[Math.min(tierIdx+1,TIERS.length-1)];
   const pct=tierIdx===TIERS.length-1?100:Math.round((score-tier.min)/(next.min-tier.min)*100);
-  const card=document.getElementById('char-card');
-  if(!card)return;
+  // Status Band 렌더: 캔버스는 hdr-score 존재 여부로 가드 (char-card 제거됨)
+  if(!document.getElementById('hdr-score'))return;
   initMiniChar(tier.color);
   const quotes=TIER_QUOTES[tier.name]||TIER_QUOTES['방관자'];
   const quote=quotes[Math.floor(Math.random()*quotes.length)];
@@ -4538,51 +4595,93 @@ async function checkYesterdayReminder(){
   showReminderBanner(missing);
 }
 
-function showCarryOverModal(tasks, missing){
-  const modal=document.getElementById('carryover-modal');
-  document.getElementById('co-icon').textContent=tasks.length>2?'😤':'📋';
-  document.getElementById('co-title').textContent=`어제 못 한 할일 ${tasks.length}개`;
-  const missingStr=missing.length>0?`어제 ${missing.join(', ')}도 미완료였어요.`:'';
-  document.getElementById('co-body').textContent=(missingStr?missingStr+' ':'')+'오늘로 이월할 항목을 골라주세요.';
+// ── 통합 Yesterday Ribbon: showYesterdayRibbon(tasks, missing) ──
+// tasks가 있으면 이월 가능한 할일 리스트 + 액션 버튼, 없으면 missing 요약 + 어제 보기 버튼만.
+function showYesterdayRibbon(tasks, missing){
+  const ribbon=document.getElementById('yesterday-ribbon');
+  if(!ribbon)return;
+  const hasTasks=!!(tasks&&tasks.length);
 
-  // 항목별 체크 UI — 기본 전체 선택
-  document.getElementById('co-task-list').innerHTML=tasks.map((t,i)=>`
-    <div onclick="toggleCarryItem(${i},this)" id="co-item-${i}" data-selected="true"
-      style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--accent-bg);border:1.5px solid var(--accent-bd);border-radius:10px;cursor:pointer;touch-action:manipulation;transition:all .15s;">
-      <div id="co-chk-${i}" style="width:18px;height:18px;border-radius:5px;background:var(--accent);border:2px solid var(--accent);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:11px;color:#fff;transition:all .15s;">✓</div>
-      <div style="font-size:13px;color:var(--text);font-weight:500;flex:1;">${t.text}</div>
-      <div style="font-size:10px;color:var(--accent);font-weight:600;">이월</div>
-    </div>`).join('');
+  // 메시지 풀 (기존 reminder 메시지 재사용)
+  const msgs=[
+    '어제 다 못 끝냈어. 오늘은 변명 없이 해.',
+    '어제 진 거야. 오늘 만회해.',
+    '매일이 싸움이야. 어제 졌어. 오늘 이겨.',
+    '어제의 너는 약했어. 오늘의 너는 달라.',
+    '놓친 게 있어. 오늘은 완벽하게.',
+  ];
+  const icons=['😤','🤬','💀','😡','🔥'];
+  const idx=Math.floor(Math.random()*msgs.length);
 
-  _updateCarryHint(tasks.length, tasks.length);
-  modal.style.display='flex';
+  document.getElementById('yr-icon').textContent=hasTasks?(tasks.length>2?'😤':'📋'):icons[idx];
+  document.getElementById('yr-title').textContent=hasTasks
+    ?`어제 못 끝낸 할일 ${tasks.length}개`
+    :'어제 못 끝낸 게 있어';
+
+  const missingStr=missing&&missing.length?missing.join(', '):'';
+  document.getElementById('yr-sub').textContent=hasTasks
+    ?(missingStr?`미완료: ${missingStr}`:'오늘로 이월할 항목을 골라주세요')
+    :(missingStr?`${missingStr} — ${msgs[idx]}`:msgs[idx]);
+
+  const list=document.getElementById('co-task-list');
+  const hint=document.getElementById('co-selection-hint');
+  const actions=document.getElementById('yr-actions');
+
+  if(hasTasks){
+    _yesterdayUndoneTasks=tasks;
+    list.innerHTML=tasks.map((t,i)=>`
+      <div class="yr-task-item" id="co-item-${i}" data-selected="true" onclick="toggleCarryItem(${i},this)">
+        <div class="yr-task-chk" id="co-chk-${i}">✓</div>
+        <div class="yr-task-text">${t.text||''}</div>
+        <div class="yr-task-tag">이월</div>
+      </div>`).join('');
+    list.style.display='flex';
+    hint.style.display='block';
+    _updateCarryHint(tasks.length,tasks.length);
+    actions.innerHTML=`
+      <button class="yr-btn yr-btn-primary" id="co-carry-btn" onclick="carryOverSelectedTasks()">선택 항목 오늘로 이월</button>
+      <button class="yr-btn yr-btn-ghost" onclick="skipCarryOver()">어제 다 했어요 ✓</button>`;
+  } else {
+    list.style.display='none';
+    hint.style.display='none';
+    actions.innerHTML=`<button class="yr-btn yr-btn-primary" onclick="goToYesterdayFromBanner()">📅 어제 기록 보기</button>`;
+  }
+
+  ribbon.style.display='block';
 }
+
+function dismissYesterdayRibbon(){
+  const r=document.getElementById('yesterday-ribbon');
+  if(r)r.style.display='none';
+  localStorage.setItem('carryover_handled',TODAY);
+  _yesterdayUndoneTasks=[];
+}
+
+// Legacy entry points — route to unified ribbon
+function showCarryOverModal(tasks, missing){showYesterdayRibbon(tasks,missing);}
 
 function toggleCarryItem(i, el){
   const sel=el.getAttribute('data-selected')==='true';
   const newSel=!sel;
-  el.setAttribute('data-selected', String(newSel));
+  el.setAttribute('data-selected',String(newSel));
   const chk=document.getElementById('co-chk-'+i);
+  const tag=el.querySelector('.yr-task-tag');
   if(newSel){
-    el.style.background='var(--accent-bg)';el.style.borderColor='var(--accent-bd)';
-    el.querySelector('div:last-child').style.color='var(--accent)';
-    el.querySelector('div:last-child').textContent='이월';
-    if(chk){chk.style.background='var(--accent)';chk.style.borderColor='var(--accent)';chk.textContent='✓';}
+    if(chk)chk.textContent='✓';
+    if(tag)tag.textContent='이월';
   } else {
-    el.style.background='var(--surface2)';el.style.borderColor='var(--border)';
-    el.querySelector('div:last-child').style.color='var(--text3)';
-    el.querySelector('div:last-child').textContent='건너뜀';
-    if(chk){chk.style.background='transparent';chk.style.borderColor='var(--border2)';chk.textContent='';}
+    if(chk)chk.textContent='';
+    if(tag)tag.textContent='건너뜀';
   }
   const total=_yesterdayUndoneTasks.length;
   const selCount=document.querySelectorAll('#co-task-list [data-selected="true"]').length;
-  _updateCarryHint(selCount, total);
+  _updateCarryHint(selCount,total);
 }
 
 function _updateCarryHint(selCount, total){
   const hint=document.getElementById('co-selection-hint');
   const btn=document.getElementById('co-carry-btn');
-  if(hint)hint.textContent=selCount>0?`${selCount}개 이월 · ${total-selCount}개 실패 처리`:`모두 건너뜀 — 어제 할일은 실패 처리됩니다`;
+  if(hint)hint.textContent=selCount>0?`${selCount}개 이월 · ${total-selCount}개 실패 처리`:'모두 건너뜀 — 어제 할일은 실패 처리됩니다';
   if(btn)btn.textContent=selCount>0?`${selCount}개 오늘로 이월`:'건너뜀으로 확인';
   if(btn)btn.style.opacity=selCount>0?'1':'0.6';
 }
@@ -4640,43 +4739,11 @@ async function skipCarryOver(){
   showToast('✓ 어제 할일 완료 처리했어요!');
 }
 
-function dismissCarryOver(){
-  document.getElementById('carryover-modal').style.display='none';
-  localStorage.setItem('carryover_handled',TODAY);
-  _yesterdayUndoneTasks=[];
-}
-
-function showReminderBanner(missing){
-  const msgs=[
-    '어제 다 못 끝냈어. 오늘은 변명 없이 해.',
-    '어제 진 거야. 오늘 만회해.',
-    '매일이 싸움이야. 어제 졌어. 오늘 이겨.',
-    '어제의 너는 약했어. 오늘의 너는 달라.',
-    '놓친 게 있어. 오늘은 완벽하게.',
-  ];
-  const icons=['😤','🤬','💀','😡','🔥'];
-  const idx=Math.floor(Math.random()*msgs.length);
-  document.getElementById('reminder-icon').textContent=icons[idx];
-  document.getElementById('reminder-title').textContent='어제 못 끝낸 게 있어 — '+missing.join(', ');
-  document.getElementById('reminder-body').textContent=msgs[idx];
-  const banner=document.getElementById('reminder-banner');
-  banner.style.display='block';
-  banner.style.opacity='0';banner.style.transform='translateY(-8px)';
-  requestAnimationFrame(()=>{
-    banner.style.transition='opacity .3s,transform .3s';
-    banner.style.opacity='1';banner.style.transform='translateY(0)';
-  });
-}
-
-function dismissReminder(){
-  const banner=document.getElementById('reminder-banner');
-  banner.style.transition='opacity .2s';
-  banner.style.opacity='0';
-  setTimeout(()=>banner.style.display='none',200);
-  localStorage.setItem('carryover_handled',TODAY);
-}
+function dismissCarryOver(){dismissYesterdayRibbon();}
+function showReminderBanner(missing){showYesterdayRibbon([],missing);}
+function dismissReminder(){dismissYesterdayRibbon();}
 function goToYesterdayFromBanner(){
-  dismissReminder();
+  dismissYesterdayRibbon();
   const yesterday=new Date(now);
   yesterday.setDate(yesterday.getDate()-1);
   const yKey=dkey(yesterday);
@@ -6009,9 +6076,22 @@ function updateGogginsHeader(){
   const todayPts=getTodayScore();
   const streak=calcStreak();
   const tier=getTier(total);
-  document.getElementById('hdr-streak').textContent=streak+'일';
-  document.getElementById('hdr-score').textContent=total+'점';
-  document.getElementById('hdr-tier').textContent=tier.icon+' '+tier.name;
+  const streakEl=document.getElementById('hdr-streak');
+  if(streakEl)streakEl.textContent=streak+'일';
+  const scoreEl=document.getElementById('hdr-score');
+  if(scoreEl)scoreEl.textContent=total.toLocaleString();
+  const tierEl=document.getElementById('hdr-tier');
+  if(tierEl){
+    tierEl.textContent=tier.icon+' '+tier.name;
+    tierEl.style.color=tier.color;
+  }
+  // Status Band: 오늘 Δ
+  const todayEl=document.getElementById('sb-today');
+  if(todayEl){
+    const sign=todayPts>0?'+':'';
+    todayEl.innerHTML=sign+todayPts+'<span class="sb-today-unit">pt</span>';
+    todayEl.style.color=todayPts>0?'var(--accent)':todayPts<0?'var(--red)':'var(--text3)';
+  }
 }
 function calcStreak(){
   function hasAct(l){
@@ -7471,8 +7551,12 @@ function renderWater(){
   const val=document.getElementById('water-val');
   const goal=CP?.water_goal||6;
   const met=log.water_cups>=goal;
-  val.textContent=log.water_cups>0?(log.water_cups*.5).toFixed(1)+'L'+(met?' ✓':''):'';
-  val.style.color=met?'var(--blue)':'var(--text2)';
+  const curL=(log.water_cups*.5).toFixed(1);
+  const goalL=(goal*.5).toFixed(1);
+  if(val){
+    val.textContent=curL+' / '+goalL+'L'+(met?' ✓':'');
+    val.style.color=met?'var(--blue)':'var(--text2)';
+  }
   // Tint the gear button when goal is met
   const gear=document.getElementById('water-gear-btn');
   if(gear)gear.style.color=met?'var(--blue)':'var(--text3)';
