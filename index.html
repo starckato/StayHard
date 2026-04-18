@@ -3814,8 +3814,8 @@ function renderSession(){
   const delta=estVol-prevVol;
   const deltaStr=delta===0?'':delta>0?'▲ +'+_wsFormatVol(Math.abs(delta)):' ▼ -'+_wsFormatVol(Math.abs(delta));
   const deltaColor=delta>=0?'var(--green)':'var(--red)';
-  // 델타는 충분히 진행됐을 때만 표시 (지난 세션의 40% 이상 혹은 초과 진행)
-  const canCompare=prevVol>0&&estVol>0&&(estVol>=prevVol*0.4);
+  // 현재 종목에 뭐라도 입력되면 델타 표시, 입력 없으면 baseline만
+  const canCompare=prevVol>0&&estVol>0;
   const volHtml=`<div class="ws-vol-line">
     <div style="font-size:10px;color:var(--amber);font-weight:600;opacity:.8;">예상 볼륨</div>
     <div style="font-size:14px;font-weight:700;color:var(--amber);font-family:'DM Mono',monospace;">${_wsFormatVol(estVol)}</div>
