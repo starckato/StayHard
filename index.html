@@ -3817,7 +3817,7 @@ function renderSession(){
   const volHtml=`<div class="ws-vol-line">
     <div style="font-size:10px;color:var(--amber);font-weight:600;opacity:.8;">예상 볼륨</div>
     <div style="font-size:14px;font-weight:700;color:var(--amber);font-family:'DM Mono',monospace;">${_wsFormatVol(estVol)}</div>
-    ${prevVol>0?`<div style="font-size:10px;font-weight:700;color:${deltaColor};margin-left:auto;">${deltaStr} <span style="font-size:9px;font-weight:500;color:var(--text3);">vs 지난 세션</span></div>`:''}
+    ${prevVol>0&&estVol>0?`<div style="font-size:10px;font-weight:700;color:${deltaColor};margin-left:auto;">${deltaStr} <span style="font-size:9px;font-weight:500;color:var(--text3);">vs 지난 세션</span></div>`:prevVol>0?`<div style="font-size:10px;font-weight:500;color:var(--text3);margin-left:auto;">지난 기록 <span style="color:var(--text2);font-weight:700;">${_wsFormatVol(prevVol)}</span></div>`:''}
   </div>`;
 
   // sets
