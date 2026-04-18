@@ -2574,7 +2574,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
         <div onclick="setMuscleMode('week')" id="mm-btn-week" style="padding:5px 10px;font-size:10px;font-weight:700;cursor:pointer;color:var(--text3);">이번 주</div>
         <div onclick="setMuscleMode('all')" id="mm-btn-all" style="padding:5px 10px;font-size:10px;font-weight:700;cursor:pointer;color:var(--text3);">전체</div>
       </div>
-      <button onclick="shareMuscleMap()" id="mm-share-btn" style="width:32px;height:32px;background:linear-gradient(135deg,var(--accent),#ff6b35);border:1px solid rgba(255,77,77,0.4);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;cursor:pointer;touch-action:manipulation;box-shadow:0 2px 8px rgba(255,77,77,0.25);-webkit-tap-highlight-color:transparent;padding:0;" title="공유"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events:none;"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></button>
+      <button onclick="shareMuscleMap()" ontouchend="event.preventDefault();shareMuscleMap();" id="mm-share-btn" style="width:32px;height:32px;background:linear-gradient(135deg,var(--accent),#ff6b35);border:1px solid rgba(255,77,77,0.4);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;cursor:pointer;box-shadow:0 2px 8px rgba(255,77,77,0.25);padding:0;pointer-events:auto;" title="공유"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events:none;display:block;"><circle cx="18" cy="5" r="3" style="pointer-events:none;"/><circle cx="6" cy="12" r="3" style="pointer-events:none;"/><circle cx="18" cy="19" r="3" style="pointer-events:none;"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49" style="pointer-events:none;"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49" style="pointer-events:none;"/></svg></button>
       <button onclick="closeMuscleMap()" style="width:28px;height:28px;background:var(--surface2);border:1px solid var(--border2);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--text2);cursor:pointer;">✕</button>
     </div>
   </div>
@@ -10129,8 +10129,12 @@ async function shareChallengResult(){
     },'image/png');
   }catch(err){showToast('캡쳐 실패. 스크린샷을 이용해주세요 📸');}
 }
+let _mmShareBusy=false;
 async function shareMuscleMap(){
-  showToast('📸 공유 카드 만드는 중...');
+  if(_mmShareBusy)return;
+  _mmShareBusy=true;
+  setTimeout(()=>{_mmShareBusy=false;},1500);
+  try{showToast('📸 공유 카드 만드는 중...');}catch(e){}
   if(typeof html2canvas==='undefined'){showToast('공유 준비 중... 잠시 후 다시 시도해주세요');return;}
   const bodyEl=document.getElementById('mm-body');
   const svgEl=bodyEl?.querySelector('svg');
