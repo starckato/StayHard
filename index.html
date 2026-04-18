@@ -10137,7 +10137,7 @@ async function shareMuscleMap(){
   if(!svgEl){showToast('근육 맵이 준비되지 않았어요');return;}
   const modeLabel=_mmMode==='today'?'오늘':_mmMode==='week'?'이번 주':'전체';
   const viewLabel=_mmView==='front'?'전면':'후면';
-  const punchline=_mmMode==='today'?'오늘도 조졌다 💪':_mmMode==='week'?'이번 주 조진 부위 🔥':'내가 집중하는 부위 💥';
+  const punchline=_mmMode==='today'?'오운완 💪':_mmMode==='week'?'이번 주 기록 🔥':'내 훈련 분포 📊';
   const entries=Object.entries(_mmActivation||{}).filter(([,d])=>d.intensity>0).sort((a,b)=>b[1].intensity-a[1].intensity);
   const fmtVol=v=>v>=1000?(v/1000).toFixed(1)+'t':Math.round(v).toLocaleString()+'kg';
   let top3Html='';
@@ -10209,7 +10209,7 @@ async function shareMuscleMap(){
     <div style="margin-top:16px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:space-between;">
       <div>
         <div style="font-size:14px;font-weight:800;color:#ff4d4d;letter-spacing:0.2px;">${punchline}</div>
-        <div style="font-size:10px;color:#6b6b78;margin-top:2px;">stayhard.app · 나랑 같이 조질래? →</div>
+        <div style="font-size:10px;color:#6b6b78;margin-top:2px;">stayhard.app · 같이 기록해볼래? →</div>
       </div>
       <div style="padding:9px 13px;background:linear-gradient(135deg,#ff4d4d,#ff6b35);border-radius:10px;font-size:11px;font-weight:900;color:#fff;letter-spacing:0.5px;box-shadow:0 4px 12px rgba(255,77,77,0.3);">💪 STAY HARD</div>
     </div>
@@ -10221,7 +10221,7 @@ async function shareMuscleMap(){
       try{document.body.removeChild(comp);}catch(e){}
       if(!blob){showToast('캡쳐 실패 😢');return;}
       const file=new File([blob],'stayhard-muscle-map.png',{type:'image/png'});
-      const shareText=`${punchline}\n나랑 같이 조질래? stayhard.app`;
+      const shareText=`${punchline}\n같이 기록해볼래? stayhard.app`;
       if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){
         try{await navigator.share({files:[file],title:'Stay Hard — 자극 부위',text:shareText});return;}catch(e){if(e.name==='AbortError')return;}
       }
