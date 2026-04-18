@@ -1177,8 +1177,11 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
           <div class="stats-hero-num" style="font-size:28px;color:var(--accent);"><span id="st-hero-today">+0</span><span style="font-size:13px;color:var(--text3);margin-left:2px;">pt</span></div>
         </div>
         <div class="stats-hero-cell" style="text-align:right;">
-          <div class="stats-hero-label">티어</div>
-          <div style="font-size:14px;font-weight:700;color:var(--text);" id="st-hero-tier">😴 방관자</div>
+          <div class="stats-hero-label">성적</div>
+          <div class="stats-hero-num" style="font-size:34px;font-weight:900;color:var(--text);line-height:1;" id="st-hero-grade">—</div>
+          <div style="font-size:10px;color:var(--text3);margin-top:2px;font-weight:600;" id="st-hero-grade-sub">기간 종합</div>
+          <!-- legacy tier hook (kept for backwards compat; invisible) -->
+          <span id="st-hero-tier" style="display:none;"></span>
         </div>
       </div>
       <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:4px;">
@@ -1388,21 +1391,32 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
       <button onclick="showChallengeJoin()" style="flex:1;padding:12px;background:var(--surface2);border:1px solid var(--border2);border-radius:12px;color:var(--text);font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">🔑 코드 참여</button>
     </div>
 
-    <!-- DISCOVERY MODE: 빈 상태 + 통합 CTA -->
-    <div id="ch-empty" style="display:none;margin-top:20px;padding:32px 20px;background:var(--surface);border:1px solid var(--border);border-radius:18px;text-align:center;">
-      <div style="font-size:48px;margin-bottom:10px;">💀</div>
-      <div style="font-size:17px;font-weight:700;margin-bottom:6px;">도전 중인 챌린지가 없어</div>
-      <div style="font-size:12px;color:var(--text3);line-height:1.7;margin-bottom:18px;">추천 챌린지로 시작하거나<br>새로 만들어서 Stay Hard.</div>
-      <button class="btn-primary" onclick="showChallengeCreate()" style="width:100%;padding:16px;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;display:flex;align-items:center;justify-content:center;gap:8px;">
-        <span style="font-size:18px;">＋</span> 새 챌린지 만들기
-      </button>
-      <button onclick="showChallengeJoin()" style="width:100%;margin-top:8px;padding:12px;background:transparent;border:none;color:var(--text2);font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">
-        🔑 코드로 참여
-      </button>
+    <!-- DISCOVERY MODE: 빈 상태 — 푸쉬업 외 가입한 챌린지 없음 -->
+    <div id="ch-empty" style="display:none;margin-top:20px;">
+      <div style="padding:28px 20px 24px;background:var(--surface);border:1px solid var(--border);border-radius:18px;text-align:center;">
+        <div style="font-size:42px;margin-bottom:10px;opacity:.85;">💀</div>
+        <div style="font-size:16px;font-weight:700;margin-bottom:6px;letter-spacing:-.01em;">아직 도전 중인 챌린지가 없어</div>
+        <div style="font-size:12px;color:var(--text3);line-height:1.6;margin-bottom:18px;word-break:keep-all;">새로 만들거나 친구 코드로 참여해.<br>위 푸쉬업 챌린지는 항상 함께 달려 💪</div>
+        <button class="btn-primary" onclick="showChallengeCreate()" style="width:100%;padding:15px;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;display:flex;align-items:center;justify-content:center;gap:8px;">
+          <span style="font-size:18px;">＋</span> 새 챌린지 만들기
+        </button>
+        <button onclick="showChallengeJoin()" style="width:100%;margin-top:8px;padding:12px;background:transparent;border:none;color:var(--text2);font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">
+          🔑 코드로 참여하기
+        </button>
+      </div>
+      <!-- 인라인 티저 (빈 상태에서만 — ch-rec-section은 감춤) -->
+      <div style="margin-top:10px;padding:14px 16px;background:rgba(255,255,255,.02);border:1px dashed var(--border2);border-radius:14px;display:flex;align-items:center;gap:12px;">
+        <div style="font-size:22px;opacity:.8;flex-shrink:0;">🦵</div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;">곧 공개</div>
+          <div style="font-size:13px;font-weight:600;color:var(--text2);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">100 Squats Every Day</div>
+        </div>
+        <div style="font-size:10px;color:var(--text3);font-weight:700;letter-spacing:.06em;flex-shrink:0;">SOON</div>
+      </div>
     </div>
 
-    <!-- 추천 챌린지 — 비활성 (티저 카드) -->
-    <div id="ch-rec-section" style="margin-top:24px;">
+    <!-- 추천 챌린지 — 가입 챌린지 있을 때만 노출 (빈 상태 때는 위에 접혀있음) -->
+    <div id="ch-rec-section" style="display:none;margin-top:24px;">
       <div style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;">다음 챌린지 예고</div>
       <div style="padding:18px 16px;background:var(--surface);border:1px dashed var(--border2);border-radius:14px;text-align:center;">
         <div style="font-size:28px;margin-bottom:6px;">🦵</div>
@@ -9139,7 +9153,9 @@ async function renderChallengeHome(){
   const emptyEl=document.getElementById('ch-empty');
   emptyEl.style.display=hasAny?'none':'block';
 
-  // ── RECOMMENDED: 비활성 상태 (정적 티저 카드만 노출) ──
+  // ── RECOMMENDED TEASER ── 빈 상태일 땐 ch-empty 안에 접혀 있으므로 감춤
+  const recSection=document.getElementById('ch-rec-section');
+  if(recSection) recSection.style.display=hasAny?'block':'none';
 
   // ── HISTORY (완료/실패) ──
   const completedComps=myComps.filter(c=>c.status==='completed'||c.status==='failed')
@@ -12415,6 +12431,29 @@ function statsSetSection(key,skipSave){
   },30);
 }
 
+// ── 기간 종합 성적 계산 (히어로 + 성적표 카드 공통) ──
+function stCalcOverallGrade(rows){
+  if(!rows||!rows.length)return{grade:'—',color:'var(--text3)',avgScore:null,sub:'데이터 없음'};
+  const calcPct=(arr,fn)=>{let d=0,t=0;arr.forEach(r=>{const a=fn(r);t+=a.total;d+=a.done;});return t>0?Math.round(d/t*100):null;};
+  const routinePct=calcPct(rows,r=>{const m=r.mandatory||[];return{total:m.length,done:m.filter(x=>x.done).length};});
+  const targetPct=calcPct(rows,r=>{const t=r.targets||[];return{total:t.length,done:t.filter(x=>x.st==='done').length};});
+  const mealRows=rows.flatMap(r=>(r.meals||[]).filter(m=>['아침','점심','저녁'].includes(m.time)&&m.type));
+  const cleanPct=mealRows.length?Math.round(mealRows.filter(m=>m.type==='green').length/mealRows.length*100):null;
+  let woCnt=0;rows.forEach(r=>{woCnt+=(r.workouts||[]).filter(w=>w.status==='done').length;});
+  const woPerWeek=rows.length>=7?(woCnt/(rows.length/7)):woCnt;
+  const g2s={A:4,B:3,C:2,D:1,F:0};
+  const woGrade=woPerWeek>=3?'A':woPerWeek>=2?'B':woPerWeek>=1?'C':'D';
+  const cleanG=cleanPct===null?null:(cleanPct>=70?'A':cleanPct>=50?'B':cleanPct>=30?'C':'D');
+  const routG=routinePct===null?null:(routinePct>=90?'A':routinePct>=70?'B':routinePct>=50?'C':'D');
+  const tgtG=targetPct===null?null:(targetPct>=80?'A':targetPct>=60?'B':targetPct>=40?'C':'D');
+  const cats=[woGrade,cleanG,routG,tgtG].filter(Boolean);
+  if(!cats.length)return{grade:'—',color:'var(--text3)',avgScore:null,sub:'데이터 없음'};
+  const avgScore=Math.round(cats.reduce((a,g)=>a+g2s[g],0)/cats.length*25);
+  const grade=avgScore>=90?'A':avgScore>=70?'B':avgScore>=50?'C':avgScore>=30?'D':'F';
+  const color=avgScore>=90?'var(--green)':avgScore>=70?'var(--blue)':avgScore>=50?'var(--amber)':'var(--red)';
+  return{grade,color,avgScore,sub:rows.length+'일 기준',woPerWeek,cleanPct,routinePct,targetPct};
+}
+
 // ── 히어로 렌더 ──
 function stRenderHero(rows){
   try{
@@ -12423,17 +12462,24 @@ function stRenderHero(rows){
     const todayLog=(typeof logCache!=='undefined'&&typeof TODAY!=='undefined')?logCache[TODAY]:null;
     const todayPts=todayLog?(todayLog._ptsLog||[]).reduce((a,p)=>a+(p.pts||0),0):0;
     document.getElementById('st-hero-today').textContent=(todayPts>=0?'+':'')+todayPts;
-    // Tier — always use cumulative profile score, not period-filtered
+
+    // Grade (period-based overall report) — replaces redundant 티어 셀
+    const g=stCalcOverallGrade(rows);
+    const gradeEl=document.getElementById('st-hero-grade');
+    const gradeSub=document.getElementById('st-hero-grade-sub');
+    if(gradeEl){gradeEl.textContent=g.grade;gradeEl.style.color=g.color;}
+    if(gradeSub)gradeSub.textContent=g.sub;
+
+    // Tier progress bar below — cumulative profile tier (여전히 유용한 컨텍스트)
     const total=+(CP?.total_score)||0;
     if(typeof getTier==='function'){
       const t=getTier(total);
-      document.getElementById('st-hero-tier').textContent=(t.icon||'')+' '+(t.name||'');
       const tiers=(typeof TIERS!=='undefined')?TIERS:null;
       const next=tiers?tiers.find(x=>x.min>total):null;
       const from=t.min||0, to=next?next.min:(t.max||(total+1));
       const pct=Math.max(0,Math.min(100,(total-from)/Math.max(1,to-from)*100));
       document.getElementById('st-hero-tier-fill').style.width=pct+'%';
-      document.getElementById('st-hero-tier-from').textContent=total+'점';
+      document.getElementById('st-hero-tier-from').textContent=(t.icon||'')+' '+(t.name||'')+' · '+total+'점';
       document.getElementById('st-hero-tier-to').textContent=next?('다음 '+next.name+' '+(next.min-total)+'pt'):'최고 티어';
     }
   }catch(e){console.warn('stRenderHero inner:',e);}
