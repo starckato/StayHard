@@ -231,10 +231,10 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 }
 
 /* ═════ SCORE GAIN CHIP — 액션 위치 → Status Band 점수 비행 ═════ */
-.score-chip{position:fixed;padding:5px 11px;border-radius:20px;background:var(--accent);color:#fff;font-weight:800;font-family:'DM Mono',monospace;font-size:13px;z-index:600;pointer-events:none;box-shadow:0 4px 16px rgba(255,77,77,.45),0 0 0 2px rgba(255,77,77,.25);letter-spacing:-.01em;white-space:nowrap;will-change:transform,opacity;}
-.score-chip.neg{background:var(--red);}
+.score-chip{position:fixed;padding:6px 13px;border-radius:22px;background:linear-gradient(135deg,#ff4d4d 0%,#ff6b35 100%);color:#fff;font-weight:900;font-family:'DM Mono',monospace;font-size:14px;z-index:950;pointer-events:none;box-shadow:0 6px 24px rgba(255,77,77,.55),0 0 0 2px rgba(255,77,77,.35),0 0 20px rgba(255,77,77,.35);letter-spacing:-.02em;white-space:nowrap;will-change:transform,opacity;}
+.score-chip.neg{background:linear-gradient(135deg,#ff4d4d 0%,#b71c1c 100%);}
 .score-chip.init{transition:none;opacity:1;transform:translate(-50%,-50%) scale(1);}
-.score-chip.fly{transition:transform .7s cubic-bezier(.22,.9,.3,1),opacity .7s cubic-bezier(.22,.9,.3,1);opacity:0;}
+.score-chip.fly{transition:transform .9s cubic-bezier(.38,.02,.28,1),opacity .9s cubic-bezier(.38,.02,.28,1);opacity:0;}
 @keyframes scorePulse{0%{transform:scale(1);}35%{transform:scale(1.16);color:var(--accent);text-shadow:0 0 12px rgba(255,77,77,.6);}100%{transform:scale(1);}}
 #hdr-score.score-pulse{animation:scorePulse .45s cubic-bezier(.2,.9,.3,1);}
 @media (prefers-reduced-motion: reduce){
@@ -6192,7 +6192,12 @@ function showScoreGain(pts, originEl){
   const oRect=originEl.getBoundingClientRect();
   const tRect=target.getBoundingClientRect();
   const ox=oRect.left+oRect.width/2, oy=oRect.top+oRect.height/2;
-  const tx=tRect.left+tRect.width/2, ty=tRect.top+tRect.height/2;
+  let tx=tRect.left+tRect.width/2, ty=tRect.top+tRect.height/2;
+  // 점수가 뷰포트 밖(위/아래)일 때는 chip을 뷰포트 가장자리에서 페이드 처리
+  // — 사용자가 "점수가 올라간 방향"을 시각적으로 느낄 수 있게
+  const vh=window.innerHeight||document.documentElement.clientHeight;
+  if(ty<0){ ty=8; }
+  else if(ty>vh){ ty=vh-8; }
   const chip=document.createElement('div');
   chip.className='score-chip init'+(pts<0?' neg':'');
   chip.textContent=(pts>0?'+':'')+pts+'pt';
@@ -6204,7 +6209,7 @@ function showScoreGain(pts, originEl){
     const dx=tx-ox, dy=ty-oy;
     chip.classList.remove('init');
     chip.classList.add('fly');
-    chip.style.transform=`translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px)) scale(.65)`;
+    chip.style.transform=`translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px)) scale(.7)`;
   }));
   setTimeout(()=>{
     chip.remove();
@@ -6212,7 +6217,7 @@ function showScoreGain(pts, originEl){
       target.classList.add('score-pulse');
       setTimeout(()=>target.classList.remove('score-pulse'),450);
     }
-  },720);
+  },920);
 }
 
 function updateGogginsHeader(){
