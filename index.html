@@ -144,8 +144,8 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 /* Bonus grant celebration modal */
 @keyframes bonusFadeIn{from{opacity:0;}to{opacity:1;}}
 @keyframes bonusPop{0%{opacity:0;transform:scale(.82) translateY(8px);}60%{opacity:1;transform:scale(1.04) translateY(0);}100%{transform:scale(1);}}
-/* Muscle map share FAB — subtle pulse to draw eye without being aggressive */
-@keyframes mmFabPulse{0%,100%{box-shadow:0 8px 22px rgba(255,77,77,0.5), 0 0 0 0 rgba(255,77,77,0.45);}50%{box-shadow:0 8px 22px rgba(255,77,77,0.55), 0 0 0 12px rgba(255,77,77,0);}}
+/* Muscle map share FAB — 매우 은은한 pulse (이전 대비 ~10%) */
+@keyframes mmFabPulse{0%,100%{box-shadow:0 8px 22px rgba(255,77,77,0.5), 0 0 0 0 rgba(255,77,77,0.045);}50%{box-shadow:0 8px 22px rgba(255,77,77,0.5), 0 0 0 10px rgba(255,77,77,0);}}
 .mm-fab-pulse{animation:mmFabPulse 2.4s ease-out infinite;}
 .mm-fab-pulse:active{transform:scale(.92);transition:transform .1s;}
 @media (prefers-reduced-motion: reduce){.mm-fab-pulse{animation:none;}}
@@ -2586,8 +2586,8 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
     </div>
   </div>
   <div id="mm-body" style="flex:1;overflow:hidden;display:flex;align-items:center;justify-content:center;padding:4px 8px 0;min-height:0;"></div>
-  <!-- Floating share FAB — body 와 legend 사이 empty zone. flex item 이라 legend 시작점 위에 자연스럽게 배치됨 -->
-  <div style="flex-shrink:0;display:flex;justify-content:center;padding:6px 0 10px;">
+  <!-- Floating share FAB — body 와 legend 사이. margin-top 음수로 body 방향으로 끌어올려 간격 축소 -->
+  <div style="flex-shrink:0;display:flex;justify-content:center;padding:0 0 10px;margin-top:-14px;">
     <button id="mm-share-fab" onclick="shareMuscleMap()" aria-label="공유하기" title="공유하기" class="mm-fab-pulse" style="width:54px;height:54px;border-radius:50%;background:linear-gradient(135deg,#ff4d4d 0%,#ff6b35 100%);border:none;color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 8px 22px rgba(255,77,77,0.5);touch-action:manipulation;padding:0;">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events:none;display:block;"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
     </button>
