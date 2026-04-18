@@ -1,0 +1,6 @@
+.vercel
+
+# Local secrets (never commit)
+.stayhard-sb-pat
+*.pat
+scripts/.env
