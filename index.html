@@ -2574,7 +2574,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
         <div onclick="setMuscleMode('week')" id="mm-btn-week" style="padding:5px 10px;font-size:10px;font-weight:700;cursor:pointer;color:var(--text3);">이번 주</div>
         <div onclick="setMuscleMode('all')" id="mm-btn-all" style="padding:5px 10px;font-size:10px;font-weight:700;cursor:pointer;color:var(--text3);">전체</div>
       </div>
-      <button onclick="shareMuscleMap()" ontouchend="event.preventDefault();shareMuscleMap();" id="mm-share-btn" style="width:32px;height:32px;background:linear-gradient(135deg,var(--accent),#ff6b35);border:1px solid rgba(255,77,77,0.4);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;cursor:pointer;box-shadow:0 2px 8px rgba(255,77,77,0.25);padding:0;pointer-events:auto;" title="공유"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events:none;display:block;"><circle cx="18" cy="5" r="3" style="pointer-events:none;"/><circle cx="6" cy="12" r="3" style="pointer-events:none;"/><circle cx="18" cy="19" r="3" style="pointer-events:none;"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49" style="pointer-events:none;"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49" style="pointer-events:none;"/></svg></button>
+      <div role="button" tabindex="0" id="mm-share-btn" style="width:32px;height:32px;background:linear-gradient(135deg,var(--accent),#ff6b35);border:1px solid rgba(255,77,77,0.4);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;cursor:pointer;box-shadow:0 2px 8px rgba(255,77,77,0.25);user-select:none;-webkit-user-select:none;" title="공유"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events:none;display:block;"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></div>
       <button onclick="closeMuscleMap()" style="width:28px;height:28px;background:var(--surface2);border:1px solid var(--border2);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--text2);cursor:pointer;">✕</button>
     </div>
   </div>
@@ -11354,6 +11354,13 @@ async function openMuscleMap(){
   if(!_mmSvgBack){try{_mmSvgBack=await loadMuscleSvg('back');}catch(e){console.warn(e);}}
   _mmView='front';_mmMode='today';
   renderMuscleMap();
+  const shareBtn=document.getElementById('mm-share-btn');
+  if(shareBtn&&!shareBtn._wired){
+    shareBtn._wired=true;
+    const handler=(e)=>{try{e.preventDefault();e.stopPropagation();}catch(_){}shareMuscleMap();};
+    shareBtn.addEventListener('click',handler);
+    shareBtn.addEventListener('touchend',handler,{passive:false});
+  }
 }
 function closeMuscleMap(){
   document.getElementById('muscle-map-overlay').style.display='none';
@@ -11449,7 +11456,18 @@ function renderMuscleMap(){
     }
     setTimeout(()=>highlightMuscle(activeList[0][0]),100);
   } else {
-    summary.innerHTML='<div style="font-size:12px;color:var(--text3);text-align:center;padding:12px 0;">'+(_mmMode==='today'?'오늘 운동 기록이 없어요 🏋️':'이번 주 운동 기록이 없어요 🏋️')+'</div>';
+    const EMPTY_COPY={
+      today:{title:'오늘 아직 훈련 안 했네요',body:'운동을 시작하면 어디를 자극했는지<br>여기에 빨갛게 차올라요 🔥',cta:'운동 시작하기'},
+      week:{title:'이번 주 훈련 기록이 없어요',body:'이번 주 한 번이라도 운동하면<br>자극 부위 분포가 나타나요 💪',cta:'지금 시작하기'},
+      all:{title:'아직 훈련 기록이 없어요',body:'첫 운동을 시작해봐요.<br>모든 기록이 여기에 쌓여요 📊',cta:'첫 운동 시작하기'}
+    };
+    const c=EMPTY_COPY[_mmMode]||EMPTY_COPY.today;
+    summary.innerHTML=`<div style="padding:14px 12px;background:linear-gradient(135deg,rgba(255,77,77,0.08) 0%,rgba(255,77,77,0.02) 100%);border:1px solid rgba(255,77,77,0.15);border-radius:12px;text-align:center;">
+      <div style="font-size:24px;margin-bottom:4px;">💪</div>
+      <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px;">${c.title}</div>
+      <div style="font-size:11px;color:var(--text3);line-height:1.5;margin-bottom:10px;">${c.body}</div>
+      <div role="button" tabindex="0" onclick="closeMuscleMap();openWorkoutStartScreen();" ontouchend="event.preventDefault();closeMuscleMap();openWorkoutStartScreen();" style="display:inline-flex;align-items:center;gap:6px;padding:8px 16px;background:linear-gradient(135deg,#ff4d4d,#ff6b35);border-radius:8px;font-size:12px;font-weight:700;color:#fff;cursor:pointer;box-shadow:0 3px 10px rgba(255,77,77,0.3);user-select:none;-webkit-user-select:none;">🔥 ${c.cta}</div>
+    </div>`;
   }
 }
 let _mmActivation={},_mmHighlighted=null;
