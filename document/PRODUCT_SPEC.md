@@ -1,7 +1,7 @@
 # Stay Hard — Product Specification
-> Last Updated: 2026-04-17
-> Version: 2.0 (Post-Redesign)
-> File: `/Users/KWAN/StayHard/index.html` (12,877 lines | 706.5KB)
+> Last Updated: 2026-04-18
+> Version: 2.1 (Sprint A/B/C — 기록 탭 정보 계층 재편)
+> File: `/Users/KWAN/StayHard/index.html` (13,575 lines | 778KB)
 
 ---
 
@@ -22,29 +22,35 @@ Stay Hard
 │   └── Signup Tab
 │
 ├── App Screen (app-screen)
-│   ├── Header
+│   ├── Header (minimal: title + avatar + motto)
 │   │   ├── "Stay Hard" title
-│   │   ├── Goggins Badge (streak, score, tier) → Score Guide
 │   │   ├── Avatar → Profile Modal
 │   │   └── Daily Motto
 │   │
 │   ├── [Tab 0] 기록 — Daily Routine (view-routine)
-│   │   ├── Yesterday Reminder Banner
-│   │   ├── Character Card → Room Overlay
+│   │   ├── Yesterday Ribbon (carry-over + reminder unified)
+│   │   │   ├── Undone targets → checkable list + 이월/건너뜀
+│   │   │   └── Missing routines → Goggins voice reminder
+│   │   ├── Status Band (hero — tinted gradient card)
+│   │   │   ├── Mini char canvas → Room Overlay
+│   │   │   ├── Tier pill / streak / today Δ
+│   │   │   ├── Archivo Black score + tier quote
+│   │   │   ├── Next-tier progress bar
+│   │   │   └── "오늘 기록 요약" primary CTA → Summary Modal
 │   │   ├── Day Slider (week strip + month nav)
-│   │   ├── Summary Button → Summary Modal
-│   │   ├── ⚖️ Weight Card → Weight Modal
-│   │   ├── 🥗 Meals Card
+│   │   ├── Weight Card (SVG scale icon) → Weight Modal
+│   │   ├── Meals Card (SVG leaf icon)
 │   │   │   ├── 아침/점심/저녁 slots → Meal Slot Modal
-│   │   │   ├── Quick-entry buttons (클린/일반/치팅/금지)
-│   │   │   ├── 간식/야식/음료/술/안주 → Snack Modal
-│   │   │   └── 💧 Water cups + goal
-│   │   ├── 💪 Workout Card
+│   │   │   └── 간식/야식/음료/술/안주 → Snack Modal
+│   │   ├── Water Card (SVG drop icon — split from meals)
+│   │   │   └── Cups + goal panel (0.5L–6L)
+│   │   ├── Workout Card (SVG dumbbell icon)
 │   │   │   ├── Session rows → Session Summary
 │   │   │   ├── "운동 추가" → Workout Start Screen
-│   │   │   └── "💥 자극 부위" → Muscle Map Overlay
-│   │   ├── ✅ 필수 루틴 Card → Mandatory Modal
-│   │   └── 🎯 오늘의 할일 Card → Inline input
+│   │   │   └── "자극 부위" → Muscle Map Overlay
+│   │   └── Today Tasks Card (SVG check-square — 필수 루틴 + 오늘의 할일 merged)
+│   │       ├── 필수 루틴 section (badge, checklist, + 루틴 추가)
+│   │       └── 오늘의 할일 section (badge, checklist, inline add input)
 │   │
 │   ├── [Tab 1] 주간 — Weekly View (view-weekly)
 │   │   └── 7-column grid (weight, meals, workouts, routines)
@@ -316,7 +322,12 @@ Workout Start Screen
 
 ---
 
-## 9. Modals & Overlays (24 total)
+## 9. Modals & Overlays (23 total — carry-over modal absorbed into inline Yesterday Ribbon in v2.1)
+
+### Inline Ribbons (in-flow, not modal)
+| ID | Trigger | Purpose |
+|----|---------|---------|
+| yesterday-ribbon | Morning load if prev-day incomplete | Unified carry-over + reminder (replaces reminder-banner + carryover-modal) |
 
 ### Bottom-Sheet Modals (z:800)
 | ID | Trigger | Purpose |
@@ -441,7 +452,49 @@ User Action → logCache[key] update → renderRoutine()
 
 ---
 
-## 13. Development Changelog (2026-04-17)
+## 13. Development Changelog (2026-04-18 — v2.1 Info-Hierarchy Redesign)
+
+### Sprint A — 기록 탭 정보 계층 재편
+- **Status Band hero**: header의 압축 goggins-badge + tiny summary pill + character card를 단일 tinted-gradient 히어로 카드로 통합. Archivo Black 대형 점수, 티어 pill, 스트릭, 오늘 Δ, 인용구, 다음 티어 진행 바, '오늘 기록 요약' 일차 CTA가 한 zone에 수직으로 배치됨.
+- **Yesterday Ribbon**: reminder-banner(인라인)와 carryover-modal(풀스크린 시트)를 단일 접이식 ribbon으로 통합. morning load 시 한 번만 노출되며 undone targets가 있으면 checkable list + 이월/건너뜀 버튼, missing routines만 있으면 Goggins-voice reminder + "어제 기록 보기" 단일 CTA.
+- **Water card split**: 식단 카드에서 물 섹션을 독립 s-card로 분리. renderWater가 `X.X / Y.YL` 포맷으로 항상 상태 표시.
+- **Todo card merge**: '필수 루틴'과 '오늘의 할일'을 하나의 `.todo-card`로 통합. 각 섹션은 `.tasks-sec-label` + s-badge로 구분되며 기존 render 핸들러(renderMandatory / renderTargets / togMand / togTgt / addTarget)는 동일 ID로 작동.
+
+### Sprint B — 비주얼 시스템 업그레이드
+- **커스텀 SVG 아이콘셋**: 24px viewBox, 1.8px stroke, round caps, currentColor — bottom nav 톤과 통일.
+  - 9개 아이콘: scale / drop / leaf / dumbbell / target / checkSq / checkCircle / chart / repeat
+  - `ICO_PATHS` 전역 + `ico(name,size)` 헬퍼 제공
+- **하단 네비 4종**: 이모지 교체 — 📋→clipboard+check, 📅→calendar+dot, 📊→bar chart, 🏆→trophy.
+- **Status Band reveal sequence**: 로그인 후 첫 렌더 1회 800ms 오케스트레이션. 점수 0→N easeOutCubic 카운트업, 티어 pill 스탬프 인(scale 0.6→1.08→1), 스트릭/오늘Δ/인용구/진행바/CTA 순차 페이드. `_statusBandRevealed` 가드로 리렌더 시 재생 방지. `prefers-reduced-motion` 존중.
+
+### Sprint C — 폴리싱
+- **챌린지 탭 빈 상태**: 카피 수정("아직 도전 중인 챌린지가 없어" + 푸쉬업은 항상 함께 달린다는 안내), 기존 별도 "다음 챌린지 예고" 카드를 빈 상태 푸터로 접어 single card. `ch-rec-section`은 가입한 챌린지가 있을 때만 표시.
+- **통계 히어로**: 3번째 셀을 '티어(중복 정보)' → '성적 A-F grade'로 교체. Archivo Black 34px, 등급별 색상(A green / B blue / C amber / D-F red). 공통 계산 `stCalcOverallGrade(rows)` 헬퍼 추가. 티어 진행 바는 하단에 유지(from 라벨에 티어 아이콘+이름 표기).
+
+### 추가 아이콘 교체
+기록 탭 카드 제목(체중/식단/물/운동/오늘 할 일), 통계 섹션 핀(종합/훈련/식단/습관), KPI 라벨(루틴/할일/클린식/운동 횟수/수분), 주간 행 라벨(체중/식단/운동/루틴/할일), 통계 주요 카드 제목 모두 SVG로 교체.
+
+### 버그 수정
+- **어제 리마인더 false-positive**: `checkYesterdayReminder`가 매일 노출되던 세 가지 버그:
+  1. 필수 루틴 카운트가 요일 필터를 무시(월-금 루틴이 토/일에도 missing으로 카운트됨) → yDow 필터 적용
+  2. 운동 체크가 `w.type==='session'`만 매칭(실 데이터는 'gym'|'activity') → 타입 호환
+  3. 식단 체크가 `.length`만 확인(품질 태그 없는 빈 끼니도 OK 처리) → `some(m=>m.type)` 전환
+  4. 최종적으로 workout/meals 검사는 개인 편차가 커 기본 missing에서 제외. 사용자가 루틴에 등록한 '운동' 루틴이 있으면 자동으로 잡힘 — 명시적 커밋만 배너에 반영.
+- **initMiniChar 초기 페인트 경고**: `_paintInitialUI` 경로에서 renderCharCard가 폴백 선언 전 호출돼 콘솔 경고 2회. `typeof initMiniChar==='function'` 가드로 silent no-op.
+- **운동 세션 볼륨 델타 오표시**: 모든 종목이 "지난 기록 16.1t" 표시 문제. 원인은 `_wsPrevSession`이 세션 총합을 리턴해 무관한 비교 발생. `_wsPrevExerciseVol(exName)` + `_wsEstimatedVolForExercise(ex)` 도입해 현재 활성 종목 기준 per-exercise 비교로 전환.
+- **운동 세션 상단 종목 pill GIF 제거**: ws-ex-chip에서 22px GIF 썸네일 삭제(텍스트만). 하단 라이브러리 GIF는 유지.
+
+### 신규 기능 — Score-gain Chip
+- 루틴/할일 완료 시 탭 지점에서 Status Band 점수로 +N pt chip이 비행하는 900ms 애니메이션.
+- `.score-chip` CSS: accent gradient pill, Archivo Black 숫자, 글로우 + 3중 shadow. 크기는 `fly` 상태에서 scale(.7)로 축소.
+- `showScoreGain(pts, originEl)`: 클릭 좌표 → #hdr-score 중심 interpolate. 타겟이 뷰포트 밖이면 viewport edge(8px 여백)로 clamp.
+- 도착 시 #hdr-score에 `.score-pulse` 클래스 450ms(scale 1.16 + 텍스트 글로우).
+- `togMand`, `togTgt`에 wiring — 토글 전 origin rect 캡처(렌더 후 DOM 재생성 대응).
+- `prefers-reduced-motion` 존중.
+
+---
+
+## 14. Development Changelog (2026-04-17)
 
 ### Bug Fixes
 - Meal save race condition (dirty key tracking)
@@ -555,7 +608,7 @@ User Action → logCache[key] update → renderRoutine()
 
 ---
 
-## 14. Muscle Activation System (자극 부위)
+## 15. Muscle Activation System (자극 부위)
 
 ### Architecture
 ```
@@ -634,7 +687,7 @@ obliques: 복사근, lower_back: 하부 등, hip_flexors: 고관절 굴곡근
 
 ---
 
-## 15. Exercise GIF Licensing & Commercial Readiness
+## 16. Exercise GIF Licensing & Commercial Readiness
 
 ### Current State (Beta)
 - GIFs sourced from `hasaneyldrm/exercises-dataset` (GitHub CDN)
@@ -667,7 +720,7 @@ obliques: 복사근, lower_back: 하부 등, hip_flexors: 고관절 굴곡근
 
 ---
 
-## 16. Wearable Integration Roadmap
+## 17. Wearable Integration Roadmap
 
 ### Phase 1: Strava API (Web — No Native App)
 **Status:** Backlog
