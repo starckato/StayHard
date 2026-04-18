@@ -84,6 +84,29 @@
   .card .e{color:#ff8888;font-size:11px;margin-top:4px;min-height:14px;}
   pre{margin:0;font:inherit;color:var(--ink3);white-space:pre-wrap;word-break:break-all;}
   a{color:var(--hl);}
+  /* Bonus admin form */
+  .bonus-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
+  @media (max-width:700px){.bonus-grid{grid-template-columns:1fr;}}
+  .bonus-row{display:flex;flex-direction:column;gap:4px;}
+  .bonus-row label{font-size:10px;color:var(--ink3);text-transform:uppercase;letter-spacing:0.4px;font-weight:600;}
+  .bonus-row input, .bonus-row select, .bonus-row textarea{width:100%;padding:7px 9px;background:var(--bg);border:1px solid var(--border);border-radius:3px;color:var(--ink);font-family:inherit;font-size:12px;box-sizing:border-box;}
+  .bonus-row textarea{resize:vertical;min-height:64px;font-family:inherit;}
+  .bonus-row input:focus, .bonus-row select:focus, .bonus-row textarea:focus{outline:none;border-color:var(--hl);}
+  .bonus-actions{display:flex;gap:8px;margin-top:6px;}
+  .bonus-actions button{padding:8px 14px;background:#5a2020;color:var(--ink);border:1px solid #7a2020;border-radius:3px;font-family:inherit;font-size:11px;cursor:pointer;font-weight:600;letter-spacing:0.3px;}
+  .bonus-actions button:hover{background:#7a2828;}
+  .bonus-actions button:disabled{opacity:0.5;cursor:not-allowed;}
+  .bonus-actions button.ghost{background:var(--panel2);border-color:var(--border);color:var(--ink2);font-weight:400;}
+  .bonus-actions button.ghost:hover{background:var(--border);}
+  .bonus-result{font-size:11px;margin-top:8px;padding:6px 10px;border-radius:3px;min-height:14px;font-variant-numeric:tabular-nums;}
+  .bonus-result.ok{background:#103018;border:1px solid #2a5a3a;color:var(--pos);}
+  .bonus-result.err{background:#301010;border:1px solid #5a2020;color:#ffb3b3;}
+  .bonus-row .hint{font-size:10px;color:var(--ink3);font-weight:400;text-transform:none;letter-spacing:0;}
+  .bonus-chip{display:inline-block;font-size:10px;padding:1px 7px;border-radius:999px;font-weight:600;letter-spacing:0.3px;text-transform:uppercase;}
+  .bonus-chip.shown{background:#1a3a1a;color:var(--pos);border:1px solid #2a5a2a;}
+  .bonus-chip.unshown{background:#3a2a10;color:var(--warn);border:1px solid #5a3a20;}
+  .bonus-del{background:none;border:none;color:var(--neg);cursor:pointer;font-family:inherit;font-size:11px;padding:2px 6px;}
+  .bonus-del:hover{text-decoration:underline;}
 </style>
 </head>
 <body>
@@ -243,6 +266,50 @@ function render(d){
     </div>
   `;
 
+  // ── BONUS GRANTS ADMIN PANEL ──
+  html+=`<section id="bonus-admin"><h2>bonus grants <span class="h2-sub">축하 메시지 + 점수 + 공유 카드 발급</span></h2>
+    <div class="bonus-grid">
+      <div class="bonus-row" style="grid-column:1/-1;">
+        <label>template</label>
+        <select id="bg-template" onchange="applyBonusTemplate()">
+          <option value="">— custom —</option>
+        </select>
+        <div class="hint">프리셋 선택 시 아래 입력칸 자동 채움. 수정 후 발급 가능</div>
+      </div>
+      <div class="bonus-row">
+        <label>user email <span style="color:var(--neg);">*</span></label>
+        <input id="bg-email" type="email" placeholder="user@example.com">
+      </div>
+      <div class="bonus-row">
+        <label>event_key <span style="color:var(--neg);">*</span></label>
+        <input id="bg-event" type="text" placeholder="buan_mediofondo_2026">
+        <div class="hint">같은 user+event_key 재발급 시 덮어쓰기 + 미수령 초기화</div>
+      </div>
+      <div class="bonus-row">
+        <label>title</label>
+        <input id="bg-title" type="text" placeholder="부안 메디오폰도 완주">
+      </div>
+      <div class="bonus-row">
+        <label>icon · points</label>
+        <div style="display:flex;gap:8px;">
+          <input id="bg-icon" type="text" value="🏆" style="width:60px;text-align:center;font-size:16px;">
+          <input id="bg-points" type="number" value="100" step="10" style="flex:1;" placeholder="100">
+        </div>
+      </div>
+      <div class="bonus-row" style="grid-column:1/-1;">
+        <label>message</label>
+        <textarea id="bg-message" placeholder="축하 본문 — 줄바꿈 그대로 적용됨"></textarea>
+      </div>
+    </div>
+    <div class="bonus-actions">
+      <button id="bg-submit" onclick="submitBonus()">🎁 Grant bonus</button>
+      <button class="ghost" onclick="resetBonusForm()">reset</button>
+      <button class="ghost" onclick="loadRecentGrants()">↻ reload list</button>
+    </div>
+    <div id="bg-result" class="bonus-result" style="display:none;"></div>
+    <div id="bg-list" style="margin-top:14px;"></div>
+  </section>`;
+
   // ── ACTIVATION FUNNEL ──
   const funnelSteps=[
     ['signups','1. signup'],
@@ -366,6 +433,200 @@ function render(d){
 
   document.getElementById('content').innerHTML=html;
   setTimeout(()=>renderTrend(d.trend_14d||[]),50);
+  // Bonus panel hooks
+  try{populateTemplateDropdown();loadRecentGrants();}catch(e){console.warn('[bonus-admin]',e);}
+}
+
+// ═══════════════════════════════════════════════
+// BONUS GRANTS ADMIN
+// ═══════════════════════════════════════════════
+const BONUS_TEMPLATES=[
+  {
+    key:'buan_mediofondo_2026',
+    label:'🚴 부안 메디오폰도 완주',
+    title:'부안 메디오폰도 완주',
+    message:'부안 메디오폰도 완주를 축하드립니다.\n앞으로도 쭉 Stay Hard!',
+    points:100, icon:'🚴'
+  },
+  {
+    key:'marathon_completion',
+    label:'🏅 마라톤 완주',
+    title:'마라톤 완주',
+    message:'42.195km 를 달려냈습니다.\n이게 진짜 너야. Stay Hard!',
+    points:150, icon:'🏅'
+  },
+  {
+    key:'gogins_4x4x48',
+    label:'🔥 4x4x48 챌린지 완주',
+    title:'4x4x48 챌린지 완주',
+    message:'48시간. 4마일씩 12번.\n너는 이제 달라. Stay Hard.',
+    points:200, icon:'🔥'
+  },
+  {
+    key:'pushup_100_club',
+    label:'💪 푸쉬업 100개 클럽',
+    title:'푸쉬업 100개 클럽',
+    message:'단일 세트 100개 돌파.\nThey don\'t know you yet. Stay Hard!',
+    points:50, icon:'💪'
+  },
+  {
+    key:'cold_plunge_30',
+    label:'🧊 냉수마찰 30일',
+    title:'냉수마찰 30일 연속',
+    message:'30일 연속 찬물 샤워.\n네 의지가 증명됐어. Stay Hard!',
+    points:80, icon:'🧊'
+  },
+];
+
+function populateTemplateDropdown(){
+  const sel=document.getElementById('bg-template');
+  if(!sel)return;
+  // Preserve custom option as first
+  sel.innerHTML='<option value="">— custom —</option>'+
+    BONUS_TEMPLATES.map(t=>`<option value="${esc(t.key)}">${esc(t.label)}</option>`).join('');
+}
+
+function applyBonusTemplate(){
+  const sel=document.getElementById('bg-template');
+  const key=sel?sel.value:'';
+  if(!key)return;
+  const t=BONUS_TEMPLATES.find(x=>x.key===key);
+  if(!t)return;
+  const setIf=(id,v)=>{const el=document.getElementById(id);if(el)el.value=v;};
+  setIf('bg-event',t.key);
+  setIf('bg-title',t.title);
+  setIf('bg-message',t.message);
+  setIf('bg-points',t.points);
+  setIf('bg-icon',t.icon);
+}
+
+function resetBonusForm(){
+  ['bg-email','bg-event','bg-title','bg-message'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  const p=document.getElementById('bg-points');if(p)p.value=100;
+  const i=document.getElementById('bg-icon');if(i)i.value='🏆';
+  const s=document.getElementById('bg-template');if(s)s.value='';
+  const r=document.getElementById('bg-result');if(r){r.style.display='none';r.textContent='';}
+}
+
+function _bonusMsg(cls,text){
+  const r=document.getElementById('bg-result');
+  if(!r)return;
+  r.className='bonus-result '+cls;
+  r.style.display='block';
+  r.textContent=text;
+}
+
+async function submitBonus(){
+  const btn=document.getElementById('bg-submit');
+  const email=(document.getElementById('bg-email').value||'').trim();
+  const event_key=(document.getElementById('bg-event').value||'').trim();
+  const title=(document.getElementById('bg-title').value||'').trim();
+  const message=(document.getElementById('bg-message').value||'').trim();
+  const points=parseInt(document.getElementById('bg-points').value||'0',10);
+  const icon=(document.getElementById('bg-icon').value||'🏆').trim()||'🏆';
+  if(!email){_bonusMsg('err','email is required');return;}
+  if(!event_key){_bonusMsg('err','event_key is required');return;}
+  if(!title){_bonusMsg('err','title is required');return;}
+  if(!message){_bonusMsg('err','message is required');return;}
+  if(!Number.isFinite(points)){_bonusMsg('err','points must be a number');return;}
+  btn.disabled=true;btn.textContent='granting…';
+  try{
+    const {data,error}=await sb.rpc('grant_bonus_by_email',{
+      p_email:email, p_event_key:event_key, p_title:title,
+      p_message:message, p_points:points, p_icon:icon
+    });
+    if(error){_bonusMsg('err','RPC error: '+error.message+(error.code?' ('+error.code+')':''));return;}
+    if(data&&data.ok){
+      _bonusMsg('ok',`✓ granted #${data.grant_id} to ${email} · ${points}pt · event=${event_key}`);
+      loadRecentGrants();
+    } else if(data&&data.error==='not_admin'){
+      _bonusMsg('err','세션이 admin 이 아닙니다. profiles.is_admin=true 확인 후 재로그인하세요.');
+    } else if(data&&data.error==='user_not_found'){
+      _bonusMsg('err',`해당 이메일의 유저가 없습니다: ${email}`);
+    } else {
+      _bonusMsg('err','unknown: '+JSON.stringify(data));
+    }
+  }catch(e){_bonusMsg('err','network: '+(e.message||e));}
+  finally{btn.disabled=false;btn.textContent='🎁 Grant bonus';}
+}
+
+async function loadRecentGrants(){
+  const box=document.getElementById('bg-list');
+  if(!box)return;
+  box.innerHTML='<div style="color:var(--ink3);font-size:11px;padding:6px 0;">loading grants…</div>';
+  try{
+    const {data,error}=await sb.from('bonus_grants')
+      .select('id,event_key,title,points,icon,shown,shown_at,created_at,user_id')
+      .order('created_at',{ascending:false}).limit(25);
+    if(error){
+      if(/does not exist|bonus_grants/i.test(error.message||'')){
+        box.innerHTML=`<div class="err" style="margin:6px 0;">bonus_grants 테이블이 없습니다. migrations/005_bonus_grants.sql 먼저 실행하세요.</div>`;
+      } else {
+        box.innerHTML=`<div class="err" style="margin:6px 0;">load failed: ${esc(error.message)}</div>`;
+      }
+      return;
+    }
+    if(!data||!data.length){
+      box.innerHTML='<div style="color:var(--ink3);font-size:11px;padding:6px 0;">no grants yet</div>';
+      return;
+    }
+    // Enrich with email via users list from last dashboard payload (fallback to user_id slice)
+    // We don't have users map here — fetch from admin_dashboard cached? Simpler: show user_id short.
+    // Try to fetch auth.users via profiles-join (admin policy)
+    const userIds=[...new Set(data.map(r=>r.user_id))];
+    let userMap={};
+    try{
+      const {data:prof}=await sb.from('profiles').select('id,display_name').in('id',userIds);
+      (prof||[]).forEach(p=>{userMap[p.id]={name:p.display_name||''};});
+    }catch(e){}
+    let html=`<div class="table-wrap"><table><thead><tr>
+      <th>when</th><th>event_key</th><th>user</th><th>title</th>
+      <th class="num">pts</th><th>status</th><th></th>
+    </tr></thead><tbody>`;
+    data.forEach(r=>{
+      const u=userMap[r.user_id]||{};
+      const userLabel=u.name||r.user_id?.slice(0,8)||'—';
+      const status=r.shown
+        ? `<span class="bonus-chip shown">claimed</span><div class="hint" style="margin-top:2px;">${fmtTime(r.shown_at)}</div>`
+        : `<span class="bonus-chip unshown">pending</span>`;
+      html+=`<tr>
+        <td class="muted">${fmtTime(r.created_at)}</td>
+        <td><code style="font-size:10px;color:var(--ink2);">${esc(r.event_key)}</code></td>
+        <td>${esc(userLabel)}</td>
+        <td>${esc(r.icon||'')} ${esc(r.title)}</td>
+        <td class="num">${r.points}</td>
+        <td>${status}</td>
+        <td><button class="bonus-del" onclick="revokeBonus(${r.id},${r.shown?'true':'false'},${r.points})">${r.shown?'delete (−pts)':'delete'}</button></td>
+      </tr>`;
+    });
+    html+=`</tbody></table></div>`;
+    box.innerHTML=html;
+  }catch(e){
+    box.innerHTML=`<div class="err" style="margin:6px 0;">load failed: ${esc(e.message||e)}</div>`;
+  }
+}
+
+async function revokeBonus(id,wasClaimed,points){
+  const warn=wasClaimed
+    ? `이미 수령된 그랜트입니다. 삭제 시 유저의 total_score 에서 ${points}점 차감됩니다. 계속할까요?`
+    : `그랜트 #${id} 삭제할까요? (미수령이라 점수 영향 없음)`;
+  if(!confirm(warn))return;
+  try{
+    // If already claimed, subtract points from user's total_score first
+    if(wasClaimed){
+      const {data:row}=await sb.from('bonus_grants').select('user_id,points').eq('id',id).maybeSingle();
+      if(row&&row.user_id){
+        // Fetch current score, subtract, update
+        const {data:p}=await sb.from('profiles').select('total_score').eq('id',row.user_id).maybeSingle();
+        const cur=+(p?.total_score)||0;
+        const newScore=Math.max(0,cur-(row.points||0));
+        await sb.from('profiles').update({total_score:newScore}).eq('id',row.user_id);
+      }
+    }
+    const {error}=await sb.from('bonus_grants').delete().eq('id',id);
+    if(error){alert('delete failed: '+error.message);return;}
+    loadRecentGrants();
+  }catch(e){alert('revoke failed: '+(e.message||e));}
 }
 
 function renderTrend(trend){
