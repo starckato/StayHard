@@ -8498,7 +8498,7 @@ function togMand(i){
     const specialType=log.mandatory[i]._scoreType;
     if(specialType){addScore(specialType);}
     else{addScore('routine_done');}
-    const earnedPts=specialType?(SCORE_EVENTS[specialType]?.pts||1):1;
+    const earnedPts=specialType?(SCORE_EVENTS[specialType]?.pts||1):(SCORE_EVENTS.routine_done?.pts||1);
     const _bounceIdx=i;
     // score-gain chip: origin 좌표를 프록시 엘리먼트로 전달
     if(_originRect){
