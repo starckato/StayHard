@@ -3047,14 +3047,27 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
     <div style="margin:14px 0 12px;padding:12px 14px;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;">
       <div style="font-size:10px;font-weight:700;color:var(--text3);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:8px;">최근 변경사항</div>
       <div style="display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--text2);line-height:1.45;">
-        <div style="display:flex;gap:8px;"><span style="color:var(--text3);font-family:'DM Mono',monospace;flex-shrink:0;">04/19</span><span>🙌 친구 초대 기능 추가 — 초대 링크로 같이 Stay Hard</span></div>
-        <div style="display:flex;gap:8px;"><span style="color:var(--text3);font-family:'DM Mono',monospace;flex-shrink:0;">04/19</span><span>🔥 첫 주 미션 카드 — 가입 후 7일 핵심 액션 체크리스트</span></div>
+        <div style="display:flex;gap:8px;"><span style="color:var(--text3);font-family:'DM Mono',monospace;flex-shrink:0;">04/20</span><span>🔒 프로필·식단 사진 프라이버시 강화</span></div>
+        <div style="display:flex;gap:8px;"><span style="color:var(--text3);font-family:'DM Mono',monospace;flex-shrink:0;">04/19</span><span>🙌 친구 초대 + 첫 주 미션 + 통계 탭 배지</span></div>
         <div style="display:flex;gap:8px;"><span style="color:var(--text3);font-family:'DM Mono',monospace;flex-shrink:0;">04/19</span><span>⚡ 점수 리밸런스 — 운동 30·30, 루틴 ±1, 할일 ±2, 금지식단 -30</span></div>
       </div>
     </div>
 
+    <!-- 프라이버시 고지 -->
+    <div style="margin:0 0 12px;padding:12px 14px;background:rgba(56,189,248,0.05);border:1px solid rgba(56,189,248,0.18);border-radius:10px;">
+      <div style="font-size:10px;font-weight:700;color:var(--blue);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:8px;">🔒 프라이버시</div>
+      <div style="font-size:11.5px;color:var(--text2);line-height:1.6;">
+        • <b>네 기록</b>(체중, 식단, 운동, 루틴)은 기본적으로 <b>너만</b> 볼 수 있어.<br>
+        • <b>챌린지</b>에 참여하면 같은 챌린지 멤버끼리 서로의 기록 일부가 공개돼 (리더보드용).<br>
+        • <b>식단 사진</b>은 업로드 후 너만 접근 가능한 서명 URL로 관리돼.<br>
+        • <b>이메일</b>은 관리자 외엔 노출되지 않아.
+      </div>
+    </div>
+
     <button class="signout-btn" onclick="doSignOut()">로그아웃</button>
-    <button class="mbtn-ghost" onclick="closeModal('profile-modal')">닫기</button>
+    <button class="mbtn-ghost" onclick="closeModal('profile-modal')" style="margin-bottom:8px;">닫기</button>
+    <!-- 계정 삭제 — 파괴적 액션, 차가운 톤으로 -->
+    <button onclick="confirmDeleteAccount()" style="width:100%;padding:10px;background:transparent;border:1px solid rgba(255,77,77,0.3);border-radius:10px;color:var(--red);font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;letter-spacing:-.01em;">계정·데이터 완전 삭제</button>
   </div>
 </div>
 
@@ -5564,6 +5577,31 @@ async function saveNickname(){
   closeModal('profile-modal');
   showToast('✓ 닉네임이 변경됐어요');
 }
+// ═══════════════════════════════════════════════
+// 계정 삭제 — 되돌릴 수 없음. 2단계 확인 + RPC 호출.
+// ═══════════════════════════════════════════════
+async function confirmDeleteAccount(){
+  const ok1=confirm('계정과 네 모든 기록을 영구 삭제합니다.\n\n• 체중·식단·운동·루틴·할일 기록 모두 삭제\n• 식단 사진, 운동 영상 모두 삭제\n• 네가 만든 챌린지도 같이 삭제\n• 이메일로 재가입 가능하지만 데이터는 복구 불가\n\n진짜 계속할래?');
+  if(!ok1)return;
+  const typed=prompt('마지막 확인.\n\n"삭제" 라고 정확히 입력해야 진행됩니다.');
+  if(typed!=='삭제'){showToast('취소됐어요');return;}
+  try{
+    showToast('계정 삭제 중...');
+    const {data,error}=await sb.rpc('delete_my_account');
+    if(error){console.warn('[delete]',error);alert('삭제 실패: '+error.message);return;}
+    if(!data||!data.ok){alert('삭제 실패: '+JSON.stringify(data));return;}
+    try{track('account_deleted',{});}catch(e){}
+    // 즉시 로그아웃 + 세션 정리
+    try{localStorage.clear();sessionStorage.clear();}catch(e){}
+    try{await sb.auth.signOut();}catch(e){}
+    alert('삭제 완료. Stay Hard 에 다시 만나길.');
+    location.href='/';
+  }catch(e){
+    console.warn('[delete]',e);
+    alert('삭제 실패 — 네트워크 문제일 수 있어. 다시 시도해줘.');
+  }
+}
+
 async function doSignOut(){
   _initDone=false;
   await sb.auth.signOut();
@@ -7874,12 +7912,33 @@ function renderMeals(){
   const qualityScoreCls={green:'',normal:'neutral',cheat:'neutral',red:'neg',alcohol:'neg'};
 
   function mealPhotoHtml(photo){
-    if(photo)return`<div class="meal-item-photo"><img src="${photo}" loading="lazy"></div>`;
-    return`<div class="meal-item-photo"><div class="meal-item-photo-placeholder">🍽️</div></div>`;
+    if(!photo)return`<div class="meal-item-photo"><div class="meal-item-photo-placeholder">🍽️</div></div>`;
+    // base64 camera preview (pre-upload) — 즉시 표시
+    if(typeof photo==='string'&&photo.startsWith('data:')){
+      return`<div class="meal-item-photo"><img src="${esc(photo)}" loading="lazy"></div>`;
+    }
+    // path or legacy URL — async hydration 후 src 채워짐
+    const path=_mealPhotoPath(photo);
+    if(!path)return`<div class="meal-item-photo"><div class="meal-item-photo-placeholder">🍽️</div></div>`;
+    // 캐시 hit 이면 바로 src 부여, 아니면 placeholder (hydrate 이 async 로 채움)
+    const cached=_mealPhotoSignedCache[path];
+    if(cached&&cached.expires>Date.now()){
+      return`<div class="meal-item-photo"><img data-meal-photo="${esc(path)}" data-hydrated="1" src="${esc(cached.url)}" loading="lazy"></div>`;
+    }
+    return`<div class="meal-item-photo"><img data-meal-photo="${esc(path)}" src="" loading="lazy" style="opacity:0;transition:opacity .25s;background:var(--surface2);"></div>`;
   }
   function snackPhotoHtml(photo,icon){
-    if(photo)return`<div class="snack-item-photo"><img src="${photo}" loading="lazy"></div>`;
-    return`<div class="snack-item-photo">${icon}</div>`;
+    if(!photo)return`<div class="snack-item-photo">${icon}</div>`;
+    if(typeof photo==='string'&&photo.startsWith('data:')){
+      return`<div class="snack-item-photo"><img src="${esc(photo)}" loading="lazy"></div>`;
+    }
+    const path=_mealPhotoPath(photo);
+    if(!path)return`<div class="snack-item-photo">${icon}</div>`;
+    const cached=_mealPhotoSignedCache[path];
+    if(cached&&cached.expires>Date.now()){
+      return`<div class="snack-item-photo"><img data-meal-photo="${esc(path)}" data-hydrated="1" src="${esc(cached.url)}" loading="lazy"></div>`;
+    }
+    return`<div class="snack-item-photo"><img data-meal-photo="${esc(path)}" src="" loading="lazy" style="opacity:0;transition:opacity .25s;"></div>`;
   }
 
   // 슬롯 HTML
@@ -7942,6 +8001,8 @@ function renderMeals(){
   </div>`;
 
   document.getElementById('meal-rows').innerHTML=slotsHtml+extrasHtml+addBtn;
+  // private bucket — signed URL async hydration (fire-and-forget)
+  try{_hydrateMealPhotos();}catch(e){console.warn('[hydrate-meal]',e);}
 }
 
 async function deleteMeal(i){
@@ -8387,11 +8448,61 @@ async function uploadPhotoToStorage(file){
     const compressed=await compressImage(file,800,0.75);
     const ext=file.type==='image/png'?'png':'jpg';
     const path=`meals/${CU.id}/${Date.now()}.${ext}`;
-    const{data,error}=await sb.storage.from('meal-photos').upload(path,compressed,{contentType:'image/jpeg',upsert:false});
+    const{error}=await sb.storage.from('meal-photos').upload(path,compressed,{contentType:file.type||'image/jpeg',upsert:false});
     if(error)throw error;
-    const{data:{publicUrl}}=sb.storage.from('meal-photos').getPublicUrl(path);
-    return publicUrl;
+    // Bucket 은 이제 private — path 만 저장하고 render 시 createSignedUrl 로 생성
+    return path;
   }catch(e){console.warn('[uploadPhoto] failed, base64 fallback:',e.message);return null;}
+}
+
+// ─────────────────────────────────────────────
+// Meal photo signed URL helpers (Supabase private bucket)
+// - 저장된 값은 path 또는 legacy public URL. _mealPhotoPath 가 path 추출.
+// - _mealPhotoSignedCache 로 1시간 TTL 캐시 → 불필요한 재서명 방지.
+// - renderMeals 끝에서 _hydrateMealPhotos() async 로 img src 채움.
+// ─────────────────────────────────────────────
+const _mealPhotoSignedCache={};
+function _mealPhotoPath(stored){
+  if(!stored||typeof stored!=='string')return null;
+  if(stored.startsWith('data:'))return null; // base64 preview, handled elsewhere
+  if(stored.includes('://')){
+    // Legacy public URL or old signed URL with full origin
+    const m=stored.match(/\/meal-photos\/(.+?)(?:\?|$)/);
+    return m?m[1]:null;
+  }
+  return stored; // already a path
+}
+async function _hydrateMealPhotos(){
+  const imgs=document.querySelectorAll('img[data-meal-photo]:not([data-hydrated])');
+  if(!imgs.length)return;
+  const now=Date.now();
+  // Collect unique paths still needing signing
+  const uniquePaths=new Set();
+  imgs.forEach(img=>{
+    const p=img.getAttribute('data-meal-photo');
+    if(!p)return;
+    const cached=_mealPhotoSignedCache[p];
+    if(!cached||cached.expires<now+60000)uniquePaths.add(p);
+  });
+  // Batch sign
+  await Promise.all([...uniquePaths].map(async p=>{
+    try{
+      const{data,error}=await sb.storage.from('meal-photos').createSignedUrl(p,3600);
+      if(!error&&data&&data.signedUrl){
+        _mealPhotoSignedCache[p]={url:data.signedUrl,expires:now+3600000};
+      }
+    }catch(e){}
+  }));
+  // Populate src
+  imgs.forEach(img=>{
+    const p=img.getAttribute('data-meal-photo');
+    const cached=p?_mealPhotoSignedCache[p]:null;
+    if(cached){
+      img.src=cached.url;
+      img.style.opacity='1';
+    }
+    img.setAttribute('data-hydrated','1');
+  });
 }
 function compressImage(file,maxPx,quality){
   return new Promise((resolve)=>{
