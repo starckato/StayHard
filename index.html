@@ -664,7 +664,17 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
 .mnuminput:focus{border-color:var(--accent);}
 .munit{display:flex;align-items:center;justify-content:center;min-width:40px;font-size:12px;color:var(--text2);}
 
-/* ─── Wheel picker component (iOS-style) ─── */
+/* ─── Tap-to-open chip (displays current value, opens wheel picker modal) ─── */
+.pk-chip{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:13px 16px;background:var(--surface2);border:1px solid var(--border);border-radius:12px;cursor:pointer;touch-action:manipulation;user-select:none;-webkit-user-select:none;transition:border-color .15s,background .15s;}
+.pk-chip:active{background:var(--surface3);border-color:var(--accent-bd);}
+.pk-chip-left{display:flex;align-items:baseline;gap:5px;min-width:0;flex:1;}
+.pk-chip-val{font-family:'DM Mono',monospace;font-size:22px;font-weight:700;color:var(--text);letter-spacing:-.01em;line-height:1;}
+.pk-chip-unit{font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;color:var(--text2);}
+.pk-chip-arrow{color:var(--text3);font-size:16px;font-weight:400;flex-shrink:0;line-height:1;}
+.pk-chip.pk-chip--empty .pk-chip-val{color:var(--text3);}
+.pk-chip--compact{padding:10px 13px;}
+.pk-chip--compact .pk-chip-val{font-size:18px;}
+/* ─── Wheel picker component (iOS-style) — only used INSIDE wheel-picker-modal ─── */
 .num-slider{padding:6px 2px;display:flex;justify-content:center;}
 .num-slider--compact{padding:4px 2px;}
 .wp-group{display:inline-flex;align-items:center;justify-content:center;gap:2px;position:relative;padding:0 10px;}
@@ -1844,7 +1854,9 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
           <div class="mfield">
             <label class="mlabel">내 목표 체중 (kg)</label>
             <input type="hidden" id="comp-wgoal-inbody" oninput="syncWgoal()">
-            <div class="num-slider num-slider--compact" data-for="comp-wgoal-inbody" data-min="40" data-max="120" data-step="0.1" data-unit="kg" data-default="65"></div>
+            <div class="pk-chip pk-chip--compact pk-chip--empty" data-pk-for="comp-wgoal-inbody" data-pk-title="내 목표 체중" data-pk-min="40" data-pk-max="120" data-pk-step="0.1" data-pk-unit="kg" data-pk-default="65" onclick="_pkOpenFromChip(this)">
+              <div class="pk-chip-left"><span class="pk-chip-val">—</span><span class="pk-chip-unit">kg</span></div><span class="pk-chip-arrow">›</span>
+            </div>
           </div>
           <!-- 골격근량: 현재 / 목표 -->
           <div style="margin-bottom:10px;">
@@ -2096,7 +2108,9 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
           <div id="ob-weight-section" style="display:none;margin-bottom:16px;background:var(--surface2);border-radius:12px;padding:14px 16px;">
             <div style="font-size:12px;color:var(--text3);margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em;">목표 체중</div>
             <input type="hidden" id="ob-weight-inp">
-            <div class="num-slider num-slider--compact" data-for="ob-weight-inp" data-min="40" data-max="120" data-step="0.1" data-unit="kg" data-default="70"></div>
+            <div class="pk-chip pk-chip--empty" data-pk-for="ob-weight-inp" data-pk-title="현재 체중" data-pk-min="40" data-pk-max="120" data-pk-step="0.1" data-pk-unit="kg" data-pk-default="70" onclick="_pkOpenFromChip(this)">
+              <div class="pk-chip-left"><span class="pk-chip-val">—</span><span class="pk-chip-unit">kg</span></div><span class="pk-chip-arrow">›</span>
+            </div>
           </div>
           <!-- 주 운동 빈도 선택기 — muscle/habit 에서만 노출 -->
           <div id="ob-wfreq-section" style="display:none;margin-bottom:16px;background:var(--surface2);border-radius:12px;padding:14px 16px;">
@@ -2423,19 +2437,25 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
     <div class="mhandle"></div>
     <div class="mtitle">공복 체중 기록</div>
 
-    <!-- 체중 (슬라이더) -->
+    <!-- 체중 (tap-to-open) -->
     <div class="mfield">
       <label class="mlabel">체중 (kg) <span style="font-size:10px;font-weight:600;padding:1px 6px;border-radius:5px;background:rgba(255,77,77,.10);color:#ff4d4d;border:1px solid rgba(255,77,77,.18);">필수</span></label>
       <input type="hidden" id="wt-inp">
-      <div class="num-slider" data-for="wt-inp" data-min="30" data-max="150" data-step="0.1" data-unit="kg" data-default="70"></div>
+      <div class="pk-chip pk-chip--empty" data-pk-for="wt-inp" data-pk-title="체중" data-pk-min="30" data-pk-max="150" data-pk-step="0.1" data-pk-unit="kg" data-pk-default="70" onclick="_pkOpenFromChip(this)">
+        <div class="pk-chip-left"><span class="pk-chip-val">—</span><span class="pk-chip-unit">kg</span></div>
+        <span class="pk-chip-arrow">›</span>
+      </div>
       <div id="wt-yesterday-hint" style="display:none;margin-top:7px;padding:7px 11px;background:var(--surface2);border-radius:8px;font-size:12px;color:var(--text2);display:flex;align-items:center;gap:6px;"></div>
     </div>
 
-    <!-- 목표 체중 (슬라이더) -->
+    <!-- 목표 체중 (tap-to-open) -->
     <div class="mfield">
       <label class="mlabel">목표 체중 (kg) <span style="font-weight:400;color:var(--text3);font-size:11px;text-transform:none;letter-spacing:0;">선택사항</span></label>
       <input type="hidden" id="wt-goal-inp">
-      <div class="num-slider" data-for="wt-goal-inp" data-min="40" data-max="120" data-step="0.1" data-unit="kg" data-default="65"></div>
+      <div class="pk-chip pk-chip--empty" data-pk-for="wt-goal-inp" data-pk-title="목표 체중" data-pk-min="40" data-pk-max="120" data-pk-step="0.1" data-pk-unit="kg" data-pk-default="65" onclick="_pkOpenFromChip(this)">
+        <div class="pk-chip-left"><span class="pk-chip-val">—</span><span class="pk-chip-unit">kg</span></div>
+        <span class="pk-chip-arrow">›</span>
+      </div>
     </div>
 
     <button class="mbtn" onclick="saveWeight()">저장</button>
@@ -2461,15 +2481,33 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
       </div>
       <div class="mfield"><label class="mlabel" id="act-lbl1"></label>
         <input type="hidden" id="act-v1">
-        <div class="num-slider num-slider--compact" id="act-v1-slider" data-for="act-v1" data-min="0" data-max="60" data-step="0.1" data-unit="" data-default="5"></div>
+        <div class="pk-chip pk-chip--empty" id="act-v1-chip" data-pk-for="act-v1" data-pk-title="값 선택" data-pk-min="0" data-pk-max="60" data-pk-step="0.1" data-pk-unit="" data-pk-default="5" onclick="_pkOpenFromChip(this)">
+          <div class="pk-chip-left"><span class="pk-chip-val">—</span><span class="pk-chip-unit"></span></div>
+          <span class="pk-chip-arrow">›</span>
+        </div>
       </div>
       <div class="mfield" id="act-f2"><label class="mlabel" id="act-lbl2"></label>
         <input type="hidden" id="act-v2">
-        <div class="num-slider num-slider--compact" id="act-v2-slider" data-for="act-v2" data-min="0" data-max="180" data-step="1" data-unit="분" data-default="30"></div>
+        <div class="pk-chip pk-chip--empty" id="act-v2-chip" data-pk-for="act-v2" data-pk-title="값 선택" data-pk-min="0" data-pk-max="180" data-pk-step="1" data-pk-unit="분" data-pk-default="30" onclick="_pkOpenFromChip(this)">
+          <div class="pk-chip-left"><span class="pk-chip-val">—</span><span class="pk-chip-unit">분</span></div>
+          <span class="pk-chip-arrow">›</span>
+        </div>
       </div>
     </div>
     <button class="mbtn" id="act-save-btn" onclick="saveActivity()" style="display:none;">저장</button>
     <button class="mbtn-ghost" onclick="closeModal('activity-modal')">취소</button>
+  </div>
+</div>
+
+<!-- GENERIC WHEEL PICKER MODAL (공용 tap-to-open) -->
+<div class="modal-overlay" id="wheel-picker-modal">
+  <div class="modal">
+    <div class="mhandle"></div>
+    <div class="mtitle" id="wpm-title" style="margin-bottom:12px;">값 선택</div>
+    <input type="hidden" id="wpm-hidden">
+    <div id="wpm-slider-wrap"></div>
+    <button class="mbtn" id="wpm-confirm-btn" onclick="_wpmConfirm()">확인</button>
+    <button class="mbtn-ghost" onclick="closeModal('wheel-picker-modal')">취소</button>
   </div>
 </div>
 
@@ -2644,28 +2682,50 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
       <div style="margin-bottom:14px;">
         <div style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:8px;">⚖️ 목표 체중 <span style="color:var(--red);">*</span></div>
         <input type="hidden" id="iep-wgoal">
-        <div class="num-slider num-slider--compact" data-for="iep-wgoal" data-min="40" data-max="120" data-step="0.1" data-unit="kg" data-default="65"></div>
+        <div class="pk-chip pk-chip--compact pk-chip--empty" data-pk-for="iep-wgoal" data-pk-title="목표 체중" data-pk-min="40" data-pk-max="120" data-pk-step="0.1" data-pk-unit="kg" data-pk-default="65" onclick="_pkOpenFromChip(this)">
+          <div class="pk-chip-left"><span class="pk-chip-val">—</span><span class="pk-chip-unit">kg</span></div><span class="pk-chip-arrow">›</span>
+        </div>
       </div>
       <div style="height:0.5px;background:var(--border);margin-bottom:14px;"></div>
       <!-- 골격근량 (선택) -->
       <div style="margin-bottom:14px;">
         <div style="font-size:12px;font-weight:600;color:var(--green);margin-bottom:8px;">💪 골격근량 <span style="font-size:10px;font-weight:400;color:var(--text3);">선택</span></div>
-        <div style="font-size:10px;color:var(--text3);margin-bottom:4px;">현재</div>
-        <input type="hidden" id="iep-muscle-now">
-        <div class="num-slider num-slider--compact" data-for="iep-muscle-now" data-min="15" data-max="60" data-step="0.1" data-unit="kg" data-default="30"></div>
-        <div style="font-size:10px;color:var(--text3);margin:10px 0 4px;">목표</div>
-        <input type="hidden" id="iep-muscle-goal">
-        <div class="num-slider num-slider--compact" data-for="iep-muscle-goal" data-min="15" data-max="60" data-step="0.1" data-unit="kg" data-default="35"></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <div>
+            <div style="font-size:10px;color:var(--text3);margin-bottom:4px;">현재</div>
+            <input type="hidden" id="iep-muscle-now">
+            <div class="pk-chip pk-chip--compact pk-chip--empty" data-pk-for="iep-muscle-now" data-pk-title="현재 골격근량" data-pk-min="15" data-pk-max="60" data-pk-step="0.1" data-pk-unit="kg" data-pk-default="30" onclick="_pkOpenFromChip(this)">
+              <div class="pk-chip-left"><span class="pk-chip-val">—</span><span class="pk-chip-unit">kg</span></div><span class="pk-chip-arrow">›</span>
+            </div>
+          </div>
+          <div>
+            <div style="font-size:10px;color:var(--text3);margin-bottom:4px;">목표</div>
+            <input type="hidden" id="iep-muscle-goal">
+            <div class="pk-chip pk-chip--compact pk-chip--empty" data-pk-for="iep-muscle-goal" data-pk-title="목표 골격근량" data-pk-min="15" data-pk-max="60" data-pk-step="0.1" data-pk-unit="kg" data-pk-default="35" onclick="_pkOpenFromChip(this)">
+              <div class="pk-chip-left"><span class="pk-chip-val">—</span><span class="pk-chip-unit">kg</span></div><span class="pk-chip-arrow">›</span>
+            </div>
+          </div>
+        </div>
       </div>
       <!-- 체지방률 (선택) -->
       <div style="margin-bottom:20px;">
         <div style="font-size:12px;font-weight:600;color:var(--amber);margin-bottom:8px;">🔥 체지방률 <span style="font-size:10px;font-weight:400;color:var(--text3);">선택</span></div>
-        <div style="font-size:10px;color:var(--text3);margin-bottom:4px;">현재</div>
-        <input type="hidden" id="iep-fat-now">
-        <div class="num-slider num-slider--compact" data-for="iep-fat-now" data-min="3" data-max="50" data-step="0.1" data-unit="%" data-default="20"></div>
-        <div style="font-size:10px;color:var(--text3);margin:10px 0 4px;">목표</div>
-        <input type="hidden" id="iep-fat-goal">
-        <div class="num-slider num-slider--compact" data-for="iep-fat-goal" data-min="3" data-max="50" data-step="0.1" data-unit="%" data-default="15"></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <div>
+            <div style="font-size:10px;color:var(--text3);margin-bottom:4px;">현재</div>
+            <input type="hidden" id="iep-fat-now">
+            <div class="pk-chip pk-chip--compact pk-chip--empty" data-pk-for="iep-fat-now" data-pk-title="현재 체지방률" data-pk-min="3" data-pk-max="50" data-pk-step="0.1" data-pk-unit="%" data-pk-default="20" onclick="_pkOpenFromChip(this)">
+              <div class="pk-chip-left"><span class="pk-chip-val">—</span><span class="pk-chip-unit">%</span></div><span class="pk-chip-arrow">›</span>
+            </div>
+          </div>
+          <div>
+            <div style="font-size:10px;color:var(--text3);margin-bottom:4px;">목표</div>
+            <input type="hidden" id="iep-fat-goal">
+            <div class="pk-chip pk-chip--compact pk-chip--empty" data-pk-for="iep-fat-goal" data-pk-title="목표 체지방률" data-pk-min="3" data-pk-max="50" data-pk-step="0.1" data-pk-unit="%" data-pk-default="15" onclick="_pkOpenFromChip(this)">
+              <div class="pk-chip-left"><span class="pk-chip-val">—</span><span class="pk-chip-unit">%</span></div><span class="pk-chip-arrow">›</span>
+            </div>
+          </div>
+        </div>
       </div>
       <div id="iep-err" style="font-size:12px;color:var(--red);margin-bottom:10px;display:none;"></div>
       <button onclick="saveMyInbodyGoal()" style="width:100%;padding:14px;background:var(--accent);border:none;border-radius:12px;color:#fff;font-size:15px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer;touch-action:manipulation;">저장</button>
@@ -5978,7 +6038,7 @@ function showOnboarding(name){
     const el=document.getElementById(id);if(el)el.style.display=i===0?'block':'none';
   });
   document.getElementById('onboarding-modal').style.display='flex';
-  try{setupNumSliders(document.getElementById('onboarding-modal'));}catch(e){}
+  try{_pkBindAll(document.getElementById('onboarding-modal'));_pkSync('ob-weight-inp');}catch(e){}
   try{track('onboard_step_view',{step:1});}catch(e){}
 }
 function obNext(step){
@@ -6959,6 +7019,107 @@ function _wpSetScroll(wp,top){
   requestAnimationFrame(retry);
 }
 function _wpCurrentRequested(el){return el._wpRequestedVal||0;}
+
+// ═══════════════════════════════════════════════
+// PK-CHIP + GENERIC WHEEL PICKER MODAL
+// ═══════════════════════════════════════════════
+// Pattern:
+//   <input type="hidden" id="wt-inp">
+//   <div class="pk-chip" data-pk-for="wt-inp" data-pk-title="체중"
+//        data-pk-min="30" data-pk-max="150" data-pk-step="0.1"
+//        data-pk-unit="kg" data-pk-default="70" onclick="_pkOpenFromChip(this)">
+//     <div class="pk-chip-left"><span class="pk-chip-val">—</span><span class="pk-chip-unit">kg</span></div>
+//     <span class="pk-chip-arrow">›</span>
+//   </div>
+// Chip display auto-syncs when hidden input 'input' fires.
+// openWheelPicker({targetId, title, min, max, step, unit, defaultVal, onSave})
+//   opens #wheel-picker-modal preloaded with config and current value.
+//   On 확인 tap, hidden input is updated and input event dispatched.
+
+let _wpmCtx=null; // {targetId, onSave}
+
+function openWheelPicker(cfg){
+  const hidden=document.getElementById(cfg.targetId);
+  if(!hidden)return;
+  const cur=hidden.value?parseFloat(hidden.value):(cfg.defaultVal!=null?cfg.defaultVal:(cfg.min+cfg.max)/2);
+  _wpmCtx={targetId:cfg.targetId,onSave:cfg.onSave};
+  const title=document.getElementById('wpm-title');
+  if(title)title.textContent=cfg.title||'값 선택';
+  const wrap=document.getElementById('wpm-slider-wrap');
+  if(!wrap)return;
+  const decimals=cfg.step<1?1:0;
+  // Rebuild slider from scratch
+  wrap.innerHTML=`<input type="hidden" id="wpm-hidden-proxy" value="${cur.toFixed(decimals)}"><div class="num-slider" data-for="wpm-hidden-proxy" data-min="${cfg.min}" data-max="${cfg.max}" data-step="${cfg.step}" data-unit="${cfg.unit||''}" data-default="${cur}"></div>`;
+  openModal('wheel-picker-modal');
+  setupNumSliders(wrap);
+  const s=wrap.querySelector('.num-slider');
+  if(s&&s._setValue)s._setValue(cur);
+}
+function _wpmConfirm(){
+  if(!_wpmCtx){closeModal('wheel-picker-modal');return;}
+  const proxy=document.getElementById('wpm-hidden-proxy');
+  const target=document.getElementById(_wpmCtx.targetId);
+  if(proxy&&target){
+    target.value=proxy.value;
+    target.dispatchEvent(new Event('input',{bubbles:true}));
+    target.dispatchEvent(new Event('change',{bubbles:true}));
+  }
+  const cb=_wpmCtx.onSave;const tgt=_wpmCtx.targetId;
+  closeModal('wheel-picker-modal');
+  _wpmCtx=null;
+  _pkSync(tgt);
+  if(cb)try{cb(target?target.value:null);}catch(e){console.warn('[wpm onSave]',e);}
+}
+function _pkOpenFromChip(chip){
+  if(!chip)return;
+  const d=chip.dataset;
+  openWheelPicker({
+    targetId:d.pkFor,
+    title:d.pkTitle||'값 선택',
+    min:parseFloat(d.pkMin)||0,
+    max:parseFloat(d.pkMax)||100,
+    step:parseFloat(d.pkStep)||1,
+    unit:d.pkUnit||'',
+    defaultVal:d.pkDefault?parseFloat(d.pkDefault):null,
+  });
+}
+// Sync chip display to hidden input value
+function _pkSync(targetId){
+  const hidden=document.getElementById(targetId);
+  if(!hidden)return;
+  const chips=document.querySelectorAll(`.pk-chip[data-pk-for="${CSS.escape(targetId)}"]`);
+  chips.forEach(chip=>{
+    const val=hidden.value;
+    const step=parseFloat(chip.dataset.pkStep)||1;
+    const decimals=step<1?1:0;
+    const valEl=chip.querySelector('.pk-chip-val');
+    const unitEl=chip.querySelector('.pk-chip-unit');
+    if(unitEl)unitEl.textContent=chip.dataset.pkUnit||'';
+    if(!valEl)return;
+    if(val===''||val==null||isNaN(parseFloat(val))){
+      valEl.textContent='—';
+      chip.classList.add('pk-chip--empty');
+    } else {
+      valEl.textContent=parseFloat(val).toFixed(decimals);
+      chip.classList.remove('pk-chip--empty');
+    }
+  });
+}
+// Bind hidden input → chip display. Call once on DOM ready + after any HTML injection.
+function _pkBindAll(root){
+  (root||document).querySelectorAll('.pk-chip:not([data-pk-bound])').forEach(chip=>{
+    chip.setAttribute('data-pk-bound','1');
+    const targetId=chip.dataset.pkFor;
+    if(!targetId)return;
+    const hidden=document.getElementById(targetId);
+    if(hidden){
+      hidden.addEventListener('input',()=>_pkSync(targetId));
+      hidden.addEventListener('change',()=>_pkSync(targetId));
+    }
+    _pkSync(targetId);
+  });
+}
+document.addEventListener('DOMContentLoaded',()=>{try{_pkBindAll(document);}catch(e){console.warn('[pk-chip]',e);}});
 
 // ═══════════════════════════════════════════════
 // SECURITY HELPERS
@@ -8170,6 +8331,7 @@ function openWeightModal(){
   if(inp)inp.value=log.weight!=null?parseFloat(log.weight).toFixed(1):'';
   const currentGoal=getWeightGoal();
   if(gi)gi.value=currentGoal?currentGoal.toFixed(1):'';
+  try{_pkBindAll(document.getElementById('weight-modal'));_pkSync('wt-inp');_pkSync('wt-goal-inp');}catch(e){}
   // 전날 체중 힌트
   const hint=document.getElementById('wt-yesterday-hint');
   if(hint){
@@ -8193,18 +8355,6 @@ function openWeightModal(){
     }
   }
   openModal('weight-modal');
-  // wheel pickers — init AFTER modal visible so scrollTop lands
-  try{
-    setupNumSliders(document.getElementById('weight-modal'));
-    const wtSlider=document.querySelector('#weight-modal .num-slider[data-for="wt-inp"]');
-    const goalSlider=document.querySelector('#weight-modal .num-slider[data-for="wt-goal-inp"]');
-    if(wtSlider&&wtSlider._setValue){
-      wtSlider._setValue(log.weight!=null?parseFloat(log.weight):(parseFloat(inp?.value)||70));
-    }
-    if(goalSlider&&goalSlider._setValue){
-      goalSlider._setValue(currentGoal?parseFloat(currentGoal):(parseFloat(gi?.value)||65));
-    }
-  }catch(e){console.warn('[weight wheel]',e);}
 }
 // ── 인바디 자동계산 헬퍼 ──
 function calcBodyFat(){
@@ -9778,19 +9928,24 @@ function _actSliderCfg(unit){
   return{min:0,max:100,step:1,default:0};
 }
 function _reconfigSlider(id,unit){
+  // id 은 이제 pk-chip (예: 'act-v1-chip' / 'act-v2-chip'). unit 별 min/max/step 을
+  // chip data-pk-* 에 최신으로 반영하고, hidden input 값 리셋 + chip 표시 재동기화.
   const el=document.getElementById(id);
   if(!el)return;
   const cfg=_actSliderCfg(unit);
-  el.setAttribute('data-min',cfg.min);
-  el.setAttribute('data-max',cfg.max);
-  el.setAttribute('data-step',cfg.step);
-  el.setAttribute('data-unit',unit||'');
-  el.setAttribute('data-default',cfg.default);
-  el.removeAttribute('data-ns-init'); // re-init 을 위해 플래그 제거
-  // hidden input 초기값 clear 해서 default 로 시작
-  const target=el.dataset.for?document.getElementById(el.dataset.for):null;
+  el.dataset.pkMin=cfg.min;
+  el.dataset.pkMax=cfg.max;
+  el.dataset.pkStep=cfg.step;
+  el.dataset.pkUnit=unit||'';
+  el.dataset.pkDefault=cfg.default;
+  const target=el.dataset.pkFor?document.getElementById(el.dataset.pkFor):null;
   if(target)target.value='';
-  setupNumSliders(el.parentElement||el);
+  // unit label visual + empty state
+  const unitEl=el.querySelector('.pk-chip-unit');
+  if(unitEl)unitEl.textContent=unit||'';
+  el.classList.add('pk-chip--empty');
+  const valEl=el.querySelector('.pk-chip-val');
+  if(valEl)valEl.textContent='—';
 }
 
 function pickActivity(i,el){
@@ -9801,12 +9956,12 @@ function pickActivity(i,el){
   document.getElementById('act-sel-icon').textContent=t.i;
   document.getElementById('act-sel-name').textContent=t.n;
   document.getElementById('act-lbl1').textContent=t.l1+' ('+t.u1+')';
-  _reconfigSlider('act-v1-slider',t.u1);
+  _reconfigSlider('act-v1-chip',t.u1);
   const f2=document.getElementById('act-f2');
   if(t.u2){
     f2.style.display='block';
     document.getElementById('act-lbl2').textContent=t.l2+' ('+t.u2+')';
-    _reconfigSlider('act-v2-slider',t.u2);
+    _reconfigSlider('act-v2-chip',t.u2);
   } else {
     f2.style.display='none';
   }
@@ -9875,6 +10030,7 @@ function editActivity(i){
       const v2=parts[1]?parseFloat(parts[1]):'';
       document.getElementById('act-v1').value=v1||'';
       document.getElementById('act-v2').value=v2||'';
+      try{_pkSync('act-v1');_pkSync('act-v2');}catch(e){}
     },50);
   }
 }
@@ -10977,10 +11133,7 @@ function showChallengeCreate(){
   const overlay=document.getElementById('ch-create-overlay');
   overlay.style.display='flex';
   overlay.scrollTop=0;
-  // Initialize inbody wgoal slider (safe if already inited)
-  setupNumSliders(overlay);
-  const wgSlider=overlay.querySelector('.num-slider[data-for="comp-wgoal-inbody"]');
-  if(wgSlider&&wgSlider._setValue)wgSlider._setValue(parseFloat(wgSlider.dataset.default)||65);
+  try{_pkBindAll(overlay);_pkSync('comp-wgoal-inbody');}catch(e){}
 }
 function hideChallengeCreate(){
   document.getElementById('ch-create-overlay').style.display='none';
@@ -11547,19 +11700,9 @@ function openInbodyEditPopup(compId){
   errEl.style.display='none';errEl.textContent='';
   document.getElementById('inbody-edit-popup').style.display='flex';
   document.body.style.overflow='hidden';
-  // Initialize sliders (first open) then sync to current stored values
+  // Sync chip displays to stored values (chip component auto-reads hidden input)
   const popup=document.getElementById('inbody-edit-popup');
-  setupNumSliders(popup);
-  const applyVal=(id,val)=>{
-    const slider=popup.querySelector(`.num-slider[data-for="${id}"]`);
-    const n=parseFloat(val);
-    if(slider&&slider._setValue&&!isNaN(n))slider._setValue(n);
-  };
-  applyVal('iep-wgoal',wg);
-  applyVal('iep-muscle-now',ig.muscleNow);
-  applyVal('iep-muscle-goal',ig.muscle);
-  applyVal('iep-fat-now',ig.fatNow);
-  applyVal('iep-fat-goal',ig.fatPct);
+  try{_pkBindAll(popup);['iep-wgoal','iep-muscle-now','iep-muscle-goal','iep-fat-now','iep-fat-goal'].forEach(_pkSync);}catch(e){}
 }
 function closeInbodyEditPopup(){
   document.getElementById('inbody-edit-popup').style.display='none';
@@ -12717,6 +12860,20 @@ function closeModal(id){
 }
 document.querySelectorAll('.modal-overlay').forEach(m=>{m.addEventListener('click',e=>{if(e.target===m)closeModal(m.id);});});
 
+// ── Scroll-lock safety net ──
+// 여러 overlay 가 각자 body.style.overflow 를 조작하다 보니 position:fixed
+// 가 한 번 남으면 _unlockScroll 의 _isAnyOverlayOpen false-positive 로 해제
+// 안 되어 배경 스크롤이 막히는 버그 재발. touchstart 시점에 overlay 가
+// 실제 열려있지 않으면 강제 복원.
+document.addEventListener('touchstart',()=>{
+  if(document.body.style.position==='fixed'&&!_isAnyOverlayOpen()){
+    try{_forceUnlockScroll();}catch(e){
+      document.body.style.overflow='';document.body.style.position='';
+      document.body.style.top='';document.body.style.width='';
+    }
+  }
+},{passive:true,capture:true});
+
 // ── Drag-to-dismiss via .mhandle (top bar만 잡고 내리기) ──
 // 바만 잡아야 모달이 내려감. 본문/휠 어느 영역이나 손대도 닫히지 않음.
 document.querySelectorAll('.modal-overlay .mhandle').forEach(handle=>{
@@ -13207,7 +13364,7 @@ window.addEventListener('offline',()=>_updateOffline(true));
 
 init();
 // 초기 로드 시 모든 slider 컴포넌트 setup (모달 안에 있어도 가능)
-document.addEventListener('DOMContentLoaded',()=>{try{setupNumSliders(document);}catch(e){console.warn('[num-slider]',e);}});
+// (num-slider 는 이제 wheel-picker-modal 내부에서만 동적으로 빌드. static 스캔 불필요)
 // Friend landing: show once if URL has ?celebrate=... param
 setTimeout(()=>{try{maybeShowFriendWelcome();}catch(e){console.warn('[friend-welcome]',e);}},700);
 
