@@ -662,24 +662,23 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
 .mnuminput:focus{border-color:var(--accent);}
 .munit{display:flex;align-items:center;justify-content:center;min-width:40px;font-size:12px;color:var(--text2);}
 
-/* ─── Numeric slider component (공용) ─── */
-.num-slider{padding:10px 2px 4px;}
-.ns-display{text-align:center;margin-bottom:8px;display:flex;align-items:baseline;justify-content:center;gap:5px;}
-.ns-val{font-family:'Archivo Black',sans-serif;font-size:34px;letter-spacing:-.02em;color:var(--text);line-height:1;}
-.ns-unit{font-size:14px;color:var(--text3);font-weight:600;}
-.ns-controls{display:flex;align-items:center;gap:10px;}
-.ns-btn{width:40px;height:40px;min-width:40px;flex-shrink:0;border-radius:10px;border:1px solid var(--border2);background:var(--surface2);color:var(--text);font-size:20px;font-weight:900;cursor:pointer;touch-action:manipulation;display:flex;align-items:center;justify-content:center;user-select:none;-webkit-user-select:none;}
-.ns-btn:active{background:var(--accent-bg);border-color:var(--accent-bd);color:var(--accent);}
-.ns-range{flex:1;-webkit-appearance:none;appearance:none;height:6px;background:var(--surface3);border-radius:3px;outline:none;touch-action:manipulation;}
-.ns-range::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,#ff4d4d,#ff6b35);cursor:grab;border:none;box-shadow:0 2px 8px rgba(255,77,77,.45);}
-.ns-range::-moz-range-thumb{width:24px;height:24px;border-radius:50%;background:#ff6b35;cursor:grab;border:none;box-shadow:0 2px 8px rgba(255,77,77,.45);}
-.ns-scale{display:flex;justify-content:space-between;padding:0 4px;margin-top:4px;font-size:10px;color:var(--text3);font-family:'DM Mono',monospace;}
-.ns-presets{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;}
-.ns-preset{padding:5px 10px;background:var(--surface2);border:1px solid var(--border2);border-radius:999px;font-size:11px;color:var(--text2);font-weight:600;cursor:pointer;touch-action:manipulation;}
-.ns-preset:active,.ns-preset.active{background:var(--accent-bg);border-color:var(--accent-bd);color:var(--accent);}
-.num-slider--compact .ns-val{font-size:24px;}
-.num-slider--compact{padding:6px 2px 2px;}
-.num-slider--compact .ns-btn{width:34px;height:34px;min-width:34px;font-size:16px;}
+/* ─── Wheel picker component (iOS-style) ─── */
+.num-slider{padding:6px 2px;}
+.num-slider--compact{padding:4px 2px;}
+.wp-group{display:flex;align-items:center;justify-content:center;gap:4px;position:relative;}
+.wp{height:180px;overflow-y:scroll;scroll-snap-type:y mandatory;scrollbar-width:none;-ms-overflow-style:none;min-width:54px;touch-action:pan-y;overscroll-behavior:contain;position:relative;z-index:1;-webkit-mask-image:linear-gradient(to bottom,transparent 0%,rgba(0,0,0,.35) 18%,#000 42%,#000 58%,rgba(0,0,0,.35) 82%,transparent 100%);mask-image:linear-gradient(to bottom,transparent 0%,rgba(0,0,0,.35) 18%,#000 42%,#000 58%,rgba(0,0,0,.35) 82%,transparent 100%);}
+.wp::-webkit-scrollbar{display:none;width:0;height:0;}
+.wp-list{padding:72px 0;}
+.wp-item{height:36px;scroll-snap-align:center;scroll-snap-stop:always;display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:20px;font-weight:700;color:var(--text3);cursor:pointer;touch-action:manipulation;user-select:none;-webkit-user-select:none;line-height:1;transition:color .12s,font-size .12s;}
+.wp-item.active{color:var(--text);font-size:26px;}
+.wp-dot{font-family:'DM Mono',monospace;font-size:22px;font-weight:700;color:var(--text);line-height:1;padding-bottom:4px;user-select:none;}
+.wp-unit{font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;color:var(--text2);margin-left:4px;align-self:center;}
+.wp-window{position:absolute;left:8px;right:8px;top:72px;height:36px;border-top:1px solid var(--border2);border-bottom:1px solid var(--border2);pointer-events:none;z-index:0;background:rgba(255,77,77,.05);border-radius:4px;}
+.num-slider--compact .wp{height:144px;}
+.num-slider--compact .wp-list{padding:54px 0;}
+.num-slider--compact .wp-item{height:36px;font-size:17px;}
+.num-slider--compact .wp-item.active{font-size:22px;}
+.num-slider--compact .wp-window{top:54px;}
 .status-row{display:flex;gap:7px;margin-bottom:12px;}
 .st-btn{flex:1;padding:9px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface2);color:var(--text2);font-family:'DM Sans',sans-serif;font-size:11px;font-weight:500;cursor:pointer;transition:all .13s;}
 .st-btn.s-done{background:var(--green-bg);border-color:var(--green);color:var(--green);}
@@ -2462,28 +2461,22 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
   </div>
 </div>
 
-<!-- KG PICKER MODAL (세트별 무게 슬라이더) -->
+<!-- KG PICKER MODAL (세트별 무게 휠 피커) -->
 <div class="modal-overlay" id="kg-picker-modal">
   <div class="modal">
     <div class="mhandle"></div>
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;gap:10px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;gap:10px;">
       <div class="mtitle" style="margin:0;font-size:14px;"><span id="kg-picker-title">세트 무게</span></div>
       <div style="display:flex;background:var(--surface2);border:1px solid var(--border2);border-radius:6px;padding:2px;">
         <div id="kgp-unit-kg" onclick="wsKgPickerSetUnit('kg')" style="padding:4px 10px;font-size:11px;font-weight:700;border-radius:4px;cursor:pointer;touch-action:manipulation;">kg</div>
         <div id="kgp-unit-lb" onclick="wsKgPickerSetUnit('lb')" style="padding:4px 10px;font-size:11px;font-weight:700;border-radius:4px;cursor:pointer;touch-action:manipulation;">lb</div>
       </div>
     </div>
-    <div style="text-align:center;margin-bottom:14px;">
-      <span id="kgp-val" style="font-family:'Archivo Black',sans-serif;font-size:48px;letter-spacing:-.02em;color:var(--text);line-height:1;">0</span>
-      <span id="kgp-unit-label" style="font-size:16px;font-weight:700;color:var(--text2);margin-left:6px;">kg</span>
+    <input type="hidden" id="kgp-hidden">
+    <div id="kgp-wheel-wrap">
+      <div class="num-slider" id="kgp-wheel" data-for="kgp-hidden" data-min="0" data-max="200" data-step="1" data-unit="kg" data-default="0" data-mode="single"></div>
     </div>
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
-      <div onclick="wsKgPickerStep(-1)" style="width:40px;height:40px;display:flex;align-items:center;justify-content:center;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;cursor:pointer;touch-action:manipulation;font-size:20px;font-weight:700;color:var(--text);flex-shrink:0;">−</div>
-      <input type="range" id="kgp-range" min="0" max="200" step="1" value="0" oninput="wsKgPickerOnRange(this.value)" style="flex:1;-webkit-appearance:none;appearance:none;height:6px;background:var(--surface3);border-radius:3px;outline:none;"/>
-      <div onclick="wsKgPickerStep(1)" style="width:40px;height:40px;display:flex;align-items:center;justify-content:center;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;cursor:pointer;touch-action:manipulation;font-size:20px;font-weight:700;color:var(--text);flex-shrink:0;">＋</div>
-    </div>
-    <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text3);padding:0 52px;margin-bottom:14px;"><span>0</span><span id="kgp-scale-mid">100</span><span id="kgp-scale-max">200</span></div>
-    <div id="kgp-presets" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:18px;"></div>
+    <div id="kgp-presets" style="display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 16px;"></div>
     <button class="mbtn" onclick="wsKgPickerSave()">확인</button>
     <button class="mbtn-ghost" onclick="closeModal('kg-picker-modal')">취소</button>
   </div>
@@ -4114,8 +4107,8 @@ function wsUpdateKg(ei,si,val){
   if(currentSession[ei].sets[si].done)saveSessionToLog();
 }
 
-// ── KG Picker Modal (tap-to-open slider for workout set kg) ──
-let _kgpEi=null,_kgpSi=null,_kgpUnit='kg',_kgpVal=0;
+// ── KG Picker Modal (tap-to-open wheel picker for workout set kg) ──
+let _kgpEi=null,_kgpSi=null,_kgpUnit='kg';
 const KGP_PRESETS_KG=[20,40,60,80,100,120];
 const KGP_PRESETS_LB=[45,95,135,185,225,275];
 
@@ -4124,70 +4117,66 @@ function wsOpenKgPicker(ei,si){
   _kgpEi=ei;_kgpSi=si;_kgpUnit=_wsUnit;
   const kgStored=parseFloat(ex.sets[si].kg)||0;
   const factor=_kgpUnit==='lb'?2.20462:1;
-  _kgpVal=Math.round(kgStored*factor);
+  const initVal=Math.round(kgStored*factor);
   const title=document.getElementById('kg-picker-title');
   if(title)title.textContent=`${ex.name||'세트'} · ${si+1}번 세트`;
-  _wsKgPickerRender();
-  const m=document.getElementById('kg-picker-modal');
-  if(m){m.style.display='flex';document.body.style.overflow='hidden';}
+  _wsKgPickerRenderPresets();
+  _wsKgPickerUnitBtn();
+  openModal('kg-picker-modal');
+  // build wheel AFTER modal is visible so scrollTop lands correctly
+  _wsKgPickerRebuildWheel(initVal);
+}
+
+function _wsKgPickerRebuildWheel(val){
+  const wrap=document.getElementById('kgp-wheel-wrap');
+  if(!wrap)return;
+  const max=_kgpUnit==='lb'?440:200;
+  // rebuild to reset max for current unit
+  wrap.innerHTML=`<input type="hidden" id="kgp-hidden" value="${val}"><div class="num-slider" id="kgp-wheel" data-for="kgp-hidden" data-min="0" data-max="${max}" data-step="1" data-unit="${_kgpUnit}" data-default="${val}" data-mode="single"></div>`;
+  setupNumSliders(wrap);
+  const el=document.getElementById('kgp-wheel');
+  if(el&&el._setValue)el._setValue(val);
 }
 
 function wsKgPickerSetUnit(u){
   if(u===_kgpUnit)return;
-  // convert current display value to the other unit
-  if(u==='lb'&&_kgpUnit==='kg')_kgpVal=Math.round(_kgpVal*2.20462);
-  else if(u==='kg'&&_kgpUnit==='lb')_kgpVal=Math.round(_kgpVal/2.20462);
+  // convert current displayed value to the new unit
+  const cur=parseFloat(document.getElementById('kgp-hidden')?.value)||0;
+  let newVal=cur;
+  if(u==='lb'&&_kgpUnit==='kg')newVal=Math.round(cur*2.20462);
+  else if(u==='kg'&&_kgpUnit==='lb')newVal=Math.round(cur/2.20462);
   _kgpUnit=u;
-  _wsKgPickerRender();
+  _wsKgPickerRebuildWheel(newVal);
+  _wsKgPickerRenderPresets();
+  _wsKgPickerUnitBtn();
 }
 
-function wsKgPickerOnRange(v){
-  _kgpVal=parseInt(v)||0;
-  _wsKgPickerSyncDisplay();
-}
-
-function wsKgPickerStep(d){
-  const max=_kgpUnit==='lb'?440:200;
-  _kgpVal=Math.max(0,Math.min(max,_kgpVal+d));
-  _wsKgPickerSyncDisplay();
-}
-
-function _wsKgPickerSyncDisplay(){
-  const v=document.getElementById('kgp-val');if(v)v.textContent=_kgpVal;
-  const r=document.getElementById('kgp-range');if(r&&parseInt(r.value)!==_kgpVal)r.value=_kgpVal;
-}
-
-function _wsKgPickerRender(){
+function _wsKgPickerUnitBtn(){
   const isLb=_kgpUnit==='lb';
-  const max=isLb?440:200;const mid=isLb?220:100;
-  const r=document.getElementById('kgp-range');
-  if(r){r.max=max;r.step=1;r.value=Math.min(_kgpVal,max);}
-  const ul=document.getElementById('kgp-unit-label');if(ul)ul.textContent=_kgpUnit;
-  const sm=document.getElementById('kgp-scale-mid');if(sm)sm.textContent=mid;
-  const sx=document.getElementById('kgp-scale-max');if(sx)sx.textContent=max;
-  // unit toggle active style
   const uk=document.getElementById('kgp-unit-kg'),ub=document.getElementById('kgp-unit-lb');
   if(uk){uk.style.background=isLb?'transparent':'var(--accent)';uk.style.color=isLb?'var(--text3)':'#fff';}
   if(ub){ub.style.background=isLb?'var(--accent)':'transparent';ub.style.color=isLb?'#fff':'var(--text3)';}
-  // presets
+}
+
+function _wsKgPickerRenderPresets(){
   const pres=document.getElementById('kgp-presets');
-  if(pres){
-    const list=isLb?KGP_PRESETS_LB:KGP_PRESETS_KG;
-    pres.innerHTML=list.map(n=>`<div onclick="wsKgPickerPreset(${n})" style="flex:1;min-width:55px;padding:8px 6px;background:var(--surface2);border:1px solid var(--border2);border-radius:7px;text-align:center;font-size:12px;font-weight:700;color:var(--text2);cursor:pointer;touch-action:manipulation;">${n}${_kgpUnit}</div>`).join('');
-  }
-  _wsKgPickerSyncDisplay();
+  if(!pres)return;
+  const list=_kgpUnit==='lb'?KGP_PRESETS_LB:KGP_PRESETS_KG;
+  pres.innerHTML=list.map(n=>`<div onclick="wsKgPickerPreset(${n})" style="flex:1;min-width:55px;padding:8px 6px;background:var(--surface2);border:1px solid var(--border2);border-radius:7px;text-align:center;font-size:12px;font-weight:700;color:var(--text2);cursor:pointer;touch-action:manipulation;">${n}${_kgpUnit}</div>`).join('');
 }
 
 function wsKgPickerPreset(n){
-  _kgpVal=n;_wsKgPickerSyncDisplay();
+  const el=document.getElementById('kgp-wheel');
+  if(el&&el._setValue)el._setValue(n);
 }
 
 function wsKgPickerSave(){
   if(_kgpEi==null||_kgpSi==null)return closeModal('kg-picker-modal');
   const ex=currentSession[_kgpEi];
   if(!ex||!ex.sets||!ex.sets[_kgpSi])return closeModal('kg-picker-modal');
+  const disp=parseFloat(document.getElementById('kgp-hidden')?.value)||0;
   const factor=_kgpUnit==='lb'?(1/2.20462):1;
-  const kg=_kgpVal*factor;
+  const kg=disp*factor;
   ex.sets[_kgpSi].kg=kg>0?kg.toFixed(2):'';
   if(ex.sets[_kgpSi]._prefill)delete ex.sets[_kgpSi]._prefill;
   if(ex.sets[_kgpSi].done)saveSessionToLog();
@@ -6690,68 +6679,176 @@ function track(eventName,meta){
 }
 
 // ═══════════════════════════════════════════════
-// NUM-SLIDER — reusable numeric input via range slider + fine controls
+// WHEEL PICKER — iOS-style scrollable number picker (공용)
 // ═══════════════════════════════════════════════
-// Usage:
+// Usage (single column):
+//   <input type="hidden" id="act-v1">
+//   <div class="num-slider num-slider--compact" data-for="act-v1" data-min="0" data-max="60" data-step="1" data-unit="분" data-default="30"></div>
+// Usage (dual column — integer + decimal wheels for 0.x precision):
 //   <input type="hidden" id="wt-inp">
-//   <div class="num-slider" data-for="wt-inp" data-min="30" data-max="150" data-step="0.1" data-unit="kg" data-default="70" data-presets="60,65,70,75,80"></div>
-// setupNumSliders(rootEl) scans + binds. Call after DOM change that adds sliders.
+//   <div class="num-slider" data-for="wt-inp" data-min="30" data-max="150" data-step="0.1" data-unit="kg" data-default="70"></div>
+//   (step<1 automatically promotes to dual mode)
+// setupNumSliders(rootEl) scans + binds. _setValue(v) syncs programmatically.
+// IMPORTANT: call _setValue AFTER the element is visible (scrollTop lost if hidden).
 function setupNumSliders(root){
+  const ITEM_H=36;
   (root||document).querySelectorAll('.num-slider:not([data-ns-init])').forEach(el=>{
     el.setAttribute('data-ns-init','1');
     const targetId=el.dataset.for;
+    const hidden=targetId?document.getElementById(targetId):null;
     const min=parseFloat(el.dataset.min)||0;
     const max=parseFloat(el.dataset.max)||100;
     const step=parseFloat(el.dataset.step)||1;
     const unit=el.dataset.unit||'';
-    const presets=(el.dataset.presets||'').split(',').map(s=>s.trim()).filter(Boolean);
     const defaultVal=parseFloat(el.dataset.default);
-    const hiddenInput=targetId?document.getElementById(targetId):null;
-    const initVal=hiddenInput&&hiddenInput.value?parseFloat(hiddenInput.value):(!isNaN(defaultVal)?defaultVal:(min+max)/2);
-    const decimals=step<1?1:0;
-    el.innerHTML=`
-      <div class="ns-display"><span class="ns-val">${initVal.toFixed(decimals)}</span><span class="ns-unit">${esc(unit)}</span></div>
-      <div class="ns-controls">
-        <button type="button" class="ns-btn" data-ns-step="-1" aria-label="감소">−</button>
-        <input type="range" class="ns-range" min="${min}" max="${max}" step="${step}" value="${initVal}">
-        <button type="button" class="ns-btn" data-ns-step="1" aria-label="증가">+</button>
-      </div>
-      <div class="ns-scale"><span>${min}</span><span>${max}${unit?' '+esc(unit):''}</span></div>
-      ${presets.length?`<div class="ns-presets">${presets.map(p=>`<button type="button" class="ns-preset" data-ns-preset="${esc(p)}">${esc(p)}${unit?' '+esc(unit):''}</button>`).join('')}</div>`:''}
-    `;
-    const range=el.querySelector('.ns-range');
-    const valEl=el.querySelector('.ns-val');
-    const sync=()=>{
-      const v=parseFloat(range.value);
-      valEl.textContent=v.toFixed(decimals);
-      if(hiddenInput){
-        hiddenInput.value=v.toFixed(decimals);
-        hiddenInput.dispatchEvent(new Event('input',{bubbles:true}));
-        hiddenInput.dispatchEvent(new Event('change',{bubbles:true}));
+    const initVal=hidden&&hidden.value?parseFloat(hidden.value):(!isNaN(defaultVal)?defaultVal:(min+max)/2);
+    const forceSingle=el.dataset.mode==='single';
+    const useDual=!forceSingle&&step<1;
+
+    // Build items for a single wheel column
+    function buildCol(vmin,vmax,vstep,decimals){
+      const items=[];
+      for(let v=vmin;v<=vmax+vstep*0.0001;v+=vstep){
+        items.push(parseFloat(v.toFixed(decimals)));
       }
-      // update preset highlight
-      el.querySelectorAll('.ns-preset').forEach(b=>{
-        b.classList.toggle('active',Math.abs(parseFloat(b.dataset.nsPreset)-v)<step/2);
-      });
-    };
-    range.addEventListener('input',sync);
-    el.querySelectorAll('.ns-btn').forEach(btn=>{
-      btn.addEventListener('click',()=>{
-        const dir=parseInt(btn.dataset.nsStep,10);
-        const v=Math.max(min,Math.min(max,parseFloat(range.value)+dir*step));
-        range.value=v;sync();
-      });
-    });
-    el.querySelectorAll('.ns-preset').forEach(btn=>{
-      btn.addEventListener('click',()=>{
-        range.value=btn.dataset.nsPreset;sync();
-      });
-    });
-    sync();
-    // Expose manual update for programmatic use: el._setValue(v)
-    el._setValue=(v)=>{range.value=v;sync();};
+      return items;
+    }
+
+    let _getValue, _syncActive;
+    if(useDual){
+      // Integer column + decimal column (e.g. 68 . 5 kg)
+      const intMin=Math.floor(min), intMax=Math.floor(max);
+      const decCount=Math.round(1/step);   // 10 for 0.1 step
+      const intItems=buildCol(intMin,intMax,1,0);
+      const decItems=[];for(let i=0;i<decCount;i++)decItems.push(i);
+      const initInt=Math.max(intMin,Math.min(intMax,Math.floor(initVal)));
+      const initDec=Math.max(0,Math.min(decCount-1,Math.round((initVal-initInt)/step)));
+      el.innerHTML=`
+        <div class="wp-group">
+          <div class="wp-window"></div>
+          <div class="wp" data-col="int"><div class="wp-list">${intItems.map(v=>`<div class="wp-item" data-v="${v}">${v}</div>`).join('')}</div></div>
+          <div class="wp-dot">.</div>
+          <div class="wp" data-col="dec"><div class="wp-list">${decItems.map(v=>`<div class="wp-item" data-v="${v}">${v}</div>`).join('')}</div></div>
+          ${unit?`<div class="wp-unit">${esc(unit)}</div>`:''}
+        </div>`;
+      const wpInt=el.querySelector('.wp[data-col="int"]');
+      const wpDec=el.querySelector('.wp[data-col="dec"]');
+      const decimals=step<1?1:0;
+      _getValue=()=>{
+        const iIdx=Math.round(wpInt.scrollTop/ITEM_H);
+        const dIdx=Math.round(wpDec.scrollTop/ITEM_H);
+        const iClamped=Math.max(0,Math.min(intItems.length-1,iIdx));
+        const dClamped=Math.max(0,Math.min(decItems.length-1,dIdx));
+        return intItems[iClamped]+decItems[dClamped]*step;
+      };
+      _syncActive=()=>{
+        [wpInt,wpDec].forEach(wp=>{
+          const idx=Math.round(wp.scrollTop/ITEM_H);
+          const items=wp.querySelectorAll('.wp-item');
+          items.forEach((e,i)=>e.classList.toggle('active',i===idx));
+        });
+        if(hidden){
+          const v=_getValue();
+          hidden.value=v.toFixed(decimals);
+          hidden.dispatchEvent(new Event('input',{bubbles:true}));
+          hidden.dispatchEvent(new Event('change',{bubbles:true}));
+        }
+      };
+      _wpAttachScroll(wpInt,ITEM_H,_syncActive);
+      _wpAttachScroll(wpDec,ITEM_H,_syncActive);
+      _wpAttachTap(wpInt,ITEM_H);
+      _wpAttachTap(wpDec,ITEM_H);
+      // store starting scroll for retry on visibility
+      el._wpTarget=()=>({int:intItems.indexOf(Math.floor(_wpCurrentRequested(el)))*ITEM_H,dec:Math.round(((_wpCurrentRequested(el))-Math.floor(_wpCurrentRequested(el)))/step)*ITEM_H});
+      el._wpRequestedVal=initVal;
+      el._setValue=(v)=>{
+        el._wpRequestedVal=v;
+        const iv=Math.floor(v), dv=Math.round((v-iv)/step);
+        const ii=Math.max(0,intItems.indexOf(Math.max(intMin,Math.min(intMax,iv))));
+        const di=Math.max(0,Math.min(decCount-1,dv));
+        _wpSetScroll(wpInt,ii*ITEM_H);
+        _wpSetScroll(wpDec,di*ITEM_H);
+        _syncActive();
+      };
+      // initial
+      el._setValue(initVal);
+    } else {
+      // Single column
+      const decimals=step<1?1:0;
+      const items=buildCol(min,max,step,decimals);
+      const initIdx=Math.max(0,Math.min(items.length-1,Math.round((initVal-min)/step)));
+      el.innerHTML=`
+        <div class="wp-group">
+          <div class="wp-window"></div>
+          <div class="wp" data-col="single"><div class="wp-list">${items.map(v=>`<div class="wp-item" data-v="${v}">${v}</div>`).join('')}</div></div>
+          ${unit?`<div class="wp-unit">${esc(unit)}</div>`:''}
+        </div>`;
+      const wp=el.querySelector('.wp');
+      _getValue=()=>{
+        const idx=Math.round(wp.scrollTop/ITEM_H);
+        const clamped=Math.max(0,Math.min(items.length-1,idx));
+        return items[clamped];
+      };
+      _syncActive=()=>{
+        const idx=Math.round(wp.scrollTop/ITEM_H);
+        const clamped=Math.max(0,Math.min(items.length-1,idx));
+        wp.querySelectorAll('.wp-item').forEach((e,i)=>e.classList.toggle('active',i===clamped));
+        if(hidden){
+          hidden.value=items[clamped].toFixed(decimals);
+          hidden.dispatchEvent(new Event('input',{bubbles:true}));
+          hidden.dispatchEvent(new Event('change',{bubbles:true}));
+        }
+      };
+      _wpAttachScroll(wp,ITEM_H,_syncActive);
+      _wpAttachTap(wp,ITEM_H);
+      el._wpRequestedVal=initVal;
+      el._setValue=(v)=>{
+        el._wpRequestedVal=v;
+        const idx=Math.max(0,Math.min(items.length-1,Math.round((v-min)/step)));
+        _wpSetScroll(wp,idx*ITEM_H);
+        _syncActive();
+      };
+      el._setValue(initVal);
+    }
   });
 }
+// Scroll handler: updates active class during drag + snaps on scroll-end
+function _wpAttachScroll(wp,ITEM_H,onSnap){
+  let timer=null;
+  wp.addEventListener('scroll',()=>{
+    // live-update active classes while scrolling
+    const idx=Math.round(wp.scrollTop/ITEM_H);
+    wp.querySelectorAll('.wp-item').forEach((e,i)=>e.classList.toggle('active',i===idx));
+    clearTimeout(timer);
+    timer=setTimeout(()=>{
+      const target=Math.round(wp.scrollTop/ITEM_H)*ITEM_H;
+      if(Math.abs(wp.scrollTop-target)>0.5){
+        try{wp.scrollTo({top:target,behavior:'smooth'});}catch(e){wp.scrollTop=target;}
+      }
+      onSnap&&onSnap();
+    },140);
+  },{passive:true});
+}
+// Tap any item to scroll it to center
+function _wpAttachTap(wp,ITEM_H){
+  wp.querySelectorAll('.wp-item').forEach((e,i)=>{
+    e.addEventListener('click',()=>{
+      try{wp.scrollTo({top:i*ITEM_H,behavior:'smooth'});}catch(err){wp.scrollTop=i*ITEM_H;}
+    });
+  });
+}
+function _wpSetScroll(wp,top){
+  // Set scrollTop now; if element is hidden, retry on next frames (scroll lost on display:none → flex transition)
+  wp.scrollTop=top;
+  let tries=0;
+  const retry=()=>{
+    if(tries++>8)return;
+    if(wp.offsetParent!==null&&Math.abs(wp.scrollTop-top)>0.5)wp.scrollTop=top;
+    requestAnimationFrame(retry);
+  };
+  requestAnimationFrame(retry);
+}
+function _wpCurrentRequested(el){return el._wpRequestedVal||0;}
 
 // ═══════════════════════════════════════════════
 // SECURITY HELPERS
@@ -7963,19 +8060,6 @@ function openWeightModal(){
   if(inp)inp.value=log.weight!=null?parseFloat(log.weight).toFixed(1):'';
   const currentGoal=getWeightGoal();
   if(gi)gi.value=currentGoal?currentGoal.toFixed(1):'';
-  // 슬라이더 init + 기존 값으로 위치 세팅
-  try{
-    setupNumSliders(document.getElementById('weight-modal'));
-    const wtSlider=document.querySelector('#weight-modal .num-slider[data-for="wt-inp"]');
-    const goalSlider=document.querySelector('#weight-modal .num-slider[data-for="wt-goal-inp"]');
-    if(wtSlider&&wtSlider._setValue){
-      wtSlider._setValue(log.weight!=null?parseFloat(log.weight):(parseFloat(inp.value)||70));
-    }
-    if(goalSlider&&goalSlider._setValue){
-      goalSlider._setValue(currentGoal?parseFloat(currentGoal):(parseFloat(gi.value)||65));
-    }
-  }catch(e){console.warn('[weight slider]',e);}
-
   // 전날 체중 힌트
   const hint=document.getElementById('wt-yesterday-hint');
   if(hint){
@@ -7999,6 +8083,18 @@ function openWeightModal(){
     }
   }
   openModal('weight-modal');
+  // wheel pickers — init AFTER modal visible so scrollTop lands
+  try{
+    setupNumSliders(document.getElementById('weight-modal'));
+    const wtSlider=document.querySelector('#weight-modal .num-slider[data-for="wt-inp"]');
+    const goalSlider=document.querySelector('#weight-modal .num-slider[data-for="wt-goal-inp"]');
+    if(wtSlider&&wtSlider._setValue){
+      wtSlider._setValue(log.weight!=null?parseFloat(log.weight):(parseFloat(inp?.value)||70));
+    }
+    if(goalSlider&&goalSlider._setValue){
+      goalSlider._setValue(currentGoal?parseFloat(currentGoal):(parseFloat(gi?.value)||65));
+    }
+  }catch(e){console.warn('[weight wheel]',e);}
 }
 // ── 인바디 자동계산 헬퍼 ──
 function calcBodyFat(){
