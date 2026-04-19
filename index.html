@@ -7059,7 +7059,8 @@ function _fwWeekKeys(){
 
 function _fwShouldShow(){
   if(!CU)return false;
-  try{if(localStorage.getItem('fw_dismissed_'+CU.id)==='1')return false;}catch(e){}
+  // Dismiss 는 세션 한정 — 탭 reload / 새 세션에선 다시 보임 (7일 이내 한정)
+  try{if(sessionStorage.getItem('fw_dismissed_'+CU.id)==='1')return false;}catch(e){}
   // CU.created_at 이 있으면 가입 후 7일 체크, 없으면 fallback 으로 최초 onboarding 시점 저장
   let signupTime=null;
   if(CU.created_at){
@@ -7145,7 +7146,10 @@ function renderFirstWeekCard(){
 }
 
 function dismissFirstWeekCard(){
-  try{if(CU&&CU.id)localStorage.setItem('fw_dismissed_'+CU.id,'1');}catch(e){}
+  // sessionStorage — 이번 세션만 숨김. reload 하면 다시 보임 (7일 윈도우 내에서)
+  try{if(CU&&CU.id)sessionStorage.setItem('fw_dismissed_'+CU.id,'1');}catch(e){}
+  // 과거에 영구 dismiss 설정했던 유저 정리
+  try{if(CU&&CU.id)localStorage.removeItem('fw_dismissed_'+CU.id);}catch(e){}
   try{track('first_week_card_dismissed',{});}catch(e){}
   const card=document.getElementById('first-week-card');
   if(card)card.style.display='none';
