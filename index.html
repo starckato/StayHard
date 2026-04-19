@@ -1832,10 +1832,8 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
           <!-- 목표 체중 -->
           <div class="mfield">
             <label class="mlabel">내 목표 체중 (kg)</label>
-            <div style="position:relative;">
-              <input class="minput" id="comp-wgoal-inbody" type="number" placeholder="예: 68.0" step="0.1" style="padding-right:40px;" oninput="syncWgoal()"/>
-              <span style="position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:13px;color:var(--text3);">kg</span>
-            </div>
+            <input type="hidden" id="comp-wgoal-inbody" oninput="syncWgoal()">
+            <div class="num-slider num-slider--compact" data-for="comp-wgoal-inbody" data-min="40" data-max="120" data-step="0.1" data-unit="kg" data-default="65"></div>
           </div>
           <!-- 골격근량: 현재 / 목표 -->
           <div style="margin-bottom:10px;">
@@ -2640,51 +2638,29 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
       <!-- 체중 목표 (필수) -->
       <div style="margin-bottom:14px;">
         <div style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:8px;">⚖️ 목표 체중 <span style="color:var(--red);">*</span></div>
-        <div style="position:relative;">
-          <input id="iep-wgoal" class="minput" type="number" placeholder="예: 68.0" step="0.1" style="padding-right:36px;"/>
-          <span style="position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:13px;color:var(--text3);">kg</span>
-        </div>
+        <input type="hidden" id="iep-wgoal">
+        <div class="num-slider num-slider--compact" data-for="iep-wgoal" data-min="40" data-max="120" data-step="0.1" data-unit="kg" data-default="65"></div>
       </div>
       <div style="height:0.5px;background:var(--border);margin-bottom:14px;"></div>
       <!-- 골격근량 (선택) -->
       <div style="margin-bottom:14px;">
         <div style="font-size:12px;font-weight:600;color:var(--green);margin-bottom:8px;">💪 골격근량 <span style="font-size:10px;font-weight:400;color:var(--text3);">선택</span></div>
-        <div style="display:flex;gap:8px;">
-          <div style="flex:1;">
-            <div style="font-size:10px;color:var(--text3);margin-bottom:4px;">현재</div>
-            <div style="position:relative;">
-              <input id="iep-muscle-now" class="minput" type="number" placeholder="예: 32.0" step="0.1" style="padding-right:30px;"/>
-              <span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:11px;color:var(--text3);">kg</span>
-            </div>
-          </div>
-          <div style="flex:1;">
-            <div style="font-size:10px;color:var(--text3);margin-bottom:4px;">목표</div>
-            <div style="position:relative;">
-              <input id="iep-muscle-goal" class="minput" type="number" placeholder="예: 35.0" step="0.1" style="padding-right:30px;"/>
-              <span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:11px;color:var(--text3);">kg</span>
-            </div>
-          </div>
-        </div>
+        <div style="font-size:10px;color:var(--text3);margin-bottom:4px;">현재</div>
+        <input type="hidden" id="iep-muscle-now">
+        <div class="num-slider num-slider--compact" data-for="iep-muscle-now" data-min="15" data-max="60" data-step="0.1" data-unit="kg" data-default="30"></div>
+        <div style="font-size:10px;color:var(--text3);margin:10px 0 4px;">목표</div>
+        <input type="hidden" id="iep-muscle-goal">
+        <div class="num-slider num-slider--compact" data-for="iep-muscle-goal" data-min="15" data-max="60" data-step="0.1" data-unit="kg" data-default="35"></div>
       </div>
       <!-- 체지방률 (선택) -->
       <div style="margin-bottom:20px;">
         <div style="font-size:12px;font-weight:600;color:var(--amber);margin-bottom:8px;">🔥 체지방률 <span style="font-size:10px;font-weight:400;color:var(--text3);">선택</span></div>
-        <div style="display:flex;gap:8px;">
-          <div style="flex:1;">
-            <div style="font-size:10px;color:var(--text3);margin-bottom:4px;">현재</div>
-            <div style="position:relative;">
-              <input id="iep-fat-now" class="minput" type="number" placeholder="예: 25.0" step="0.1" style="padding-right:24px;"/>
-              <span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:11px;color:var(--text3);">%</span>
-            </div>
-          </div>
-          <div style="flex:1;">
-            <div style="font-size:10px;color:var(--text3);margin-bottom:4px;">목표</div>
-            <div style="position:relative;">
-              <input id="iep-fat-goal" class="minput" type="number" placeholder="예: 18.0" step="0.1" style="padding-right:24px;"/>
-              <span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:11px;color:var(--text3);">%</span>
-            </div>
-          </div>
-        </div>
+        <div style="font-size:10px;color:var(--text3);margin-bottom:4px;">현재</div>
+        <input type="hidden" id="iep-fat-now">
+        <div class="num-slider num-slider--compact" data-for="iep-fat-now" data-min="3" data-max="50" data-step="0.1" data-unit="%" data-default="20"></div>
+        <div style="font-size:10px;color:var(--text3);margin:10px 0 4px;">목표</div>
+        <input type="hidden" id="iep-fat-goal">
+        <div class="num-slider num-slider--compact" data-for="iep-fat-goal" data-min="3" data-max="50" data-step="0.1" data-unit="%" data-default="15"></div>
       </div>
       <div id="iep-err" style="font-size:12px;color:var(--red);margin-bottom:10px;display:none;"></div>
       <button onclick="saveMyInbodyGoal()" style="width:100%;padding:14px;background:var(--accent);border:none;border-radius:12px;color:#fff;font-size:15px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer;touch-action:manipulation;">저장</button>
@@ -10795,6 +10771,10 @@ function showChallengeCreate(){
   const overlay=document.getElementById('ch-create-overlay');
   overlay.style.display='flex';
   overlay.scrollTop=0;
+  // Initialize inbody wgoal slider (safe if already inited)
+  setupNumSliders(overlay);
+  const wgSlider=overlay.querySelector('.num-slider[data-for="comp-wgoal-inbody"]');
+  if(wgSlider&&wgSlider._setValue)wgSlider._setValue(parseFloat(wgSlider.dataset.default)||65);
 }
 function hideChallengeCreate(){
   document.getElementById('ch-create-overlay').style.display='none';
@@ -11361,6 +11341,19 @@ function openInbodyEditPopup(compId){
   errEl.style.display='none';errEl.textContent='';
   document.getElementById('inbody-edit-popup').style.display='flex';
   document.body.style.overflow='hidden';
+  // Initialize sliders (first open) then sync to current stored values
+  const popup=document.getElementById('inbody-edit-popup');
+  setupNumSliders(popup);
+  const applyVal=(id,val)=>{
+    const slider=popup.querySelector(`.num-slider[data-for="${id}"]`);
+    const n=parseFloat(val);
+    if(slider&&slider._setValue&&!isNaN(n))slider._setValue(n);
+  };
+  applyVal('iep-wgoal',wg);
+  applyVal('iep-muscle-now',ig.muscleNow);
+  applyVal('iep-muscle-goal',ig.muscle);
+  applyVal('iep-fat-now',ig.fatNow);
+  applyVal('iep-fat-goal',ig.fatPct);
 }
 function closeInbodyEditPopup(){
   document.getElementById('inbody-edit-popup').style.display='none';

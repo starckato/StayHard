@@ -1,6 +1,22 @@
-.vercel
-
-# Local secrets (never commit)
+# Environment / secrets (never commit)
+.env
+.env.local
+.env.production
+config.local.js
 .stayhard-sb-pat
 *.pat
 scripts/.env
+
+# Vercel / build output
+.vercel
+.next
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Local-only docs (spec, ops playbook, security backlog, review artifacts, prototypes)
+# These contain internal process notes / example user emails / security details
+# that should not be in a public repo.
+document-private/
+document/
