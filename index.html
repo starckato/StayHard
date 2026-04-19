@@ -931,6 +931,18 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
       <span id="char-pts" style="display:none;"></span>
     </div>
 
+    <!-- 첫 주 미션 — 가입 후 7일간 노출. renderFirstWeekCard() 가 상태 판별 + 숨김 처리 -->
+    <div id="first-week-card" class="s-card" style="display:none;margin:0 14px 10px;padding:14px 14px 12px;background:linear-gradient(135deg,rgba(255,77,77,0.08) 0%,rgba(255,107,53,0.04) 100%);border:1px solid rgba(255,77,77,0.22);">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px;">
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:13px;font-weight:800;color:var(--text);letter-spacing:-0.01em;line-height:1.2;">🔥 첫 주 미션</div>
+          <div style="font-size:10px;color:var(--text3);margin-top:2px;" id="fw-progress-sub">—</div>
+        </div>
+        <button onclick="dismissFirstWeekCard()" aria-label="닫기" style="background:none;border:none;color:var(--text3);font-size:14px;cursor:pointer;padding:2px 4px;margin-left:6px;line-height:1;">✕</button>
+      </div>
+      <div id="fw-list" style="display:flex;flex-direction:column;gap:6px;"></div>
+    </div>
+
     <div class="day-slider-wrap">
       <div class="month-row">
         <div class="month-label" id="slider-month"></div>
@@ -7024,7 +7036,137 @@ function scrollToSection(s){
   const el=document.getElementById(map[s]);
   if(el)el.scrollIntoView({behavior:'smooth',block:'center'});
 }
-function renderRoutine(){renderCharCard();renderSummaryCard();renderWeight();renderMeals();renderCheatBadge();renderWater();renderWorkouts();renderMandatory();renderTargets();updateGogginsHeader();revealStatusBand();}
+function renderRoutine(){renderCharCard();renderSummaryCard();renderWeight();renderMeals();renderCheatBadge();renderWater();renderWorkouts();renderMandatory();renderTargets();updateGogginsHeader();revealStatusBand();try{renderFirstWeekCard();}catch(e){console.warn('[fw-card]',e);}}
+
+// ═══════════════════════════════════════════════
+// FIRST-WEEK MISSION CARD
+// ═══════════════════════════════════════════════
+// 가입 후 7일간 노출. 5개 미션 (+ 일일 완료 보너스) 체크리스트.
+// 미션 완료 상태는 logCache 훑어서 판별 — 별도 DB column 없음.
+
+function _fwWeekKeys(){
+  const keys=[];
+  const today=new Date();
+  const monOffset=(today.getDay()+6)%7; // Mon=0
+  for(let i=0;i<7;i++){
+    const d=new Date(today);d.setDate(today.getDate()-monOffset+i);
+    keys.push(dkey(d));
+  }
+  return keys;
+}
+
+function _fwShouldShow(){
+  if(!CU)return false;
+  try{if(localStorage.getItem('fw_dismissed_'+CU.id)==='1')return false;}catch(e){}
+  // CU.created_at 이 있으면 가입 후 7일 체크, 없으면 fallback 으로 최초 onboarding 시점 저장
+  let signupTime=null;
+  if(CU.created_at){
+    const t=new Date(CU.created_at).getTime();
+    if(!isNaN(t))signupTime=t;
+  }
+  if(!signupTime){
+    try{
+      const cached=localStorage.getItem('fw_seen_at_'+CU.id);
+      if(cached)signupTime=parseInt(cached,10);
+      else{localStorage.setItem('fw_seen_at_'+CU.id,String(Date.now()));signupTime=Date.now();}
+    }catch(e){signupTime=Date.now();}
+  }
+  const daysSince=(Date.now()-signupTime)/86400000;
+  return daysSince<=7;
+}
+
+function _fwCheckMissions(){
+  const weekKeys=_fwWeekKeys();
+  const weekLogs=weekKeys.map(k=>logCache[k]).filter(Boolean);
+  const weight=weekLogs.some(l=>l.weight!=null&&+l.weight>0);
+  const routine=(log.mandatory||[]).some(m=>m&&m.type==='custom');
+  const workout=weekLogs.some(l=>(l.workouts||[]).some(w=>w.status==='done'));
+  const targets=weekLogs.some(l=>(l.targets||[]).length>0);
+  // 오늘 필수 루틴 모두 완료했는지 (팔굽혀펴기 보너스 조건)
+  const todayDow=(new Date().getDay()+6)%7;
+  const todayCustom=(log.mandatory||[]).filter(m=>m&&m.type==='custom'&&(!m.days||m.days.includes(todayDow)));
+  const dailyComplete=todayCustom.length>0&&todayCustom.every(m=>m.done);
+  return {weight,routine,workout,targets,dailyComplete};
+}
+
+function renderFirstWeekCard(){
+  const card=document.getElementById('first-week-card');
+  if(!card)return;
+  if(!_fwShouldShow()){card.style.display='none';return;}
+  const m=_fwCheckMissions();
+  const missions=[
+    {key:'weight', done:m.weight, label:'이번 주 몸무게 기록', cta:'기록하기', fn:'fwGotoWeight'},
+    {key:'routine', done:m.routine, label:'필수 루틴 세팅', cta:'루틴 추가', fn:'fwGotoRoutine'},
+    {key:'workout', done:m.workout, label:'이번 주 첫 운동', cta:'운동하기', fn:'fwGotoWorkout'},
+    {key:'targets', done:m.targets, label:'이번 주 할일 계획', cta:'주간 탭', fn:'fwGotoTargets'},
+  ];
+  const doneCount=missions.filter(x=>x.done).length;
+  const allDone=doneCount===missions.length;
+  card.style.display='block';
+  const sub=document.getElementById('fw-progress-sub');
+  if(sub)sub.textContent=allDone?'완료! 🎉 · 첫 주 미션 달성':`첫 주 (${doneCount}/${missions.length})`;
+  const list=document.getElementById('fw-list');
+  if(!list)return;
+  let html=missions.map(mi=>{
+    const bg=mi.done?'var(--surface)':'var(--surface2)';
+    const opacity=mi.done?'0.55':'1';
+    const checkBg=mi.done?'rgba(52,211,153,0.18)':'transparent';
+    const checkBd=mi.done?'rgba(52,211,153,0.55)':'var(--border2)';
+    const checkCol=mi.done?'#34d399':'var(--text3)';
+    const checkMark=mi.done?'✓':'';
+    const textCol=mi.done?'var(--text3)':'var(--text)';
+    const textDeco=mi.done?'text-decoration:line-through;':'';
+    const ctaHtml=mi.done?'':`<button onclick="${mi.fn}()" style="font-size:11px;font-weight:800;padding:7px 12px;background:linear-gradient(135deg,#ff4d4d,#ff6b35);border:none;border-radius:8px;color:#fff;cursor:pointer;touch-action:manipulation;letter-spacing:-.01em;white-space:nowrap;flex-shrink:0;">${mi.cta} →</button>`;
+    return `<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:${bg};border:1px solid var(--border2);border-radius:10px;opacity:${opacity};">
+      <div style="width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:${checkBg};border:1.5px solid ${checkBd};color:${checkCol};font-size:11px;font-weight:900;">${checkMark}</div>
+      <div style="flex:1;font-size:12.5px;color:${textCol};${textDeco}line-height:1.3;">${mi.label}</div>
+      ${ctaHtml}
+    </div>`;
+  }).join('');
+  // 보너스: 오늘 필수 루틴 전부 완료 시 팔굽혀펴기 챌린지 CTA
+  if(m.dailyComplete){
+    html+=`<div style="margin-top:4px;padding:12px;background:linear-gradient(135deg,rgba(255,77,77,0.14),rgba(255,107,53,0.08));border:1px solid rgba(255,77,77,0.35);border-radius:10px;">
+      <div style="font-size:12px;font-weight:800;color:#fff;margin-bottom:8px;letter-spacing:-.01em;">💪 오늘 할 일 다 끝냈네. 보너스 미션.</div>
+      <button onclick="fwGotoPushup()" style="width:100%;padding:10px;background:linear-gradient(135deg,#ff4d4d,#ff6b35);border:none;border-radius:8px;color:#fff;font-size:13px;font-weight:800;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;letter-spacing:-.01em;box-shadow:0 4px 14px rgba(255,77,77,0.3);">🔥 팔굽혀펴기 챌린지 →</button>
+    </div>`;
+  }
+  list.innerHTML=html;
+  // 최초 노출 시 track (세션당 1회)
+  try{
+    if(!window._fwShownTracked){
+      window._fwShownTracked=true;
+      track('first_week_card_shown',{done:doneCount,all_done:allDone});
+    }
+  }catch(e){}
+}
+
+function dismissFirstWeekCard(){
+  try{if(CU&&CU.id)localStorage.setItem('fw_dismissed_'+CU.id,'1');}catch(e){}
+  try{track('first_week_card_dismissed',{});}catch(e){}
+  const card=document.getElementById('first-week-card');
+  if(card)card.style.display='none';
+}
+
+function fwGotoWeight(){
+  try{track('fw_mission_click',{mission:'weight'});}catch(e){}
+  try{openWeightModal();}catch(e){console.warn(e);}
+}
+function fwGotoRoutine(){
+  try{track('fw_mission_click',{mission:'routine'});}catch(e){}
+  try{openAddMandatoryModal();}catch(e){console.warn(e);}
+}
+function fwGotoWorkout(){
+  try{track('fw_mission_click',{mission:'workout'});}catch(e){}
+  try{openWorkoutModal();}catch(e){console.warn(e);}
+}
+function fwGotoTargets(){
+  try{track('fw_mission_click',{mission:'targets'});}catch(e){}
+  try{switchTab('weekly');}catch(e){}
+}
+function fwGotoPushup(){
+  try{track('fw_mission_click',{mission:'pushup'});}catch(e){}
+  try{cvOpenPushupChallenge();}catch(e){console.warn(e);}
+}
 
 // WEIGHT
 function toggleWeightInfo(){
