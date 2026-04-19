@@ -147,6 +147,10 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 /* Muscle map share FAB — 매우 은은한 pulse (이전 대비 ~10%) */
 @keyframes mmFabPulse{0%,100%{box-shadow:0 8px 22px rgba(255,77,77,0.5), 0 0 0 0 rgba(255,77,77,0.045);}50%{box-shadow:0 8px 22px rgba(255,77,77,0.5), 0 0 0 10px rgba(255,77,77,0);}}
 @keyframes tierShareSlide{from{opacity:0;transform:translate(-50%,20px);}to{opacity:1;transform:translate(-50%,0);}}
+/* Nav badge — milestone reveal pulse (M2) */
+.nav-badge-dot{position:absolute;top:6px;right:50%;margin-right:-18px;width:8px;height:8px;border-radius:50%;background:#ff6b35;box-shadow:0 0 0 0 rgba(255,107,53,0.6);animation:navBadgePulse 1.6s ease-out infinite;}
+@keyframes navBadgePulse{0%,100%{box-shadow:0 0 0 0 rgba(255,107,53,0.6);}50%{box-shadow:0 0 0 6px rgba(255,107,53,0);}}
+@media (prefers-reduced-motion: reduce){.nav-badge-dot{animation:none;}}
 .mm-fab-pulse{animation:mmFabPulse 2.4s ease-out infinite;}
 .mm-fab-pulse:active{transform:scale(.92);transition:transform .1s;}
 @media (prefers-reduced-motion: reduce){.mm-fab-pulse{animation:none;}}
@@ -2176,7 +2180,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
       </svg>
       <div>주간</div>
     </div>
-    <div class="bni" onclick="switchTab('stats',2)">
+    <div class="bni" onclick="switchTab('stats',2)" style="position:relative;">
       <svg class="bni-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
         <path d="M4 20h16"/>
         <path d="M7 20v-6"/>
@@ -2184,6 +2188,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
         <path d="M17 20v-3"/>
       </svg>
       <div>통계</div>
+      <span id="nav-badge-stats" class="nav-badge-dot" style="display:none;"></span>
     </div>
     <div class="bni" onclick="switchTab('competition',3)">
       <svg class="bni-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -4656,6 +4661,8 @@ function addScore(type, note='', ptsOverride=null, silent=false){
   renderCharCard();
   // 첫 주 미션 재평가 — weight/workout/routine 등 어떤 스코어 이벤트든 체크 상태 갱신
   try{if(typeof renderFirstWeekCard==='function')renderFirstWeekCard();}catch(e){}
+  // Milestone: 첫 workout → 통계 탭에 pulse badge
+  try{if(typeof maybeUnlockStatsOnWorkout==='function')maybeUnlockStatsOnWorkout(type);}catch(e){}
   // Sprint G: 활성 챌린지에 활동 기록 (pts>0만, fire-and-forget, 실패 시 silent)
   if(pts>0&&typeof _appendCompActivity==='function'){_appendCompActivity(type,pts);}
   // Activation funnel: fire once per user (localStorage-gated)
@@ -6689,6 +6696,27 @@ function _friendWelcomeCta(action){
   }
 }
 
+// ── Milestone reveals (M2) — 첫 이벤트 발생 시 깊은 기능 공개 ──
+function unlockNavBadge(tab){
+  if(!CU||!CU.id)return;
+  const seenKey='milestone_seen_'+tab+'_'+CU.id;
+  try{if(localStorage.getItem(seenKey)==='1')return;}catch(e){}
+  const badge=document.getElementById('nav-badge-'+tab);
+  if(badge)badge.style.display='block';
+  try{track('milestone_badge_shown',{tab});}catch(e){}
+}
+function consumeNavBadge(tab){
+  if(!CU||!CU.id)return;
+  const seenKey='milestone_seen_'+tab+'_'+CU.id;
+  try{localStorage.setItem(seenKey,'1');}catch(e){}
+  const badge=document.getElementById('nav-badge-'+tab);
+  if(badge)badge.style.display='none';
+}
+function maybeUnlockStatsOnWorkout(scoreType){
+  if(scoreType!=='workout_done'&&scoreType!=='workout_cardio_done')return;
+  try{unlockNavBadge('stats');}catch(e){}
+}
+
 // ── Day-1 evening nudge (P2.3) — 첫날 저녁까지 점수 없을 때 Goggins-voice 격려 ──
 function checkDay1EveningNudge(){
   if(!CU||!CU.id)return;
@@ -6905,7 +6933,7 @@ function switchTab(name,idx){
   // 탭 상단으로 스크롤 복귀 — 이전 탭 깊은 위치가 남아있어 새 탭 바닥에서 시작되는 현상 방지
   try{window.scrollTo({top:0,behavior:'instant'});}catch(e){window.scrollTo(0,0);}
   if(name==='weekly'){renderWeeklyView();}
-  if(name==='stats'){loadStatsTab();}
+  if(name==='stats'){loadStatsTab();try{consumeNavBadge('stats');}catch(e){}}
   if(name==='competition'){renderChallengeHome();loadPushupChallenge();}
   if(name==='goggins')renderGogginsTab();
   // Safety: release any stale scroll lock on tab change
