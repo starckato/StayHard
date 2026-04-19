@@ -681,7 +681,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
 .wp{height:180px;overflow-y:scroll;scroll-snap-type:y mandatory;scrollbar-width:none;-ms-overflow-style:none;width:72px;flex:0 0 72px;touch-action:pan-y;overscroll-behavior:contain;position:relative;z-index:1;-webkit-mask-image:linear-gradient(to bottom,transparent 0%,rgba(0,0,0,.35) 18%,#000 42%,#000 58%,rgba(0,0,0,.35) 82%,transparent 100%);mask-image:linear-gradient(to bottom,transparent 0%,rgba(0,0,0,.35) 18%,#000 42%,#000 58%,rgba(0,0,0,.35) 82%,transparent 100%);}
 .wp::-webkit-scrollbar{display:none;width:0;height:0;}
 .wp-list{padding:72px 0;}
-.wp-item{height:36px;scroll-snap-align:center;scroll-snap-stop:always;display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:20px;font-weight:700;color:var(--text3);cursor:pointer;touch-action:manipulation;user-select:none;-webkit-user-select:none;line-height:1;transition:color .12s,font-size .12s;}
+.wp-item{height:36px;scroll-snap-align:center;scroll-snap-stop:normal;display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:20px;font-weight:700;color:var(--text3);cursor:pointer;touch-action:manipulation;user-select:none;-webkit-user-select:none;line-height:1;transition:color .12s,font-size .12s;}
 .wp-item.active{color:var(--text);font-size:26px;}
 .wp-dot{font-family:'DM Mono',monospace;font-size:22px;font-weight:700;color:var(--text);line-height:1;padding:0 2px 4px;user-select:none;align-self:center;}
 .wp-unit{font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;color:var(--text2);margin-left:6px;align-self:center;}
@@ -6959,12 +6959,19 @@ function _wpAnimateScroll(el,target,duration){
 // Scroll handler: updates active class during drag + snaps on scroll-end.
 // Touch handlers contain the scroll to the wheel (prevents parent modal from
 // rubber-banding on iOS where nested scrollers chain by default).
+// 햅틱: 각 아이템이 중앙을 지날 때마다 navigator.vibrate(4). Android 단말
+// 에서만 실제 진동 발생(iOS Safari 는 vibrate API 미지원 → 무시됨).
 function _wpAttachScroll(wp,ITEM_H,onSnap){
   let timer=null;
+  let lastIdx=-1;
   wp.addEventListener('scroll',()=>{
     // live-update active classes while scrolling
     const idx=Math.round(wp.scrollTop/ITEM_H);
     wp.querySelectorAll('.wp-item').forEach((e,i)=>e.classList.toggle('active',i===idx));
+    if(idx!==lastIdx){
+      lastIdx=idx;
+      try{if(navigator.vibrate)navigator.vibrate(4);}catch(e){}
+    }
     clearTimeout(timer);
     timer=setTimeout(()=>{
       const target=Math.round(wp.scrollTop/ITEM_H)*ITEM_H;
