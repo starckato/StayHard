@@ -7183,6 +7183,8 @@ function toggleWeightInfo(){
 }
 
 function renderWeight(){
+  // 첫 주 미션 재평가 — 체중 기록 즉시 반영
+  try{if(typeof renderFirstWeekCard==='function')renderFirstWeekCard();}catch(e){}
   const emptyState=document.getElementById('wt-empty-state');
   const filledState=document.getElementById('wt-filled-state');
   const hasWeight=log.weight!==null&&log.weight!==undefined;
@@ -8463,6 +8465,8 @@ function renderWorkouts(){
   // also refresh start screen tiles if visible
   renderWssRoutineTiles();
   renderWssCardioTiles();
+  // 첫 주 미션 재평가 — 운동 추가/완료/삭제 시 미션 상태 바로 갱신
+  try{if(typeof renderFirstWeekCard==='function')renderFirstWeekCard();}catch(e){}
   const workouts=log.workouts||[];
   const done=workouts.filter(w=>w.status==='done');
   const b=document.getElementById('wo-badge');
