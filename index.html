@@ -2072,6 +2072,16 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
               <span style="font-size:14px;color:var(--text3);">kg</span>
             </div>
           </div>
+          <!-- 주 운동 빈도 선택기 — muscle/habit 에서만 노출 -->
+          <div id="ob-wfreq-section" style="display:none;margin-bottom:16px;background:var(--surface2);border-radius:12px;padding:14px 16px;">
+            <div style="font-size:12px;color:var(--text3);margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em;">주 운동 횟수</div>
+            <div id="ob-wfreq-row" style="display:flex;gap:6px;">
+              <div onclick="obSelectWfreq(2)" data-freq="2" class="ob-wfreq-btn" style="flex:1;text-align:center;padding:10px 0;border-radius:8px;border:1.5px solid var(--border2);background:var(--surface);color:var(--text2);font-size:13px;font-weight:700;cursor:pointer;touch-action:manipulation;">주 2회</div>
+              <div onclick="obSelectWfreq(3)" data-freq="3" class="ob-wfreq-btn" style="flex:1;text-align:center;padding:10px 0;border-radius:8px;border:1.5px solid var(--border2);background:var(--surface);color:var(--text2);font-size:13px;font-weight:700;cursor:pointer;touch-action:manipulation;">주 3회</div>
+              <div onclick="obSelectWfreq(4)" data-freq="4" class="ob-wfreq-btn" style="flex:1;text-align:center;padding:10px 0;border-radius:8px;border:1.5px solid var(--border2);background:var(--surface);color:var(--text2);font-size:13px;font-weight:700;cursor:pointer;touch-action:manipulation;">주 4회</div>
+              <div onclick="obSelectWfreq(5)" data-freq="5" class="ob-wfreq-btn" style="flex:1;text-align:center;padding:10px 0;border-radius:8px;border:1.5px solid var(--border2);background:var(--surface);color:var(--text2);font-size:13px;font-weight:700;cursor:pointer;touch-action:manipulation;">주 5회</div>
+            </div>
+          </div>
           <!-- 추천 루틴 칩 -->
           <div style="margin-bottom:16px;">
             <div style="font-size:11px;color:var(--text3);margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em;">추천 루틴 (탭해서 추가)</div>
@@ -5785,7 +5795,7 @@ const OB_GOAL_ROUTINES={
   muscle:[
     {name:'💪 팔굽혀펴기 10개', scoreType:null},
     {name:'🦵 맨몸 스쿼트 50개', scoreType:null},
-    {name:'⚖️ 공복 체중 측정', scoreType:null},
+    {name:'🔥 헬스 (주 4회)', scoreType:null, days:[1,2,4,5]}, // Mon/Tue/Thu/Fri 기본
     {name:'🥩 단백질 1g/체중 챙기기', scoreType:null},
     {name:'💧 물 2L 마시기', scoreType:null},
   ],
@@ -5798,6 +5808,8 @@ const OB_GOAL_ROUTINES={
   ],
 };
 let _obGoal=null;
+let _obWorkoutFreq=null; // 주 운동 횟수 override (사용자 선택 시 셋됨)
+const WFREQ_DAYS={2:[1,4],3:[1,3,5],4:[1,2,4,5],5:[1,2,3,4,5]}; // 요일 기본 분포
 
 function obDismissForever(){
   document.getElementById('onboarding-modal').style.display='none';
@@ -5868,11 +5880,40 @@ function obBuildRoutineChips(){
   // 다이어트면 목표 체중 입력 표시
   const wtSec=document.getElementById('ob-weight-section');
   if(wtSec)wtSec.style.display=_obGoal==='diet'||_obGoal==='muscle'?'block':'none';
+  // muscle/habit 은 주 운동 빈도 선택기 노출 — default 를 고른 상태로 초기화
+  const wfSec=document.getElementById('ob-wfreq-section');
+  if(wfSec){
+    const needWfreq=(_obGoal==='muscle'||_obGoal==='habit');
+    wfSec.style.display=needWfreq?'block':'none';
+    if(needWfreq){
+      const def=_obGoal==='muscle'?4:3;
+      _obWorkoutFreq=def;
+      setTimeout(()=>obSelectWfreq(def,true),0);
+    } else {
+      _obWorkoutFreq=null;
+    }
+  }
   // 루틴 칩 생성 — index 를 토글러에 넘겨 OB_GOAL_ROUTINES 에서 원본(days 포함) 룩업
   document.getElementById('ob-routine-chips').innerHTML=routines.map((r,i)=>
     `<div onclick="obToggleRoutine(this,${i})" style="padding:8px 14px;border-radius:20px;border:1.5px solid var(--border2);background:var(--surface2);font-size:13px;cursor:pointer;color:var(--text2);touch-action:manipulation;">${r.name}</div>`
   ).join('');
   document.getElementById('ob-selected-routines').innerHTML='';
+}
+function obSelectWfreq(n,silent){
+  _obWorkoutFreq=n;
+  document.querySelectorAll('.ob-wfreq-btn').forEach(btn=>{
+    const f=parseInt(btn.getAttribute('data-freq'),10);
+    const on=f===n;
+    btn.style.background=on?'var(--accent)':'var(--surface)';
+    btn.style.color=on?'#fff':'var(--text2)';
+    btn.style.borderColor=on?'var(--accent)':'var(--border2)';
+  });
+  // obSelectedRoutines 안의 '운동'/'헬스' 항목 있으면 days 업데이트
+  const newDays=(WFREQ_DAYS[n]||WFREQ_DAYS[3]).slice();
+  obSelectedRoutines.forEach(r=>{
+    if(/운동|헬스/.test(r.name||''))r.days=newDays.slice();
+  });
+  if(!silent){try{track('onboard_wfreq_select',{freq:n,goal:_obGoal});}catch(e){}}
 }
 function obToggleRoutine(el,idx){
   const source=_obGoal?OB_GOAL_ROUTINES[_obGoal]:OB_GOAL_ROUTINES.habit;
@@ -5882,7 +5923,12 @@ function obToggleRoutine(el,idx){
     obSelectedRoutines.splice(existingIdx,1);
     el.style.background='var(--surface2)';el.style.color='var(--text2)';el.style.borderColor='var(--border2)';
   } else {
-    obSelectedRoutines.push({name:r.name,scoreType:r.scoreType||null,days:Array.isArray(r.days)?r.days.slice():null});
+    // 운동/헬스 루틴은 유저가 고른 주 빈도 반영 (WFREQ_DAYS)
+    let days=Array.isArray(r.days)?r.days.slice():null;
+    if(/운동|헬스/.test(r.name||'')&&_obWorkoutFreq&&WFREQ_DAYS[_obWorkoutFreq]){
+      days=WFREQ_DAYS[_obWorkoutFreq].slice();
+    }
+    obSelectedRoutines.push({name:r.name,scoreType:r.scoreType||null,days});
     el.style.background='var(--accent)';el.style.color='#fff';el.style.borderColor='var(--accent)';
   }
   document.getElementById('ob-selected-routines').innerHTML=obSelectedRoutines.length>0
