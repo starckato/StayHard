@@ -4609,6 +4609,8 @@ function addScore(type, note='', ptsOverride=null, silent=false){
   _saveTimer=setTimeout(_flushSave, 500);
   updateGogginsHeader();
   renderCharCard();
+  // 첫 주 미션 재평가 — weight/workout/routine 등 어떤 스코어 이벤트든 체크 상태 갱신
+  try{if(typeof renderFirstWeekCard==='function')renderFirstWeekCard();}catch(e){}
   // Sprint G: 활성 챌린지에 활동 기록 (pts>0만, fire-and-forget, 실패 시 silent)
   if(pts>0&&typeof _appendCompActivity==='function'){_appendCompActivity(type,pts);}
   // Activation funnel: fire once per user (localStorage-gated)
@@ -7077,16 +7079,19 @@ function _fwShouldShow(){
 
 function _fwCheckMissions(){
   const weekKeys=_fwWeekKeys();
-  const weekLogs=weekKeys.map(k=>logCache[k]).filter(Boolean);
-  const weight=weekLogs.some(l=>l.weight!=null&&+l.weight>0);
+  // logCache + 현재 선택 log 둘 다 스캔 (saveWeight 등이 logCache 반영 전 상태일 때도 커버)
+  const weekLogSet=new Set();
+  weekKeys.forEach(k=>{const c=logCache[k];if(c)weekLogSet.add(c);});
+  if(selectedKey&&weekKeys.includes(selectedKey)&&log)weekLogSet.add(log);
+  const weekLogs=[...weekLogSet];
+  const weight=weekLogs.some(l=>l&&l.weight!=null&&+l.weight>0);
   const routine=(log.mandatory||[]).some(m=>m&&m.type==='custom');
-  const workout=weekLogs.some(l=>(l.workouts||[]).some(w=>w.status==='done'));
-  const targets=weekLogs.some(l=>(l.targets||[]).length>0);
+  const workout=weekLogs.some(l=>l&&(l.workouts||[]).some(w=>w&&w.status==='done'));
   // 오늘 필수 루틴 모두 완료했는지 (팔굽혀펴기 보너스 조건)
   const todayDow=(new Date().getDay()+6)%7;
   const todayCustom=(log.mandatory||[]).filter(m=>m&&m.type==='custom'&&(!m.days||m.days.includes(todayDow)));
   const dailyComplete=todayCustom.length>0&&todayCustom.every(m=>m.done);
-  return {weight,routine,workout,targets,dailyComplete};
+  return {weight,routine,workout,dailyComplete};
 }
 
 function renderFirstWeekCard(){
@@ -7098,7 +7103,6 @@ function renderFirstWeekCard(){
     {key:'weight', done:m.weight, label:'이번 주 몸무게 기록', cta:'기록하기', fn:'fwGotoWeight'},
     {key:'routine', done:m.routine, label:'필수 루틴 세팅', cta:'루틴 추가', fn:'fwGotoRoutine'},
     {key:'workout', done:m.workout, label:'이번 주 첫 운동', cta:'운동하기', fn:'fwGotoWorkout'},
-    {key:'targets', done:m.targets, label:'이번 주 할일 계획', cta:'주간 탭', fn:'fwGotoTargets'},
   ];
   const doneCount=missions.filter(x=>x.done).length;
   const allDone=doneCount===missions.length;
