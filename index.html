@@ -6812,7 +6812,9 @@ function setupNumSliders(root){
     }
   });
 }
-// Scroll handler: updates active class during drag + snaps on scroll-end
+// Scroll handler: updates active class during drag + snaps on scroll-end.
+// Touch handlers contain the scroll to the wheel (prevents parent modal from
+// rubber-banding on iOS where nested scrollers chain by default).
 function _wpAttachScroll(wp,ITEM_H,onSnap){
   let timer=null;
   wp.addEventListener('scroll',()=>{
@@ -6828,6 +6830,30 @@ function _wpAttachScroll(wp,ITEM_H,onSnap){
       onSnap&&onSnap();
     },140);
   },{passive:true});
+  // ── iOS scroll containment ──
+  // Without this, dragging inside the wheel at its scroll-edge bubbles the
+  // scroll up to `.modal` (which has overflow-y:auto), pushing the whole
+  // modal down. overscroll-behavior:contain helps on iOS 16+ but not always.
+  // Combine with explicit touch handling for maximum reliability.
+  let touchStartY=0;
+  wp.addEventListener('touchstart',e=>{
+    touchStartY=e.touches[0].clientY;
+    e.stopPropagation();
+    // If scroll is near exact 0 or max, nudge 1px inward so the browser
+    // decides we're "inside" the scrollable region and won't chain to parent.
+    if(wp.scrollTop<=0)wp.scrollTop=1;
+    else if(wp.scrollTop+wp.clientHeight>=wp.scrollHeight)wp.scrollTop=wp.scrollHeight-wp.clientHeight-1;
+  },{passive:true});
+  wp.addEventListener('touchmove',e=>{
+    e.stopPropagation();
+    const y=e.touches[0].clientY;
+    const dy=y-touchStartY;
+    touchStartY=y;
+    // dy>0 → finger moves down → browser tries to scroll wheel up
+    const atTop=wp.scrollTop<=0;
+    const atBottom=wp.scrollTop+wp.clientHeight>=wp.scrollHeight-0.5;
+    if((atTop&&dy>0)||(atBottom&&dy<0))e.preventDefault();
+  },{passive:false});
 }
 // Tap any item to scroll it to center
 function _wpAttachTap(wp,ITEM_H){
