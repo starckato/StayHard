@@ -5711,7 +5711,7 @@ const OB_GOAL_ROUTINES={
     {name:'💪 팔굽혀펴기 10개', scoreType:null},
     {name:'🚶 30분 걷기', scoreType:null},
     {name:'💧 물 2L 마시기', scoreType:null},
-    {name:'📵 폰 1시간 덜 보기', scoreType:null},
+    {name:'🔥 운동 (주 3회)', scoreType:null, days:[1,3,5]}, // 월/수/금 기본
     {name:'😴 11시 전 취침', scoreType:null},
   ],
 };
@@ -5786,19 +5786,21 @@ function obBuildRoutineChips(){
   // 다이어트면 목표 체중 입력 표시
   const wtSec=document.getElementById('ob-weight-section');
   if(wtSec)wtSec.style.display=_obGoal==='diet'||_obGoal==='muscle'?'block':'none';
-  // 루틴 칩 생성
+  // 루틴 칩 생성 — index 를 토글러에 넘겨 OB_GOAL_ROUTINES 에서 원본(days 포함) 룩업
   document.getElementById('ob-routine-chips').innerHTML=routines.map((r,i)=>
-    `<div onclick="obToggleRoutine(this,'${r.name}',${r.scoreType?`'${r.scoreType}'`:'null'})" style="padding:8px 14px;border-radius:20px;border:1.5px solid var(--border2);background:var(--surface2);font-size:13px;cursor:pointer;color:var(--text2);touch-action:manipulation;">${r.name}</div>`
+    `<div onclick="obToggleRoutine(this,${i})" style="padding:8px 14px;border-radius:20px;border:1.5px solid var(--border2);background:var(--surface2);font-size:13px;cursor:pointer;color:var(--text2);touch-action:manipulation;">${r.name}</div>`
   ).join('');
   document.getElementById('ob-selected-routines').innerHTML='';
 }
-function obToggleRoutine(el,name,scoreType){
-  const idx=obSelectedRoutines.findIndex(r=>r.name===name);
-  if(idx>=0){
-    obSelectedRoutines.splice(idx,1);
+function obToggleRoutine(el,idx){
+  const source=_obGoal?OB_GOAL_ROUTINES[_obGoal]:OB_GOAL_ROUTINES.habit;
+  const r=source[idx];if(!r)return;
+  const existingIdx=obSelectedRoutines.findIndex(x=>x.name===r.name);
+  if(existingIdx>=0){
+    obSelectedRoutines.splice(existingIdx,1);
     el.style.background='var(--surface2)';el.style.color='var(--text2)';el.style.borderColor='var(--border2)';
   } else {
-    obSelectedRoutines.push({name,scoreType:scoreType||null});
+    obSelectedRoutines.push({name:r.name,scoreType:r.scoreType||null,days:Array.isArray(r.days)?r.days.slice():null});
     el.style.background='var(--accent)';el.style.color='#fff';el.style.borderColor='var(--accent)';
   }
   document.getElementById('ob-selected-routines').innerHTML=obSelectedRoutines.length>0
@@ -5813,14 +5815,15 @@ async function obFinish(){
   if(wtVal&&!isNaN(wtVal)){
     await saveWeightGoal(wtVal);
   }
-  // 선택된 루틴 — 기존 루틴에 추가 (덮어쓰기 금지)
+  // 선택된 루틴 — 기존 루틴에 추가 (덮어쓰기 금지). days 지정 없으면 매일.
   if(obSelectedRoutines.length>0){
     const existing=log.mandatory||[];
     const existingNames=new Set(existing.map(r=>r.name));
     const newRoutines=obSelectedRoutines
       .filter(r=>!existingNames.has(r.name)) // 중복 제거
       .map(r=>({
-        name:r.name,done:false,days:[0,1,2,3,4,5,6],
+        name:r.name,done:false,
+        days:Array.isArray(r.days)&&r.days.length?r.days:[0,1,2,3,4,5,6],
         ...(r.scoreType?{_scoreType:r.scoreType}:{})
       }));
     if(newRoutines.length>0){
