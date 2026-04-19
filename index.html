@@ -10470,7 +10470,8 @@ async function enterChallenge(compId){
 async function fixMemberDisplayNames(memberIds){
   // For any member whose display_name is null, set it to username
   try{
-    const{data:ps}=await sb.from('profiles').select('id,display_name,username').in('id',memberIds);
+    // RLS: direct SELECT on profiles는 auth.uid()=id 로 제한됨 → 타유저 조회는 SECURITY DEFINER RPC로
+    const{data:ps}=await sb.rpc('get_public_profiles',{p_ids:memberIds});
     for(const p of (ps||[])){
       // display_name 없으면 로컬 fallback만, DB 덮어쓰기 안 함
       if(!p.display_name&&p.username){
@@ -11322,7 +11323,8 @@ async function renderChallengeRoom(){
   document.getElementById('room-progress-pct').textContent=isCompleted?'종료됨':`${daysLeft}일 남음`;
 
   const mbs=Array.isArray(c.members)?c.members:JSON.parse(c.members||'[]');
-  const{data:profiles}=await sb.from('profiles').select('id,display_name,username').in('id',mbs);
+  // RLS 강화 — 타유저 프로필은 get_public_profiles RPC 통해서만
+  const{data:profiles}=await sb.rpc('get_public_profiles',{p_ids:mbs});
   const chStart=startDate.toISOString().slice(0,10);
   const chEnd=new Date(startDate.getTime()+c.duration_days*86400000).toISOString().slice(0,10);
   const memberWgoals=c.member_wgoals||{};
@@ -11974,7 +11976,8 @@ const RANK_COLORS=['r1','r2','r3','rn','rn','rn'];
 async function renderCompetition(){
   if(!activeComp){showCS('cs-none');return;}
   const members=Array.isArray(activeComp.members)?activeComp.members:(activeComp.members?JSON.parse(activeComp.members):[activeComp.creator_id]);
-  const{data:profiles}=await sb.from('profiles').select('*').in('id',members);
+  // RLS: 타유저 프로필은 SECURITY DEFINER RPC로. total_score 포함 safe fields만 반환.
+  const{data:profiles}=await sb.rpc('get_public_profiles',{p_ids:members});
   const{data:logs}=await sb.from('daily_logs').select('*').in('user_id',members).eq('log_date',TODAY);
   const secs=activeComp.sections||{diet:true,workout:true,mandatory:true};
 
