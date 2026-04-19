@@ -1503,6 +1503,12 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
     <div id="sg-my-status" style="padding:16px 20px;background:var(--surface2);border-bottom:1px solid var(--border);flex-shrink:0;display:flex;align-items:center;gap:16px;"></div>
     <!-- 스크롤 영역 -->
     <div style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 20px 40px;">
+      <!-- Goggins-voice explainer (M6) -->
+      <div style="margin-top:14px;padding:12px 14px;background:rgba(255,77,77,0.06);border:1px solid rgba(255,77,77,0.18);border-radius:12px;font-size:12px;color:var(--text2);line-height:1.6;">
+        점수는 일회성 이벤트 아냐.<br>
+        매일 체크, 매일 쌓아.<br>
+        <span style="color:#ff6b35;font-weight:800;">꾸준함</span>이 너를 만든다.
+      </div>
 
       <!-- 티어 목록 -->
       <div style="margin-top:16px;margin-bottom:20px;">
@@ -2993,6 +2999,16 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
     <div class="profile-row">
       <div class="pav">🧑</div>
       <div><div class="pname" id="p-name"></div><div class="pemail" id="p-email"></div><div style="font-size:10px;color:var(--text3);margin-top:1px;" id="p-username"></div></div>
+    </div>
+
+    <!-- 최근 변경사항 (M8) — 조용한 채널, 3줄 max -->
+    <div style="margin:14px 0 12px;padding:12px 14px;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;">
+      <div style="font-size:10px;font-weight:700;color:var(--text3);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:8px;">최근 변경사항</div>
+      <div style="display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--text2);line-height:1.45;">
+        <div style="display:flex;gap:8px;"><span style="color:var(--text3);font-family:'DM Mono',monospace;flex-shrink:0;">04/19</span><span>🙌 친구 초대 기능 추가 — 초대 링크로 같이 Stay Hard</span></div>
+        <div style="display:flex;gap:8px;"><span style="color:var(--text3);font-family:'DM Mono',monospace;flex-shrink:0;">04/19</span><span>🔥 첫 주 미션 카드 — 가입 후 7일 핵심 액션 체크리스트</span></div>
+        <div style="display:flex;gap:8px;"><span style="color:var(--text3);font-family:'DM Mono',monospace;flex-shrink:0;">04/19</span><span>⚡ 점수 리밸런스 — 운동 30·30, 루틴 ±1, 할일 ±2, 금지식단 -30</span></div>
+      </div>
     </div>
 
     <button class="signout-btn" onclick="doSignOut()">로그아웃</button>
@@ -6664,7 +6680,10 @@ function renderInviteCard(){
   if(!card)return;
   if(!CU){card.style.display='none';return;}
   try{if(localStorage.getItem('invite_dismissed_'+CU.id)==='1'){card.style.display='none';return;}}catch(e){}
+  const wasHidden=card.style.display==='none';
   card.style.display='block';
+  // first-time show → 팁 toast 노출 (localStorage-gated)
+  if(wasHidden){try{if(typeof tipInvite==='function')setTimeout(tipInvite,1500);}catch(e){}}
 }
 function dismissInviteCard(){
   try{if(CU&&CU.id)localStorage.setItem('invite_dismissed_'+CU.id,'1');}catch(e){}
@@ -11890,6 +11909,11 @@ function showTip(key,title,body){
 function tipMeal(){showTip('meal','식단 품질 가이드','✅ <b>클린</b> — 샐러드, 닭가슴살, 현미밥<br>🍚 <b>일반</b> — 한식, 백반, 찌개<br>🎉 <b>치팅</b> — 치트밀 (주 2회 허용)<br>🚫 <b>금지</b> — 폭식, 배달음식, 정크푸드');}
 function tipWorkout(){showTip('workout','운동 세션 사용법','무게와 반복 횟수를 입력하고 ✓ 체크하면 세트 완료!<br>＋ 버튼으로 종목 추가, 완료되면 아래 버튼 탭.');}
 function tipWater(){showTip('water','물 마시기','컵을 탭하면 채워져요.<br>같은 컵을 다시 탭하면 취소됩니다.<br>⚙️ 아이콘으로 목표량 설정 가능!');}
+// Ship 5 — tips 레지스트리 확장 (M5)
+function tipStatusBand(){showTip('status-band','점수 · 티어 · 스트릭','점수는 행동할 때마다 쌓여.<br>티어는 방관자 → Goggins 6단계.<br>스트릭은 하루라도 안 기록하면 끊겨.<br>탭하면 전체 점수 규칙 보여.');}
+function tipDaySlider(){showTip('day-slider','날짜 이동','좌우로 밀어서 다른 날 확인.<br>과거 기록 수정 가능, 미래는 미리 계획.<br>날짜 숫자 탭하면 오늘로 복귀.');}
+function tipMuscleMap(){showTip('muscle-map','자극 부위 맵','운동 기록하면 근육맵에 누적돼.<br>전면 · 후면 동시 표시.<br>탭해서 타격 부위별 세트 · 볼륨 확인.<br>↗ FAB 로 친구한테 자랑하자.');}
+function tipInvite(){showTip('invite','친구랑 같이 Stay Hard','혼자 하면 3일 가.<br>친구 초대해서 같이 챌린지.<br>서로 자극 주면 진짜 꾸준함.');}
 
 // ── Muscle Activation Map ──
 const MUSCLE_MAP={
@@ -12027,6 +12051,8 @@ async function openMuscleMap(){
   const el=document.getElementById('muscle-map-overlay');
   el.style.display='flex';
   document.body.style.overflow='hidden';
+  // first-use tooltip (localStorage-gated) — 1회만 노출
+  try{if(typeof tipMuscleMap==='function')setTimeout(tipMuscleMap,500);}catch(e){}
   if(!_mmSvgFront){try{_mmSvgFront=await loadMuscleSvg('front');}catch(e){console.warn(e);}}
   if(!_mmSvgBack){try{_mmSvgBack=await loadMuscleSvg('back');}catch(e){console.warn(e);}}
   _mmView='both';_mmMode='today'; // _mmView 는 analytics 용으로만 잔존
