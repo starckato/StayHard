@@ -661,6 +661,25 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
 .mnuminput{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:'DM Mono',monospace;font-size:16px;padding:11px 13px;outline:none;text-align:center;}
 .mnuminput:focus{border-color:var(--accent);}
 .munit{display:flex;align-items:center;justify-content:center;min-width:40px;font-size:12px;color:var(--text2);}
+
+/* ─── Numeric slider component (공용) ─── */
+.num-slider{padding:10px 2px 4px;}
+.ns-display{text-align:center;margin-bottom:8px;display:flex;align-items:baseline;justify-content:center;gap:5px;}
+.ns-val{font-family:'Archivo Black',sans-serif;font-size:34px;letter-spacing:-.02em;color:var(--text);line-height:1;}
+.ns-unit{font-size:14px;color:var(--text3);font-weight:600;}
+.ns-controls{display:flex;align-items:center;gap:10px;}
+.ns-btn{width:40px;height:40px;min-width:40px;flex-shrink:0;border-radius:10px;border:1px solid var(--border2);background:var(--surface2);color:var(--text);font-size:20px;font-weight:900;cursor:pointer;touch-action:manipulation;display:flex;align-items:center;justify-content:center;user-select:none;-webkit-user-select:none;}
+.ns-btn:active{background:var(--accent-bg);border-color:var(--accent-bd);color:var(--accent);}
+.ns-range{flex:1;-webkit-appearance:none;appearance:none;height:6px;background:var(--surface3);border-radius:3px;outline:none;touch-action:manipulation;}
+.ns-range::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,#ff4d4d,#ff6b35);cursor:grab;border:none;box-shadow:0 2px 8px rgba(255,77,77,.45);}
+.ns-range::-moz-range-thumb{width:24px;height:24px;border-radius:50%;background:#ff6b35;cursor:grab;border:none;box-shadow:0 2px 8px rgba(255,77,77,.45);}
+.ns-scale{display:flex;justify-content:space-between;padding:0 4px;margin-top:4px;font-size:10px;color:var(--text3);font-family:'DM Mono',monospace;}
+.ns-presets{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;}
+.ns-preset{padding:5px 10px;background:var(--surface2);border:1px solid var(--border2);border-radius:999px;font-size:11px;color:var(--text2);font-weight:600;cursor:pointer;touch-action:manipulation;}
+.ns-preset:active,.ns-preset.active{background:var(--accent-bg);border-color:var(--accent-bd);color:var(--accent);}
+.num-slider--compact .ns-val{font-size:24px;}
+.num-slider--compact{padding:6px 2px 2px;}
+.num-slider--compact .ns-btn{width:34px;height:34px;min-width:34px;font-size:16px;}
 .status-row{display:flex;gap:7px;margin-bottom:12px;}
 .st-btn{flex:1;padding:9px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface2);color:var(--text2);font-family:'DM Sans',sans-serif;font-size:11px;font-weight:500;cursor:pointer;transition:all .13s;}
 .st-btn.s-done{background:var(--green-bg);border-color:var(--green);color:var(--green);}
@@ -2066,11 +2085,9 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
           </div>
           <!-- 목표 체중 (다이어트일 때만) -->
           <div id="ob-weight-section" style="display:none;margin-bottom:16px;background:var(--surface2);border-radius:12px;padding:14px 16px;">
-            <div style="font-size:12px;color:var(--text3);margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em;">목표 체중</div>
-            <div style="display:flex;align-items:center;gap:10px;">
-              <input id="ob-weight-inp" type="number" inputmode="decimal" placeholder="예: 70" style="flex:1;background:var(--surface);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;color:var(--text);font-size:16px;font-family:'DM Mono',monospace;"/>
-              <span style="font-size:14px;color:var(--text3);">kg</span>
-            </div>
+            <div style="font-size:12px;color:var(--text3);margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em;">목표 체중</div>
+            <input type="hidden" id="ob-weight-inp">
+            <div class="num-slider num-slider--compact" data-for="ob-weight-inp" data-min="40" data-max="120" data-step="0.1" data-unit="kg" data-default="70"></div>
           </div>
           <!-- 주 운동 빈도 선택기 — muscle/habit 에서만 노출 -->
           <div id="ob-wfreq-section" style="display:none;margin-bottom:16px;background:var(--surface2);border-radius:12px;padding:14px 16px;">
@@ -2397,17 +2414,19 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
     <div class="mhandle"></div>
     <div class="mtitle">공복 체중 기록</div>
 
-    <!-- 체중 -->
+    <!-- 체중 (슬라이더) -->
     <div class="mfield">
       <label class="mlabel">체중 (kg) <span style="font-size:10px;font-weight:600;padding:1px 6px;border-radius:5px;background:rgba(255,77,77,.10);color:#ff4d4d;border:1px solid rgba(255,77,77,.18);">필수</span></label>
-      <input class="minput" id="wt-inp" type="number" step="0.1" placeholder="예: 74.0"/>
+      <input type="hidden" id="wt-inp">
+      <div class="num-slider" data-for="wt-inp" data-min="30" data-max="150" data-step="0.1" data-unit="kg" data-default="70"></div>
       <div id="wt-yesterday-hint" style="display:none;margin-top:7px;padding:7px 11px;background:var(--surface2);border-radius:8px;font-size:12px;color:var(--text2);display:flex;align-items:center;gap:6px;"></div>
     </div>
 
-    <!-- 목표 체중 -->
+    <!-- 목표 체중 (슬라이더) -->
     <div class="mfield">
       <label class="mlabel">목표 체중 (kg) <span style="font-weight:400;color:var(--text3);font-size:11px;text-transform:none;letter-spacing:0;">선택사항</span></label>
-      <input class="minput" id="wt-goal-inp" type="number" step="0.1" placeholder="예: 70.0"/>
+      <input type="hidden" id="wt-goal-inp">
+      <div class="num-slider" data-for="wt-goal-inp" data-min="40" data-max="120" data-step="0.1" data-unit="kg" data-default="65"></div>
     </div>
 
     <button class="mbtn" onclick="saveWeight()">저장</button>
@@ -2432,10 +2451,12 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
         <span id="act-sel-name" style="font-size:14px;font-weight:600;"></span>
       </div>
       <div class="mfield"><label class="mlabel" id="act-lbl1"></label>
-        <div class="mrow"><input class="mnuminput" id="act-v1" type="number" step="0.1" placeholder="0"/><div class="munit" id="act-u1"></div></div>
+        <input type="hidden" id="act-v1">
+        <div class="num-slider num-slider--compact" id="act-v1-slider" data-for="act-v1" data-min="0" data-max="60" data-step="0.1" data-unit="" data-default="5"></div>
       </div>
       <div class="mfield" id="act-f2"><label class="mlabel" id="act-lbl2"></label>
-        <div class="mrow"><input class="mnuminput" id="act-v2" type="number" placeholder="0"/><div class="munit" id="act-u2"></div></div>
+        <input type="hidden" id="act-v2">
+        <div class="num-slider num-slider--compact" id="act-v2-slider" data-for="act-v2" data-min="0" data-max="180" data-step="1" data-unit="분" data-default="30"></div>
       </div>
     </div>
     <button class="mbtn" id="act-save-btn" onclick="saveActivity()" style="display:none;">저장</button>
@@ -5871,6 +5892,7 @@ function showOnboarding(name){
     const el=document.getElementById(id);if(el)el.style.display=i===0?'block':'none';
   });
   document.getElementById('onboarding-modal').style.display='flex';
+  try{setupNumSliders(document.getElementById('onboarding-modal'));}catch(e){}
   try{track('onboard_step_view',{step:1});}catch(e){}
 }
 function obNext(step){
@@ -6580,6 +6602,70 @@ function track(eventName,meta){
     sb.from('events').insert({user_id:CU.id,event_name:eventName,meta:meta||{}})
       .then(()=>{},(e)=>{if(!String(e?.message||'').includes('events'))console.warn('[track]',eventName,e);});
   }catch(e){}
+}
+
+// ═══════════════════════════════════════════════
+// NUM-SLIDER — reusable numeric input via range slider + fine controls
+// ═══════════════════════════════════════════════
+// Usage:
+//   <input type="hidden" id="wt-inp">
+//   <div class="num-slider" data-for="wt-inp" data-min="30" data-max="150" data-step="0.1" data-unit="kg" data-default="70" data-presets="60,65,70,75,80"></div>
+// setupNumSliders(rootEl) scans + binds. Call after DOM change that adds sliders.
+function setupNumSliders(root){
+  (root||document).querySelectorAll('.num-slider:not([data-ns-init])').forEach(el=>{
+    el.setAttribute('data-ns-init','1');
+    const targetId=el.dataset.for;
+    const min=parseFloat(el.dataset.min)||0;
+    const max=parseFloat(el.dataset.max)||100;
+    const step=parseFloat(el.dataset.step)||1;
+    const unit=el.dataset.unit||'';
+    const presets=(el.dataset.presets||'').split(',').map(s=>s.trim()).filter(Boolean);
+    const defaultVal=parseFloat(el.dataset.default);
+    const hiddenInput=targetId?document.getElementById(targetId):null;
+    const initVal=hiddenInput&&hiddenInput.value?parseFloat(hiddenInput.value):(!isNaN(defaultVal)?defaultVal:(min+max)/2);
+    const decimals=step<1?1:0;
+    el.innerHTML=`
+      <div class="ns-display"><span class="ns-val">${initVal.toFixed(decimals)}</span><span class="ns-unit">${esc(unit)}</span></div>
+      <div class="ns-controls">
+        <button type="button" class="ns-btn" data-ns-step="-1" aria-label="감소">−</button>
+        <input type="range" class="ns-range" min="${min}" max="${max}" step="${step}" value="${initVal}">
+        <button type="button" class="ns-btn" data-ns-step="1" aria-label="증가">+</button>
+      </div>
+      <div class="ns-scale"><span>${min}</span><span>${max}${unit?' '+esc(unit):''}</span></div>
+      ${presets.length?`<div class="ns-presets">${presets.map(p=>`<button type="button" class="ns-preset" data-ns-preset="${esc(p)}">${esc(p)}${unit?' '+esc(unit):''}</button>`).join('')}</div>`:''}
+    `;
+    const range=el.querySelector('.ns-range');
+    const valEl=el.querySelector('.ns-val');
+    const sync=()=>{
+      const v=parseFloat(range.value);
+      valEl.textContent=v.toFixed(decimals);
+      if(hiddenInput){
+        hiddenInput.value=v.toFixed(decimals);
+        hiddenInput.dispatchEvent(new Event('input',{bubbles:true}));
+        hiddenInput.dispatchEvent(new Event('change',{bubbles:true}));
+      }
+      // update preset highlight
+      el.querySelectorAll('.ns-preset').forEach(b=>{
+        b.classList.toggle('active',Math.abs(parseFloat(b.dataset.nsPreset)-v)<step/2);
+      });
+    };
+    range.addEventListener('input',sync);
+    el.querySelectorAll('.ns-btn').forEach(btn=>{
+      btn.addEventListener('click',()=>{
+        const dir=parseInt(btn.dataset.nsStep,10);
+        const v=Math.max(min,Math.min(max,parseFloat(range.value)+dir*step));
+        range.value=v;sync();
+      });
+    });
+    el.querySelectorAll('.ns-preset').forEach(btn=>{
+      btn.addEventListener('click',()=>{
+        range.value=btn.dataset.nsPreset;sync();
+      });
+    });
+    sync();
+    // Expose manual update for programmatic use: el._setValue(v)
+    el._setValue=(v)=>{range.value=v;sync();};
+  });
 }
 
 // ═══════════════════════════════════════════════
@@ -7792,6 +7878,18 @@ function openWeightModal(){
   if(inp)inp.value=log.weight!=null?parseFloat(log.weight).toFixed(1):'';
   const currentGoal=getWeightGoal();
   if(gi)gi.value=currentGoal?currentGoal.toFixed(1):'';
+  // 슬라이더 init + 기존 값으로 위치 세팅
+  try{
+    setupNumSliders(document.getElementById('weight-modal'));
+    const wtSlider=document.querySelector('#weight-modal .num-slider[data-for="wt-inp"]');
+    const goalSlider=document.querySelector('#weight-modal .num-slider[data-for="wt-goal-inp"]');
+    if(wtSlider&&wtSlider._setValue){
+      wtSlider._setValue(log.weight!=null?parseFloat(log.weight):(parseFloat(inp.value)||70));
+    }
+    if(goalSlider&&goalSlider._setValue){
+      goalSlider._setValue(currentGoal?parseFloat(currentGoal):(parseFloat(gi.value)||65));
+    }
+  }catch(e){console.warn('[weight slider]',e);}
 
   // 전날 체중 힌트
   const hint=document.getElementById('wt-yesterday-hint');
@@ -9379,6 +9477,31 @@ function openActivityModal(mode=null, fromEdit=false){
   openModal('activity-modal');
 }
 
+// 활동 유닛별 슬라이더 범위
+function _actSliderCfg(unit){
+  if(unit==='km')return{min:0,max:50,step:0.1,default:5};
+  if(unit==='분')return{min:0,max:180,step:1,default:30};
+  if(unit==='kg')return{min:0,max:3000,step:10,default:0};
+  if(unit==='holes')return{min:1,max:18,step:1,default:18};
+  if(unit==='sets')return{min:0,max:20,step:1,default:3};
+  return{min:0,max:100,step:1,default:0};
+}
+function _reconfigSlider(id,unit){
+  const el=document.getElementById(id);
+  if(!el)return;
+  const cfg=_actSliderCfg(unit);
+  el.setAttribute('data-min',cfg.min);
+  el.setAttribute('data-max',cfg.max);
+  el.setAttribute('data-step',cfg.step);
+  el.setAttribute('data-unit',unit||'');
+  el.setAttribute('data-default',cfg.default);
+  el.removeAttribute('data-ns-init'); // re-init 을 위해 플래그 제거
+  // hidden input 초기값 clear 해서 default 로 시작
+  const target=el.dataset.for?document.getElementById(el.dataset.for):null;
+  if(target)target.value='';
+  setupNumSliders(el.parentElement||el);
+}
+
 function pickActivity(i,el){
   actTypeIdx=i;
   const t=ACTIVITY_TYPES[i];
@@ -9387,22 +9510,17 @@ function pickActivity(i,el){
   document.getElementById('act-sel-icon').textContent=t.i;
   document.getElementById('act-sel-name').textContent=t.n;
   document.getElementById('act-lbl1').textContent=t.l1+' ('+t.u1+')';
-  document.getElementById('act-u1').textContent=t.u1;
+  _reconfigSlider('act-v1-slider',t.u1);
   const f2=document.getElementById('act-f2');
-  if(t.u2){f2.style.display='block';document.getElementById('act-lbl2').textContent=t.l2+' ('+t.u2+')';document.getElementById('act-u2').textContent=t.u2;}
-  else{f2.style.display='none';}
+  if(t.u2){
+    f2.style.display='block';
+    document.getElementById('act-lbl2').textContent=t.l2+' ('+t.u2+')';
+    _reconfigSlider('act-v2-slider',t.u2);
+  } else {
+    f2.style.display='none';
+  }
   document.getElementById('act-fields').style.display='block';
   document.getElementById('act-save-btn').style.display='block';
-  setTimeout(()=>{
-    const v1=document.getElementById('act-v1');
-    if(v1){
-      v1.focus();
-      // After keyboard opens (~300ms), scroll input into view within modal
-      setTimeout(()=>{
-        v1.scrollIntoView({behavior:'smooth',block:'center'});
-      },350);
-    }
-  },80);
 }
 
 function saveActivity(){
@@ -12748,6 +12866,8 @@ window.addEventListener('offline',()=>_updateOffline(true));
 })();
 
 init();
+// 초기 로드 시 모든 slider 컴포넌트 setup (모달 안에 있어도 가능)
+document.addEventListener('DOMContentLoaded',()=>{try{setupNumSliders(document);}catch(e){console.warn('[num-slider]',e);}});
 // Friend landing: show once if URL has ?celebrate=... param
 setTimeout(()=>{try{maybeShowFriendWelcome();}catch(e){console.warn('[friend-welcome]',e);}},700);
 
