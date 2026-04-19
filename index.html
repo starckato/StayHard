@@ -146,6 +146,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 @keyframes bonusPop{0%{opacity:0;transform:scale(.82) translateY(8px);}60%{opacity:1;transform:scale(1.04) translateY(0);}100%{transform:scale(1);}}
 /* Muscle map share FAB — 매우 은은한 pulse (이전 대비 ~10%) */
 @keyframes mmFabPulse{0%,100%{box-shadow:0 8px 22px rgba(255,77,77,0.5), 0 0 0 0 rgba(255,77,77,0.045);}50%{box-shadow:0 8px 22px rgba(255,77,77,0.5), 0 0 0 10px rgba(255,77,77,0);}}
+@keyframes tierShareSlide{from{opacity:0;transform:translate(-50%,20px);}to{opacity:1;transform:translate(-50%,0);}}
 .mm-fab-pulse{animation:mmFabPulse 2.4s ease-out infinite;}
 .mm-fab-pulse:active{transform:scale(.92);transition:transform .1s;}
 @media (prefers-reduced-motion: reduce){.mm-fab-pulse{animation:none;}}
@@ -929,6 +930,19 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
 
       <span id="char-tier-name" style="display:none;"></span>
       <span id="char-pts" style="display:none;"></span>
+    </div>
+
+    <!-- 친구 초대 카드 — 항상 노출 (dismiss 가능). 바이럴 루프 진입점 -->
+    <div id="invite-card" class="s-card" style="display:none;margin:0 14px 10px;padding:12px 14px;background:var(--surface);border:1px solid var(--border2);">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,rgba(255,77,77,0.18),rgba(255,107,53,0.12));display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px;">🙌</div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:13px;font-weight:800;color:var(--text);letter-spacing:-0.01em;line-height:1.2;">친구랑 같이 Stay Hard</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:2px;line-height:1.3;">초대장 보내서 같이 기록하자</div>
+        </div>
+        <button onclick="shareInvite()" style="flex-shrink:0;padding:8px 12px;border:none;border-radius:8px;background:linear-gradient(135deg,#ff4d4d,#ff6b35);color:#fff;font-size:11px;font-weight:800;cursor:pointer;touch-action:manipulation;letter-spacing:-.01em;">초대 →</button>
+        <button onclick="dismissInviteCard()" aria-label="닫기" style="flex-shrink:0;background:none;border:none;color:var(--text3);font-size:13px;cursor:pointer;padding:4px 2px;margin-left:-4px;">✕</button>
+      </div>
     </div>
 
     <!-- 첫 주 미션 — 가입 후 7일간 노출. renderFirstWeekCard() 가 상태 판별 + 숨김 처리 -->
@@ -4596,6 +4610,8 @@ function addScore(type, note='', ptsOverride=null, silent=false){
       launchConfetti();
       showWin('perfect',0,_newTier.icon+' '+_newTier.name+'\n티어 달성!');
       openRoomOverlay();
+      // 티어업 peak dopamine 시점 → 공유 CTA surface (3초 뒤, 작은 ribbon)
+      try{showTierUpShareCTA(_newTier);}catch(e){console.warn('[tierup-share]',e);}
     },800);
   } else if(pts>0&&Math.floor(CP.total_score/100)>Math.floor(_prevScore/100)){
     setTimeout(()=>showWin('routine',0,CP.total_score+'점 돌파! 🎉'),600);
@@ -6583,43 +6599,53 @@ async function shareBonusGrant(){
   }
 }
 
-// ── Friend landing: someone opened a shared URL with ?celebrate=... ──
+// ── Friend landing: someone opened ?celebrate=... OR ?invite=... URL ──
 function maybeShowFriendWelcome(){
   try{
     const params=new URLSearchParams(window.location.search||'');
-    const key=params.get('celebrate');
-    if(!key)return;
-    // Dismissed-once guard (localStorage keyed by event)
-    try{if(localStorage.getItem('friend_welcome_'+key)==='1')return;}catch(e){}
-    const eventLabels={
-      'buan_mediofondo_2026':{title:'부안 메디오폰도 완주 축하',icon:'🚴'},
-    };
-    const info=eventLabels[key]||{title:'친구의 성취',icon:'🏆'};
+    const celebrateKey=params.get('celebrate');
+    const inviteRef=params.get('invite');
+    if(!celebrateKey&&!inviteRef)return;
+    const mode=celebrateKey?'celebrate':'invite';
+    const storageKey=mode==='celebrate'?('friend_welcome_'+celebrateKey):('friend_invite_'+inviteRef);
+    try{if(localStorage.getItem(storageKey)==='1')return;}catch(e){}
+    let title,body,icon;
+    if(mode==='celebrate'){
+      const eventLabels={'buan_mediofondo_2026':{title:'부안 메디오폰도 완주 축하',icon:'🚴'}};
+      const info=eventLabels[celebrateKey]||{title:'친구의 성취',icon:'🏆'};
+      title='친구가 축하 카드를 보냈어요';
+      body=`${info.title}<br>너도 Stay Hard 로 네 기록을 쌓아볼래?`;
+      icon=info.icon;
+    } else {
+      title='친구가 Stay Hard 로 초대했어요';
+      body='매일 체중·식단·운동 체크하고<br>친구들이랑 챌린지하자';
+      icon='🙌';
+    }
     const el=document.createElement('div');
     el.id='friend-welcome-modal';
     el.style.cssText='position:fixed;inset:0;z-index:9995;background:rgba(0,0,0,.82);display:flex;align-items:center;justify-content:center;padding:22px;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);';
     el.innerHTML=`
       <div style="background:linear-gradient(155deg,#1a1a22,#12080a);border:1px solid rgba(255,107,53,.35);border-radius:22px;padding:30px 22px 22px;max-width:340px;width:100%;text-align:center;box-shadow:0 16px 48px rgba(255,77,77,.25);">
-        <div style="font-size:56px;line-height:1;margin-bottom:10px;">${info.icon}</div>
-        <div style="font-family:'Archivo Black',sans-serif;font-size:18px;color:#fff;margin-bottom:8px;letter-spacing:-.02em;">친구가 축하 카드를 보냈어요</div>
-        <div style="font-size:13px;color:#d8d8de;line-height:1.6;margin-bottom:18px;">${info.title}<br>너도 Stay Hard 로 네 기록을 쌓아볼래?</div>
+        <div style="font-size:56px;line-height:1;margin-bottom:10px;">${icon}</div>
+        <div style="font-family:'Archivo Black',sans-serif;font-size:18px;color:#fff;margin-bottom:8px;letter-spacing:-.02em;">${title}</div>
+        <div style="font-size:13px;color:#d8d8de;line-height:1.6;margin-bottom:18px;">${body}</div>
         <div style="display:flex;flex-direction:column;gap:8px;">
-          <button onclick="_friendWelcomeCta('join')" style="padding:14px;border-radius:13px;border:none;background:linear-gradient(135deg,#ff4d4d,#ff6b35);color:#fff;font-weight:900;font-size:15px;font-family:'DM Sans',sans-serif;cursor:pointer;letter-spacing:-.01em;box-shadow:0 10px 24px rgba(255,77,77,.4);touch-action:manipulation;">🔥 나도 도전해보기</button>
-          <button onclick="_friendWelcomeCta('login')" style="padding:12px;border-radius:13px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.04);color:#fff;font-weight:700;font-size:14px;font-family:'DM Sans',sans-serif;cursor:pointer;touch-action:manipulation;">나도 받으러 가기 (로그인)</button>
+          <button onclick="_friendWelcomeCta('join')" style="padding:14px;border-radius:13px;border:none;background:linear-gradient(135deg,#ff4d4d,#ff6b35);color:#fff;font-weight:900;font-size:15px;font-family:'DM Sans',sans-serif;cursor:pointer;letter-spacing:-.01em;box-shadow:0 10px 24px rgba(255,77,77,.4);touch-action:manipulation;">🔥 나도 시작하기</button>
+          <button onclick="_friendWelcomeCta('login')" style="padding:12px;border-radius:13px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.04);color:#fff;font-weight:700;font-size:14px;font-family:'DM Sans',sans-serif;cursor:pointer;touch-action:manipulation;">이미 계정 있어요 (로그인)</button>
           <button onclick="_friendWelcomeCta('close')" style="padding:8px;border:none;background:transparent;color:#6b6b78;font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;">나중에</button>
         </div>
       </div>
     `;
     document.body.appendChild(el);
-    window._friendWelcomeKey=key;
-    try{track('friend_welcome_seen',{event_key:key});}catch(e){}
+    window._friendWelcomeKey=storageKey;
+    try{track('friend_welcome_seen',{mode,key:celebrateKey||inviteRef});}catch(e){}
   }catch(e){console.warn('[friend-welcome]',e);}
 }
 
 function _friendWelcomeCta(action){
-  const key=window._friendWelcomeKey||'';
-  try{localStorage.setItem('friend_welcome_'+key,'1');}catch(e){}
-  try{track('friend_welcome_cta',{event_key:key,action:action});}catch(e){}
+  const storageKey=window._friendWelcomeKey||'';
+  try{if(storageKey)localStorage.setItem(storageKey,'1');}catch(e){}
+  try{track('friend_welcome_cta',{key:storageKey,action:action});}catch(e){}
   const el=document.getElementById('friend-welcome-modal');if(el)el.remove();
   // Auto-switch auth tab if user isn't logged in yet (signup for join, login for login)
   if(action==='join'||action==='login'){
@@ -6629,6 +6655,112 @@ function _friendWelcomeCta(action){
         switchAuthTab(action==='join'?'signup':'login');
       }
     }catch(e){}
+  }
+}
+
+// ── 친구 초대 카드 — 홈 표시/숨김 + 공유 플로우 ──
+function renderInviteCard(){
+  const card=document.getElementById('invite-card');
+  if(!card)return;
+  if(!CU){card.style.display='none';return;}
+  try{if(localStorage.getItem('invite_dismissed_'+CU.id)==='1'){card.style.display='none';return;}}catch(e){}
+  card.style.display='block';
+}
+function dismissInviteCard(){
+  try{if(CU&&CU.id)localStorage.setItem('invite_dismissed_'+CU.id,'1');}catch(e){}
+  const card=document.getElementById('invite-card');if(card)card.style.display='none';
+  try{track('invite_card_dismissed',{});}catch(e){}
+}
+// ── 티어업 공유 ribbon — 확정 알람 이후 bottom에 작은 sticky CTA ──
+function showTierUpShareCTA(tier){
+  if(!tier)return;
+  // 세션당 동일 티어 중복 노출 방지
+  const sessionKey='tierup_share_shown_'+(tier.name||'');
+  try{if(sessionStorage.getItem(sessionKey)==='1')return;}catch(e){}
+  try{sessionStorage.setItem(sessionKey,'1');}catch(e){}
+  const existing=document.getElementById('tierup-share-ribbon');
+  if(existing)existing.remove();
+  const ribbon=document.createElement('div');
+  ribbon.id='tierup-share-ribbon';
+  ribbon.style.cssText='position:fixed;left:50%;transform:translateX(-50%);bottom:88px;z-index:1100;width:calc(100% - 32px);max-width:400px;padding:12px 14px;background:linear-gradient(135deg,rgba(26,26,34,0.97),rgba(18,8,10,0.97));border:1px solid rgba(255,107,53,0.4);border-radius:14px;box-shadow:0 12px 32px rgba(255,77,77,0.35);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);display:flex;align-items:center;gap:10px;animation:tierShareSlide .4s ease;';
+  ribbon.innerHTML=`
+    <div style="font-size:24px;flex-shrink:0;">${tier.icon||'🔥'}</div>
+    <div style="flex:1;min-width:0;">
+      <div style="font-size:13px;font-weight:800;color:#fff;letter-spacing:-.01em;">${tier.name} 달성!</div>
+      <div style="font-size:11px;color:#b8b8c0;margin-top:1px;">친구한테 보여주자</div>
+    </div>
+    <button onclick="shareInvite();(document.getElementById('tierup-share-ribbon')||{}).remove&&document.getElementById('tierup-share-ribbon').remove();" style="flex-shrink:0;padding:8px 14px;border:none;border-radius:9px;background:linear-gradient(135deg,#ff4d4d,#ff6b35);color:#fff;font-size:12px;font-weight:800;cursor:pointer;touch-action:manipulation;letter-spacing:-.01em;box-shadow:0 4px 12px rgba(255,77,77,0.4);">↗ 자랑하기</button>
+    <button onclick="(document.getElementById('tierup-share-ribbon')||{}).remove&&document.getElementById('tierup-share-ribbon').remove();" aria-label="닫기" style="flex-shrink:0;background:none;border:none;color:#6b6b78;font-size:14px;cursor:pointer;padding:4px;">✕</button>
+  `;
+  document.body.appendChild(ribbon);
+  try{track('tierup_share_cta_shown',{tier:tier.name});}catch(e){}
+  // 10초 뒤 자동 사라짐
+  setTimeout(()=>{const el=document.getElementById('tierup-share-ribbon');if(el)el.remove();},10000);
+}
+
+async function shareInvite(){
+  if(!CU||!CU.id){showToast('로그인이 필요해요');return;}
+  if(typeof html2canvas==='undefined'){showToast('공유 준비 중... 잠시 후 다시 시도');return;}
+  try{track('invite_share_start',{});}catch(e){}
+  const refId=CU.id;
+  const shareUrl='https://stay-hard-rouge.vercel.app/?invite='+encodeURIComponent(refId);
+  const displayUrl='stay-hard-rouge.vercel.app';
+  const userName=(CP&&(CP.display_name||CP.username))||'친구';
+  const tier=typeof getTier==='function'?getTier(+(CP?.total_score)||0):{icon:'🔥',name:'Stay Hard'};
+  const score=+(CP?.total_score)||0;
+  const card=document.createElement('div');
+  card.style.cssText='position:fixed;left:-9999px;top:0;width:430px;background:#0a0a0c;padding:30px 28px 24px;color:#fff;font-family:"DM Sans",sans-serif;box-sizing:border-box;';
+  const safeName=String(userName).replace(/</g,'&lt;');
+  card.innerHTML=`
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+      <div style="font-family:'Archivo Black',sans-serif;font-size:15px;letter-spacing:.1em;color:#fff;">STAY HARD</div>
+      <div style="font-size:11px;color:#8a8a94;font-family:'DM Mono',monospace;">초대장</div>
+    </div>
+    <div style="text-align:center;padding:30px 0 18px;">
+      <div style="font-size:68px;line-height:1;margin-bottom:4px;">🙌</div>
+      <div style="font-family:'Archivo Black',sans-serif;font-size:24px;letter-spacing:-.02em;margin-top:14px;line-height:1.25;">${safeName} 님이<br>너를 초대했어</div>
+      <div style="display:inline-flex;align-items:center;gap:6px;margin-top:14px;padding:6px 14px;background:rgba(255,77,77,0.12);border:1px solid rgba(255,77,77,0.3);border-radius:999px;font-size:12px;font-weight:700;color:#ff9f43;">${tier.icon} ${tier.name} · ${score.toLocaleString()}pt</div>
+    </div>
+    <div style="font-size:14px;color:#dadae0;line-height:1.65;text-align:center;padding:4px 8px 22px;">
+      매일 체중 · 식단 · 운동 체크하고<br>
+      <span style="color:#ff6b35;font-weight:800;">꾸준함</span>으로 진짜 나를 만드는 앱
+    </div>
+    <div style="background:rgba(255,107,53,0.06);border:1px solid rgba(255,107,53,0.28);border-radius:14px;padding:14px 16px;margin-bottom:16px;text-align:center;">
+      <div style="font-size:13px;color:#ff9f43;font-weight:800;margin-bottom:3px;letter-spacing:-.01em;">🔥 같이 Stay Hard 하자</div>
+      <div style="font-size:12px;color:#b8b8c0;line-height:1.5;">친구랑 챌린지하면<br>혼자 할 때보다 확실히 꾸준함</div>
+    </div>
+    <div style="border-top:1px dashed rgba(255,255,255,.14);padding-top:14px;display:flex;align-items:center;justify-content:space-between;gap:8px;">
+      <div style="font-size:11px;color:#8a8a94;font-family:'DM Mono',monospace;letter-spacing:-.01em;">${displayUrl}</div>
+      <div style="font-size:10px;color:#5a5a66;letter-spacing:.1em;font-weight:700;">STAY HARD</div>
+    </div>
+  `;
+  document.body.appendChild(card);
+  try{
+    const canvas=await html2canvas(card,{backgroundColor:null,scale:2,useCORS:true,logging:false,allowTaint:true});
+    card.remove();
+    const blob=await new Promise(res=>canvas.toBlob(res,'image/png'));
+    if(!blob){showToast('이미지 생성 실패');return;}
+    const file=new File([blob],'stayhard_invite.png',{type:'image/png'});
+    const shareText=`${userName} 님이 Stay Hard 초대장을 보냈어요 → ${shareUrl}`;
+    const prevOverflow=document.body.style.overflow;
+    document.body.style.overflow='';
+    try{
+      if(navigator.canShare&&navigator.canShare({files:[file]})){
+        await navigator.share({files:[file],title:'STAY HARD — 초대장',text:shareText});
+        try{track('invite_share',{channel:'web_share'});}catch(e){}
+        document.body.style.overflow=prevOverflow;
+        return;
+      }
+    }catch(e){console.warn('[invite-share] share err',e);}
+    const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=file.name;
+    document.body.appendChild(a);a.click();a.remove();
+    document.body.style.overflow=prevOverflow;
+    showToast('📸 이미지 저장됨 — 카톡에 붙여주세요');
+    try{track('invite_share',{channel:'download'});}catch(e){}
+  }catch(e){
+    console.warn('[invite-share] canvas err',e);
+    if(card.parentNode)card.remove();
+    showToast('공유 실패 — 다시 시도');
   }
 }
 
@@ -7038,7 +7170,7 @@ function scrollToSection(s){
   const el=document.getElementById(map[s]);
   if(el)el.scrollIntoView({behavior:'smooth',block:'center'});
 }
-function renderRoutine(){renderCharCard();renderSummaryCard();renderWeight();renderMeals();renderCheatBadge();renderWater();renderWorkouts();renderMandatory();renderTargets();updateGogginsHeader();revealStatusBand();try{renderFirstWeekCard();}catch(e){console.warn('[fw-card]',e);}}
+function renderRoutine(){renderCharCard();renderSummaryCard();renderWeight();renderMeals();renderCheatBadge();renderWater();renderWorkouts();renderMandatory();renderTargets();updateGogginsHeader();revealStatusBand();try{renderFirstWeekCard();}catch(e){console.warn('[fw-card]',e);}try{renderInviteCard();}catch(e){console.warn('[invite-card]',e);}}
 
 // ═══════════════════════════════════════════════
 // FIRST-WEEK MISSION CARD
