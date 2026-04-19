@@ -8483,7 +8483,15 @@ function renderWorkouts(){
   if(ctaLbl)ctaLbl.textContent=workouts.length>0?'운동 더 추가하기':'운동 추가하기';
 
   if(workouts.length===0){
-    const wr=document.getElementById('workout-rows');wr.innerHTML='';wr.style.cssText='';
+    const wr=document.getElementById('workout-rows');
+    wr.innerHTML=`<div style="padding:14px 0 6px;text-align:center;">
+      <div style="font-size:24px;margin-bottom:6px;">💪</div>
+      <div style="font-size:12px;color:var(--text3);margin-bottom:10px;line-height:1.5;">아직 오늘 운동 기록이 없어요<br>근력 · 유산소 · 활동 중 뭐든 OK</div>
+      <div style="display:inline-flex;align-items:center;gap:6px;font-size:10px;font-weight:600;padding:5px 10px;background:var(--surface2);border:1px solid var(--border2);border-radius:999px;color:var(--text3);letter-spacing:-.01em;">
+        <span style="color:var(--green);">+30pt</span>근력 · <span style="color:var(--green);">+30pt</span>유산소 <span style="color:var(--text3);opacity:0.7;">(하루 1회씩)</span>
+      </div>
+    </div>`;
+    wr.style.cssText='';
     return;
   }
 
@@ -9118,7 +9126,14 @@ function renderMandatory(){
   const rows=document.getElementById('check-rows');
   if(!rows)return;
   if(items.length===0){
-    rows.innerHTML='<div style="padding:16px 0;text-align:center;"><div style="font-size:28px;margin-bottom:6px;">✅</div><div style="font-size:13px;color:var(--text3);margin-bottom:4px;">매일 반복할 루틴을 추가하세요</div><div style="font-size:11px;color:var(--text3);">예: 🐱 고양이 밥 · 🪥 양치 · 🧹 집 청소</div></div>';
+    rows.innerHTML='<div style="padding:16px 0;text-align:center;">'
+      +'<div style="font-size:28px;margin-bottom:6px;">✅</div>'
+      +'<div style="font-size:13px;color:var(--text3);margin-bottom:4px;">매일 반복할 루틴을 추가하세요</div>'
+      +'<div style="font-size:11px;color:var(--text3);margin-bottom:10px;">예: 💪 팔굽혀펴기 10개 · 🚶 걷기 30분 · 💧 물 2L</div>'
+      +'<div style="display:inline-flex;align-items:center;gap:6px;font-size:10px;font-weight:600;padding:5px 10px;background:var(--surface2);border:1px solid var(--border2);border-radius:999px;color:var(--text3);letter-spacing:-.01em;">'
+      +'<span style="color:var(--green);">+1pt</span>체크 · <span style="color:var(--red);">-1pt</span>실패/스킵'
+      +'</div>'
+      +'</div>';
     return;
   }
   rows.innerHTML=items.map(t=>{
@@ -9426,7 +9441,10 @@ function renderTargets(){
     ?`<div style="padding:16px 0;text-align:center;">
   <div style="font-size:28px;margin-bottom:6px;">🎯</div>
   <div style="font-size:13px;color:var(--text3);margin-bottom:4px;">오늘의 할일을 설정하세요</div>
-  <div style="font-size:11px;color:var(--text3);">예: 링크드인 연락 · 보고서 작성 · 병원 예약</div>
+  <div style="font-size:11px;color:var(--text3);margin-bottom:10px;">예: 링크드인 연락 · 보고서 작성 · 병원 예약</div>
+  <div style="display:inline-flex;align-items:center;gap:6px;font-size:10px;font-weight:600;padding:5px 10px;background:var(--surface2);border:1px solid var(--border2);border-radius:999px;color:var(--text3);letter-spacing:-.01em;">
+    <span style="color:var(--green);">+2pt</span>완료 · <span style="color:var(--red);">-2pt</span>실패
+  </div>
 </div>`
     :log.targets.map((t,i)=>{
       const isDone=t.st==='done';
