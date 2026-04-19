@@ -7191,22 +7191,21 @@ function _fwWeekKeys(){
 
 function _fwShouldShow(){
   if(!CU)return false;
-  // Dismiss 는 세션 한정 — 탭 reload / 새 세션에선 다시 보임 (7일 이내 한정)
   try{if(sessionStorage.getItem('fw_dismissed_'+CU.id)==='1')return false;}catch(e){}
-  // CU.created_at 이 있으면 가입 후 7일 체크, 없으면 fallback 으로 최초 onboarding 시점 저장
-  let signupTime=null;
-  if(CU.created_at){
-    const t=new Date(CU.created_at).getTime();
-    if(!isNaN(t))signupTime=t;
+  // "처음 본 날" 기준 7일 창 — 기존 유저도 feature discovery 로 체험하게.
+  // 신규는 가입 당일=최초 노출이라 자연스럽고, 기존은 배포 후 첫 로그인부터 7일.
+  // URL 에 ?fw=1 붙이면 디버그 override.
+  try{const p=new URLSearchParams(window.location.search||'');if(p.get('fw')==='1')return true;}catch(e){}
+  let firstSeen=null;
+  try{
+    const cached=localStorage.getItem('fw_seen_at_'+CU.id);
+    if(cached){firstSeen=parseInt(cached,10);if(isNaN(firstSeen))firstSeen=null;}
+  }catch(e){}
+  if(!firstSeen){
+    firstSeen=Date.now();
+    try{localStorage.setItem('fw_seen_at_'+CU.id,String(firstSeen));}catch(e){}
   }
-  if(!signupTime){
-    try{
-      const cached=localStorage.getItem('fw_seen_at_'+CU.id);
-      if(cached)signupTime=parseInt(cached,10);
-      else{localStorage.setItem('fw_seen_at_'+CU.id,String(Date.now()));signupTime=Date.now();}
-    }catch(e){signupTime=Date.now();}
-  }
-  const daysSince=(Date.now()-signupTime)/86400000;
+  const daysSince=(Date.now()-firstSeen)/86400000;
   return daysSince<=7;
 }
 
