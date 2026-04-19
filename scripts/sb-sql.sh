@@ -48,13 +48,19 @@ import os, json
 print(json.dumps({"query": os.environ["SQL"]}))
 ')"
 
-HTTP_CODE=$(curl -sS -o /tmp/sb-sql.out -w "%{http_code}" \
+# Use mktemp + chmod 600 — Supabase rows can contain emails/PII; never leave
+# the response world-readable in /tmp.
+TMPOUT="$(mktemp)"
+chmod 600 "$TMPOUT"
+trap 'rm -f "$TMPOUT"' EXIT
+
+HTTP_CODE=$(curl -sS -o "$TMPOUT" -w "%{http_code}" \
   -X POST "https://api.supabase.com/v1/projects/${PROJECT_REF}/database/query" \
   -H "Authorization: Bearer ${PAT}" \
   -H "Content-Type: application/json" \
   --data-binary "$PAYLOAD")
 
-cat /tmp/sb-sql.out
+cat "$TMPOUT"
 echo ""
 echo "HTTP ${HTTP_CODE}" >&2
 
