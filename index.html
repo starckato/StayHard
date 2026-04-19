@@ -8584,18 +8584,42 @@ function getCheatWeekKey(d=new Date()){
 }
 
 // 앱 로드 시 주간 초기화 + 절제 보너스 체크
+// v2.4 fix: 하드코딩 2 → 실제 cheat_quota. 가입 직후 주 롤오버로 unearned +40pt 받는
+// 버그 수정 — 지난 주 실제 활동(≥3일)이 있어야 보너스 지급.
 async function checkCheatWeekReset(){
   if(!CP||!CU)return;
   const curWeek=getCheatWeekKey();
   if(CP.cheat_reset_week===curWeek)return;
   const lastUsed=CP.cheat_used||0;
-  const unused=Math.max(0,2-lastUsed);
+  const quota=+(CP.cheat_quota)||2;
+  const unused=Math.max(0,quota-lastUsed);
   if(CP.cheat_reset_week&&unused>0){
-    const bonusPts=unused*SCORE_EVENTS.cheat_bonus.pts;
-    for(let i=0;i<unused;i++)addScore('cheat_bonus');
-    setTimeout(()=>{
-      showWin('diet_clean',bonusPts,'치팅 절제 보너스!');
-    },1500);
+    // 지난 주 실제 활동 여부 확인 — 가입 직후 주 롤오버 케이스에서 unearned bonus 방지
+    let priorActive=false;
+    try{
+      const today=new Date();
+      const weekAgoStart=new Date(today);weekAgoStart.setDate(today.getDate()-7);
+      const {data}=await sb.from('daily_logs')
+        .select('log_date,weight,meals,workouts,points_log')
+        .eq('user_id',CU.id)
+        .gte('log_date',dkey(weekAgoStart))
+        .lt('log_date',dkey(today));
+      const activeDays=(data||[]).filter(l=>{
+        if(l.weight!=null&&+l.weight>0)return true;
+        if((l.meals||[]).length>0)return true;
+        if((l.workouts||[]).some(w=>w&&w.status==='done'))return true;
+        if((l.points_log||[]).some(p=>+p.pts>0))return true;
+        return false;
+      }).length;
+      priorActive=activeDays>=3;
+    }catch(e){console.warn('[cheat-reset] active check failed — skipping bonus',e);}
+    if(priorActive){
+      const bonusPts=unused*SCORE_EVENTS.cheat_bonus.pts;
+      for(let i=0;i<unused;i++)addScore('cheat_bonus');
+      setTimeout(()=>{
+        showWin('diet_clean',bonusPts,'치팅 절제 보너스!');
+      },1500);
+    }
   }
   CP.cheat_used=0;
   CP.cheat_reset_week=curWeek;
