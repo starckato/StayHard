@@ -936,6 +936,20 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
       <span id="char-pts" style="display:none;"></span>
     </div>
 
+    <!-- Weekly feature ribbon (M1) — 이번 주 배울 기능. 주차 바뀌면 새로 노출 -->
+    <div id="weekly-feature-card" class="s-card" style="display:none;margin:0 14px 10px;padding:12px 14px;background:linear-gradient(135deg,rgba(139,92,246,0.08),rgba(168,85,247,0.04));border:1px solid rgba(168,85,247,0.25);">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div style="width:36px;height:36px;border-radius:10px;background:rgba(168,85,247,0.18);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px;" class="wf-icon">💥</div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:10px;color:#c084fc;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:2px;">이번 주 배울 기능</div>
+          <div style="font-size:13px;font-weight:800;color:var(--text);letter-spacing:-0.01em;line-height:1.2;" class="wf-title">—</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:2px;line-height:1.35;" class="wf-body">—</div>
+        </div>
+        <button class="wf-cta" style="flex-shrink:0;padding:8px 12px;border:none;border-radius:8px;background:linear-gradient(135deg,#a855f7,#8b5cf6);color:#fff;font-size:11px;font-weight:800;cursor:pointer;touch-action:manipulation;letter-spacing:-.01em;white-space:nowrap;">—</button>
+        <button onclick="dismissWeeklyFeature()" aria-label="닫기" style="flex-shrink:0;background:none;border:none;color:var(--text3);font-size:13px;cursor:pointer;padding:4px 2px;margin-left:-4px;">✕</button>
+      </div>
+    </div>
+
     <!-- Day-3 챌린지 넛지 (P3.2) — 3일 연속 기록 시 챌린지 유도 -->
     <div id="day3-nudge-card" class="s-card" style="display:none;margin:0 14px 10px;padding:12px 14px;background:linear-gradient(135deg,rgba(52,211,153,0.08),rgba(34,211,238,0.04));border:1px solid rgba(52,211,153,0.25);">
       <div style="display:flex;align-items:center;gap:12px;">
@@ -6696,6 +6710,58 @@ function _friendWelcomeCta(action){
   }
 }
 
+// ── Weekly feature ribbon (M1) — 이번 주 배울 기능. ISO 주차 단위로 rotating ──
+// 큐레이션은 현재 코드 edit + push 방식. Admin UI 는 follow-up ship.
+const WEEKLY_FEATURES=[
+  {icon:'💥',title:'자극 부위 맵',body:'운동하면 근육맵에 누적돼.<br>탭해서 전신 타격 분포 확인.',cta:'지금 보기',fn:'openMuscleMap'},
+  {icon:'🏆',title:'챌린지로 경쟁',body:'친구랑 코드로 참여해서<br>매일 점수 겨뤄.',cta:'챌린지 탭',fn:'gotoChallengeTab'},
+  {icon:'📊',title:'통계로 돌아보기',body:'주간·월간 KPI + 리포트 카드<br>내 변화를 숫자로 확인.',cta:'통계 탭',fn:'gotoStatsTab'},
+  {icon:'💪',title:'푸쉬업 챌린지',body:'CV 가 자동으로 세봐.<br>첫 30개까지 1pt/개.',cta:'도전',fn:'cvOpenPushupChallenge'},
+];
+function _currentWeekFeature(){
+  const now=new Date();
+  const start=new Date(now.getFullYear(),0,1);
+  const days=Math.floor((now-start)/86400000);
+  const weekNum=Math.floor(days/7);
+  return WEEKLY_FEATURES[weekNum%WEEKLY_FEATURES.length];
+}
+function renderWeeklyFeatureRibbon(){
+  const card=document.getElementById('weekly-feature-card');
+  if(!card)return;
+  if(!CU||!CU.id){card.style.display='none';return;}
+  // Dismiss 는 ISO 주차 단위 (주 바뀌면 다시 노출)
+  const now=new Date();
+  const start=new Date(now.getFullYear(),0,1);
+  const weekNum=Math.floor(Math.floor((now-start)/86400000)/7);
+  const dismissKey='wf_dismissed_'+CU.id+'_'+weekNum;
+  try{if(sessionStorage.getItem(dismissKey)==='1'){card.style.display='none';return;}}catch(e){}
+  const feat=_currentWeekFeature();
+  if(!feat){card.style.display='none';return;}
+  const icoEl=card.querySelector('.wf-icon');
+  const titleEl=card.querySelector('.wf-title');
+  const bodyEl=card.querySelector('.wf-body');
+  const ctaEl=card.querySelector('.wf-cta');
+  if(icoEl)icoEl.textContent=feat.icon;
+  if(titleEl)titleEl.textContent=feat.title;
+  if(bodyEl)bodyEl.innerHTML=feat.body;
+  if(ctaEl){
+    ctaEl.textContent=feat.cta+' →';
+    ctaEl.onclick=()=>{try{track('wf_cta_click',{title:feat.title});}catch(e){}try{window[feat.fn]&&window[feat.fn]();}catch(e){console.warn('[wf]',e);}};
+  }
+  card.style.display='block';
+  card.dataset.week=String(weekNum);
+}
+function dismissWeeklyFeature(){
+  if(!CU||!CU.id)return;
+  const now=new Date();
+  const start=new Date(now.getFullYear(),0,1);
+  const weekNum=Math.floor(Math.floor((now-start)/86400000)/7);
+  try{sessionStorage.setItem('wf_dismissed_'+CU.id+'_'+weekNum,'1');}catch(e){}
+  const c=document.getElementById('weekly-feature-card');if(c)c.style.display='none';
+  try{track('wf_dismissed',{});}catch(e){}
+}
+function gotoStatsTab(){try{track('wf_goto',{to:'stats'});}catch(e){}try{switchTab('stats',2);}catch(e){}}
+
 // ── Milestone reveals (M2) — 첫 이벤트 발생 시 깊은 기능 공개 ──
 function unlockNavBadge(tab){
   if(!CU||!CU.id)return;
@@ -7307,7 +7373,7 @@ function scrollToSection(s){
   const el=document.getElementById(map[s]);
   if(el)el.scrollIntoView({behavior:'smooth',block:'center'});
 }
-function renderRoutine(){renderCharCard();renderSummaryCard();renderWeight();renderMeals();renderCheatBadge();renderWater();renderWorkouts();renderMandatory();renderTargets();updateGogginsHeader();revealStatusBand();try{renderFirstWeekCard();}catch(e){console.warn('[fw-card]',e);}try{renderInviteCard();}catch(e){console.warn('[invite-card]',e);}try{renderDay3ChallengeNudge();}catch(e){console.warn('[d3-nudge]',e);}}
+function renderRoutine(){renderCharCard();renderSummaryCard();renderWeight();renderMeals();renderCheatBadge();renderWater();renderWorkouts();renderMandatory();renderTargets();updateGogginsHeader();revealStatusBand();try{renderFirstWeekCard();}catch(e){console.warn('[fw-card]',e);}try{renderInviteCard();}catch(e){console.warn('[invite-card]',e);}try{renderDay3ChallengeNudge();}catch(e){console.warn('[d3-nudge]',e);}try{renderWeeklyFeatureRibbon();}catch(e){console.warn('[wf-ribbon]',e);}}
 
 // ═══════════════════════════════════════════════
 // FIRST-WEEK MISSION CARD
