@@ -1,9 +1,31 @@
 # Stay Hard — Ops SQL Playbook
 
-Copy any block → paste into **Supabase Dashboard → SQL Editor** → Run.
-All queries are read-only (SELECT). No auth required — you're running as `postgres` in the SQL Editor.
+Two ways to run these:
 
-Requires migration `003_analytics_events.sql` to be run first.
+1. **Supabase Dashboard → SQL Editor** — paste + Run. Runs as `postgres`, bypasses RLS.
+2. **`./scripts/sb-sql.sh -c "SELECT …"`** — Management API via Personal Access Token (stored at `~/.stayhard-sb-pat`, `chmod 600`). Can also pass a file path. See `scripts/README.md`.
+
+Requires `migrations/003–011` applied. All queries here are read-only SELECTs unless marked otherwise.
+
+### Current infra reference (as of v2.4 / 2026-04-19)
+
+| Table / Column | Purpose | Migration |
+|---|---|---|
+| `profiles.is_admin` | Admin flag — gates `admin_dashboard`, `grant_bonus_by_email`, `set_user_excluded` | 003 |
+| `profiles.is_excluded` | Hides user from dashboard metrics (internal/test accounts) | 006 |
+| `profiles.goal` | `diet` / `muscle` / `habit` (from onboarding) | 010 |
+| `profiles.total_score` | Lifetime score; updated via `addScore` + `claim_bonus_grant` RPC | (pre-session) |
+| `events` table | Analytics event stream (`track()` client → RLS insert-self) | 003 |
+| `bonus_grants` table | Admin-issued celebrations (claim via RPC) | 005 |
+
+| RPC | Caller | Notes |
+|---|---|---|
+| `admin_dashboard()` | admin.html | Returns full KPI payload; raises if not admin |
+| `claim_bonus_grant(id)` | client (post-auth) | Atomic grant consume + score bump |
+| `grant_bonus_by_email(email, key, title, msg, pts, icon)` | admin | Upsert on (user_id, event_key) |
+| `set_user_excluded(uuid, bool)` | admin | Toggle exclusion flag |
+| `is_user_excluded(uuid)` | internal only | REVOKE'd from authenticated/anon (migration 011) |
+| `is_admin()` | internal — called by other SECURITY DEFINER fns | pre-session |
 
 ---
 

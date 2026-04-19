@@ -1,12 +1,22 @@
 # Stay Hard — Product Specification
-> Last Updated: 2026-04-18 (evening)
-> Version: 2.3 (+ Sprint I — Muscle-map Share + PM Admin Dashboard)
-> Files: `/Users/KWAN/StayHard/index.html` (14,161 lines), `/Users/KWAN/StayHard/admin.html` (390 lines)
+> Last Updated: 2026-04-19 (evening)
+> Version: 2.4 (+ Onboarding Rebuild · Viral Loop · Milestone Reveals · Security Hardening)
+> Files: `/Users/KWAN/StayHard/index.html` (15,101 lines), `/Users/KWAN/StayHard/admin.html` (695 lines)
 > Migrations:
 > - `migrations/001_competition_recent_activity.sql`
 > - `migrations/002_tighten_competitions_rls.sql`
 > - `migrations/003_analytics_events.sql` — events table + is_admin() + profiles.is_admin
 > - `migrations/004_admin_dashboard_full_data.sql` — admin_dashboard() RPC with full KPIs + row data
+> - `migrations/005_bonus_grants.sql` — admin-issued celebrations + claim_bonus_grant / grant_bonus_by_email RPCs
+> - `migrations/006_exclude_users_from_dashboard.sql` — profiles.is_excluded + is_user_excluded + set_user_excluded
+> - `migrations/007_cap_future_logs_in_dashboard.sql` — log_date <= current_date caps in every admin agg
+> - `migrations/008_show_last_login_not_last_log.sql` — all_users returns last_sign_in_at
+> - `migrations/009_last_activity_timestamp.sql` — all_users returns MAX(daily_logs.updated_at) as last_activity
+> - `migrations/010_profiles_goal_column.sql` — profiles.goal (diet/muscle/habit) persistence
+> - `migrations/011_revoke_is_user_excluded.sql` — security: REVOKE EXECUTE from authenticated/anon/public
+>
+> Tooling:
+> - `scripts/sb-sql.sh` — run SQL against Supabase via Management API (Personal Access Token in `~/.stayhard-sb-pat`)
 >
 > Deployment (Vercel): all aliases below point to the same project
 > - Primary: `https://stay-hard-rouge.vercel.app` ← use this
@@ -232,43 +242,67 @@ status          text      waiting | active | completed | failed
 
 ## 5. Scoring System
 
+> **v2.4 Rebalance (2026-04-19):** Workouts split into 근력 / 유산소 with 30pt each (cap 60/day). Diet penalty moved from 0 to −30 (with sentence-completion recovery path). Routine/target success shrunk from 2 to 1 and 2. Welcome bonus +10 added on onboarding finish.
+
 ### Earning Points
 | Action | Points | Type |
 |--------|--------|------|
-| Workout completed | +20 | workout_done |
+| Strength workout (gym) — 1×/day | +30 | workout_done |
+| Cardio workout (activity) — 1×/day | +30 | workout_cardio_done |
 | Clean meal | +10 | diet_clean |
 | Cold shower | +10 | cold_shower |
 | Early rise (6am) | +10 | early_rise |
 | Weight loss vs previous | +5 | weight_loss |
 | Goal weight achieved | +30 | weight_goal |
-| Routine item done | +2 | routine_done |
+| Routine item done | +1 | routine_done |
 | Target done | +2 | target_done |
 | Meal logged | +1 | diet_log |
 | Weight recorded | +1 | weight_record |
 | Cheat restraint bonus | +20 | cheat_bonus |
+| Pushup challenge | dynamic | pushup_challenge |
 | 4x4x48 challenge | +100 | goggins_4x4x48 |
+| Onboarding complete (one-time) | +10 | onboarding_bonus |
+| Admin-issued celebration | varies | (via `bonus_grants` table) |
 
-### Penalties (0 points, tracked for records)
-| Action | Type |
-|--------|------|
-| Forbidden meal | diet_junk |
-| Alcohol | diet_alcohol_register |
-| Routine failed | routine_fail |
-| Target failed | target_fail |
+**Pushup challenge step function (today's cumulative reps):**
+- First 30 reps: 1pt per rep (30pt max for first 30)
+- After 30: 1pt per 5 additional reps (100 reps → 44pt)
+
+### Penalties (negative values counted, not flat 0)
+| Action | Points | Type |
+|--------|--------|------|
+| Forbidden meal | **−30** | diet_junk |
+| Routine skipped (unchecked at end of day) | −1 | routine_skip (auto-applied on next-day reminder) |
+| Routine failed (manual) | −1 | routine_fail |
+| Target failed (manual) | −2 | target_fail |
+| Alcohol | 0 | diet_alcohol_register |
+
+### Diet sentence flow (new in v2.4)
+Red meal penalty of −30 is recoverable via the 형량 system:
+- **Log red meal** → −30 applied immediately, 채찍피티 overlay shows exercise sentence
+- **형량 수락** → cardio activity auto-added to workout list with `_isChaek:true` + `status:'planned'`
+- **형량 완료** (mark activity done) → +30 recovery (net 0) — guarded by `_canRefundJunk()` against double-refund
+- **도망 (reject sentence)** → keeps the original −30 (no additional penalty; prior double-penalty bug fixed)
 
 ### Cancellations (negative, ledger correction)
 | Action | Points | Type |
 |--------|--------|------|
-| Workout cancelled | -20 | workout_done_cancel |
-| Clean meal deleted | -10 | diet_clean_delete |
-| Routine undone | -2 | routine_done_cancel |
-| Target undone | -2 | target_done_cancel |
-| Meal unlogged | -1 | diet_log_cancel |
+| Strength workout cancelled | −30 | workout_done_cancel |
+| Cardio workout cancelled | −30 | workout_cardio_done_cancel |
+| Clean meal deleted | −10 | diet_clean_delete |
+| Routine undone | −1 | routine_done_cancel |
+| Target undone | −2 | target_done_cancel |
+| Meal unlogged | −1 | diet_log_cancel |
+| Diet junk recovered (via sentence complete or meal edit) | +30 | diet_junk_cancel |
+| Routine skip undone | +1 | routine_skip_cancel |
+| Routine fail undone | +1 | routine_fail_cancel |
+| Target fail undone | +2 | target_fail_cancel |
 
 ### Milestone Celebrations
 - Every 100 points → popup celebration
-- Tier-up → confetti + win modal + room overlay
+- Tier-up → confetti + win modal + room overlay + **tier-up share ribbon (v2.4)**
 - Perfect day (all sections complete) → special confetti
+- **First workout (v2.4)** → pulse badge dot on 통계 bottom-nav item, cleared on tab visit
 
 ---
 
@@ -463,7 +497,93 @@ User Action → logCache[key] update → renderRoutine()
 
 ---
 
-## 13. Development Changelog (2026-04-18 evening — v2.3 Sprint I: Share + PM Admin Dashboard)
+## 13. Development Changelog (2026-04-19 — v2.4 Onboarding Rebuild · Viral Loop · Milestone Reveals · Security Hardening)
+
+### Ship 1 — Onboarding Body Rebuild
+- **Step 1 redesigned** (`index.html:1921–1964`): 환영한다 + STAY HARD wordmark + "매일 작은 체크, 꾸준한 성장" tagline + philosophy line ("고긴스의 광기가 아니라 너의 매일이 너를 만든다") + 2×2 pillar grid (⚖️ 공복 체중 · 🥗 클린 식단 · 💪 운동 기록 · ✅ 루틴·할일) + closing consistency copy. Replaces the bare name+quote previous welcome.
+- **Step 4 quick-win**: After routine selection, new `ob-s4` slide shows scoring rules preview + "+10pt 환영 보너스" CTA. `obFinish()` calls `addScore('onboarding_bonus')` so the user lands on the app at 10pt instead of 0 — kills the cold-start dopamine dead zone.
+- **`OB_GOAL_ROUTINES` realistic bodyweight rewrite**:
+  - diet: 물 2L · 30분 걷기 · 공복 체중 · 저녁 9시 금식 · 팔굽혀펴기 10개
+  - muscle: 팔굽혀펴기 10개 · 맨몸 스쿼트 50개 · 🔥 헬스 (주 4회, days [1,2,4,5]) · 단백질 1g/체중 · 물 2L
+  - habit: 팔굽혀펴기 10개 · 30분 걷기 · 물 2L · 🔥 운동 (주 3회, days [1,3,5]) · 11시 전 취침
+  Dropped 찬물 샤워 / 새벽 6시 기상 / 독서 / 책상 정리 / 폰 덜 보기 (too high-friction or unmeasurable).
+- **Goal persistence** (`migrations/010_profiles_goal_column.sql`): `profiles.goal text CHECK IN ('diet','muscle','habit')`. `obSelectGoal()` writes immediately; `obFinish()` writes again as safety.
+- **Activation funnel instrumentation**: `onboard_step_view{step}`, `onboard_goal_select{goal}`, `first_point_earned{type,pts}` (localStorage-guarded `first_pt_<userId>` fires once per user across onboarding bonus + organic first earn).
+
+### Ship 2 — First-Week Mission Card
+- New `#first-week-card` on 기록 tab between Status Band and day slider (`index.html:948–958`).
+- 3 missions (reduced from 4 after user feedback):
+  1. 이번 주 몸무게 기록 → `openWeightModal`
+  2. 필수 루틴 세팅 → `openAddMandatoryModal`
+  3. 이번 주 첫 운동 → `openWorkoutModal`
+- Bonus: when today's custom mandatory routines are all done, appends "💪 오늘 할 일 다 끝냈네. 보너스 미션. 🔥 팔굽혀펴기 챌린지 →" row wired to `cvOpenPushupChallenge`.
+- State: `logCache` scan for current ISO week; no new DB columns. Refresh hooked into `addScore` + `renderWorkouts` + `renderWeight` so missions flip to ✓ in the same frame as the user's action.
+- Visibility: "first-seen" timestamp via localStorage (`fw_seen_at_<userId>`) + 7-day window. Existing users retroactively get 7 days from first post-deploy login. Override via `?fw=1` URL param bypasses both dismiss and window. sessionStorage dismiss — reappears after tab close.
+- Analytics: `first_week_card_shown`, `first_week_card_dismissed`, `fw_mission_click{mission}`.
+
+### Ship 3 — Smart Empty States with Score Previews
+Empty states on routine / target / workout cards now carry inline `[+Npt / -Npt]` pills so new users learn the scoring through usage, not through a tutorial:
+- **Routines** (`check-rows` empty): `[+1pt 체크 · -1pt 실패/스킵]` + updated examples (팔굽혀펴기 / 걷기 / 물 2L) replacing 고양이 밥 / 양치 / 청소.
+- **Targets** (`tgt-rows` empty): `[+2pt 완료 · -2pt 실패]`.
+- **Workouts** (`workout-rows` empty): `[+30pt 근력 · +30pt 유산소 (하루 1회씩)]` + 💪 "아직 오늘 운동 기록이 없어요" copy.
+- Water untouched (no direct score). Meals untouched (per-slot UI already surfaces per-meal score via `qualityScore` inside logged rows).
+
+### Ship 4 — Viral Loop (Friend Invite Card + Tier-Up Share + URL Landing)
+- **`#invite-card`** on home (`index.html:935–946`): 🙌 row with 초대 → CTA + ✕ dismiss. Persistent (localStorage dismiss per user). Renders via `renderInviteCard()` hooked into `renderRoutine`.
+- **`shareInvite()`**: html2canvas-rendered 430px card with user display_name + tier pill + score chip + "같이 Stay Hard 하자" pitch + footer URL. Web Share API (native sheet — KakaoTalk / Instagram / 메시지) first, PNG download fallback (with `URL.revokeObjectURL` cleanup — fixed in security round).
+- **`maybeShowFriendWelcome()` extended**: dual-mode now — `?celebrate=<event_key>` (bonus grant) and `?invite=<userId>` (invite link). Shows modal with "친구가 Stay Hard 로 초대했어요" + pitch + 나도 시작/로그인/나중에 CTAs. Once-dismissed guard per storage key. URL params validated via `sanitizeUrlParam()` (added in security round).
+- **Tier-up share ribbon**: `showTierUpShareCTA(tier)` fires inside `addScore` tier-change branch, bottom-anchored sticky ribbon (`#tierup-share-ribbon`) with tier icon + "친구한테 보여주자" + ↗ 자랑하기 button. Per-tier sessionStorage guard, 10s auto-dismiss, slides up via `tierShareSlide` keyframe.
+- Analytics: `invite_card_dismissed`, `invite_share_start`, `invite_share{channel}`, `tierup_share_cta_shown{tier}`, `friend_welcome_seen/cta{mode,key}`.
+
+### Ship 5 — Tip Registry + Goggins Explainer + Changelog
+- **`showTip()` expansion** (`index.html:~12096`): new entries `tipStatusBand`, `tipDaySlider`, `tipMuscleMap`, `tipInvite`. localStorage-gated (1-shot per key), 8s auto-dismiss. `tipMuscleMap` fires 500ms into `openMuscleMap`; `tipInvite` fires 1.5s after `renderInviteCard` first shows.
+- **Score Guide Goggins banner** (`index.html:1505+`): top of scroll area, `"점수는 일회성 이벤트 아냐. 매일 체크, 매일 쌓아. 꾸준함이 너를 만든다."` Reinforces philosophy at peak-comprehension moment (user explicitly opened scoring ladder).
+- **Profile Modal changelog** (`index.html:2998+`): 3-line rolling log under profile row with date prefix + emoji + one-liner. Quiet discovery channel for power users.
+
+### Ship 6 — Day-1 Evening Goggins Nudge + Day-3 Challenge Nudge
+- **P2.3 Day-1 nudge** (`checkDay1EveningNudge` at `index.html:~6837`): fires 3s after `onLogin` if `firstSeen` is today + no point events today + local hour ≥ 17 + once-per-day localStorage guard (`day1_nudge_<date>_<userId>`). Shows `_showDay1NudgeModal` with 🌱 icon + one of 3 Goggins-voice messages + single "알았어, 간다" CTA.
+- **P3.2 Day-3 nudge** (`renderDay3ChallengeNudge`): new `#day3-nudge-card` between Status Band and invite card. Renders when `logCache` contains ≥3 distinct active days (weight / workout done / meals / points_log present). Cyan+green gradient (differentiates from red onboarding / invite). Dismissible per session.
+- Analytics: `day1_nudge_shown / cta`, `day3_nudge_dismissed / cta`.
+
+### Ship 7 — Milestone Reveal (첫 운동 → 통계 nav badge)
+- **`.nav-badge-dot`** CSS: 8px orange pulsing dot on bottom-nav items (`.bni`). Uses `navBadgePulse` keyframe; respects `prefers-reduced-motion`.
+- **`unlockNavBadge(tab)` / `consumeNavBadge(tab)`** generic pair (`index.html:~6962`). localStorage guard `milestone_seen_<tab>_<userId>`.
+- **First workout trigger**: `maybeUnlockStatsOnWorkout(type)` called from `addScore` when type matches `workout_done` or `workout_cardio_done`. Dot clears on `switchTab('stats')`.
+- Analytics: `milestone_badge_shown{tab}`.
+
+### Ship 8 — Weekly Feature Ribbon (hardcoded rotation)
+- **`#weekly-feature-card`** between Status Band and day-3 nudge. Purple gradient to distinguish from red onboarding / invite / green day-3.
+- **`WEEKLY_FEATURES`** hardcoded array of 4 items:
+  - 💥 자극 부위 맵 → `openMuscleMap`
+  - 🏆 챌린지로 경쟁 → `gotoChallengeTab`
+  - 📊 통계로 돌아보기 → `gotoStatsTab`
+  - 💪 푸쉬업 챌린지 → `cvOpenPushupChallenge`
+- Week index = `floor(dayOfYear / 7)` (client-side deterministic). Dismiss is per-user-per-week via sessionStorage. Admin curation UI deferred to follow-up ship.
+- Analytics: `wf_cta_click{title}`, `wf_dismissed`, `wf_goto{to}`.
+
+### Ship 9 — 주 운동 횟수 Picker (Step 3)
+- **`#ob-wfreq-section`** above routine chips, visible only for muscle/habit goals (`index.html:2076–2086`). Four options 2/3/4/5회.
+- **`WFREQ_DAYS`** mapping count → weekday indices: 2회→[월,목], 3회→[월,수,금], 4회→[월,화,목,금], 5회→[월~금].
+- **`obSelectWfreq(n)`** updates any already-selected 운동/헬스 routine's `days` array + styles the picker. `obToggleRoutine` checks `_obWorkoutFreq` and applies the custom days when adding a workout chip.
+- Muscle defaults to 4회, habit to 3회. Progressive routine auto-increment (10→15→20) deferred (needs UX trigger design).
+- Analytics: `onboard_wfreq_select{freq,goal}`.
+
+### Security hardening (post-review, same day)
+Code review flagged 4 HIGH + 10 MEDIUM issues; HIGH + M2/M3/M4 fixed immediately:
+- **esc() / escMultiline() helpers** (`index.html:~6547`): HTML-entity escape any DB/user-sourced string before `innerHTML` injection. Applied to competition activity feed (`display_name`/`label`/`type`), carry-over ribbon and renderTargets (`t.text`), bonus grant modal + share card (`icon`/`title`/`message`).
+- **Blob URL leak fix** (`index.html:6711, 7030`): `shareBonusGrant` + `shareInvite` PNG download paths now `setTimeout(() => URL.revokeObjectURL(url), 1500)` after `a.click()`.
+- **`migrations/011_revoke_is_user_excluded.sql`**: REVOKE EXECUTE on `is_user_excluded(uuid)` from authenticated/anon/public. Function still runs inside `admin_dashboard()` SECURITY DEFINER context; direct external calls blocked.
+- **`sanitizeUrlParam(v, maxLen=128)`**: whitelist `[a-zA-Z0-9_-]`, length-clamp. Applied to `?celebrate` / `?invite` before use as localStorage keys or analytics meta.
+- **`scripts/sb-sql.sh` temp file hardening**: `mktemp` + `chmod 600` + `trap 'rm -f "$TMPOUT"' EXIT`. Prior world-readable `/tmp/sb-sql.out` could leak emails/PII to other local users.
+
+Open items deferred to follow-up ship: `body.overflow` reference counting for nested modals (M1); extracting `shareCardAsPng()` helper to deduplicate three share fns (M6); `render_error` tracking on the 4 silent render catches (M7); atomic decrement RPC for `revokeBonus` (M5); ISO-week rotation for `WEEKLY_FEATURES` (M8); aria-label audit on share buttons (L2). Review artifact at `document/reviews/session-2026-04-19-review.md`.
+
+### Tooling
+- **`scripts/sb-sql.sh`** + `scripts/README.md`: run any SQL against Supabase via Management API. Requires a Personal Access Token at `~/.stayhard-sb-pat` (chmod 600). Supports file / stdin / `-c "inline SQL"`. Stores token in home dir outside repo; `.gitignore` defensively blocks `.stayhard-sb-pat`, `*.pat`, `scripts/.env`.
+
+---
+
+## 14. Development Changelog (2026-04-18 evening — v2.3 Sprint I: Share + PM Admin Dashboard)
 
 ### Sprint I-A — Muscle Map Share Feature
 - **↗ Share button** in `#muscle-map-overlay` header (next to ✕). Universal 3-node share SVG icon (Android-style, 15×15 stroke 2.2), 40×40 tap target, accent gradient background.
@@ -557,7 +677,7 @@ User Action → logCache[key] update → renderRoutine()
 
 ---
 
-## 14. Development Changelog (2026-04-18 — v2.2 UX-Evaluation Follow-up + RLS Hardening)
+## 15. Development Changelog (2026-04-18 — v2.2 UX-Evaluation Follow-up + RLS Hardening)
 
 Built on top of v2.1 after a structured UX evaluation (4 personas × 6 use cases × 18 UX values). Each sprint targets a specific under-delivered value.
 
@@ -598,7 +718,7 @@ Built on top of v2.1 after a structured UX evaluation (4 personas × 6 use cases
 
 ---
 
-## 15. Development Changelog (2026-04-18 — v2.1 Info-Hierarchy Redesign)
+## 16. Development Changelog (2026-04-18 — v2.1 Info-Hierarchy Redesign)
 
 ### Sprint A — 기록 탭 정보 계층 재편
 - **Status Band hero**: header의 압축 goggins-badge + tiny summary pill + character card를 단일 tinted-gradient 히어로 카드로 통합. Archivo Black 대형 점수, 티어 pill, 스트릭, 오늘 Δ, 인용구, 다음 티어 진행 바, '오늘 기록 요약' 일차 CTA가 한 zone에 수직으로 배치됨.
@@ -640,7 +760,7 @@ Built on top of v2.1 after a structured UX evaluation (4 personas × 6 use cases
 
 ---
 
-## 16. Development Changelog (2026-04-17)
+## 17. Development Changelog (2026-04-17)
 
 ### Bug Fixes
 - Meal save race condition (dirty key tracking)
@@ -754,7 +874,7 @@ Built on top of v2.1 after a structured UX evaluation (4 personas × 6 use cases
 
 ---
 
-## 17. Muscle Activation System (자극 부위)
+## 18. Muscle Activation System (자극 부위)
 
 ### Architecture
 ```
@@ -833,7 +953,7 @@ obliques: 복사근, lower_back: 하부 등, hip_flexors: 고관절 굴곡근
 
 ---
 
-## 18. Exercise GIF Licensing & Commercial Readiness
+## 19. Exercise GIF Licensing & Commercial Readiness
 
 ### Current State (Beta)
 - GIFs sourced from `hasaneyldrm/exercises-dataset` (GitHub CDN)
@@ -866,7 +986,7 @@ obliques: 복사근, lower_back: 하부 등, hip_flexors: 고관절 굴곡근
 
 ---
 
-## 19. Wearable Integration Roadmap
+## 20. Wearable Integration Roadmap
 
 ### Phase 1: Strava API (Web — No Native App)
 **Status:** Backlog
