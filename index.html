@@ -1357,6 +1357,361 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
   border-top: 0;
   background: var(--color-surface);
 }
+
+
+/* ════════════════════════════════════════════════════════════════
+   v3.0 · Mockup (inline-cards.html) 레이아웃 CSS
+   각 card body 안에 공통으로 사용 · .v3-live 스코프
+════════════════════════════════════════════════════════════════ */
+
+/* --- Expanded card head (used inside pc-body) --- */
+.v3-live .card-expanded-head{
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 12px 14px 10px;
+  border-bottom: 0.5px solid var(--color-line);
+}
+.v3-live .card-expanded-head .card-label{
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-ink);
+  letter-spacing: -0.01em;
+}
+.v3-live .card-expanded-head .card-label svg{
+  width: 14px; height: 14px; color: var(--color-ink-2);
+}
+.v3-live .card-meta{
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: var(--color-ink-3);
+  text-transform: uppercase;
+}
+
+/* --- Inline checklist (필수 루틴 · 오늘의 목표) --- */
+.v3-live .inline-checklist{
+  display: flex;
+  flex-direction: column;
+  padding: 4px 14px 8px;
+}
+.v3-live .inline-check-row{
+  display: grid;
+  grid-template-columns: 18px 1fr auto auto;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 2px;
+  border-top: 0.5px solid var(--color-line-faint);
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.v3-live .inline-check-row:first-child{ border-top: 0; }
+.v3-live .inline-check-box{
+  width: 16px; height: 16px;
+  border: 1px solid var(--color-line-strong);
+  border-radius: 3px;
+  display: flex; align-items: center; justify-content: center;
+  color: transparent;
+  font-size: 10px;
+  font-weight: 700;
+  transition: background 160ms, border-color 160ms, color 160ms;
+}
+.v3-live .inline-check-box.is-done{
+  background: var(--color-will);
+  border-color: var(--color-will);
+  color: var(--color-will-on);
+}
+.v3-live .inline-check-label{
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  color: var(--color-ink);
+  letter-spacing: -0.01em;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.v3-live .inline-check-label.is-done{
+  color: var(--color-ink-3);
+  text-decoration: line-through;
+  text-decoration-thickness: 0.5px;
+  text-decoration-color: var(--color-ink-4);
+}
+.v3-live .inline-check-pt{
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: var(--color-ink-3);
+  letter-spacing: 0;
+}
+.v3-live .inline-check-pt.is-done{ color: var(--color-ink-2); }
+.v3-live .inline-check-fail{
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  padding: 3px 8px;
+  border-radius: 3px;
+  border: 0.5px solid var(--color-line-strong);
+  color: var(--color-ink-3);
+  background: transparent;
+  cursor: pointer;
+  touch-action: manipulation;
+  white-space: nowrap;
+}
+.v3-live .inline-check-fail.is-fail{
+  border-color: var(--color-penalty);
+  color: var(--color-penalty);
+  background: var(--color-penalty-soft);
+}
+
+/* Routine pill (요일 표기) */
+.v3-live .inline-check-daypill{
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 6px;
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.04em;
+  color: var(--color-ink-3);
+  background: var(--color-surface-2);
+  border-radius: 2px;
+}
+
+/* --- Goal add row --- */
+.v3-live .goal-add-row{
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px 12px;
+  margin-top: 4px;
+  border-top: 0.5px solid var(--color-line);
+}
+.v3-live .goal-add-input{
+  width: 100%;
+  background: transparent;
+  border: 0;
+  color: var(--color-ink);
+  font-size: 13px;
+  font-family: 'DM Sans', sans-serif;
+  padding: 6px 0;
+  outline: none;
+  letter-spacing: -0.01em;
+}
+.v3-live .goal-add-input::placeholder{ color: var(--color-ink-3); }
+.v3-live .goal-add-btn{
+  width: 28px; height: 28px;
+  border-radius: 4px;
+  background: var(--color-will);
+  color: var(--color-will-on);
+  font-size: 16px;
+  line-height: 1;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 600;
+  border: 0;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+/* --- Meal slots (식단 카드 body 안) --- */
+.v3-live .meal-slots{
+  display: flex;
+  flex-direction: column;
+  padding: 4px 14px 4px;
+}
+.v3-live .meal-slot{
+  display: grid;
+  grid-template-columns: 44px 1fr auto;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 2px;
+  border-top: 0.5px solid var(--color-line-faint);
+  font-size: 13px;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.v3-live .meal-slot:first-child{ border-top: 0; }
+.v3-live .meal-slot-time{
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  color: var(--color-ink-3);
+  text-transform: uppercase;
+  text-align: center;
+}
+.v3-live .meal-slot-content{
+  color: var(--color-ink);
+  letter-spacing: -0.01em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+  font-family: 'DM Sans', sans-serif;
+}
+.v3-live .meal-slot-content.is-empty{
+  color: var(--color-ink-3);
+}
+.v3-live .meal-slot-content .category{
+  color: var(--color-ink-2);
+  margin-right: 6px;
+  font-weight: 500;
+}
+.v3-live .meal-slot-content .category.is-penalty{
+  color: var(--color-penalty);
+}
+.v3-live .meal-slot-pts{
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: var(--color-ink-3);
+  white-space: nowrap;
+}
+.v3-live .meal-slot-pts.is-penalty{ color: var(--color-penalty); }
+
+/* --- Water row (식단 카드 body 안) --- */
+.v3-live .water-row{
+  display: grid;
+  grid-template-columns: 44px 1fr auto;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 2px 4px;
+  border-top: 0.5px solid var(--color-line);
+  margin: 6px 14px 0;
+}
+.v3-live .water-row .water-label{
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  color: var(--color-ink-3);
+  text-transform: uppercase;
+  text-align: center;
+}
+.v3-live .water-dots{
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+.v3-live .water-dot{
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  border: 0.5px solid var(--color-line-strong);
+  background: transparent;
+  cursor: pointer;
+  transition: background 140ms, border-color 140ms;
+  touch-action: manipulation;
+}
+.v3-live .water-dot.is-filled{
+  background: var(--color-will);
+  border-color: var(--color-will);
+}
+.v3-live .water-stat{
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: var(--color-ink-2);
+  white-space: nowrap;
+}
+
+/* --- Workout list (운동 카드 body 안) --- */
+.v3-live .workout-list{
+  display: flex;
+  flex-direction: column;
+  padding: 4px 14px 4px;
+}
+.v3-live .workout-row{
+  display: grid;
+  grid-template-columns: 20px 1fr auto auto;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 2px;
+  border-top: 0.5px solid var(--color-line-faint);
+  font-size: 13px;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.v3-live .workout-row:first-child{ border-top: 0; }
+.v3-live .workout-icon{
+  font-size: 14px;
+  text-align: center;
+  opacity: 0.85;
+}
+.v3-live .workout-title{
+  color: var(--color-ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: 'DM Sans', sans-serif;
+  letter-spacing: -0.01em;
+}
+.v3-live .workout-meta{
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: var(--color-ink-2);
+  text-align: right;
+  white-space: nowrap;
+}
+.v3-live .workout-done{
+  color: var(--color-will);
+  font-size: 12px;
+  width: 14px;
+  text-align: center;
+  font-weight: 700;
+}
+
+.v3-live .muscle-hit{
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-top: 0.5px solid var(--color-line);
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: var(--color-ink-2);
+  letter-spacing: -0.01em;
+  cursor: pointer;
+  touch-action: manipulation;
+  font-family: 'DM Sans', sans-serif;
+}
+.v3-live .muscle-hit strong{
+  color: var(--color-ink);
+  font-weight: 500;
+}
+.v3-live .muscle-hit .arrow{
+  color: var(--color-ink-3);
+  font-size: 14px;
+}
+
+/* --- Full-screen CTA (운동 시작 · opens existing workout-start-screen) --- */
+.v3-live .cta-fullscreen{
+  width: calc(100% - 28px);
+  margin: 8px 14px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 11px 14px;
+  background: transparent;
+  border: 0.5px solid var(--color-line-strong);
+  border-radius: 4px;
+  color: var(--color-ink);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: border-color 140ms, background 140ms;
+}
+.v3-live .cta-fullscreen:hover,
+.v3-live .cta-fullscreen:active{
+  border-color: var(--color-will);
+  background: var(--color-surface-3);
+}
+.v3-live .cta-fullscreen .arrow{
+  color: var(--color-ink-3);
+  font-size: 11px;
+}
 </style>
 </head>
 <body class="v3-live">
@@ -11165,7 +11520,19 @@ function renderMandatory(){
   updateTasksBadge();
   const rows=document.getElementById('check-rows');
   if(!rows)return;
+  const v3Live=document.body&&document.body.classList.contains('v3-live');
   if(items.length===0){
+    if(v3Live){
+      rows.className='inline-checklist';
+      rows.innerHTML='<div style="padding:18px 8px;text-align:center;">'
+        +'<div style="font-size:13px;color:var(--color-ink-2);margin-bottom:6px;letter-spacing:-0.01em;">매일 반복할 루틴을 추가하세요</div>'
+        +'<div style="font-size:11px;color:var(--color-ink-3);margin-bottom:10px;font-family:\'DM Mono\', monospace;letter-spacing:0.02em;">예: 팔굽혀펴기 10개 · 걷기 30분 · 물 2L</div>'
+        +'<div style="display:inline-flex;align-items:center;gap:6px;font-family:\'DM Mono\', monospace;font-size:10px;padding:4px 10px;border:0.5px solid var(--color-line);color:var(--color-ink-3);letter-spacing:0.04em;">'
+        +'<span style="color:var(--color-ink);">+1pt</span>체크 · <span style="color:var(--color-penalty);">−1pt</span>실패'
+        +'</div>'
+        +'</div>';
+      return;
+    }
     rows.innerHTML='<div style="padding:16px 0;text-align:center;">'
       +'<div style="font-size:28px;margin-bottom:6px;">✅</div>'
       +'<div style="font-size:13px;color:var(--text3);margin-bottom:4px;">매일 반복할 루틴을 추가하세요</div>'
@@ -11176,6 +11543,7 @@ function renderMandatory(){
       +'</div>';
     return;
   }
+  if(v3Live){ rows.className='inline-checklist'; } else { rows.className=''; }
   rows.innerHTML=items.map(t=>{
     const realIdx=log.mandatory.indexOf(t);
     const state={done:!!t.done, fail:!!t.fail};
@@ -11186,9 +11554,33 @@ function renderMandatory(){
 function renderCustomMandRow(t,i,state,dow){
   const daysLabel=t.days&&t.days.length<7?['월','화','수','목','금','토','일'].filter((_,di)=>t.days.includes(di)).join(''):'매일';
   const pillText=daysLabel;
-  const endBadge=t.end_date?`<span style="font-size:10px;color:var(--text3);margin-left:4px;">~${t.end_date.slice(5).replace('-','/')}</span>`:'';
+  const endBadge=t.end_date?`<span class="inline-check-daypill" style="opacity:0.7;margin-left:4px;">~${t.end_date.slice(5).replace('-','/')}</span>`:'';
   const isFail=!!state.fail;
   const isDone=!!state.done;
+  const v3Live=document.body&&document.body.classList.contains('v3-live');
+
+  if(v3Live){
+    // ── v3.0 mockup-compliant inline-checklist row ──
+    const rowBg=isFail?'background:var(--color-penalty-soft);':'';
+    const labelCls=isDone?'is-done':'';
+    const boxCls=isDone?'is-done':'';
+    const failCls=isFail?'is-fail':'';
+    return `<div class="inline-check-row ck-row custom" data-ridx="${i}" style="${rowBg}"
+        onclick="togMand(${i})"
+        ontouchstart="mandTouchStart()"
+        ontouchend="event.preventDefault();mandTouchEnd(${i})">
+      <div class="inline-check-box ck-box ${boxCls}">${isDone?'✓':''}</div>
+      <div class="inline-check-label ${labelCls}">${t.name||''}<span class="inline-check-daypill">${pillText}</span>${endBadge}</div>
+      <span class="inline-check-pt ${isDone?'is-done':''}">+1</span>
+      <span style="display:flex;gap:4px;align-items:center;" onclick="event.stopPropagation();">
+        ${!isDone?`<button class="inline-check-fail ${failCls}" onclick="event.stopPropagation();markMandFail(${i})">${isFail?'해제':'실패'}</button>`:''}
+        <button class="ck-edit" onclick="event.stopPropagation();editMandatory(${i})" style="color:var(--color-ink-3);">✎</button>
+        <button class="ck-del" onclick="event.stopPropagation();delMand(${i})" style="color:var(--color-ink-3);">✕</button>
+      </span>
+    </div>`;
+  }
+
+  // ── legacy v2.5 row (fallback, should not fire with v3-live) ──
   return`<div class="ck-row custom" data-ridx="${i}" style="${isFail?'background:rgba(255,77,77,0.06);':''}">
     <div style="min-width:44px;min-height:44px;display:flex;align-items:center;justify-content:center;cursor:pointer;touch-action:manipulation;"
       onclick="togMand(${i})"
