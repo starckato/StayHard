@@ -2486,6 +2486,102 @@ body:not(.v3-live) #v3-goal-add-row{ display: none !important; }
   font-family: 'DM Mono', monospace !important;
 }
 
+/* ──── v3 · Weight hero modal · item 12 ──── */
+.v3-live .wt-hero{
+  margin: -4px -4px 20px;
+  padding: 22px 18px 18px;
+  background: linear-gradient(180deg, var(--color-surface-2) 0%, var(--color-surface) 100%);
+  border: 0.5px solid var(--color-line) !important;
+  border-radius: 16px;
+  position: relative;
+  overflow: hidden;
+}
+.v3-live .wt-hero-label{
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--color-ink-3) !important;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-family: 'DM Sans', sans-serif;
+  margin-bottom: 8px;
+}
+.v3-live .wt-hero-num-row{
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+.v3-live .wt-hero-num{
+  font-family: 'Archivo Black', 'DM Mono', monospace;
+  font-size: 56px;
+  font-weight: normal;
+  letter-spacing: -0.04em;
+  line-height: 0.95;
+  color: var(--color-ink) !important;
+}
+.v3-live .wt-hero-unit{
+  font-size: 14px;
+  color: var(--color-ink-3) !important;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 500;
+}
+.v3-live .wt-hero-meta{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+.v3-live .wt-hero-pill{
+  font-size: 11px;
+  font-family: 'DM Mono', monospace;
+  padding: 4px 9px;
+  border-radius: 99px;
+  background: var(--color-surface) !important;
+  border: 0.5px solid var(--color-line-strong) !important;
+  color: var(--color-ink-2) !important;
+  letter-spacing: -0.01em;
+}
+.v3-live .wt-hero-pill.is-empty{
+  color: var(--color-ink-3) !important;
+  border-style: dashed;
+}
+.v3-live .wt-hero-pill.is-down{ color: var(--color-ink) !important; }
+.v3-live .wt-hero-pill.is-up{ color: var(--color-penalty) !important; border-color: var(--color-penalty) !important; }
+.v3-live .wt-hero-pill.is-hit{ color: var(--color-ink) !important; border-color: var(--color-ink) !important; }
+.v3-live .wt-hero-chart{
+  width: 100%;
+  height: 70px;
+  position: relative;
+  margin-top: 6px;
+}
+.v3-live .wt-hero-chart svg{ width: 100%; height: 100%; display: block; }
+.v3-live .wt-hero-chart .wt-ch-line{
+  stroke: var(--color-ink);
+  stroke-width: 1.5;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.v3-live .wt-hero-chart .wt-ch-goal{
+  stroke: var(--color-ink-3);
+  stroke-width: 0.5;
+  stroke-dasharray: 2 3;
+}
+.v3-live .wt-hero-chart .wt-ch-dot{
+  fill: var(--color-ink);
+}
+.v3-live .wt-hero-chart .wt-ch-dot.last{
+  fill: var(--color-ink);
+  stroke: var(--color-surface);
+  stroke-width: 2;
+  r: 3;
+}
+.v3-live .wt-hero-chart .wt-ch-empty{
+  fill: var(--color-ink-3);
+  font-size: 10px;
+  font-family: 'DM Sans', sans-serif;
+}
+
 /* ──── v3 · Workout session set rows · items 6/7/8 ──── */
 /* Remove red-orange box-shadow on primary CTAs inside workout session */
 .v3-live .btn-primary,
@@ -4328,9 +4424,24 @@ body:not(.v3-live) #v3-goal-add-row{ display: none !important; }
   </div>
 </div>
 <div class="modal-overlay" id="weight-modal">
-  <div class="modal">
+  <div class="modal wt-hero-modal">
     <div class="mhandle"></div>
-    <div class="mtitle">공복 체중 기록</div>
+
+    <!-- v3 · 체중 hero block (visualization) -->
+    <div class="wt-hero">
+      <div class="wt-hero-label">오늘 체중</div>
+      <div class="wt-hero-num-row">
+        <div class="wt-hero-num" id="wt-hero-num">—</div>
+        <div class="wt-hero-unit">kg</div>
+      </div>
+      <div class="wt-hero-meta" id="wt-hero-meta">
+        <span class="wt-hero-pill is-empty" id="wt-hero-yest">어제 —</span>
+        <span class="wt-hero-pill is-empty" id="wt-hero-goal">목표 —</span>
+      </div>
+      <div class="wt-hero-chart" id="wt-hero-chart" aria-hidden="true">
+        <!-- SVG sparkline injected by drawWeightHeroChart() -->
+      </div>
+    </div>
 
     <!-- 체중 (tap-to-open) -->
     <div class="mfield">
@@ -10060,12 +10171,11 @@ function togglePrimaryCard(kind){
 function renderPrimarySummaries(){
   const l=log||{};
 
-  // ---- 체중 ----
+  // ---- 체중 · 현재 / 어제 대비 / 목표까지 ----
   const wEl=document.getElementById('pc-sum-weight');
   if(wEl){
     const w=(l.weight!=null && !isNaN(+l.weight))?(+l.weight):null;
     if(w!=null){
-      // delta vs previous day with weight
       let delta=null;
       try{
         const keys=Object.keys(logCache||{}).filter(k=>k<selectedKey).sort();
@@ -10077,10 +10187,22 @@ function renderPrimarySummaries(){
           }
         }
       }catch(e){}
+      let goal=null;
+      try{ goal=(typeof getWeightGoal==='function')?getWeightGoal():null; }catch(e){}
       let html=w.toFixed(1)+' <span class="pc-sub">kg</span>';
       if(delta!=null){
         const sign=delta>=0?'+':'';
-        html+=' <span class="pc-delta">'+sign+delta.toFixed(1)+'</span>';
+        html+=' <span class="pc-delta">어제 '+sign+delta.toFixed(1)+'</span>';
+      }
+      if(goal!=null && !isNaN(+goal)){
+        const remain=w-(+goal);
+        if(remain>0.05){
+          html+=' <span class="pc-sub">· 목표까지 −'+remain.toFixed(1)+'</span>';
+        }else if(remain<-0.05){
+          html+=' <span class="pc-sub">· 목표 초과 +'+Math.abs(remain).toFixed(1)+'</span>';
+        }else{
+          html+=' <span class="pc-sub">· 목표 도달</span>';
+        }
       }
       wEl.className='pc-value';
       wEl.innerHTML=html;
@@ -10710,7 +10832,116 @@ function openWeightModal(){
     }
   }
   openModal('weight-modal');
+  try{ renderWeightHero(); }catch(e){ console.warn('[renderWeightHero]', e); }
 }
+
+// v3 · Weight hero: big number + delta + goal + sparkline
+function renderWeightHero(){
+  const numEl=document.getElementById('wt-hero-num');
+  const yestEl=document.getElementById('wt-hero-yest');
+  const goalEl=document.getElementById('wt-hero-goal');
+  const chartEl=document.getElementById('wt-hero-chart');
+  if(!numEl||!chartEl)return;
+  const curRaw=log&&log.weight!=null?parseFloat(log.weight):null;
+  const cur=(curRaw!=null && !isNaN(curRaw))?curRaw:null;
+  numEl.textContent=cur!=null?cur.toFixed(1):'—';
+
+  // yesterday delta
+  try{
+    const keys=Object.keys(logCache||{}).filter(k=>k<(selectedKey||TODAY)).sort();
+    let prev=null;
+    for(let i=keys.length-1;i>=0;i--){
+      const pl=logCache[keys[i]];
+      if(pl&&pl.weight!=null&&!isNaN(+pl.weight)){prev=+pl.weight;break;}
+    }
+    if(yestEl){
+      if(cur!=null && prev!=null){
+        const d=cur-prev;
+        const sign=d>0?'+':(d<0?'−':'');
+        const abs=Math.abs(d).toFixed(1);
+        yestEl.textContent='어제 '+sign+abs;
+        yestEl.className='wt-hero-pill '+(d<0?'is-down':d>0?'is-up':'');
+      }else{
+        yestEl.textContent='어제 기록 없음';
+        yestEl.className='wt-hero-pill is-empty';
+      }
+    }
+  }catch(e){}
+
+  // goal remaining
+  const goal=(typeof getWeightGoal==='function')?getWeightGoal():null;
+  if(goalEl){
+    if(goal!=null && !isNaN(+goal)){
+      if(cur!=null){
+        const rem=cur-goal;
+        if(rem>0.05){
+          goalEl.textContent='목표까지 −'+rem.toFixed(1);
+          goalEl.className='wt-hero-pill';
+        }else if(rem<-0.05){
+          goalEl.textContent='목표 초과 +'+Math.abs(rem).toFixed(1);
+          goalEl.className='wt-hero-pill is-up';
+        }else{
+          goalEl.textContent='목표 도달';
+          goalEl.className='wt-hero-pill is-hit';
+        }
+      }else{
+        goalEl.textContent='목표 '+parseFloat(goal).toFixed(1)+'kg';
+        goalEl.className='wt-hero-pill is-empty';
+      }
+    }else{
+      goalEl.textContent='목표 미설정';
+      goalEl.className='wt-hero-pill is-empty';
+    }
+  }
+
+  // sparkline · last 30 days of weight entries
+  const series=[];
+  try{
+    const allKeys=Object.keys(logCache||{}).sort();
+    const recent=allKeys.slice(-30);
+    recent.forEach(k=>{
+      const lg=logCache[k];
+      if(lg&&lg.weight!=null&&!isNaN(+lg.weight))series.push({k,w:+lg.weight});
+    });
+    if(cur!=null){
+      const todayKey=selectedKey||TODAY;
+      if(!series.length||series[series.length-1].k!==todayKey){
+        series.push({k:todayKey,w:cur});
+      }else{
+        series[series.length-1].w=cur;
+      }
+    }
+  }catch(e){}
+
+  const W=390,H=70,padX=12,padY=10;
+  if(series.length<2){
+    chartEl.innerHTML='<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none"><text class="wt-ch-empty" x="'+(W/2)+'" y="'+(H/2+3)+'" text-anchor="middle">기록이 2개 이상 쌓이면 그래프가 보여요</text></svg>';
+    return;
+  }
+  const ws=series.map(s=>s.w);
+  let lo=Math.min.apply(null,ws),hi=Math.max.apply(null,ws);
+  if(goal!=null){lo=Math.min(lo,+goal);hi=Math.max(hi,+goal);}
+  const range=(hi-lo)||1;
+  const pad=range*0.15;
+  lo-=pad;hi+=pad;
+  const yScale=w=>H-padY-((w-lo)/(hi-lo))*(H-padY*2);
+  const xScale=i=>padX+(i/(series.length-1))*(W-padX*2);
+  const path=series.map((s,i)=>(i===0?'M':'L')+xScale(i).toFixed(1)+' '+yScale(s.w).toFixed(1)).join(' ');
+  let svg='<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none">';
+  if(goal!=null){
+    const gy=yScale(+goal).toFixed(1);
+    svg+='<line class="wt-ch-goal" x1="'+padX+'" y1="'+gy+'" x2="'+(W-padX)+'" y2="'+gy+'"/>';
+  }
+  svg+='<path class="wt-ch-line" d="'+path+'"/>';
+  series.forEach((s,i)=>{
+    const cx=xScale(i).toFixed(1),cy=yScale(s.w).toFixed(1);
+    const isLast=i===series.length-1;
+    svg+='<circle class="wt-ch-dot'+(isLast?' last':'')+'" cx="'+cx+'" cy="'+cy+'" r="'+(isLast?'3':'1.8')+'"/>';
+  });
+  svg+='</svg>';
+  chartEl.innerHTML=svg;
+}
+
 // ── 인바디 자동계산 헬퍼 ──
 function calcBodyFat(){
   // 체중 변경 시 기존 자동계산값 유지 (재계산)
