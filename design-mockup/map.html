@@ -127,7 +127,7 @@
   <header class="review-header">
     <span class="review-eyebrow">Stay Hard · Redesign v1</span>
     <h1>Design Map — 모든 목업</h1>
-    <p>그라파이트 × StayHard 듀얼 테마 설계 페이지 12종. 프로덕션과 격리된 <code style="font-family:var(--font-mono); background:var(--color-surface-2); padding:2px 6px; border:0.5px solid var(--color-line);">redesign/graphite</code> 브랜치.</p>
+    <p><strong>그라파이트 (CLARITY) 단일 버전.</strong> 프로덕션과 격리된 <code style="font-family:var(--font-mono); background:var(--color-surface-2); padding:2px 6px; border:0.5px solid var(--color-line);">redesign/graphite</code> 브랜치. 기존 StayHard 팔레트는 <a href="theme-compare.html" style="color:var(--color-ink-2); text-underline-offset:3px;">archive/theme-compare</a> 에 기록으로 보존.</p>
   </header>
 
   <div class="map-preview-url">
@@ -135,24 +135,6 @@
     <span class="kbd">PREVIEW</span> https://stay-hard-git-redesign-graphite-starckato-3038s-projects.vercel.app/design-mockup/<br>
     <span class="kbd">ROLLBACK</span> tag v2.5-pre-graphite · commit 8ebd9ce
   </div>
-
-
-  <!-- ═══ 듀얼 테마 ═══ -->
-  <section class="map-section">
-    <header class="map-section-head">
-      <h2>테마 · 두 모드의 공존</h2>
-      <span class="count">1</span>
-    </header>
-
-    <div class="map-grid">
-      <a class="map-card is-new" href="theme-compare.html">
-        <span class="num">00</span>
-        <h3>모드 비교 · HEAT × CLARITY</h3>
-        <p>같은 뼈대, 다른 피부. <strong style="color:#FF4D4D;">HEAT</strong> (기존 red-orange) ↔ <strong style="color:var(--color-will);">CLARITY</strong> (graphite). data-theme 단일 속성으로 전환. 스코어링·플로우·정책 100% 공유.</p>
-        <span class="file">theme-compare.html<span class="arrow">→</span></span>
-      </a>
-    </div>
-  </section>
 
 
   <!-- ═══ 기초 ═══ -->
@@ -180,8 +162,8 @@
 
       <a class="map-card" href="onboarding.html">
         <span class="num">03</span>
-        <h3>온보딩 4화면 · 모드 선택 포함</h3>
-        <p>철학 → 도구 → <strong>모드 선택 (NEW)</strong> → 초대. 모드 선택: HEAT/CLARITY 카드, 미리보기 strip 포함. 마지막 motto: "나는 나의 격자다."</p>
+        <h3>온보딩 3화면</h3>
+        <p>철학 → 도구 → 초대. 마지막 motto card: "기록은 점 · 하루는 선 · 반복은 격자 · 나는 나의 격자다." (가안)</p>
         <span class="file">onboarding.html<span class="arrow">→</span></span>
       </a>
 
@@ -290,6 +272,28 @@
         <h3>이 페이지 · Map</h3>
         <p>모든 목업으로 가는 허브. 방문할 때마다 돌아올 수 있는 원점.</p>
         <span class="file">map.html<span class="arrow">→</span></span>
+      </a>
+    </div>
+  </section>
+
+
+  <!-- ═══ 아카이브 ═══ -->
+  <section class="map-section" style="opacity:0.75;">
+    <header class="map-section-head">
+      <h2>아카이브 · 기각된 대안</h2>
+      <span class="count">1 · NOT IN USE</span>
+    </header>
+
+    <p style="font-size:var(--text-13); color:var(--color-ink-3); line-height:1.7; margin:0 0 20px; max-width:640px;">
+      듀얼 테마 (HEAT × CLARITY) 검토 후 <strong style="color:var(--color-ink-2);">CLARITY 단일 버전 채택</strong>. HEAT 팔레트와 듀얼 전환 인프라는 향후 재검토 가능성을 위해 코드 · 토큰 레이어에 보존 (CSS <code style="font-family:var(--font-mono);font-size:11px;">[data-theme="heat"]</code> 블록 유지). 이 페이지는 결정 배경 기록용.
+    </p>
+
+    <div class="map-grid">
+      <a class="map-card" href="theme-compare.html">
+        <span class="num">—</span>
+        <h3>모드 비교 · HEAT × CLARITY (기각)</h3>
+        <p>검토 당시 양 모드 나란히 렌더. 2026-04-20 단일 버전 회귀 결정 후 참조 자료로 남김.</p>
+        <span class="file">theme-compare.html<span class="arrow">→</span></span>
       </a>
     </div>
   </section>
