@@ -2191,6 +2191,102 @@ body:not(.v3-live) #v3-goal-add-row{ display: none !important; }
   color: #fff !important;
 }
 
+
+/* v3.0 · Snack modal (meal-modal-snack) · 같은 pill 구조 */
+.v3-live #meal-modal-snack .food-types{
+  display: grid !important;
+  grid-template-columns: repeat(4, 1fr) !important;
+  gap: 6px !important;
+}
+.v3-live #meal-modal-snack .ftbtn{
+  background: transparent !important;
+  border: 0.5px solid var(--color-line-strong) !important;
+  color: var(--color-ink-2) !important;
+  border-radius: 4px !important;
+  padding: 12px 8px !important;
+  text-align: center;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+.v3-live #meal-modal-snack .ftbtn.active,
+.v3-live #meal-modal-snack .ftbtn.sel-green,
+.v3-live #meal-modal-snack .ftbtn.sel-normal,
+.v3-live #meal-modal-snack .ftbtn.sel-cheat{
+  background: var(--color-surface-2) !important;
+  color: var(--color-ink) !important;
+  border: 1px solid var(--color-will) !important;
+}
+.v3-live #meal-modal-snack .ftbtn.sel-red.active,
+.v3-live #meal-modal-snack .ftbtn[onclick*="'red'"].active{
+  border-color: var(--color-penalty) !important;
+  color: var(--color-penalty) !important;
+  background: var(--color-penalty-soft) !important;
+}
+
+/* Snack category buttons (msnPickCat) · emoji + label grid */
+.v3-live #meal-modal-snack button[onclick*="msnPickCat"]{
+  background: var(--color-surface-2) !important;
+  border: 0.5px solid var(--color-line-strong) !important;
+  border-radius: 4px !important;
+  color: var(--color-ink) !important;
+  font-family: 'DM Sans', sans-serif !important;
+}
+.v3-live #meal-modal-snack button[onclick*="msnPickCat"].active,
+.v3-live #meal-modal-snack button[onclick*="msnPickCat"].sel{
+  border: 1px solid var(--color-will) !important;
+  background: var(--color-surface-3) !important;
+}
+
+/* Alcohol warning block · 빨간 bg → oxblood ribbon */
+.v3-live #msn-alcohol-block{
+  background: var(--color-penalty-soft) !important;
+  border: 0 !important;
+  border-left: 2px solid var(--color-penalty) !important;
+  border-radius: 0 4px 4px 0 !important;
+  padding: 10px 12px !important;
+}
+.v3-live #msn-alcohol-block > div:first-child{
+  color: var(--color-penalty) !important;
+  font-family: 'DM Sans', sans-serif !important;
+}
+.v3-live #msn-alcohol-cheat-toggle{
+  background: transparent !important;
+  border: 0.5px solid var(--color-penalty) !important;
+  color: var(--color-penalty) !important;
+}
+.v3-live #msn-alcohol-cheat-toggle.on{
+  background: var(--color-penalty) !important;
+  color: #fff !important;
+}
+.v3-live #msn-alcohol-penalty-label{
+  color: var(--color-ink-2) !important;
+  font-family: 'DM Mono', monospace !important;
+  font-size: 10px;
+  letter-spacing: 0.02em;
+  border-top-color: var(--color-penalty) !important;
+}
+
+/* Snack photo buttons → dashed */
+.v3-live #meal-modal-snack button[onclick*="photo-camera"],
+.v3-live #meal-modal-snack button[onclick*="photo-gallery"]{
+  background: transparent !important;
+  border: 0.5px dashed var(--color-line-strong) !important;
+  border-radius: 4px !important;
+  color: var(--color-ink-3) !important;
+}
+.v3-live #msn-photo-preview button[onclick*="msnClearPhoto"]{
+  background: rgba(0,0,0,0.6) !important;
+  color: var(--color-will) !important;
+  border: 0 !important;
+  border-radius: 4px !important;
+  width: 22px !important;
+  height: 22px !important;
+  top: 6px !important;
+  right: 6px !important;
+}
+
 .v3-live #ms-ctx-pill{
   background: var(--color-surface-2) !important;
   color: var(--color-ink-2) !important;
@@ -2388,6 +2484,125 @@ body:not(.v3-live) #v3-goal-add-row{ display: none !important; }
   border: 0.5px dashed var(--color-line-strong) !important;
   color: var(--color-ink-2) !important;
   font-family: 'DM Mono', monospace !important;
+}
+
+/* ──── v3 · Workout session set rows · items 6/7/8 ──── */
+/* Remove red-orange box-shadow on primary CTAs inside workout session */
+.v3-live .btn-primary,
+.v3-live .abtn,
+.v3-live .ws-done-btn,
+.v3-live .mbtn{
+  box-shadow: none !important;
+  background: var(--color-will) !important;
+  color: var(--color-will-on) !important;
+}
+.v3-live .btn-primary:active,
+.v3-live .abtn:active,
+.v3-live .ws-done-btn:active,
+.v3-live .mbtn:active{
+  box-shadow: none !important;
+  filter: brightness(0.96);
+}
+
+/* Bone button text contrast — white bg needs ink text */
+.v3-live #ws-body button[style*="#fff"],
+.v3-live #add-ex-modal button[style*="var(--accent)"],
+.v3-live #routine-create button{
+  color: var(--color-will-on) !important;
+}
+
+/* Set row · kg/reps inputs · prefill yellow border → neutral ink-2 */
+.v3-live #ws-body div[style*="rgba(245,158,11"]{
+  border-color: var(--color-line-strong) !important;
+  color: var(--color-ink-2) !important;
+}
+.v3-live #ws-body input[style*="rgba(245,158,11"]{
+  border-color: var(--color-line-strong) !important;
+  color: var(--color-ink-2) !important;
+}
+
+/* Prefill hint ribbon · amber → ink-2 */
+.v3-live #ws-body div[style*="↻"],
+.v3-live #ws-body div[style*="color:var(--amber)"]{
+  color: var(--color-ink-2) !important;
+}
+
+/* Set done state · inputs + check · white border + glow · item 7 */
+.v3-live #ws-body div[style*="var(--accent)"][style*="var(--surface2)"],
+.v3-live #ws-body input[style*="var(--accent)"],
+.v3-live #ws-body .ws-kg-input.is-done,
+.v3-live #ws-body .ws-reps-input.is-done{
+  border-color: var(--color-ink) !important;
+  box-shadow: 0 0 0 0.5px rgba(236,236,236,0.35), 0 0 10px 1px rgba(236,236,236,0.22) !important;
+  color: var(--color-ink) !important;
+}
+
+/* Set check 28x28 box · done state · white border + glow · item 7 */
+.v3-live #ws-body div[style*="var(--green-bg)"][style*="var(--green-bd)"]{
+  background: var(--color-will) !important;
+  border-color: var(--color-ink) !important;
+  color: var(--color-will-on) !important;
+  box-shadow: 0 0 0 0.5px rgba(236,236,236,0.4), 0 0 12px 2px rgba(236,236,236,0.3) !important;
+}
+
+/* 세트 추가 button · hardcoded red-orange rgba → bone ink border · item 6 */
+.v3-live #ws-body div[style*="rgba(255,77,77"]{
+  background: transparent !important;
+  border: 0.5px dashed var(--color-line-strong) !important;
+  color: var(--color-ink-2) !important;
+  box-shadow: none !important;
+}
+.v3-live #ws-body div[style*="rgba(255,77,77"] svg{
+  stroke: var(--color-ink-2) !important;
+}
+
+/* Exercise remove (X) button · red-bg → bone penalty ghost */
+.v3-live #ws-body div[style*="var(--red-bg)"]{
+  background: transparent !important;
+  border: 0.5px solid var(--color-line-strong) !important;
+}
+.v3-live #ws-body div[style*="var(--red-bg)"] svg{
+  stroke: var(--color-ink-2) !important;
+}
+
+/* "운동 완료 ✓" footer button · item 8 · remove red shadow */
+.v3-live #ws-done-btn,
+.v3-live #workout-session-overlay #ws-done-btn{
+  background: var(--color-will) !important;
+  color: var(--color-will-on) !important;
+  box-shadow: 0 0 0 0.5px rgba(236,236,236,0.25), 0 6px 18px rgba(0,0,0,0.35) !important;
+  border: 0 !important;
+}
+
+/* Exercise complete bubble · green → bone */
+.v3-live #ws-body div[style*="var(--green-bg)"][style*="var(--green-bd)"][style*="text-align:center"]{
+  background: var(--color-surface-2) !important;
+  border: 0.5px solid var(--color-line-strong) !important;
+  color: var(--color-ink) !important;
+  box-shadow: none !important;
+}
+
+/* 첫 세트 복사 ghost button · already neutral, ensure no red */
+.v3-live #ws-body div[onclick*="wsCopyFirstSet"]{
+  background: var(--color-surface-2) !important;
+  border: 0.5px solid var(--color-line) !important;
+  color: var(--color-ink-2) !important;
+}
+
+/* Rest timer · red accent → bone */
+.v3-live #ws-body #ws-rest-block,
+.v3-live #ws-body .ws-rest-time{
+  color: var(--color-ink) !important;
+}
+.v3-live #ws-body .ws-rest-fill{
+  background: var(--color-will) !important;
+}
+
+/* Add Exercise modal · "+" buttons → bone ghost */
+.v3-live #add-ex-modal button[style*="var(--accent-bg)"]{
+  background: var(--color-surface-2) !important;
+  border: 0.5px solid var(--color-line-strong) !important;
+  color: var(--color-ink) !important;
 }
 
 
@@ -5998,11 +6213,12 @@ function toggleSet(ei,si){
   const s=currentSession[ei].sets[si];
   s.done=!s.done;
   if(s.done){
-    // auto-copy weight to next undone set
+    // auto-copy weight to next undone set — BUT only to EMPTY fields
+    // (사용자가 이미 다음 세트에 다른 값을 입력해둔 경우 덮어쓰지 않음)
     const nextSet=currentSession[ei].sets[si+1];
     if(nextSet&&!nextSet.done){
-      if(s.kg)nextSet.kg=s.kg;
-      if(s.reps)nextSet.reps=s.reps;
+      if(s.kg && !nextSet.kg) nextSet.kg=s.kg;
+      if(s.reps && !nextSet.reps) nextSet.reps=s.reps;
     }
     saveSessionToLog();
     // start rest timer
@@ -9073,7 +9289,7 @@ const WEEKLY_FEATURES=[
   {icon:'💥',title:'자극 부위 맵',body:'운동하면 근육맵에 누적돼.<br>탭해서 전신 타격 분포 확인.',cta:'지금 보기',fn:'openMuscleMap'},
   {icon:'🏆',title:'챌린지로 경쟁',body:'친구랑 코드로 참여해서<br>매일 점수 겨뤄.',cta:'챌린지 탭',fn:'gotoChallengeTab'},
   {icon:'📊',title:'통계로 돌아보기',body:'주간·월간 KPI + 리포트 카드<br>내 변화를 숫자로 확인.',cta:'통계 탭',fn:'gotoStatsTab'},
-  {icon:'💪',title:'푸쉬업 챌린지',body:'CV 가 자동으로 세봐.<br>첫 30개까지 1pt/개.',cta:'도전',fn:'cvOpenPushupChallenge'},
+  {icon:'💪',title:'푸쉬업 챌린지',body:'카메라가 자세를 인식해<br>자동으로 개수를 세요. 첫 30개까지 1pt/개.',cta:'도전',fn:'cvOpenPushupChallenge'},
 ];
 function _currentWeekFeature(){
   const now=new Date();
@@ -10727,13 +10943,16 @@ let mealCategory=null;      // 'meal'|'snack'|'drink'|'alcohol'
 // ── 공통 유틸 ──
 function _msResetQualityBtns(container){
   document.querySelectorAll('#'+container+' .ftbtn').forEach(b=>{
-    b.className='ftbtn';b.style.cssText='';
+    // v3: preserve v3-cat-pill / v3-cat-penalty · strip sel-* and active classes
+    b.classList.remove('active','sel-green','sel-normal','sel-cheat','sel-red','sel-alcohol');
+    b.style.cssText='';
   });
 }
 function _msSelectQualityBtn(container, type){
   document.querySelectorAll('#'+container+' .ftbtn').forEach(b=>{
     if(b.getAttribute('onclick')&&b.getAttribute('onclick').includes("'"+type+"'")){
       b.classList.add('sel-'+type);
+      b.classList.add('active'); // v3 pill selection indicator
     }
   });
 }
@@ -10836,6 +11055,7 @@ function msPickQuality(type, el){
   _msUpdateInfoRibbon(type);
   _msResetQualityBtns('ms-quality-btns');
   el.classList.add('sel-'+type);
+  el.classList.add('active'); // v3 pill active indicator
 }
 
 function msPreviewPhoto(inp){
@@ -11023,6 +11243,7 @@ function msnPickQuality(type, el){
   foodType=type;
   _msResetQualityBtns('msn-quality-btns');
   el.classList.add('sel-'+type);
+  el.classList.add('active'); // v3 pill active indicator
 }
 
 function msnPreviewPhoto(inp){
