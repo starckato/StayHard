@@ -1735,6 +1735,36 @@ body:not(.v3-live) #v3-goal-add-row{ display: none !important; }
 }
 .v3-live .v3-row-btn:hover,
 .v3-live .v3-row-btn:active{ color: var(--color-ink); }
+
+/* v3.0 · add-row CTA (루틴 추가 · ink-based, no red) */
+.v3-live .v3-add-row{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 12px 14px;
+  margin-top: 2px;
+  border-top: 0.5px solid var(--color-line);
+  color: var(--color-ink-2);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: color 140ms, background 140ms;
+}
+.v3-live .v3-add-row:hover,
+.v3-live .v3-add-row:active{
+  color: var(--color-ink);
+  background: var(--color-surface-1);
+}
+.v3-live .v3-add-row .v3-add-plus{
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1;
+  color: var(--color-ink-3);
+}
 </style>
 </head>
 <body class="v3-live">
@@ -2095,7 +2125,7 @@ body:not(.v3-live) #v3-goal-add-row{ display: none !important; }
         <span>필수 루틴</span>
       </div>
       <div class="check-rows" id="check-rows"></div>
-      <div class="add-row" onclick="openAddMandatoryModal()" style="color:var(--accent);font-weight:500;padding:10px 14px;cursor:pointer;touch-action:manipulation;border-top:0.5px solid var(--color-line);"><span style="font-size:16px;margin-right:6px;">＋</span> 루틴 추가</div>
+      <div class="v3-add-row" onclick="openAddMandatoryModal()"><span class="v3-add-plus">＋</span>루틴 추가</div>
     </div>
 
     <!-- v3.0 · 오늘의 목표 primary card (split from combined todo) -->
@@ -11957,7 +11987,7 @@ function renderTargets(){
       return `<div class="inline-check-row" data-tidx="${i}" style="${rowBg}"
           onclick="togTgt(${i})">
         <div class="inline-check-box ${boxCls}">${isDone?'✓':''}</div>
-        <div class="inline-check-label ${labelCls}">${esc(t.text||'')}${t._carried?` <span class="inline-check-daypill" style="background:var(--color-penalty-soft);color:var(--color-penalty);">이월</span>`:''}</div>
+        <div class="inline-check-label ${labelCls}">${esc(t.text||'')}${t._carried?` <span class="inline-check-daypill">이월</span>`:''}</div>
         <span class="inline-check-pt ${isDone?'is-done':''}">+2</span>
         <span style="display:flex;gap:4px;align-items:center;" onclick="event.stopPropagation();">
           ${!isDone?`<button class="inline-check-fail ${failCls}" onclick="event.stopPropagation();markFail(${i})">${isFail?'해제':'실패'}</button>`:''}
