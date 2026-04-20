@@ -1720,6 +1720,11 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
 /* v3 goal-add-row is always visible at bottom of target list */
 body:not(.v3-live) #v3-goal-add-row{ display: none !important; }
 
+/* v3 체중 — pc-head 가 weight-modal 직접 오픈 · s-card body 는 항상 숨김 */
+.v3-live .s-card[data-pc-body="weight"]{ display: none !important; }
+/* pc-head-weight · chevron ↗ 로 교체 (모달 오픈 의미) */
+.v3-live #pc-head-weight .pc-chev{ transform: rotate(-45deg); }
+
 /* v3.0 · small ghost row buttons (replaces .ck-edit / .ck-del inside rows) */
 .v3-live .v3-row-btn{
   background: none;
@@ -1951,8 +1956,8 @@ body:not(.v3-live) #v3-goal-add-row{ display: none !important; }
       <div class="today-header-pts" id="today-header-pts">+0 pt</div>
     </div>
 
-    <!-- v3.0 · 체중 primary card (inline-expand) -->
-    <button type="button" class="pc-head" id="pc-head-weight" onclick="togglePrimaryCard('weight')">
+    <!-- v3.0 · 체중 primary card — 탭 시 기존 weight-modal 직접 오픈 (mockup 의 인라인 wheel picker 와 동등한 UX) -->
+    <button type="button" class="pc-head" id="pc-head-weight" onclick="openWeightModal()">
       <span class="pc-label">체중</span>
       <span class="pc-value is-empty" id="pc-sum-weight">탭하여 입력</span>
       <span class="pc-chev">›</span>
