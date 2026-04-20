@@ -1719,6 +1719,22 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
 
 /* v3 goal-add-row is always visible at bottom of target list */
 body:not(.v3-live) #v3-goal-add-row{ display: none !important; }
+
+/* v3.0 · small ghost row buttons (replaces .ck-edit / .ck-del inside rows) */
+.v3-live .v3-row-btn{
+  background: none;
+  border: 0;
+  color: var(--color-ink-3);
+  font-size: 14px;
+  padding: 4px 6px;
+  min-width: 28px;
+  cursor: pointer;
+  touch-action: manipulation;
+  font-family: inherit;
+  line-height: 1;
+}
+.v3-live .v3-row-btn:hover,
+.v3-live .v3-row-btn:active{ color: var(--color-ink); }
 </style>
 </head>
 <body class="v3-live">
@@ -2063,31 +2079,34 @@ body:not(.v3-live) #v3-goal-add-row{ display: none !important; }
         </div>
       </div>
     </div>
-    <!-- ✅ 오늘 할 일 — 필수 루틴 + 오늘의 할일 통합 카드 -->
-    <button type="button" class="pc-head" id="pc-head-todo" onclick="togglePrimaryCard('todo')">
-      <span class="pc-label">오늘 할 일</span>
-      <span class="pc-value is-empty" id="pc-sum-todo">0</span>
+    <!-- v3.0 · 필수 루틴 primary card (split from combined todo) -->
+    <button type="button" class="pc-head" id="pc-head-routine" onclick="togglePrimaryCard('routine')">
+      <span class="pc-label">필수 루틴</span>
+      <span class="pc-value is-empty" id="pc-sum-routine">0 / 0</span>
       <span class="pc-chev">›</span>
     </button>
-    <div class="s-card todo-card" data-pc-body="todo">
-      <div class="s-card-hdr">
-        <div class="s-card-title"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 12l3 3 5-5"/></svg>오늘 할 일</div>
-      </div>
-      <div class="s-divider"></div>
-
-      <!-- SECTION: 필수 루틴 -->
-      <div class="tasks-sec-label">
-        <span>필수 루틴</span>
+    <div class="s-card routine-card" data-pc-body="routine">
+      <!-- Hidden legacy hdr/label/badge — retained as no-op containers for JS compat -->
+      <div class="s-card-hdr" style="display:none;">
+        <div class="s-card-title">필수 루틴</div>
         <span class="s-badge" id="mand-badge">0/0</span>
       </div>
+      <div class="tasks-sec-label" style="display:none;">
+        <span>필수 루틴</span>
+      </div>
       <div class="check-rows" id="check-rows"></div>
-      <div class="add-row" onclick="openAddMandatoryModal()" style="color:var(--accent);font-weight:500;"><span style="font-size:16px;margin-right:6px;">＋</span> 루틴 추가</div>
+      <div class="add-row" onclick="openAddMandatoryModal()" style="color:var(--accent);font-weight:500;padding:10px 14px;cursor:pointer;touch-action:manipulation;border-top:0.5px solid var(--color-line);"><span style="font-size:16px;margin-right:6px;">＋</span> 루틴 추가</div>
+    </div>
 
-      <div class="s-divider"></div>
-
-      <!-- SECTION: 오늘의 할일 -->
-      <div class="tasks-sec-label">
-        <span>오늘의 할일</span>
+    <!-- v3.0 · 오늘의 목표 primary card (split from combined todo) -->
+    <button type="button" class="pc-head" id="pc-head-goal" onclick="togglePrimaryCard('goal')">
+      <span class="pc-label">오늘의 목표</span>
+      <span class="pc-value is-empty" id="pc-sum-goal">0 / 0</span>
+      <span class="pc-chev">›</span>
+    </button>
+    <div class="s-card goal-card" data-pc-body="goal">
+      <div class="s-card-hdr" style="display:none;">
+        <div class="s-card-title">오늘의 목표</div>
         <span class="s-badge" id="tgt-badge">0/0</span>
       </div>
       <div class="check-rows" id="tgt-rows"></div>
@@ -9091,24 +9110,35 @@ function renderPrimarySummaries(){
     }
   }
 
-  // ---- 오늘 할 일 (routines + targets combined count) ----
-  const tdEl=document.getElementById('pc-sum-todo');
-  if(tdEl){
+  // ---- 필수 루틴 (day-filtered) ----
+  const rtEl=document.getElementById('pc-sum-routine');
+  if(rtEl){
     const selDate=new Date((selectedKey||TODAY)+'T12:00:00');
     const wkDow=isNaN(selDate.getTime())?0:(selDate.getDay()+6)%7;
     const mand=(l.mandatory||[]).filter(t=>t&&!(t.days&&!t.days.includes(wkDow)));
     const mandDone=mand.filter(m=>m.done).length;
+    if(mand.length===0){
+      rtEl.className='pc-value is-empty';
+      rtEl.textContent='탭하여 추가';
+    }else{
+      const cls=(mandDone===mand.length && mand.length>0)?'pc-badge is-full':(mandDone===0?'pc-badge is-zero':'pc-badge');
+      rtEl.className='pc-value';
+      rtEl.innerHTML='<span class="'+cls+'">'+mandDone+' / '+mand.length+'</span>';
+    }
+  }
+
+  // ---- 오늘의 목표 ----
+  const gEl=document.getElementById('pc-sum-goal');
+  if(gEl){
     const tgt=(l.targets||[]).filter(t=>t&&t.text);
     const tgtDone=tgt.filter(t=>t.st==='done').length;
-    const totalDone=mandDone+tgtDone;
-    const totalAll=mand.length+tgt.length;
-    if(totalAll===0){
-      tdEl.className='pc-value is-empty';
-      tdEl.textContent='탭하여 추가';
+    if(tgt.length===0){
+      gEl.className='pc-value is-empty';
+      gEl.textContent='탭하여 추가';
     }else{
-      const cls=(totalDone===totalAll && totalAll>0)?'pc-badge is-full':(totalDone===0?'pc-badge is-zero':'pc-badge');
-      tdEl.className='pc-value';
-      tdEl.innerHTML='<span class="'+cls+'">'+totalDone+' / '+totalAll+'</span>';
+      const cls=(tgtDone===tgt.length && tgt.length>0)?'pc-badge is-full':(tgtDone===0?'pc-badge is-zero':'pc-badge');
+      gEl.className='pc-value';
+      gEl.innerHTML='<span class="'+cls+'">'+tgtDone+' / '+tgt.length+'</span>';
     }
   }
 }
@@ -11574,21 +11604,22 @@ function renderCustomMandRow(t,i,state,dow){
 
   if(v3Live){
     // ── v3.0 mockup-compliant inline-checklist row ──
+    // 주의: v2.5 의 .ck-row / .ck-box 클래스는 붙이지 않는다 (레거시 스타일 누수 방지).
     const rowBg=isFail?'background:var(--color-penalty-soft);':'';
     const labelCls=isDone?'is-done':'';
     const boxCls=isDone?'is-done':'';
     const failCls=isFail?'is-fail':'';
-    return `<div class="inline-check-row ck-row custom" data-ridx="${i}" style="${rowBg}"
+    return `<div class="inline-check-row" data-ridx="${i}" style="${rowBg}"
         onclick="togMand(${i})"
         ontouchstart="mandTouchStart()"
         ontouchend="event.preventDefault();mandTouchEnd(${i})">
-      <div class="inline-check-box ck-box ${boxCls}">${isDone?'✓':''}</div>
+      <div class="inline-check-box ${boxCls}">${isDone?'✓':''}</div>
       <div class="inline-check-label ${labelCls}">${t.name||''}<span class="inline-check-daypill">${pillText}</span>${endBadge}</div>
       <span class="inline-check-pt ${isDone?'is-done':''}">+1</span>
       <span style="display:flex;gap:4px;align-items:center;" onclick="event.stopPropagation();">
         ${!isDone?`<button class="inline-check-fail ${failCls}" onclick="event.stopPropagation();markMandFail(${i})">${isFail?'해제':'실패'}</button>`:''}
-        <button class="ck-edit" onclick="event.stopPropagation();editMandatory(${i})" style="color:var(--color-ink-3);">✎</button>
-        <button class="ck-del" onclick="event.stopPropagation();delMand(${i})" style="color:var(--color-ink-3);">✕</button>
+        <button class="v3-row-btn" onclick="event.stopPropagation();editMandatory(${i})" aria-label="수정">✎</button>
+        <button class="v3-row-btn" onclick="event.stopPropagation();delMand(${i})" aria-label="삭제">✕</button>
       </span>
     </div>`;
   }
@@ -11626,7 +11657,11 @@ function togMand(i){
   const wasFail=m.fail;
   // 토글 전에 origin 박스 좌표 캡처 (렌더 후에는 DOM이 재생성됨)
   // log.mandatory 는 요일 필터로 일부만 렌더되므로 data-ridx 속성으로 정확히 매칭해야 함
-  const _origin=document.querySelector('#check-rows .ck-row[data-ridx="'+i+'"] .ck-box')||null;
+  // v3.0 의 .inline-check-row 우선, v2.5 의 .ck-row fallback
+  const _origin=
+    document.querySelector('#check-rows .inline-check-row[data-ridx="'+i+'"] .inline-check-box')
+    ||document.querySelector('#check-rows .ck-row[data-ridx="'+i+'"] .ck-box')
+    ||null;
   const _originRect=_origin?_origin.getBoundingClientRect():null;
   log.mandatory[i].done=!wasDone;
   if(wasFail&&!wasDone){log.mandatory[i].fail=false;} // 실패→완료 시 실패 해제
@@ -11919,15 +11954,15 @@ function renderTargets(){
       const labelCls=isDone?'is-done':'';
       const boxCls=isDone?'is-done':'';
       const failCls=isFail?'is-fail':'';
-      return `<div class="inline-check-row tgt-row" data-tidx="${i}" style="${rowBg}"
+      return `<div class="inline-check-row" data-tidx="${i}" style="${rowBg}"
           onclick="togTgt(${i})">
-        <div class="inline-check-box tgt-btn ${boxCls} ${t.st||''}">${isDone?'✓':''}</div>
-        <div class="inline-check-label tgt-text ${labelCls}">${esc(t.text||'')}${t._carried?` <span class="inline-check-daypill" style="background:var(--color-penalty-soft);color:var(--color-penalty);">이월</span>`:''}</div>
+        <div class="inline-check-box ${boxCls}">${isDone?'✓':''}</div>
+        <div class="inline-check-label ${labelCls}">${esc(t.text||'')}${t._carried?` <span class="inline-check-daypill" style="background:var(--color-penalty-soft);color:var(--color-penalty);">이월</span>`:''}</div>
         <span class="inline-check-pt ${isDone?'is-done':''}">+2</span>
         <span style="display:flex;gap:4px;align-items:center;" onclick="event.stopPropagation();">
           ${!isDone?`<button class="inline-check-fail ${failCls}" onclick="event.stopPropagation();markFail(${i})">${isFail?'해제':'실패'}</button>`:''}
-          <button class="ck-edit" onclick="event.stopPropagation();openPromoteTodoModal(${i})" title="매일 반복하는 필수 루틴으로 변환" style="color:var(--color-ink-3);">↻</button>
-          <button class="ck-del" onclick="event.stopPropagation();delTgt(${i})" style="color:var(--color-ink-3);">✕</button>
+          <button class="v3-row-btn" onclick="event.stopPropagation();openPromoteTodoModal(${i})" aria-label="루틴으로 변환" title="매일 반복하는 필수 루틴으로 변환">↻</button>
+          <button class="v3-row-btn" onclick="event.stopPropagation();delTgt(${i})" aria-label="삭제">✕</button>
         </span>
       </div>`;
     }).join('');
@@ -11961,8 +11996,11 @@ function renderTargets(){
 function togTgt(i){
   const s=log.targets[i].st||'';
   const nowDone=s!=='done';
-  // 토글 전에 origin 좌표 캡처
-  const _origin=document.querySelectorAll('#tgt-rows .tgt-btn')[i]||null;
+  // 토글 전에 origin 좌표 캡처 — v3 (.inline-check-row[data-tidx]) 우선, v2.5 fallback
+  const _origin=
+    document.querySelector('#tgt-rows .inline-check-row[data-tidx="'+i+'"] .inline-check-box')
+    ||document.querySelectorAll('#tgt-rows .tgt-btn')[i]
+    ||null;
   const _originRect=_origin?_origin.getBoundingClientRect():null;
   log.targets[i].st=nowDone?'done':'';
   renderTargets();saveNow();
