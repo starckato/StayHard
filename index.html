@@ -2486,6 +2486,227 @@ body:not(.v3-live) #v3-goal-add-row{ display: none !important; }
   font-family: 'DM Mono', monospace !important;
 }
 
+/* ──── v3 · Session summary · item 10 · workout-flow 04 ──── */
+.v3-live #session-summary-modal .ssm-big{
+  padding: 28px 0 20px;
+  text-align: left;
+  border-bottom: 0.5px solid var(--color-line);
+  margin-bottom: 20px;
+}
+.v3-live #session-summary-modal .ssm-big-num{
+  font-family: 'Archivo Black', 'DM Mono', monospace;
+  font-size: 72px;
+  letter-spacing: -0.04em;
+  line-height: 0.9;
+  color: var(--color-ink) !important;
+  font-weight: normal;
+  margin-bottom: 6px;
+}
+.v3-live #session-summary-modal .ssm-big-num .ssm-big-unit{
+  font-family: 'DM Mono', monospace;
+  font-size: 28px;
+  color: var(--color-ink-2);
+  margin-left: 6px;
+  font-weight: 500;
+  letter-spacing: 0;
+}
+.v3-live #session-summary-modal .ssm-big-label{
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-ink-3) !important;
+  font-family: 'DM Sans', sans-serif;
+}
+.v3-live #session-summary-modal .ssm-big-pt{
+  margin-left: 8px;
+  font-family: 'DM Mono', monospace;
+  color: var(--color-ink) !important;
+}
+.v3-live #session-summary-modal .ssm-stats{
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 26px;
+}
+.v3-live #session-summary-modal .ssm-stat{
+  padding: 14px 12px;
+  background: var(--color-surface-2) !important;
+  border: 0.5px solid var(--color-line) !important;
+  border-radius: 12px;
+  text-align: left;
+}
+.v3-live #session-summary-modal .ssm-stat-v{
+  font-family: 'Archivo Black', 'DM Mono', monospace;
+  font-size: 26px;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  color: var(--color-ink) !important;
+  margin-bottom: 4px;
+  font-weight: normal;
+}
+.v3-live #session-summary-modal .ssm-stat-k{
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-ink-3) !important;
+  font-family: 'DM Sans', sans-serif;
+}
+.v3-live #session-summary-modal .ssm-section{ margin-bottom: 22px; }
+.v3-live #session-summary-modal .ssm-h4{
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-ink-3) !important;
+  font-weight: 600;
+  margin: 0 0 12px;
+  font-family: 'DM Sans', sans-serif;
+}
+.v3-live #session-summary-modal .ssm-exrow{
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 12px;
+  align-items: baseline;
+  padding: 11px 0;
+  border-bottom: 0.5px solid var(--color-line);
+  font-family: 'DM Sans', sans-serif;
+}
+.v3-live #session-summary-modal .ssm-exrow:last-child{ border-bottom: 0; }
+.v3-live #session-summary-modal .ssm-exrow-name{
+  font-size: 14px;
+  color: var(--color-ink) !important;
+  letter-spacing: -0.01em;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.v3-live #session-summary-modal .ssm-exrow-sets{
+  font-size: 11px;
+  color: var(--color-ink-3) !important;
+  font-family: 'DM Mono', monospace;
+}
+.v3-live #session-summary-modal .ssm-exrow-vol{
+  font-size: 13px;
+  color: var(--color-ink) !important;
+  font-family: 'DM Mono', monospace;
+  letter-spacing: -0.01em;
+}
+.v3-live #session-summary-modal .ssm-muscles{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.v3-live #session-summary-modal .ssm-muscle-pill{
+  padding: 6px 11px;
+  border: 0.5px solid var(--color-line-strong) !important;
+  border-radius: 99px;
+  background: var(--color-surface-2) !important;
+  font-size: 12px;
+  color: var(--color-ink) !important;
+  font-family: 'DM Sans', sans-serif;
+  letter-spacing: -0.005em;
+}
+.v3-live #session-summary-modal .ssm-muscle-pill .pct{
+  color: var(--color-ink-3) !important;
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  margin-left: 5px;
+}
+.v3-live #session-summary-modal .ssm-v3-share{
+  background: var(--color-will) !important;
+  color: var(--color-will-on) !important;
+  box-shadow: none !important;
+}
+
+/* ──── v3 · Workout start screen · item 9 · workout-flow 01 ──── */
+.v3-live #wss-routine-tiles{
+  flex-direction: column !important;
+  gap: 8px !important;
+  overflow: visible !important;
+  padding: 4px 16px 14px !important;
+}
+.v3-live #wss-cardio-tiles{
+  flex-wrap: wrap !important;
+  gap: 8px !important;
+  overflow: visible !important;
+  padding: 4px 16px 20px !important;
+}
+.v3-live .wss-v3-routine{
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+  padding: 16px 18px;
+  background: var(--color-surface-2) !important;
+  border: 0.5px solid var(--color-line) !important;
+  border-radius: 12px;
+  text-align: left;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  touch-action: manipulation;
+}
+.v3-live .wss-v3-routine--add{
+  background: transparent !important;
+  border-style: dashed !important;
+}
+.v3-live .wss-v3-routine--add .wss-v3-routine-name{ color: var(--color-ink-2) !important; }
+.v3-live .wss-v3-routine-name{
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  color: var(--color-ink) !important;
+}
+.v3-live .wss-v3-routine-meta{
+  font-size: 12px;
+  color: var(--color-ink-3) !important;
+  letter-spacing: -0.005em;
+}
+.v3-live .wss-v3-or{
+  font-size: 10px;
+  text-align: center;
+  color: var(--color-ink-3);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  margin: 14px 0 8px;
+}
+.v3-live .wss-v3-empty{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 16px 18px;
+  background: var(--color-will) !important;
+  color: var(--color-will-on) !important;
+  border: 0 !important;
+  border-radius: 12px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.v3-live .wss-v3-empty-arrow{ font-family: 'DM Mono', monospace; opacity: 0.75; }
+.v3-live .wss-v3-cardio{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-width: 72px;
+  padding: 12px 10px;
+  background: var(--color-surface-2) !important;
+  border: 0.5px solid var(--color-line) !important;
+  border-radius: 12px;
+  font-family: 'DM Sans', sans-serif;
+  color: var(--color-ink) !important;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.v3-live .wss-v3-cardio-emoji{ font-size: 20px; line-height: 1; }
+.v3-live .wss-v3-cardio-name{ font-size: 11px; color: var(--color-ink-2); letter-spacing: -0.01em; }
+.v3-live .wss-v3-cardio--more{ border-style: dashed !important; }
+
 /* ──── v3 · Weight hero modal · item 12 ──── */
 .v3-live .wt-hero{
   margin: -4px -4px 20px;
@@ -3941,36 +4162,42 @@ body:not(.v3-live) #v3-goal-add-row{ display: none !important; }
   </div>
 
   <!-- SESSION SUMMARY MODAL -->
-  <div id="session-summary-modal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:var(--bg);z-index:550;flex-direction:column;">
+  <div id="session-summary-modal" class="ssm-v3" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:var(--bg);z-index:550;flex-direction:column;">
     <!-- Header -->
-    <div style="display:flex;align-items:center;gap:10px;padding:52px 18px 14px;border-bottom:1px solid var(--border);flex-shrink:0;">
+    <div class="ssm-v3-header" style="display:flex;align-items:center;gap:10px;padding:52px 18px 14px;border-bottom:0.5px solid var(--border);flex-shrink:0;">
       <button onclick="closeSessionSummary()" style="background:none;border:none;color:var(--text2);font-size:22px;cursor:pointer;padding:0;touch-action:manipulation;">←</button>
       <div style="flex:1;">
-        <div style="font-size:17px;font-weight:700;">🏋️ 헬스 세션</div>
-        <div style="font-size:12px;color:var(--text3);margin-top:2px;" id="ssm-date"></div>
+        <div class="ssm-v3-title" style="font-size:17px;font-weight:700;">끝 <span class="ssm-v3-sub" id="ssm-date" style="font-size:12px;color:var(--text3);margin-left:6px;font-weight:400;"></span></div>
       </div>
     </div>
-    <!-- Stats -->
-    <div style="display:flex;border-bottom:1px solid var(--border);flex-shrink:0;">
-      <div style="flex:1;text-align:center;padding:16px 0;">
-        <div style="font-size:22px;font-weight:800;color:var(--accent);" id="ssm-vol">—</div>
-        <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-top:3px;">총 볼륨</div>
+    <!-- Body · scrollable -->
+    <div class="ssm-v3-body" style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:20px 18px 24px;">
+      <!-- Hero volume -->
+      <div class="ssm-big">
+        <div class="ssm-big-num" id="ssm-vol">—</div>
+        <div class="ssm-big-label"><span id="ssm-vol-label">Total Volume</span><span class="ssm-big-pt" id="ssm-vol-pt"></span></div>
       </div>
-      <div style="flex:1;text-align:center;padding:16px 0;border-left:1px solid var(--border);">
-        <div style="font-size:22px;font-weight:800;color:var(--green);" id="ssm-sets">—</div>
-        <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-top:3px;">완료 세트</div>
+      <!-- 3 stats grid -->
+      <div class="ssm-stats">
+        <div class="ssm-stat"><div class="ssm-stat-v" id="ssm-dur">—</div><div class="ssm-stat-k">Minutes</div></div>
+        <div class="ssm-stat"><div class="ssm-stat-v" id="ssm-excount">—</div><div class="ssm-stat-k">Exercises</div></div>
+        <div class="ssm-stat"><div class="ssm-stat-v" id="ssm-sets">—</div><div class="ssm-stat-k">Sets</div></div>
       </div>
-      <div style="flex:1;text-align:center;padding:16px 0;border-left:1px solid var(--border);">
-        <div style="font-size:22px;font-weight:800;color:var(--text);" id="ssm-excount">—</div>
-        <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-top:3px;">종목 수</div>
-      </div>
+      <!-- Exercise list -->
+      <section class="ssm-section">
+        <h4 class="ssm-h4">운동별 볼륨</h4>
+        <div id="ssm-exercises"></div>
+      </section>
+      <!-- Muscle emphasis -->
+      <section class="ssm-section" id="ssm-muscle-section" style="display:none;">
+        <h4 class="ssm-h4">자극 부위</h4>
+        <div id="ssm-muscles" class="ssm-muscles"></div>
+      </section>
     </div>
-    <!-- Exercise list -->
-    <div id="ssm-exercises" style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 18px;"></div>
     <!-- Bottom button -->
-    <div style="padding:14px 18px 40px;border-top:1px solid var(--border);flex-shrink:0;display:flex;gap:10px;">
-      <button id="ssm-edit-btn" style="flex:1;padding:16px;background:var(--surface2);border:1px solid var(--border2);border-radius:14px;color:var(--text2);font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;cursor:pointer;touch-action:manipulation;">✎ 세션 수정</button>
-      <button onclick="captureSessionSummary()" style="flex:1;padding:16px;background:var(--accent);border:none;border-radius:14px;color:#fff;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;cursor:pointer;touch-action:manipulation;">📸 공유하기</button>
+    <div class="ssm-v3-footer" style="padding:14px 18px 40px;border-top:0.5px solid var(--border);flex-shrink:0;display:flex;gap:10px;">
+      <button id="ssm-edit-btn" style="flex:1;padding:16px;background:var(--surface2);border:0.5px solid var(--border2);border-radius:14px;color:var(--text2);font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;cursor:pointer;touch-action:manipulation;">✎ 세션 수정</button>
+      <button onclick="captureSessionSummary()" class="ssm-v3-share" style="flex:1;padding:16px;background:var(--accent);border:none;border-radius:14px;color:#fff;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;cursor:pointer;touch-action:manipulation;">📸 공유하기</button>
     </div>
   </div>
 
@@ -5096,6 +5323,33 @@ body:not(.v3-live) #v3-goal-add-row{ display: none !important; }
           <div style="flex:1;">
             <div style="font-size:14px;font-weight:600;">독서 30분</div>
             <div style="font-size:11px;color:var(--text3);">하루 30분 독서. 생각이 넓어진다.</div>
+          </div>
+          <div style="font-size:11px;color:var(--text3);">+1점</div>
+        </div>
+
+        <div onclick="pickRecommendedRoutine('🚫 오늘 배달음식 안 먹기',null)" style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:12px;cursor:pointer;touch-action:manipulation;">
+          <div style="font-size:22px;">🚫</div>
+          <div style="flex:1;">
+            <div style="font-size:14px;font-weight:600;">오늘 배달음식 안 먹기</div>
+            <div style="font-size:11px;color:var(--text3);">배달 앱 OFF. 직접 요리하거나 외식으로.</div>
+          </div>
+          <div style="font-size:11px;color:var(--text3);">+1점</div>
+        </div>
+
+        <div onclick="pickRecommendedRoutine('🥤 탄산·단 음료 OFF',null)" style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:12px;cursor:pointer;touch-action:manipulation;">
+          <div style="font-size:22px;">🥤</div>
+          <div style="flex:1;">
+            <div style="font-size:14px;font-weight:600;">탄산·단 음료 OFF</div>
+            <div style="font-size:11px;color:var(--text3);">물·차·블랙커피만. 설탕 liquid 금지.</div>
+          </div>
+          <div style="font-size:11px;color:var(--text3);">+1점</div>
+        </div>
+
+        <div onclick="pickRecommendedRoutine('📵 자기 전 1시간 폰 OFF',null)" style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:12px;cursor:pointer;touch-action:manipulation;">
+          <div style="font-size:22px;">📵</div>
+          <div style="flex:1;">
+            <div style="font-size:14px;font-weight:600;">자기 전 1시간 폰 OFF</div>
+            <div style="font-size:11px;color:var(--text3);">취침 전 1시간 스크린 금지. 수면 품질.</div>
           </div>
           <div style="font-size:11px;color:var(--text3);">+1점</div>
         </div>
@@ -12165,6 +12419,28 @@ function closeWorkoutStartScreen(){
 function renderWssRoutineTiles(){
   const el=document.getElementById('wss-routine-tiles');
   if(!el)return;
+  const v3=document.body.classList.contains('v3-live');
+  if(v3){
+    // v3 · workout-flow.html 01 · 루틴 리스트 세로 스택 + "빈 세션" CTA 하단
+    const routineItems=(userRoutines||[]).map(r=>{
+      const exs=r.exercises||[];
+      const muscles=Array.from(new Set(exs.map(e=>e.muscle).filter(Boolean))).slice(0,3).join(' · ');
+      const meta=(muscles||'종목')+' · '+exs.length+'종목';
+      return `<button class="wss-v3-routine" onclick="startSessionFromRoutine('${r.id}')">
+        <span class="wss-v3-routine-name">${r.name||'루틴'}</span>
+        <span class="wss-v3-routine-meta">${meta}</span>
+      </button>`;
+    }).join('');
+    const addRow=`<button class="wss-v3-routine wss-v3-routine--add" onclick="openRoutineModal()">
+      <span class="wss-v3-routine-name">＋ 새 루틴</span>
+      <span class="wss-v3-routine-meta">운동 조합을 저장</span>
+    </button>`;
+    const emptySession=`<button class="wss-v3-empty" onclick="startGymSession()">
+      <span>빈 세션으로 시작</span><span class="wss-v3-empty-arrow">↗</span>
+    </button>`;
+    el.innerHTML=routineItems+addRow+'<div class="wss-v3-or">또는</div>'+emptySession;
+    return;
+  }
   const freeTile=`<div onclick="startGymSession()" style="flex:0 0 70px;min-width:70px;background:rgba(255,77,77,.08);border:1px dashed rgba(255,77,77,.35);border-radius:10px;padding:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;cursor:pointer;touch-action:manipulation;">
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ff4d4d" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
     <span style="font-size:12px;color:#ff4d4d;text-align:center;font-weight:600;line-height:1.3;">자유<br>운동</span>
@@ -12187,6 +12463,7 @@ function renderWssRoutineTiles(){
 function renderWssCardioTiles(){
   const el=document.getElementById('wss-cardio-tiles');
   if(!el)return;
+  const v3=document.body.classList.contains('v3-live');
   const CARDIO_QUICK=[
     {i:'🏃',n:'달리기',cat:'cardio',idx:0},
     {i:'🚴',n:'사이클',cat:'cardio',idx:1},
@@ -12195,6 +12472,18 @@ function renderWssCardioTiles(){
     {i:'🎾',n:'테니스',cat:'sports',idx:5},
   ];
   const catLabel={cardio:'유산소',sports:'스포츠',mindfulness:'마음챙김'};
+  if(v3){
+    const tiles=CARDIO_QUICK.map(a=>`<button class="wss-v3-cardio" onclick="openActivityModalPreset(${a.idx})">
+      <span class="wss-v3-cardio-emoji">${a.i}</span>
+      <span class="wss-v3-cardio-name">${a.n}</span>
+    </button>`).join('');
+    const moreTile=`<button class="wss-v3-cardio wss-v3-cardio--more" onclick="openActivityModal('done')">
+      <span class="wss-v3-cardio-emoji">···</span>
+      <span class="wss-v3-cardio-name">더보기</span>
+    </button>`;
+    el.innerHTML=tiles+moreTile;
+    return;
+  }
   const tiles=CARDIO_QUICK.map(a=>`<div onclick="openActivityModalPreset(${a.idx})" style="flex:0 0 90px;min-width:90px;background:rgba(96,165,250,0.12);border:1px solid rgba(96,165,250,0.28);border-radius:12px;padding:12px 11px;cursor:pointer;touch-action:manipulation;">
     <div style="font-size:11px;font-weight:700;letter-spacing:.04em;color:#38bdf8;text-transform:uppercase;margin-bottom:2px;">${catLabel[a.cat]||a.cat}</div>
     <div style="font-size:15px;font-weight:600;color:#38bdf8;margin-bottom:2px;">${a.i} ${a.n}</div>
@@ -12383,40 +12672,96 @@ function toggleGymExpand(i){openSessionSummary(i);}
 function openSessionSummary(i){
   const w=log.workouts[i];
   if(!w||w.type!=='gym')return;
+  const v3=document.body.classList.contains('v3-live');
   const vol=w.totalVolume||0;
+  // Split number + unit for v3 (big num + small "t" or "kg")
+  let volNumStr, volUnit;
+  if(vol>=1000){ volNumStr=(vol/1000).toFixed(1); volUnit='t'; }
+  else if(vol>0){ volNumStr=Math.round(vol).toLocaleString(); volUnit='kg'; }
+  else { volNumStr='—'; volUnit=''; }
   const volStr=vol>=1000?(vol/1000).toFixed(1)+'t':vol>0?vol.toLocaleString()+'kg':'—';
   const totalSets=(w.exercises||[]).reduce((a,ex)=>a+(ex.sets||[]).filter(s=>s.done).length,0);
   const totalEx=(w.exercises||[]).length;
+  const durMin=(+w.duration_min)||0;
   const d=new Date(selectedKey.split('-').map(Number).reduce((arr,v,j)=>arr.concat(j===1?v-1:v),[]).reduce((d,v,j)=>{if(j===0)d.setFullYear(v);else if(j===1)d.setMonth(v);else d.setDate(v);return d;},new Date()));
   const dateStr=(d.getMonth()+1)+'월 '+d.getDate()+'일';
-  // Build modal content
-  const exHtml=(w.exercises||[]).map(ex=>{
-    const allSets=(ex.sets||[]);
-    const doneSets=allSets.filter(s=>s.done);
-    const exVol=doneSets.reduce((a,s)=>a+(parseFloat(s.kg)||0)*(parseInt(s.reps)||0),0);
-    const setTags=allSets.map((s,si)=>{
-      const label=(s.kg||s.reps)?(s.kg||'—')+'×'+(s.reps||'—'):'—';
-      const isDone=s.done;
-      return '<span style="background:'+(isDone?'var(--surface3)':'var(--surface2)')+';border:1px solid '+(isDone?'var(--border2)':'var(--border)')+';border-radius:6px;padding:3px 7px;font-size:10px;font-family:\'DM Mono\',monospace;color:'+(isDone?'var(--text2)':'var(--text3)')+';opacity:'+(isDone?'1':'.45')+';">'+label+'</span>';
+
+  // Exercise breakdown — v3 uses slim row, legacy uses set tags
+  let exHtml;
+  if(v3){
+    exHtml=(w.exercises||[]).map(ex=>{
+      const allSets=(ex.sets||[]);
+      const doneSets=allSets.filter(s=>s.done);
+      const exVol=doneSets.reduce((a,s)=>a+(parseFloat(s.kg)||0)*(parseInt(s.reps)||0),0);
+      const volLabel=exVol>=1000?(exVol/1000).toFixed(1)+' t':exVol>0?Math.round(exVol).toLocaleString()+' kg':'—';
+      return '<div class="ssm-exrow"><span class="ssm-exrow-name">'+ex.name+'</span><span class="ssm-exrow-sets">'+doneSets.length+'세트</span><span class="ssm-exrow-vol">'+volLabel+'</span></div>';
     }).join('');
-    return'<div style="padding:10px 0;border-bottom:1px solid var(--border);">'
-      +'<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">'
-      +'<span>'+exIcon(ex.name||ex.n,48)+'</span>'
-      +'<div style="flex:1;">'
-      +'<div style="font-size:13px;font-weight:600;">'+ex.name+'</div>'
-      +'<div style="font-size:10px;color:var(--text3);">'+doneSets.length+'세트 완료'+(exVol>0?' · '+exVol.toLocaleString()+'kg':'')+'</div>'
-      +'</div></div>'
-      +'<div style="display:flex;flex-wrap:wrap;gap:5px;">'+setTags+'</div>'
-      +'</div>';
-  }).join('');
+  }else{
+    exHtml=(w.exercises||[]).map(ex=>{
+      const allSets=(ex.sets||[]);
+      const doneSets=allSets.filter(s=>s.done);
+      const exVol=doneSets.reduce((a,s)=>a+(parseFloat(s.kg)||0)*(parseInt(s.reps)||0),0);
+      const setTags=allSets.map((s,si)=>{
+        const label=(s.kg||s.reps)?(s.kg||'—')+'×'+(s.reps||'—'):'—';
+        const isDone=s.done;
+        return '<span style="background:'+(isDone?'var(--surface3)':'var(--surface2)')+';border:1px solid '+(isDone?'var(--border2)':'var(--border)')+';border-radius:6px;padding:3px 7px;font-size:10px;font-family:\'DM Mono\',monospace;color:'+(isDone?'var(--text2)':'var(--text3)')+';opacity:'+(isDone?'1':'.45')+';">'+label+'</span>';
+      }).join('');
+      return'<div style="padding:10px 0;border-bottom:1px solid var(--border);">'
+        +'<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">'
+        +'<span>'+exIcon(ex.name||ex.n,48)+'</span>'
+        +'<div style="flex:1;">'
+        +'<div style="font-size:13px;font-weight:600;">'+ex.name+'</div>'
+        +'<div style="font-size:10px;color:var(--text3);">'+doneSets.length+'세트 완료'+(exVol>0?' · '+exVol.toLocaleString()+'kg':'')+'</div>'
+        +'</div></div>'
+        +'<div style="display:flex;flex-wrap:wrap;gap:5px;">'+setTags+'</div>'
+        +'</div>';
+    }).join('');
+  }
+
+  // Muscle emphasis (v3 only) · vol-weighted by muscle string
+  let muscleHtml='', muscleVis=false;
+  if(v3){
+    const byM={};let volSum=0;
+    (w.exercises||[]).forEach(ex=>{
+      const exVol=(ex.sets||[]).filter(s=>s.done).reduce((a,s)=>a+(parseFloat(s.kg)||0)*(parseInt(s.reps)||0),0);
+      if(exVol<=0)return;
+      const muscles=(ex.muscle||'').split(/[·,\/]/).map(s=>s.trim()).filter(Boolean);
+      const n=muscles.length||1;
+      muscles.forEach(m=>{ byM[m]=(byM[m]||0)+exVol/n; });
+      volSum+=exVol;
+    });
+    const entries=Object.entries(byM).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]).slice(0,6);
+    if(entries.length){
+      muscleHtml=entries.map(([m,v])=>{
+        const pct=volSum>0?Math.round(v/volSum*100):0;
+        return '<span class="ssm-muscle-pill">'+m+' <span class="pct">'+pct+'%</span></span>';
+      }).join('');
+      muscleVis=true;
+    }
+  }
+
   // Inject into modal
   const modal=document.getElementById('session-summary-modal');
   if(!modal)return;
-  document.getElementById('ssm-date').textContent=dateStr;
-  document.getElementById('ssm-vol').textContent=volStr;
+  const volEl=document.getElementById('ssm-vol');
+  if(v3 && volUnit){
+    volEl.innerHTML=volNumStr+'<span class="ssm-big-unit">'+volUnit+'</span>';
+  }else{
+    volEl.textContent=volStr;
+  }
+  // Pt label (bone-highlighted) — computed from addScore logic: sets*2
+  const ptEl=document.getElementById('ssm-vol-pt');
+  if(ptEl){ const pt=totalSets*2; ptEl.textContent=pt>0?' · +'+pt+' pt':''; }
+  document.getElementById('ssm-date').textContent=w.routineName?w.routineName+' · '+dateStr:dateStr;
   document.getElementById('ssm-sets').textContent=totalSets;
-  document.getElementById('ssm-excount').textContent=totalEx+'종목';
+  document.getElementById('ssm-excount').textContent=totalEx;
+  const durEl=document.getElementById('ssm-dur');
+  if(durEl)durEl.textContent=durMin>0?durMin:'—';
   document.getElementById('ssm-exercises').innerHTML=exHtml;
+  const msec=document.getElementById('ssm-muscle-section');
+  const mel=document.getElementById('ssm-muscles');
+  if(mel)mel.innerHTML=muscleHtml;
+  if(msec)msec.style.display=muscleVis?'block':'none';
   document.getElementById('ssm-edit-btn').onclick=()=>{closeSessionSummary();editGymSession(i);};
   document.body.style.overflow='hidden';
   modal.style.display='flex';
