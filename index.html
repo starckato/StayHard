@@ -1770,6 +1770,204 @@ body:not(.v3-live) #v3-goal-add-row{ display: none !important; }
   line-height: 1;
   color: var(--color-ink-3);
 }
+
+
+/* ════════════════════════════════════════════════════════════════
+   v3.0 · Modal overrides (meal-flow.html 참조)
+════════════════════════════════════════════════════════════════ */
+
+.v3-live .modal-overlay{ background: rgba(0, 0, 0, 0.55); }
+.v3-live .modal{
+  background: var(--color-surface);
+  border: 0.5px solid var(--color-line-strong);
+  border-radius: 12px 12px 0 0;
+  color: var(--color-ink);
+}
+.v3-live .mhandle{ background: var(--color-line-strong); }
+.v3-live .mtitle{
+  color: var(--color-ink);
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.v3-live .mlabel{
+  color: var(--color-ink-3);
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+.v3-live .minput,
+.v3-live .mtextarea{
+  background: var(--color-surface-2);
+  border: 0.5px solid var(--color-line-strong);
+  color: var(--color-ink);
+  border-radius: 4px;
+  font-family: 'DM Sans', sans-serif;
+}
+.v3-live .minput:focus,
+.v3-live .mtextarea:focus{ border-color: var(--color-ink); }
+.v3-live .minput::placeholder,
+.v3-live .mtextarea::placeholder{ color: var(--color-ink-3); }
+
+/* Meal modal category pills */
+.v3-live #meal-modal-slot .ftbtn,
+.v3-live #meal-modal-snack .ftbtn{
+  background: transparent;
+  border: 0.5px solid var(--color-line-strong);
+  color: var(--color-ink-2);
+  border-radius: 4px;
+  padding: 12px 8px;
+  text-align: center;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+.v3-live #meal-modal-slot .ftbtn.active,
+.v3-live #meal-modal-snack .ftbtn.active{
+  background: var(--color-surface-2);
+  color: var(--color-ink);
+  border: 1px solid var(--color-will);
+}
+/* 금지 = 4th button · oxblood on active */
+.v3-live #meal-modal-slot .ftbtn:nth-child(4).active,
+.v3-live #meal-modal-snack .ftbtn:nth-child(4).active{
+  border-color: var(--color-penalty);
+  color: var(--color-penalty);
+  background: var(--color-penalty-soft);
+}
+
+.v3-live #ms-ctx-pill{
+  background: var(--color-surface-2) !important;
+  color: var(--color-ink-2) !important;
+  border-color: var(--color-line-strong) !important;
+}
+.v3-live #ms-delete-btn{
+  background: transparent !important;
+  border-color: var(--color-penalty) !important;
+  color: var(--color-penalty) !important;
+}
+
+.v3-live .mbtn{
+  background: var(--color-will) !important;
+  color: var(--color-will-on) !important;
+  border: 0 !important;
+  border-radius: 4px;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  box-shadow: none !important;
+}
+.v3-live .mbtn:active{ filter: brightness(0.95); }
+.v3-live .mbtn-ghost{
+  background: transparent !important;
+  color: var(--color-ink-3) !important;
+  border: 0 !important;
+  font-family: 'DM Sans', sans-serif;
+}
+
+.v3-live #ms-photo-btns button,
+.v3-live #msnk-photo-btns button{
+  background: transparent !important;
+  border: 0.5px dashed var(--color-line-strong) !important;
+  border-radius: 4px !important;
+  color: var(--color-ink-3);
+}
+
+.v3-live #ms-cheat-hint,
+.v3-live #msnk-cheat-hint{
+  background: var(--color-surface-2) !important;
+  border: 0.5px solid var(--color-line-strong) !important;
+  color: var(--color-ink-2) !important;
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.02em;
+}
+
+
+/* ════════════════════════════════════════════════════════════════
+   v3.0 · Workout overlays (workout-flow.html 참조)
+════════════════════════════════════════════════════════════════ */
+
+.v3-live #workout-start-screen,
+.v3-live #workout-session-overlay,
+.v3-live #ex-library-overlay,
+.v3-live #session-summary-modal,
+.v3-live #routine-modal-overlay,
+.v3-live #muscle-map-overlay{
+  background: var(--color-surface);
+  color: var(--color-ink);
+}
+
+.v3-live .wss-routine-tile{
+  background: var(--color-surface-1) !important;
+  border: 0.5px solid var(--color-line-strong) !important;
+  color: var(--color-ink) !important;
+}
+.v3-live .wss-routine-tile.selected{ border-color: var(--color-ink) !important; }
+.v3-live .wss-cardio-tile{
+  background: var(--color-surface-2) !important;
+  border: 0.5px solid var(--color-line) !important;
+  color: var(--color-ink) !important;
+}
+
+.v3-live .ws-head{
+  background: var(--color-surface) !important;
+  border-bottom: 0.5px solid var(--color-line) !important;
+  color: var(--color-ink) !important;
+}
+.v3-live .ws-ex-chip{
+  background: var(--color-surface-2) !important;
+  border: 0.5px solid var(--color-line) !important;
+  color: var(--color-ink-2) !important;
+}
+.v3-live .ws-ex-chip.active{
+  background: var(--color-will) !important;
+  color: var(--color-will-on) !important;
+  border-color: var(--color-will) !important;
+}
+.v3-live .ws-ex-chip.done{ color: var(--color-ink-3) !important; }
+.v3-live .ws-done-btn{
+  background: var(--color-will) !important;
+  color: var(--color-will-on) !important;
+  border: 0 !important;
+}
+
+.v3-live #muscle-map-overlay .mm-header{
+  background: var(--color-surface) !important;
+  border-bottom: 0.5px solid var(--color-line) !important;
+  color: var(--color-ink) !important;
+}
+
+
+/* ════════════════════════════════════════════════════════════════
+   v3.0 · Score chip (+N pt · 비행) · graphite
+════════════════════════════════════════════════════════════════ */
+
+.v3-live .score-chip{
+  background: var(--color-will) !important;
+  color: var(--color-will-on) !important;
+  border: 0.5px solid var(--color-will) !important;
+  box-shadow:
+    0 0 0 0.5px rgba(255,255,255,0.3),
+    0 0 14px 2px rgba(255,255,255,0.45) !important;
+  font-family: 'DM Mono', monospace !important;
+  font-weight: 600 !important;
+}
+.v3-live .score-chip.neg{
+  background: var(--color-penalty) !important;
+  color: #fff !important;
+  border-color: var(--color-penalty) !important;
+  box-shadow:
+    0 0 0 0.5px rgba(201,75,42,0.3),
+    0 0 14px 2px rgba(201,75,42,0.55) !important;
+}
+.v3-live #hdr-score.score-pulse,
+.v3-live #id-score.score-pulse{
+  text-shadow: 0 0 12px rgba(255,255,255,0.65) !important;
+}
 </style>
 </head>
 <body class="v3-live">
