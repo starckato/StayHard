@@ -96,7 +96,10 @@
     .sess-exchips::-webkit-scrollbar { display: none; }
     .ex-chip {
       flex-shrink: 0;
-      padding: 6px 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px 4px 4px;
       background: var(--color-surface-2);
       border: 0.5px solid var(--color-line);
       font-size: var(--text-11);
@@ -104,30 +107,155 @@
       letter-spacing: -0.01em;
       white-space: nowrap;
     }
+    .ex-chip-thumb {
+      width: 22px;
+      height: 22px;
+      background: var(--color-surface);
+      border: 0.5px solid var(--color-line-faint);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      flex-shrink: 0;
+    }
     .ex-chip.is-active {
       background: var(--color-will);
       color: var(--color-will-on);
       border-color: var(--color-will);
       font-weight: 500;
     }
+    .ex-chip.is-active .ex-chip-thumb {
+      background: var(--color-surface);
+      border-color: var(--color-line);
+    }
     .ex-chip.is-done { color: var(--color-ink-3); }
-    .ex-chip.is-done::after { content: ' ✓'; color: var(--color-ink-2); }
+    .ex-chip.is-done::after { content: '✓'; color: var(--color-ink-2); margin-left:2px; }
 
+    /* Exercise header — GIF thumb + name + remove */
     .sess-exhead {
-      padding: 18px 20px 4px;
+      padding: 14px 20px 10px;
+      display: grid;
+      grid-template-columns: 48px 1fr auto;
+      gap: 12px;
+      align-items: center;
+    }
+    .sess-exthumb {
+      width: 48px;
+      height: 48px;
+      background: var(--color-surface-2);
+      border: 0.5px solid var(--color-line);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+    }
+    .sess-exinfo {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      min-width: 0;
     }
     .sess-exname {
-      font-size: var(--text-20);
+      font-size: var(--text-17);
       font-weight: 600;
       letter-spacing: -0.015em;
       color: var(--color-ink);
-      margin-bottom: 4px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
     .sess-exmuscle {
       font-family: var(--font-mono);
-      font-size: var(--text-11);
+      font-size: var(--text-10);
       color: var(--color-ink-3);
       letter-spacing: 0.04em;
+    }
+    .sess-exremove {
+      width: 28px;
+      height: 28px;
+      color: var(--color-penalty);
+      background: transparent;
+      border: 0.5px solid var(--color-penalty);
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background var(--dur-fast);
+    }
+    .sess-exremove:hover {
+      background: var(--color-penalty-soft);
+    }
+
+    /* Prefill suggestion card */
+    .sess-prefill {
+      margin: 4px 20px 8px;
+      padding: 12px 14px;
+      background: var(--color-surface-2);
+      border: 0.5px dashed var(--color-line-strong);
+    }
+    .pf-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: baseline;
+      margin-bottom: 10px;
+    }
+    .pf-label {
+      font-family: var(--font-mono);
+      font-size: var(--text-10);
+      letter-spacing: var(--track-wider);
+      color: var(--color-ink-3);
+      text-transform: uppercase;
+    }
+    .pf-value {
+      font-family: var(--font-display);
+      font-size: var(--text-24);
+      color: var(--color-ink);
+      letter-spacing: -0.02em;
+      line-height: 1;
+    }
+    .pf-value .pf-unit {
+      font-family: var(--font-mono);
+      font-size: var(--text-12);
+      color: var(--color-ink-2);
+      letter-spacing: var(--track-wide);
+      margin-left: 4px;
+    }
+
+    .pf-bar {
+      height: 3px;
+      background: var(--color-surface);
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 4px;
+    }
+    .pf-bar-fill {
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      background: var(--color-ink-2);
+    }
+    .pf-bar-labels {
+      display: flex;
+      justify-content: space-between;
+      font-family: var(--font-mono);
+      font-size: 9px;
+      color: var(--color-ink-3);
+      letter-spacing: var(--track-wide);
+      margin-bottom: 8px;
+    }
+
+    .pf-hint {
+      font-size: var(--text-10);
+      color: var(--color-ink-2);
+      letter-spacing: -0.01em;
+      font-style: italic;
+      font-weight: 300;
+      line-height: 1.4;
+    }
+    .pf-hint::before {
+      content: '↻ ';
+      color: var(--color-ink-3);
+      font-style: normal;
+      margin-right: 2px;
     }
 
     .sets-grid {
@@ -501,18 +629,57 @@
           </header>
 
           <div class="sess-exchips">
-            <span class="ex-chip is-done">벤치프레스</span>
-            <span class="ex-chip is-active">덤벨 숄더 프레스</span>
-            <span class="ex-chip">인클라인 프레스</span>
-            <span class="ex-chip">트라이셉 익스텐션</span>
-            <span class="ex-chip">딥스</span>
+            <span class="ex-chip is-done">
+              <span class="ex-chip-thumb">🏋</span>
+              <span>벤치프레스</span>
+            </span>
+            <span class="ex-chip is-active">
+              <span class="ex-chip-thumb">🏋</span>
+              <span>덤벨 숄더 프레스</span>
+            </span>
+            <span class="ex-chip">
+              <span class="ex-chip-thumb">🏋</span>
+              <span>인클라인 프레스</span>
+            </span>
+            <span class="ex-chip">
+              <span class="ex-chip-thumb">💪</span>
+              <span>트라이셉 익스텐션</span>
+            </span>
+            <span class="ex-chip">
+              <span class="ex-chip-thumb">🤸</span>
+              <span>딥스</span>
+            </span>
           </div>
 
           <div class="screen-body">
 
             <div class="sess-exhead">
-              <div class="sess-exname">덤벨 숄더 프레스</div>
-              <div class="sess-exmuscle">어깨 · 전면 삼각근 · 삼두</div>
+              <div class="sess-exthumb">🏋</div>
+              <div class="sess-exinfo">
+                <div class="sess-exname">덤벨 숄더 프레스</div>
+                <div class="sess-exmuscle">어깨 · 전면 삼각근 · 삼두</div>
+              </div>
+              <button class="sess-exremove" aria-label="이 운동 제거">×</button>
+            </div>
+
+            <!-- Prefill suggestion card -->
+            <div class="sess-prefill">
+              <div class="pf-row">
+                <div>
+                  <div class="pf-label">예상 중량</div>
+                </div>
+                <div class="pf-value">26<span class="pf-unit">KG</span></div>
+              </div>
+
+              <div class="pf-bar">
+                <div class="pf-bar-fill" style="width:62%;"></div>
+              </div>
+              <div class="pf-bar-labels">
+                <span>0%</span>
+                <span>PR 100%</span>
+              </div>
+
+              <div class="pf-hint">지난 기록 자동 입력 · 그대로 OK, 수정도 가능</div>
             </div>
 
             <div class="sets-grid">
