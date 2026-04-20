@@ -115,3 +115,77 @@
   --ease-out-expo:  cubic-bezier(0.16, 1, 0.3, 1);
   --ease-out-cubic: cubic-bezier(0.33, 1, 0.68, 1);
 }
+
+
+/* ============================================================
+   [data-theme="stayhard"] · HEAT MODE
+   기존 팔레트 — 분노·에너지·불
+   "Fire mode — push me with heat."
+   ============================================================ */
+
+[data-theme="stayhard"] {
+  --color-page:              #050507;
+  --color-surface:           #0A0A0C;
+  --color-surface-1:         #141418;
+  --color-surface-2:         #1C1C22;
+  --color-surface-3:         #24242C;
+
+  --color-hm-empty:          #1C1C22;
+  --color-hm-future-dot:     #2E2E38;
+
+  --color-ink:               #EAEAEA;
+  --color-ink-2:             #8B8B96;
+  --color-ink-3:             #6B6B78;
+  --color-ink-4:             #3A3A46;
+
+  --color-line-faint:        #141418;
+  --color-line:              #24242C;
+  --color-line-strong:       #3A3A46;
+
+  /* Will = red-orange Goggins fire (instead of pure white) */
+  --color-will:              #FF4D4D;
+  --color-will-soft:         #7A2818;
+  --color-will-faint:        #1F0E0E;
+  --color-will-on:           #FFFFFF;
+  --color-will-hover:        #FF6B35;
+
+  --color-purple-400:        var(--color-will);
+  --color-purple-100:        var(--color-will-soft);
+  --color-purple-50:         var(--color-will-faint);
+  --color-purple-ink:        var(--color-will-on);
+  --color-purple-500:        var(--color-will-hover);
+
+  /* Warning — amber back in stayhard */
+  --color-warning:           #F59E0B;
+  --color-warning-soft:      #2A1F0A;
+
+  /* Penalty same red family (context distinguishes) */
+  --color-penalty:           #FF4D4D;
+  --color-penalty-soft:      #2A1212;
+  --color-penalty-bright:    #FF6B35;
+
+  --border-hair:    0.5px solid var(--color-line);
+  --border-strong:  0.5px solid var(--color-line-strong);
+}
+
+
+/* ============================================================
+   [data-theme="graphite"] · CLARITY MODE
+   현 기본값 · 의지를 빛으로
+   "Control mode — silence myself with clarity."
+   ============================================================ */
+
+[data-theme="graphite"] {
+  --color-will:              #FFFFFF;
+  --color-will-soft:         #6A6B6E;
+  --color-will-faint:        #1B1C20;
+  --color-will-on:           #0A0A0C;
+  --color-will-hover:        #F5F5F0;
+
+  --color-penalty:           #C94B2A;
+  --color-penalty-soft:      #2A1212;
+  --color-penalty-bright:    #E85A38;
+
+  --color-warning:           var(--color-ink-2);
+  --color-warning-soft:      var(--color-surface-2);
+}

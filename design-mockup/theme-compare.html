@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Stay Hard · 모드 비교</title>
+  <link rel="stylesheet" as="style" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="tokens.css">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .theme-row-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      margin-bottom: 24px;
+      padding-bottom: 12px;
+      border-bottom: 0.5px solid var(--color-line);
+    }
+    .theme-row-head h2 {
+      margin: 0;
+      font-size: var(--text-20);
+      font-weight: 600;
+      letter-spacing: -0.015em;
+    }
+    .theme-row-head .tag {
+      font-family: var(--font-mono);
+      font-size: var(--text-11);
+      color: var(--color-ink-3);
+      letter-spacing: var(--track-wider);
+      text-transform: uppercase;
+    }
+    .theme-card-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 14px;
+    }
+    .theme-card-meta .name {
+      font-family: var(--font-display);
+      font-size: var(--text-17);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .theme-card-meta .name.is-heat { color: #FF4D4D; }
+    .theme-card-meta .desc {
+      font-size: var(--text-12);
+      color: var(--color-ink-2);
+      line-height: 1.6;
+    }
+  </style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="mascot" viewBox="0 0 24 28">
+      <rect x="5" y="1.5" width="3" height="3" fill="currentColor"/>
+      <rect x="16" y="1.5" width="3" height="3" fill="currentColor"/>
+      <rect x="6.5" y="3" width="11" height="8.5" rx="1" fill="currentColor"/>
+      <rect x="9.5" y="6" width="1.4" height="1.4" fill="#0A0A0C"/>
+      <rect x="13.1" y="6" width="1.4" height="1.4" fill="#0A0A0C"/>
+      <rect x="10.6" y="8.6" width="2.8" height="0.8" fill="#0A0A0C"/>
+      <rect x="5.5" y="11.5" width="13" height="10" rx="1.5" fill="currentColor"/>
+      <rect x="7" y="21.5" width="3" height="5.5" fill="currentColor"/>
+      <rect x="14" y="21.5" width="3" height="5.5" fill="currentColor"/>
+    </symbol>
+    <symbol id="ico-weight" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M2.5 4.5h9l-0.8 6.5a1 1 0 0 1-1 0.9h-5.4a1 1 0 0 1-1-0.9L2.5 4.5Z"/>
+      <path d="M5 4.5v-0.7a2 2 0 0 1 4 0v0.7"/>
+    </symbol>
+    <symbol id="ico-meal" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M2 6.5a5 5 0 0 1 10 0"/>
+      <path d="M1.5 6.5h11"/>
+      <path d="M3.5 9h7"/>
+    </symbol>
+    <symbol id="ico-workout" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M2 5.5v3"/><path d="M3.5 4v6"/><path d="M10.5 4v6"/><path d="M12 5.5v3"/><path d="M3.5 7h7"/>
+    </symbol>
+    <symbol id="ico-routine" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="2" y="2" width="10" height="10" rx="1.5"/>
+      <path d="M4.5 7l2 2 3-4"/>
+    </symbol>
+    <symbol id="ico-goal" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="7" cy="7" r="5"/><circle cx="7" cy="7" r="2.6"/>
+      <circle cx="7" cy="7" r="0.6" fill="currentColor"/>
+    </symbol>
+  </defs>
+</svg>
+
+
+<div class="review-shell">
+
+  <header class="review-header">
+    <span class="review-eyebrow">Stay Hard · Redesign v1</span>
+    <h1>두 모드 · 같은 뼈대, 다른 피부</h1>
+    <p>유저가 자신의 동기 스타일을 선택. 구조·기능·정책 전부 동일 · 팔레트만 다름.<br>
+    <a href="map.html">← map</a></p>
+  </header>
+
+
+  <div class="theme-row-head">
+    <h2>기록 탭 · 동일 유저 상태, 다른 팔레트</h2>
+    <span class="tag">430 × 932 × 2</span>
+  </div>
+
+  <div class="frames-row">
+
+
+    <!-- ===================== STAYHARD (HEAT) ===================== -->
+    <figure class="frame-wrap">
+      <figcaption>
+        <span>STAYHARD · 열기 모드</span>
+        <span>#FF4D4D</span>
+      </figcaption>
+
+      <div class="theme-card-meta">
+        <span class="name is-heat">HEAT</span>
+        <span class="desc">분노·에너지 기반. 불로 밀어붙여야 움직이는 날들을 위해. 완료 = 붉은 빛. Goggins 음성.</span>
+      </div>
+
+      <div class="phone-frame" data-theme="stayhard">
+        <header class="app-header">
+          <div class="app-title">Stay Hard</div>
+          <button class="app-avatar" aria-label="프로필">권</button>
+        </header>
+
+        <main class="record-tab">
+
+          <section class="identity-band">
+            <div class="mascot"><svg width="24" height="28"><use href="#mascot"/></svg></div>
+            <div class="identity-main">
+              <div class="tier-line">
+                <span class="tier-name">수련자</span>
+                <span class="tier-sep">·</span>
+                <span class="tier-score">248</span>
+                <span class="tier-sep">·</span>
+                <span class="tier-streak">🔥 12일</span>
+              </div>
+              <div class="tier-sub">다음 지배자까지 · 252pt</div>
+            </div>
+            <div class="identity-quote">"멈추지 마. 넌 이미 다른 사람이야."</div>
+          </section>
+
+          <section class="heatmap is-animate">
+            <header class="hm-header">
+              <h2 class="hm-title">4월 · <span>이번 주</span></h2>
+              <div style="display:flex; gap:4px">
+                <button class="hm-nav">‹</button>
+                <button class="hm-nav">›</button>
+              </div>
+            </header>
+            <div class="hm-grid">
+              <div class="hm-cornerspacer"></div>
+              <div class="hm-dow">월</div>
+              <div class="hm-dow">화</div>
+              <div class="hm-dow">수</div>
+              <div class="hm-dow is-today">목</div>
+              <div class="hm-dow">금</div>
+              <div class="hm-dow">토</div>
+              <div class="hm-dow">일</div>
+
+              <div class="hm-rowlabel">식단</div>
+              <div class="hm-cell is-done"></div>
+              <div class="hm-cell is-done"></div>
+              <div class="hm-cell is-partial"></div>
+              <div class="hm-cell is-partial is-today"></div>
+              <div class="hm-cell is-future"></div>
+              <div class="hm-cell is-future"></div>
+              <div class="hm-cell is-future"></div>
+
+              <div class="hm-rowlabel">운동</div>
+              <div class="hm-cell is-done"></div>
+              <div class="hm-cell is-empty"></div>
+              <div class="hm-cell is-done"></div>
+              <div class="hm-cell is-empty is-today"></div>
+              <div class="hm-cell is-future"></div>
+              <div class="hm-cell is-future"></div>
+              <div class="hm-cell is-future"></div>
+
+              <div class="hm-rowlabel">루틴</div>
+              <div class="hm-cell is-done"></div>
+              <div class="hm-cell is-done"></div>
+              <div class="hm-cell is-done"></div>
+              <div class="hm-cell is-partial is-today"></div>
+              <div class="hm-cell is-future"></div>
+              <div class="hm-cell is-future"></div>
+              <div class="hm-cell is-future"></div>
+
+              <div class="hm-rowlabel">목표</div>
+              <div class="hm-cell hm-cell--tall is-done"><span class="hm-goal-name">링크드인</span><span class="hm-goal-count">외2</span></div>
+              <div class="hm-cell hm-cell--tall is-done"><span class="hm-goal-name">혁이 결혼식</span><span class="hm-goal-count">외1</span></div>
+              <div class="hm-cell hm-cell--tall is-partial"><span class="hm-goal-name">링크드인</span><span class="hm-goal-count">외2</span></div>
+              <div class="hm-cell hm-cell--tall is-partial is-today"><span class="hm-goal-name">운동 피드</span><span class="hm-goal-count">외1</span></div>
+              <div class="hm-cell hm-cell--tall is-planned"><span class="hm-goal-name">혁이 결혼식</span><span class="hm-goal-count">외1</span></div>
+              <div class="hm-cell hm-cell--tall is-future"></div>
+              <div class="hm-cell hm-cell--tall is-future"></div>
+            </div>
+          </section>
+
+          <header class="today-header">
+            <div class="today-day">목요일 · <span>오늘</span></div>
+            <div class="today-pts">+42 pt</div>
+          </header>
+
+          <aside class="ribbon">
+            <span class="ribbon-dot"></span>
+            <span class="ribbon-text"><strong>어제 미완</strong> · 링크드인 포스트 외 1개</span>
+            <span class="ribbon-arrow">›</span>
+          </aside>
+
+          <div class="cards-stack">
+            <button class="card"><svg class="card-ico"><use href="#ico-weight"/></svg><span class="card-label">체중</span><span class="card-value">96.4 kg <span class="card-delta">−0.3</span></span></button>
+            <button class="card"><svg class="card-ico"><use href="#ico-meal"/></svg><span class="card-label">식단</span><span class="card-value"><span class="badge">2/4</span></span></button>
+            <button class="card"><svg class="card-ico"><use href="#ico-workout"/></svg><span class="card-label">운동</span><span class="card-value">2.4t <span class="card-sub">· 45분</span></span></button>
+            <button class="card"><svg class="card-ico"><use href="#ico-routine"/></svg><span class="card-label">필수 루틴</span><span class="card-value"><span class="badge">3/4</span></span></button>
+            <button class="card"><svg class="card-ico"><use href="#ico-goal"/></svg><span class="card-label">오늘의 목표</span><span class="card-value"><span class="badge">1/3</span></span></button>
+          </div>
+
+          <section class="promo-zone">
+            <div class="promo-zone-label">알림 · 2</div>
+            <button class="promo-item">
+              <span class="promo-icon">🔥</span>
+              <span class="promo-text"><strong>12일 연속.</strong> 30일 마일스톤까지 18일.</span>
+              <span class="promo-arrow">›</span>
+            </button>
+            <button class="promo-item">
+              <span class="promo-icon">◎</span>
+              <span class="promo-text">친구 초대 · 같이 Stay Hard</span>
+              <span class="promo-arrow">›</span>
+            </button>
+          </section>
+        </main>
+
+        <nav class="bot-nav">
+          <button class="bn-item is-active"><span>기록</span></button>
+          <button class="bn-item"><span>챌린지</span></button>
+          <button class="bn-item"><span>통계</span></button>
+        </nav>
+      </div>
+    </figure>
+
+
+    <!-- ===================== GRAPHITE (CLARITY) ===================== -->
+    <figure class="frame-wrap">
+      <figcaption>
+        <span>GRAPHITE · 통제 모드</span>
+        <span>#FFFFFF</span>
+      </figcaption>
+
+      <div class="theme-card-meta">
+        <span class="name">CLARITY</span>
+        <span class="desc">고요·자기 통제 기반. 격자가 주인공, 내 의지만이 빛. 감정 없이 팩트. 보상은 어둠을 깨뜨리는 흰 빛.</span>
+      </div>
+
+      <div class="phone-frame" data-theme="graphite">
+        <header class="app-header">
+          <div class="app-title">Stay Hard</div>
+          <button class="app-avatar" aria-label="프로필">권</button>
+        </header>
+
+        <main class="record-tab">
+
+          <section class="identity-band">
+            <div class="mascot"><svg width="24" height="28"><use href="#mascot"/></svg></div>
+            <div class="identity-main">
+              <div class="tier-line">
+                <span class="tier-name">수련자</span>
+                <span class="tier-sep">·</span>
+                <span class="tier-score">248</span>
+                <span class="tier-sep">·</span>
+                <span class="tier-streak">🔥 12일</span>
+              </div>
+              <div class="tier-sub">다음 지배자까지 · 252pt</div>
+            </div>
+            <div class="identity-quote">"멈추지 마. 넌 이미 다른 사람이야."</div>
+          </section>
+
+          <section class="heatmap is-animate">
+            <header class="hm-header">
+              <h2 class="hm-title">4월 · <span>이번 주</span></h2>
+              <div style="display:flex; gap:4px">
+                <button class="hm-nav">‹</button>
+                <button class="hm-nav">›</button>
+              </div>
+            </header>
+            <div class="hm-grid">
+              <div class="hm-cornerspacer"></div>
+              <div class="hm-dow">월</div>
+              <div class="hm-dow">화</div>
+              <div class="hm-dow">수</div>
+              <div class="hm-dow is-today">목</div>
+              <div class="hm-dow">금</div>
+              <div class="hm-dow">토</div>
+              <div class="hm-dow">일</div>
+
+              <div class="hm-rowlabel">식단</div>
+              <div class="hm-cell is-done"></div>
+              <div class="hm-cell is-done"></div>
+              <div class="hm-cell is-partial"></div>
+              <div class="hm-cell is-partial is-today"></div>
+              <div class="hm-cell is-future"></div>
+              <div class="hm-cell is-future"></div>
+              <div class="hm-cell is-future"></div>
+
+              <div class="hm-rowlabel">운동</div>
+              <div class="hm-cell is-done"></div>
+              <div class="hm-cell is-empty"></div>
+              <div class="hm-cell is-done"></div>
+              <div class="hm-cell is-empty is-today"></div>
+              <div class="hm-cell is-future"></div>
+              <div class="hm-cell is-future"></div>
+              <div class="hm-cell is-future"></div>
+
+              <div class="hm-rowlabel">루틴</div>
+              <div class="hm-cell is-done"></div>
+              <div class="hm-cell is-done"></div>
+              <div class="hm-cell is-done"></div>
+              <div class="hm-cell is-partial is-today"></div>
+              <div class="hm-cell is-future"></div>
+              <div class="hm-cell is-future"></div>
+              <div class="hm-cell is-future"></div>
+
+              <div class="hm-rowlabel">목표</div>
+              <div class="hm-cell hm-cell--tall is-done"><span class="hm-goal-name">링크드인</span><span class="hm-goal-count">외2</span></div>
+              <div class="hm-cell hm-cell--tall is-done"><span class="hm-goal-name">혁이 결혼식</span><span class="hm-goal-count">외1</span></div>
+              <div class="hm-cell hm-cell--tall is-partial"><span class="hm-goal-name">링크드인</span><span class="hm-goal-count">외2</span></div>
+              <div class="hm-cell hm-cell--tall is-partial is-today"><span class="hm-goal-name">운동 피드</span><span class="hm-goal-count">외1</span></div>
+              <div class="hm-cell hm-cell--tall is-planned"><span class="hm-goal-name">혁이 결혼식</span><span class="hm-goal-count">외1</span></div>
+              <div class="hm-cell hm-cell--tall is-future"></div>
+              <div class="hm-cell hm-cell--tall is-future"></div>
+            </div>
+          </section>
+
+          <header class="today-header">
+            <div class="today-day">목요일 · <span>오늘</span></div>
+            <div class="today-pts">+42 pt</div>
+          </header>
+
+          <aside class="ribbon">
+            <span class="ribbon-dot"></span>
+            <span class="ribbon-text"><strong>어제 미완</strong> · 링크드인 포스트 외 1개</span>
+            <span class="ribbon-arrow">›</span>
+          </aside>
+
+          <div class="cards-stack">
+            <button class="card"><svg class="card-ico"><use href="#ico-weight"/></svg><span class="card-label">체중</span><span class="card-value">96.4 kg <span class="card-delta">−0.3</span></span></button>
+            <button class="card"><svg class="card-ico"><use href="#ico-meal"/></svg><span class="card-label">식단</span><span class="card-value"><span class="badge">2/4</span></span></button>
+            <button class="card"><svg class="card-ico"><use href="#ico-workout"/></svg><span class="card-label">운동</span><span class="card-value">2.4t <span class="card-sub">· 45분</span></span></button>
+            <button class="card"><svg class="card-ico"><use href="#ico-routine"/></svg><span class="card-label">필수 루틴</span><span class="card-value"><span class="badge">3/4</span></span></button>
+            <button class="card"><svg class="card-ico"><use href="#ico-goal"/></svg><span class="card-label">오늘의 목표</span><span class="card-value"><span class="badge">1/3</span></span></button>
+          </div>
+
+          <section class="promo-zone">
+            <div class="promo-zone-label">알림 · 2</div>
+            <button class="promo-item">
+              <span class="promo-icon">🔥</span>
+              <span class="promo-text"><strong>12일 연속.</strong> 30일 마일스톤까지 18일.</span>
+              <span class="promo-arrow">›</span>
+            </button>
+            <button class="promo-item">
+              <span class="promo-icon">◎</span>
+              <span class="promo-text">친구 초대 · 같이 Stay Hard</span>
+              <span class="promo-arrow">›</span>
+            </button>
+          </section>
+        </main>
+
+        <nav class="bot-nav">
+          <button class="bn-item is-active"><span>기록</span></button>
+          <button class="bn-item"><span>챌린지</span></button>
+          <button class="bn-item"><span>통계</span></button>
+        </nav>
+      </div>
+    </figure>
+
+  </div>
+
+
+  <!-- Notes · parity matrix -->
+  <div class="compare-notes">
+    <h3>두 모드 · 운영 정책 파리티</h3>
+    <p>
+      · <strong>스코어링</strong>: 동일 (+N/−N 값, 쿨다운, 치팅 쿼터 전부 같음)<br>
+      · <strong>티어 체계</strong>: 동일 (방관자 → Goggins 6단계, 같은 임계값)<br>
+      · <strong>기록 구조</strong>: 동일 (5 primary cards · heatmap · 슬롯 · 세트)<br>
+      · <strong>보상 로직</strong>: 동일 (크랙 연출의 색만 달라짐 — heat 모드는 붉은 빛, clarity 모드는 순백)<br>
+      · <strong>패널티</strong>: 동일 (−30 pt · ledger 남음)<br>
+      · <strong>챌린지·통계·공유</strong>: 동일 구조
+    </p>
+
+    <h3 class="is-b">무엇이 다른가</h3>
+    <p>
+      · <strong>완료 색</strong>: HEAT #FF4D4D · CLARITY #FFFFFF<br>
+      · <strong>경고 색</strong>: HEAT 앰버 #F59E0B · CLARITY 무채색 ink-2<br>
+      · <strong>보상 연출 톤</strong>: HEAT — 불꽃·분출·글로우 · CLARITY — 조용한 빛·크랙·fade<br>
+      · <strong>문구</strong>: HEAT — Goggins 음성 ("멈추지 마. 너의 약함을 죽여라.") · CLARITY — 선언·속삭임 ("나는 나의 격자다.")<br>
+      · <strong>애니메이션 강도</strong>: HEAT 강·빠름 · CLARITY 약·느림
+    </p>
+
+    <h3 class="is-b">유저 선택 시점</h3>
+    <p>
+      <strong>온보딩 3화면 끝, 초대 직전.</strong> 두 모드를 미리보기 카드로 나란히 보여주고 "어떤 동기가 네게 맞나" 단일 선택. 언제든 프로필에서 변경 가능. DB 필드: <code style="font-family:var(--font-mono); background:var(--color-surface-2); padding:1px 6px; border:0.5px solid var(--color-line); font-size:11px;">profiles.theme</code> ('heat' | 'clarity', default 'clarity').
+    </p>
+
+    <h3 class="is-b">왜 같은 구조를 유지하나</h3>
+    <p>
+      운영·유지보수 비용 최소화. 기능·정책·스코어링·DB 스키마 100% 공유. 차이는 CSS 변수 덩어리 하나. 유저가 모드를 바꾸면 즉시 전환. 데이터·진행 상황 전부 그대로 유지.
+    </p>
+  </div>
+
+</div>
+
+</body>
+</html>
