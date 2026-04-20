@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Stay Hard · 운동 등록 플로우</title>
+  <link rel="stylesheet" as="style" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="tokens.css">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    /* ---- Flow-specific styles ---- */
+
+    .flow-frame { width: 430px; height: 932px; }
+
+    /* Full-screen overlay inside frame (for workout session) */
+    .screen {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      background: var(--color-surface);
+    }
+    .screen-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px 14px;
+      border-bottom: 0.5px solid var(--color-line);
+    }
+    .screen-title {
+      font-size: var(--text-15);
+      font-weight: 600;
+      letter-spacing: -0.01em;
+    }
+    .screen-title .sub {
+      display: block;
+      font-size: var(--text-11);
+      font-weight: 400;
+      color: var(--color-ink-3);
+      margin-top: 2px;
+      font-family: var(--font-mono);
+      letter-spacing: 0.04em;
+    }
+    .screen-close {
+      width: 26px;
+      height: 26px;
+      color: var(--color-ink-3);
+      font-size: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .screen-body { flex: 1; overflow-y: auto; }
+    .screen-body::-webkit-scrollbar { display: none; }
+
+    /* Routine picker */
+    .routine-list { padding: 10px 16px; }
+    .routine-item {
+      display: block;
+      width: 100%;
+      padding: 16px;
+      background: var(--color-surface-2);
+      border: 0.5px solid var(--color-line);
+      margin-bottom: 6px;
+      text-align: left;
+    }
+    .routine-name {
+      font-size: var(--text-14);
+      font-weight: 500;
+      color: var(--color-ink);
+      margin-bottom: 6px;
+    }
+    .routine-meta {
+      font-family: var(--font-mono);
+      font-size: var(--text-11);
+      color: var(--color-ink-3);
+      letter-spacing: 0.04em;
+    }
+    .routine-divider {
+      margin: 14px 16px 6px;
+      font-family: var(--font-mono);
+      font-size: var(--text-10);
+      color: var(--color-ink-3);
+      letter-spacing: var(--track-wider);
+      text-transform: uppercase;
+    }
+
+    /* Session active */
+    .sess-exchips {
+      display: flex;
+      gap: 6px;
+      padding: 10px 16px;
+      overflow-x: auto;
+      border-bottom: 0.5px solid var(--color-line);
+    }
+    .sess-exchips::-webkit-scrollbar { display: none; }
+    .ex-chip {
+      flex-shrink: 0;
+      padding: 6px 10px;
+      background: var(--color-surface-2);
+      border: 0.5px solid var(--color-line);
+      font-size: var(--text-11);
+      color: var(--color-ink-2);
+      letter-spacing: -0.01em;
+      white-space: nowrap;
+    }
+    .ex-chip.is-active {
+      background: var(--color-will);
+      color: var(--color-will-on);
+      border-color: var(--color-will);
+      font-weight: 500;
+    }
+    .ex-chip.is-done { color: var(--color-ink-3); }
+    .ex-chip.is-done::after { content: ' ✓'; color: var(--color-ink-2); }
+
+    .sess-exhead {
+      padding: 18px 20px 4px;
+    }
+    .sess-exname {
+      font-size: var(--text-20);
+      font-weight: 600;
+      letter-spacing: -0.015em;
+      color: var(--color-ink);
+      margin-bottom: 4px;
+    }
+    .sess-exmuscle {
+      font-family: var(--font-mono);
+      font-size: var(--text-11);
+      color: var(--color-ink-3);
+      letter-spacing: 0.04em;
+    }
+
+    .sets-grid {
+      padding: 14px 20px 8px;
+    }
+    .sets-grid-head {
+      display: grid;
+      grid-template-columns: 30px 60px 1fr 1fr 28px;
+      gap: 10px;
+      padding: 6px 2px;
+      border-bottom: 0.5px solid var(--color-line);
+      font-family: var(--font-mono);
+      font-size: 9px;
+      color: var(--color-ink-3);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+    .set-row {
+      display: grid;
+      grid-template-columns: 30px 60px 1fr 1fr 28px;
+      gap: 10px;
+      padding: 10px 2px;
+      align-items: center;
+      border-bottom: 0.5px solid var(--color-line-faint);
+      font-size: var(--text-13);
+    }
+    .set-idx {
+      font-family: var(--font-mono);
+      color: var(--color-ink-3);
+      font-size: var(--text-11);
+      text-align: center;
+    }
+    .set-prev {
+      font-family: var(--font-mono);
+      font-size: var(--text-11);
+      color: var(--color-ink-3);
+      letter-spacing: 0;
+    }
+    .set-input {
+      padding: 8px 10px;
+      background: var(--color-surface-2);
+      border: 0.5px solid var(--color-line);
+      font-family: var(--font-mono);
+      font-size: var(--text-13);
+      color: var(--color-ink);
+      text-align: center;
+      font-variant-numeric: tabular-nums;
+    }
+    .set-input.is-current {
+      border-color: var(--color-will);
+      color: var(--color-will);
+    }
+    .set-input.is-done {
+      background: transparent;
+      border-color: var(--color-line);
+      color: var(--color-ink-2);
+    }
+    .set-check {
+      width: 20px;
+      height: 20px;
+      border: 1px solid var(--color-line-strong);
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      color: var(--color-will-on);
+    }
+    .set-check.is-done {
+      background: var(--color-will);
+      border-color: var(--color-will);
+    }
+    .set-add {
+      margin: 6px 0 2px;
+      padding: 10px;
+      background: transparent;
+      border: 0.5px dashed var(--color-line-strong);
+      width: 100%;
+      color: var(--color-ink-3);
+      font-size: var(--text-12);
+      letter-spacing: -0.01em;
+    }
+
+    .rest-timer {
+      margin: 12px 20px;
+      padding: 12px 14px;
+      background: var(--color-surface-2);
+      border: 0.5px solid var(--color-line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .rest-timer .label {
+      font-family: var(--font-mono);
+      font-size: var(--text-10);
+      color: var(--color-ink-3);
+      letter-spacing: var(--track-wider);
+      text-transform: uppercase;
+    }
+    .rest-timer .count {
+      font-family: var(--font-display);
+      font-size: var(--text-24);
+      color: var(--color-ink);
+      letter-spacing: -0.02em;
+    }
+
+    .sess-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+      padding: 12px 16px 20px;
+      border-top: 0.5px solid var(--color-line);
+      margin-top: auto;
+    }
+
+    /* Exercise library */
+    .lib-search {
+      padding: 14px 16px 10px;
+    }
+    .lib-search input {
+      width: 100%;
+      padding: 10px 12px;
+      background: var(--color-surface-2);
+      border: 0.5px solid var(--color-line);
+      font-family: var(--font-ui);
+      font-size: var(--text-13);
+      color: var(--color-ink);
+      outline: none;
+    }
+    .lib-search input::placeholder { color: var(--color-ink-3); }
+
+    .lib-filters {
+      padding: 0 16px 10px;
+      display: flex;
+      gap: 5px;
+      overflow-x: auto;
+      white-space: nowrap;
+    }
+    .lib-filters::-webkit-scrollbar { display: none; }
+    .lib-chip {
+      padding: 5px 10px;
+      background: transparent;
+      border: 0.5px solid var(--color-line);
+      font-size: var(--text-11);
+      color: var(--color-ink-2);
+      flex-shrink: 0;
+      letter-spacing: -0.01em;
+    }
+    .lib-chip.is-active {
+      background: var(--color-surface-2);
+      border-color: var(--color-line-strong);
+      color: var(--color-ink);
+      font-weight: 500;
+    }
+
+    .lib-row {
+      display: grid;
+      grid-template-columns: 54px 1fr 14px;
+      gap: 12px;
+      align-items: center;
+      padding: 10px 16px;
+      border-top: 0.5px solid var(--color-line-faint);
+    }
+    .lib-thumb {
+      width: 54px;
+      height: 54px;
+      background: var(--color-surface-2);
+      border: 0.5px solid var(--color-line);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
+    .lib-info {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      min-width: 0;
+    }
+    .lib-name {
+      font-size: var(--text-13);
+      color: var(--color-ink);
+      font-weight: 500;
+      letter-spacing: -0.01em;
+    }
+    .lib-tags {
+      display: flex;
+      gap: 6px;
+      font-family: var(--font-mono);
+      font-size: var(--text-10);
+      color: var(--color-ink-3);
+      letter-spacing: 0.04em;
+    }
+    .lib-chev { color: var(--color-ink-3); font-size: 14px; }
+
+    /* Session summary */
+    .summ-big {
+      padding: 32px 20px 20px;
+      text-align: center;
+      border-bottom: 0.5px solid var(--color-line);
+    }
+    .summ-big .big {
+      font-family: var(--font-display);
+      font-size: 56px;
+      letter-spacing: -0.03em;
+      line-height: 1;
+      color: var(--color-ink);
+    }
+    .summ-big .label {
+      margin-top: 8px;
+      font-family: var(--font-mono);
+      font-size: var(--text-11);
+      letter-spacing: 0.12em;
+      color: var(--color-ink-3);
+      text-transform: uppercase;
+    }
+    .summ-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      padding: 16px 0;
+      border-bottom: 0.5px solid var(--color-line);
+    }
+    .summ-stat {
+      padding: 8px 10px;
+      text-align: center;
+      border-left: 0.5px solid var(--color-line);
+    }
+    .summ-stat:first-child { border-left: 0; }
+    .summ-stat .v {
+      font-family: var(--font-display);
+      font-size: var(--text-20);
+      letter-spacing: -0.02em;
+      color: var(--color-ink);
+      line-height: 1;
+    }
+    .summ-stat .k {
+      margin-top: 6px;
+      font-family: var(--font-mono);
+      font-size: var(--text-10);
+      letter-spacing: var(--track-wider);
+      color: var(--color-ink-3);
+      text-transform: uppercase;
+    }
+    .summ-section { padding: 18px 20px; border-bottom: 0.5px solid var(--color-line); }
+    .summ-section h4 {
+      margin: 0 0 12px;
+      font-size: var(--text-12);
+      font-weight: 500;
+      color: var(--color-ink-2);
+      letter-spacing: -0.01em;
+    }
+    .summ-exrow {
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      gap: 10px;
+      padding: 8px 2px;
+      font-size: var(--text-13);
+      color: var(--color-ink);
+      align-items: baseline;
+      border-top: 0.5px solid var(--color-line-faint);
+    }
+    .summ-exrow:first-of-type { border-top: 0; }
+    .summ-exrow .sets {
+      font-family: var(--font-mono);
+      color: var(--color-ink-3);
+      font-size: var(--text-11);
+    }
+    .summ-exrow .vol {
+      font-family: var(--font-mono);
+      color: var(--color-ink);
+      font-weight: 500;
+    }
+    .summ-muscle {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .summ-muscle-pill {
+      padding: 4px 9px;
+      border: 0.5px solid var(--color-line-strong);
+      font-size: var(--text-11);
+      color: var(--color-ink);
+      font-family: var(--font-mono);
+      letter-spacing: 0.02em;
+    }
+    .summ-muscle-pill .pct {
+      color: var(--color-ink-3);
+      margin-left: 6px;
+    }
+    .summ-actions {
+      padding: 16px 16px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="review-shell">
+
+  <header class="review-header">
+    <span class="review-eyebrow">Stay Hard · Redesign v1</span>
+    <h1>운동 등록 — 전체 플로우</h1>
+    <p>기록 탭 · 운동 카드 → 시작 → 세션 → 라이브러리 → 요약. <a href="index.html">← 기록 탭</a></p>
+  </header>
+
+  <div class="ic-grid">
+
+
+    <!-- =============================================================
+         01 · 운동 시작 화면 (루틴 피커)
+         ============================================================= -->
+    <figure class="ic-frame">
+      <figcaption><span>01 · 운동 시작</span><span>ROUTINE PICKER</span></figcaption>
+      <div class="phone-frame flow-frame">
+        <div class="screen">
+
+          <header class="screen-top">
+            <div class="screen-title">운동<span class="sub">루틴 선택 또는 빈 세션</span></div>
+            <button class="screen-close">×</button>
+          </header>
+
+          <div class="screen-body">
+            <div class="routine-divider">저장된 루틴 · 3</div>
+            <div class="routine-list">
+              <button class="routine-item">
+                <div class="routine-name">상체</div>
+                <div class="routine-meta">가슴 · 어깨 · 삼두 · 5종목</div>
+              </button>
+              <button class="routine-item">
+                <div class="routine-name">하체</div>
+                <div class="routine-meta">대퇴 · 둔근 · 햄스트링 · 4종목</div>
+              </button>
+              <button class="routine-item">
+                <div class="routine-name">등 · 이두</div>
+                <div class="routine-meta">등 · 이두 · 6종목</div>
+              </button>
+
+              <button class="routine-item" style="background:transparent; border-style:dashed;">
+                <div class="routine-name" style="color:var(--color-ink-2);">＋ 새 루틴</div>
+                <div class="routine-meta">운동 조합을 저장</div>
+              </button>
+            </div>
+
+            <div class="routine-divider">또는</div>
+            <div style="padding:0 16px;">
+              <button class="cta-fullscreen" style="margin-top:0;">
+                <span>빈 세션으로 시작</span>
+                <span class="arrow">↗</span>
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </figure>
+
+
+    <!-- =============================================================
+         02 · 활성 세션 (sets grid + rest timer)
+         ============================================================= -->
+    <figure class="ic-frame">
+      <figcaption><span>02 · 활성 세션</span><span>SETS · REST TIMER</span></figcaption>
+      <div class="phone-frame flow-frame">
+        <div class="screen">
+
+          <header class="screen-top">
+            <div class="screen-title">상체<span class="sub">2 / 5 · 22:14 경과</span></div>
+            <button class="screen-close">×</button>
+          </header>
+
+          <div class="sess-exchips">
+            <span class="ex-chip is-done">벤치프레스</span>
+            <span class="ex-chip is-active">덤벨 숄더 프레스</span>
+            <span class="ex-chip">인클라인 프레스</span>
+            <span class="ex-chip">트라이셉 익스텐션</span>
+            <span class="ex-chip">딥스</span>
+          </div>
+
+          <div class="screen-body">
+
+            <div class="sess-exhead">
+              <div class="sess-exname">덤벨 숄더 프레스</div>
+              <div class="sess-exmuscle">어깨 · 전면 삼각근 · 삼두</div>
+            </div>
+
+            <div class="sets-grid">
+              <div class="sets-grid-head">
+                <span>Set</span>
+                <span>이전</span>
+                <span>kg</span>
+                <span>reps</span>
+                <span>✓</span>
+              </div>
+
+              <div class="set-row">
+                <span class="set-idx">1</span>
+                <span class="set-prev">22 × 10</span>
+                <span class="set-input is-done">22</span>
+                <span class="set-input is-done">10</span>
+                <span class="set-check is-done">✓</span>
+              </div>
+              <div class="set-row">
+                <span class="set-idx">2</span>
+                <span class="set-prev">24 × 8</span>
+                <span class="set-input is-done">24</span>
+                <span class="set-input is-done">8</span>
+                <span class="set-check is-done">✓</span>
+              </div>
+              <div class="set-row">
+                <span class="set-idx">3</span>
+                <span class="set-prev">26 × 6</span>
+                <span class="set-input is-current">26</span>
+                <span class="set-input is-current">—</span>
+                <span class="set-check">&nbsp;</span>
+              </div>
+              <div class="set-row">
+                <span class="set-idx">4</span>
+                <span class="set-prev">26 × 6</span>
+                <span class="set-input">—</span>
+                <span class="set-input">—</span>
+                <span class="set-check">&nbsp;</span>
+              </div>
+
+              <button class="set-add">＋ 세트 추가</button>
+            </div>
+
+            <div class="rest-timer">
+              <div>
+                <div class="label">Rest</div>
+                <div class="count">1:27</div>
+              </div>
+              <span style="font-family:var(--font-mono); font-size:11px; color:var(--color-ink-3); letter-spacing:0.12em;">SKIP ›</span>
+            </div>
+
+          </div>
+
+          <footer class="sess-actions">
+            <button class="cta-ghost" style="background:var(--color-surface-2); border:0.5px solid var(--color-line); padding:12px;">다음 운동 →</button>
+            <button class="cta-inline">운동 완료</button>
+          </footer>
+
+        </div>
+      </div>
+    </figure>
+
+
+    <!-- =============================================================
+         03 · 운동 라이브러리
+         ============================================================= -->
+    <figure class="ic-frame">
+      <figcaption><span>03 · 운동 라이브러리</span><span>PICKER · FILTER</span></figcaption>
+      <div class="phone-frame flow-frame">
+        <div class="screen">
+
+          <header class="screen-top">
+            <div class="screen-title">운동 추가<span class="sub">검색 또는 근육 필터</span></div>
+            <button class="screen-close">×</button>
+          </header>
+
+          <div class="lib-search">
+            <input type="text" placeholder="운동 검색…" value="프레스">
+          </div>
+
+          <div class="lib-filters">
+            <button class="lib-chip">전체</button>
+            <button class="lib-chip is-active">가슴</button>
+            <button class="lib-chip">등</button>
+            <button class="lib-chip">어깨</button>
+            <button class="lib-chip">삼두</button>
+            <button class="lib-chip">이두</button>
+            <button class="lib-chip">하체</button>
+            <button class="lib-chip">복근</button>
+          </div>
+
+          <div class="lib-filters" style="padding-bottom:12px; border-bottom:0.5px solid var(--color-line);">
+            <button class="lib-chip">전체</button>
+            <button class="lib-chip is-active">바벨</button>
+            <button class="lib-chip">덤벨</button>
+            <button class="lib-chip">머신</button>
+            <button class="lib-chip">맨몸</button>
+          </div>
+
+          <div class="screen-body">
+            <div class="lib-row">
+              <div class="lib-thumb">🏋️</div>
+              <div class="lib-info">
+                <span class="lib-name">벤치 프레스</span>
+                <span class="lib-tags"><span>가슴</span>·<span>바벨</span>·<span>수평</span></span>
+              </div>
+              <span class="lib-chev">›</span>
+            </div>
+            <div class="lib-row">
+              <div class="lib-thumb">🏋️</div>
+              <div class="lib-info">
+                <span class="lib-name">인클라인 벤치 프레스</span>
+                <span class="lib-tags"><span>가슴 상부</span>·<span>바벨</span></span>
+              </div>
+              <span class="lib-chev">›</span>
+            </div>
+            <div class="lib-row">
+              <div class="lib-thumb">🏋️</div>
+              <div class="lib-info">
+                <span class="lib-name">디클라인 벤치 프레스</span>
+                <span class="lib-tags"><span>가슴 하부</span>·<span>바벨</span></span>
+              </div>
+              <span class="lib-chev">›</span>
+            </div>
+            <div class="lib-row">
+              <div class="lib-thumb">🏋️</div>
+              <div class="lib-info">
+                <span class="lib-name">클로즈 그립 벤치 프레스</span>
+                <span class="lib-tags"><span>삼두</span>·<span>바벨</span></span>
+              </div>
+              <span class="lib-chev">›</span>
+            </div>
+            <div class="lib-row">
+              <div class="lib-thumb">🏋️</div>
+              <div class="lib-info">
+                <span class="lib-name">스미스 벤치 프레스</span>
+                <span class="lib-tags"><span>가슴</span>·<span>머신</span></span>
+              </div>
+              <span class="lib-chev">›</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </figure>
+
+
+    <!-- =============================================================
+         04 · 세션 요약
+         ============================================================= -->
+    <figure class="ic-frame">
+      <figcaption><span>04 · 세션 요약</span><span>POST-WORKOUT</span></figcaption>
+      <div class="phone-frame flow-frame">
+        <div class="screen">
+
+          <header class="screen-top">
+            <div class="screen-title">끝<span class="sub">상체 · 4월 20일 · 19:48 종료</span></div>
+            <button class="screen-close">×</button>
+          </header>
+
+          <div class="screen-body">
+
+            <div class="summ-big">
+              <div class="big">2.4<span style="font-size:28px; font-family:var(--font-mono); margin-left:6px; color:var(--color-ink-2);">t</span></div>
+              <div class="label">Total Volume · +30 pt</div>
+            </div>
+
+            <div class="summ-stats">
+              <div class="summ-stat">
+                <div class="v">45</div>
+                <div class="k">Minutes</div>
+              </div>
+              <div class="summ-stat">
+                <div class="v">5</div>
+                <div class="k">Exercises</div>
+              </div>
+              <div class="summ-stat">
+                <div class="v">24</div>
+                <div class="k">Sets</div>
+              </div>
+            </div>
+
+            <section class="summ-section">
+              <h4>운동별 볼륨</h4>
+              <div class="summ-exrow">
+                <span>벤치 프레스</span>
+                <span class="sets">4세트</span>
+                <span class="vol">720 kg</span>
+              </div>
+              <div class="summ-exrow">
+                <span>덤벨 숄더 프레스</span>
+                <span class="sets">5세트</span>
+                <span class="vol">580 kg</span>
+              </div>
+              <div class="summ-exrow">
+                <span>인클라인 프레스</span>
+                <span class="sets">4세트</span>
+                <span class="vol">480 kg</span>
+              </div>
+              <div class="summ-exrow">
+                <span>트라이셉 익스텐션</span>
+                <span class="sets">5세트</span>
+                <span class="vol">380 kg</span>
+              </div>
+              <div class="summ-exrow">
+                <span>딥스</span>
+                <span class="sets">6세트</span>
+                <span class="vol">240 kg</span>
+              </div>
+            </section>
+
+            <section class="summ-section">
+              <h4>자극 부위</h4>
+              <div class="summ-muscle">
+                <span class="summ-muscle-pill">가슴 <span class="pct">42%</span></span>
+                <span class="summ-muscle-pill">삼두 <span class="pct">28%</span></span>
+                <span class="summ-muscle-pill">어깨 <span class="pct">18%</span></span>
+                <span class="summ-muscle-pill">전삼각 <span class="pct">12%</span></span>
+              </div>
+            </section>
+
+          </div>
+
+          <footer class="summ-actions">
+            <button class="cta-fullscreen" style="margin-top:0;">
+              <span>루틴으로 저장</span>
+              <span class="arrow">↗</span>
+            </button>
+            <button class="cta-inline">완료</button>
+          </footer>
+
+        </div>
+      </div>
+    </figure>
+
+  </div>
+
+
+  <div class="compare-notes">
+    <h3>플로우 검증 포인트</h3>
+    <p>
+      · <strong>ex-chip</strong>: 완료 운동은 dim + ✓, 현재 운동은 흰 pill (빛이 현재에 머문다), 다가올 운동은 bone-outline<br>
+      · <strong>sets grid</strong>: 완료된 세트는 dim, 현재 입력 행은 흰 outline + 흰 숫자. 다음 행은 ghost<br>
+      · <strong>set check</strong>: 완료 체크는 순백 사각형 (의지의 단일 표현)<br>
+      · <strong>rest timer</strong>: 큰 Archivo Black 숫자. 바뀌지만 flashing·pulsing 없음. 담담<br>
+      · <strong>volume total</strong>: 세션 후 Archivo Black 56px "2.4 t" — 과거의 축적과 동일한 서체로 일관
+    </p>
+
+    <h3 class="is-b">색 정책 재확인</h3>
+    <p>
+      이 플로우에 감정색 없음. 세트 입력 칸이 <strong>빨강</strong>이 되는 순간은 없음. 모든 상태는 흑 × 흰의 강약 + 아웃라인으로 표현. 그라파이트 원칙 일관.
+    </p>
+  </div>
+
+</div>
+
+</body>
+</html>

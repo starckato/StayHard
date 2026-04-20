@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Stay Hard · 식단 등록 플로우</title>
+  <link rel="stylesheet" as="style" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="tokens.css">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .flow-frame { width: 430px; height: 932px; }
+
+    /* Category pills — graphite palette (status via outline, NOT hue) */
+    .cat-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+      padding: 12px 0 4px;
+    }
+    .cat-pill {
+      padding: 14px 10px;
+      background: transparent;
+      border: 0.5px solid var(--color-line);
+      text-align: center;
+      font-size: var(--text-12);
+      color: var(--color-ink-2);
+      letter-spacing: -0.01em;
+    }
+    .cat-pill .pt {
+      display: block;
+      margin-top: 4px;
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: var(--track-wider);
+      color: var(--color-ink-3);
+      text-transform: uppercase;
+    }
+    .cat-pill.is-selected {
+      background: var(--color-surface-2);
+      border: 1px solid var(--color-will);
+      color: var(--color-ink);
+    }
+    .cat-pill.is-selected .pt { color: var(--color-ink-2); }
+    .cat-pill.is-penalty.is-selected {
+      border-color: var(--color-penalty);
+      color: var(--color-penalty);
+    }
+    .cat-pill.is-penalty.is-selected .pt { color: var(--color-penalty); }
+
+    /* Meal input area */
+    .meal-input-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      padding: 8px 0;
+    }
+    .meal-input-label {
+      font-family: var(--font-mono);
+      font-size: var(--text-10);
+      letter-spacing: var(--track-wider);
+      color: var(--color-ink-3);
+      text-transform: uppercase;
+    }
+    .meal-input {
+      padding: 12px 14px;
+      background: var(--color-surface-2);
+      border: 0.5px solid var(--color-line);
+      font-family: var(--font-ui);
+      font-size: var(--text-14);
+      color: var(--color-ink);
+      outline: none;
+      width: 100%;
+    }
+    .meal-input::placeholder { color: var(--color-ink-3); }
+
+    /* Photo uploader */
+    .photo-wrap {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+      padding: 4px 0;
+    }
+    .photo-drop {
+      aspect-ratio: 1;
+      background: transparent;
+      border: 0.5px dashed var(--color-line-strong);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      color: var(--color-ink-3);
+      font-size: var(--text-12);
+    }
+    .photo-attached {
+      aspect-ratio: 1;
+      background: var(--color-surface-3);
+      border: 0.5px solid var(--color-line);
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      justify-content: flex-start;
+      padding: 8px;
+      position: relative;
+    }
+    .photo-attached::before {
+      content: '';
+      position: absolute;
+      inset: 12px;
+      background:
+        linear-gradient(45deg, var(--color-ink-4) 25%, transparent 25%),
+        linear-gradient(-45deg, var(--color-ink-4) 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, var(--color-ink-4) 75%),
+        linear-gradient(-45deg, transparent 75%, var(--color-ink-4) 75%);
+      background-size: 12px 12px;
+      background-position: 0 0, 0 6px, 6px -6px, -6px 0;
+      opacity: 0.25;
+    }
+    .photo-remove {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      width: 20px;
+      height: 20px;
+      background: rgba(0,0,0,0.6);
+      color: var(--color-will);
+      font-size: 11px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2;
+    }
+    .photo-icon {
+      font-size: 18px;
+      opacity: 0.55;
+    }
+
+    /* Sheet structure */
+    .sheet-wrap {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      background: var(--color-surface);
+      padding: 16px 20px 24px;
+    }
+    .sheet-wrap .sheet-handle {
+      width: 36px;
+      height: 4px;
+      background: var(--color-line-strong);
+      border-radius: 2px;
+      margin: 0 auto 16px;
+    }
+    .sheet-wrap .sheet-top {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      padding-bottom: 14px;
+      border-bottom: 0.5px solid var(--color-line);
+    }
+    .sheet-wrap .sheet-top h3 {
+      margin: 0;
+      font-size: var(--text-17);
+      font-weight: 600;
+      letter-spacing: -0.01em;
+    }
+    .sheet-wrap .sheet-top .when {
+      font-family: var(--font-mono);
+      font-size: var(--text-11);
+      color: var(--color-ink-3);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .sheet-wrap .sheet-body {
+      flex: 1;
+      overflow-y: auto;
+      padding-top: 12px;
+    }
+    .sheet-wrap .sheet-body::-webkit-scrollbar { display: none; }
+    .sheet-wrap .sheet-foot {
+      padding-top: 14px;
+      border-top: 0.5px solid var(--color-line);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    /* Snack categories grid */
+    .snack-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 6px;
+      padding: 12px 0;
+    }
+    .snack-cell {
+      padding: 16px 8px;
+      background: transparent;
+      border: 0.5px solid var(--color-line);
+      text-align: center;
+      font-size: var(--text-12);
+      color: var(--color-ink-2);
+    }
+    .snack-cell.is-selected {
+      background: var(--color-surface-2);
+      border: 1px solid var(--color-will);
+      color: var(--color-ink);
+    }
+    .snack-cell .count {
+      display: block;
+      margin-top: 6px;
+      font-family: var(--font-mono);
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--color-ink);
+    }
+    .snack-cell.is-selected .count { color: var(--color-ink); }
+    .snack-cell.is-inactive .count { color: var(--color-ink-4); }
+
+    /* Current-selection detail */
+    .snack-detail {
+      margin-top: 14px;
+      padding: 16px;
+      background: var(--color-surface-2);
+      border: 0.5px solid var(--color-line);
+    }
+    .snack-detail .title {
+      font-size: var(--text-13);
+      color: var(--color-ink);
+      margin-bottom: 10px;
+      font-weight: 500;
+    }
+    .snack-counter {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+    }
+    .counter-btn {
+      width: 36px;
+      height: 36px;
+      border: 0.5px solid var(--color-line-strong);
+      background: transparent;
+      color: var(--color-ink);
+      font-size: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .counter-btn.is-will {
+      background: var(--color-will);
+      color: var(--color-will-on);
+      border-color: var(--color-will);
+    }
+    .counter-val {
+      font-family: var(--font-display);
+      font-size: var(--text-32);
+      color: var(--color-ink);
+      letter-spacing: -0.02em;
+      line-height: 1;
+      min-width: 40px;
+      text-align: center;
+    }
+    .counter-unit {
+      font-family: var(--font-mono);
+      font-size: var(--text-11);
+      color: var(--color-ink-3);
+      letter-spacing: var(--track-wider);
+      text-transform: uppercase;
+    }
+  </style>
+</head>
+<body>
+
+<div class="review-shell">
+
+  <header class="review-header">
+    <span class="review-eyebrow">Stay Hard · Redesign v1</span>
+    <h1>식단 등록 — 슬롯 시트 × 간식 시트</h1>
+    <p>카드 펼침 → 슬롯 탭 → sub-sheet. 사진·카테고리 입력. <a href="index.html">← 기록 탭</a></p>
+  </header>
+
+  <div class="ic-grid">
+
+
+    <!-- =============================================================
+         01 · 식단 슬롯 시트 (아침 예시)
+         ============================================================= -->
+    <figure class="ic-frame">
+      <figcaption><span>01 · 슬롯 시트</span><span>MEAL · CATEGORY + PHOTO</span></figcaption>
+      <div class="phone-frame flow-frame">
+        <div class="sheet-wrap">
+          <div class="sheet-handle"></div>
+
+          <header class="sheet-top">
+            <h3>아침</h3>
+            <span class="when">목 · 07:42</span>
+          </header>
+
+          <div class="sheet-body">
+
+            <div class="meal-input-label" style="margin-top:8px;">카테고리</div>
+            <div class="cat-row">
+              <button class="cat-pill is-selected">
+                클린
+                <span class="pt">+10 pt</span>
+              </button>
+              <button class="cat-pill">
+                일반
+                <span class="pt">+1 pt</span>
+              </button>
+              <button class="cat-pill">
+                치팅
+                <span class="pt">quota</span>
+              </button>
+              <button class="cat-pill is-penalty">
+                금지
+                <span class="pt">−30 pt</span>
+              </button>
+            </div>
+
+            <div class="meal-input-wrap">
+              <span class="meal-input-label">음식</span>
+              <input class="meal-input" type="text" placeholder="무엇을 먹었나…" value="오트밀 · 계란 2개">
+            </div>
+
+            <div class="meal-input-wrap">
+              <span class="meal-input-label">사진 (선택)</span>
+              <div class="photo-wrap">
+                <div class="photo-attached">
+                  <span class="photo-remove">×</span>
+                </div>
+                <button class="photo-drop">
+                  <span class="photo-icon">＋</span>
+                  <span>추가</span>
+                </button>
+              </div>
+            </div>
+
+            <div style="margin-top:18px; padding:10px 12px; background:var(--color-surface-2); border-left:2px solid var(--color-ink-2); font-size:var(--text-11); color:var(--color-ink-2); letter-spacing:-0.01em; font-family:var(--font-mono); line-height:1.5;">
+              클린 기준: 단백질·채소 위주, 가공식품 없음, 당·기름 최소.
+            </div>
+
+          </div>
+
+          <footer class="sheet-foot">
+            <button class="cta-inline">저장 · +10 pt</button>
+            <button class="cta-ghost" style="text-align:center;">취소</button>
+          </footer>
+
+        </div>
+      </div>
+    </figure>
+
+
+    <!-- =============================================================
+         02 · 금지 선택 상태
+         ============================================================= -->
+    <figure class="ic-frame">
+      <figcaption><span>02 · 슬롯 시트 · 금지</span><span>PENALTY CATEGORY</span></figcaption>
+      <div class="phone-frame flow-frame">
+        <div class="sheet-wrap">
+          <div class="sheet-handle"></div>
+
+          <header class="sheet-top">
+            <h3>저녁</h3>
+            <span class="when">목 · 22:14</span>
+          </header>
+
+          <div class="sheet-body">
+
+            <div class="meal-input-label" style="margin-top:8px;">카테고리</div>
+            <div class="cat-row">
+              <button class="cat-pill">
+                클린
+                <span class="pt">+10 pt</span>
+              </button>
+              <button class="cat-pill">
+                일반
+                <span class="pt">+1 pt</span>
+              </button>
+              <button class="cat-pill">
+                치팅
+                <span class="pt">quota</span>
+              </button>
+              <button class="cat-pill is-penalty is-selected">
+                금지
+                <span class="pt">−30 pt</span>
+              </button>
+            </div>
+
+            <div class="meal-input-wrap">
+              <span class="meal-input-label">음식</span>
+              <input class="meal-input" type="text" placeholder="무엇을 먹었나…" value="라면 · 과자">
+            </div>
+
+            <div class="meal-input-wrap">
+              <span class="meal-input-label">사진 (선택)</span>
+              <div class="photo-wrap">
+                <button class="photo-drop">
+                  <span class="photo-icon">＋</span>
+                  <span>사진 추가</span>
+                </button>
+                <button class="photo-drop">
+                  <span class="photo-icon">＋</span>
+                  <span>추가</span>
+                </button>
+              </div>
+            </div>
+
+            <div style="margin-top:18px; padding:10px 12px; background:var(--color-penalty-soft); border-left:2px solid var(--color-penalty); font-size:var(--text-11); color:var(--color-ink); letter-spacing:-0.01em; line-height:1.5;">
+              <strong style="color:var(--color-penalty);">−30 pt.</strong> 기록은 그대로 남는다. 되돌릴 수 없음. 다음 선택만 내 것.
+            </div>
+
+          </div>
+
+          <footer class="sheet-foot">
+            <button class="cta-inline" style="background:var(--color-penalty); color:#FFF;">금지 기록 · −30 pt</button>
+            <button class="cta-ghost" style="text-align:center;">취소</button>
+          </footer>
+
+        </div>
+      </div>
+    </figure>
+
+
+    <!-- =============================================================
+         03 · 간식 · 음료 · 술 시트
+         ============================================================= -->
+    <figure class="ic-frame">
+      <figcaption><span>03 · 간식/술 시트</span><span>MULTI-CATEGORY</span></figcaption>
+      <div class="phone-frame flow-frame">
+        <div class="sheet-wrap">
+          <div class="sheet-handle"></div>
+
+          <header class="sheet-top">
+            <h3>간식 · 음료 · 술</h3>
+            <span class="when">선택적 기록</span>
+          </header>
+
+          <div class="sheet-body">
+
+            <div class="meal-input-label" style="margin-top:8px;">카테고리 · 수량</div>
+            <div class="snack-grid">
+              <button class="snack-cell is-selected">
+                간식
+                <span class="count">2</span>
+              </button>
+              <button class="snack-cell is-inactive">
+                야식
+                <span class="count">0</span>
+              </button>
+              <button class="snack-cell is-selected">
+                음료
+                <span class="count">1</span>
+              </button>
+              <button class="snack-cell is-inactive">
+                술
+                <span class="count">0</span>
+              </button>
+              <button class="snack-cell is-inactive">
+                안주
+                <span class="count">0</span>
+              </button>
+            </div>
+
+            <div class="snack-detail">
+              <div class="title">간식 · 수량</div>
+              <div class="snack-counter">
+                <button class="counter-btn">−</button>
+                <div>
+                  <div class="counter-val">2</div>
+                  <div class="counter-unit" style="text-align:center; margin-top:4px;">개</div>
+                </div>
+                <button class="counter-btn is-will">＋</button>
+              </div>
+            </div>
+
+            <div class="meal-input-wrap" style="margin-top:12px;">
+              <span class="meal-input-label">메모 (선택)</span>
+              <input class="meal-input" type="text" placeholder="예: 단백질 바, 아메리카노…" value="단백질 바 2개, 커피">
+            </div>
+
+            <div style="margin-top:14px; padding:10px 12px; background:var(--color-surface-2); border-left:2px solid var(--color-ink-2); font-size:var(--text-11); color:var(--color-ink-2); font-family:var(--font-mono); line-height:1.5; letter-spacing:-0.01em;">
+              간식·음료 자체는 점수에 반영 안 됨. 패턴 확인용 기록.
+            </div>
+
+          </div>
+
+          <footer class="sheet-foot">
+            <button class="cta-inline">저장</button>
+            <button class="cta-ghost" style="text-align:center;">취소</button>
+          </footer>
+
+        </div>
+      </div>
+    </figure>
+
+  </div>
+
+
+  <div class="compare-notes">
+    <h3>카테고리 색 정책</h3>
+    <p>
+      · <strong>클린 · 일반 · 치팅</strong>: 선택 시 <strong>흰 1px outline + surface-2 배경</strong>. 감정색 없음.<br>
+      · <strong>금지</strong>: 유일하게 선택 시 <strong>oxblood outline</strong>. 점수가 실제로 깎이는 유일한 카테고리 → 색을 쓴다는 사실 자체가 "여기서부턴 결과가 다르다"는 신호.<br>
+      · 저장 버튼까지 oxblood (금지 기록 · −30 pt) — 실행 전 마지막으로 의식적 확인.
+    </p>
+
+    <h3 class="is-b">사진 UX</h3>
+    <p>
+      dashed box = 빈 슬롯. 첨부된 사진은 checker 패턴 placeholder + 우상단 ×. <strong>2슬롯까지만</strong> — 식단은 기록이지 전시가 아님.
+    </p>
+
+    <h3 class="is-b">간식·음료·술</h3>
+    <p>
+      카테고리 그리드 5개. 선택된 셀만 <strong>counter 영역에 노출</strong> (현재 간식만 활성). 수량 카운터는 + 버튼만 흰 (의지가 숫자를 키운다), − 는 outline. "저장" 후 inline 식단 카드의 <strong>간식 row</strong>에 "2개 · 커피" 요약으로 반영.
+    </p>
+  </div>
+
+</div>
+
+</body>
+</html>
