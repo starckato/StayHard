@@ -1126,6 +1126,32 @@ button {
 
 
 /* ============================================================
+   HEAT-theme cross-page overrides
+   ============================================================ */
+
+/* Identity score glows red in HEAT mode (echoes original Stay Hard) */
+[data-theme="stayhard"] .tier-score {
+  color: var(--color-will);
+  text-shadow: 0 0 12px rgba(255, 77, 77, 0.35);
+}
+
+/* Streak flame in HEAT is vivid, in CLARITY dim */
+[data-theme="stayhard"] .tier-streak {
+  color: var(--color-will);
+}
+
+/* Promo items strong text echoes theme — HEAT red */
+[data-theme="stayhard"] .promo-text strong {
+  color: var(--color-will);
+}
+
+/* Empty badge state reads slightly warmer in HEAT */
+[data-theme="stayhard"] .badge.is-full {
+  box-shadow: 0 0 10px -2px rgba(255, 77, 77, 0.6);
+}
+
+
+/* ============================================================
    Primary card TAP STATE — pattern comparison
    Variant A: bottom sheet
    Variant B: inline expand

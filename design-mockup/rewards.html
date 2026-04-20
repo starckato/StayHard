@@ -421,6 +421,117 @@
       100% { border-color: var(--color-line-strong); box-shadow: none; }
     }
 
+    /* ---- Theme toggle (HEAT ↔ CLARITY) ---- */
+    .th-toggle {
+      display: inline-flex;
+      gap: 4px;
+      padding: 4px;
+      background: var(--color-surface-1);
+      border: 0.5px solid var(--color-line);
+      margin-bottom: 20px;
+    }
+    .th-btn {
+      padding: 8px 14px;
+      font-family: var(--font-mono);
+      font-size: var(--text-11);
+      letter-spacing: var(--track-wide);
+      color: var(--color-ink-3);
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .th-btn .th-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+    .th-btn[data-theme-target="stayhard"] .th-dot { background: #FF4D4D; }
+    .th-btn[data-theme-target="graphite"] .th-dot { background: #FFFFFF; }
+    .th-btn.is-active {
+      background: var(--color-surface-2);
+      color: var(--color-ink);
+    }
+
+
+    /* ============================================================
+       HEAT-theme overrides for reward animations
+       ============================================================ */
+
+    /* Chip glow red */
+    .stage[data-theme="stayhard"] .pt-chip {
+      box-shadow:
+        0 0 0 0.5px rgba(255, 77, 77, 0.5),
+        0 0 12px 2px rgba(255, 77, 77, 0.6);
+    }
+    .stage[data-theme="stayhard"] .pt-chip.is-fly.is-plus-30 {
+      box-shadow:
+        0 0 0 0.5px rgba(255, 77, 77, 0.7),
+        0 0 24px 8px rgba(255, 107, 53, 0.8);
+    }
+
+    /* Score pulse — red glow instead of white */
+    .stage[data-theme="stayhard"] .tier-score.is-pulse {
+      animation-name: scorePulseHeat;
+    }
+    @keyframes scorePulseHeat {
+      0%   { transform: scale(1); }
+      45%  { transform: scale(1.14); text-shadow: 0 0 14px rgba(255, 77, 77, 0.85); }
+      100% { transform: scale(1); text-shadow: none; }
+    }
+
+    /* Crack animation — red/orange fire */
+    .stage[data-theme="stayhard"] .crack-line { stroke: #FF4D4D; }
+    .stage[data-theme="stayhard"] .crack-scene.is-on .crack-core {
+      animation-name: crackStagesHeat;
+    }
+    @keyframes crackStagesHeat {
+      0%   { opacity: 0; transform: scale(0.6); }
+      8%   { opacity: 1; transform: scale(1); }
+      55%  { opacity: 1; transform: scale(1.15); }
+      75%  {
+        opacity: 1;
+        transform: scale(1.4);
+        box-shadow:
+          0 0 60px 20px rgba(255, 77, 77, 0.6),
+          0 0 120px 40px rgba(255, 107, 53, 0.35);
+      }
+      95%  {
+        opacity: 1;
+        transform: scale(1.5);
+        box-shadow: 0 0 80px 30px rgba(255, 77, 77, 0);
+      }
+      100% { opacity: 0; transform: scale(1.5); }
+    }
+    .stage[data-theme="stayhard"] .crack-text .big {
+      color: #FFE5E5;
+      text-shadow: 0 0 16px rgba(255, 77, 77, 0.85);
+    }
+
+    /* Shimmer sweep — red tint */
+    .stage[data-theme="stayhard"] .stage-cards::after {
+      background: linear-gradient(
+        90deg,
+        transparent 0%,
+        rgba(255, 77, 77, 0) 15%,
+        rgba(255, 77, 77, 0.65) 50%,
+        rgba(255, 77, 77, 0) 85%,
+        transparent 100%
+      );
+    }
+    .stage[data-theme="stayhard"] .stage-cards.is-shimmer .stage-card {
+      animation-name: cardGlowHeat;
+    }
+    @keyframes cardGlowHeat {
+      0%   { border-color: var(--color-line-strong); }
+      50%  {
+        border-color: var(--color-will);
+        box-shadow: 0 0 14px -2px rgba(255, 77, 77, 0.55);
+      }
+      100% { border-color: var(--color-line-strong); box-shadow: none; }
+    }
+
+
     /* Static notes */
 
     .note-grid {
@@ -464,6 +575,17 @@
     <span class="review-eyebrow">Stay Hard · Rewards</span>
     <h1>보상 연출 — 의지를 빛으로</h1>
     <p>환호 없이. 팩트로. 의지가 어둠을 깨뜨린 사실만 기록. <a href="index.html">← 기록 탭</a></p>
+
+    <div class="th-toggle" style="margin-top:18px;">
+      <button class="th-btn" data-theme-target="stayhard">
+        <span class="th-dot"></span>
+        HEAT
+      </button>
+      <button class="th-btn is-active" data-theme-target="graphite">
+        <span class="th-dot"></span>
+        CLARITY
+      </button>
+    </div>
   </header>
 
 
@@ -511,7 +633,7 @@
 
 
     <!-- Stage — reward plays out here -->
-    <div class="stage" id="stage">
+    <div class="stage" id="stage" data-theme="graphite">
       <div class="stage-inner">
 
         <div class="stage-id">
@@ -694,6 +816,16 @@
     mealCard.classList.remove('is-flash-penalty');
     stageCards.classList.remove('is-shimmer');
   }
+
+  // Theme toggle
+  document.querySelectorAll('.th-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const target = btn.dataset.themeTarget;
+      document.getElementById('stage').dataset.theme = target;
+      document.querySelectorAll('.th-btn').forEach(b => b.classList.remove('is-active'));
+      btn.classList.add('is-active');
+    });
+  });
 
   document.querySelectorAll('.trigger-btn').forEach(btn => {
     btn.addEventListener('click', () => {
