@@ -1725,6 +1725,212 @@ body:not(.v3-live) #v3-goal-add-row{ display: none !important; }
 /* pc-head-weight · chevron ↗ 로 교체 (모달 오픈 의미) */
 .v3-live #pc-head-weight .pc-chev{ transform: rotate(-45deg); }
 
+
+/* ════════════════════════════════════════════════════════════════
+   v3.0 · BLANKET LEGACY TOKEN NEUTRALIZATION
+   v2.5 의 accent/green/amber/blue 를 전부 graphite 토큰으로 치환.
+   (--red 만 penalty 로 유지 — earned color)
+════════════════════════════════════════════════════════════════ */
+.v3-live{
+  /* 긍정/완료/정보 모두 bone */
+  --green: var(--color-ink);
+  --green-bg: var(--color-surface-2);
+  --green-bd: var(--color-line-strong);
+  --blue: var(--color-ink);
+  --blue-bg: var(--color-surface-2);
+  /* 경고 · ink-2 로 약화 (앰버 제거) */
+  --amber: var(--color-ink-2);
+  --amber-bg: var(--color-surface-2);
+  --amber-bd: var(--color-line-strong);
+  /* red/accent · oxblood penalty (earned color) */
+  --red: var(--color-penalty);
+  --red-bg: var(--color-penalty-soft);
+  --red-bd: var(--color-penalty);
+  --accent: var(--color-will);
+  --accent-bg: var(--color-will-faint);
+  --accent-bd: var(--color-line-strong);
+  /* goggins·text · bone 통일 */
+  --goggins: var(--color-ink);
+  /* gradient · bone solid */
+  --accent-grad: var(--color-will);
+  /* glow · 부드럽게 */
+  --glow: 0 0 18px rgba(255,255,255,0.12);
+}
+
+/* Score guide modal · 인라인 '+N' 초록 텍스트 bone 으로 */
+.v3-live #score-guide-modal [style*="color:var(--green)"],
+.v3-live #score-guide-modal [style*="color: var(--green)"],
+.v3-live #score-guide-modal span[style*="#34d399"]{
+  color: var(--color-ink) !important;
+}
+.v3-live #score-guide-modal [style*="color:var(--red)"],
+.v3-live #score-guide-modal [style*="color: var(--red)"]{
+  color: var(--color-penalty) !important;
+}
+
+
+/* ════════════════════════════════════════════════════════════════
+   v3.0 · Score chip 비행 (목표: 좌측 상단 identity score) · 느리게
+════════════════════════════════════════════════════════════════ */
+
+/* Legacy score-chip keyframes 무효화 (v3 전용 애니메이션 적용) */
+.v3-live .score-chip.fly{
+  animation: scoreChipFlyV3 1400ms cubic-bezier(0.22, 1, 0.36, 1) forwards !important;
+}
+@keyframes scoreChipFlyV3{
+  0%   { opacity: 0; transform: translate(-50%, 4px) scale(0.75); }
+  12%  { opacity: 1; transform: translate(-50%, -10px) scale(1); }
+  35%  { opacity: 1; }
+  75%  { opacity: 0.85; }
+  100% { opacity: 0; transform: translate(calc(-50% + var(--sc-dx, 0px)), calc(-50% + var(--sc-dy, 0px))) scale(0.55); }
+}
+@media (prefers-reduced-motion: reduce){
+  .v3-live .score-chip.fly{ animation: none !important; opacity: 0 !important; }
+}
+
+
+/* ════════════════════════════════════════════════════════════════
+   v3.0 · Crack reward scene (100pt milestone · tier-up)
+   design-mockup/rewards.html 기반
+════════════════════════════════════════════════════════════════ */
+
+#v3-crack-scene{
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 200ms;
+}
+#v3-crack-scene.is-on{
+  opacity: 1;
+  pointer-events: auto;
+}
+#v3-crack-scene .crack-dim{
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0);
+  transition: background 260ms;
+}
+#v3-crack-scene.is-on .crack-dim{
+  background: rgba(0, 0, 0, 0.78);
+}
+#v3-crack-scene .crack-core{
+  position: relative;
+  width: 140px;
+  height: 140px;
+  opacity: 0;
+  transform: scale(0.6);
+}
+#v3-crack-scene.is-on .crack-core{
+  animation: v3CrackStages 1800ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+#v3-crack-scene.is-tier .crack-core{
+  width: 240px;
+  height: 240px;
+}
+@keyframes v3CrackStages{
+  0%   { opacity: 0; transform: scale(0.6); }
+  8%   { opacity: 1; transform: scale(1); }
+  55%  { opacity: 1; transform: scale(1.15); }
+  75%  {
+    opacity: 1;
+    transform: scale(1.4);
+    box-shadow: 0 0 60px 20px rgba(255,255,255,0.45), 0 0 120px 40px rgba(255,255,255,0.25);
+  }
+  95%  {
+    opacity: 1;
+    transform: scale(1.5);
+    box-shadow: 0 0 80px 30px rgba(255,255,255,0);
+  }
+  100% { opacity: 0; transform: scale(1.5); }
+}
+#v3-crack-scene .crack-box{
+  position: absolute;
+  inset: 0;
+  background: #000;
+  border: 0.5px solid #0A0A0C;
+}
+#v3-crack-scene .crack-svg{
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+#v3-crack-scene .crack-line{
+  stroke: #FFF;
+  stroke-width: 1.3;
+  fill: none;
+  stroke-linecap: round;
+  stroke-dasharray: 120;
+  stroke-dashoffset: 120;
+}
+#v3-crack-scene.is-on .crack-line{
+  animation: v3CrackDraw 280ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+#v3-crack-scene.is-on .crack-line:nth-child(1){ animation-delay: 180ms; }
+#v3-crack-scene.is-on .crack-line:nth-child(2){ animation-delay: 210ms; }
+#v3-crack-scene.is-on .crack-line:nth-child(3){ animation-delay: 240ms; }
+#v3-crack-scene.is-on .crack-line:nth-child(4){ animation-delay: 200ms; }
+#v3-crack-scene.is-on .crack-line:nth-child(5){ animation-delay: 230ms; }
+#v3-crack-scene.is-on .crack-line:nth-child(6){ animation-delay: 250ms; }
+#v3-crack-scene.is-on .crack-line:nth-child(7){ animation-delay: 190ms; }
+#v3-crack-scene.is-on .crack-line:nth-child(8){ animation-delay: 220ms; }
+@keyframes v3CrackDraw{
+  from { stroke-dashoffset: 120; }
+  to   { stroke-dashoffset: 0; }
+}
+#v3-crack-scene .crack-text{
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #FFF;
+  opacity: 0;
+  gap: 6px;
+  text-align: center;
+}
+#v3-crack-scene.is-on .crack-text{
+  animation: v3CrackText 1200ms ease-out forwards;
+  animation-delay: 700ms;
+}
+@keyframes v3CrackText{
+  0%   { opacity: 0; transform: scale(0.9); }
+  25%  { opacity: 1; transform: scale(1); }
+  75%  { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(1); }
+}
+#v3-crack-scene .crack-text .big{
+  font-family: 'Archivo Black', 'DM Sans', sans-serif;
+  font-size: 48px;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  text-shadow: 0 0 16px rgba(255,255,255,0.5);
+}
+#v3-crack-scene.is-tier .crack-text .big{ font-size: 72px; }
+#v3-crack-scene .crack-text .sub{
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  color: rgba(255,255,255,0.7);
+  text-transform: uppercase;
+}
+@media (prefers-reduced-motion: reduce){
+  #v3-crack-scene, #v3-crack-scene.is-on,
+  #v3-crack-scene.is-on .crack-core,
+  #v3-crack-scene.is-on .crack-line,
+  #v3-crack-scene.is-on .crack-text{
+    animation: none !important;
+    opacity: 0 !important;
+  }
+}
+
 /* v3.0 · small ghost row buttons (replaces .ck-edit / .ck-del inside rows) */
 .v3-live .v3-row-btn{
   background: none;
@@ -1971,6 +2177,28 @@ body:not(.v3-live) #v3-goal-add-row{ display: none !important; }
 </style>
 </head>
 <body class="v3-live">
+
+<!-- v3.0 · Crack reward scene (100pt milestone · tier-up) -->
+<div id="v3-crack-scene" aria-hidden="true">
+  <div class="crack-dim"></div>
+  <div class="crack-core">
+    <div class="crack-box"></div>
+    <svg class="crack-svg" viewBox="-40 -40 200 200" preserveAspectRatio="xMidYMid meet">
+      <path class="crack-line" d="M60 60 L58 44 L64 28 L56 12"/>
+      <path class="crack-line" d="M60 60 L74 52 L86 55 L100 48"/>
+      <path class="crack-line" d="M60 60 L46 52 L30 56 L12 50"/>
+      <path class="crack-line" d="M60 60 L62 74 L58 88 L66 108"/>
+      <path class="crack-line" d="M60 60 L76 48 L96 40 L114 22"/>
+      <path class="crack-line" d="M60 60 L42 46 L22 40 L6 22"/>
+      <path class="crack-line" d="M60 60 L74 72 L88 86 L112 104"/>
+      <path class="crack-line" d="M60 60 L44 72 L24 86 L10 108"/>
+    </svg>
+    <div class="crack-text">
+      <span class="big" id="v3-crack-big">+100</span>
+      <span class="sub" id="v3-crack-sub">누적 · 0</span>
+    </div>
+  </div>
+</div>
 
 <div class="loading-overlay" id="loading"><div class="spinner"></div><div class="loading-txt">로딩 중…</div><button id="loading-retry" onclick="location.reload()" style="display:none;margin-top:16px;padding:10px 24px;background:var(--accent-grad);border:none;border-radius:var(--radius-sm);color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;">다시 시도</button></div>
 <div class="toast" id="toast">저장됨 ✓</div>
@@ -2276,6 +2504,8 @@ body:not(.v3-live) #v3-goal-add-row{ display: none !important; }
           <div id="wg-btn-12" onclick="setWaterGoal(12)" class="wg-btn">6.0L</div>
         </div>
       </div>
+      <!-- v3 snack row (간식/음료/술 entry point) — after water -->
+      <div id="v3-snack-row"></div>
     </div>
 
     <!-- v3.0 · 운동 primary card -->
@@ -6040,16 +6270,28 @@ function addScore(type, note='', ptsOverride=null, silent=false){
   CP.total_score=Math.max(0,(+CP.total_score||0)+pts);
   const _prevTier=getTier(_prevScore);
   const _newTier=getTier(CP.total_score);
+  const _v3Live=document.body&&document.body.classList.contains('v3-live');
   if(_prevTier.name!==_newTier.name){
     setTimeout(()=>{
-      launchConfetti();
-      showWin('perfect',0,_newTier.icon+' '+_newTier.name+'\n티어 달성!');
-      openRoomOverlay();
-      // 티어업 peak dopamine 시점 → 공유 CTA surface (3초 뒤, 작은 ribbon)
+      if(_v3Live){
+        // v3 · 크랙 연출 · 새 티어명
+        v3FireCrack({ big: _newTier.name, sub: '티어 달성 · '+(CP.total_score).toLocaleString()+' pt', tier: true });
+      }else{
+        launchConfetti();
+        showWin('perfect',0,_newTier.icon+' '+_newTier.name+'\n티어 달성!');
+        openRoomOverlay();
+      }
+      // 공유 CTA는 양쪽 모두 유지
       try{showTierUpShareCTA(_newTier);}catch(e){console.warn('[tierup-share]',e);}
     },800);
   } else if(pts>0&&Math.floor(CP.total_score/100)>Math.floor(_prevScore/100)){
-    setTimeout(()=>showWin('routine',0,CP.total_score+'점 돌파! 🎉'),600);
+    const _bucket=Math.floor(CP.total_score/100)*100;
+    if(_v3Live){
+      // v3 · 100pt 돌파 크랙
+      setTimeout(()=>v3FireCrack({ big:'+100', sub:'누적 · '+CP.total_score.toLocaleString() }),600);
+    }else{
+      setTimeout(()=>showWin('routine',0,CP.total_score+'점 돌파! 🎉'),600);
+    }
   }
   // 3. localStorage 즉시 백업 — DB flush 전 앱 종료돼도 점수 보존
   try{if(CU)localStorage.setItem('score_'+CU.id,String(CP.total_score));}catch(e){}
@@ -7789,6 +8031,11 @@ function closeRage(){
 }
 
 function showRage(){
+  // v3 · Goggins rage overlay 폐기 · penalty 는 score count-down + ledger 로 충분
+  if(document.body&&document.body.classList.contains('v3-live')){
+    if(navigator.vibrate)navigator.vibrate(30);
+    return;
+  }
   // 20% 기존, 80% 강력 메시지
   let r;
   if(Math.random()<0.8){
@@ -7823,6 +8070,8 @@ function showSystemNotice(msg){
 let _winShowing=false;
 
 function showWin(type, pts=null, title=null){
+  // v3 · 기존 Goggins/confetti popup 전부 폐기 · 크랙 연출 + pt chip 로만 보상
+  if(document.body&&document.body.classList.contains('v3-live'))return;
   try{console.log('[showWin]',{type,pts,title,_winShowing,qlen:_winQueue.length});}catch(e){}
   if(pts===100){
     const el=document.getElementById('goggins-100');
@@ -7890,6 +8139,8 @@ function _renderWinBody({type,pts,title}){
 
 let _confettiLock=false;
 function launchConfetti(){
+  // v3 · 컨페티 폐기 · 보상은 크랙 연출로만
+  if(document.body&&document.body.classList.contains('v3-live'))return;
   if(_confettiLock)return;
   _confettiLock=true;
   setTimeout(()=>_confettiLock=false,1200);
@@ -8900,17 +9151,20 @@ function revealStatusBand(){
   setTimeout(()=>{sb&&sb.classList.remove('sb-reveal');},1100);
 }
 
-// 액션 위치 → Status Band 점수로 +N pt chip 비행 애니메이션
+// 액션 위치 → identity score 로 +N pt chip 비행 애니메이션
+// v3.0: 목표 우선순위 #id-score (좌상단 identity band) → fallback #hdr-score
 function showScoreGain(pts, originEl){
   if(!pts||!originEl)return;
-  const target=document.getElementById('hdr-score');
+  const v3Live=document.body&&document.body.classList.contains('v3-live');
+  const target=
+    (v3Live?document.getElementById('id-score'):null)
+    ||document.getElementById('hdr-score')
+    ||document.getElementById('id-score');
   if(!target)return;
   const oRect=originEl.getBoundingClientRect();
   const tRect=target.getBoundingClientRect();
   const ox=oRect.left+oRect.width/2, oy=oRect.top+oRect.height/2;
   let tx=tRect.left+tRect.width/2, ty=tRect.top+tRect.height/2;
-  // 점수가 뷰포트 밖(위/아래)일 때는 chip을 뷰포트 가장자리에서 페이드 처리
-  // — 사용자가 "점수가 올라간 방향"을 시각적으로 느낄 수 있게
   const vh=window.innerHeight||document.documentElement.clientHeight;
   if(ty<0){ ty=8; }
   else if(ty>vh){ ty=vh-8; }
@@ -8920,20 +9174,112 @@ function showScoreGain(pts, originEl){
   chip.style.left=ox+'px';
   chip.style.top=oy+'px';
   document.body.appendChild(chip);
-  // 2 RAF로 확실히 init 상태 페인트 후 fly로 전환 (Safari 호환)
+  const dx=tx-ox, dy=ty-oy;
+  // v3 animation reads these CSS vars for final translate
+  chip.style.setProperty('--sc-dx', dx+'px');
+  chip.style.setProperty('--sc-dy', dy+'px');
   requestAnimationFrame(()=>requestAnimationFrame(()=>{
-    const dx=tx-ox, dy=ty-oy;
     chip.classList.remove('init');
     chip.classList.add('fly');
-    chip.style.transform=`translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px)) scale(.7)`;
+    // v2.5 fallback transform (v3 uses keyframe instead)
+    if(!v3Live){
+      chip.style.transform=`translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px)) scale(.7)`;
+    }
   }));
+  const dur=v3Live?1400:920;
   setTimeout(()=>{
     chip.remove();
     if(pts>0){
       target.classList.add('score-pulse');
-      setTimeout(()=>target.classList.remove('score-pulse'),450);
+      setTimeout(()=>target.classList.remove('score-pulse'),650);
     }
-  },920);
+  },dur);
+}
+
+// v3.0 · 식단 메밀 slot 리스트 · mockup meal-flow.html 구조
+// 아침·점심·저녁·야식 4 slot + 간식 row
+function renderMealsV3(){
+  const meals=log.meals||[];
+  const slotKeys=['아침','점심','저녁','야식'];
+
+  // Diet badge · logged slot count (max 4)
+  const slotsPresent=new Set(meals.filter(m=>m&&m.type&&slotKeys.includes(m.time)).map(m=>m.time));
+  const logged=slotsPresent.size;
+  const b=document.getElementById('diet-badge');
+  if(b){
+    b.textContent=logged+'/4';
+    b.className='s-badge '+(logged>=3?'green':'');
+  }
+
+  const qualityLabel={green:'클린',normal:'일반',cheat:'치팅',red:'금지',alcohol:'음주'};
+  const qualityPt={green:'+10',normal:'+1',cheat:'—',red:'−30',alcohol:'0'};
+  const qualityCls={red:'is-penalty',alcohol:'is-penalty'};
+
+  // slot map · latest entry per slot
+  const slotMap={};
+  meals.forEach((m,i)=>{
+    if(slotKeys.includes(m.time))slotMap[m.time]={...m,_idx:i};
+  });
+
+  const slotsHtml=slotKeys.map(slot=>{
+    const m=slotMap[slot];
+    if(m){
+      const catLabel=qualityLabel[m.type]||m.type;
+      const catCls=qualityCls[m.type]||'';
+      const ptStr=qualityPt[m.type]||'';
+      const ptCls=(m.type==='red'||m.type==='alcohol')?'is-penalty':'';
+      const name=esc(m.name||catLabel);
+      return `<div class="meal-slot" onclick="openSlotModal('${slot}', ${m._idx})">
+        <span class="meal-slot-time">${slot}</span>
+        <span class="meal-slot-content"><span class="category ${catCls}">${catLabel}</span>${name}</span>
+        <span class="meal-slot-pts ${ptCls}">${ptStr}</span>
+      </div>`;
+    }
+    const optional=(slot==='야식')?' <span style="opacity:0.6;">(선택)</span>':'';
+    return `<div class="meal-slot" onclick="openSlotModal('${slot}')">
+      <span class="meal-slot-time">${slot}</span>
+      <span class="meal-slot-content is-empty">+ 기록${optional}</span>
+      <span class="meal-slot-pts">—</span>
+    </div>`;
+  }).join('');
+
+  const wrap=document.getElementById('meal-rows');
+  if(wrap){
+    wrap.className='meal-slots';
+    wrap.style.cssText='';
+    wrap.innerHTML=slotsHtml;
+  }
+
+  // 간식 row · water 아래 별도 영역
+  const extras=meals.filter(m=>m&&!slotKeys.includes(m.time));
+  const extrasCount=extras.length;
+  const snackWrap=document.getElementById('v3-snack-row');
+  if(snackWrap){
+    snackWrap.className='meal-slots';
+    snackWrap.innerHTML=`<div class="meal-slot" onclick="openSnackModal()">
+      <span class="meal-slot-time">간식</span>
+      <span class="meal-slot-content ${extrasCount===0?'is-empty':''}">${extrasCount===0?'+ 기록 (선택)':(extrasCount+'개 기록')}</span>
+      <span class="meal-slot-pts">—</span>
+    </div>`;
+  }
+}
+
+// v3.0 · 100pt milestone / tier-up · 검은 박스 → 흰 빛 크랙 연출
+function v3FireCrack(opts){
+  const scene=document.getElementById('v3-crack-scene');
+  if(!scene)return;
+  const isReduced=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(isReduced)return;
+  const big=document.getElementById('v3-crack-big');
+  const sub=document.getElementById('v3-crack-sub');
+  if(big) big.textContent = (opts&&opts.big) || '+100';
+  if(sub) sub.textContent = (opts&&opts.sub) || '';
+  scene.classList.toggle('is-tier', !!(opts&&opts.tier));
+  scene.classList.remove('is-on');
+  void scene.offsetWidth;
+  scene.classList.add('is-on');
+  const dur = (opts&&opts.tier) ? 2800 : 1800;
+  setTimeout(()=>scene.classList.remove('is-on'), dur);
 }
 
 function updateGogginsHeader(){
@@ -9968,6 +10314,11 @@ async function saveWeight(){
 }
 
 function renderMeals(){
+  const v3Live=document.body&&document.body.classList.contains('v3-live');
+  if(v3Live){
+    renderMealsV3();
+    return;
+  }
   const meals=log.meals||[];
   const slotKeys=['아침','점심','저녁'];
   const slotMeals=meals.filter(m=>m.type&&slotKeys.includes(m.time));
