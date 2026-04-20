@@ -2047,28 +2047,17 @@ body:not(.v3-live) #v3-goal-add-row{ display: none !important; }
       </div>
       <div class="s-divider"></div>
       <div class="meal-rows" id="meal-rows"></div>
-    </div>
-
-    <!-- 💧 물 카드 (식단에서 분리됨) -->
-    <button type="button" class="pc-head" id="pc-head-water" onclick="togglePrimaryCard('water')">
-      <span class="pc-label">물</span>
-      <span class="pc-value is-empty" id="pc-sum-water">0 / 6 컵</span>
-      <span class="pc-chev">›</span>
-    </button>
-    <div class="s-card" data-pc-body="water">
-      <div class="s-card-hdr">
-        <div class="s-card-title"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3s7 7 7 12a7 7 0 0 1-14 0c0-5 7-12 7-12z"/></svg>물</div>
-        <div style="display:flex;align-items:center;gap:8px;">
-          <div class="s-badge" id="water-val"></div>
-          <button onclick="toggleWaterGoalPanel()" id="water-gear-btn" style="background:none;border:none;cursor:pointer;font-size:14px;color:var(--text3);padding:4px;touch-action:manipulation;" title="물 목표 설정">⚙️</button>
+      <!-- v3.0 · 물 row (식단 카드 body 안으로 통합) -->
+      <div class="water-row" id="v3-water-row">
+        <span class="water-label">물</span>
+        <div class="water-track">
+          <div class="water-dots" id="water-cups"></div>
+          <span class="water-stat" id="water-val">0 / 0</span>
         </div>
+        <button onclick="toggleWaterGoalPanel()" id="water-gear-btn" class="v3-row-btn" aria-label="물 목표 설정" title="물 목표 설정">⚙</button>
       </div>
-      <div class="s-divider"></div>
-      <div style="padding:12px 16px 14px;">
-        <div class="water-cups" id="water-cups" style="display:flex;gap:4px;flex-wrap:nowrap;overflow:hidden;"></div>
-      </div>
-      <div id="water-goal-panel" style="display:none;padding:10px 14px 14px;border-top:1px solid var(--border);animation:fadeIn .15s ease;">
-        <div style="font-size:10px;color:var(--text3);margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em;">하루 물 목표</div>
+      <div id="water-goal-panel" style="display:none;padding:10px 14px 14px;border-top:0.5px solid var(--color-line);">
+        <div style="font-size:10px;color:var(--color-ink-3);margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em;font-family:'DM Mono', monospace;">하루 물 목표</div>
         <div style="display:flex;gap:5px;flex-wrap:wrap;">
           <div id="wg-btn-1" onclick="setWaterGoal(1)" class="wg-btn">0.5L</div>
           <div id="wg-btn-2" onclick="setWaterGoal(2)" class="wg-btn">1.0L</div>
@@ -9098,20 +9087,7 @@ function renderPrimarySummaries(){
     }
   }
 
-  // ---- 물 (cups / goal) ----
-  const waEl=document.getElementById('pc-sum-water');
-  if(waEl){
-    const cups=+((l.water_cups)||0);
-    const goal=+((CP&&CP.water_goal)||6);
-    if(cups===0){
-      waEl.className='pc-value is-empty';
-      waEl.textContent='0 / '+goal+' 컵';
-    }else{
-      const cls=cups>=goal?'pc-badge is-full':'pc-badge';
-      waEl.className='pc-value';
-      waEl.innerHTML='<span class="'+cls+'">'+cups+' / '+goal+'</span>';
-    }
-  }
+  // (물 카드는 식단 body 로 통합됨 — pc-sum-water 블록 제거)
 
   // ---- 운동 (volume + duration · done sessions only) ----
   const woEl=document.getElementById('pc-sum-workout');
@@ -10801,20 +10777,58 @@ function delPhoto(){
 
 
 function renderWater(){
-  const c=document.getElementById('water-cups');c.innerHTML='';
-  for(let i=0;i<12;i++){const d=document.createElement('div');d.className='wc'+(i<log.water_cups?' on':'');d.onclick=()=>{tipWater();log.water_cups=(log.water_cups===i+1)?i:i+1;renderWater();scheduleSave();};c.appendChild(d);}
-  const val=document.getElementById('water-val');
+  const c=document.getElementById('water-cups');
+  if(!c)return;
+  c.innerHTML='';
+  const v3Live=document.body&&document.body.classList.contains('v3-live');
   const goal=CP?.water_goal||6;
-  const met=log.water_cups>=goal;
-  const curL=(log.water_cups*.5).toFixed(1);
+  const filled=(log.water_cups||0);
+
+  if(v3Live){
+    // v3.0 · graphite dots · exactly `goal` dots (no extra overflow cups)
+    // Scale tap overshoot for users that drink more than goal: allow extra dots up to filled
+    const total=Math.max(goal, filled);
+    for(let i=0;i<total;i++){
+      const d=document.createElement('span');
+      d.className='water-dot'+(i<filled?' is-filled':'');
+      d.onclick=()=>{
+        tipWater();
+        log.water_cups=(log.water_cups===i+1)?i:i+1;
+        renderWater();scheduleSave();
+      };
+      c.appendChild(d);
+    }
+  }else{
+    // v2.5 · 12-cup grid
+    for(let i=0;i<12;i++){
+      const d=document.createElement('div');
+      d.className='wc'+(i<filled?' on':'');
+      d.onclick=()=>{
+        tipWater();
+        log.water_cups=(log.water_cups===i+1)?i:i+1;
+        renderWater();scheduleSave();
+      };
+      c.appendChild(d);
+    }
+  }
+
+  const val=document.getElementById('water-val');
+  const met=filled>=goal;
+  const curL=(filled*.5).toFixed(1);
   const goalL=(goal*.5).toFixed(1);
   if(val){
-    val.textContent=curL+' / '+goalL+'L'+(met?' ✓':'');
-    val.style.color=met?'var(--blue)':'var(--text2)';
+    if(v3Live){
+      val.textContent=curL+' / '+goalL+'L';
+      val.style.color='';
+    }else{
+      val.textContent=curL+' / '+goalL+'L'+(met?' ✓':'');
+      val.style.color=met?'var(--blue)':'var(--text2)';
+    }
   }
-  // Tint the gear button when goal is met
   const gear=document.getElementById('water-gear-btn');
-  if(gear)gear.style.color=met?'var(--blue)':'var(--text3)';
+  if(gear && !v3Live){
+    gear.style.color=met?'var(--blue)':'var(--text3)';
+  }
 }
 
 // ══════════════════════════════════════════════
