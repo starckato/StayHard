@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Stay Hard · Design Map</title>
+  <link rel="stylesheet" as="style" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="tokens.css">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .map-section {
+      border-top: 0.5px solid var(--color-line);
+      padding: 36px 0;
+    }
+    .map-section:first-of-type { border-top: 0; padding-top: 24px; }
+
+    .map-section-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .map-section-head h2 {
+      margin: 0;
+      font-size: var(--text-20);
+      font-weight: 600;
+      letter-spacing: -0.015em;
+      color: var(--color-ink);
+    }
+    .map-section-head .count {
+      font-family: var(--font-mono);
+      font-size: var(--text-11);
+      letter-spacing: var(--track-wider);
+      color: var(--color-ink-3);
+      text-transform: uppercase;
+    }
+
+    .map-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1px;
+      background: var(--color-line);
+      border: 0.5px solid var(--color-line);
+    }
+
+    .map-card {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 24px 22px;
+      background: var(--color-surface);
+      color: var(--color-ink);
+      text-decoration: none;
+      transition: background var(--dur-fast);
+      min-height: 170px;
+    }
+    .map-card:hover { background: var(--color-surface-1); }
+
+    .map-card .num {
+      font-family: var(--font-mono);
+      font-size: var(--text-10);
+      color: var(--color-ink-3);
+      letter-spacing: var(--track-wider);
+      text-transform: uppercase;
+    }
+    .map-card h3 {
+      margin: 0;
+      font-size: var(--text-17);
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      color: var(--color-ink);
+    }
+    .map-card p {
+      margin: 0;
+      font-size: var(--text-12);
+      color: var(--color-ink-2);
+      line-height: 1.6;
+      letter-spacing: -0.005em;
+      flex: 1;
+    }
+    .map-card .file {
+      font-family: var(--font-mono);
+      font-size: var(--text-11);
+      color: var(--color-ink-3);
+      letter-spacing: 0;
+      margin-top: auto;
+    }
+    .map-card .file .arrow {
+      float: right;
+      color: var(--color-ink-2);
+    }
+
+    .map-card.is-new .num::after {
+      content: ' · NEW';
+      color: var(--color-will);
+    }
+
+    /* Preview tag */
+    .map-preview-url {
+      padding: 20px;
+      background: var(--color-surface-1);
+      border: 0.5px solid var(--color-line);
+      font-family: var(--font-mono);
+      font-size: var(--text-11);
+      color: var(--color-ink-2);
+      letter-spacing: 0;
+      word-break: break-all;
+      line-height: 1.6;
+      margin: 24px 0 8px;
+    }
+    .map-preview-url .kbd {
+      display: inline-block;
+      padding: 2px 6px;
+      background: var(--color-surface-2);
+      color: var(--color-ink);
+      border: 0.5px solid var(--color-line);
+      font-size: 10px;
+      margin-right: 6px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="review-shell">
+
+  <header class="review-header">
+    <span class="review-eyebrow">Stay Hard · Redesign v1</span>
+    <h1>Design Map — 모든 목업</h1>
+    <p>그라파이트 팔레트 기반 설계 페이지 11종. 프로덕션과 격리된 <code style="font-family:var(--font-mono); background:var(--color-surface-2); padding:2px 6px; border:0.5px solid var(--color-line);">redesign/graphite</code> 브랜치.</p>
+  </header>
+
+  <div class="map-preview-url">
+    <span class="kbd">BRANCH</span> redesign/graphite<br>
+    <span class="kbd">PREVIEW</span> https://stay-hard-git-redesign-graphite-starckato-3038s-projects.vercel.app/design-mockup/<br>
+    <span class="kbd">ROLLBACK</span> tag v2.5-pre-graphite · commit 8ebd9ce
+  </div>
+
+
+  <!-- ═══ 기초 ═══ -->
+  <section class="map-section">
+    <header class="map-section-head">
+      <h2>기초 · 디자인 시스템과 상단 재설계</h2>
+      <span class="count">3</span>
+    </header>
+
+    <div class="map-grid">
+
+      <a class="map-card" href="concept.html">
+        <span class="num">01</span>
+        <h3>Concept · 디자인 시스템 원본</h3>
+        <p>격자가 주인공. 의지 = 순백. 나머지는 그라파이트에 가라앉음. 색은 패널티에만. 팔레트·타이포·컴포넌트 specimen.</p>
+        <span class="file">concept.html<span class="arrow">→</span></span>
+      </a>
+
+      <a class="map-card" href="index.html">
+        <span class="num">02</span>
+        <h3>기록 탭 · 3층 구조</h3>
+        <p>Layer 1 정체성 슬림 · Layer 2 주간 격자 (hero) · Layer 3 Today header + primary card 5개 + ribbon + 알림 존. Populated / Empty 나란히.</p>
+        <span class="file">index.html<span class="arrow">→</span></span>
+      </a>
+
+      <a class="map-card" href="onboarding.html">
+        <span class="num">03</span>
+        <h3>온보딩 3화면</h3>
+        <p>철학 → 도구 → 초대. 마지막 motto card: "기록은 점 · 하루는 선 · 반복은 격자 · 나는 나의 격자다."</p>
+        <span class="file">onboarding.html<span class="arrow">→</span></span>
+      </a>
+
+    </div>
+  </section>
+
+
+  <!-- ═══ 상호작용 ═══ -->
+  <section class="map-section">
+    <header class="map-section-head">
+      <h2>상호작용 · 카드 탭의 정체</h2>
+      <span class="count">2</span>
+    </header>
+
+    <div class="map-grid">
+
+      <a class="map-card" href="interactions.html">
+        <span class="num">04</span>
+        <h3>카드 탭 · Sheet vs Inline 비교</h3>
+        <p>체중·필수 루틴 각각 Bottom Sheet 패턴 vs Inline Expand 패턴 나란히. 채택: 혼합 — 가벼운 건 inline, 복잡한 건 sheet.</p>
+        <span class="file">interactions.html<span class="arrow">→</span></span>
+      </a>
+
+      <a class="map-card" href="inline-cards.html">
+        <span class="num">05</span>
+        <h3>Primary Cards · Inline 전개 5종</h3>
+        <p>체중 · 식단 · 운동 · 필수 루틴 · 오늘의 목표 각각 inline 펼침 상태. 체중엔 목표+델타 메타. 운동은 inline 요약 + 풀스크린 CTA.</p>
+        <span class="file">inline-cards.html<span class="arrow">→</span></span>
+      </a>
+
+    </div>
+  </section>
+
+
+  <!-- ═══ 상세 플로우 ═══ -->
+  <section class="map-section">
+    <header class="map-section-head">
+      <h2>상세 플로우 · 등록 여정</h2>
+      <span class="count">3</span>
+    </header>
+
+    <div class="map-grid">
+
+      <a class="map-card" href="workout-flow.html">
+        <span class="num">06</span>
+        <h3>운동 등록 플로우</h3>
+        <p>시작(루틴 피커) → 활성 세션(sets + rest timer) → 라이브러리(검색·필터) → 요약(볼륨·자극 부위). 4 화면.</p>
+        <span class="file">workout-flow.html<span class="arrow">→</span></span>
+      </a>
+
+      <a class="map-card" href="meal-flow.html">
+        <span class="num">07</span>
+        <h3>식단 등록 플로우</h3>
+        <p>슬롯 시트 (클린/일반/치팅/금지) + 간식·음료·술 시트 (5종 카운터). 금지 경로에서만 oxblood — 색 정책 일관.</p>
+        <span class="file">meal-flow.html<span class="arrow">→</span></span>
+      </a>
+
+      <a class="map-card is-new" href="muscle-map.html">
+        <span class="num">08</span>
+        <h3>자극 부위 (근육맵)</h3>
+        <p>운동 로그 기반 근육 활성도. 전면/후면 토글. 색이 아닌 <strong style="color:var(--color-will);">흰 광도 5단계</strong>로 강도 표현. 워밍업 → 폭발.</p>
+        <span class="file">muscle-map.html<span class="arrow">→</span></span>
+      </a>
+
+    </div>
+  </section>
+
+
+  <!-- ═══ 보상 · 통계 ═══ -->
+  <section class="map-section">
+    <header class="map-section-head">
+      <h2>보상 · 통계</h2>
+      <span class="count">2</span>
+    </header>
+
+    <div class="map-grid">
+
+      <a class="map-card" href="rewards.html">
+        <span class="num">09</span>
+        <h3>보상 연출 데모</h3>
+        <p>+1/+10/+30 chip 비행 · 100pt 크랙 연출 · 퍼펙트 데이 shimmer · 금지 식단 count-down + ledger. 트리거 버튼 동작함.</p>
+        <span class="file">rewards.html<span class="arrow">→</span></span>
+      </a>
+
+      <a class="map-card" href="stats.html">
+        <span class="num">10</span>
+        <h3>통계 탭 · 축적의 증거</h3>
+        <p>20종 → 5개로 큐레이션. 28일 격자 (hero) · 축적 선 차트 · 체중 + 목표선 · 채움률 (이전 대비) · 스트릭 (현재/최장).</p>
+        <span class="file">stats.html<span class="arrow">→</span></span>
+      </a>
+
+    </div>
+  </section>
+
+
+  <!-- ═══ 참조 ═══ -->
+  <section class="map-section">
+    <header class="map-section-head">
+      <h2>참조</h2>
+      <span class="count">1</span>
+    </header>
+
+    <div class="map-grid">
+      <a class="map-card" href="map.html">
+        <span class="num">00</span>
+        <h3>이 페이지 · Map</h3>
+        <p>모든 목업으로 가는 허브. 방문할 때마다 돌아올 수 있는 원점.</p>
+        <span class="file">map.html<span class="arrow">→</span></span>
+      </a>
+    </div>
+  </section>
+
+
+  <!-- Philosophy recap -->
+  <div class="compare-notes" style="margin-top:56px;">
+    <h3>설계 헌장</h3>
+    <p>
+      · <strong>격자가 주인공.</strong> 모든 다른 것은 받침.<br>
+      · <strong>의지 = 순백.</strong> 내가 해낸 칸만 빛난다.<br>
+      · <strong>색은 패널티에만.</strong> −pt 이벤트에만 oxblood 허용.<br>
+      · <strong>감정 없이 팩트.</strong> 축하·분노·코칭 없음. 숫자가 실제로 오르고 내리는 걸 보여주는 것까지가 앱의 일.<br>
+      · <strong>누적이 전부다.</strong> 점 → 선 → 격자 → 나. 한 번의 점이 중요한 게 아니라, 점이 이어진다는 사실이 중요.
+    </p>
+  </div>
+
+</div>
+
+</body>
+</html>

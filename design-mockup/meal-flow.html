@@ -267,6 +267,95 @@
       letter-spacing: var(--track-wider);
       text-transform: uppercase;
     }
+
+    /* Forbidden toggle */
+    .forbidden-toggle {
+      margin-top: 14px;
+      padding: 12px 14px;
+      background: var(--color-surface-2);
+      border: 0.5px solid var(--color-line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .forbidden-toggle.is-on {
+      border-color: var(--color-penalty);
+      background: var(--color-penalty-soft);
+    }
+    .ft-main { flex: 1; min-width: 0; }
+    .ft-label {
+      font-size: var(--text-13);
+      font-weight: 500;
+      color: var(--color-ink);
+      letter-spacing: -0.01em;
+    }
+    .forbidden-toggle.is-on .ft-label { color: var(--color-penalty); }
+    .ft-sub {
+      margin-top: 2px;
+      font-family: var(--font-mono);
+      font-size: var(--text-10);
+      letter-spacing: 0.02em;
+      color: var(--color-ink-3);
+    }
+
+    /* Switch */
+    .ft-switch {
+      position: relative;
+      width: 40px;
+      height: 22px;
+      display: inline-block;
+      flex-shrink: 0;
+    }
+    .ft-input { opacity: 0; width: 0; height: 0; position: absolute; }
+    .ft-track {
+      position: absolute;
+      inset: 0;
+      background: var(--color-surface-3);
+      border: 0.5px solid var(--color-line-strong);
+      border-radius: 22px;
+      transition: background var(--dur-fast);
+    }
+    .ft-track::before {
+      content: '';
+      position: absolute;
+      left: 2px;
+      top: 2px;
+      width: 16px;
+      height: 16px;
+      background: var(--color-ink-2);
+      border-radius: 50%;
+      transition: transform var(--dur-fast), background var(--dur-fast);
+    }
+    .ft-input:checked + .ft-track {
+      background: var(--color-penalty-soft);
+      border-color: var(--color-penalty);
+    }
+    .ft-input:checked + .ft-track::before {
+      transform: translateX(18px);
+      background: var(--color-penalty);
+    }
+
+    /* Info ribbons (re-used) */
+    .info-ribbon {
+      margin-top: 14px;
+      padding: 10px 12px;
+      border-left: 2px solid;
+      font-size: var(--text-11);
+      line-height: 1.5;
+      letter-spacing: -0.01em;
+    }
+    .info-ribbon--neutral {
+      background: var(--color-surface-2);
+      border-left-color: var(--color-ink-2);
+      color: var(--color-ink-2);
+      font-family: var(--font-mono);
+    }
+    .info-ribbon--penalty {
+      background: var(--color-penalty-soft);
+      border-left-color: var(--color-penalty);
+      color: var(--color-ink);
+    }
   </style>
 </head>
 <body>
@@ -480,14 +569,114 @@
               <input class="meal-input" type="text" placeholder="예: 단백질 바, 아메리카노…" value="단백질 바 2개, 커피">
             </div>
 
-            <div style="margin-top:14px; padding:10px 12px; background:var(--color-surface-2); border-left:2px solid var(--color-ink-2); font-size:var(--text-11); color:var(--color-ink-2); font-family:var(--font-mono); line-height:1.5; letter-spacing:-0.01em;">
-              간식·음료 자체는 점수에 반영 안 됨. 패턴 확인용 기록.
+            <!-- Forbidden toggle — if on, this snack entry becomes penalty -->
+            <div class="forbidden-toggle">
+              <div class="ft-main">
+                <div class="ft-label">금지 음식 포함</div>
+                <div class="ft-sub">라면·과자·폭식·튀김 등 스스로 정한 금지</div>
+              </div>
+              <label class="ft-switch">
+                <input type="checkbox" class="ft-input" />
+                <span class="ft-track"></span>
+              </label>
+            </div>
+
+            <div class="info-ribbon info-ribbon--neutral">
+              간식·음료는 기본적으로 점수에 반영 안 됨. 패턴 확인용.
+            </div>
+            <div class="info-ribbon info-ribbon--penalty" style="display:none;">
+              <strong style="color:var(--color-penalty);">금지 포함 · −30 pt.</strong> 수량이 아닌 <em style="font-style:normal;">사실</em>이 차감. 그 안에 뭐가 있었는지 메모에 남겨라.
             </div>
 
           </div>
 
           <footer class="sheet-foot">
             <button class="cta-inline">저장</button>
+            <button class="cta-ghost" style="text-align:center;">취소</button>
+          </footer>
+
+        </div>
+      </div>
+    </figure>
+
+
+    <!-- =============================================================
+         04 · 간식 시트 · 금지 포함 ON (penalty state)
+         ============================================================= -->
+    <figure class="ic-frame">
+      <figcaption><span>04 · 간식 · 금지 포함 ON</span><span>PENALTY STATE</span></figcaption>
+      <div class="phone-frame flow-frame">
+        <div class="sheet-wrap">
+          <div class="sheet-handle"></div>
+
+          <header class="sheet-top">
+            <h3>간식 · 음료 · 술</h3>
+            <span class="when">선택적 기록</span>
+          </header>
+
+          <div class="sheet-body">
+
+            <div class="meal-input-label" style="margin-top:8px;">카테고리 · 수량</div>
+            <div class="snack-grid">
+              <button class="snack-cell is-selected">
+                간식
+                <span class="count">1</span>
+              </button>
+              <button class="snack-cell is-selected">
+                야식
+                <span class="count">1</span>
+              </button>
+              <button class="snack-cell is-inactive">
+                음료
+                <span class="count">0</span>
+              </button>
+              <button class="snack-cell is-selected">
+                술
+                <span class="count">2</span>
+              </button>
+              <button class="snack-cell is-selected">
+                안주
+                <span class="count">1</span>
+              </button>
+            </div>
+
+            <div class="snack-detail">
+              <div class="title">야식 · 수량</div>
+              <div class="snack-counter">
+                <button class="counter-btn">−</button>
+                <div>
+                  <div class="counter-val">1</div>
+                  <div class="counter-unit" style="text-align:center; margin-top:4px;">개</div>
+                </div>
+                <button class="counter-btn is-will">＋</button>
+              </div>
+            </div>
+
+            <div class="meal-input-wrap" style="margin-top:12px;">
+              <span class="meal-input-label">메모 (선택 · 금지일 땐 권장)</span>
+              <input class="meal-input" type="text" placeholder="무엇이었나…" value="치맥 · 치킨 한 마리 + 맥주 2잔 + 과자">
+            </div>
+
+            <!-- Toggle ON state -->
+            <div class="forbidden-toggle is-on">
+              <div class="ft-main">
+                <div class="ft-label">금지 음식 포함</div>
+                <div class="ft-sub">이 기록은 패널티로 계산됨</div>
+              </div>
+              <label class="ft-switch">
+                <input type="checkbox" class="ft-input" checked>
+                <span class="ft-track"></span>
+              </label>
+            </div>
+
+            <div class="info-ribbon info-ribbon--penalty">
+              <strong style="color:var(--color-penalty);">금지 포함 · −30 pt.</strong> 수량이 아닌 <em style="font-style:normal; color:var(--color-ink);">사실</em>이 차감. 그 안에 뭐가 있었는지 메모에 남겨라.
+            </div>
+
+          </div>
+
+          <footer class="sheet-foot">
+            <button class="cta-inline" style="background:var(--color-penalty); color:#FFF;">금지 기록 · −30 pt</button>
             <button class="cta-ghost" style="text-align:center;">취소</button>
           </footer>
 
@@ -513,7 +702,12 @@
 
     <h3 class="is-b">간식·음료·술</h3>
     <p>
-      카테고리 그리드 5개. 선택된 셀만 <strong>counter 영역에 노출</strong> (현재 간식만 활성). 수량 카운터는 + 버튼만 흰 (의지가 숫자를 키운다), − 는 outline. "저장" 후 inline 식단 카드의 <strong>간식 row</strong>에 "2개 · 커피" 요약으로 반영.
+      카테고리 그리드 5개. 선택된 셀만 <strong>counter 영역에 노출</strong>. 수량 카운터는 + 버튼만 흰 (의지가 숫자를 키운다), − 는 outline. "저장" 후 inline 식단 카드의 <strong>간식 row</strong>에 "2개 · 커피" 요약으로 반영.
+    </p>
+
+    <h3 class="is-b">간식 · 금지 포함 토글 (NEW)</h3>
+    <p>
+      간식·야식·술 같은 애매한 영역은 <strong>본인이 금지로 설정한 음식</strong>인지 유저만 안다. 토글 OFF = 단순 기록. 토글 ON = <strong>−30 pt 패널티</strong> 적용. 토글 ON 순간 카드 전체 oxblood로 전환 (border + track + label + CTA 모두). 수량이 아니라 "들어갔다는 사실"이 1회 차감. 메모 입력 권장 문구도 ON일 때 자동 강조.
     </p>
   </div>
 
