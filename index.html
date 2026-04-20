@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="ko" data-theme="heat">
 <head>
 <meta charset="UTF-8">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
@@ -18,6 +18,10 @@
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Archivo+Black&display=swap" rel="stylesheet">
 <style>
+/* ════════════════════════════════════════════════════════════════
+   v2.5 TOKENS (existing · production-active)
+   Do NOT remove until full v3.0 migration complete.
+════════════════════════════════════════════════════════════════ */
 :root{
   --bg:#0a0a0c;--surface:#141418;--surface2:#1c1c22;--surface3:#24242c;
   --border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.10);
@@ -31,6 +35,155 @@
   --accent-grad:linear-gradient(135deg,#ff4d4d 0%,#ff6b35 100%);
   --radius:12px;--radius-sm:10px;
   --glow:0 0 20px rgba(255,77,77,0.15);
+
+  /* ════════════════════════════════════════════════════════════════
+     v3.0 THEME TOKENS (new · default = HEAT)
+     Components switching to var(--color-*) become theme-aware.
+     Legacy hardcoded colors keep working unchanged.
+     Switch themes via <html data-theme="heat|clarity">
+  ════════════════════════════════════════════════════════════════ */
+
+  /* Surfaces */
+  --color-page:              #050507;
+  --color-surface:           var(--bg);
+  --color-surface-1:         var(--surface);
+  --color-surface-2:         var(--surface2);
+  --color-surface-3:         var(--surface3);
+
+  /* Heatmap cell surfaces */
+  --color-hm-empty:          var(--surface2);
+  --color-hm-future-dot:     #2e2e38;
+
+  /* Ink (text) */
+  --color-ink:               var(--text);
+  --color-ink-2:             var(--text2);
+  --color-ink-3:             #5a5a66;
+  --color-ink-4:             var(--text3);
+
+  /* Lines */
+  --color-line-faint:        var(--border);
+  --color-line:              var(--border2);
+  --color-line-strong:       #3a3a46;
+
+  /* Will — HEAT = red-orange fire */
+  --color-will:              #ff4d4d;
+  --color-will-soft:         #7a2818;
+  --color-will-faint:        rgba(255,77,77,0.10);
+  --color-will-on:           #ffffff;
+  --color-will-hover:        #ff6b35;
+
+  /* Warning — HEAT keeps amber */
+  --color-warning:           var(--amber);
+  --color-warning-soft:      var(--amber-bg);
+
+  /* Penalty — oxblood-family (reuses red in HEAT) */
+  --color-penalty:           #ff4d4d;
+  --color-penalty-soft:      rgba(255,77,77,0.12);
+  --color-penalty-bright:    #ff6b35;
+
+  /* Typography stacks */
+  --font-ui:
+    'Pretendard Variable', Pretendard,
+    'DM Sans',
+    -apple-system, BlinkMacSystemFont,
+    'Apple SD Gothic Neo', 'Noto Sans KR',
+    system-ui, sans-serif;
+  --font-mono:
+    'DM Mono', 'IBM Plex Mono',
+    ui-monospace, SFMono-Regular,
+    Menlo, Consolas, monospace;
+  --font-display:
+    'Archivo Black',
+    'Pretendard Variable', 'DM Sans',
+    sans-serif;
+
+  /* Motion */
+  --dur-fast:   140ms;
+  --dur-normal: 260ms;
+  --dur-slow:   420ms;
+  --ease-out-expo:  cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-out-cubic: cubic-bezier(0.33, 1, 0.68, 1);
+
+  /* Type scale */
+  --text-10: 10px;  --text-11: 11px;  --text-12: 12px;
+  --text-13: 13px;  --text-14: 14px;  --text-15: 15px;
+  --text-17: 17px;  --text-20: 20px;  --text-24: 24px;
+  --text-32: 32px;
+
+  /* Letter-spacing */
+  --track-tight:   -0.01em;
+  --track-base:     0;
+  --track-wide:     0.04em;
+  --track-wider:    0.08em;
+  --track-widest:   0.16em;
+
+  /* Spacing (base 4) */
+  --space-1: 4px;   --space-2: 8px;   --space-3: 12px;
+  --space-4: 16px;  --space-5: 20px;  --space-6: 24px;
+  --space-8: 32px;  --space-10: 40px; --space-12: 48px;
+
+  /* Radii · v3.0 sharp */
+  --radius-xs: 2px; --radius-sm3: 4px; --radius-md3: 6px; --radius-lg3: 10px;
+
+  /* Hairline borders */
+  --border-hair:    0.5px solid var(--color-line);
+  --border-strong3: 0.5px solid var(--color-line-strong);
+}
+
+
+/* ════════════════════════════════════════════════════════════════
+   [data-theme="heat"] · explicit (default)
+   매칭되는 :root 값 유지. symmetry 용도.
+════════════════════════════════════════════════════════════════ */
+[data-theme="heat"]{
+  --color-will:              #ff4d4d;
+  --color-will-soft:         #7a2818;
+  --color-will-faint:        rgba(255,77,77,0.10);
+  --color-will-on:           #ffffff;
+  --color-will-hover:        #ff6b35;
+  --color-penalty:           #ff4d4d;
+  --color-penalty-soft:      rgba(255,77,77,0.12);
+  --color-penalty-bright:    #ff6b35;
+  --color-warning:           var(--amber);
+  --color-warning-soft:      var(--amber-bg);
+}
+
+
+/* ════════════════════════════════════════════════════════════════
+   [data-theme="clarity"] · graphite · will-as-light
+   완료 = 순백. 패널티만 oxblood. warning 은 무채.
+════════════════════════════════════════════════════════════════ */
+[data-theme="clarity"]{
+  --color-page:              #050507;
+  --color-surface:           #0a0a0c;
+  --color-surface-1:         #131417;
+  --color-surface-2:         #1b1c20;
+  --color-surface-3:         #24252a;
+
+  --color-hm-empty:          #1b1c20;
+  --color-hm-future-dot:     #2e2e34;
+
+  --color-ink:               #edebe3;
+  --color-ink-2:             #8f8f8a;
+  --color-ink-3:             #5a5a57;
+  --color-ink-4:             #3a3a38;
+
+  --color-line-faint:        #141418;
+  --color-line:              #24252a;
+  --color-line-strong:       #3a3b3f;
+
+  --color-will:              #ffffff;
+  --color-will-soft:         #6a6b6e;
+  --color-will-faint:        #1b1c20;
+  --color-will-on:           #0a0a0c;
+  --color-will-hover:        #f5f5f0;
+
+  --color-penalty:           #c94b2a;
+  --color-penalty-soft:      rgba(201,75,42,0.15);
+  --color-penalty-bright:    #e85a38;
+
+  --color-warning:           var(--color-ink-2);
+  --color-warning-soft:      var(--color-surface-2);
 }
 
 /* ═════ Goggins primary CTA — use on all main action buttons ═════ */
