@@ -10430,7 +10430,7 @@ function renderCustomMandRow(t,i,state,dow){
       ontouchend="event.preventDefault();mandTouchEnd(${i})">
       <div class="ck-name ${isDone?'done':isFail?'fail':''}">${t.name||''}<span class="routine-pill">${pillText}</span>${isFail?' ❌':''}${endBadge}</div>
     </div>
-    ${!isDone?`<button onclick="markMandFail(${i})" style="font-size:11px;padding:5px 10px;border-radius:8px;border:1px solid ${isFail?'var(--red)':'var(--border2)'};background:${isFail?'var(--red-bg)':'transparent'};color:${isFail?'var(--red)':'var(--text3)'};cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;white-space:nowrap;flex-shrink:0;">${isFail?'취소':'실패'}</button>`:''}
+    ${!isDone?`<button onclick="markMandFail(${i})" style="font-size:11px;padding:5px 10px;border-radius:8px;border:1px solid ${isFail?'var(--red)':'var(--border2)'};background:${isFail?'var(--red-bg)':'transparent'};color:${isFail?'var(--red)':'var(--text3)'};cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;white-space:nowrap;flex-shrink:0;">${isFail?'해제':'실패'}</button>`:''}
     <button class="ck-edit" onclick="editMandatory(${i})">✎</button>
     <button class="ck-del" onclick="delMand(${i})">✕</button>
   </div>`;
@@ -10528,9 +10528,11 @@ function markMandFail(i){
   m.fail=!wasFail;
   if(m.done&&!wasFail){m.done=false;}
   if(!wasFail){
-    addScore('routine_fail'); // -5점
+    // NEW fail state → −1 pt (routine_fail)
+    addScore('routine_fail');
   } else {
-    addScore('routine_fail_cancel'); // now 0점 — Q3=C 패널티 제거
+    // UNDO previous fail → +1 pt refund (routine_fail_cancel)
+    addScore('routine_fail_cancel');
   }
   renderMandatory();saveNow();
 }
@@ -10728,7 +10730,7 @@ function renderTargets(){
           onclick="togTgt(${i})"
           style="cursor:pointer;flex:1;padding:12px 4px;-webkit-user-select:none;user-select:none;">${esc(t.text||'')}${t._carried?` <span style="font-size:9px;font-weight:600;padding:1px 5px;border-radius:4px;background:var(--accent-bg);color:var(--accent);border:0.5px solid var(--accent-bd);vertical-align:middle;">이월</span>`:''}
         </div>
-        ${!isDone?`<button onclick="markFail(${i})" style="font-size:11px;padding:5px 10px;border-radius:8px;border:1px solid ${isFail?'var(--red)':'var(--border2)'};background:${isFail?'var(--red-bg)':'transparent'};color:${isFail?'var(--red)':'var(--text3)'};cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;white-space:nowrap;flex-shrink:0;">${isFail?'취소':'실패'}</button>`:''}
+        ${!isDone?`<button onclick="markFail(${i})" style="font-size:11px;padding:5px 10px;border-radius:8px;border:1px solid ${isFail?'var(--red)':'var(--border2)'};background:${isFail?'var(--red-bg)':'transparent'};color:${isFail?'var(--red)':'var(--text3)'};cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;white-space:nowrap;flex-shrink:0;">${isFail?'해제':'실패'}</button>`:''}
         <button onclick="openPromoteTodoModal(${i})" title="매일 반복하는 필수 루틴으로 변환" style="background:none;border:none;color:var(--accent);cursor:pointer;font-size:14px;padding:6px 8px;min-width:36px;touch-action:manipulation;">↻</button>
         <button onclick="delTgt(${i})" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:18px;padding:6px 8px;min-width:36px;touch-action:manipulation;">✕</button>
       </div>`;
@@ -10767,9 +10769,11 @@ function markFail(i){
   const wasFail=log.targets[i].st==='fail';
   log.targets[i].st=wasFail?'':'fail';
   if(!wasFail){
-    addScore('target_fail'); // -3점
+    // NEW fail state → −2 pt (target_fail)
+    addScore('target_fail');
   } else {
-    addScore('target_fail_cancel'); // now 0점 — Q3=C 패널티 제거
+    // UNDO previous fail → +2 pt refund (target_fail_cancel)
+    addScore('target_fail_cancel');
   }
   renderTargets();saveNow();
 }
