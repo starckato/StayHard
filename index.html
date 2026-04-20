@@ -1124,9 +1124,140 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
 .hm-week-cell.done .goal-count{ color: var(--color-will-on); }
 .hm-week-cell.partial .goal-name,
 .hm-week-cell.partial .goal-count{ color: var(--color-ink); }
+
+
+/* ════════════════════════════════════════════════════════════════
+   v3.0 · Identity band (slim · replaces .sb status band)
+════════════════════════════════════════════════════════════════ */
+
+/* Hide legacy status band + day-slider */
+.v3-live .sb,
+.v3-live .day-slider-wrap { display: none !important; }
+
+.id-band{
+  padding: 14px 16px 12px;
+  background: var(--color-surface);
+  border-bottom: 0.5px solid var(--color-line);
+  display: grid;
+  grid-template-columns: 28px 1fr;
+  column-gap: 12px;
+  align-items: center;
+}
+.id-band-mascot{
+  width: 24px; height: 28px;
+  color: var(--color-ink);
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.id-band-main{
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+.id-band-row{
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  letter-spacing: -0.01em;
+}
+.id-band-tier{
+  font-weight: 600;
+  color: var(--color-ink);
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.id-band-score{
+  font-family: 'Archivo Black', 'DM Mono', sans-serif;
+  font-weight: 400;
+  font-size: 24px;
+  color: var(--color-ink);
+  letter-spacing: -0.02em;
+  line-height: 1;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.id-band-sep{
+  color: var(--color-ink-4);
+  font-weight: 400;
+}
+.id-band-streak{
+  font-family: 'DM Mono', monospace;
+  font-size: 13px;
+  color: var(--color-ink-2);
+}
+.id-band-next{
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0;
+  color: var(--color-ink-3);
+}
+.id-band-quote{
+  grid-column: 1 / -1;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 0.5px dashed var(--color-line);
+  font-family: 'DM Sans', sans-serif;
+  font-style: italic;
+  font-weight: 300;
+  font-size: 12px;
+  color: var(--color-ink-2);
+  line-height: 1.5;
+  letter-spacing: -0.01em;
+  min-height: 18px;
+}
+
+
+/* ════════════════════════════════════════════════════════════════
+   v3.0 · Today header (between heatmap and cards)
+════════════════════════════════════════════════════════════════ */
+.today-header{
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 18px 16px 10px;
+}
+.today-header-day{
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--color-ink);
+}
+.today-header-day span{
+  color: var(--color-ink-3);
+  font-weight: 400;
+  margin-left: 2px;
+}
+.today-header-pts{
+  font-family: 'DM Mono', monospace;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-ink);
+  font-variant-numeric: tabular-nums;
+}
+.today-header-pts.is-empty{
+  color: var(--color-ink-3);
+  font-weight: 400;
+}
+
+/* Reposition heatmap: when v3-live, put heatmap at top of view (after identity-band),
+   push everything else below. Using CSS order within flex parent. */
+.v3-live #view-routine{
+  display: flex;
+  flex-direction: column;
+}
+.v3-live #view-routine > *{ order: 5; }
+.v3-live #view-routine > .id-band{ order: 0; }
+.v3-live #view-routine > #yesterday-ribbon{ order: 1; }
+.v3-live #view-routine > .hm-week{ order: 2; }
+.v3-live #view-routine > .today-header{ order: 3; }
 </style>
 </head>
-<body>
+<body class="v3-live">
 
 <div class="loading-overlay" id="loading"><div class="spinner"></div><div class="loading-txt">로딩 중…</div><button id="loading-retry" onclick="location.reload()" style="display:none;margin-top:16px;padding:10px 24px;background:var(--accent-grad);border:none;border-radius:var(--radius-sm);color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;">다시 시도</button></div>
 <div class="toast" id="toast">저장됨 ✓</div>
@@ -1193,6 +1324,32 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
 
   <!-- ══ DAILY ROUTINE ══ -->
   <div class="view active" id="view-routine">
+
+    <!-- v3.0 · Identity band (slim) — replaces .sb status band -->
+    <section class="id-band" id="id-band" style="display:none;">
+      <svg class="id-band-mascot" viewBox="0 0 24 28" onclick="openRoomOverlay()" aria-label="캐릭터 방">
+        <rect x="5" y="1.5" width="3" height="3" fill="currentColor"/>
+        <rect x="16" y="1.5" width="3" height="3" fill="currentColor"/>
+        <rect x="6.5" y="3" width="11" height="8.5" rx="1" fill="currentColor"/>
+        <rect x="9.5" y="6" width="1.4" height="1.4" fill="#0a0a0c"/>
+        <rect x="13.1" y="6" width="1.4" height="1.4" fill="#0a0a0c"/>
+        <rect x="10.6" y="8.6" width="2.8" height="0.8" fill="#0a0a0c"/>
+        <rect x="5.5" y="11.5" width="13" height="10" rx="1.5" fill="currentColor"/>
+        <rect x="7" y="21.5" width="3" height="5.5" fill="currentColor"/>
+        <rect x="14" y="21.5" width="3" height="5.5" fill="currentColor"/>
+      </svg>
+      <div class="id-band-main">
+        <div class="id-band-row">
+          <span class="id-band-tier" id="id-tier" onclick="openScoreGuide()">방관자</span>
+          <span class="id-band-sep">·</span>
+          <span class="id-band-score" id="id-score" onclick="openScoreGuide()">0</span>
+          <span class="id-band-sep">·</span>
+          <span class="id-band-streak" id="id-streak">🔥 0일</span>
+        </div>
+        <div class="id-band-next" id="id-next">—</div>
+      </div>
+      <div class="id-band-quote" id="id-quote"></div>
+    </section>
 
     <!-- YESTERDAY RIBBON — 어제 미완료 / 이월 할일 통합 표시 -->
     <div id="yesterday-ribbon" class="yr" style="display:none;">
@@ -1277,6 +1434,12 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
       </div>
       <div class="hm-week-grid" id="hm-week-grid"></div>
     </section>
+
+    <!-- v3.0 · Today header -->
+    <div class="today-header" id="today-header" style="display:none;">
+      <div class="today-header-day" id="today-header-day">—</div>
+      <div class="today-header-pts" id="today-header-pts">+0 pt</div>
+    </div>
 
     <div class="s-card" style="margin-bottom:10px;">
       <div class="s-card-hdr">
@@ -8326,7 +8489,104 @@ function scrollToSection(s){
   const el=document.getElementById(map[s]);
   if(el)el.scrollIntoView({behavior:'smooth',block:'center'});
 }
-function renderRoutine(){renderCharCard();renderSummaryCard();renderWeight();renderMeals();renderCheatBadge();renderWater();renderWorkouts();renderMandatory();renderTargets();updateGogginsHeader();revealStatusBand();try{renderHeatmap();}catch(e){console.warn('[heatmap]',e);}try{renderFirstWeekCard();}catch(e){console.warn('[fw-card]',e);}try{renderInviteCard();}catch(e){console.warn('[invite-card]',e);}try{renderDay3ChallengeNudge();}catch(e){console.warn('[d3-nudge]',e);}try{renderWeeklyFeatureRibbon();}catch(e){console.warn('[wf-ribbon]',e);}}
+function renderRoutine(){renderCharCard();renderSummaryCard();renderWeight();renderMeals();renderCheatBadge();renderWater();renderWorkouts();renderMandatory();renderTargets();updateGogginsHeader();revealStatusBand();try{renderHeatmap();}catch(e){console.warn('[heatmap]',e);}try{renderIdentityBand();}catch(e){console.warn('[id-band]',e);}try{renderTodayHeader();}catch(e){console.warn('[today-header]',e);}try{renderFirstWeekCard();}catch(e){console.warn('[fw-card]',e);}try{renderInviteCard();}catch(e){console.warn('[invite-card]',e);}try{renderDay3ChallengeNudge();}catch(e){console.warn('[d3-nudge]',e);}try{renderWeeklyFeatureRibbon();}catch(e){console.warn('[wf-ribbon]',e);}}
+
+// ════════════════════════════════════════════════════════════════
+// v3.0 · Identity Band (slim) — reads CP.total_score, tier, streak, quote
+// 기존 .sb 를 대체. renderCharCard 는 아직 남아있지만 .sb 가 hidden 이라 no-op 화.
+// ════════════════════════════════════════════════════════════════
+function renderIdentityBand(){
+  const section=document.getElementById('id-band');
+  if(!section)return;
+  const scoreEl=document.getElementById('id-score');
+  const tierEl=document.getElementById('id-tier');
+  const streakEl=document.getElementById('id-streak');
+  const nextEl=document.getElementById('id-next');
+  const quoteEl=document.getElementById('id-quote');
+  if(!scoreEl||!tierEl)return;
+
+  const score=+(CP?.total_score)||0;
+  const tier=getTier(score);
+  const tierIdx=TIERS.indexOf(tier);
+  const next=TIERS[Math.min(tierIdx+1,TIERS.length-1)];
+  const streak=(typeof calcStreak==='function')?calcStreak():0;
+
+  scoreEl.textContent=score.toLocaleString();
+  tierEl.textContent=tier.name;
+  tierEl.style.color=tier.color||'';
+  if(streakEl)streakEl.textContent='🔥 '+streak+'일';
+  if(nextEl){
+    if(tierIdx===TIERS.length-1){
+      nextEl.textContent='최고 티어';
+    }else{
+      nextEl.textContent='다음 '+next.name+'까지 · '+(next.min-score)+' pt';
+    }
+  }
+  if(quoteEl){
+    const quotes=TIER_QUOTES[tier.name]||TIER_QUOTES['방관자'];
+    // 같은 세션에서 재렌더 시 반복되지 않도록 캐시
+    if(!section._quoteCached){
+      section._quoteCached=quotes[Math.floor(Math.random()*quotes.length)];
+    }
+    quoteEl.textContent='"'+section._quoteCached+'"';
+    quoteEl.style.color=tier.color||'';
+    quoteEl.style.opacity='0.75';
+  }
+  section.style.display='';
+}
+
+// ════════════════════════════════════════════════════════════════
+// v3.0 · Today Header — "목요일 · 오늘" + today's earned pts
+// selectedKey 기반 — 다른 날 보는 경우 요일 + 상대 라벨 변경
+// ════════════════════════════════════════════════════════════════
+function renderTodayHeader(){
+  const host=document.getElementById('today-header');
+  const dayEl=document.getElementById('today-header-day');
+  const ptsEl=document.getElementById('today-header-pts');
+  if(!host||!dayEl||!ptsEl)return;
+
+  const selKey=selectedKey||TODAY;
+  const d=new Date(selKey+'T12:00:00');
+  if(isNaN(d.getTime())){host.style.display='none';return;}
+  const DOW=['일요일','월요일','화요일','수요일','목요일','금요일','토요일'];
+  const dayName=DOW[d.getDay()];
+
+  // Relative label
+  const diffDays=Math.round((d-new Date(TODAY+'T12:00:00'))/(1000*60*60*24));
+  let rel='';
+  if(diffDays===0)rel='오늘';
+  else if(diffDays===-1)rel='어제';
+  else if(diffDays===1)rel='내일';
+  else if(diffDays<0)rel=Math.abs(diffDays)+'일 전';
+  else rel=diffDays+'일 후';
+
+  dayEl.innerHTML=dayName+' · <span>'+rel+'</span>';
+
+  // Today pts — viewing today: earned today; viewing other day: day's summed pts
+  const viewingLog=logCache[selKey];
+  let pts=0;
+  if(viewingLog && viewingLog._ptsLog){
+    pts=viewingLog._ptsLog.reduce((a,e)=>a+(+e.pts||0),0);
+  }
+  if(diffDays===0){
+    // today → use getTodayScore for live value
+    try{ pts=(typeof getTodayScore==='function')?getTodayScore():pts; }catch(e){}
+  }
+
+  if(pts===0 && diffDays>0){
+    ptsEl.textContent='미래 · 계획';
+    ptsEl.classList.add('is-empty');
+  }else if(pts===0){
+    ptsEl.textContent='시작 전';
+    ptsEl.classList.add('is-empty');
+  }else{
+    const sign=pts>0?'+':'';
+    ptsEl.textContent=sign+pts+' pt';
+    ptsEl.classList.remove('is-empty');
+  }
+
+  host.style.display='';
+}
 
 // ════════════════════════════════════════════════════════════════
 // v3.0 · Weekly Heatmap renderer
