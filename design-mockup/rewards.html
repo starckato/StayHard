@@ -375,37 +375,50 @@
       font-weight: 500;
     }
 
-    /* ---- Perfect day shimmer row ---- */
+    /* ---- Perfect day shimmer (sweeps across the 5 cards) ---- */
 
-    .shimmer-row {
+    .stage-cards {
       position: relative;
-      height: 22px;
-      background: var(--color-hm-empty);
-      border-radius: 2px;
-      overflow: hidden;
     }
-    .shimmer-row.is-full { background: var(--color-will); }
-    .shimmer-row .shimmer-sweep {
+    .stage-cards::after {
+      content: '';
       position: absolute;
-      top: 0;
-      bottom: 0;
-      width: 40%;
+      top: -4px;
+      bottom: -4px;
+      left: 0;
+      width: 32%;
       background: linear-gradient(
         90deg,
         transparent 0%,
-        rgba(255,255,255,0) 20%,
-        rgba(255,255,255,0.85) 50%,
-        rgba(255,255,255,0) 80%,
+        rgba(255,255,255,0.0) 15%,
+        rgba(255,255,255,0.55) 50%,
+        rgba(255,255,255,0.0) 85%,
         transparent 100%
       );
       transform: translateX(-120%);
+      opacity: 0;
+      pointer-events: none;
+      mix-blend-mode: screen;
+      z-index: 5;
     }
-    .stage-cards.is-shimmer .shimmer-row .shimmer-sweep {
-      animation: shimmerSweep 900ms ease-in-out;
+    .stage-cards.is-shimmer::after {
+      animation: shimmerSweep 1000ms ease-in-out;
     }
     @keyframes shimmerSweep {
-      from { transform: translateX(-120%); }
-      to   { transform: translateX(260%); }
+      0%   { transform: translateX(-120%); opacity: 0; }
+      15%  { opacity: 1; }
+      85%  { opacity: 1; }
+      100% { transform: translateX(350%); opacity: 0; }
+    }
+
+    /* All cards briefly glow during shimmer */
+    .stage-cards.is-shimmer .stage-card {
+      animation: cardGlow 1000ms ease-in-out;
+    }
+    @keyframes cardGlow {
+      0%   { border-color: var(--color-line-strong); }
+      50%  { border-color: var(--color-will); box-shadow: 0 0 14px -2px rgba(255,255,255,0.35); }
+      100% { border-color: var(--color-line-strong); box-shadow: none; }
     }
 
     /* Static notes */

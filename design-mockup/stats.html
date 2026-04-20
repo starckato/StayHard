@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Stay Hard · 통계 · 축적의 증거</title>
+  <link rel="stylesheet" as="style" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="tokens.css">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    /* ============================================================
+       Stats-specific layout
+       ============================================================ */
+
+    .stats-main {
+      height: calc(932px - 52px - 60px);
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding-bottom: 40px;
+      scrollbar-width: none;
+    }
+    .stats-main::-webkit-scrollbar { display: none; }
+
+    .stats-period {
+      display: flex;
+      gap: 4px;
+      padding: 14px 20px 12px;
+      border-bottom: 0.5px solid var(--color-line);
+    }
+    .period-btn {
+      padding: 6px 12px;
+      font-family: var(--font-mono);
+      font-size: var(--text-11);
+      letter-spacing: var(--track-wide);
+      color: var(--color-ink-3);
+      background: transparent;
+      border: 0.5px solid var(--color-line);
+      text-transform: uppercase;
+    }
+    .period-btn.is-active {
+      color: var(--color-ink);
+      background: var(--color-surface-2);
+      border-color: var(--color-line-strong);
+    }
+
+    /* ---- Section primitives ---- */
+
+    .stat-section {
+      padding: 20px 20px 14px;
+      border-bottom: 0.5px solid var(--color-line);
+    }
+
+    .stat-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+    .stat-head h3 {
+      margin: 0;
+      font-size: var(--text-13);
+      font-weight: 500;
+      letter-spacing: var(--track-tight);
+      color: var(--color-ink);
+    }
+    .stat-head .range {
+      font-family: var(--font-mono);
+      font-size: var(--text-10);
+      letter-spacing: var(--track-wider);
+      color: var(--color-ink-3);
+      text-transform: uppercase;
+    }
+
+    /* ---- HERO · 28-day grid ---- */
+
+    .month-grid {
+      display: grid;
+      grid-template-columns: 30px repeat(28, 1fr);
+      column-gap: 1.5px;
+      row-gap: 2px;
+    }
+    .month-grid .mg-label {
+      font-size: var(--text-10);
+      color: var(--color-ink-2);
+      text-align: right;
+      padding-right: 4px;
+      align-self: center;
+      letter-spacing: var(--track-tight);
+    }
+    .month-grid .mg-cell {
+      height: 13px;
+      background: var(--color-hm-empty);
+      border-radius: 1px;
+    }
+    .month-grid .mg-cell.done    { background: var(--color-will); }
+    .month-grid .mg-cell.partial { background: var(--color-will-soft); }
+    .month-grid .mg-cell.today   { outline: 1px solid var(--color-will); outline-offset: -1px; }
+    .month-grid .mg-cell.future  { background: transparent; border: 0.5px dashed var(--color-hm-future-dot); }
+
+    /* Week separator columns (every 7th gap gets extra space) */
+    .month-grid .mg-spacer {
+      grid-column: span 1;
+    }
+
+    .mg-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 10px;
+      font-family: var(--font-mono);
+      font-size: var(--text-10);
+      letter-spacing: var(--track-wide);
+      color: var(--color-ink-3);
+    }
+    .mg-footer strong { color: var(--color-ink); font-weight: 500; }
+
+    /* ---- Line charts (score, weight) ---- */
+
+    .chart-wrap {
+      position: relative;
+      width: 100%;
+      height: 80px;
+    }
+    .chart-wrap svg {
+      display: block;
+      width: 100%;
+      height: 100%;
+      overflow: visible;
+    }
+
+    .chart-meta {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      margin-top: 12px;
+      font-family: var(--font-mono);
+      font-size: var(--text-11);
+      letter-spacing: var(--track-wide);
+      color: var(--color-ink-3);
+    }
+    .chart-meta .now {
+      font-family: var(--font-display);
+      font-size: var(--text-24);
+      color: var(--color-ink);
+      letter-spacing: -0.02em;
+      line-height: 1;
+    }
+    .chart-meta .unit {
+      font-family: var(--font-mono);
+      font-size: var(--text-11);
+      color: var(--color-ink-3);
+      margin-left: 2px;
+    }
+    .chart-meta .delta-strong {
+      color: var(--color-ink);
+      font-weight: 500;
+    }
+
+    /* ---- Discipline rate ---- */
+
+    .rate-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0;
+      border: 0.5px solid var(--color-line);
+      background: var(--color-surface);
+    }
+    .rate-cell {
+      padding: 14px 16px;
+      border-right: 0.5px solid var(--color-line);
+    }
+    .rate-cell:last-child { border-right: 0; }
+    .rate-label {
+      font-family: var(--font-mono);
+      font-size: var(--text-10);
+      letter-spacing: var(--track-wider);
+      color: var(--color-ink-3);
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+    .rate-value {
+      font-family: var(--font-display);
+      font-size: var(--text-32);
+      color: var(--color-ink);
+      letter-spacing: -0.02em;
+      line-height: 1;
+    }
+    .rate-value .suffix {
+      font-family: var(--font-mono);
+      font-size: var(--text-13);
+      color: var(--color-ink-2);
+      margin-left: 2px;
+    }
+    .rate-sub {
+      margin-top: 6px;
+      font-family: var(--font-mono);
+      font-size: var(--text-10);
+      letter-spacing: var(--track-wide);
+      color: var(--color-ink-3);
+    }
+
+    /* ---- Streaks ---- */
+
+    .streak-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .streak-cell {
+      padding: 14px 16px;
+      background: var(--color-surface-2);
+    }
+    .streak-cell.is-primary {
+      background: var(--color-will);
+      color: var(--color-will-on);
+    }
+    .streak-cell.is-primary .streak-label { color: var(--color-will-on); opacity: 0.75; }
+    .streak-cell.is-primary .streak-value { color: var(--color-will-on); }
+    .streak-cell.is-primary .streak-sub { color: var(--color-will-on); opacity: 0.65; }
+
+    .streak-label {
+      font-family: var(--font-mono);
+      font-size: var(--text-10);
+      letter-spacing: var(--track-wider);
+      color: var(--color-ink-3);
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+    .streak-value {
+      font-family: var(--font-display);
+      font-size: var(--text-32);
+      color: var(--color-ink);
+      letter-spacing: -0.02em;
+      line-height: 1;
+    }
+    .streak-value .unit {
+      font-family: var(--font-mono);
+      font-size: var(--text-13);
+      color: var(--color-ink-2);
+      margin-left: 2px;
+    }
+    .streak-cell.is-primary .streak-value .unit { color: var(--color-will-on); opacity: 0.65; }
+    .streak-sub {
+      margin-top: 6px;
+      font-family: var(--font-mono);
+      font-size: var(--text-10);
+      letter-spacing: var(--track-wide);
+      color: var(--color-ink-3);
+    }
+
+    /* ---- Workout detail (collapsed section) ---- */
+
+    .advanced-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      color: var(--color-ink-2);
+      font-size: var(--text-12);
+      letter-spacing: var(--track-tight);
+      border-bottom: 0.5px solid var(--color-line);
+      cursor: pointer;
+    }
+    .advanced-toggle .label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .advanced-toggle .chev {
+      font-family: var(--font-mono);
+      color: var(--color-ink-3);
+      font-size: var(--text-11);
+    }
+  </style>
+</head>
+<body>
+
+<div class="review-shell">
+
+  <header class="review-header">
+    <span class="review-eyebrow">Stay Hard · Redesign v1</span>
+    <h1>통계 — 축적의 증거</h1>
+    <p>20종 → 핵심 5개로 큐레이션. 격자·축적·체중·채움률·스트릭. <a href="index.html">← 기록 탭</a></p>
+  </header>
+
+  <div class="frames-row">
+
+    <figure class="frame-wrap">
+      <figcaption><span>통계 · 1달</span></figcaption>
+      <div class="phone-frame">
+
+        <header class="app-header">
+          <div class="app-title">Stay Hard</div>
+          <button class="app-avatar" aria-label="프로필">권</button>
+        </header>
+
+        <main class="stats-main">
+
+          <!-- Period selector -->
+          <div class="stats-period">
+            <button class="period-btn is-active">1달</button>
+            <button class="period-btn">3달</button>
+            <button class="period-btn">올해</button>
+            <button class="period-btn">전체</button>
+          </div>
+
+          <!-- ═══ HERO · 28일 격자 ═══ -->
+          <section class="stat-section">
+            <header class="stat-head">
+              <h3>격자</h3>
+              <span class="range">3월 24 — 4월 20</span>
+            </header>
+
+            <div class="month-grid">
+              <!-- 식단 row (28 days mix) -->
+              <div class="mg-label">식단</div>
+              <div class="mg-cell done"></div>
+              <div class="mg-cell done"></div>
+              <div class="mg-cell partial"></div>
+              <div class="mg-cell done"></div>
+              <div class="mg-cell done"></div>
+              <div class="mg-cell partial"></div>
+              <div class="mg-cell done"></div>
+              <div class="mg-cell done"></div>
+              <div class="mg-cell done"></div>
+              <div class="mg-cell partial"></div>
+              <div class="mg-cell done"></div>
+              <div class="mg-cell done"></div>
+              <div class="mg-cell partial"></div>
+              <div class="mg-cell done"></div>
+              <div class="mg-cell done"></div>
+              <div class="mg-cell done"></div>
+              <div class="mg-cell done"></div>
+              <div class="mg-cell partial"></div>
+              <div class="mg-cell done"></div>
+              <div class="mg-cell done"></div>
+              <div class="mg-cell partial"></div>
+              <div class="mg-cell done"></div>
+              <div class="mg-cell done"></div>
+              <div class="mg-cell partial"></div>
+              <div class="mg-cell done"></div>
+              <div class="mg-cell done"></div>
+              <div class="mg-cell partial"></div>
+              <div class="mg-cell partial today"></div>
+
+              <!-- 운동 row -->
+              <div class="mg-label">운동</div>
+              <div class="mg-cell done"></div>
+              <div class="mg-cell"></div>
+              <div class="mg-cell done"></div>
+              <div class="mg-cell done"></div>
+              <div class="mg-cell"></div>
+              <div class="mg-cell done"></div>
+              <div class="mg-cell done"></div>
+              <div class="mg-cell done"></div>
+              <div class="mg-cell"></div>
+              <div class="mg-cell done"></div>
+              <div class="mg-cell done"></div>
+              <div class="mg-cell"></div>
+              <div class="mg-cell done"></div>
+              <div class="mg-cell"></div>
+              <div class="mg-cell done"></div>
+              <div class="mg-cell done"></div>
+              <div class="mg-cell"></div>
+              <div class="mg-cell done"></div>
+              <div class="mg-cell done"></div>
+              <div class="mg-cell"></div>
+              <div class="mg-cell done"></div>
+              <div class="mg-cell done"></div>
+              <div class="mg-cell"></div>
+              <div class="mg-cell done"></div>
+              <div class="mg-cell done"></div>
+              <div class="mg-cell"></div>
+              <div class="mg-cell done"></div>
+              <div class="mg-cell today"></div>
+
+              <!-- 루틴 row -->
+              <div class="mg-label">루틴</div>
+              <div class="mg-cell done"></div>
+              <div class="mg-cell done"></div>
+              <div class="mg-cell done"></div>
+              <div class="mg-cell done"></div>
+              <div class="mg-cell partial"></div>
+              <div class="mg-cell done"></div>
+              <div class="mg-cell done"></div>
+              <div class="mg-cell done"></div>
+              <div class="mg-cell done"></div>
+              <div class="mg-cell partial"></div>
+              <div class="mg-cell done"></div>
+              <div class="mg-cell done"></div>
+              <div class="mg-cell done"></div>
+              <div class="mg-cell partial"></div>
+              <div class="mg-cell done"></div>
+              <div class="mg-cell done"></div>
+              <div class="mg-cell done"></div>
+              <div class="mg-cell done"></div>
+              <div class="mg-cell done"></div>
+              <div class="mg-cell partial"></div>
+              <div class="mg-cell done"></div>
+              <div class="mg-cell done"></div>
+              <div class="mg-cell done"></div>
+              <div class="mg-cell done"></div>
+              <div class="mg-cell partial"></div>
+              <div class="mg-cell done"></div>
+              <div class="mg-cell done"></div>
+              <div class="mg-cell partial today"></div>
+
+              <!-- 목표 row -->
+              <div class="mg-label">목표</div>
+              <div class="mg-cell partial"></div>
+              <div class="mg-cell done"></div>
+              <div class="mg-cell"></div>
+              <div class="mg-cell done"></div>
+              <div class="mg-cell partial"></div>
+              <div class="mg-cell"></div>
+              <div class="mg-cell done"></div>
+              <div class="mg-cell done"></div>
+              <div class="mg-cell partial"></div>
+              <div class="mg-cell"></div>
+              <div class="mg-cell done"></div>
+              <div class="mg-cell done"></div>
+              <div class="mg-cell partial"></div>
+              <div class="mg-cell"></div>
+              <div class="mg-cell done"></div>
+              <div class="mg-cell done"></div>
+              <div class="mg-cell done"></div>
+              <div class="mg-cell partial"></div>
+              <div class="mg-cell"></div>
+              <div class="mg-cell done"></div>
+              <div class="mg-cell done"></div>
+              <div class="mg-cell partial"></div>
+              <div class="mg-cell"></div>
+              <div class="mg-cell done"></div>
+              <div class="mg-cell done"></div>
+              <div class="mg-cell done"></div>
+              <div class="mg-cell partial"></div>
+              <div class="mg-cell partial today"></div>
+            </div>
+
+            <div class="mg-footer">
+              <span>빛 · <strong>78칸</strong> / 112</span>
+              <span>이전 28일 · 72</span>
+            </div>
+          </section>
+
+
+          <!-- ═══ 축적 (score accumulation) ═══ -->
+          <section class="stat-section">
+            <header class="stat-head">
+              <h3>축적</h3>
+              <span class="range">+128 pt vs 이전</span>
+            </header>
+
+            <div class="chart-wrap">
+              <svg viewBox="0 0 300 80" preserveAspectRatio="none">
+                <defs>
+                  <linearGradient id="scoreFill" x1="0" x2="0" y1="0" y2="1">
+                    <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.28"/>
+                    <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0"/>
+                  </linearGradient>
+                </defs>
+                <!-- Fill under line -->
+                <path d="M0 68 L20 66 L40 63 L60 58 L80 54 L100 50 L120 46 L140 40 L160 36 L180 30 L200 24 L220 20 L240 14 L260 10 L280 7 L300 5 L300 80 L0 80 Z"
+                      fill="url(#scoreFill)"/>
+                <!-- Line -->
+                <path d="M0 68 L20 66 L40 63 L60 58 L80 54 L100 50 L120 46 L140 40 L160 36 L180 30 L200 24 L220 20 L240 14 L260 10 L280 7 L300 5"
+                      stroke="#FFFFFF" stroke-width="1.4" fill="none"
+                      stroke-linecap="round" stroke-linejoin="round"/>
+                <!-- End point -->
+                <circle cx="300" cy="5" r="2.5" fill="#FFFFFF"/>
+              </svg>
+            </div>
+
+            <div class="chart-meta">
+              <span>누적 <span class="now">3,512</span><span class="unit"> pt</span></span>
+              <span>지난 28일 <span class="delta-strong">+128</span></span>
+            </div>
+          </section>
+
+
+          <!-- ═══ 체중 ═══ -->
+          <section class="stat-section">
+            <header class="stat-head">
+              <h3>체중</h3>
+              <span class="range">시작 98.2 · 목표 90.0</span>
+            </header>
+
+            <div class="chart-wrap">
+              <svg viewBox="0 0 300 80" preserveAspectRatio="none">
+                <!-- Goal line (dashed horizontal) at y=70 (bottom zone) -->
+                <line x1="0" y1="70" x2="300" y2="70"
+                      stroke="#5A5A57" stroke-width="0.5" stroke-dasharray="3 3"/>
+                <!-- Weight line going down -->
+                <path d="M0 14 L30 17 L60 22 L90 26 L120 30 L150 34 L180 37 L210 42 L240 46 L270 50 L300 52"
+                      stroke="#FFFFFF" stroke-width="1.4" fill="none"
+                      stroke-linecap="round" stroke-linejoin="round"/>
+                <circle cx="300" cy="52" r="2.5" fill="#FFFFFF"/>
+                <!-- Goal label -->
+                <text x="4" y="67" fill="#5A5A57" font-size="8" font-family="IBM Plex Mono" letter-spacing="1">GOAL · 90.0</text>
+              </svg>
+            </div>
+
+            <div class="chart-meta">
+              <span>현재 <span class="now">96.4</span><span class="unit"> kg</span></span>
+              <span>목표까지 <span class="delta-strong">−6.4</span></span>
+            </div>
+          </section>
+
+
+          <!-- ═══ 격자 채움률 ═══ -->
+          <section class="stat-section">
+            <header class="stat-head">
+              <h3>채움률</h3>
+              <span class="range">격자 cells / total</span>
+            </header>
+
+            <div class="rate-row">
+              <div class="rate-cell">
+                <div class="rate-label">지난 28일</div>
+                <div class="rate-value">87<span class="suffix">%</span></div>
+                <div class="rate-sub">빛 97 / 112</div>
+              </div>
+              <div class="rate-cell">
+                <div class="rate-label">이전 28일</div>
+                <div class="rate-value">79<span class="suffix">%</span></div>
+                <div class="rate-sub">빛 88 / 112</div>
+              </div>
+            </div>
+          </section>
+
+
+          <!-- ═══ 스트릭 ═══ -->
+          <section class="stat-section">
+            <header class="stat-head">
+              <h3>스트릭</h3>
+              <span class="range">중단 없이 이어진 일수</span>
+            </header>
+
+            <div class="streak-row">
+              <div class="streak-cell is-primary">
+                <div class="streak-label">현재</div>
+                <div class="streak-value">12<span class="unit">일</span></div>
+                <div class="streak-sub">4월 9일 시작</div>
+              </div>
+              <div class="streak-cell">
+                <div class="streak-label">최장</div>
+                <div class="streak-value">27<span class="unit">일</span></div>
+                <div class="streak-sub">2월 8일 — 3월 6일</div>
+              </div>
+            </div>
+          </section>
+
+
+          <!-- ═══ 훈련 상세 (collapsed) ═══ -->
+          <div class="advanced-toggle">
+            <span class="label">
+              <span style="width:6px; height:6px; background:var(--color-ink-3); border-radius:50%;"></span>
+              훈련 상세 · 볼륨 · PR · 자극 부위
+            </span>
+            <span class="chev">펼치기 ›</span>
+          </div>
+
+        </main>
+
+        <nav class="bot-nav">
+          <button class="bn-item">기록</button>
+          <button class="bn-item">챌린지</button>
+          <button class="bn-item is-active">통계</button>
+        </nav>
+
+      </div>
+    </figure>
+
+  </div>
+
+
+  <!-- Notes -->
+  <div class="compare-notes">
+    <h3>큐레이션 원칙</h3>
+    <p>
+      이 탭의 기능은 <strong>자기 자신과의 비교</strong>. 타인과의 비교도, 등급도 아님. 모든 지표는 "이전 기간 대비 어떻게 달라졌나"를 같이 보여줌.
+    </p>
+
+    <h3 class="is-b">제외한 이유</h3>
+    <p>
+      · <strong>Report Card A-F</strong> — 앱이 유저에게 성적을 매기는 행위. 철학 위반.<br>
+      · <strong>Insights 5줄</strong> — 앱이 말을 거는 행위. 유저가 주인공.<br>
+      · <strong>KPI Grid (%, %, %, n, n)</strong> — 격자가 이미 담는 정보.<br>
+      · <strong>파이차트 · 히트맵 · 바차트 중복</strong> — 같은 정보 여러 시각화는 소음.<br>
+      · <strong>인바디 세부</strong> — 체중 추이면 충분. 인바디 고수는 별도 전문 앱을 씀.
+    </p>
+
+    <h3 class="is-b">숨긴 것 · 훈련 상세</h3>
+    <p>
+      볼륨 차트 · PR 대시보드 · 자극 부위 분포는 <strong>펼치기</strong> 안쪽으로 이동. 운동만 진지한 유저에겐 가치가 있지만 기본 상태에선 노이즈.
+    </p>
+  </div>
+
+</div>
+
+</body>
+</html>
