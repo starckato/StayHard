@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Stay Hard · Primary Cards · Inline Expand</title>
+  <link rel="stylesheet" as="style" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="tokens.css">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="ico-weight" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M2.5 4.5h9l-0.8 6.5a1 1 0 0 1-1 0.9h-5.4a1 1 0 0 1-1-0.9L2.5 4.5Z"/>
+      <path d="M5 4.5v-0.7a2 2 0 0 1 4 0v0.7"/>
+      <path d="M6 7.5l1-1 1 1"/>
+    </symbol>
+    <symbol id="ico-meal" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M2 6.5a5 5 0 0 1 10 0"/>
+      <path d="M1.5 6.5h11"/>
+      <path d="M3.5 9h7"/>
+      <path d="M3 11h8"/>
+    </symbol>
+    <symbol id="ico-workout" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M2 5.5v3"/>
+      <path d="M3.5 4v6"/>
+      <path d="M10.5 4v6"/>
+      <path d="M12 5.5v3"/>
+      <path d="M3.5 7h7"/>
+    </symbol>
+    <symbol id="ico-routine" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="2" y="2" width="10" height="10" rx="1.5"/>
+      <path d="M4.5 7l2 2 3-4"/>
+    </symbol>
+    <symbol id="ico-goal" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="7" cy="7" r="5"/>
+      <circle cx="7" cy="7" r="2.6"/>
+      <circle cx="7" cy="7" r="0.6" fill="currentColor"/>
+    </symbol>
+  </defs>
+</svg>
+
+
+<div class="review-shell">
+
+  <header class="review-header">
+    <span class="review-eyebrow">Stay Hard · Redesign v1</span>
+    <h1>Primary Cards — Inline Expand</h1>
+    <p>각 카드 탭 시 펼쳐지는 상태. 한 번에 하나만 펼침이 원칙이지만, 리뷰용으로 카드별 분리 전시. <a href="index.html">← 기록 탭</a></p>
+  </header>
+
+  <div class="ic-grid">
+
+
+    <!-- =============================================================
+         01 · 체중  (수치 · 휠 피커)
+         ============================================================= -->
+    <figure class="ic-frame">
+      <figcaption><span>01 · 체중</span><span>NUMERIC · WHEEL</span></figcaption>
+      <div class="ic-surface">
+        <header class="today-header">
+          <div class="today-day">목요일 · <span>오늘</span></div>
+          <div class="today-pts">+42 pt</div>
+        </header>
+
+        <div class="cards-stack">
+
+          <!-- EXPANDED -->
+          <div class="card is-expanded">
+            <header class="card-expanded-head">
+              <span class="card-label">
+                <svg><use href="#ico-weight"/></svg> 체중
+              </span>
+              <span class="card-meta">이전 96.7 · 목표 90.0</span>
+            </header>
+
+            <div class="card-expanded-body">
+              <div class="wheel-picker wheel-picker--compact">
+                <div class="wheel-col">
+                  <div class="wheel-stack">
+                    <div class="wheel-item">95</div>
+                    <div class="wheel-item is-center">96</div>
+                    <div class="wheel-item">97</div>
+                  </div>
+                </div>
+                <div class="wheel-sep">.</div>
+                <div class="wheel-col">
+                  <div class="wheel-stack">
+                    <div class="wheel-item">3</div>
+                    <div class="wheel-item is-center">4</div>
+                    <div class="wheel-item">5</div>
+                  </div>
+                </div>
+                <div class="wheel-unit">kg</div>
+              </div>
+
+              <div style="display:flex; gap:18px; margin-top:14px; font-family:var(--font-mono); font-size:11px; color:var(--color-ink-3); letter-spacing:0.04em;">
+                <span>어제 대비 <strong style="color:var(--color-ink); font-weight:500">−0.3</strong></span>
+                <span>목표까지 <strong style="color:var(--color-ink); font-weight:500">−6.4</strong></span>
+              </div>
+            </div>
+
+            <div class="card-expanded-actions">
+              <button class="cta-inline">저장</button>
+              <button class="cta-ghost">취소</button>
+            </div>
+          </div>
+
+          <!-- COLLAPSED siblings -->
+          <button class="card"><svg class="card-ico"><use href="#ico-meal"/></svg><span class="card-label">식단</span><span class="card-value"><span class="badge">2/4</span></span></button>
+          <button class="card"><svg class="card-ico"><use href="#ico-workout"/></svg><span class="card-label">운동</span><span class="card-value">2.4t <span class="card-sub">· 45분</span></span></button>
+          <button class="card"><svg class="card-ico"><use href="#ico-routine"/></svg><span class="card-label">필수 루틴</span><span class="card-value"><span class="badge">3/4</span></span></button>
+          <button class="card"><svg class="card-ico"><use href="#ico-goal"/></svg><span class="card-label">오늘의 목표</span><span class="card-value"><span class="badge">1/3</span></span></button>
+
+        </div>
+      </div>
+    </figure>
+
+
+    <!-- =============================================================
+         02 · 식단  (slot-based: 아침 · 점심 · 저녁 · 야식 + 물)
+         ============================================================= -->
+    <figure class="ic-frame">
+      <figcaption><span>02 · 식단</span><span>SLOT LIST · WATER</span></figcaption>
+      <div class="ic-surface">
+        <header class="today-header">
+          <div class="today-day">목요일 · <span>오늘</span></div>
+          <div class="today-pts">+42 pt</div>
+        </header>
+
+        <div class="cards-stack">
+
+          <button class="card"><svg class="card-ico"><use href="#ico-weight"/></svg><span class="card-label">체중</span><span class="card-value">96.4 kg <span class="card-delta">−0.3</span></span></button>
+
+          <!-- EXPANDED -->
+          <div class="card is-expanded">
+            <header class="card-expanded-head">
+              <span class="card-label">
+                <svg><use href="#ico-meal"/></svg> 식단
+              </span>
+              <span class="card-meta">2 / 4 · +21 pt</span>
+            </header>
+
+            <div class="card-expanded-body" style="padding:8px 0 4px; display:block;">
+              <div class="meal-slots">
+                <div class="meal-slot">
+                  <span class="meal-slot-time">아침</span>
+                  <span class="meal-slot-content"><span class="category">클린</span>오트밀 · 계란 2개</span>
+                  <span class="meal-slot-pts">+10</span>
+                </div>
+                <div class="meal-slot">
+                  <span class="meal-slot-time">점심</span>
+                  <span class="meal-slot-content"><span class="category">일반</span>김치찌개 · 공깃밥</span>
+                  <span class="meal-slot-pts">+1</span>
+                </div>
+                <div class="meal-slot">
+                  <span class="meal-slot-time">저녁</span>
+                  <span class="meal-slot-content is-empty">+ 기록</span>
+                  <span class="meal-slot-pts">—</span>
+                </div>
+                <div class="meal-slot">
+                  <span class="meal-slot-time">야식</span>
+                  <span class="meal-slot-content is-empty">+ 기록 (선택)</span>
+                  <span class="meal-slot-pts">—</span>
+                </div>
+              </div>
+
+              <div class="water-row">
+                <span class="water-label">물</span>
+                <div class="water-track">
+                  <div class="water-dots">
+                    <span class="water-dot is-filled"></span>
+                    <span class="water-dot is-filled"></span>
+                    <span class="water-dot is-filled"></span>
+                    <span class="water-dot"></span>
+                    <span class="water-dot"></span>
+                    <span class="water-dot"></span>
+                  </div>
+                  <span class="water-stat">3 / 6 컵</span>
+                </div>
+              </div>
+
+              <div class="meal-slot" style="border-top: 0.5px solid var(--color-line); margin-top: 4px;">
+                <span class="meal-slot-time">간식</span>
+                <span class="meal-slot-content is-empty">+ 기록 (선택)</span>
+                <span class="meal-slot-pts">—</span>
+              </div>
+            </div>
+          </div>
+
+          <button class="card"><svg class="card-ico"><use href="#ico-workout"/></svg><span class="card-label">운동</span><span class="card-value">2.4t <span class="card-sub">· 45분</span></span></button>
+          <button class="card"><svg class="card-ico"><use href="#ico-routine"/></svg><span class="card-label">필수 루틴</span><span class="card-value"><span class="badge">3/4</span></span></button>
+          <button class="card"><svg class="card-ico"><use href="#ico-goal"/></svg><span class="card-label">오늘의 목표</span><span class="card-value"><span class="badge">1/3</span></span></button>
+
+        </div>
+      </div>
+    </figure>
+
+
+    <!-- =============================================================
+         03 · 운동  (세션 리스트 + 자극 부위 · CTA→full-screen)
+         ============================================================= -->
+    <figure class="ic-frame">
+      <figcaption><span>03 · 운동</span><span>LIST · FULL-SCREEN CTA</span></figcaption>
+      <div class="ic-surface">
+        <header class="today-header">
+          <div class="today-day">목요일 · <span>오늘</span></div>
+          <div class="today-pts">+42 pt</div>
+        </header>
+
+        <div class="cards-stack">
+
+          <button class="card"><svg class="card-ico"><use href="#ico-weight"/></svg><span class="card-label">체중</span><span class="card-value">96.4 kg <span class="card-delta">−0.3</span></span></button>
+          <button class="card"><svg class="card-ico"><use href="#ico-meal"/></svg><span class="card-label">식단</span><span class="card-value"><span class="badge">2/4</span></span></button>
+
+          <!-- EXPANDED -->
+          <div class="card is-expanded">
+            <header class="card-expanded-head">
+              <span class="card-label">
+                <svg><use href="#ico-workout"/></svg> 운동
+              </span>
+              <span class="card-meta">2.4 t · 45 분 · +60 pt</span>
+            </header>
+
+            <div class="card-expanded-body" style="padding:8px 0 4px; display:block;">
+              <div class="workout-list">
+                <div class="workout-row">
+                  <span class="workout-icon">🏋️</span>
+                  <span class="workout-title">상체 세션</span>
+                  <span class="workout-meta">5종목 · 2.4t · 45분</span>
+                  <span class="workout-done">✓</span>
+                </div>
+                <div class="workout-row">
+                  <span class="workout-icon">🏃</span>
+                  <span class="workout-title">러닝</span>
+                  <span class="workout-meta">30분 · 4.2km</span>
+                  <span class="workout-done">✓</span>
+                </div>
+              </div>
+
+              <button class="cta-fullscreen">
+                <span>+ 운동 시작</span>
+                <span class="arrow">↗</span>
+              </button>
+
+              <div class="muscle-hit">
+                <strong>자극 부위</strong>
+                <span>가슴 · 어깨 · 삼두</span>
+                <span class="arrow">›</span>
+              </div>
+            </div>
+          </div>
+
+          <button class="card"><svg class="card-ico"><use href="#ico-routine"/></svg><span class="card-label">필수 루틴</span><span class="card-value"><span class="badge">3/4</span></span></button>
+          <button class="card"><svg class="card-ico"><use href="#ico-goal"/></svg><span class="card-label">오늘의 목표</span><span class="card-value"><span class="badge">1/3</span></span></button>
+
+        </div>
+      </div>
+    </figure>
+
+
+    <!-- =============================================================
+         04 · 필수 루틴  (체크리스트 · 인스턴트 토글)
+         ============================================================= -->
+    <figure class="ic-frame">
+      <figcaption><span>04 · 필수 루틴</span><span>CHECKLIST · INSTANT</span></figcaption>
+      <div class="ic-surface">
+        <header class="today-header">
+          <div class="today-day">목요일 · <span>오늘</span></div>
+          <div class="today-pts">+42 pt</div>
+        </header>
+
+        <div class="cards-stack">
+
+          <button class="card"><svg class="card-ico"><use href="#ico-weight"/></svg><span class="card-label">체중</span><span class="card-value">96.4 kg <span class="card-delta">−0.3</span></span></button>
+          <button class="card"><svg class="card-ico"><use href="#ico-meal"/></svg><span class="card-label">식단</span><span class="card-value"><span class="badge">2/4</span></span></button>
+          <button class="card"><svg class="card-ico"><use href="#ico-workout"/></svg><span class="card-label">운동</span><span class="card-value">2.4t <span class="card-sub">· 45분</span></span></button>
+
+          <!-- EXPANDED -->
+          <div class="card is-expanded">
+            <header class="card-expanded-head">
+              <span class="card-label">
+                <svg><use href="#ico-routine"/></svg> 필수 루틴
+              </span>
+              <span class="card-meta">3 / 4 · +3 pt</span>
+            </header>
+
+            <div class="card-expanded-body" style="padding:6px 0 2px; display:block;">
+              <div class="inline-checklist">
+                <div class="inline-check-row">
+                  <div class="inline-check-box is-done">✓</div>
+                  <div class="inline-check-label is-done">팔굽혀펴기 10개</div>
+                  <div class="inline-check-pt">+1</div>
+                </div>
+                <div class="inline-check-row">
+                  <div class="inline-check-box is-done">✓</div>
+                  <div class="inline-check-label is-done">30분 걷기</div>
+                  <div class="inline-check-pt">+1</div>
+                </div>
+                <div class="inline-check-row">
+                  <div class="inline-check-box is-done">✓</div>
+                  <div class="inline-check-label is-done">공복 체중</div>
+                  <div class="inline-check-pt">+1</div>
+                </div>
+                <div class="inline-check-row">
+                  <div class="inline-check-box"></div>
+                  <div class="inline-check-label">저녁 9시 금식</div>
+                  <div class="inline-check-pt">+1</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <button class="card"><svg class="card-ico"><use href="#ico-goal"/></svg><span class="card-label">오늘의 목표</span><span class="card-value"><span class="badge">1/3</span></span></button>
+
+        </div>
+      </div>
+    </figure>
+
+
+    <!-- =============================================================
+         05 · 오늘의 목표  (체크리스트 + 추가 입력)
+         ============================================================= -->
+    <figure class="ic-frame">
+      <figcaption><span>05 · 오늘의 목표</span><span>CHECKLIST · ADD INPUT</span></figcaption>
+      <div class="ic-surface">
+        <header class="today-header">
+          <div class="today-day">목요일 · <span>오늘</span></div>
+          <div class="today-pts">+42 pt</div>
+        </header>
+
+        <div class="cards-stack">
+
+          <button class="card"><svg class="card-ico"><use href="#ico-weight"/></svg><span class="card-label">체중</span><span class="card-value">96.4 kg <span class="card-delta">−0.3</span></span></button>
+          <button class="card"><svg class="card-ico"><use href="#ico-meal"/></svg><span class="card-label">식단</span><span class="card-value"><span class="badge">2/4</span></span></button>
+          <button class="card"><svg class="card-ico"><use href="#ico-workout"/></svg><span class="card-label">운동</span><span class="card-value">2.4t <span class="card-sub">· 45분</span></span></button>
+          <button class="card"><svg class="card-ico"><use href="#ico-routine"/></svg><span class="card-label">필수 루틴</span><span class="card-value"><span class="badge">3/4</span></span></button>
+
+          <!-- EXPANDED -->
+          <div class="card is-expanded">
+            <header class="card-expanded-head">
+              <span class="card-label">
+                <svg><use href="#ico-goal"/></svg> 오늘의 목표
+              </span>
+              <span class="card-meta">1 / 3 · +2 pt</span>
+            </header>
+
+            <div class="card-expanded-body" style="padding:6px 0 2px; display:block;">
+              <div class="inline-checklist">
+                <div class="inline-check-row">
+                  <div class="inline-check-box is-done">✓</div>
+                  <div class="inline-check-label is-done">링크드인 포스트</div>
+                  <div class="inline-check-pt">+2</div>
+                </div>
+                <div class="inline-check-row">
+                  <div class="inline-check-box"></div>
+                  <div class="inline-check-label">영어 단어 50개</div>
+                  <div class="inline-check-pt">+2</div>
+                </div>
+                <div class="inline-check-row">
+                  <div class="inline-check-box"></div>
+                  <div class="inline-check-label">운동 영상 업로드</div>
+                  <div class="inline-check-pt">+2</div>
+                </div>
+              </div>
+
+              <div class="goal-add-row">
+                <input class="goal-add-input" type="text" placeholder="새 목표 입력…">
+                <button class="goal-add-btn" aria-label="추가">+</button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </figure>
+
+  </div>
+
+  <!-- Notes -->
+  <div class="compare-notes">
+    <h3>패턴 분배</h3>
+    <p>
+      · <strong>체중 · 루틴 · 목표</strong> → inline expand (가벼운 토글·단일 수치·리스트)<br>
+      · <strong>식단</strong> → inline expand (요약 뷰). 각 슬롯 탭 시 세부 입력은 하위 sheet 또는 카테고리 pill picker (후속 결정)<br>
+      · <strong>운동</strong> → inline expand는 <strong>요약·세션 리스트·CTA</strong>만. `+ 운동 시작` 버튼은 full-screen overlay 실행 (세트·무게·타이머는 inline 불가능)
+    </p>
+
+    <h3 class="is-b">체중 카드 메타</h3>
+    <p>
+      헤더 우측: <strong>이전 96.7 · 목표 90.0</strong> — 과거 기록과 목표가 한 줄에. 휠 아래: <strong>어제 대비 −0.3 · 목표까지 −6.4</strong> — 감정 없이 사실만.
+    </p>
+
+    <h3 class="is-b">없음 (색으로 표현 안 함)</h3>
+    <p>
+      식단 카테고리별 색상 배지 없음. 클린/일반/치팅은 텍스트로만 구분. <strong>금지</strong>만 oxblood 적용. 물 컵은 흰 점으로 진행도만 표시. 목표 완료 체크는 흰 사각형(bone 아님) — 의지가 찍은 순간은 다른 모든 것과 구분되는 빛.
+    </p>
+  </div>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Stay Hard · Redesign v1 · 기록 탭</title>
+  <link rel="stylesheet" as="style" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Serif+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="tokens.css">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- ============================================================
+     Reusable SVG symbols (icons, mascot)
+     ============================================================ -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <!-- Mascot (24x28) — abstract blocky figure -->
+    <symbol id="mascot" viewBox="0 0 24 28">
+      <rect x="5" y="1.5" width="3" height="3" fill="currentColor"/>
+      <rect x="16" y="1.5" width="3" height="3" fill="currentColor"/>
+      <rect x="6.5" y="3" width="11" height="8.5" rx="1" fill="currentColor"/>
+      <rect x="9.5" y="6" width="1.4" height="1.4" fill="#0A0A0C"/>
+      <rect x="13.1" y="6" width="1.4" height="1.4" fill="#0A0A0C"/>
+      <rect x="10.6" y="8.6" width="2.8" height="0.8" fill="#0A0A0C"/>
+      <rect x="5.5" y="11.5" width="13" height="10" rx="1.5" fill="currentColor"/>
+      <rect x="7" y="21.5" width="3" height="5.5" fill="currentColor"/>
+      <rect x="14" y="21.5" width="3" height="5.5" fill="currentColor"/>
+    </symbol>
+
+    <!-- Icons 14x14, stroke 1.5, round caps — used on primary cards -->
+    <symbol id="ico-weight" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M2.5 4.5h9l-0.8 6.5a1 1 0 0 1-1 0.9h-5.4a1 1 0 0 1-1-0.9L2.5 4.5Z"/>
+      <path d="M5 4.5v-0.7a2 2 0 0 1 4 0v0.7"/>
+      <path d="M6 7.5l1-1 1 1"/>
+    </symbol>
+    <symbol id="ico-meal" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M2 6.5a5 5 0 0 1 10 0"/>
+      <path d="M1.5 6.5h11"/>
+      <path d="M3.5 9h7"/>
+      <path d="M3 11h8"/>
+    </symbol>
+    <symbol id="ico-workout" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M2 5.5v3"/>
+      <path d="M3.5 4v6"/>
+      <path d="M10.5 4v6"/>
+      <path d="M12 5.5v3"/>
+      <path d="M3.5 7h7"/>
+    </symbol>
+    <symbol id="ico-routine" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="2" y="2" width="10" height="10" rx="1.5"/>
+      <path d="M4.5 7l2 2 3-4"/>
+    </symbol>
+    <symbol id="ico-goal" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="7" cy="7" r="5"/>
+      <circle cx="7" cy="7" r="2.6"/>
+      <circle cx="7" cy="7" r="0.6" fill="currentColor"/>
+    </symbol>
+
+    <!-- Promo icons (20x20) -->
+    <symbol id="pr-flame" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M10 2.5c0.5 2.5 2.5 3 3.5 5s0.3 5-3.5 6.5c-3.8 1.5-5.5-2-4-5 1-2 2.5-2.5 2-4 2 1 2.4 3.5 1.5 5"/>
+      <circle cx="10" cy="11" r="1.4" fill="currentColor" stroke="none"/>
+    </symbol>
+    <symbol id="pr-invite" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="7" cy="8" r="2.5"/>
+      <path d="M2.5 15.5c0-2 2-3.8 4.5-3.8s4.5 1.8 4.5 3.8"/>
+      <path d="M14 6v4"/>
+      <path d="M12 8h4"/>
+    </symbol>
+
+    <!-- Bottom nav icons (18x18) -->
+    <symbol id="nav-record" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="3.5" y="2.5" width="11" height="13" rx="1.5"/>
+      <path d="M6 2.5v-0.5h6v0.5"/>
+      <path d="M6 7h6"/>
+      <path d="M6 10h6"/>
+      <path d="M6 13h4"/>
+    </symbol>
+    <symbol id="nav-challenge" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M5 3h8v3.5a4 4 0 0 1-8 0V3Z"/>
+      <path d="M5 4.5H3.5a1.5 1.5 0 0 0 0 3H5"/>
+      <path d="M13 4.5h1.5a1.5 1.5 0 0 1 0 3H13"/>
+      <path d="M7 11.5h4v2H7z"/>
+      <path d="M6 15.5h6"/>
+    </symbol>
+    <symbol id="nav-stats" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M2.5 15.5h13"/>
+      <rect x="4" y="9" width="2.5" height="5"/>
+      <rect x="8" y="6" width="2.5" height="8"/>
+      <rect x="12" y="3.5" width="2.5" height="10.5"/>
+    </symbol>
+  </defs>
+</svg>
+
+
+<!-- ============================================================
+     Page
+     ============================================================ -->
+<div class="review-shell">
+
+  <header class="review-header">
+    <span class="review-eyebrow">Stay Hard · Redesign v1</span>
+    <h1>기록 탭 — 정체성 · 경향 · 액션</h1>
+    <p>엑셀 MVP의 공간적 전지성 복원. 히트맵이 시각 중심. 3층 구조 × 3단계 카드 위계. <a href="onboarding.html">온보딩 3화면 보기 →</a></p>
+  </header>
+
+  <div class="frames-row">
+
+
+    <!-- =============================================================
+         FRAME 1 — POPULATED
+         권동현 · 수련자 248pt · 🔥 12일 · 목요일 오후
+         ============================================================= -->
+
+    <figure class="frame-wrap">
+      <figcaption><span>Populated · 권동현 · 목요일 오후</span></figcaption>
+
+      <div class="phone-frame">
+
+        <!-- App header -->
+        <header class="app-header">
+          <div class="app-title">Stay Hard</div>
+          <button class="app-avatar" aria-label="프로필">권</button>
+        </header>
+
+        <main class="record-tab">
+
+          <!-- ======== LAYER 1 — IDENTITY ======== -->
+          <section class="identity-band">
+            <div class="mascot"><svg width="24" height="28"><use href="#mascot"/></svg></div>
+            <div class="identity-main">
+              <div class="tier-line">
+                <span class="tier-name">수련자</span>
+                <span class="tier-sep">·</span>
+                <span class="tier-score">248</span>
+                <span class="tier-sep">·</span>
+                <span class="tier-streak">🔥 12일</span>
+              </div>
+              <div class="tier-sub">다음 지배자까지 · 252pt</div>
+            </div>
+            <div class="identity-quote">"멈추지 마. 넌 이미 다른 사람이야."</div>
+          </section>
+
+
+          <!-- ======== LAYER 2 — HEATMAP (hero) ======== -->
+          <section class="heatmap is-animate">
+            <header class="hm-header">
+              <h2 class="hm-title">4월 · <span>이번 주</span></h2>
+              <div style="display:flex; gap:4px">
+                <button class="hm-nav" aria-label="이전 주">‹</button>
+                <button class="hm-nav" aria-label="다음 주">›</button>
+              </div>
+            </header>
+
+            <div class="hm-grid">
+              <!-- DOW row -->
+              <div class="hm-cornerspacer"></div>
+              <div class="hm-dow">월</div>
+              <div class="hm-dow">화</div>
+              <div class="hm-dow">수</div>
+              <div class="hm-dow is-today">목</div>
+              <div class="hm-dow">금</div>
+              <div class="hm-dow">토</div>
+              <div class="hm-dow">일</div>
+
+              <!-- 식단 -->
+              <div class="hm-rowlabel">식단</div>
+              <div class="hm-cell is-done"></div>
+              <div class="hm-cell is-done"></div>
+              <div class="hm-cell is-partial"></div>
+              <div class="hm-cell is-partial is-today"></div>
+              <div class="hm-cell is-future"></div>
+              <div class="hm-cell is-future"></div>
+              <div class="hm-cell is-future"></div>
+
+              <!-- 운동 -->
+              <div class="hm-rowlabel">운동</div>
+              <div class="hm-cell is-done"></div>
+              <div class="hm-cell is-empty"></div>
+              <div class="hm-cell is-done"></div>
+              <div class="hm-cell is-empty is-today"></div>
+              <div class="hm-cell is-future"></div>
+              <div class="hm-cell is-future"></div>
+              <div class="hm-cell is-future"></div>
+
+              <!-- 루틴 -->
+              <div class="hm-rowlabel">루틴</div>
+              <div class="hm-cell is-done"></div>
+              <div class="hm-cell is-done"></div>
+              <div class="hm-cell is-done"></div>
+              <div class="hm-cell is-partial is-today"></div>
+              <div class="hm-cell is-future"></div>
+              <div class="hm-cell is-future"></div>
+              <div class="hm-cell is-future"></div>
+
+              <!-- 목표 · tall -->
+              <div class="hm-rowlabel">목표</div>
+              <div class="hm-cell hm-cell--tall is-done"><span class="hm-goal-name">링크드인</span><span class="hm-goal-count">외2</span></div>
+              <div class="hm-cell hm-cell--tall is-done"><span class="hm-goal-name">혁이 결혼식</span><span class="hm-goal-count">외1</span></div>
+              <div class="hm-cell hm-cell--tall is-partial"><span class="hm-goal-name">링크드인</span><span class="hm-goal-count">외2</span></div>
+              <div class="hm-cell hm-cell--tall is-partial is-today"><span class="hm-goal-name">운동 피드</span><span class="hm-goal-count">외1</span></div>
+              <div class="hm-cell hm-cell--tall is-planned"><span class="hm-goal-name">혁이 결혼식</span><span class="hm-goal-count">외1</span></div>
+              <div class="hm-cell hm-cell--tall is-future"></div>
+              <div class="hm-cell hm-cell--tall is-future"></div>
+            </div>
+          </section>
+
+
+          <!-- ======== LAYER 3 — TODAY HEADER ======== -->
+          <header class="today-header">
+            <div class="today-day">목요일 · <span>오늘</span></div>
+            <div class="today-pts">+42 pt</div>
+          </header>
+
+          <!-- Secondary ribbon (yesterday carryover) -->
+          <aside class="ribbon" role="button" tabindex="0">
+            <span class="ribbon-dot"></span>
+            <span class="ribbon-text"><strong>어제 미완</strong> · 링크드인 포스트 외 1개</span>
+            <span class="ribbon-arrow">›</span>
+          </aside>
+
+          <!-- Primary cards -->
+          <div class="cards-stack">
+            <button class="card">
+              <svg class="card-ico" aria-hidden="true"><use href="#ico-weight"/></svg>
+              <span class="card-label">체중</span>
+              <span class="card-value">96.4 kg <span class="card-delta">−0.3</span></span>
+            </button>
+
+            <button class="card">
+              <svg class="card-ico" aria-hidden="true"><use href="#ico-meal"/></svg>
+              <span class="card-label">식단</span>
+              <span class="card-value"><span class="badge">2/4</span></span>
+            </button>
+
+            <button class="card">
+              <svg class="card-ico" aria-hidden="true"><use href="#ico-workout"/></svg>
+              <span class="card-label">운동</span>
+              <span class="card-value">2.4t <span class="card-sub">· 45분</span></span>
+            </button>
+
+            <button class="card">
+              <svg class="card-ico" aria-hidden="true"><use href="#ico-routine"/></svg>
+              <span class="card-label">필수 루틴</span>
+              <span class="card-value"><span class="badge">3/4</span></span>
+            </button>
+
+            <button class="card">
+              <svg class="card-ico" aria-hidden="true"><use href="#ico-goal"/></svg>
+              <span class="card-label">오늘의 목표</span>
+              <span class="card-value"><span class="badge">1/3</span></span>
+            </button>
+          </div>
+
+          <!-- Promo zone -->
+          <section class="promo-zone">
+            <div class="promo-zone-label">알림 · 2</div>
+            <button class="promo-item">
+              <span class="promo-icon"><svg width="18" height="18"><use href="#pr-flame"/></svg></span>
+              <span class="promo-text"><strong>12일 연속.</strong> 30일 마일스톤까지 18일.</span>
+              <span class="promo-arrow">›</span>
+            </button>
+            <button class="promo-item">
+              <span class="promo-icon"><svg width="18" height="18"><use href="#pr-invite"/></svg></span>
+              <span class="promo-text">친구 초대 · 같이 Stay Hard</span>
+              <span class="promo-arrow">›</span>
+            </button>
+          </section>
+
+        </main>
+
+        <!-- Bottom nav -->
+        <nav class="bot-nav">
+          <button class="bn-item is-active">
+            <svg width="18" height="18"><use href="#nav-record"/></svg>
+            <span>기록</span>
+          </button>
+          <button class="bn-item">
+            <svg width="18" height="18"><use href="#nav-challenge"/></svg>
+            <span>챌린지</span>
+          </button>
+          <button class="bn-item">
+            <svg width="18" height="18"><use href="#nav-stats"/></svg>
+            <span>통계</span>
+          </button>
+        </nav>
+
+      </div><!-- /phone-frame -->
+    </figure>
+
+
+
+    <!-- =============================================================
+         FRAME 2 — EMPTY (first-week user, 목요일)
+         ============================================================= -->
+
+    <figure class="frame-wrap">
+      <figcaption><span>Empty · 첫 주 사용자 · 목요일</span></figcaption>
+
+      <div class="phone-frame">
+
+        <header class="app-header">
+          <div class="app-title">Stay Hard</div>
+          <button class="app-avatar" aria-label="프로필">신</button>
+        </header>
+
+        <main class="record-tab">
+
+          <!-- ======== LAYER 1 — IDENTITY (newcomer) ======== -->
+          <section class="identity-band">
+            <div class="mascot"><svg width="24" height="28"><use href="#mascot"/></svg></div>
+            <div class="identity-main">
+              <div class="tier-line">
+                <span class="tier-name">방관자</span>
+                <span class="tier-sep">·</span>
+                <span class="tier-score">10</span>
+                <span class="tier-sep">·</span>
+                <span class="tier-streak" style="color:var(--color-ink-3)">🔥 0일</span>
+              </div>
+              <div class="tier-sub">다음 각성자까지 · 190pt</div>
+            </div>
+            <div class="identity-quote">"일어나… 아직 늦지 않았어."</div>
+          </section>
+
+
+          <!-- ======== LAYER 2 — HEATMAP (empty) ======== -->
+          <section class="heatmap is-animate">
+            <header class="hm-header">
+              <h2 class="hm-title">4월 · <span>이번 주</span></h2>
+              <div style="display:flex; gap:4px">
+                <button class="hm-nav" aria-label="이전 주">‹</button>
+                <button class="hm-nav" aria-label="다음 주">›</button>
+              </div>
+            </header>
+
+            <div class="hm-grid">
+              <div class="hm-cornerspacer"></div>
+              <div class="hm-dow">월</div>
+              <div class="hm-dow">화</div>
+              <div class="hm-dow">수</div>
+              <div class="hm-dow is-today">목</div>
+              <div class="hm-dow">금</div>
+              <div class="hm-dow">토</div>
+              <div class="hm-dow">일</div>
+
+              <div class="hm-rowlabel">식단</div>
+              <div class="hm-cell is-empty"></div>
+              <div class="hm-cell is-empty"></div>
+              <div class="hm-cell is-empty"></div>
+              <div class="hm-cell is-empty is-today"></div>
+              <div class="hm-cell is-future"></div>
+              <div class="hm-cell is-future"></div>
+              <div class="hm-cell is-future"></div>
+
+              <div class="hm-rowlabel">운동</div>
+              <div class="hm-cell is-empty"></div>
+              <div class="hm-cell is-empty"></div>
+              <div class="hm-cell is-empty"></div>
+              <div class="hm-cell is-empty is-today"></div>
+              <div class="hm-cell is-future"></div>
+              <div class="hm-cell is-future"></div>
+              <div class="hm-cell is-future"></div>
+
+              <div class="hm-rowlabel">루틴</div>
+              <div class="hm-cell is-empty"></div>
+              <div class="hm-cell is-empty"></div>
+              <div class="hm-cell is-empty"></div>
+              <div class="hm-cell is-empty is-today"></div>
+              <div class="hm-cell is-future"></div>
+              <div class="hm-cell is-future"></div>
+              <div class="hm-cell is-future"></div>
+
+              <div class="hm-rowlabel">목표</div>
+              <div class="hm-cell hm-cell--tall is-future"></div>
+              <div class="hm-cell hm-cell--tall is-future"></div>
+              <div class="hm-cell hm-cell--tall is-future"></div>
+              <div class="hm-cell hm-cell--tall is-future is-today"></div>
+              <div class="hm-cell hm-cell--tall is-future"></div>
+              <div class="hm-cell hm-cell--tall is-future"></div>
+              <div class="hm-cell hm-cell--tall is-future"></div>
+            </div>
+          </section>
+
+
+          <!-- ======== LAYER 3 — TODAY HEADER (empty) ======== -->
+          <header class="today-header">
+            <div class="today-day">목요일 · <span>오늘</span></div>
+            <div class="today-pts is-empty">시작 전</div>
+          </header>
+
+          <!-- No ribbon (no yesterday to carry over for first-week user) -->
+
+          <div class="cards-stack">
+            <button class="card">
+              <svg class="card-ico" aria-hidden="true"><use href="#ico-weight"/></svg>
+              <span class="card-label">체중</span>
+              <span class="card-value is-empty">탭하여 입력</span>
+            </button>
+
+            <button class="card">
+              <svg class="card-ico" aria-hidden="true"><use href="#ico-meal"/></svg>
+              <span class="card-label">식단</span>
+              <span class="card-value is-empty">탭하여 추가</span>
+            </button>
+
+            <button class="card">
+              <svg class="card-ico" aria-hidden="true"><use href="#ico-workout"/></svg>
+              <span class="card-label">운동</span>
+              <span class="card-value is-empty">탭하여 추가</span>
+            </button>
+
+            <button class="card">
+              <svg class="card-ico" aria-hidden="true"><use href="#ico-routine"/></svg>
+              <span class="card-label">필수 루틴</span>
+              <span class="card-value"><span class="badge is-zero">0/4</span></span>
+            </button>
+
+            <button class="card">
+              <svg class="card-ico" aria-hidden="true"><use href="#ico-goal"/></svg>
+              <span class="card-label">오늘의 목표</span>
+              <span class="card-value is-empty">탭하여 추가</span>
+            </button>
+          </div>
+
+          <!-- Promo zone — onboarding mission for first-week user -->
+          <section class="promo-zone">
+            <div class="promo-zone-label">알림 · 1</div>
+            <button class="promo-item">
+              <span class="promo-icon"><svg width="18" height="18"><use href="#pr-flame"/></svg></span>
+              <span class="promo-text"><strong>첫 주 미션 시작.</strong> 오늘 체중부터.</span>
+              <span class="promo-arrow">›</span>
+            </button>
+          </section>
+
+        </main>
+
+        <nav class="bot-nav">
+          <button class="bn-item is-active">
+            <svg width="18" height="18"><use href="#nav-record"/></svg>
+            <span>기록</span>
+          </button>
+          <button class="bn-item">
+            <svg width="18" height="18"><use href="#nav-challenge"/></svg>
+            <span>챌린지</span>
+          </button>
+          <button class="bn-item">
+            <svg width="18" height="18"><use href="#nav-stats"/></svg>
+            <span>통계</span>
+          </button>
+        </nav>
+
+      </div>
+    </figure>
+
+  </div><!-- /frames-row -->
+</div><!-- /review-shell -->
+
+</body>
+</html>

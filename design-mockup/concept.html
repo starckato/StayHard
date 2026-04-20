@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Stay Hard · Concept · Will As Light</title>
+  <link rel="stylesheet" as="style" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css" />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Archivo+Black&display=swap" rel="stylesheet">
+  <style>
+    /* ============================================================
+       Concept palette — Graphite × Bone × Pure Light
+       Neutral. The grid is the only thing that earns presence.
+       ============================================================ */
+
+    :root {
+      --bg-page:         #0C0D0F;
+      --bg-surface:      #131417;
+      --bg-elev:         #1B1C20;
+      --bg-card:         #1B1C20;
+
+      --ink-1:           #E8E5DD;   /* primary */
+      --ink-2:           #8F8F8A;   /* secondary */
+      --ink-3:           #5A5A57;   /* tertiary */
+      --ink-4:           #3A3A38;   /* dim */
+
+      --line-faint:      #1F2023;
+      --line:            #2A2B2F;
+      --line-strong:     #3A3B3F;
+
+      /* THE SACRED — heatmap cell states */
+      --cell-done:       #FFFFFF;   /* will, actualized */
+      --cell-partial:    #6A6B6E;   /* will, partial */
+      --cell-empty:      #232428;   /* past, not chosen */
+      --cell-future:     transparent;
+
+      /* The one earned color */
+      --penalty:         #C94B2A;
+
+      --font-ui:
+        'Pretendard Variable', Pretendard, -apple-system,
+        BlinkMacSystemFont, 'Apple SD Gothic Neo',
+        'Noto Sans KR', system-ui, sans-serif;
+      --font-mono:
+        'IBM Plex Mono', ui-monospace, SFMono-Regular,
+        Menlo, Consolas, monospace;
+      --font-display:
+        'Archivo Black', 'Pretendard Variable', sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: var(--bg-page);
+      color: var(--ink-1);
+      font-family: var(--font-ui);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
+
+    /* ------------------------------------------------------------
+       Layout
+       ------------------------------------------------------------ */
+
+    .shell {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 80px 32px 120px;
+    }
+
+    .eyebrow {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--ink-3);
+      margin: 0 0 14px;
+    }
+
+    h1 {
+      margin: 0 0 14px;
+      font-size: 48px;
+      line-height: 1.05;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      color: var(--ink-1);
+    }
+    h1 em {
+      font-style: normal;
+      color: var(--ink-3);
+    }
+
+    .lede {
+      max-width: 620px;
+      font-size: 15px;
+      line-height: 1.7;
+      color: var(--ink-2);
+      margin: 0 0 56px;
+    }
+
+    .section {
+      margin-top: 80px;
+      padding-top: 32px;
+      border-top: 0.5px solid var(--line);
+    }
+
+    .section-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      margin-bottom: 24px;
+    }
+
+    .section-head h2 {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+    }
+
+    .section-head .tag {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--ink-3);
+    }
+
+    .section-note {
+      max-width: 620px;
+      font-size: 13px;
+      line-height: 1.7;
+      color: var(--ink-2);
+      margin: 0 0 28px;
+    }
+
+    /* ------------------------------------------------------------
+       Palette swatches
+       ------------------------------------------------------------ */
+
+    .palette {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 1px;
+      background: var(--line);
+      border: 0.5px solid var(--line);
+    }
+    .palette-chip {
+      padding: 16px 14px 18px;
+      background: var(--chip);
+      color: var(--on, var(--ink-1));
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.04em;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-height: 88px;
+    }
+    .palette-chip strong { font-weight: 500; font-size: 12px; letter-spacing: 0.02em; }
+    .palette-chip span { color: inherit; opacity: 0.6; font-size: 10px; }
+
+    /* ------------------------------------------------------------
+       Heatmap (the hero)
+       ------------------------------------------------------------ */
+
+    .hero-wrap {
+      background: var(--bg-surface);
+      border: 0.5px solid var(--line);
+      padding: 40px 44px 42px;
+    }
+
+    .hm-top {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      margin-bottom: 24px;
+    }
+
+    .hm-title {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--ink-1);
+      letter-spacing: -0.01em;
+    }
+    .hm-title span { color: var(--ink-3); font-weight: 400; margin-left: 2px; }
+
+    .hm-nav {
+      display: flex;
+      gap: 4px;
+    }
+    .hm-nav button {
+      width: 22px;
+      height: 22px;
+      color: var(--ink-3);
+      font-size: 14px;
+      line-height: 1;
+    }
+
+    .hm {
+      display: grid;
+      grid-template-columns: 44px repeat(7, 1fr);
+      column-gap: 4px;
+      row-gap: 6px;
+      font-variant-numeric: tabular-nums;
+    }
+    .hm > .spacer {}
+    .hm .dow {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--ink-3);
+      letter-spacing: 0.1em;
+      text-align: center;
+      padding-bottom: 4px;
+      position: relative;
+    }
+    .hm .dow.today {
+      color: var(--ink-1);
+      font-weight: 600;
+    }
+    .hm .dow.today::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 3px;
+      height: 3px;
+      background: var(--ink-1);
+      border-radius: 50%;
+    }
+    .hm .rowlabel {
+      font-size: 12px;
+      color: var(--ink-2);
+      align-self: center;
+      text-align: right;
+      padding-right: 6px;
+      letter-spacing: -0.01em;
+    }
+    .hm .cell {
+      height: 22px;
+      background: var(--cell-empty);
+      border-radius: 2px;
+    }
+    .hm .cell.done      { background: var(--cell-done); }
+    .hm .cell.partial   { background: var(--cell-partial); }
+    .hm .cell.future {
+      background: transparent;
+      border: 0.5px dashed var(--ink-4);
+    }
+    .hm .cell.planned {
+      background: var(--bg-elev);
+    }
+    .hm .cell.today {
+      outline: 1px solid var(--ink-1);
+      outline-offset: -1px;
+    }
+
+    .hm .cell--goal {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 0 6px;
+      overflow: hidden;
+      line-height: 1;
+    }
+    .hm .goal-name {
+      font-size: 10.5px;
+      flex: 1 1 auto;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      letter-spacing: -0.02em;
+      font-weight: 500;
+    }
+    .hm .goal-count {
+      font-size: 9px;
+      flex: 0 0 auto;
+      opacity: 0.7;
+      font-weight: 500;
+    }
+    .hm .cell--goal.done .goal-name,
+    .hm .cell--goal.done .goal-count { color: #0C0D0F; }
+    .hm .cell--goal.partial .goal-name,
+    .hm .cell--goal.partial .goal-count { color: var(--ink-1); }
+    .hm .cell--goal.planned .goal-name { color: var(--ink-3); font-weight: 400; }
+    .hm .cell--goal.planned .goal-count { color: var(--ink-4); }
+
+    /* ------------------------------------------------------------
+       Identity band specimen
+       ------------------------------------------------------------ */
+
+    .id-band {
+      background: var(--bg-surface);
+      border: 0.5px solid var(--line);
+      padding: 28px 32px 26px;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      column-gap: 20px;
+      align-items: center;
+    }
+
+    .id-mascot {
+      width: 36px;
+      height: 42px;
+      color: var(--ink-1);
+      opacity: 0.85;
+    }
+
+    .id-main {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .id-row {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+    }
+    .id-tier {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--ink-1);
+      letter-spacing: -0.005em;
+    }
+    .id-score {
+      font-family: var(--font-display);
+      font-size: 28px;
+      color: var(--ink-1);
+      letter-spacing: -0.02em;
+      line-height: 1;
+    }
+    .id-streak {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--ink-2);
+      letter-spacing: 0.02em;
+    }
+    .id-next {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--ink-3);
+      letter-spacing: 0.04em;
+    }
+
+    .id-quote {
+      font-family: var(--font-ui);
+      font-style: italic;
+      font-weight: 400;
+      font-size: 13px;
+      color: var(--ink-2);
+      line-height: 1.5;
+      text-align: right;
+      max-width: 220px;
+      letter-spacing: -0.01em;
+    }
+
+    /* ------------------------------------------------------------
+       Primary card row specimen
+       ------------------------------------------------------------ */
+
+    .cards {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .card {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      padding: 14px 18px;
+      background: var(--bg-card);
+      border: 0.5px solid var(--line);
+      font-size: 14px;
+    }
+
+    .card-label {
+      color: var(--ink-1);
+      font-weight: 500;
+      letter-spacing: -0.01em;
+    }
+
+    .card-value {
+      font-family: var(--font-mono);
+      color: var(--ink-1);
+      font-variant-numeric: tabular-nums;
+      letter-spacing: -0.01em;
+    }
+
+    .card-delta {
+      margin-left: 8px;
+      color: var(--ink-1);
+      opacity: 0.55;
+      font-size: 12px;
+    }
+
+    .badge {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      padding: 3px 8px;
+      border: 0.5px solid var(--line-strong);
+      color: var(--ink-1);
+      letter-spacing: 0;
+    }
+    .badge.zero { color: var(--ink-3); border-color: var(--line); }
+    .badge.full { background: var(--ink-1); color: var(--bg-page); border-color: var(--ink-1); }
+
+    /* Primary card — EXPANDED (inline edit) */
+    .card.expanded {
+      display: block;
+      border: 1px solid var(--ink-1);
+      padding: 18px 20px 18px;
+      background: var(--bg-card);
+    }
+    .card-ex-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      padding-bottom: 14px;
+      border-bottom: 0.5px solid var(--line);
+    }
+    .card-ex-head .card-label { font-size: 14px; }
+    .card-ex-meta {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.06em;
+      color: var(--ink-3);
+      text-transform: uppercase;
+    }
+    .card-ex-body {
+      padding: 22px 0 14px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+    .card-ex-big {
+      font-family: var(--font-display);
+      font-size: 56px;
+      color: var(--ink-1);
+      letter-spacing: -0.03em;
+      line-height: 1;
+    }
+    .card-ex-big .unit {
+      font-family: var(--font-mono);
+      font-size: 14px;
+      color: var(--ink-2);
+      letter-spacing: 0.05em;
+      margin-left: 6px;
+      vertical-align: middle;
+    }
+    .card-ex-delta-row {
+      display: flex;
+      gap: 14px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--ink-3);
+      letter-spacing: 0.04em;
+    }
+    .card-ex-delta-row strong { color: var(--ink-1); font-weight: 500; }
+
+    .card-ex-actions {
+      display: flex;
+      gap: 8px;
+      padding-top: 14px;
+      border-top: 0.5px solid var(--line);
+      margin-top: 4px;
+    }
+    .cta {
+      padding: 11px 16px;
+      background: var(--ink-1);
+      color: var(--bg-page);
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: -0.005em;
+      flex: 1;
+      text-align: center;
+    }
+    .cta.ghost {
+      background: transparent;
+      color: var(--ink-3);
+      flex: 0 0 auto;
+    }
+
+    /* ------------------------------------------------------------
+       Motto / quote card specimen
+       ------------------------------------------------------------ */
+
+    .motto {
+      background: var(--bg-surface);
+      border: 0.5px solid var(--line);
+      padding: 56px 40px 60px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 24px;
+      text-align: center;
+    }
+    .motto-mark {
+      font-family: var(--font-display);
+      font-size: 14px;
+      letter-spacing: 0.28em;
+      color: var(--ink-1);
+    }
+    .motto-rule {
+      width: 28px;
+      height: 0.5px;
+      background: var(--line-strong);
+      border: 0;
+      margin: 0;
+    }
+    .motto-quote {
+      font-family: var(--font-ui);
+      font-style: italic;
+      font-size: 15px;
+      line-height: 1.7;
+      color: var(--ink-1);
+      letter-spacing: -0.01em;
+      font-weight: 300;
+      max-width: 360px;
+    }
+
+    /* ------------------------------------------------------------
+       Penalty specimen (the one earned color)
+       ------------------------------------------------------------ */
+
+    .penalty-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      padding: 14px 18px;
+      background: var(--bg-card);
+      border: 0.5px solid var(--line);
+      border-left: 2px solid var(--penalty);
+      align-items: center;
+    }
+    .penalty-row .card-label { color: var(--ink-1); }
+    .penalty-row .pt { font-family: var(--font-mono); font-size: 12px; color: var(--penalty); }
+
+    /* Typography specimen */
+    .type-row {
+      display: grid;
+      grid-template-columns: 140px 1fr;
+      align-items: baseline;
+      padding: 14px 0;
+      border-top: 0.5px solid var(--line);
+      gap: 20px;
+    }
+    .type-row:first-child { border-top: 0; }
+    .type-row .tag {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--ink-3);
+    }
+  </style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="mascot" viewBox="0 0 24 28">
+      <rect x="5" y="1.5" width="3" height="3" fill="currentColor"/>
+      <rect x="16" y="1.5" width="3" height="3" fill="currentColor"/>
+      <rect x="6.5" y="3" width="11" height="8.5" rx="1" fill="currentColor"/>
+      <rect x="9.5" y="6" width="1.4" height="1.4" fill="#0C0D0F"/>
+      <rect x="13.1" y="6" width="1.4" height="1.4" fill="#0C0D0F"/>
+      <rect x="10.6" y="8.6" width="2.8" height="0.8" fill="#0C0D0F"/>
+      <rect x="5.5" y="11.5" width="13" height="10" rx="1.5" fill="currentColor"/>
+      <rect x="7" y="21.5" width="3" height="5.5" fill="currentColor"/>
+      <rect x="14" y="21.5" width="3" height="5.5" fill="currentColor"/>
+    </symbol>
+  </defs>
+</svg>
+
+<div class="shell">
+
+  <p class="eyebrow">Stay Hard · Concept</p>
+  <h1>의지는 빛이다.<br><em>나머지는 전부 종이에 배경처럼.</em></h1>
+  <p class="lede">
+    격자(grid)는 우리의 의지가 쌓인 흔적이다. 점이 모여 선이 되고, 선이 쌓여 한 사람이 된다.
+    이 앱은 기분을 꾸미지 않는다. 따뜻하지도, 차갑지도 않다 — 현실 그대로.
+    <br><br>
+    배경은 그라파이트(graphite). 글자는 뼈(bone). 내가 해낸 칸만이 순백(pure white)으로 드러난다.
+    감정이 붙는 색은 하나, 패널티(penalty)뿐. 그 외의 모든 장식은 사라진다.
+  </p>
+
+
+  <!-- =======================================================
+       PALETTE
+       ======================================================= -->
+  <div class="section">
+    <div class="section-head">
+      <h2>Palette</h2>
+      <span class="tag">Graphite × Bone × Pure Light</span>
+    </div>
+    <p class="section-note">
+      색은 감정의 표현이 아니라 의지의 가시화. 완료된 칸만이 광원이다.
+      패널티(-pt)는 유일하게 색을 쓰되, 이름 값 하는 붉음 — 광고색 아닌 피색.
+    </p>
+
+    <div class="palette">
+      <div class="palette-chip" style="--chip:#0C0D0F;--on:#E8E5DD"><strong>PAGE</strong><span>#0C0D0F</span></div>
+      <div class="palette-chip" style="--chip:#131417;--on:#E8E5DD"><strong>SURFACE</strong><span>#131417</span></div>
+      <div class="palette-chip" style="--chip:#1B1C20;--on:#E8E5DD"><strong>CARD</strong><span>#1B1C20</span></div>
+      <div class="palette-chip" style="--chip:#232428;--on:#8F8F8A"><strong>CELL · empty</strong><span>#232428</span></div>
+      <div class="palette-chip" style="--chip:#6A6B6E;--on:#0C0D0F"><strong>CELL · partial</strong><span>#6A6B6E</span></div>
+      <div class="palette-chip" style="--chip:#FFFFFF;--on:#0C0D0F"><strong>CELL · done</strong><span>will · #FFFFFF</span></div>
+      <div class="palette-chip" style="--chip:#C94B2A;--on:#FFFFFF"><strong>PENALTY</strong><span>earned · #C94B2A</span></div>
+      <div class="palette-chip" style="--chip:#0C0D0F;--on:#E8E5DD;border-top:0.5px solid #3A3B3F"><strong>INK · bone</strong><span>#E8E5DD</span></div>
+    </div>
+  </div>
+
+
+  <!-- =======================================================
+       HEATMAP — HERO
+       ======================================================= -->
+  <div class="section">
+    <div class="section-head">
+      <h2>격자 — 의지의 지도</h2>
+      <span class="tag">Grid as protagonist</span>
+    </div>
+    <p class="section-note">
+      이번 주 내가 해낸 일과 하지 않은 일. 흰 칸은 내가 만들어낸 빛.
+      어두운 칸은 피하려 했던 순간.
+    </p>
+
+    <div class="hero-wrap">
+      <div class="hm-top">
+        <div class="hm-title">4월 · <span>이번 주</span></div>
+        <div class="hm-nav">
+          <button>‹</button>
+          <button>›</button>
+        </div>
+      </div>
+
+      <div class="hm">
+        <div class="spacer"></div>
+        <div class="dow">월</div>
+        <div class="dow">화</div>
+        <div class="dow">수</div>
+        <div class="dow today">목</div>
+        <div class="dow">금</div>
+        <div class="dow">토</div>
+        <div class="dow">일</div>
+
+        <div class="rowlabel">식단</div>
+        <div class="cell done"></div>
+        <div class="cell done"></div>
+        <div class="cell partial"></div>
+        <div class="cell partial today"></div>
+        <div class="cell future"></div>
+        <div class="cell future"></div>
+        <div class="cell future"></div>
+
+        <div class="rowlabel">운동</div>
+        <div class="cell done"></div>
+        <div class="cell"></div>
+        <div class="cell done"></div>
+        <div class="cell today"></div>
+        <div class="cell future"></div>
+        <div class="cell future"></div>
+        <div class="cell future"></div>
+
+        <div class="rowlabel">루틴</div>
+        <div class="cell done"></div>
+        <div class="cell done"></div>
+        <div class="cell done"></div>
+        <div class="cell partial today"></div>
+        <div class="cell future"></div>
+        <div class="cell future"></div>
+        <div class="cell future"></div>
+
+        <div class="rowlabel">목표</div>
+        <div class="cell cell--goal done"><span class="goal-name">링크드인</span><span class="goal-count">외2</span></div>
+        <div class="cell cell--goal done"><span class="goal-name">혁이 결혼식</span><span class="goal-count">외1</span></div>
+        <div class="cell cell--goal partial"><span class="goal-name">링크드인</span><span class="goal-count">외2</span></div>
+        <div class="cell cell--goal partial today"><span class="goal-name">운동 피드</span><span class="goal-count">외1</span></div>
+        <div class="cell cell--goal planned"><span class="goal-name">혁이 결혼식</span><span class="goal-count">외1</span></div>
+        <div class="cell cell--goal future"></div>
+        <div class="cell cell--goal future"></div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- =======================================================
+       IDENTITY BAND
+       ======================================================= -->
+  <div class="section">
+    <div class="section-head">
+      <h2>정체성 · Identity</h2>
+      <span class="tag">Archivo Black for past accumulated</span>
+    </div>
+    <p class="section-note">
+      큰 숫자는 과거의 축적 · 내가 쌓아온 것의 무게. 다른 모든 것은 받침.
+    </p>
+
+    <div class="id-band">
+      <svg class="id-mascot"><use href="#mascot"/></svg>
+      <div class="id-main">
+        <div class="id-row">
+          <div class="id-score">248</div>
+          <div class="id-tier">수련자</div>
+          <div class="id-streak">12 days</div>
+        </div>
+        <div class="id-next">다음 지배자까지 · 252 pt</div>
+      </div>
+      <div class="id-quote">"멈추지 마. 넌 이미 다른 사람이야."</div>
+    </div>
+  </div>
+
+
+  <!-- =======================================================
+       PRIMARY CARDS — DEFAULT + EXPANDED
+       ======================================================= -->
+  <div class="section">
+    <div class="section-head">
+      <h2>Primary Card · inline 전개</h2>
+      <span class="tag">Default · Expanded · Weight example</span>
+    </div>
+
+    <div class="cards">
+      <div class="card">
+        <span class="card-label">체중</span>
+        <span class="card-value">96.4 kg <span class="card-delta">−0.3</span></span>
+      </div>
+
+      <!-- Expanded -->
+      <div class="card expanded">
+        <header class="card-ex-head">
+          <span class="card-label">체중</span>
+          <span class="card-ex-meta">이전 96.7 · 목표 90.0</span>
+        </header>
+
+        <div class="card-ex-body">
+          <div class="card-ex-big">96.4<span class="unit">kg</span></div>
+          <div class="card-ex-delta-row">
+            <span>어제 대비 <strong>−0.3</strong></span>
+            <span>목표까지 <strong>−6.4</strong></span>
+          </div>
+        </div>
+
+        <div class="card-ex-actions">
+          <button class="cta">저장</button>
+          <button class="cta ghost">취소</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <span class="card-label">식단</span>
+        <span class="card-value"><span class="badge">2/4</span></span>
+      </div>
+      <div class="card">
+        <span class="card-label">운동</span>
+        <span class="card-value">2.4t <span class="card-delta">45분</span></span>
+      </div>
+      <div class="card">
+        <span class="card-label">필수 루틴</span>
+        <span class="card-value"><span class="badge">3/4</span></span>
+      </div>
+      <div class="card">
+        <span class="card-label">오늘의 목표</span>
+        <span class="card-value"><span class="badge">1/3</span></span>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- =======================================================
+       PENALTY (the one earned color)
+       ======================================================= -->
+  <div class="section">
+    <div class="section-head">
+      <h2>Penalty · 유일하게 색을 허용하는 자리</h2>
+      <span class="tag">−pt only</span>
+    </div>
+    <p class="section-note">
+      금지 음식. 피하지 못한 순간. 점수는 실제로 깎이고, 그 사실은 숨기지 않는다.
+    </p>
+
+    <div class="penalty-row">
+      <span class="card-label">금지 음식 기록 · 오후 10:12</span>
+      <span class="pt">−30 pt</span>
+    </div>
+  </div>
+
+
+  <!-- =======================================================
+       MOTTO
+       ======================================================= -->
+  <div class="section">
+    <div class="section-head">
+      <h2>Motto</h2>
+      <span class="tag">Literal · not decorative</span>
+    </div>
+    <p class="section-note">
+      서체에도 꾸밈을 더하지 않는다. 세리프가 가진 따뜻함은 버리고,
+      이탤릭으로만 속삭이듯.
+    </p>
+
+    <div class="motto">
+      <div class="motto-mark">STAY HARD</div>
+      <hr class="motto-rule">
+      <div class="motto-quote">
+        기록은 점.<br>
+        하루는 선.<br>
+        반복은 격자.<br>
+        <br>
+        나는 나의 격자다.
+      </div>
+    </div>
+  </div>
+
+
+  <!-- =======================================================
+       TYPE SPECIMEN
+       ======================================================= -->
+  <div class="section">
+    <div class="section-head">
+      <h2>Typography</h2>
+      <span class="tag">Pretendard · Plex Mono · Archivo Black</span>
+    </div>
+
+    <div>
+      <div class="type-row">
+        <span class="tag">Display · 축적</span>
+        <span style="font-family:var(--font-display); font-size:56px; letter-spacing:-0.02em; line-height:1;">3,512</span>
+      </div>
+      <div class="type-row">
+        <span class="tag">Hero · title</span>
+        <span style="font-size:24px; font-weight:600; letter-spacing:-0.015em;">삶의 조종간은 네 손에 있어야 한다</span>
+      </div>
+      <div class="type-row">
+        <span class="tag">Body · 본문</span>
+        <span style="font-size:14px; line-height:1.7; color:var(--ink-2);">체중 96.4kg. 식단 2/4. 운동 45분. 루틴 3/4. 오늘의 목표 1/3 — 숫자는 나를 속이지 않는다.</span>
+      </div>
+      <div class="type-row">
+        <span class="tag">Quote · 속삭임</span>
+        <span style="font-family:var(--font-ui); font-style:italic; font-weight:300; font-size:15px; color:var(--ink-1); letter-spacing:-0.01em;">"멈추지 마. 넌 이미 다른 사람이야."</span>
+      </div>
+      <div class="type-row">
+        <span class="tag">Mono · data</span>
+        <span style="font-family:var(--font-mono); font-size:14px; color:var(--ink-1); letter-spacing:0.02em;">2026-04-20 · D+12 · +42 pt</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

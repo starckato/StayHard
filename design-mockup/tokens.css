@@ -1,0 +1,117 @@
+/* ============================================================
+   Stay Hard · Design Tokens
+   Graphite × Bone × Pure Light
+   철학: 격자가 주인공. 의지만이 빛. 감정은 패널티에만 허용.
+   ============================================================ */
+
+:root {
+  /* ---- Surfaces (graphite) --------------------------------- */
+  --color-page:              #050507;   /* desktop review bg */
+  --color-surface:           #0A0A0C;   /* app/frame bg */
+  --color-surface-1:         #131417;   /* section bg */
+  --color-surface-2:         #1B1C20;   /* card, promo zone */
+  --color-surface-3:         #24252A;   /* elevated */
+
+  /* ---- Heatmap cell surfaces ------------------------------- */
+  --color-hm-empty:          #1B1C20;   /* past, not chosen */
+  --color-hm-future-dot:     #2E2E34;   /* dashed future border */
+
+  /* ---- Ink (bone, warm-neutral) ---------------------------- */
+  --color-ink:               #EDEBE3;   /* primary */
+  --color-ink-2:             #8F8F8A;   /* secondary */
+  --color-ink-3:             #5A5A57;   /* tertiary */
+  --color-ink-4:             #3A3A38;   /* disabled / dim */
+
+  /* ---- Lines ----------------------------------------------- */
+  --color-line-faint:        #141418;
+  --color-line:              #24252A;
+  --color-line-strong:       #3A3B3F;
+
+  /* ---- WILL = pure light (the only non-color accent) ------- */
+  --color-will:              #FFFFFF;   /* done / actualized */
+  --color-will-soft:         #6A6B6E;   /* partial */
+  --color-will-faint:        #1B1C20;   /* badge bg (subtle) */
+  --color-will-on:           #0A0A0C;   /* text on white cells */
+  --color-will-hover:        #F5F5F0;
+
+  /* ---- Backward-compat aliases (will be phased out) -------- */
+  --color-purple-400:        var(--color-will);
+  --color-purple-100:        var(--color-will-soft);
+  --color-purple-50:         var(--color-will-faint);
+  --color-purple-ink:        var(--color-will-on);
+  --color-purple-500:        var(--color-will-hover);
+
+  /* ---- Warning (no amber — ink-based neutrality) ----------- */
+  --color-warning:           var(--color-ink-2);
+  --color-warning-soft:      var(--color-surface-2);
+
+  /* ---- Penalty (only earned color) ------------------------- */
+  --color-penalty:           #C94B2A;   /* oxblood, deep */
+  --color-penalty-soft:      #2A1212;
+  --color-penalty-bright:    #E85A38;   /* for count-down number flash */
+
+  /* ---- Typography ------------------------------------------ */
+  --font-ui:
+    'Pretendard Variable', Pretendard,
+    -apple-system, BlinkMacSystemFont,
+    'Apple SD Gothic Neo', 'Noto Sans KR',
+    system-ui, sans-serif;
+  --font-mono:
+    'IBM Plex Mono', ui-monospace, SFMono-Regular,
+    Menlo, Consolas, monospace;
+  --font-display:
+    'Archivo Black',
+    'Pretendard Variable', Pretendard,
+    sans-serif;
+  --font-serif:
+    'Noto Serif KR', 'Noto Serif', Georgia,
+    serif;   /* retained but deprecated — Pretendard italic preferred */
+
+  /* Type scale */
+  --text-10:   10px;
+  --text-11:   11px;
+  --text-12:   12px;
+  --text-13:   13px;
+  --text-14:   14px;
+  --text-15:   15px;
+  --text-17:   17px;
+  --text-20:   20px;
+  --text-24:   24px;
+  --text-32:   32px;
+  --text-display: 48px;
+
+  /* Letter-spacing */
+  --track-tight:     -0.01em;
+  --track-base:      0;
+  --track-wide:      0.04em;
+  --track-wider:     0.08em;
+  --track-widest:    0.16em;
+
+  /* ---- Spacing (base 4) ------------------------------------ */
+  --space-1:    4px;
+  --space-2:    8px;
+  --space-3:    12px;
+  --space-4:    16px;
+  --space-5:    20px;
+  --space-6:    24px;
+  --space-8:    32px;
+  --space-10:   40px;
+  --space-12:   48px;
+
+  /* ---- Radii (sharp · disciplined) ------------------------- */
+  --radius-xs:  2px;
+  --radius-sm:  4px;
+  --radius-md:  6px;
+  --radius-lg:  10px;
+
+  /* ---- Borders -------------------------------------------- */
+  --border-hair:    0.5px solid var(--color-line);
+  --border-strong:  0.5px solid var(--color-line-strong);
+
+  /* ---- Motion ---------------------------------------------- */
+  --dur-fast:   140ms;
+  --dur-normal: 260ms;
+  --dur-slow:   420ms;
+  --ease-out-expo:  cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-out-cubic: cubic-bezier(0.33, 1, 0.68, 1);
+}

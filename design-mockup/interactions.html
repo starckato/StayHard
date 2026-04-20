@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Stay Hard · Redesign v1 · 카드 탭 상호작용 비교</title>
+  <link rel="stylesheet" as="style" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css" />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Serif+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="tokens.css">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="ico-weight" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M2.5 4.5h9l-0.8 6.5a1 1 0 0 1-1 0.9h-5.4a1 1 0 0 1-1-0.9L2.5 4.5Z"/>
+      <path d="M5 4.5v-0.7a2 2 0 0 1 4 0v0.7"/>
+      <path d="M6 7.5l1-1 1 1"/>
+    </symbol>
+    <symbol id="ico-routine" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="2" y="2" width="10" height="10" rx="1.5"/>
+      <path d="M4.5 7l2 2 3-4"/>
+    </symbol>
+    <symbol id="ico-meal" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M2 6.5a5 5 0 0 1 10 0"/>
+      <path d="M1.5 6.5h11"/>
+      <path d="M3.5 9h7"/>
+      <path d="M3 11h8"/>
+    </symbol>
+    <symbol id="ico-workout" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M2 5.5v3"/>
+      <path d="M3.5 4v6"/>
+      <path d="M10.5 4v6"/>
+      <path d="M12 5.5v3"/>
+      <path d="M3.5 7h7"/>
+    </symbol>
+    <symbol id="ico-goal" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="7" cy="7" r="5"/>
+      <circle cx="7" cy="7" r="2.6"/>
+      <circle cx="7" cy="7" r="0.6" fill="currentColor"/>
+    </symbol>
+  </defs>
+</svg>
+
+<div class="review-shell">
+
+  <header class="review-header">
+    <span class="review-eyebrow">Stay Hard · Redesign v1</span>
+    <h1>카드 탭 — 상호작용 2가지</h1>
+    <p>Primary card를 탭했을 때 입력 UI가 나타나는 두 가지 방식. <a href="index.html">← 기록 탭</a></p>
+  </header>
+
+
+  <!-- =============================================================
+       ROW 1 — 체중 (simple numeric input)
+       ============================================================= -->
+
+  <div class="compare-row-head">
+    <h2>체중 · 단일 숫자 입력</h2>
+    <span class="compare-sub">simple · numeric · daily</span>
+  </div>
+
+  <div class="frames-row">
+
+
+    <!-- Variant A: bottom sheet -->
+    <figure class="frame-wrap">
+      <figcaption><span>A · Bottom Sheet</span></figcaption>
+      <div class="phone-frame">
+
+        <!-- dimmed content behind -->
+        <div style="position:absolute; inset:0; z-index:1;">
+          <header class="app-header">
+            <div class="app-title">Stay Hard</div>
+            <div class="app-avatar">권</div>
+          </header>
+          <div class="today-header" style="padding:18px 20px 10px;">
+            <div class="today-day">목요일 · <span>오늘</span></div>
+            <div class="today-pts">+42 pt</div>
+          </div>
+          <div class="cards-stack">
+            <div class="card"><svg class="card-ico"><use href="#ico-weight"/></svg><span class="card-label">체중</span><span class="card-value">96.4 kg <span class="card-delta">−0.3</span></span></div>
+            <div class="card"><svg class="card-ico"><use href="#ico-meal"/></svg><span class="card-label">식단</span><span class="card-value"><span class="badge">2/4</span></span></div>
+            <div class="card"><svg class="card-ico"><use href="#ico-workout"/></svg><span class="card-label">운동</span><span class="card-value">2.4t <span class="card-sub">· 45분</span></span></div>
+            <div class="card"><svg class="card-ico"><use href="#ico-routine"/></svg><span class="card-label">필수 루틴</span><span class="card-value"><span class="badge">3/4</span></span></div>
+            <div class="card"><svg class="card-ico"><use href="#ico-goal"/></svg><span class="card-label">오늘의 목표</span><span class="card-value"><span class="badge">1/3</span></span></div>
+          </div>
+        </div>
+
+        <!-- backdrop -->
+        <div class="sheet-backdrop"></div>
+
+        <!-- sheet -->
+        <aside class="bottom-sheet">
+          <div class="sheet-handle"></div>
+          <header class="sheet-header">
+            <div class="sheet-title">체중</div>
+            <div class="sheet-sub">목 · 4월 20일</div>
+          </header>
+
+          <div class="sheet-body">
+            <div class="wheel-picker">
+              <div class="wheel-col">
+                <div class="wheel-stack">
+                  <div class="wheel-item">94</div>
+                  <div class="wheel-item">95</div>
+                  <div class="wheel-item is-center">96</div>
+                  <div class="wheel-item">97</div>
+                  <div class="wheel-item">98</div>
+                </div>
+              </div>
+              <div class="wheel-sep">.</div>
+              <div class="wheel-col">
+                <div class="wheel-stack">
+                  <div class="wheel-item">2</div>
+                  <div class="wheel-item">3</div>
+                  <div class="wheel-item is-center">4</div>
+                  <div class="wheel-item">5</div>
+                  <div class="wheel-item">6</div>
+                </div>
+              </div>
+              <div class="wheel-unit">kg</div>
+            </div>
+          </div>
+
+          <footer class="sheet-footer">
+            <button class="cta-primary">저장</button>
+          </footer>
+        </aside>
+
+      </div>
+    </figure>
+
+
+    <!-- Variant B: inline expand -->
+    <figure class="frame-wrap">
+      <figcaption><span>B · Inline Expand</span></figcaption>
+      <div class="phone-frame">
+
+        <header class="app-header">
+          <div class="app-title">Stay Hard</div>
+          <div class="app-avatar">권</div>
+        </header>
+
+        <main class="record-tab">
+
+          <!-- truncated identity/heatmap for space; show only today header + cards -->
+          <header class="today-header" style="padding-top: 22px;">
+            <div class="today-day">목요일 · <span>오늘</span></div>
+            <div class="today-pts">+42 pt</div>
+          </header>
+
+          <div class="cards-stack">
+
+            <!-- EXPANDED 체중 card -->
+            <div class="card is-expanded">
+              <header class="card-expanded-head">
+                <span class="card-label">
+                  <svg><use href="#ico-weight"/></svg>
+                  체중
+                </span>
+                <span class="card-meta">이전 96.7 kg</span>
+              </header>
+
+              <div class="card-expanded-body">
+                <div class="wheel-picker wheel-picker--compact">
+                  <div class="wheel-col">
+                    <div class="wheel-stack">
+                      <div class="wheel-item">95</div>
+                      <div class="wheel-item is-center">96</div>
+                      <div class="wheel-item">97</div>
+                    </div>
+                  </div>
+                  <div class="wheel-sep">.</div>
+                  <div class="wheel-col">
+                    <div class="wheel-stack">
+                      <div class="wheel-item">3</div>
+                      <div class="wheel-item is-center">4</div>
+                      <div class="wheel-item">5</div>
+                    </div>
+                  </div>
+                  <div class="wheel-unit">kg</div>
+                </div>
+              </div>
+
+              <div class="card-expanded-actions">
+                <button class="cta-inline">저장</button>
+                <button class="cta-ghost">취소</button>
+              </div>
+            </div>
+
+            <button class="card"><svg class="card-ico"><use href="#ico-meal"/></svg><span class="card-label">식단</span><span class="card-value"><span class="badge">2/4</span></span></button>
+            <button class="card"><svg class="card-ico"><use href="#ico-workout"/></svg><span class="card-label">운동</span><span class="card-value">2.4t <span class="card-sub">· 45분</span></span></button>
+            <button class="card"><svg class="card-ico"><use href="#ico-routine"/></svg><span class="card-label">필수 루틴</span><span class="card-value"><span class="badge">3/4</span></span></button>
+            <button class="card"><svg class="card-ico"><use href="#ico-goal"/></svg><span class="card-label">오늘의 목표</span><span class="card-value"><span class="badge">1/3</span></span></button>
+
+          </div>
+        </main>
+
+      </div>
+    </figure>
+
+  </div>
+
+
+  <!-- =============================================================
+       ROW 2 — 필수 루틴 (checklist)
+       ============================================================= -->
+
+  <div class="compare-row-head">
+    <h2>필수 루틴 · 체크리스트</h2>
+    <span class="compare-sub">list · toggle · daily</span>
+  </div>
+
+  <div class="frames-row">
+
+
+    <!-- Variant A: bottom sheet -->
+    <figure class="frame-wrap">
+      <figcaption><span>A · Bottom Sheet</span></figcaption>
+      <div class="phone-frame">
+
+        <div style="position:absolute; inset:0; z-index:1;">
+          <header class="app-header">
+            <div class="app-title">Stay Hard</div>
+            <div class="app-avatar">권</div>
+          </header>
+          <div class="today-header" style="padding:18px 20px 10px;">
+            <div class="today-day">목요일 · <span>오늘</span></div>
+            <div class="today-pts">+42 pt</div>
+          </div>
+          <div class="cards-stack">
+            <div class="card"><svg class="card-ico"><use href="#ico-weight"/></svg><span class="card-label">체중</span><span class="card-value">96.4 kg <span class="card-delta">−0.3</span></span></div>
+            <div class="card"><svg class="card-ico"><use href="#ico-meal"/></svg><span class="card-label">식단</span><span class="card-value"><span class="badge">2/4</span></span></div>
+            <div class="card"><svg class="card-ico"><use href="#ico-workout"/></svg><span class="card-label">운동</span><span class="card-value">2.4t <span class="card-sub">· 45분</span></span></div>
+            <div class="card"><svg class="card-ico"><use href="#ico-routine"/></svg><span class="card-label">필수 루틴</span><span class="card-value"><span class="badge">3/4</span></span></div>
+            <div class="card"><svg class="card-ico"><use href="#ico-goal"/></svg><span class="card-label">오늘의 목표</span><span class="card-value"><span class="badge">1/3</span></span></div>
+          </div>
+        </div>
+
+        <div class="sheet-backdrop"></div>
+
+        <aside class="bottom-sheet">
+          <div class="sheet-handle"></div>
+          <header class="sheet-header">
+            <div class="sheet-title">필수 루틴</div>
+            <div class="sheet-sub">3 / 4 · +3 pt</div>
+          </header>
+
+          <div class="sheet-body" style="padding:16px 0; display:block;">
+            <div class="inline-checklist">
+              <div class="inline-check-row">
+                <div class="inline-check-box is-done">✓</div>
+                <div class="inline-check-label is-done">팔굽혀펴기 10개</div>
+                <div class="inline-check-pt">+1 pt</div>
+              </div>
+              <div class="inline-check-row">
+                <div class="inline-check-box is-done">✓</div>
+                <div class="inline-check-label is-done">30분 걷기</div>
+                <div class="inline-check-pt">+1 pt</div>
+              </div>
+              <div class="inline-check-row">
+                <div class="inline-check-box is-done">✓</div>
+                <div class="inline-check-label is-done">공복 체중</div>
+                <div class="inline-check-pt">+1 pt</div>
+              </div>
+              <div class="inline-check-row">
+                <div class="inline-check-box"></div>
+                <div class="inline-check-label">저녁 9시 금식</div>
+                <div class="inline-check-pt">+1 pt</div>
+              </div>
+            </div>
+          </div>
+
+          <footer class="sheet-footer">
+            <button class="cta-primary">완료</button>
+          </footer>
+        </aside>
+
+      </div>
+    </figure>
+
+
+    <!-- Variant B: inline expand -->
+    <figure class="frame-wrap">
+      <figcaption><span>B · Inline Expand</span></figcaption>
+      <div class="phone-frame">
+
+        <header class="app-header">
+          <div class="app-title">Stay Hard</div>
+          <div class="app-avatar">권</div>
+        </header>
+
+        <main class="record-tab">
+
+          <header class="today-header" style="padding-top: 22px;">
+            <div class="today-day">목요일 · <span>오늘</span></div>
+            <div class="today-pts">+42 pt</div>
+          </header>
+
+          <div class="cards-stack">
+            <button class="card"><svg class="card-ico"><use href="#ico-weight"/></svg><span class="card-label">체중</span><span class="card-value">96.4 kg <span class="card-delta">−0.3</span></span></button>
+            <button class="card"><svg class="card-ico"><use href="#ico-meal"/></svg><span class="card-label">식단</span><span class="card-value"><span class="badge">2/4</span></span></button>
+            <button class="card"><svg class="card-ico"><use href="#ico-workout"/></svg><span class="card-label">운동</span><span class="card-value">2.4t <span class="card-sub">· 45분</span></span></button>
+
+            <!-- EXPANDED 필수 루틴 card -->
+            <div class="card is-expanded">
+              <header class="card-expanded-head">
+                <span class="card-label">
+                  <svg><use href="#ico-routine"/></svg>
+                  필수 루틴
+                </span>
+                <span class="card-meta">3 / 4 · +3 pt</span>
+              </header>
+
+              <div class="card-expanded-body" style="padding:6px 0 0; display:block;">
+                <div class="inline-checklist">
+                  <div class="inline-check-row">
+                    <div class="inline-check-box is-done">✓</div>
+                    <div class="inline-check-label is-done">팔굽혀펴기 10개</div>
+                    <div class="inline-check-pt">+1</div>
+                  </div>
+                  <div class="inline-check-row">
+                    <div class="inline-check-box is-done">✓</div>
+                    <div class="inline-check-label is-done">30분 걷기</div>
+                    <div class="inline-check-pt">+1</div>
+                  </div>
+                  <div class="inline-check-row">
+                    <div class="inline-check-box is-done">✓</div>
+                    <div class="inline-check-label is-done">공복 체중</div>
+                    <div class="inline-check-pt">+1</div>
+                  </div>
+                  <div class="inline-check-row">
+                    <div class="inline-check-box"></div>
+                    <div class="inline-check-label">저녁 9시 금식</div>
+                    <div class="inline-check-pt">+1</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <button class="card"><svg class="card-ico"><use href="#ico-goal"/></svg><span class="card-label">오늘의 목표</span><span class="card-value"><span class="badge">1/3</span></span></button>
+
+          </div>
+        </main>
+
+      </div>
+    </figure>
+
+  </div>
+
+
+  <!-- Notes / tradeoffs -->
+
+  <div class="compare-notes">
+    <h3>A · Bottom Sheet</h3>
+    <p><strong>Strengths.</strong> 친숙한 패턴. 복잡한 입력(운동 세션·식단 사진)도 동일 프레임 안에서 해결. 스와이프-다운 제스처로 빠르게 닫기. 현재 앱의 wheel-picker 아키텍처(§13)와 1:1로 맞음.</p>
+    <p><strong>Weaknesses.</strong> 시트가 뜨는 순간 히트맵·정체성 밴드가 가려진다 — 공간적 전지성의 단절. 루틴 토글처럼 가벼운 작업에도 "모달 진입" 무게가 붙는다.</p>
+
+    <h3 class="is-b">B · Inline Expand</h3>
+    <p><strong>Strengths.</strong> 엑셀 원본의 "셀 안에서 편집" 감각. 히트맵이 계속 보인다. 체크 한 번의 경량 작업에 잘 맞음.</p>
+    <p><strong>Weaknesses.</strong> 운동 세션(세트·무게·휴식 타이머)처럼 큰 UI는 결국 full-screen overlay가 필요 — inline이 모든 카드에 적용되지는 않는다. 확장 시 다른 카드들이 아래로 밀려나 스크롤 점프 발생 가능.</p>
+
+    <h3 class="is-b">추천 · 혼합</h3>
+    <p>체중 · 필수 루틴 · 오늘의 목표 → <strong>Inline expand</strong> (가벼운 토글·단일 수치). 식단(사진·6종 카테고리) · 운동(세션 UI) → <strong>Bottom sheet / full-screen overlay</strong>. 한 카드당 한 패턴 고정해서 사용자가 학습 비용 없이 탭할 수 있도록.</p>
+  </div>
+
+</div>
+
+</body>
+</html>

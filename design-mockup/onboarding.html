@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Stay Hard · Redesign v1 · 온보딩 3화면</title>
+  <link rel="stylesheet" as="style" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Serif+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="tokens.css">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="review-shell">
+
+  <header class="review-header">
+    <span class="review-eyebrow">Stay Hard · Redesign v1</span>
+    <h1>온보딩 3화면 — 철학 · 도구 · 초대</h1>
+    <p>기능 교육이 아닌 멘탈 모델 주입. 회원가입 전 (α) 100% 노출. <a href="index.html">← 기록 탭으로</a></p>
+  </header>
+
+  <div class="onb-frames-col">
+
+
+    <!-- =============================================================
+         SCREEN 1 — PHILOSOPHY
+         ============================================================= -->
+    <figure class="frame-wrap">
+      <figcaption><span>1 / 3 · 철학</span></figcaption>
+      <div class="phone-frame">
+        <div class="onb-shell">
+
+          <div class="onb-topbar">
+            <div class="onb-dots">
+              <div class="onb-dot is-active"></div>
+              <div class="onb-dot"></div>
+              <div class="onb-dot"></div>
+            </div>
+            <button class="onb-skip">건너뛰기</button>
+          </div>
+
+          <div class="onb-body">
+            <div class="onb-philosophy">
+              <div>체중만 줄여서는 안 된다.</div>
+              <div>운동만 해서는 안 된다.</div>
+              <div>식단만 챙겨서는 안 된다.</div>
+              <div>할일만 쳐내서도 안 된다.</div>
+              <hr>
+              <div class="is-conclusion">전부 해내야 변한다.</div>
+            </div>
+          </div>
+
+          <div class="onb-footer">
+            <button class="cta-primary">
+              <span>다음</span>
+              <span>→</span>
+            </button>
+          </div>
+
+        </div>
+      </div>
+    </figure>
+
+
+    <!-- =============================================================
+         SCREEN 2 — TOOL
+         ============================================================= -->
+    <figure class="frame-wrap">
+      <figcaption><span>2 / 3 · 도구</span></figcaption>
+      <div class="phone-frame">
+        <div class="onb-shell">
+
+          <div class="onb-topbar">
+            <div class="onb-dots">
+              <div class="onb-dot"></div>
+              <div class="onb-dot is-active"></div>
+              <div class="onb-dot"></div>
+            </div>
+            <button class="onb-skip">건너뛰기</button>
+          </div>
+
+          <div class="onb-body">
+            <section class="onb-tool">
+              <h2>삶의 조종간은<br>네 손에 있어야 한다</h2>
+              <p class="onb-sub">Stay Hard는 그 조종간이<br>잘 잡히도록 돕는 도구.</p>
+
+              <!-- Mini heatmap preview (scaled visual of Layer 2) -->
+              <div class="onb-preview">
+                <div class="hm-grid onb-mini-hm">
+                  <div></div>
+                  <div class="hm-dow">월</div>
+                  <div class="hm-dow">화</div>
+                  <div class="hm-dow">수</div>
+                  <div class="hm-dow is-today">목</div>
+                  <div class="hm-dow">금</div>
+                  <div class="hm-dow">토</div>
+                  <div class="hm-dow">일</div>
+
+                  <div class="hm-rowlabel">식단</div>
+                  <div class="hm-cell is-done"></div>
+                  <div class="hm-cell is-done"></div>
+                  <div class="hm-cell is-partial"></div>
+                  <div class="hm-cell is-partial is-today"></div>
+                  <div class="hm-cell is-future"></div>
+                  <div class="hm-cell is-future"></div>
+                  <div class="hm-cell is-future"></div>
+
+                  <div class="hm-rowlabel">운동</div>
+                  <div class="hm-cell is-done"></div>
+                  <div class="hm-cell is-empty"></div>
+                  <div class="hm-cell is-done"></div>
+                  <div class="hm-cell is-empty is-today"></div>
+                  <div class="hm-cell is-future"></div>
+                  <div class="hm-cell is-future"></div>
+                  <div class="hm-cell is-future"></div>
+
+                  <div class="hm-rowlabel">루틴</div>
+                  <div class="hm-cell is-done"></div>
+                  <div class="hm-cell is-done"></div>
+                  <div class="hm-cell is-done"></div>
+                  <div class="hm-cell is-partial is-today"></div>
+                  <div class="hm-cell is-future"></div>
+                  <div class="hm-cell is-future"></div>
+                  <div class="hm-cell is-future"></div>
+
+                  <div class="hm-rowlabel">목표</div>
+                  <div class="hm-cell hm-cell--tall is-done"><span class="hm-goal-name">링크드</span><span class="hm-goal-count">외2</span></div>
+                  <div class="hm-cell hm-cell--tall is-done"><span class="hm-goal-name">결혼식</span><span class="hm-goal-count">외1</span></div>
+                  <div class="hm-cell hm-cell--tall is-partial"><span class="hm-goal-name">링크드</span><span class="hm-goal-count">외2</span></div>
+                  <div class="hm-cell hm-cell--tall is-partial is-today"><span class="hm-goal-name">피드</span><span class="hm-goal-count">외1</span></div>
+                  <div class="hm-cell hm-cell--tall is-planned"><span class="hm-goal-name">결혼식</span><span class="hm-goal-count">외1</span></div>
+                  <div class="hm-cell hm-cell--tall is-future"></div>
+                  <div class="hm-cell hm-cell--tall is-future"></div>
+                </div>
+              </div>
+
+              <p class="onb-tagline">격자 하나에 전부 — 식단·운동·루틴·목표를 한눈에.</p>
+            </section>
+          </div>
+
+          <div class="onb-footer">
+            <button class="cta-primary">
+              <span>다음</span>
+              <span>→</span>
+            </button>
+          </div>
+
+        </div>
+      </div>
+    </figure>
+
+
+    <!-- =============================================================
+         SCREEN 3 — INVITATION
+         ============================================================= -->
+    <figure class="frame-wrap">
+      <figcaption><span>3 / 3 · 초대</span></figcaption>
+      <div class="phone-frame">
+        <div class="onb-shell">
+
+          <div class="onb-topbar">
+            <div class="onb-dots">
+              <div class="onb-dot"></div>
+              <div class="onb-dot"></div>
+              <div class="onb-dot is-active"></div>
+            </div>
+            <button class="onb-skip">건너뛰기</button>
+          </div>
+
+          <div class="onb-body">
+            <section class="onb-invite">
+              <h2>시작하기 전에,<br>잊지 말자</h2>
+
+              <div class="motto-card">
+                <div class="motto-wordmark">Stay Hard</div>
+                <hr class="motto-rule">
+                <div class="motto-quote">
+                  기록은 점.<br>
+                  하루는 선.<br>
+                  반복은 격자.<br>
+                  <br>
+                  나는 나의 격자다.
+                </div>
+              </div>
+            </section>
+          </div>
+
+          <div class="onb-footer">
+            <button class="cta-primary">
+              <span>시작하기</span>
+              <span>→</span>
+            </button>
+            <div class="cta-sub">오늘 체중부터 · 약 30초</div>
+          </div>
+
+        </div>
+      </div>
+    </figure>
+
+  </div>
+</div>
+
+</body>
+</html>
