@@ -2082,20 +2082,21 @@ body:not(.v3-live) #v3-goal-add-row{ display: none !important; }
       <span class="pc-chev">›</span>
     </button>
     <div class="s-card" data-pc-body="workout">
-      <div class="s-card-hdr">
-        <div class="s-card-title"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10v4M7 7v10M17 7v10M21 10v4"/><path d="M7 12h10"/></svg>운동</div>
+      <!-- Hidden legacy hdr/badge — retained as no-op for JS compat -->
+      <div class="s-card-hdr" style="display:none;">
+        <div class="s-card-title">운동</div>
         <div class="s-badge" id="wo-badge">오늘 없음</div>
       </div>
       <div class="workout-rows" id="workout-rows"></div>
-      <div style="display:flex;gap:8px;margin:8px 12px 12px;">
-        <div id="wo-add-cta" onclick="openWorkoutStartScreen()" style="flex:1;display:flex;align-items:center;justify-content:center;gap:8px;padding:14px;background:linear-gradient(135deg,rgba(255,77,77,.10),rgba(255,77,77,.08));border:1px solid rgba(255,77,77,.25);border-radius:10px;cursor:pointer;touch-action:manipulation;">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          <span id="wo-add-cta-lbl" style="font-size:14px;font-weight:700;color:var(--accent);">운동 추가</span>
-        </div>
-        <div onclick="openMuscleMap()" style="display:flex;align-items:center;justify-content:center;gap:6px;padding:14px 16px;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;cursor:pointer;touch-action:manipulation;">
-          <span style="font-size:14px;">💥</span>
-          <span style="font-size:12px;font-weight:600;color:var(--text2);">자극 부위</span>
-        </div>
+      <!-- v3.0 · mockup 03 style: '+ 운동 시작' CTA + '자극 부위' row -->
+      <button type="button" class="cta-fullscreen" id="wo-add-cta" onclick="openWorkoutStartScreen()">
+        <span id="wo-add-cta-lbl">＋ 운동 시작</span>
+        <span class="arrow">↗</span>
+      </button>
+      <div class="muscle-hit" onclick="openMuscleMap()">
+        <strong>자극 부위</strong>
+        <span id="v3-muscle-groups">—</span>
+        <span class="arrow">›</span>
       </div>
     </div>
     <!-- v3.0 · 필수 루틴 primary card (split from combined todo) -->
@@ -10926,20 +10927,61 @@ function renderWorkouts(){
   const workouts=log.workouts||[];
   const done=workouts.filter(w=>w.status==='done');
   const b=document.getElementById('wo-badge');
-  if(workouts.length===0){
-    b.textContent='오늘 없음';b.className='s-badge';
-  } else if(done.length===workouts.length){
-    b.textContent='완료';b.className='s-badge green';
-  } else {
-    b.textContent='진행 중';b.className='s-badge';
-    b.style.color='var(--amber)';b.style.background='rgba(245,158,11,0.1)';b.style.border='1px solid rgba(245,158,11,0.3)';
+  if(b){
+    if(workouts.length===0){
+      b.textContent='오늘 없음';b.className='s-badge';
+      b.style.cssText='';
+    } else if(done.length===workouts.length){
+      b.textContent='완료';b.className='s-badge green';
+      b.style.cssText='';
+    } else {
+      b.textContent='진행 중';b.className='s-badge';
+      b.style.color='var(--amber)';b.style.background='rgba(245,158,11,0.1)';b.style.border='1px solid rgba(245,158,11,0.3)';
+    }
   }
-  // CTA label changes after logging
+
+  const v3Live=document.body&&document.body.classList.contains('v3-live');
+
+  // CTA label
   const ctaLbl=document.getElementById('wo-add-cta-lbl');
-  if(ctaLbl)ctaLbl.textContent=workouts.length>0?'운동 더 추가하기':'운동 추가하기';
+  if(ctaLbl){
+    if(v3Live){
+      ctaLbl.textContent=workouts.length>0?'＋ 운동 더 추가':'＋ 운동 시작';
+    }else{
+      ctaLbl.textContent=workouts.length>0?'운동 더 추가하기':'운동 추가하기';
+    }
+  }
+
+  // v3 muscle groups summary
+  if(v3Live){
+    const mEl=document.getElementById('v3-muscle-groups');
+    if(mEl){
+      const groups=new Set();
+      workouts.forEach(w=>{
+        if(w.type!=='gym')return;
+        (w.exercises||[]).forEach(ex=>{
+          const parts=(ex.muscle||'').split(/[,/·]/).map(s=>s.trim()).filter(Boolean);
+          parts.forEach(p=>groups.add(p));
+        });
+      });
+      mEl.textContent = groups.size>0 ? [...groups].slice(0,3).join(' · ') : '—';
+    }
+  }
 
   if(workouts.length===0){
     const wr=document.getElementById('workout-rows');
+    if(v3Live){
+      wr.className='';
+      wr.style.cssText='';
+      wr.innerHTML=`<div style="padding:18px 14px;text-align:center;">
+        <div style="font-size:13px;color:var(--color-ink-2);margin-bottom:6px;letter-spacing:-0.01em;">아직 오늘 운동 기록이 없어요</div>
+        <div style="font-size:11px;color:var(--color-ink-3);margin-bottom:10px;font-family:'DM Mono', monospace;letter-spacing:0.02em;">근력 · 유산소 · 활동 중 뭐든 OK</div>
+        <div style="display:inline-flex;align-items:center;gap:6px;font-family:'DM Mono', monospace;font-size:10px;padding:4px 10px;border:0.5px solid var(--color-line);color:var(--color-ink-3);letter-spacing:0.04em;">
+          <span style="color:var(--color-ink);">+30pt</span>근력 · <span style="color:var(--color-ink);">+30pt</span>유산소 (하루 1회씩)
+        </div>
+      </div>`;
+      return;
+    }
     wr.innerHTML=`<div style="padding:14px 0 6px;text-align:center;">
       <div style="font-size:24px;margin-bottom:6px;">💪</div>
       <div style="font-size:12px;color:var(--text3);margin-bottom:10px;line-height:1.5;">아직 오늘 운동 기록이 없어요<br>근력 · 유산소 · 활동 중 뭐든 OK</div>
@@ -10948,6 +10990,41 @@ function renderWorkouts(){
       </div>
     </div>`;
     wr.style.cssText='';
+    return;
+  }
+
+  // v3.0 · mockup-compliant row list
+  if(v3Live){
+    const wr=document.getElementById('workout-rows');
+    wr.className='workout-list';
+    wr.style.cssText='';
+    wr.innerHTML=workouts.map((w,i)=>{
+      const isGym=w.type==='gym';
+      const isDone=w.status==='done';
+      const icon=isGym?'🏋️':(w.icon||'🏃');
+      const title=isGym?(w.sessionName||'헬스 세션'):(w.name||'활동');
+      let meta='';
+      if(isGym){
+        const vol=w.totalVolume||0;
+        const volStr=vol>=1000?(vol/1000).toFixed(1)+'t':vol>0?vol.toLocaleString()+'kg':'';
+        const totalSets=(w.exercises||[]).reduce((a,ex)=>a+(ex.sets||[]).filter(s=>s.done).length,0);
+        const totalEx=(w.exercises||[]).length;
+        const parts=[];
+        if(totalEx>0)parts.push(totalEx+'종목');
+        if(volStr)parts.push(volStr);
+        if(totalSets>0)parts.push(totalSets+'세트');
+        meta=parts.join(' · ');
+      }else{
+        meta=w.meta||(isDone?'완료':'계획');
+      }
+      const onclick=isGym?`openSessionSummary(${i})`:`editActivity(${i})`;
+      return `<div class="workout-row" onclick="${onclick}">
+        <span class="workout-icon">${icon}</span>
+        <span class="workout-title">${esc(title)}</span>
+        <span class="workout-meta">${esc(meta)}</span>
+        <span class="workout-done">${isDone?'✓':''}</span>
+      </div>`;
+    }).join('');
     return;
   }
 
