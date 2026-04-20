@@ -221,6 +221,25 @@
       margin-left: 4px;
     }
 
+    .pf-delta {
+      margin-top: 4px;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--color-ink-2);
+      letter-spacing: 0.02em;
+      font-variant-numeric: tabular-nums;
+    }
+    .pf-delta .pf-arrow {
+      color: var(--color-ink);
+      font-weight: 600;
+      margin-right: 3px;
+    }
+    .pf-delta.is-down .pf-arrow { color: var(--color-ink-3); }
+    .pf-delta strong {
+      color: var(--color-ink);
+      font-weight: 500;
+    }
+
     .pf-bar {
       height: 3px;
       background: var(--color-surface);
@@ -666,17 +685,20 @@
             <div class="sess-prefill">
               <div class="pf-row">
                 <div>
-                  <div class="pf-label">예상 중량</div>
+                  <div class="pf-label">예상 총볼륨</div>
+                  <div class="pf-delta">
+                    <span class="pf-arrow">↑</span>지난 세션 대비 <strong>+60 kg</strong>
+                  </div>
                 </div>
-                <div class="pf-value">26<span class="pf-unit">KG</span></div>
+                <div class="pf-value">720<span class="pf-unit">KG</span></div>
               </div>
 
               <div class="pf-bar">
-                <div class="pf-bar-fill" style="width:62%;"></div>
+                <div class="pf-bar-fill" style="width:68%;"></div>
               </div>
               <div class="pf-bar-labels">
                 <span>0%</span>
-                <span>PR 100%</span>
+                <span>PR 1,060 kg</span>
               </div>
 
               <div class="pf-hint">지난 기록 자동 입력 · 그대로 OK, 수정도 가능</div>
