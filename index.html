@@ -1712,6 +1712,13 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
   color: var(--color-ink-3);
   font-size: 11px;
 }
+
+/* Legacy add-tgt / add-tgt-input hidden under v3 — replaced by goal-add-row */
+.v3-live .add-tgt,
+.v3-live .add-tgt-input{ display: none !important; }
+
+/* v3 goal-add-row is always visible at bottom of target list */
+body:not(.v3-live) #v3-goal-add-row{ display: none !important; }
 </style>
 </head>
 <body class="v3-live">
@@ -2084,6 +2091,12 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
         <span class="s-badge" id="tgt-badge">0/0</span>
       </div>
       <div class="check-rows" id="tgt-rows"></div>
+      <!-- v3.0 · always-visible goal add row -->
+      <div class="goal-add-row" id="v3-goal-add-row">
+        <input class="goal-add-input" id="v3-tgt-inp" type="text" placeholder="새 목표 입력…" onkeydown="if(event.key==='Enter'){addTargetV3();event.preventDefault();}"/>
+        <button class="goal-add-btn" aria-label="추가" onclick="addTargetV3()">+</button>
+      </div>
+      <!-- Legacy v2.5 add (hidden under v3-live via CSS) -->
       <div class="add-tgt" onclick="toggleAddTgt()" style="color:var(--accent);font-weight:500;"><span style="font-size:16px;margin-right:6px;">＋</span> 할일 추가</div>
       <div class="add-tgt-input" id="add-tgt-input">
         <input type="text" id="tgt-inp" placeholder="오늘 무엇을 하고 싶나요?"/>
@@ -11871,34 +11884,77 @@ function renderTargets(){
   const done=log.targets.filter(t=>t.st==='done').length;
   const b=document.getElementById('tgt-badge');if(b){b.textContent=done+'/'+log.targets.length;b.className='s-badge '+(done>0&&done===log.targets.length?'green':'');}
   if(typeof updateTasksBadge==='function')updateTasksBadge();
-  document.getElementById('tgt-rows').innerHTML=log.targets.length===0
-    ?`<div style="padding:16px 0;text-align:center;">
+  const rows=document.getElementById('tgt-rows');
+  if(!rows)return;
+  const v3Live=document.body&&document.body.classList.contains('v3-live');
+
+  if(log.targets.length===0){
+    if(v3Live){
+      rows.className='inline-checklist';
+      rows.innerHTML='<div style="padding:18px 8px;text-align:center;">'
+        +'<div style="font-size:13px;color:var(--color-ink-2);margin-bottom:6px;letter-spacing:-0.01em;">오늘의 할일을 설정하세요</div>'
+        +'<div style="font-size:11px;color:var(--color-ink-3);margin-bottom:10px;font-family:\'DM Mono\', monospace;letter-spacing:0.02em;">예: 링크드인 연락 · 보고서 작성 · 병원 예약</div>'
+        +'<div style="display:inline-flex;align-items:center;gap:6px;font-family:\'DM Mono\', monospace;font-size:10px;padding:4px 10px;border:0.5px solid var(--color-line);color:var(--color-ink-3);letter-spacing:0.04em;">'
+        +'<span style="color:var(--color-ink);">+2pt</span>완료 · <span style="color:var(--color-penalty);">−2pt</span>실패'
+        +'</div></div>';
+      return;
+    }
+    rows.innerHTML=`<div style="padding:16px 0;text-align:center;">
   <div style="font-size:28px;margin-bottom:6px;">🎯</div>
   <div style="font-size:13px;color:var(--text3);margin-bottom:4px;">오늘의 할일을 설정하세요</div>
   <div style="font-size:11px;color:var(--text3);margin-bottom:10px;">예: 링크드인 연락 · 보고서 작성 · 병원 예약</div>
   <div style="display:inline-flex;align-items:center;gap:6px;font-size:10px;font-weight:600;padding:5px 10px;background:var(--surface2);border:1px solid var(--border2);border-radius:999px;color:var(--text3);letter-spacing:-.01em;">
     <span style="color:var(--green);">+2pt</span>완료 · <span style="color:var(--red);">-2pt</span>실패
   </div>
-</div>`
-    :log.targets.map((t,i)=>{
+</div>`;
+    return;
+  }
+
+  if(v3Live){
+    rows.className='inline-checklist';
+    rows.innerHTML=log.targets.map((t,i)=>{
       const isDone=t.st==='done';
       const isFail=t.st==='fail';
-      const checkContent=isDone?'<span style="color:var(--green);font-size:14px;">✓</span>':isFail?'<span style="color:var(--red);font-size:12px;">✕</span>':'';
-      return`<div class="tgt-row" style="${isFail?'background:rgba(255,77,77,0.05);':''}">
-        <div class="tgt-btn ${t.st||''}"
-          onclick="togTgt(${i})"
-          style="cursor:pointer;-webkit-user-select:none;user-select:none;flex-shrink:0;">
-          ${checkContent}
-        </div>
-        <div class="tgt-text ${isDone?'done':isFail?'fail':''}"
-          onclick="togTgt(${i})"
-          style="cursor:pointer;flex:1;padding:12px 4px;-webkit-user-select:none;user-select:none;">${esc(t.text||'')}${t._carried?` <span style="font-size:9px;font-weight:600;padding:1px 5px;border-radius:4px;background:var(--accent-bg);color:var(--accent);border:0.5px solid var(--accent-bd);vertical-align:middle;">이월</span>`:''}
-        </div>
-        ${!isDone?`<button onclick="markFail(${i})" style="font-size:11px;padding:5px 10px;border-radius:8px;border:1px solid ${isFail?'var(--red)':'var(--border2)'};background:${isFail?'var(--red-bg)':'transparent'};color:${isFail?'var(--red)':'var(--text3)'};cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;white-space:nowrap;flex-shrink:0;">${isFail?'해제':'실패'}</button>`:''}
-        <button onclick="openPromoteTodoModal(${i})" title="매일 반복하는 필수 루틴으로 변환" style="background:none;border:none;color:var(--accent);cursor:pointer;font-size:14px;padding:6px 8px;min-width:36px;touch-action:manipulation;">↻</button>
-        <button onclick="delTgt(${i})" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:18px;padding:6px 8px;min-width:36px;touch-action:manipulation;">✕</button>
+      const rowBg=isFail?'background:var(--color-penalty-soft);':'';
+      const labelCls=isDone?'is-done':'';
+      const boxCls=isDone?'is-done':'';
+      const failCls=isFail?'is-fail':'';
+      return `<div class="inline-check-row tgt-row" data-tidx="${i}" style="${rowBg}"
+          onclick="togTgt(${i})">
+        <div class="inline-check-box tgt-btn ${boxCls} ${t.st||''}">${isDone?'✓':''}</div>
+        <div class="inline-check-label tgt-text ${labelCls}">${esc(t.text||'')}${t._carried?` <span class="inline-check-daypill" style="background:var(--color-penalty-soft);color:var(--color-penalty);">이월</span>`:''}</div>
+        <span class="inline-check-pt ${isDone?'is-done':''}">+2</span>
+        <span style="display:flex;gap:4px;align-items:center;" onclick="event.stopPropagation();">
+          ${!isDone?`<button class="inline-check-fail ${failCls}" onclick="event.stopPropagation();markFail(${i})">${isFail?'해제':'실패'}</button>`:''}
+          <button class="ck-edit" onclick="event.stopPropagation();openPromoteTodoModal(${i})" title="매일 반복하는 필수 루틴으로 변환" style="color:var(--color-ink-3);">↻</button>
+          <button class="ck-del" onclick="event.stopPropagation();delTgt(${i})" style="color:var(--color-ink-3);">✕</button>
+        </span>
       </div>`;
     }).join('');
+    return;
+  }
+
+  // Legacy v2.5 render
+  rows.className='check-rows';
+  rows.innerHTML=log.targets.map((t,i)=>{
+    const isDone=t.st==='done';
+    const isFail=t.st==='fail';
+    const checkContent=isDone?'<span style="color:var(--green);font-size:14px;">✓</span>':isFail?'<span style="color:var(--red);font-size:12px;">✕</span>':'';
+    return`<div class="tgt-row" style="${isFail?'background:rgba(255,77,77,0.05);':''}">
+      <div class="tgt-btn ${t.st||''}"
+        onclick="togTgt(${i})"
+        style="cursor:pointer;-webkit-user-select:none;user-select:none;flex-shrink:0;">
+        ${checkContent}
+      </div>
+      <div class="tgt-text ${isDone?'done':isFail?'fail':''}"
+        onclick="togTgt(${i})"
+        style="cursor:pointer;flex:1;padding:12px 4px;-webkit-user-select:none;user-select:none;">${esc(t.text||'')}${t._carried?` <span style="font-size:9px;font-weight:600;padding:1px 5px;border-radius:4px;background:var(--accent-bg);color:var(--accent);border:0.5px solid var(--accent-bd);vertical-align:middle;">이월</span>`:''}
+      </div>
+      ${!isDone?`<button onclick="markFail(${i})" style="font-size:11px;padding:5px 10px;border-radius:8px;border:1px solid ${isFail?'var(--red)':'var(--border2)'};background:${isFail?'var(--red-bg)':'transparent'};color:${isFail?'var(--red)':'var(--text3)'};cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;white-space:nowrap;flex-shrink:0;">${isFail?'해제':'실패'}</button>`:''}
+      <button onclick="openPromoteTodoModal(${i})" title="매일 반복하는 필수 루틴으로 변환" style="background:none;border:none;color:var(--accent);cursor:pointer;font-size:14px;padding:6px 8px;min-width:36px;touch-action:manipulation;">↻</button>
+      <button onclick="delTgt(${i})" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:18px;padding:6px 8px;min-width:36px;touch-action:manipulation;">✕</button>
+    </div>`;
+  }).join('');
 }
 
 // Tap = toggle done/undone
@@ -12020,6 +12076,19 @@ function confirmPromoteTodo(){
 }
 function toggleAddTgt(){const x=document.getElementById('add-tgt-input');x.classList.toggle('open');if(x.classList.contains('open'))document.getElementById('tgt-inp').focus();}
 function addTarget(){const inp=document.getElementById('tgt-inp');const t=inp.value.trim();if(!t)return;log.targets.push({text:t,st:''});inp.value='';document.getElementById('add-tgt-input').classList.remove('open');renderTargets();saveNow();}
+
+// v3.0 · always-visible goal add row (replaces add-tgt toggle flow)
+function addTargetV3(){
+  const inp=document.getElementById('v3-tgt-inp');
+  if(!inp)return;
+  const t=(inp.value||'').trim();
+  if(!t)return;
+  if(!log.targets)log.targets=[];
+  log.targets.push({text:t,st:''});
+  inp.value='';
+  renderTargets();
+  saveNow();
+}
 document.getElementById('tgt-inp').addEventListener('keydown',e=>{if(e.key==='Enter')addTarget();});
 
 // ── WEEKLY VIEW ──
