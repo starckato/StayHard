@@ -994,6 +994,136 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
 .cv-guide-text{font-size:14px;color:rgba(255,255,255,.85);line-height:1.5;}
 .cv-rep-flash{position:absolute;inset:0;background:rgba(52,211,153,.15);pointer-events:none;opacity:0;transition:opacity .25s;z-index:1;}
 .cv-rep-flash.flash{opacity:1;}
+
+/* ════════════════════════════════════════════════════════════════
+   v3.0 · Weekly Heatmap (hero)
+   주간 격자: 식단·운동·루틴·목표 × 7 days
+   data-theme 자동 적응 (현재 clarity = 흰 빛)
+════════════════════════════════════════════════════════════════ */
+.hm-week{
+  padding: 14px 16px 16px;
+  background: var(--color-surface);
+  border-bottom: 0.5px solid var(--color-line);
+}
+.hm-week-head{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.hm-week-title{
+  margin: 0;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-ink);
+  letter-spacing: -0.01em;
+  font-family: 'DM Sans', sans-serif;
+}
+.hm-week-title span{
+  color: var(--color-ink-3);
+  margin-left: 2px;
+  font-weight: 400;
+}
+.hm-week-nav{ display: flex; gap: 4px; }
+.hm-week-nav button{
+  width: 26px; height: 26px;
+  border: 0.5px solid var(--color-line);
+  background: transparent;
+  color: var(--color-ink-2);
+  border-radius: 2px;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  font-family: 'DM Mono', monospace;
+  touch-action: manipulation;
+}
+.hm-week-nav button:active{ background: var(--color-surface-2); }
+.hm-week-grid{
+  display: grid;
+  grid-template-columns: 30px repeat(7, 1fr);
+  column-gap: 3px;
+  row-gap: 4px;
+  font-variant-numeric: tabular-nums;
+}
+.hm-week-dow{
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  color: var(--color-ink-3);
+  letter-spacing: 0.04em;
+  text-align: center;
+  padding-bottom: 3px;
+  position: relative;
+}
+.hm-week-dow.is-today{
+  color: var(--color-ink);
+  font-weight: 600;
+}
+.hm-week-dow.is-today::after{
+  content:'';
+  position: absolute;
+  bottom: 0; left: 50%;
+  transform: translateX(-50%);
+  width: 3px; height: 3px;
+  background: var(--color-ink);
+  border-radius: 50%;
+}
+.hm-week-rowlabel{
+  font-size: 11px;
+  color: var(--color-ink-2);
+  align-self: center;
+  text-align: right;
+  padding-right: 4px;
+  letter-spacing: -0.01em;
+  font-family: 'DM Sans', sans-serif;
+}
+.hm-week-cell{
+  height: 16px;
+  background: var(--color-hm-empty);
+  border-radius: 2px;
+  cursor: pointer;
+  transition: background 200ms;
+  touch-action: manipulation;
+}
+.hm-week-cell.done{ background: var(--color-will); }
+.hm-week-cell.partial{ background: var(--color-will-soft); }
+.hm-week-cell.future{
+  background: transparent;
+  border: 0.5px dashed var(--color-hm-future-dot);
+  cursor: default;
+}
+.hm-week-cell.is-today{
+  outline: 1px solid var(--color-ink);
+  outline-offset: -1px;
+}
+.hm-week-cell.cell-tall{
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 0 4px;
+  overflow: hidden;
+  line-height: 1;
+}
+.hm-week-cell .goal-name{
+  font-size: 8px;
+  font-weight: 500;
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  letter-spacing: -0.03em;
+  font-family: 'DM Sans', sans-serif;
+}
+.hm-week-cell .goal-count{
+  font-size: 7px;
+  flex: 0 0 auto;
+  opacity: 0.75;
+  font-family: 'DM Mono', monospace;
+}
+.hm-week-cell.done .goal-name,
+.hm-week-cell.done .goal-count{ color: var(--color-will-on); }
+.hm-week-cell.partial .goal-name,
+.hm-week-cell.partial .goal-count{ color: var(--color-ink); }
 </style>
 </head>
 <body>
@@ -1135,6 +1265,18 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
       <div class="day-strip" id="day-strip"></div>
       <div class="sel-day-label" id="sel-day-label" onclick="jumpToToday()" title="오늘로 돌아가기"></div>
     </div>
+
+    <!-- ═══ v3.0 · Weekly Heatmap (hero) ═══ -->
+    <section class="hm-week" id="hm-week" style="display:none;">
+      <div class="hm-week-head">
+        <h2 class="hm-week-title" id="hm-week-title"></h2>
+        <div class="hm-week-nav">
+          <button onclick="shiftWeek(-1)" aria-label="이전 주">‹</button>
+          <button onclick="shiftWeek(1)" aria-label="다음 주">›</button>
+        </div>
+      </div>
+      <div class="hm-week-grid" id="hm-week-grid"></div>
+    </section>
 
     <div class="s-card" style="margin-bottom:10px;">
       <div class="s-card-hdr">
@@ -8184,7 +8326,123 @@ function scrollToSection(s){
   const el=document.getElementById(map[s]);
   if(el)el.scrollIntoView({behavior:'smooth',block:'center'});
 }
-function renderRoutine(){renderCharCard();renderSummaryCard();renderWeight();renderMeals();renderCheatBadge();renderWater();renderWorkouts();renderMandatory();renderTargets();updateGogginsHeader();revealStatusBand();try{renderFirstWeekCard();}catch(e){console.warn('[fw-card]',e);}try{renderInviteCard();}catch(e){console.warn('[invite-card]',e);}try{renderDay3ChallengeNudge();}catch(e){console.warn('[d3-nudge]',e);}try{renderWeeklyFeatureRibbon();}catch(e){console.warn('[wf-ribbon]',e);}}
+function renderRoutine(){renderCharCard();renderSummaryCard();renderWeight();renderMeals();renderCheatBadge();renderWater();renderWorkouts();renderMandatory();renderTargets();updateGogginsHeader();revealStatusBand();try{renderHeatmap();}catch(e){console.warn('[heatmap]',e);}try{renderFirstWeekCard();}catch(e){console.warn('[fw-card]',e);}try{renderInviteCard();}catch(e){console.warn('[invite-card]',e);}try{renderDay3ChallengeNudge();}catch(e){console.warn('[d3-nudge]',e);}try{renderWeeklyFeatureRibbon();}catch(e){console.warn('[wf-ribbon]',e);}}
+
+// ════════════════════════════════════════════════════════════════
+// v3.0 · Weekly Heatmap renderer
+// 선택 주간 (월~일) × 4행 (식단/운동/루틴/목표) · logCache 기반
+// 셀 상태: done(흰) · partial(연회색) · empty(어두움) · future(점선)
+// ════════════════════════════════════════════════════════════════
+function renderHeatmap(){
+  const grid=document.getElementById('hm-week-grid');
+  const titleEl=document.getElementById('hm-week-title');
+  const section=document.getElementById('hm-week');
+  if(!grid||!titleEl||!section)return;
+
+  // Base = selectedKey (current viewed day). Derive Monday of that week.
+  const baseStr=selectedKey||TODAY;
+  const sel=new Date(baseStr+'T12:00:00');
+  if(isNaN(sel.getTime())){section.style.display='none';return;}
+  const dow=(sel.getDay()+6)%7;  // 0=Mon .. 6=Sun
+  const monday=new Date(sel);
+  monday.setDate(sel.getDate()-dow);
+
+  // 7 days of the week
+  const days=[];
+  for(let i=0;i<7;i++){
+    const d=new Date(monday);
+    d.setDate(monday.getDate()+i);
+    days.push(d);
+  }
+
+  // Title (month + "이번 주" flag if today is in this range)
+  const todayKey=TODAY;
+  const mo=monday.getMonth()+1;
+  const isThisWeek=days.some(d=>dkey(d)===todayKey);
+  titleEl.innerHTML=`${mo}월 <span>${isThisWeek?'· 이번 주':'· '+monday.getDate()}-${days[6].getDate()}일</span>`;
+
+  // DOW header row
+  const dowLabels=['월','화','수','목','금','토','일'];
+  let html='<div></div>';  // corner spacer
+  days.forEach((d,i)=>{
+    const isToday=dkey(d)===todayKey;
+    html+=`<div class="hm-week-dow${isToday?' is-today':''}">${dowLabels[i]}</div>`;
+  });
+
+  // Data rows
+  html+='<div class="hm-week-rowlabel">식단</div>'+days.map(d=>_hmCell(d,'meal',todayKey)).join('');
+  html+='<div class="hm-week-rowlabel">운동</div>'+days.map(d=>_hmCell(d,'workout',todayKey)).join('');
+  html+='<div class="hm-week-rowlabel">루틴</div>'+days.map(d=>_hmCell(d,'routine',todayKey)).join('');
+  html+='<div class="hm-week-rowlabel">목표</div>'+days.map(d=>_hmCell(d,'goal',todayKey)).join('');
+
+  grid.innerHTML=html;
+  section.style.display='';
+}
+
+function _hmJump(k){
+  const d=new Date(k+'T12:00:00');
+  if(isNaN(d.getTime()))return;
+  selectDay(d,k);
+}
+
+function _hmCell(d,kind,todayKey){
+  const k=dkey(d);
+  const dayLog=logCache[k];
+  const isToday=k===todayKey;
+  const isFuture=k>todayKey;
+  const clsToday=isToday?' is-today':'';
+  const onclick=` onclick="_hmJump('${k}')"`;
+
+  if(kind==='goal')return _hmCellGoal(d,k,dayLog,isToday,isFuture,clsToday,onclick);
+
+  // Future without data → dashed future cell
+  if(isFuture&&!dayLog){
+    return `<div class="hm-week-cell future${clsToday}"></div>`;
+  }
+
+  let status='empty';
+  if(dayLog){
+    if(kind==='meal'){
+      const meals=(dayLog.meals||[]).filter(m=>m&&m.type);
+      if(meals.length>=3)status='done';
+      else if(meals.length>0)status='partial';
+    } else if(kind==='workout'){
+      const ws=(dayLog.workouts||[]).filter(w=>w&&w.status==='done');
+      if(ws.length>0)status='done';
+    } else if(kind==='routine'){
+      const wkDow=(d.getDay()+6)%7;
+      const mand=(dayLog.mandatory||[]).filter(t=>t&&!(t.days&&!t.days.includes(wkDow)));
+      const done=mand.filter(m=>m.done).length;
+      if(mand.length>0&&done===mand.length)status='done';
+      else if(done>0)status='partial';
+    }
+  }
+  return `<div class="hm-week-cell ${status}${clsToday}"${onclick}></div>`;
+}
+
+function _hmCellGoal(d,k,dayLog,isToday,isFuture,clsToday,onclick){
+  const targets=dayLog?(dayLog.targets||[]).filter(t=>t&&t.text):[];
+
+  if(targets.length===0){
+    if(isFuture)return `<div class="hm-week-cell future cell-tall${clsToday}"></div>`;
+    return `<div class="hm-week-cell empty cell-tall${clsToday}"${onclick}></div>`;
+  }
+
+  const done=targets.filter(t=>t.st==='done').length;
+  let status='partial';
+  if(done===targets.length)status='done';
+  else if(done===0)status='empty';
+
+  // Escape first target name (short)
+  const rawName=(targets[0].text||'').slice(0,6);
+  const name=rawName.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const extra=targets.length>1?`외${targets.length-1}`:'';
+
+  return `<div class="hm-week-cell ${status} cell-tall${clsToday}"${onclick}>
+    <span class="goal-name">${name}</span>
+    ${extra?`<span class="goal-count">${extra}</span>`:''}
+  </div>`;
+}
 
 // ═══════════════════════════════════════════════
 // FIRST-WEEK MISSION CARD
