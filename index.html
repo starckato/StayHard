@@ -4318,11 +4318,11 @@ function toggleSet(ei,si){
   const s=currentSession[ei].sets[si];
   s.done=!s.done;
   if(s.done){
-    // auto-copy weight to next undone set
+    // auto-copy weight to next undone set — only to EMPTY fields, never overwrite user input
     const nextSet=currentSession[ei].sets[si+1];
     if(nextSet&&!nextSet.done){
-      if(s.kg)nextSet.kg=s.kg;
-      if(s.reps)nextSet.reps=s.reps;
+      if(s.kg && !nextSet.kg)nextSet.kg=s.kg;
+      if(s.reps && !nextSet.reps)nextSet.reps=s.reps;
     }
     saveSessionToLog();
     // start rest timer
