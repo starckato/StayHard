@@ -9710,51 +9710,67 @@ async function captureSessionSummary(ev){
     restore();
   },15000);
 
+  // Off-screen static clone · fixed-position modal 은 html2canvas 가 iOS 에서 hang 하므로
+  // 컨텐츠를 detached 정적 컨테이너에 복사해서 캡쳐
+  let clone=null;
   try{
-    await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
     const isMobile=/iPad|iPhone|iPod|Android/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
-    console.log('[share] isMobile=',isMobile,'UA=',navigator.userAgent);
+    console.log('[share] isMobile=',isMobile);
 
-    const canvas=await html2canvas(el,{
+    clone=el.cloneNode(true);
+    clone.removeAttribute('id');
+    // fixed 해제 · 오프스크린 고정폭
+    clone.style.cssText='position:absolute;left:-10000px;top:0;width:430px;max-width:430px;background:#0a0a0c;display:block;z-index:-1;';
+    // footer 숨김 + scroll container 전부 확장
+    const footer=clone.querySelector('.ssm-v3-footer, .ssm-footer')
+      ||clone.querySelector('#ssm-edit-btn')?.parentElement;
+    if(footer)footer.style.display='none';
+    clone.querySelectorAll('[style]').forEach(n=>{
+      const st=n.style;
+      if(st.overflow==='auto'||st.overflow==='scroll'||st.overflowY==='auto'||st.overflowY==='scroll'){
+        st.overflow='visible';st.overflowY='visible';
+      }
+    });
+    const exList=clone.querySelector('#ssm-exercises');
+    if(exList){
+      exList.style.overflow='visible';exList.style.maxHeight='none';
+      exList.style.flex='none';exList.style.height='auto';
+    }
+    const body=clone.querySelector('.ssm-v3-body');
+    if(body){
+      body.style.overflow='visible';body.style.maxHeight='none';
+      body.style.flex='none';body.style.height='auto';
+    }
+    // header padding top 52px 는 status bar 용 — capture 에선 축소
+    const hdr=clone.querySelector('.ssm-v3-header')||clone.firstElementChild;
+    if(hdr&&hdr.style)hdr.style.padding='18px 18px 14px';
+    document.body.appendChild(clone);
+
+    // 2 RAF 로 레이아웃 안정화 대기
+    await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
+    await new Promise(r=>setTimeout(r,50));
+    console.log('[share] clone size',clone.offsetWidth,'x',clone.offsetHeight);
+
+    const canvas=await html2canvas(clone,{
       backgroundColor:'#0a0a0c',
       scale:isMobile?1.5:2,
       useCORS:true,
       allowTaint:true,
       logging:false,
-      height:el.scrollHeight,
-      windowHeight:el.scrollHeight,
-      onclone:(doc)=>{
-        try{
-          const cl=doc.getElementById('session-summary-modal');
-          if(cl){
-            const exList=doc.getElementById('ssm-exercises');
-            if(exList){
-              exList.style.overflow='visible';
-              exList.style.maxHeight='none';
-              exList.style.flex='none';
-              exList.style.height='auto';
-            }
-            const body=cl.querySelector('.ssm-v3-body');
-            if(body){
-              body.style.overflow='visible';
-              body.style.maxHeight='none';
-              body.style.flex='none';
-              body.style.height='auto';
-            }
-            const footer=cl.querySelector('.ssm-v3-footer')
-              ||cl.querySelector('.ssm-footer')
-              ||(doc.getElementById('ssm-edit-btn')?.parentElement);
-            if(footer)footer.style.display='none';
-          }
-        }catch(e){ console.warn('[share] onclone error',e); }
-      }
+      width:clone.offsetWidth,
+      height:clone.offsetHeight,
+      windowWidth:clone.offsetWidth,
+      windowHeight:clone.offsetHeight,
+      scrollX:0,scrollY:0
     });
     clearTimeout(watchdog);
+    clone.remove();clone=null;
     console.log('[share] canvas',canvas.width,'x',canvas.height);
     ov.setImage(canvas);
     restore();
   }catch(e){
     clearTimeout(watchdog);
+    if(clone)try{clone.remove();}catch(_){}
     console.error('[share] capture error',e);
     ov.setMessage('캡쳐 실패: '+(e&&e.message||e)+'\n\n다시 시도해주세요.');
     restore();
