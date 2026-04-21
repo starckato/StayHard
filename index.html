@@ -12777,27 +12777,34 @@ async function captureSessionSummary(ev){
   const btn=(ev&&ev.currentTarget)||document.getElementById('ssm-share-btn');
   const origText=btn?btn.textContent:'';
   const restore=()=>{ if(btn){btn.textContent=origText;btn.disabled=false;} };
-  if(!el){showToast('요약 모달을 찾을 수 없음');return;}
+  if(!el){alert('요약 모달을 찾을 수 없음');return;}
+  console.log('[share] capture start · html2canvas=',typeof html2canvas);
+
+  // 1) synchronous user-gesture 에 즉시 오버레이 생성
+  const ov=_createShareOverlay();
+  document.body.appendChild(ov.el);
+
   if(typeof html2canvas==='undefined'){
-    showToast('캡쳐 기능을 불러오는 중이에요. 잠시 후 다시 시도해주세요.');
+    ov.setMessage('캡쳐 라이브러리 로딩 실패 — 네트워크 확인 후 재시도');
     return;
   }
+
   if(btn){btn.textContent='캡쳐 중...';btn.disabled=true;}
-  console.log('[share] capture start');
 
   let watchdog=setTimeout(()=>{
     console.warn('[share] watchdog timeout');
-    showToast('캡쳐 시간 초과 — 다시 시도해주세요');
+    ov.setMessage('캡쳐 시간 초과 — 다시 시도해보세요.');
     restore();
-  },12000);
+  },15000);
 
   try{
     await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
+    const isMobile=/iPad|iPhone|iPod|Android/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+    console.log('[share] isMobile=',isMobile);
 
-    // onclone: live DOM 은 건드리지 않고 clone 에서만 footer/scroll 조작
     const canvas=await html2canvas(el,{
       backgroundColor:'#0a0a0c',
-      scale:2,
+      scale:isMobile?1.5:2,
       useCORS:true,
       allowTaint:true,
       logging:false,
@@ -12830,86 +12837,77 @@ async function captureSessionSummary(ev){
       }
     });
     clearTimeout(watchdog);
-    console.log('[share] canvas ready',canvas.width,'x',canvas.height);
-
-    const toBlob=()=>new Promise((resolve)=>{
-      try{ canvas.toBlob(b=>resolve(b),'image/png'); }catch(e){ resolve(null); }
-    });
-    const blob=await toBlob();
-    console.log('[share] blob',blob&&blob.size);
-    if(!blob){
-      console.warn('[share] blob null → fallback overlay');
-      showImageOverlay(canvas,null);
-      restore();
-      return;
-    }
-    const file=new File([blob],'stayhard_workout.png',{type:'image/png'});
-    const isMobile=/iPad|iPhone|iPod|Android/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
-
-    // 모바일 · Web Share API 는 await 후 user gesture 가 만료되어 silently 차단됨 → inline overlay 로 노출
-    if(isMobile){
-      console.log('[share] mobile → inline overlay');
-      showImageOverlay(canvas,blob);
-    } else {
-      let shared=false;
-      if(navigator.share){
-        try{
-          await navigator.share({files:[file],title:'Stay Hard 운동 기록'});
-          console.log('[share] native share ok');
-          shared=true;
-        }catch(e){
-          console.warn('[share] native share error',e&&e.name);
-          if(e&&e.name==='AbortError') shared=true;
-        }
-      }
-      if(!shared){
-        console.log('[share] desktop → download');
-        downloadImage(canvas,blob);
-      }
-    }
+    console.log('[share] canvas',canvas.width,'x',canvas.height);
+    ov.setImage(canvas);
     restore();
   }catch(e){
     clearTimeout(watchdog);
     console.error('[share] capture error',e);
-    showToast('캡쳐 중 오류: '+(e&&e.message||e));
+    ov.setMessage('캡쳐 실패: '+(e&&e.message||e)+'\n\n다시 시도해주세요.');
     restore();
   }
 }
 
-// 캡쳐 이미지를 같은 페이지 오버레이로 노출 — iOS 의 popup/download 차단 우회
-function showImageOverlay(canvas,blob){
-  const url=blob?URL.createObjectURL(blob):canvas.toDataURL('image/png');
-  const ov=document.createElement('div');
-  ov.id='share-image-overlay';
-  ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:20px 16px 24px;overflow-y:auto;-webkit-overflow-scrolling:touch;';
-  ov.innerHTML=''
-    +'<div style="color:#fff;font-size:14px;font-weight:600;text-align:center;padding:8px 0 14px;font-family:\'DM Sans\',sans-serif;">이미지를 <b style="color:#ff9f43;">꾹 누르면</b> 저장 / 공유</div>'
-    +'<img id="share-overlay-img" src="'+url+'" style="max-width:100%;height:auto;border-radius:14px;box-shadow:0 8px 32px rgba(0,0,0,.6);margin-bottom:20px;" alt="운동 기록"/>'
-    +'<div style="display:flex;gap:10px;width:100%;max-width:320px;">'
-    +  '<button id="share-ov-share" style="flex:1;padding:14px;background:#ff4d4d;color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:\'DM Sans\',sans-serif;touch-action:manipulation;">📤 공유</button>'
-    +  '<button id="share-ov-close" style="flex:1;padding:14px;background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.2);border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;font-family:\'DM Sans\',sans-serif;touch-action:manipulation;">닫기</button>'
-    +'</div>';
-  document.body.appendChild(ov);
+function _createShareOverlay(){
+  const el=document.createElement('div');
+  el.id='share-image-overlay';
+  el.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:10000;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:20px 16px 24px;overflow-y:auto;-webkit-overflow-scrolling:touch;';
+  el.innerHTML=''
+    +'<div id="so-msg" style="color:#fff;font-size:14px;font-weight:600;text-align:center;padding:8px 0 14px;font-family:\'DM Sans\',sans-serif;white-space:pre-line;">캡쳐 준비 중...</div>'
+    +'<div id="so-loader" style="width:40px;height:40px;border:3px solid rgba(255,255,255,.2);border-top-color:#ff9f43;border-radius:50%;animation:spin 0.8s linear infinite;margin:40px 0;"></div>'
+    +'<img id="so-img" style="display:none;max-width:100%;height:auto;border-radius:14px;box-shadow:0 8px 32px rgba(0,0,0,.6);margin-bottom:20px;" alt="운동 기록"/>'
+    +'<div id="so-actions" style="display:none;gap:10px;width:100%;max-width:320px;">'
+    +  '<button id="so-share" style="flex:1;padding:14px;background:#ff4d4d;color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:\'DM Sans\',sans-serif;touch-action:manipulation;">📤 공유</button>'
+    +  '<button id="so-close" style="flex:1;padding:14px;background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.2);border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;font-family:\'DM Sans\',sans-serif;touch-action:manipulation;">닫기</button>'
+    +'</div>'
+    +'<button id="so-cancel" style="margin-top:auto;padding:10px 22px;background:transparent;color:#aaa;border:1px solid rgba(255,255,255,.15);border-radius:20px;font-size:12px;cursor:pointer;font-family:\'DM Sans\',sans-serif;touch-action:manipulation;">취소</button>';
 
-  const close=()=>{ try{URL.revokeObjectURL(url);}catch(_){} ov.remove(); };
-  ov.querySelector('#share-ov-close').onclick=close;
-  ov.addEventListener('click',(e)=>{ if(e.target===ov)close(); });
+  let objectUrl=null, lastBlob=null;
+  const close=()=>{ try{if(objectUrl)URL.revokeObjectURL(objectUrl);}catch(_){} el.remove(); };
+  el.querySelector('#so-cancel').onclick=close;
+  el.addEventListener('click',(e)=>{ if(e.target===el)close(); });
 
-  const shareBtn=ov.querySelector('#share-ov-share');
-  shareBtn.onclick=async()=>{
-    if(blob && navigator.share){
-      try{
-        const f=new File([blob],'stayhard_workout.png',{type:'image/png'});
-        await navigator.share({files:[f],title:'Stay Hard 운동 기록'});
-        console.log('[share] overlay native share ok');
-        close();
-        return;
-      }catch(e){
-        console.warn('[share] overlay share error',e&&e.name);
-        if(e&&e.name==='AbortError') return;
-      }
-    }
-    downloadImage(canvas,blob);
+  return {
+    el,
+    setMessage:(text)=>{
+      el.querySelector('#so-loader').style.display='none';
+      el.querySelector('#so-msg').textContent=text;
+      el.querySelector('#so-cancel').textContent='닫기';
+    },
+    setImage:(canvas)=>{
+      el.querySelector('#so-loader').style.display='none';
+      el.querySelector('#so-msg').innerHTML='이미지를 <b style="color:#ff9f43;">꾹 누르면</b> 저장 / 공유';
+      const img=el.querySelector('#so-img');
+      canvas.toBlob((blob)=>{
+        if(blob){
+          lastBlob=blob;
+          objectUrl=URL.createObjectURL(blob);
+          img.src=objectUrl;
+        } else {
+          img.src=canvas.toDataURL('image/png');
+        }
+        img.style.display='block';
+        el.querySelector('#so-actions').style.display='flex';
+      },'image/png');
+
+      el.querySelector('#so-close').onclick=close;
+      el.querySelector('#so-share').onclick=async()=>{
+        if(navigator.share && lastBlob){
+          try{
+            const f=new File([lastBlob],'stayhard_workout.png',{type:'image/png'});
+            await navigator.share({files:[f],title:'Stay Hard 운동 기록'});
+            console.log('[share] overlay native share ok');
+            close();
+            return;
+          }catch(e){
+            console.warn('[share] overlay share error',e&&e.name);
+            if(e&&e.name==='AbortError') return;
+          }
+        }
+        downloadImage(canvas,lastBlob);
+      };
+      el.querySelector('#so-cancel').style.display='none';
+    },
   };
 }
 
