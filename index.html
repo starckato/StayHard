@@ -12839,24 +12839,35 @@ async function captureSessionSummary(ev){
     console.log('[share] blob',blob&&blob.size);
     if(!blob){
       console.warn('[share] blob null → fallback download');
-      downloadImage(canvas);
+      downloadImage(canvas,null);
       restore();
       return;
     }
     const file=new File([blob],'stayhard_workout.png',{type:'image/png'});
 
-    const canShareFile=navigator.share&&navigator.canShare&&(()=>{try{return navigator.canShare({files:[file]})}catch(_){return false}})();
-    if(canShareFile){
+    // canShare check 우회 — navigator.share 있으면 무조건 시도
+    let shared=false;
+    if(navigator.share){
       try{
         await navigator.share({files:[file],title:'Stay Hard 운동 기록'});
         console.log('[share] native share ok');
+        shared=true;
       }catch(e){
-        console.warn('[share] native share error',e);
-        if(e&&e.name!=='AbortError')downloadImage(canvas);
+        console.warn('[share] native share error',e&&e.name,e&&e.message);
+        if(e&&e.name==='AbortError'){ shared=true; }
+        else if(/TypeError|NotAllowedError/i.test(e&&e.name||'')){
+          try{
+            await navigator.share({title:'Stay Hard 운동 기록',text:'오늘의 운동 기록'});
+            shared=true;
+          }catch(e2){ console.warn('[share] text-only share also failed',e2); }
+        }
       }
     } else {
-      console.log('[share] no native share → download');
-      downloadImage(canvas);
+      console.log('[share] navigator.share 없음');
+    }
+    if(!shared){
+      console.log('[share] → downloadImage fallback');
+      downloadImage(canvas,blob);
     }
     restore();
   }catch(e){
@@ -12867,12 +12878,34 @@ async function captureSessionSummary(ev){
   }
 }
 
-function downloadImage(canvas){
-  const a=document.createElement('a');
-  a.download='stayhard_workout_'+TODAY+'.png';
-  a.href=canvas.toDataURL('image/png');
-  a.click();
-  showToast('📸 이미지 저장됨!');
+function downloadImage(canvas,blob){
+  const fileName='stayhard_workout_'+TODAY+'.png';
+  const isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+  // iOS Safari 는 <a download> 가 조용히 실패함 → 새 탭 에 이미지 띄워 사용자가 꾹 눌러 저장
+  if(isIOS){
+    try{
+      const url=blob?URL.createObjectURL(blob):canvas.toDataURL('image/png');
+      const w=window.open('','_blank');
+      if(w&&w.document){
+        w.document.write('<html><head><title>Stay Hard</title><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{margin:0;background:#0a0a0c;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px;box-sizing:border-box;}img{max-width:100%;height:auto;border-radius:14px;box-shadow:0 8px 32px rgba(0,0,0,.5);}p{color:#bbb;font-family:-apple-system,sans-serif;font-size:13px;text-align:center;padding:16px 0;margin:0;}</style></head><body><div><p>이미지를 <b>꾹 누르면</b> 저장돼요</p><img src="'+url+'"/></div></body></html>');
+        w.document.close();
+        showToast('새 탭에서 이미지를 꾹 눌러 저장하세요');
+        return;
+      }
+    }catch(e){ console.warn('[share] iOS window.open failed',e); }
+  }
+  try{
+    const a=document.createElement('a');
+    a.download=fileName;
+    a.href=blob?URL.createObjectURL(blob):canvas.toDataURL('image/png');
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(()=>{ try{ document.body.removeChild(a); }catch(_){} if(blob)URL.revokeObjectURL(a.href); },1000);
+    showToast('📸 이미지 저장됨!');
+  }catch(e){
+    console.error('[share] downloadImage error',e);
+    showToast('이미지 저장 실패 — 스크린샷으로 저장해주세요');
+  }
 }
 
 function markWorkoutDone(i){
