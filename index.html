@@ -12669,7 +12669,9 @@ function renderWorkouts(){
 }
 
 function toggleGymExpand(i){openSessionSummary(i);}
+let _currentSummaryIdx=null;
 function openSessionSummary(i){
+  _currentSummaryIdx=i;
   const w=log.workouts[i];
   if(!w||w.type!=='gym')return;
   const v3=document.body.classList.contains('v3-live');
@@ -12772,91 +12774,233 @@ function closeSessionSummary(){
   document.body.style.overflow='';
 }
 
+// Canvas 2D native 직접 렌더링 — html2canvas 포기, iOS 에서도 <10ms
 async function captureSessionSummary(ev){
-  const el=document.getElementById('session-summary-modal');
   const btn=(ev&&ev.currentTarget)||document.getElementById('ssm-share-btn');
   const origText=btn?btn.textContent:'';
   const restore=()=>{ if(btn){btn.textContent=origText;btn.disabled=false;} };
-  if(!el){alert('요약 모달을 찾을 수 없음');return;}
-  console.log('[share] capture start · html2canvas=',typeof html2canvas);
 
-  // 1) synchronous user-gesture 에 즉시 오버레이 생성
   const ov=_createShareOverlay();
   document.body.appendChild(ov.el);
 
-  if(typeof html2canvas==='undefined'){
-    ov.setMessage('캡쳐 라이브러리 로딩 실패 — 네트워크 확인 후 재시도');
+  const i=_currentSummaryIdx;
+  if(i==null||!log.workouts||!log.workouts[i]){
+    ov.setMessage('세션 데이터를 찾을 수 없음');
     return;
   }
-
+  const w=log.workouts[i];
   if(btn){btn.textContent='캡쳐 중...';btn.disabled=true;}
 
-  let watchdog=setTimeout(()=>{
-    console.warn('[share] watchdog timeout');
-    ov.setMessage('캡쳐 시간 초과 — 다시 시도해보세요.');
-    restore();
-  },15000);
-
-  // Off-screen static clone · fixed-position modal 은 html2canvas 가 iOS 에서 hang
-  let clone=null;
   try{
-    const isMobile=/iPad|iPhone|iPod|Android/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
-    console.log('[share] isMobile=',isMobile);
-
-    clone=el.cloneNode(true);
-    clone.removeAttribute('id');
-    clone.style.cssText='position:absolute;left:-10000px;top:0;width:430px;max-width:430px;background:#0a0a0c;display:block;z-index:-1;';
-    const footer=clone.querySelector('.ssm-v3-footer, .ssm-footer')
-      ||clone.querySelector('#ssm-edit-btn')?.parentElement;
-    if(footer)footer.style.display='none';
-    clone.querySelectorAll('[style]').forEach(n=>{
-      const st=n.style;
-      if(st.overflow==='auto'||st.overflow==='scroll'||st.overflowY==='auto'||st.overflowY==='scroll'){
-        st.overflow='visible';st.overflowY='visible';
-      }
-    });
-    const exList=clone.querySelector('#ssm-exercises');
-    if(exList){
-      exList.style.overflow='visible';exList.style.maxHeight='none';
-      exList.style.flex='none';exList.style.height='auto';
-    }
-    const body=clone.querySelector('.ssm-v3-body');
-    if(body){
-      body.style.overflow='visible';body.style.maxHeight='none';
-      body.style.flex='none';body.style.height='auto';
-    }
-    const hdr=clone.querySelector('.ssm-v3-header')||clone.firstElementChild;
-    if(hdr&&hdr.style)hdr.style.padding='18px 18px 14px';
-    document.body.appendChild(clone);
-
-    await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
-    await new Promise(r=>setTimeout(r,50));
-    console.log('[share] clone size',clone.offsetWidth,'x',clone.offsetHeight);
-
-    const canvas=await html2canvas(clone,{
-      backgroundColor:'#0a0a0c',
-      scale:isMobile?1.5:2,
-      useCORS:true,
-      allowTaint:true,
-      logging:false,
-      width:clone.offsetWidth,
-      height:clone.offsetHeight,
-      windowWidth:clone.offsetWidth,
-      windowHeight:clone.offsetHeight,
-      scrollX:0,scrollY:0
-    });
-    clearTimeout(watchdog);
-    clone.remove();clone=null;
+    console.log('[share] native canvas render start');
+    const canvas=renderSummaryToCanvas(w);
     console.log('[share] canvas',canvas.width,'x',canvas.height);
     ov.setImage(canvas);
     restore();
   }catch(e){
-    clearTimeout(watchdog);
-    if(clone)try{clone.remove();}catch(_){}
-    console.error('[share] capture error',e);
-    ov.setMessage('캡쳐 실패: '+(e&&e.message||e)+'\n\n다시 시도해주세요.');
+    console.error('[share] render error',e);
+    ov.setMessage('이미지 생성 실패: '+(e&&e.message||e));
     restore();
   }
+}
+
+// 네이티브 Canvas 2D 로 세션 요약 이미지 직접 그리기
+function renderSummaryToCanvas(w){
+  const W=860;
+  const PAD=36;
+  const INNER=W-PAD*2;
+  const DPR=2;
+
+  const vol=w.totalVolume||0;
+  const volNumStr = vol>=1000 ? (vol/1000).toFixed(1) : vol>0 ? Math.round(vol).toLocaleString() : '—';
+  const volUnit   = vol>=1000 ? 't' : vol>0 ? 'kg' : '';
+  const totalSets=(w.exercises||[]).reduce((a,ex)=>a+(ex.sets||[]).filter(s=>s.done).length,0);
+  const totalEx=(w.exercises||[]).length;
+  const durMin=(+w.duration_min)||0;
+  const pt=totalSets*2;
+
+  let dateStr='';
+  try{
+    const d=new Date((selectedKey||TODAY)+'T12:00:00');
+    dateStr=(d.getMonth()+1)+'월 '+d.getDate()+'일';
+  }catch(_){ dateStr=selectedKey||TODAY; }
+  const headerSub=(w.routineName?w.routineName+' · ':'')+dateStr;
+
+  const exRows=(w.exercises||[]).map(ex=>{
+    const doneSets=(ex.sets||[]).filter(s=>s.done);
+    const exVol=doneSets.reduce((a,s)=>a+(parseFloat(s.kg)||0)*(parseInt(s.reps)||0),0);
+    const volLabel=exVol>=1000?(exVol/1000).toFixed(1)+' t':exVol>0?Math.round(exVol).toLocaleString()+' kg':'—';
+    return {name:ex.name||'—',sets:doneSets.length,volLabel};
+  });
+
+  const muscles=[];
+  try{
+    const byM={};let volSum=0;
+    (w.exercises||[]).forEach(ex=>{
+      const exVol=(ex.sets||[]).filter(s=>s.done).reduce((a,s)=>a+(parseFloat(s.kg)||0)*(parseInt(s.reps)||0),0);
+      if(exVol<=0)return;
+      const ms=(ex.muscle||'').split(/[·,\/]/).map(s=>s.trim()).filter(Boolean);
+      const n=ms.length||1;
+      ms.forEach(m=>{ byM[m]=(byM[m]||0)+exVol/n; });
+      volSum+=exVol;
+    });
+    Object.entries(byM).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]).slice(0,6).forEach(([m,v])=>{
+      muscles.push({name:m,pct:volSum>0?Math.round(v/volSum*100):0});
+    });
+  }catch(_){}
+
+  let H=0;
+  const SEG={HEADER:100,DIVIDER:30,HERO:170,STATS:130,SECTION_GAP:34,SECTION_HEAD:34,EXROW:52,MUSCLES_ROW:52,FOOTER:70};
+  H+=SEG.HEADER+SEG.DIVIDER+SEG.HERO+SEG.STATS;
+  H+=SEG.SECTION_GAP+SEG.SECTION_HEAD+exRows.length*SEG.EXROW;
+  if(muscles.length)H+=SEG.SECTION_GAP+SEG.SECTION_HEAD+SEG.MUSCLES_ROW;
+  H+=SEG.FOOTER+PAD;
+
+  const c=document.createElement('canvas');
+  c.width=W*DPR;c.height=H*DPR;
+  c.style.width=W+'px';c.style.height=H+'px';
+  const ctx=c.getContext('2d');
+  ctx.scale(DPR,DPR);
+
+  ctx.fillStyle='#0a0a0c';
+  ctx.fillRect(0,0,W,H);
+
+  let y=44;
+
+  ctx.textBaseline='top';
+  ctx.fillStyle='#ffffff';
+  ctx.font='700 32px -apple-system,"DM Sans",sans-serif';
+  ctx.fillText('끝',PAD,y);
+  ctx.fillStyle='#999';
+  ctx.font='500 15px -apple-system,"DM Sans",sans-serif';
+  ctx.fillText(headerSub,PAD+68,y+10);
+  y+=SEG.HEADER-56;
+
+  ctx.strokeStyle='rgba(255,255,255,0.08)';
+  ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(PAD,y);ctx.lineTo(W-PAD,y);ctx.stroke();
+  y+=SEG.DIVIDER;
+
+  ctx.fillStyle='#ffffff';
+  ctx.font='900 110px "Archivo Black","DM Mono",monospace';
+  const volTextW=ctx.measureText(volNumStr).width;
+  ctx.fillText(volNumStr,PAD,y-6);
+  if(volUnit){
+    ctx.fillStyle='rgba(255,255,255,0.55)';
+    ctx.font='500 44px "DM Mono",monospace';
+    ctx.fillText(volUnit,PAD+volTextW+12,y+40);
+  }
+  y+=120;
+  ctx.fillStyle='rgba(255,255,255,0.45)';
+  ctx.font='600 13px -apple-system,sans-serif';
+  const heroLabel='TOTAL VOLUME'+(pt>0?'   ·   +'+pt+' PT':'');
+  ctx.fillText(heroLabel,PAD,y);
+  y+=SEG.HERO-120;
+
+  const statW=(INNER-24)/3;
+  const stats=[
+    {v:durMin>0?String(durMin):'—',k:'MINUTES'},
+    {v:String(totalEx),k:'EXERCISES'},
+    {v:String(totalSets),k:'SETS'},
+  ];
+  stats.forEach((s,i)=>{
+    const sx=PAD+i*(statW+12);
+    ctx.fillStyle='#18181c';
+    _roundRect(ctx,sx,y,statW,100,14);
+    ctx.fill();
+    ctx.fillStyle='#ffffff';
+    ctx.font='900 40px "Archivo Black","DM Mono",monospace';
+    ctx.fillText(s.v,sx+18,y+18);
+    ctx.fillStyle='rgba(255,255,255,0.4)';
+    ctx.font='600 11px -apple-system,sans-serif';
+    ctx.fillText(s.k,sx+18,y+72);
+  });
+  y+=SEG.STATS;
+
+  y+=SEG.SECTION_GAP;
+  ctx.fillStyle='rgba(255,255,255,0.4)';
+  ctx.font='600 13px -apple-system,sans-serif';
+  ctx.fillText('운동별 볼륨',PAD,y);
+  y+=SEG.SECTION_HEAD;
+
+  exRows.forEach((r)=>{
+    ctx.fillStyle='#ffffff';
+    ctx.font='500 20px -apple-system,"DM Sans",sans-serif';
+    let nm=r.name;const maxNameW=INNER*0.55;
+    while(ctx.measureText(nm).width>maxNameW && nm.length>3){nm=nm.slice(0,-1);}
+    if(nm!==r.name)nm=nm+'…';
+    ctx.fillText(nm,PAD,y+10);
+    ctx.fillStyle='rgba(255,255,255,0.4)';
+    ctx.font='400 15px "DM Mono",monospace';
+    ctx.textAlign='right';
+    ctx.fillText(r.sets+'세트',W-PAD-120,y+13);
+    ctx.fillStyle='#ffffff';
+    ctx.font='500 18px "DM Mono",monospace';
+    ctx.fillText(r.volLabel,W-PAD,y+11);
+    ctx.textAlign='left';
+    ctx.strokeStyle='rgba(255,255,255,0.06)';
+    ctx.beginPath();ctx.moveTo(PAD,y+SEG.EXROW-1);ctx.lineTo(W-PAD,y+SEG.EXROW-1);ctx.stroke();
+    y+=SEG.EXROW;
+  });
+
+  if(muscles.length){
+    y+=SEG.SECTION_GAP;
+    ctx.fillStyle='rgba(255,255,255,0.4)';
+    ctx.font='600 13px -apple-system,sans-serif';
+    ctx.fillText('자극 부위',PAD,y);
+    y+=SEG.SECTION_HEAD;
+
+    let px=PAD;
+    const pillY=y;
+    const pillH=36;
+    muscles.forEach(m=>{
+      const label=m.name+' '+m.pct+'%';
+      ctx.font='500 15px -apple-system,"DM Sans",sans-serif';
+      const pw=ctx.measureText(label).width+22;
+      if(px+pw>W-PAD){ return; }
+      ctx.fillStyle='#18181c';
+      _roundRect(ctx,px,pillY,pw,pillH,18);
+      ctx.fill();
+      ctx.strokeStyle='rgba(255,255,255,0.12)';
+      ctx.lineWidth=0.5;
+      ctx.stroke();
+      ctx.fillStyle='#ffffff';
+      ctx.font='500 15px -apple-system,"DM Sans",sans-serif';
+      const nameW=ctx.measureText(m.name).width;
+      ctx.fillText(m.name,px+11,pillY+10);
+      ctx.fillStyle='rgba(255,255,255,0.45)';
+      ctx.font='500 13px "DM Mono",monospace';
+      ctx.fillText(m.pct+'%',px+11+nameW+6,pillY+12);
+      px+=pw+6;
+    });
+    y+=SEG.MUSCLES_ROW;
+  }
+
+  y=H-PAD-40;
+  ctx.fillStyle='rgba(255,255,255,0.3)';
+  ctx.font='700 18px "Archivo Black",sans-serif';
+  ctx.fillText('STAY HARD',PAD,y);
+  ctx.fillStyle='rgba(255,255,255,0.3)';
+  ctx.font='500 13px "DM Mono",monospace';
+  ctx.textAlign='right';
+  ctx.fillText('매일의 기록',W-PAD,y+3);
+  ctx.textAlign='left';
+
+  return c;
+}
+
+function _roundRect(ctx,x,y,w,h,r){
+  ctx.beginPath();
+  ctx.moveTo(x+r,y);
+  ctx.lineTo(x+w-r,y);
+  ctx.quadraticCurveTo(x+w,y,x+w,y+r);
+  ctx.lineTo(x+w,y+h-r);
+  ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+  ctx.lineTo(x+r,y+h);
+  ctx.quadraticCurveTo(x,y+h,x,y+h-r);
+  ctx.lineTo(x,y+r);
+  ctx.quadraticCurveTo(x,y,x+r,y);
+  ctx.closePath();
 }
 
 function _createShareOverlay(){
