@@ -9696,55 +9696,90 @@ async function captureSessionSummary(ev){
     return;
   }
   if(btn){btn.textContent='캡쳐 중...';btn.disabled=true;}
+  console.log('[share] capture start');
 
-  // Expand scroll container so full content is captured (fixed modal + inner overflow:auto 문제 회피)
-  const exList=document.getElementById('ssm-exercises');
-  const prevStyle=exList?exList.getAttribute('style'):null;
-  if(exList){
-    exList.style.overflow='visible';
-    exList.style.maxHeight='none';
-    exList.style.flex='none';
-    exList.style.height='auto';
-  }
-  // 버튼은 캡쳐에서 제외 (footer 전체 임시 숨김)
-  const footer=el.querySelector('.ssm-v3-footer, .ssm-footer, [id="ssm-edit-btn"]')?.parentElement||null;
-  const prevFooterDisplay=footer?footer.style.display:'';
-  if(footer)footer.style.display='none';
+  // html2canvas watchdog: 12초 넘으면 강제 복구
+  let watchdog=setTimeout(()=>{
+    console.warn('[share] watchdog timeout');
+    showToast('캡쳐 시간 초과 — 다시 시도해주세요');
+    restore();
+  },12000);
 
   try{
     await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
-    const canvas=await html2canvas(el,{
+
+    // html2canvas onclone: live DOM 은 건드리지 않고 clone 에서만 footer/scroll 조작
+    const canvasPromise=html2canvas(el,{
       backgroundColor:'#0a0a0c',
       scale:2,
       useCORS:true,
       allowTaint:true,
       logging:false,
       height:el.scrollHeight,
-      windowHeight:el.scrollHeight
+      windowHeight:el.scrollHeight,
+      onclone:(doc)=>{
+        try{
+          const cl=doc.getElementById('session-summary-modal');
+          if(cl){
+            // 전체 content 보이도록 scroll container 해제
+            const exList=doc.getElementById('ssm-exercises');
+            if(exList){
+              exList.style.overflow='visible';
+              exList.style.maxHeight='none';
+              exList.style.flex='none';
+              exList.style.height='auto';
+            }
+            const body=cl.querySelector('.ssm-v3-body');
+            if(body){
+              body.style.overflow='visible';
+              body.style.maxHeight='none';
+              body.style.flex='none';
+              body.style.height='auto';
+            }
+            // 버튼 footer 는 이미지에서 제외
+            const footer=cl.querySelector('.ssm-v3-footer')
+              ||cl.querySelector('.ssm-footer')
+              ||(doc.getElementById('ssm-edit-btn')?.parentElement);
+            if(footer)footer.style.display='none';
+          }
+        }catch(e){ console.warn('[share] onclone error',e); }
+      }
     });
 
-    // restore DOM before share prompt (user dismisses share → modal should be usable again)
-    if(exList){ if(prevStyle===null)exList.removeAttribute('style'); else exList.setAttribute('style',prevStyle); }
-    if(footer)footer.style.display=prevFooterDisplay;
+    const canvas=await canvasPromise;
+    clearTimeout(watchdog);
+    console.log('[share] canvas ready',canvas.width,'x',canvas.height);
 
-    const toBlob=()=>new Promise(resolve=>canvas.toBlob(b=>resolve(b),'image/png'));
+    const toBlob=()=>new Promise((resolve)=>{
+      try{ canvas.toBlob(b=>resolve(b),'image/png'); }catch(e){ resolve(null); }
+    });
     const blob=await toBlob();
-    if(!blob){ showToast('캡쳐 실패 — 다시 시도해주세요'); restore(); return; }
+    console.log('[share] blob',blob&&blob.size);
+    if(!blob){
+      console.warn('[share] blob null → fallback download');
+      downloadImage(canvas);
+      restore();
+      return;
+    }
     const file=new File([blob],'stayhard_workout.png',{type:'image/png'});
 
-    if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){
+    const canShareFile=navigator.share&&navigator.canShare&&(()=>{try{return navigator.canShare({files:[file]})}catch(_){return false}})();
+    if(canShareFile){
       try{
         await navigator.share({files:[file],title:'Stay Hard 운동 기록'});
+        console.log('[share] native share ok');
       }catch(e){
-        if(e.name!=='AbortError')downloadImage(canvas);
+        console.warn('[share] native share error',e);
+        if(e&&e.name!=='AbortError')downloadImage(canvas);
       }
     } else {
+      console.log('[share] no native share → download');
       downloadImage(canvas);
     }
     restore();
   }catch(e){
-    if(exList){ if(prevStyle===null)exList.removeAttribute('style'); else exList.setAttribute('style',prevStyle); }
-    if(footer)footer.style.display=prevFooterDisplay;
+    clearTimeout(watchdog);
+    console.error('[share] capture error',e);
     showToast('캡쳐 중 오류: '+(e&&e.message||e));
     restore();
   }
