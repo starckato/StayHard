@@ -12783,30 +12783,18 @@ async function captureSessionSummary(ev){
     return;
   }
   if(btn){btn.textContent='캡쳐 중...';btn.disabled=true;}
+  console.log('[share] capture start');
 
-  // Expand scroll container + ssm-v3-body so full content is captured
-  const exList=document.getElementById('ssm-exercises');
-  const prevExStyle=exList?exList.getAttribute('style'):null;
-  if(exList){
-    exList.style.overflow='visible';
-    exList.style.maxHeight='none';
-    exList.style.flex='none';
-    exList.style.height='auto';
-  }
-  const body=el.querySelector('.ssm-v3-body');
-  const prevBodyStyle=body?body.getAttribute('style'):null;
-  if(body){
-    body.style.overflow='visible';
-    body.style.maxHeight='none';
-    body.style.flex='none';
-    body.style.height='auto';
-  }
-  const footer=el.querySelector('.ssm-v3-footer');
-  const prevFooterDisplay=footer?footer.style.display:'';
-  if(footer)footer.style.display='none';
+  let watchdog=setTimeout(()=>{
+    console.warn('[share] watchdog timeout');
+    showToast('캡쳐 시간 초과 — 다시 시도해주세요');
+    restore();
+  },12000);
 
   try{
     await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
+
+    // onclone: live DOM 은 건드리지 않고 clone 에서만 footer/scroll 조작
     const canvas=await html2canvas(el,{
       backgroundColor:'#0a0a0c',
       scale:2,
@@ -12814,32 +12802,66 @@ async function captureSessionSummary(ev){
       allowTaint:true,
       logging:false,
       height:el.scrollHeight,
-      windowHeight:el.scrollHeight
+      windowHeight:el.scrollHeight,
+      onclone:(doc)=>{
+        try{
+          const cl=doc.getElementById('session-summary-modal');
+          if(cl){
+            const exList=doc.getElementById('ssm-exercises');
+            if(exList){
+              exList.style.overflow='visible';
+              exList.style.maxHeight='none';
+              exList.style.flex='none';
+              exList.style.height='auto';
+            }
+            const body=cl.querySelector('.ssm-v3-body');
+            if(body){
+              body.style.overflow='visible';
+              body.style.maxHeight='none';
+              body.style.flex='none';
+              body.style.height='auto';
+            }
+            const footer=cl.querySelector('.ssm-v3-footer')
+              ||cl.querySelector('.ssm-footer')
+              ||(doc.getElementById('ssm-edit-btn')?.parentElement);
+            if(footer)footer.style.display='none';
+          }
+        }catch(e){ console.warn('[share] onclone error',e); }
+      }
     });
+    clearTimeout(watchdog);
+    console.log('[share] canvas ready',canvas.width,'x',canvas.height);
 
-    if(exList){ if(prevExStyle===null)exList.removeAttribute('style'); else exList.setAttribute('style',prevExStyle); }
-    if(body){ if(prevBodyStyle===null)body.removeAttribute('style'); else body.setAttribute('style',prevBodyStyle); }
-    if(footer)footer.style.display=prevFooterDisplay;
-
-    const toBlob=()=>new Promise(resolve=>canvas.toBlob(b=>resolve(b),'image/png'));
+    const toBlob=()=>new Promise((resolve)=>{
+      try{ canvas.toBlob(b=>resolve(b),'image/png'); }catch(e){ resolve(null); }
+    });
     const blob=await toBlob();
-    if(!blob){ showToast('캡쳐 실패 — 다시 시도해주세요'); restore(); return; }
+    console.log('[share] blob',blob&&blob.size);
+    if(!blob){
+      console.warn('[share] blob null → fallback download');
+      downloadImage(canvas);
+      restore();
+      return;
+    }
     const file=new File([blob],'stayhard_workout.png',{type:'image/png'});
 
-    if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){
+    const canShareFile=navigator.share&&navigator.canShare&&(()=>{try{return navigator.canShare({files:[file]})}catch(_){return false}})();
+    if(canShareFile){
       try{
         await navigator.share({files:[file],title:'Stay Hard 운동 기록'});
+        console.log('[share] native share ok');
       }catch(e){
-        if(e.name!=='AbortError')downloadImage(canvas);
+        console.warn('[share] native share error',e);
+        if(e&&e.name!=='AbortError')downloadImage(canvas);
       }
     } else {
+      console.log('[share] no native share → download');
       downloadImage(canvas);
     }
     restore();
   }catch(e){
-    if(exList){ if(prevExStyle===null)exList.removeAttribute('style'); else exList.setAttribute('style',prevExStyle); }
-    if(body){ if(prevBodyStyle===null)body.removeAttribute('style'); else body.setAttribute('style',prevBodyStyle); }
-    if(footer)footer.style.display=prevFooterDisplay;
+    clearTimeout(watchdog);
+    console.error('[share] capture error',e);
     showToast('캡쳐 중 오류: '+(e&&e.message||e));
     restore();
   }
