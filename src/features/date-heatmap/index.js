@@ -85,12 +85,16 @@ function cellStatus(dl, cat, isFuture) {
   return 'empty';
 }
 
-function cellColor(status, isToday) {
-  if (status === 'future') return { bg: 'rgba(255,255,255,0.03)', bd: 'rgba(255,255,255,0.06)' };
-  if (status === 'pass')    return { bg: 'rgba(52,211,153,0.22)', bd: 'rgba(52,211,153,0.45)' };
-  if (status === 'partial') return { bg: 'rgba(245,158,11,0.22)', bd: 'rgba(245,158,11,0.42)' };
-  if (status === 'fail')    return { bg: 'rgba(255,77,77,0.18)',  bd: 'rgba(255,77,77,0.38)' };
-  return { bg: 'rgba(255,255,255,0.04)', bd: 'rgba(255,255,255,0.06)' };
+// Discipline palette — muted sage / mustard / coral. Chosen so the brand
+// red (used only for "today" and "selected" indicators) never competes with
+// the status color of a cell. These are the approved OKLCH values converted
+// to rgba for broader browser support.
+function cellColor(status) {
+  if (status === 'future')  return { bg: 'rgba(255,255,255,0.025)', bd: 'rgba(255,255,255,0.05)', dashed: true };
+  if (status === 'pass')    return { bg: 'rgba(122,169,153,0.22)',  bd: 'rgba(122,169,153,0.42)' };
+  if (status === 'partial') return { bg: 'rgba(184,151,91,0.20)',   bd: 'rgba(184,151,91,0.38)' };
+  if (status === 'fail')    return { bg: 'rgba(184,96,77,0.22)',    bd: 'rgba(184,96,77,0.42)' };
+  return { bg: 'rgba(255,255,255,0.035)', bd: 'rgba(255,255,255,0.06)' };
 }
 
 function taskPreview(dl) {
@@ -168,8 +172,8 @@ export function buildHeatmapGrid() {
       const dayIdx = (d.getDay() + 6) % 7;
       const isMon = dayIdx === 0 && i > 0;
       const status = cellStatus(dl, cat.key, isFuture);
-      const { bg, bd } = cellColor(status, isT);
-      const cellBd = isSel ? 'var(--accent)' : bd;
+      const { bg, bd, dashed } = cellColor(status);
+      const borderStyle = dashed ? 'dashed' : 'solid';
 
       let inner = '';
       if (cat.key === 'tasks' && !isFuture) {
@@ -181,7 +185,12 @@ export function buildHeatmapGrid() {
         }
       }
 
-      row += `<div onclick="dhSelectDate('${k}',${d.getTime()})" style="${day}border-bottom:1px solid var(--border);cursor:pointer;${isMon ? 'border-left:1px solid rgba(255,255,255,0.08);' : ''}"><div style="height:22px;border-radius:5px;background:${bg};border:1px solid ${cellBd};display:flex;align-items:center;justify-content:center;padding:0 4px;overflow:hidden;">${inner}</div></div>`;
+      // Today/selected get a subtle column tint via the date-row pill only —
+      // never overridden on category cells, so status color stays true.
+      const columnTint = isT ? 'background-image:linear-gradient(rgba(255,77,77,0.04),rgba(255,77,77,0));'
+                        : isSel ? 'background-image:linear-gradient(rgba(255,255,255,0.03),rgba(255,255,255,0));'
+                        : '';
+      row += `<div onclick="dhSelectDate('${k}',${d.getTime()})" style="${day}border-bottom:1px solid var(--border);cursor:pointer;${columnTint}${isMon ? 'border-left:1px solid rgba(255,255,255,0.08);' : ''}"><div style="height:22px;border-radius:5px;background:${bg};border:1px ${borderStyle} ${bd};display:flex;align-items:center;justify-content:center;padding:0 4px;overflow:hidden;">${inner}</div></div>`;
     });
     row += '</div>';
     return row;
