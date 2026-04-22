@@ -22,11 +22,12 @@ import * as stats from './features/stats/index.js';
 import * as onboarding from './features/onboarding/index.js';
 import * as weight from './features/weight/index.js';
 import * as rewards from './features/rewards/index.js';
+import * as weeklyView from './features/weekly-view/index.js';
 
 Object.assign(
   window,
   date, tier, icons, env, analytics, mealPhoto, toast,
   scoreEvents, mottos, exercises, muscle, rewardMessages, pushupCV,
-  stats, onboarding, weight, rewards
+  stats, onboarding, weight, rewards, weeklyView
 );
 window.sb = sb;
