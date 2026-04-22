@@ -7,9 +7,15 @@
   "scripts": {
     "dev": "node esbuild.config.mjs --watch --serve",
     "build": "node esbuild.config.mjs",
-    "check": "node --check src/main.js"
+    "check": "node --check src/main.js",
+    "cap:prepare": "bash scripts/cap-prepare.sh",
+    "cap:sync": "npm run cap:prepare && cap sync",
+    "cap:open:ios": "cap open ios",
+    "cap:open:android": "cap open android"
   },
   "devDependencies": {
+    "@capacitor/cli": "^7.6.2",
+    "@capacitor/core": "^7.6.2",
     "esbuild": "^0.24.0"
   }
 }

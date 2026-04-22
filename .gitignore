@@ -32,5 +32,12 @@ index.html.backup-*
 # esbuild bundle output (built fresh by Vercel on every deploy)
 dist/
 
+# Capacitor web-dir output (built fresh via npm run cap:prepare)
+www/
+
+# Capacitor native platform projects (re-creatable via `npx cap add ios|android`)
+ios/
+android/
+
 # npm
 node_modules/
