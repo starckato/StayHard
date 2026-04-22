@@ -59,24 +59,25 @@ function deriveState() {
   return { state: 'overdue', ...found };
 }
 
-// Compare against the most recent prior weight in logCache. First checks
-// yesterday; if missing, walks backwards up to 60 days for the latest
-// non-null entry. Returns the label ('어제 -0.3' / '3일 전 +0.2' / etc.)
-// and the class for color ('down' for loss, 'up' for gain).
-function formatDelta(w) {
+// Compare the currently-displayed weight to the previous non-null weight
+// in logCache. `offsetDays` lets the caller anchor the search relative to
+// the displayed value — e.g. in carryover state the shown weight is 3 days
+// old, so we want the entry BEFORE that, not the gap between today and 3d.
+// Returns just the signed delta string (no '어제' / 'N일 전' label).
+function formatDelta(w, offsetDays) {
   if (w == null) return null;
   const anchor = new Date(window.selectedDate);
-  for (let i = 1; i <= 60; i++) {
+  const start = (offsetDays || 0) + 1;
+  for (let i = start; i <= 60; i++) {
     const d = new Date(anchor); d.setDate(anchor.getDate() - i);
     const k = window.dkey(d);
     const l = window.logCache?.[k];
     const prev = l?.weight != null ? parseFloat(l.weight) : null;
     if (prev == null) continue;
     const diff = w - prev;
-    const label = i === 1 ? '어제' : i + '일 전';
-    if (Math.abs(diff) < 0.05) return { text: label + ' ±0.0', cls: '' };
-    if (diff < 0) return { text: label + ' ' + diff.toFixed(1), cls: 'down pos' };
-    return { text: label + ' +' + diff.toFixed(1), cls: 'up neg' };
+    if (Math.abs(diff) < 0.05) return { text: '±0.0', cls: '' };
+    if (diff < 0) return { text: diff.toFixed(1), cls: 'down pos' };
+    return { text: '+' + diff.toFixed(1), cls: 'up neg' };
   }
   return null;
 }
@@ -108,19 +109,16 @@ export function renderWeight() {
     }
     if (ccSep) ccSep.style.display = '';
     if (ccDelta) {
-      if (info.state === 'recorded') {
-        const d = formatDelta(info.value);
-        ccDelta.textContent = d ? d.text : '첫 기록';
-        ccDelta.className = d ? d.cls.split(' ').map(c => c === 'down' ? 'pos' : c === 'up' ? 'neg' : c).join(' ') : '';
-      } else if (info.state === 'carryover') {
-        ccDelta.textContent = info.daysSince + '일 전 기록';
-        ccDelta.className = '';
-      } else if (info.state === 'stale') {
-        ccDelta.textContent = info.daysSince + '일 전 기록';
-        ccDelta.className = 'stale';
+      // Delta is always signed kg vs the record BEFORE the displayed value.
+      // In carryover/stale the displayed value is `daysSince` days old, so
+      // we start the search one day further back.
+      const d = formatDelta(info.value, info.daysSince || 0);
+      if (d) {
+        ccDelta.textContent = d.text;
+        ccDelta.className = d.cls.split(' ').map(c => c === 'down' ? 'pos' : c === 'up' ? 'neg' : c).join(' ');
       } else {
-        ccDelta.textContent = info.daysSince + '일 전 · 업데이트 필요';
-        ccDelta.className = 'overdue';
+        ccDelta.textContent = '첫 기록';
+        ccDelta.className = '';
       }
     }
   }
@@ -154,8 +152,8 @@ export function renderWeight() {
                           : info.state === 'overdue' ? '업데이트 필요'
                           : '기록 없음';
   }
-  if (info.state === 'recorded') {
-    const d = formatDelta(info.value);
+  {
+    const d = formatDelta(info.value, info.daysSince || 0);
     if (d) {
       if (metaSep) metaSep.style.display = '';
       if (metaDelta) { metaDelta.style.display = ''; metaDelta.textContent = d.text; metaDelta.className = 'delta ' + d.cls.split(' ')[0]; }
@@ -163,9 +161,6 @@ export function renderWeight() {
       if (metaSep) metaSep.style.display = 'none';
       if (metaDelta) metaDelta.style.display = 'none';
     }
-  } else {
-    if (metaSep) metaSep.style.display = 'none';
-    if (metaDelta) metaDelta.style.display = 'none';
   }
 
   // Goal info merged into meta line: "목표까지 -6.4kg" / "🎯 달성" / "목표 미설정"
