@@ -59,17 +59,26 @@ function deriveState() {
   return { state: 'overdue', ...found };
 }
 
+// Compare against the most recent prior weight in logCache. First checks
+// yesterday; if missing, walks backwards up to 60 days for the latest
+// non-null entry. Returns the label ('어제 -0.3' / '3일 전 +0.2' / etc.)
+// and the class for color ('down' for loss, 'up' for gain).
 function formatDelta(w) {
-  const yesterday = new Date(window.selectedDate);
-  yesterday.setDate(yesterday.getDate() - 1);
-  const yKey = window.dkey(yesterday);
-  const yLog = window.logCache?.[yKey];
-  const yWeight = yLog?.weight != null ? parseFloat(yLog.weight) : null;
-  if (yWeight == null || w == null) return null;
-  const diff = w - yWeight;
-  if (Math.abs(diff) < 0.05) return { text: '어제 ±0.0', cls: '' };
-  if (diff < 0) return { text: '어제 ' + diff.toFixed(1), cls: 'down pos' };
-  return { text: '어제 +' + diff.toFixed(1), cls: 'up neg' };
+  if (w == null) return null;
+  const anchor = new Date(window.selectedDate);
+  for (let i = 1; i <= 60; i++) {
+    const d = new Date(anchor); d.setDate(anchor.getDate() - i);
+    const k = window.dkey(d);
+    const l = window.logCache?.[k];
+    const prev = l?.weight != null ? parseFloat(l.weight) : null;
+    if (prev == null) continue;
+    const diff = w - prev;
+    const label = i === 1 ? '어제' : i + '일 전';
+    if (Math.abs(diff) < 0.05) return { text: label + ' ±0.0', cls: '' };
+    if (diff < 0) return { text: label + ' ' + diff.toFixed(1), cls: 'down pos' };
+    return { text: label + ' +' + diff.toFixed(1), cls: 'up neg' };
+  }
+  return null;
 }
 
 // ── Render ────────────────────────────────────────────────────────────
@@ -101,7 +110,7 @@ export function renderWeight() {
     if (ccDelta) {
       if (info.state === 'recorded') {
         const d = formatDelta(info.value);
-        ccDelta.textContent = d ? d.text : '어제 기록 없음';
+        ccDelta.textContent = d ? d.text : '첫 기록';
         ccDelta.className = d ? d.cls.split(' ').map(c => c === 'down' ? 'pos' : c === 'up' ? 'neg' : c).join(' ') : '';
       } else if (info.state === 'carryover') {
         ccDelta.textContent = info.daysSince + '일 전 기록';
