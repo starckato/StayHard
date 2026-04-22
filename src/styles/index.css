@@ -1,0 +1,9 @@
+/* Stay Hard · modular CSS entry point
+ *
+ * Migration phase: 0 (setup only — no styles imported yet)
+ * See: document-private/MIGRATION_PLAN.md
+ *
+ * In Phase 1, this file will @import all extracted CSS partials.
+ * For now it is intentionally empty — the existing inline <style> block in
+ * index.html still owns all production styling.
+ */

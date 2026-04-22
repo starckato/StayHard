@@ -28,3 +28,9 @@ assets/tier2_*
 
 # Local index.html snapshots (rollback safety nets)
 index.html.backup-*
+
+# esbuild bundle output (built fresh by Vercel on every deploy)
+dist/
+
+# npm
+node_modules/
