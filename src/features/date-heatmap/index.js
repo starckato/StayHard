@@ -85,16 +85,15 @@ function cellStatus(dl, cat, isFuture) {
   return 'empty';
 }
 
-// Discipline palette — muted sage / mustard / coral. Chosen so the brand
-// red (used only for "today" and "selected" indicators) never competes with
-// the status color of a cell. These are the approved OKLCH values converted
-// to rgba for broader browser support.
+// Editorial palette — soft translucent fills, no visible borders. Uses the
+// Discipline sage/mustard/coral hues but at lower alpha so the grid reads
+// as rhythm of color blocks rather than a spreadsheet.
 function cellColor(status) {
-  if (status === 'future')  return { bg: 'rgba(255,255,255,0.025)', bd: 'rgba(255,255,255,0.05)', dashed: true };
-  if (status === 'pass')    return { bg: 'rgba(122,169,153,0.22)',  bd: 'rgba(122,169,153,0.42)' };
-  if (status === 'partial') return { bg: 'rgba(184,151,91,0.20)',   bd: 'rgba(184,151,91,0.38)' };
-  if (status === 'fail')    return { bg: 'rgba(184,96,77,0.22)',    bd: 'rgba(184,96,77,0.42)' };
-  return { bg: 'rgba(255,255,255,0.035)', bd: 'rgba(255,255,255,0.06)' };
+  if (status === 'future')  return { bg: 'rgba(255,255,255,0.02)' };
+  if (status === 'pass')    return { bg: 'rgba(122,169,153,0.24)' };
+  if (status === 'partial') return { bg: 'rgba(184,151,91,0.22)' };
+  if (status === 'fail')    return { bg: 'rgba(184,96,77,0.24)' };
+  return { bg: 'rgba(255,255,255,0.04)' };
 }
 
 function taskPreview(dl) {
@@ -115,65 +114,68 @@ function escapeHtml(s) {
 export function buildHeatmapGrid() {
   const grid = document.getElementById('dh-grid');
   if (!grid) return;
-  // Lazy bootstrap: buildSlider() may call this before renderDateHeatmap()
-  // has run (initial login flow). Kick off the full init; it synchronously
-  // populates dhAllDates and re-invokes buildHeatmapGrid before its await.
   if (!dhAllDates.length) {
     renderDateHeatmap();
     return;
   }
   const DAY_NAMES = ['월', '화', '수', '목', '금', '토', '일'];
-  const lbl = `display:table-cell;vertical-align:middle;position:sticky;left:0;z-index:2;background:var(--bg);width:${DH_LABEL_W}px;min-width:${DH_LABEL_W}px;padding:2px 8px 2px 10px;`;
-  const day = `display:table-cell;vertical-align:middle;width:${DH_DAY_W}px;min-width:${DH_DAY_W}px;padding:${DH_GAP}px;`;
+  // Selected column tint lives on EVERY cell in the matching column so the
+  // highlight reads as a vertical bar spanning all rows.
+  const SEL_TINT = 'rgba(255,255,255,0.07)';
+  const MON_SEP = 'rgba(255,255,255,0.06)';
+  const lbl = `display:table-cell;vertical-align:middle;position:sticky;left:0;z-index:2;background:var(--bg);width:${DH_LABEL_W}px;min-width:${DH_LABEL_W}px;padding:3px 8px 3px 10px;`;
+  const dayBase = `display:table-cell;vertical-align:middle;width:${DH_DAY_W}px;min-width:${DH_DAY_W}px;padding:${DH_GAP}px;`;
+  const cellStyle = (isSel, isMon) =>
+    `${dayBase}cursor:pointer;${isSel ? `background:${SEL_TINT};` : ''}${isMon ? `border-left:1px solid ${MON_SEP};` : ''}`;
 
-  // Row 1 — day-of-week letter, month tag on first date of a month
+  // Row 1 — today dot + day-of-week letter, month tag on first date of a month
   let rDay = '<div style="display:table-row;">';
-  rDay += `<div style="${lbl}border-bottom:1px solid var(--border);"></div>`;
-  dhAllDates.forEach((d, i) => {
-    const k = dkey(d);
-    const isT = k === window.TODAY;
-    const dayIdx = (d.getDay() + 6) % 7;
-    const isMon = dayIdx === 0 && i > 0;
-    const prev = i > 0 ? dhAllDates[i - 1] : null;
-    const monthChanged = !prev || prev.getMonth() !== d.getMonth();
-    const showMonth = i === 0 || monthChanged;
-    const monthTag = showMonth
-      ? `<div style="font-size:9px;font-weight:700;color:var(--accent);margin-bottom:1px;">${d.getMonth() + 1}월</div>`
-      : '<div style="font-size:9px;margin-bottom:1px;opacity:0;">·</div>';
-    rDay += `<div style="${day}text-align:center;border-bottom:1px solid var(--border);${isMon ? 'border-left:1px solid rgba(255,255,255,0.08);' : ''}">${monthTag}<div style="font-size:10px;font-weight:700;letter-spacing:.04em;color:${isT ? 'var(--accent)' : 'var(--text3)'};">${DAY_NAMES[dayIdx]}</div></div>`;
-  });
-  rDay += '</div>';
-
-  // Row 2 — date number, today highlighted as accent pill
-  let rNum = '<div style="display:table-row;">';
-  rNum += `<div style="${lbl}border-bottom:1px solid var(--border2);"></div>`;
+  rDay += `<div style="${lbl}"></div>`;
   dhAllDates.forEach((d, i) => {
     const k = dkey(d);
     const isT = k === window.TODAY;
     const isSel = k === window.selectedKey;
     const dayIdx = (d.getDay() + 6) % 7;
     const isMon = dayIdx === 0 && i > 0;
-    const bg = isT ? 'var(--accent)' : isSel ? 'var(--surface3)' : 'transparent';
-    const fg = isT ? '#fff' : isSel ? 'var(--text)' : 'var(--text2)';
-    rNum += `<div onclick="dhSelectDate('${k}',${d.getTime()})" style="${day}text-align:center;border-bottom:1px solid var(--border2);cursor:pointer;${isMon ? 'border-left:1px solid rgba(255,255,255,0.08);' : ''}"><div style="width:24px;height:24px;border-radius:50%;background:${bg};margin:0 auto;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:${fg};">${d.getDate()}</div></div>`;
+    const prev = i > 0 ? dhAllDates[i - 1] : null;
+    const monthChanged = !prev || prev.getMonth() !== d.getMonth();
+    const showMonth = i === 0 || monthChanged;
+    const monthTag = showMonth
+      ? `<div style="font-size:9px;font-weight:700;color:var(--text3);margin-bottom:1px;">${d.getMonth() + 1}월</div>`
+      : '<div style="font-size:9px;margin-bottom:1px;opacity:0;">·</div>';
+    const todayDot = isT
+      ? '<div style="width:5px;height:5px;border-radius:50%;background:var(--accent);margin:0 auto 2px;"></div>'
+      : '<div style="width:5px;height:5px;margin:0 auto 2px;opacity:0;"></div>';
+    rDay += `<div onclick="dhSelectDate('${k}',${d.getTime()})" style="${cellStyle(isSel, isMon)}text-align:center;">${monthTag}${todayDot}<div style="font-size:10px;font-weight:700;letter-spacing:.04em;color:${isSel ? 'var(--text)' : 'var(--text3)'};">${DAY_NAMES[dayIdx]}</div></div>`;
+  });
+  rDay += '</div>';
+
+  // Row 2 — date number
+  let rNum = '<div style="display:table-row;">';
+  rNum += `<div style="${lbl}"></div>`;
+  dhAllDates.forEach((d, i) => {
+    const k = dkey(d);
+    const isSel = k === window.selectedKey;
+    const dayIdx = (d.getDay() + 6) % 7;
+    const isMon = dayIdx === 0 && i > 0;
+    const fg = isSel ? 'var(--text)' : 'var(--text2)';
+    rNum += `<div onclick="dhSelectDate('${k}',${d.getTime()})" style="${cellStyle(isSel, isMon)}text-align:center;padding-top:0;padding-bottom:5px;"><div style="font-size:13px;font-weight:600;color:${fg};">${d.getDate()}</div></div>`;
   });
   rNum += '</div>';
 
-  // Category rows
+  // Category rows — borderless filled cells only, column-wide tint for selected
   const catRows = DH_ROWS.map(cat => {
     let row = '<div style="display:table-row;">';
-    row += `<div style="${lbl}padding:4px 8px 4px 10px;border-bottom:1px solid var(--border);"><span style="font-size:10px;font-weight:600;color:var(--text3);letter-spacing:.02em;">${cat.lbl}</span></div>`;
+    row += `<div style="${lbl}padding:4px 8px 4px 10px;"><span style="font-size:10px;font-weight:600;color:var(--text3);letter-spacing:.02em;">${cat.lbl}</span></div>`;
     dhAllDates.forEach((d, i) => {
       const k = dkey(d);
-      const dl = dhLogs[k] || window.logCache?.[k];
+      const dl = window.logCache?.[k] || dhLogs[k];
       const isFuture = d > window.now && k !== window.TODAY;
-      const isT = k === window.TODAY;
       const isSel = k === window.selectedKey;
       const dayIdx = (d.getDay() + 6) % 7;
       const isMon = dayIdx === 0 && i > 0;
       const status = cellStatus(dl, cat.key, isFuture);
-      const { bg, bd, dashed } = cellColor(status);
-      const borderStyle = dashed ? 'dashed' : 'solid';
+      const { bg } = cellColor(status);
 
       let inner = '';
       if (cat.key === 'tasks' && !isFuture) {
@@ -185,12 +187,7 @@ export function buildHeatmapGrid() {
         }
       }
 
-      // Today/selected get a subtle column tint via the date-row pill only —
-      // never overridden on category cells, so status color stays true.
-      const columnTint = isT ? 'background-image:linear-gradient(rgba(255,77,77,0.04),rgba(255,77,77,0));'
-                        : isSel ? 'background-image:linear-gradient(rgba(255,255,255,0.03),rgba(255,255,255,0));'
-                        : '';
-      row += `<div onclick="dhSelectDate('${k}',${d.getTime()})" style="${day}border-bottom:1px solid var(--border);cursor:pointer;${columnTint}${isMon ? 'border-left:1px solid rgba(255,255,255,0.08);' : ''}"><div style="height:22px;border-radius:5px;background:${bg};border:1px ${borderStyle} ${bd};display:flex;align-items:center;justify-content:center;padding:0 4px;overflow:hidden;">${inner}</div></div>`;
+      row += `<div onclick="dhSelectDate('${k}',${d.getTime()})" style="${cellStyle(isSel, isMon)}"><div style="height:20px;border-radius:4px;background:${bg};display:flex;align-items:center;justify-content:center;padding:0 4px;overflow:hidden;">${inner}</div></div>`;
     });
     row += '</div>';
     return row;
