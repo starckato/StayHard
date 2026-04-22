@@ -20,6 +20,7 @@ import * as scoreEvents from './data/score-events.js';
 import * as mottos from './data/mottos.js';
 import * as exercises from './data/exercises.js';
 import * as muscle from './data/muscle.js';
+import * as rewardMessages from './data/reward-messages.js';
 
 // Features
 import * as stats from './features/stats/index.js';
@@ -29,7 +30,7 @@ import * as onboarding from './features/onboarding/index.js';
 Object.assign(
   window,
   date, tier, icons, env, analytics, mealPhoto, toast,
-  scoreEvents, mottos, exercises, muscle,
+  scoreEvents, mottos, exercises, muscle, rewardMessages,
   stats, onboarding
 );
 window.sb = sb;
