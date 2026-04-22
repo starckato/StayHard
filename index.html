@@ -6451,13 +6451,7 @@ function bounceEl(el){
 // Usage: track('event_name', { key: value })
 // Sends to events table; RLS enforces user_id = auth.uid().
 // Silent on failure (e.g. migration not run, offline). Never blocks UI.
-function track(eventName,meta){
-  try{
-    if(!sb||!CU||!CU.id)return;
-    sb.from('events').insert({user_id:CU.id,event_name:eventName,meta:meta||{}})
-      .then(()=>{},(e)=>{if(!String(e?.message||'').includes('events'))console.warn('[track]',eventName,e);});
-  }catch(e){}
-}
+// track(eventName, meta) — moved to src/lib/analytics.js (Phase 2.2). window.track via bundle.
 
 // ═══════════════════════════════════════════════
 // WHEEL PICKER — iOS-style scrollable number picker (공용)
@@ -7334,24 +7328,7 @@ async function shareInvite(){
   }
 }
 
-let _toastQueue=[];
-let _toastShowing=false;
-function showToast(m,duration=2000){
-  _toastQueue.push({m,duration});
-  if(!_toastShowing)_flushToast();
-}
-function _flushToast(){
-  if(!_toastQueue.length){_toastShowing=false;return;}
-  _toastShowing=true;
-  const {m,duration}=_toastQueue.shift();
-  const t=document.getElementById('toast');
-  t.textContent=m;
-  t.classList.add('show');
-  setTimeout(()=>{
-    t.classList.remove('show');
-    setTimeout(_flushToast,300);
-  },duration);
-}
+// showToast — moved to src/ui/toast.js (Phase 2.2). window.showToast via bundle.
 
 // ── TABS ──
 function switchTab(name,idx){
