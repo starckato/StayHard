@@ -111,6 +111,13 @@ function escapeHtml(s) {
 export function buildHeatmapGrid() {
   const grid = document.getElementById('dh-grid');
   if (!grid) return;
+  // Lazy bootstrap: buildSlider() may call this before renderDateHeatmap()
+  // has run (initial login flow). Kick off the full init; it synchronously
+  // populates dhAllDates and re-invokes buildHeatmapGrid before its await.
+  if (!dhAllDates.length) {
+    renderDateHeatmap();
+    return;
+  }
   const DAY_NAMES = ['월', '화', '수', '목', '금', '토', '일'];
   const lbl = `display:table-cell;vertical-align:middle;position:sticky;left:0;z-index:2;background:var(--bg);width:${DH_LABEL_W}px;min-width:${DH_LABEL_W}px;padding:2px 8px 2px 10px;`;
   const day = `display:table-cell;vertical-align:middle;width:${DH_DAY_W}px;min-width:${DH_DAY_W}px;padding:${DH_GAP}px;`;
