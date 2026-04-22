@@ -122,8 +122,7 @@ export function renderWeight() {
   const emptyMsg = document.getElementById('wt-empty-msg');
   const inbodyRow = document.getElementById('wt-inbody-row');
   const graphWrap = document.getElementById('wt-graph-wrap');
-  const goalTarget = document.getElementById('wt-goal-target');
-  const goalRemain = document.getElementById('wt-goal-remain');
+  const goalBtn = document.getElementById('wt-goal-btn');
   const primaryBtn = document.getElementById('wt-primary-btn');
   const axisStart = document.getElementById('wt-axis-start');
   const axisEnd = document.getElementById('wt-axis-end');
@@ -150,6 +149,36 @@ export function renderWeight() {
   } else {
     if (metaSep) metaSep.style.display = 'none';
     if (metaDelta) metaDelta.style.display = 'none';
+  }
+
+  // Goal info merged into meta line: "목표까지 -6.4kg" / "🎯 달성" / "목표 미설정"
+  const metaGoalSep = document.getElementById('wt-meta-goal-sep');
+  const metaGoal = document.getElementById('wt-meta-goal');
+  if (metaGoal && metaGoalSep) {
+    if (info.state === 'empty') {
+      metaGoalSep.style.display = 'none';
+      metaGoal.style.display = 'none';
+    } else if (goal && info.value != null) {
+      const diff = goal - info.value;
+      metaGoalSep.style.display = '';
+      metaGoal.style.display = '';
+      if (diff >= 0) {
+        // Above or at goal (still gaining toward a gain target) or already reached.
+        metaGoal.textContent = '🎯 달성';
+        metaGoal.className = 'wc-meta-goal achieved';
+      } else {
+        metaGoal.textContent = '목표까지 ' + diff.toFixed(1) + 'kg';
+        metaGoal.className = 'wc-meta-goal';
+      }
+    } else if (!goal) {
+      metaGoalSep.style.display = '';
+      metaGoal.style.display = '';
+      metaGoal.textContent = '목표 미설정';
+      metaGoal.className = 'wc-meta-goal unset';
+    } else {
+      metaGoalSep.style.display = 'none';
+      metaGoal.style.display = 'none';
+    }
   }
 
   if (weightWrap && weightDisplay && unitEl && emptyMsg) {
@@ -191,26 +220,6 @@ export function renderWeight() {
   renderWeightGraph(goal);
   if (graphWrap) graphWrap.style.opacity = info.state === 'empty' ? '0.3' : '1';
 
-  // ─── Goal strip ───
-  if (goalTarget && goalRemain) {
-    if (goal) {
-      goalTarget.textContent = goal.toFixed(1) + ' kg';
-      if (info.value != null) {
-        const diff = goal - info.value;
-        const sign = diff > 0 ? '+' : '';
-        const remainTxt = diff === 0 ? '달성' : '남은 ' + sign + diff.toFixed(1) + 'kg';
-        goalRemain.innerHTML = diff <= 0
-          ? '<span class="ok">' + remainTxt + '</span>'
-          : remainTxt;
-      } else {
-        goalRemain.innerHTML = '';
-      }
-    } else {
-      goalTarget.textContent = '미설정';
-      goalRemain.innerHTML = '';
-    }
-  }
-
   // ─── Primary CTA state ───
   if (primaryBtn) {
     primaryBtn.className = 'wc-btn-primary';
@@ -218,6 +227,12 @@ export function renderWeight() {
     if (info.state === 'overdue') { primaryBtn.classList.add('urgent'); primaryBtn.textContent = '오늘 체중 입력'; }
     else if (info.state === 'empty') { primaryBtn.classList.add('cta'); primaryBtn.textContent = '첫 기록 시작 →'; }
     else if (info.state === 'stale') { primaryBtn.classList.add('cta'); primaryBtn.textContent = '업데이트'; }
+  }
+
+  // ─── Goal-set ghost button: tint amber when no goal yet to nudge user ───
+  if (goalBtn) {
+    goalBtn.className = 'wc-btn-ghost' + (!goal ? ' cta' : '');
+    goalBtn.textContent = goal ? '목표 편집' : '목표 설정';
   }
 
   // Axis labels
@@ -331,13 +346,46 @@ export async function saveWeightGoal(gv) {
   }
 }
 
-// ── Modal open (unchanged behavior, just re-exposed) ──────────────────
-export function openWeightModal() {
+// ── Modal open ─────────────────────────────────────────────────────────
+// mode:
+//   'weight' — today's weight only (default from 수정 button)
+//   'goal'   — target weight only (from 목표 설정 button)
+//   'both'   — both fields (first-time / empty state)
+export function openWeightModal(mode) {
+  // First-time users: no weight AND no goal → show both fields so the
+  // modal doubles as onboarding.
+  if (!mode) {
+    const hasWeight = window.log?.weight != null;
+    const hasGoal = !!getWeightGoal();
+    mode = hasWeight || hasGoal ? 'weight' : 'both';
+  }
   // Auto-expand the card so user sees the result after save
   if (!_wtExpanded) {
     _wtExpanded = true;
     document.getElementById('wt-card')?.classList.add('expanded');
   }
+  // Title + field visibility per mode
+  const title = document.getElementById('wt-modal-title');
+  const weightField = document.querySelector('[data-wt-field="weight"]');
+  const goalField = document.querySelector('[data-wt-field="goal"]');
+  if (title) {
+    title.textContent = mode === 'goal' ? '목표 체중 설정'
+                      : mode === 'weight' ? '공복 체중 기록'
+                      : '체중 & 목표 설정';
+  }
+  if (weightField) weightField.style.display = mode === 'goal' ? 'none' : '';
+  if (goalField) goalField.style.display = mode === 'weight' ? 'none' : '';
+  // Target label hint shows "필수" in goal-only mode since it's the sole required field
+  const goalLabelHint = document.getElementById('wt-goal-label-hint');
+  if (goalLabelHint) {
+    if (mode === 'goal') {
+      goalLabelHint.textContent = '';
+    } else {
+      goalLabelHint.textContent = '선택사항';
+      goalLabelHint.style.color = 'var(--text3)';
+    }
+  }
+
   const inp = document.getElementById('wt-inp');
   const gi = document.getElementById('wt-goal-inp');
   if (inp) inp.value = window.log?.weight != null ? parseFloat(window.log.weight).toFixed(1) : '';
@@ -409,9 +457,31 @@ export function showCalcResult(msg) {
 
 // ── Save ──────────────────────────────────────────────────────────────
 export async function saveWeight() {
+  // Goal-only mode: 체중 필드가 숨겨진 상태일 땐 목표만 저장하고 조기 반환.
+  const weightField = document.querySelector('[data-wt-field="weight"]');
+  const goalOnly = weightField && weightField.style.display === 'none';
+
+  const gi = document.getElementById('wt-goal-inp');
+  if (goalOnly) {
+    if (gi && gi.value.trim() !== '') {
+      const gv = parseFloat(gi.value);
+      if (!isNaN(gv) && gv > 0) {
+        await saveWeightGoal(gv);
+        showToast('🎯 목표 체중 저장됨');
+      } else {
+        showToast('목표 체중을 입력해주세요'); return;
+      }
+    } else {
+      await saveWeightGoal(null);
+      showToast('목표 체중 해제됨');
+    }
+    closeModal('weight-modal');
+    renderWeight();
+    return;
+  }
+
   const v = parseFloat(document.getElementById('wt-inp').value);
   if (isNaN(v) || v <= 0) { showToast('체중을 입력해주세요'); return; }
-  const gi = document.getElementById('wt-goal-inp');
   if (gi && gi.value.trim() !== '') {
     const gv = parseFloat(gi.value);
     if (!isNaN(gv) && gv > 0) await saveWeightGoal(gv);
