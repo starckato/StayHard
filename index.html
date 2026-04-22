@@ -20,7 +20,7 @@
      so window globals (dkey, normKey, ...) are set before inline code runs.
      Query version bumps cache when bundle content changes. Bump manually or
      via build script when shipping a new bundle. See MIGRATION_PLAN.md. -->
-<script src="/dist/app.js?v=20260422e"></script>
+<script src="/dist/app.js?v=20260422f"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Archivo+Black&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -330,6 +330,74 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
 .dh-grid{display:table;width:max-content;border-collapse:collapse;}
 .sel-day-label{text-align:center;font-size:11px;color:var(--text3);padding:6px 16px 0;font-family:'DM Mono',monospace;cursor:pointer;transition:color .15s;letter-spacing:.02em;}
 .sel-day-label:hover{color:var(--accent);}
+
+/* ACCORDION CARD (weight v2 — collapsed/expanded) */
+.s-card.accordion{margin:0 14px 8px;}
+.s-card.accordion.expanded{border-color:var(--border2);}
+.s-card .card-collapsed{display:flex;align-items:center;justify-content:space-between;padding:13px 16px;cursor:pointer;user-select:none;transition:background .15s;gap:10px;}
+.s-card .card-collapsed:active{background:var(--surface2);}
+.s-card .card-collapsed-left{display:flex;align-items:center;gap:9px;flex-shrink:0;}
+.s-card .cc-icon{color:var(--accent);display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;}
+.s-card .cc-title{font-size:13px;font-weight:700;color:var(--text);letter-spacing:-.01em;}
+.s-card .cc-summary{font-size:12px;color:var(--text2);font-family:'DM Mono',monospace;font-weight:500;display:flex;align-items:center;gap:6px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;justify-content:flex-end;}
+.s-card .cc-summary .sep{color:var(--text3);font-size:10px;}
+.s-card .cc-summary .main{color:var(--text);font-weight:600;}
+.s-card .cc-summary .pos{color:var(--green);}
+.s-card .cc-summary .neg{color:var(--accent);}
+.s-card .cc-summary .stale{color:var(--amber);}
+.s-card .cc-summary .overdue{color:var(--red);}
+.s-card .cc-summary .empty{color:var(--text3);}
+.s-card .cc-chevron{width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;color:var(--text3);transition:transform .25s;flex-shrink:0;}
+.s-card.expanded .cc-chevron{transform:rotate(180deg);}
+.s-card .card-body{max-height:0;overflow:hidden;transition:max-height .3s ease;}
+.s-card.expanded .card-body{max-height:780px;}
+
+/* Weight expanded content */
+.wc-meta{padding:12px 16px 4px;display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;font-weight:500;}
+.wc-meta .dot{width:6px;height:6px;border-radius:50%;background:var(--text3);}
+.wc-meta.recorded{color:var(--green);}
+.wc-meta.recorded .dot{background:var(--green);}
+.wc-meta.carryover{color:var(--text3);}
+.wc-meta.stale{color:var(--amber);}
+.wc-meta.stale .dot{background:var(--amber);}
+.wc-meta.overdue{color:var(--red);}
+.wc-meta.overdue .dot{background:var(--red);}
+.wc-meta .delta.down{color:var(--green);}
+.wc-meta .delta.up{color:var(--accent);}
+
+.wc-main{padding:2px 16px 16px;text-align:center;}
+.wc-weight{font-family:'DM Mono',monospace;font-size:56px;font-weight:300;letter-spacing:-.04em;color:var(--text);line-height:1;display:inline-flex;align-items:baseline;gap:6px;}
+.wc-weight.carryover{color:var(--text2);opacity:.8;}
+.wc-weight.stale{color:var(--text3);}
+.wc-weight .unit{font-size:15px;color:var(--text3);font-weight:400;}
+.wc-empty-msg{font-size:12px;color:var(--text3);margin-top:10px;}
+.wc-empty-num{font-family:'DM Mono',monospace;font-size:36px;font-weight:300;color:var(--text3);letter-spacing:-.02em;}
+
+.wc-graph-wrap{padding:0 12px 6px;}
+.wc-graph{width:100%;height:64px;display:block;}
+.wc-axis{display:flex;justify-content:space-between;padding:4px 4px 0;font-size:10px;font-family:'DM Mono',monospace;font-weight:500;}
+.wc-axis-col{display:flex;flex-direction:column;gap:2px;}
+.wc-axis-col.right{align-items:flex-end;}
+.wc-axis-date{color:var(--text3);font-size:9px;text-transform:uppercase;letter-spacing:.06em;}
+.wc-axis-val{color:var(--text2);font-size:11px;}
+
+.wc-goal{margin:4px 12px 0;padding:11px 12px;background:var(--surface2);border-radius:10px;display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.wc-goal-info{flex:1;min-width:0;}
+.wc-goal-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;font-family:'DM Mono',monospace;font-weight:500;margin-bottom:3px;}
+.wc-goal-main{display:flex;align-items:baseline;gap:8px;font-family:'DM Mono',monospace;flex-wrap:wrap;}
+.wc-goal-target{font-size:14px;font-weight:600;color:var(--text);letter-spacing:-.01em;}
+.wc-goal-remain{font-size:11px;color:var(--text2);}
+.wc-goal-remain .ok{color:var(--green);}
+.wc-goal-btn{background:transparent;border:1px solid var(--border2);color:var(--text2);padding:5px 10px;border-radius:6px;font-size:10px;font-family:'DM Sans',sans-serif;font-weight:500;cursor:pointer;transition:all .15s;}
+.wc-goal-btn:active{background:var(--surface3);color:var(--text);}
+
+.wc-actions{display:flex;gap:8px;padding:12px 12px 14px;}
+.wc-btn-primary{flex:1;background:var(--accent);color:#0a0a0b;border:none;padding:11px;border-radius:10px;font-size:13px;font-family:'DM Sans',sans-serif;font-weight:600;cursor:pointer;letter-spacing:-.01em;transition:opacity .15s;}
+.wc-btn-primary:active{opacity:.85;}
+.wc-btn-primary.cta{background:var(--amber);color:#0a0a0b;}
+.wc-btn-primary.urgent{background:var(--red);color:#fff;}
+.wc-btn-ghost{background:transparent;color:var(--text2);border:1px solid var(--border2);padding:11px 13px;border-radius:10px;font-size:12px;font-family:'DM Sans',sans-serif;font-weight:500;cursor:pointer;white-space:nowrap;letter-spacing:-.01em;}
+.wc-btn-ghost:active{background:var(--surface2);color:var(--text);}
 
 /* WEIGHT */
 .wt-strip{display:flex;align-items:center;gap:10px;padding:12px 14px;}
@@ -946,76 +1014,77 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
       <div class="sel-day-label" id="sel-day-label" onclick="jumpToToday()" title="오늘로 돌아가기"></div>
     </div>
 
-    <div class="s-card" style="margin-bottom:10px;">
-      <div class="s-card-hdr">
-        <div style="display:flex;align-items:center;gap:6px;">
-          <div class="s-card-title"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="14" width="18" height="6" rx="1.5"/><path d="M8 14v-2a4 4 0 0 1 8 0v2"/><circle cx="12" cy="18" r=".9" fill="currentColor"/></svg>체중</div>
-          <div id="wt-info-btn" onclick="toggleWeightInfo()" style="width:18px;height:18px;border-radius:50%;border:1.5px solid var(--text3);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--text3);cursor:pointer;flex-shrink:0;touch-action:manipulation;">i</div>
+    <!-- Weight card (v2 — collapsed/expanded accordion) -->
+    <div class="s-card accordion" id="wt-card">
+      <div class="card-collapsed" onclick="toggleWeightCard()">
+        <div class="card-collapsed-left">
+          <span class="cc-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="14" width="18" height="6" rx="1.5"/><path d="M8 14v-2a4 4 0 0 1 8 0v2"/><circle cx="12" cy="18" r=".9" fill="currentColor"/></svg></span>
+          <span class="cc-title">체중</span>
         </div>
-        <div class="wt2-settings-btn" onclick="openWeightModal()" title="목표 체중 설정">⚙️</div>
-      </div>
-      <!-- i 설명 패널 -->
-      <div id="wt-info-panel" style="display:none;padding:10px 16px;background:var(--surface2);border-bottom:1px solid var(--border);font-size:12px;color:var(--text2);line-height:1.6;">
-        🌅 <strong>정확한 체중 측정법</strong><br>
-        아침에 일어나자마자 화장실 다녀온 뒤, 빈속에 재는 게 가장 정확해요.<br>
-        매일 같은 조건에서 재야 변화를 제대로 볼 수 있어요.
-      </div>
-      <div class="s-divider"></div>
-      <!-- 미입력 상태 -->
-      <div id="wt-empty-state" class="wt2-empty" onclick="openWeightModal()">
-        <div class="wt2-empty-row">
-          <div class="wt2-cta">
-            <div class="wt2-cta-icon">⚡</div>
-            <div>
-              <div class="wt2-cta-text">오늘 체중 입력</div>
-              <div class="wt2-cta-sub">공복에 재는 게 가장 정확해요</div>
-            </div>
-          </div>
-          <div class="wt2-arrow">›</div>
+        <div class="cc-summary">
+          <span class="main" id="wt-cc-main">—</span>
+          <span class="sep" id="wt-cc-sep">·</span>
+          <span id="wt-cc-delta"></span>
         </div>
-        <div id="wt-goal-empty" style="display:none;" class="wt2-goal-preview"></div>
+        <span class="cc-chevron">▾</span>
       </div>
-      <!-- 입력 완료 상태 -->
-      <div id="wt-filled-state" style="display:none;">
-        <div class="wt2-body">
-          <div class="wt2-top" onclick="openWeightModal()">
-            <div>
-              <div class="wt2-main">
-                <div class="wt2-num" id="wt-display">—</div>
-                <div class="wt2-unit" id="wt-unit" style="display:none;">kg</div>
-              </div>
-              <div class="wt2-diff">
-                <div id="wt-vs-yesterday" style="display:none;" class="wt2-diff-pill"></div>
-                <div id="wt-inbody-row" style="display:none;margin-top:4px;font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;"></div>
-              </div>
+      <div class="card-body">
+        <div class="wc-meta" id="wt-meta">
+          <span class="dot"></span>
+          <span id="wt-meta-status">기록 없음</span>
+          <span id="wt-meta-sep" style="color:var(--text3);display:none;">·</span>
+          <span class="delta" id="wt-meta-delta" style="display:none;"></span>
+        </div>
+        <div class="wc-main">
+          <div class="wc-weight" id="wt-weight-wrap">
+            <span id="wt-display">—</span><span class="unit" id="wt-unit" style="display:none;">kg</span>
+          </div>
+          <div class="wc-empty-msg" id="wt-empty-msg" style="display:none;"></div>
+          <div id="wt-inbody-row" style="display:none;margin-top:8px;font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;"></div>
+        </div>
+        <div class="wc-graph-wrap" id="wt-graph-wrap">
+          <svg class="wc-graph" id="wt-graph" viewBox="0 0 340 64" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="wt-area-grad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="var(--accent)" stop-opacity="0.22"/>
+                <stop offset="100%" stop-color="var(--accent)" stop-opacity="0"/>
+              </linearGradient>
+            </defs>
+            <line id="wt-goal-line" x1="0" y1="48" x2="340" y2="48" stroke="var(--green)" stroke-width="1" stroke-dasharray="3 3" opacity="0.5"/>
+            <text id="wt-goal-label" x="336" y="44" fill="var(--green)" font-size="9" font-family="DM Mono,monospace" text-anchor="end" opacity="0.8"></text>
+            <path id="wt-area-path" d="" fill="url(#wt-area-grad)"/>
+            <path id="wt-line-path" d="" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <g id="wt-points"></g>
+          </svg>
+          <div class="wc-axis">
+            <div class="wc-axis-col">
+              <span class="wc-axis-date">30일 전</span>
+              <span class="wc-axis-val" id="wt-axis-start">—</span>
             </div>
-            <div class="wt2-right" id="wt-remain-block" style="display:none;">
-              <div class="wt2-remain-label">목표까지</div>
-              <div class="wt2-remain-num" id="wt-remain-num">—</div>
-              <div class="wt2-remain-unit">kg 남음</div>
+            <div class="wc-axis-col right">
+              <span class="wc-axis-date">지금</span>
+              <span class="wc-axis-val" id="wt-axis-end">—</span>
             </div>
           </div>
-          <!-- 진행 바 (목표 있을 때만) -->
-          <div id="wt-progress-block" style="display:none;">
-            <div class="wt2-bar-wrap">
-              <div class="wt2-bar-labels">
-                <span class="wt2-bar-lbl" id="wt-bar-start-lbl">시작</span>
-                <span class="wt2-bar-lbl" id="wt-bar-goal-lbl">목표</span>
-              </div>
-              <div class="wt2-bar-track">
-                <div class="wt2-bar-fill" id="wt-bar-fill" style="width:0%;"></div>
-              </div>
-              <div class="wt2-bar-foot">
-                <span class="wt2-bar-range" id="wt-bar-range"></span>
-                <span class="wt2-bar-pct" id="wt-bar-pct"></span>
-              </div>
-            </div>
-            <!-- 목표 달성 배너 -->
-            <div id="wt-achieved-banner" style="display:none;" class="wt2-achieved">
-              <span style="font-size:20px;">🏆</span>
-              <span class="wt2-achieved-txt">목표 체중 달성! Stay Hard!</span>
+        </div>
+        <div class="wc-goal" id="wt-goal-row">
+          <div class="wc-goal-info">
+            <div class="wc-goal-label">Target</div>
+            <div class="wc-goal-main">
+              <span class="wc-goal-target" id="wt-goal-target">미설정</span>
+              <span class="wc-goal-remain" id="wt-goal-remain"></span>
             </div>
           </div>
+          <button class="wc-goal-btn" onclick="event.stopPropagation(); openWeightModal();">편집</button>
+        </div>
+        <div class="wc-actions">
+          <button class="wc-btn-primary" id="wt-primary-btn" onclick="event.stopPropagation(); openWeightModal();">수정</button>
+          <button class="wc-btn-ghost" onclick="event.stopPropagation(); toggleWeightInfo();">측정 팁</button>
+        </div>
+        <div id="wt-info-panel" style="display:none;padding:10px 16px 14px;font-size:12px;color:var(--text2);line-height:1.6;border-top:1px solid var(--border);">
+          🌅 <strong>정확한 체중 측정법</strong><br>
+          아침에 일어나자마자 화장실 다녀온 뒤, 빈속에 재는 게 가장 정확해요.<br>
+          매일 같은 조건에서 재야 변화를 제대로 볼 수 있어요.
         </div>
       </div>
     </div>
