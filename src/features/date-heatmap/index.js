@@ -261,6 +261,10 @@ export async function renderDateHeatmap() {
     await fetchHeatmapRange(initialDates);
     buildHeatmapGrid();
     if (!hasCached) centerOnSelected();
+    // Other cards (weight delta, routine summary, etc.) read from logCache
+    // too. After we hydrate it with 4 weeks of history, refresh any card
+    // that was painted with stale data on initial load.
+    try { window.renderWeight?.(); } catch {}
   } catch (e) { /* silent */ }
 }
 
@@ -323,6 +327,8 @@ async function dhLoadMore(side, el) {
       if (side === 'left') {
         requestAnimationFrame(() => { el.scrollLeft = l0 + (el.scrollWidth - w0); });
       }
+      // New historical data may change the weight delta / first-record label.
+      try { window.renderWeight?.(); } catch {}
     } catch (e) { /* silent */ }
   }
   requestAnimationFrame(() => { dhLoadingMore = false; });
