@@ -9,16 +9,24 @@ import { sb } from '../../lib/supabase.js';
 import { SCORE_EVENTS } from '../../data/score-events.js';
 import { showToast } from '../../ui/toast.js';
 
-// Accordion state — only one card may be expanded; weight defaults closed.
-let _wtExpanded = false;
+// Exclusive accordion helper — collapses every other .s-card.accordion
+// before expanding `targetId`. When `targetId` is already expanded we
+// simply collapse it (toggle off, nothing else opens).
+export function setExclusiveCard(targetId) {
+  const target = document.getElementById(targetId);
+  if (!target) return;
+  const willExpand = !target.classList.contains('expanded');
+  document.querySelectorAll('.s-card.accordion').forEach(c => {
+    if (c !== target) c.classList.remove('expanded');
+  });
+  target.classList.toggle('expanded', willExpand);
+  try { window.sh?.haptics?.tap('light'); } catch {}
+  return willExpand;
+}
 
 export function toggleWeightCard() {
-  _wtExpanded = !_wtExpanded;
-  const card = document.getElementById('wt-card');
-  if (!card) return;
-  card.classList.toggle('expanded', _wtExpanded);
-  try { window.sh?.haptics?.tap('light'); } catch {}
-  if (_wtExpanded) renderWeight();
+  const expanded = setExclusiveCard('wt-card');
+  if (expanded) renderWeight();
 }
 
 export function toggleWeightInfo() {
@@ -360,9 +368,13 @@ export function openWeightModal(mode) {
     mode = hasWeight || hasGoal ? 'weight' : 'both';
   }
   // Auto-expand the card so user sees the result after save
-  if (!_wtExpanded) {
-    _wtExpanded = true;
-    document.getElementById('wt-card')?.classList.add('expanded');
+  const wtCard = document.getElementById('wt-card');
+  if (wtCard && !wtCard.classList.contains('expanded')) {
+    // Collapse any other accordion so we don't leave two cards open.
+    document.querySelectorAll('.s-card.accordion').forEach(c => {
+      if (c !== wtCard) c.classList.remove('expanded');
+    });
+    wtCard.classList.add('expanded');
   }
   // Title + field visibility per mode
   const title = document.getElementById('wt-modal-title');
