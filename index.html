@@ -20,7 +20,7 @@
      so window globals (dkey, normKey, ...) are set before inline code runs.
      Query version bumps cache when bundle content changes. Bump manually or
      via build script when shipping a new bundle. See MIGRATION_PLAN.md. -->
-<script src="/dist/app.js?v=20260423a"></script>
+<script src="/dist/app.js?v=20260423b"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Archivo+Black&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -349,8 +349,8 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
 .s-card .cc-summary .empty{color:var(--text3);}
 .s-card .cc-chevron{width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;color:var(--text3);transition:transform .25s;flex-shrink:0;}
 .s-card.expanded .cc-chevron{transform:rotate(180deg);}
-.s-card .card-body{max-height:0;overflow:hidden;transition:max-height .3s ease;}
-.s-card.expanded .card-body{max-height:780px;}
+.s-card .card-body{max-height:0;overflow:hidden;transition:max-height .35s ease;}
+.s-card.expanded .card-body{max-height:2400px;}
 
 /* Weight expanded content */
 .wc-meta{padding:12px 16px 4px;display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;font-weight:500;}
@@ -2968,7 +2968,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
     <div id="ws-ex-strip" style="display:flex;gap:5px;overflow-x:auto;scrollbar-width:none;padding-bottom:1px;"></div>
   </div>
   <div class="ws-body" id="ws-body" style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:12px 14px 140px;"></div>
-  <div class="ws-footer" style="position:absolute;bottom:0;left:0;width:100%;background:var(--bg);border-top:1px solid var(--border);padding:10px 14px 24px;">
+  <div class="ws-footer" id="ws-footer" style="position:absolute;bottom:0;left:0;width:100%;background:var(--bg);border-top:1px solid var(--border);padding:10px 14px 24px;">
     <button class="ws-done-btn" id="ws-done-btn" onclick="wsFooterAction()" style="width:100%;padding:14px;font-size:16px;font-weight:700;">운동 완료 ✓</button>
   </div>
 </div>
@@ -3983,8 +3983,11 @@ function renderSession(){
     btn.style.background='';
     btn.style.boxShadow='';
   }
+  // Hide the whole footer when there are no exercises — nothing to complete yet.
+  const footerEl=document.getElementById('ws-footer');
+  if(footerEl)footerEl.style.display=currentSession.length===0?'none':'';
   if(currentSession.length===0){
-    body.innerHTML=`<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;min-height:calc(100vh - 200px);gap:16px;">
+    body.innerHTML=`<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;min-height:calc(100vh - 200px);gap:16px;padding-bottom:40px;">
       <div style="font-size:48px;">🏋️</div>
       <div style="font-size:16px;font-weight:700;">어떤 운동부터 시작할까요?</div>
       <div style="font-size:12px;color:var(--text3);line-height:1.6;margin-bottom:8px;">종목을 추가해서 시작하세요</div>
