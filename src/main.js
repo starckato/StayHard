@@ -1,5 +1,5 @@
 // Stay Hard · modular bundle entry point
-// Migration phase: 3
+// Migration phase: 3 complete · Phase 5 (Capacitor) in progress
 
 import * as date from './lib/date.js';
 import * as tier from './lib/tier.js';
@@ -25,6 +25,12 @@ import * as weight from './features/weight/index.js';
 import * as rewards from './features/rewards/index.js';
 import * as weeklyView from './features/weekly-view/index.js';
 
+// Platform abstractions (web/iOS/Android unified APIs)
+import * as platform from './platform/platform.js';
+import * as pCamera from './platform/camera.js';
+import * as pHaptics from './platform/haptics.js';
+import * as pNotifications from './platform/notifications.js';
+
 Object.assign(
   window,
   date, tier, icons, env, analytics, mealPhoto, cheat, toast,
@@ -32,3 +38,11 @@ Object.assign(
   stats, onboarding, weight, rewards, weeklyView
 );
 window.sb = sb;
+
+// Namespace platform APIs under window.sh — inline code uses e.g.
+// window.sh.camera.pickImage() to reach unified web/native camera.
+window.sh = window.sh || {};
+window.sh.platform = platform;
+window.sh.camera = pCamera;
+window.sh.haptics = pHaptics;
+window.sh.notifications = pNotifications;
