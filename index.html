@@ -20,7 +20,7 @@
      so window globals (dkey, normKey, ...) are set before inline code runs.
      Query version bumps cache when bundle content changes. Bump manually or
      via build script when shipping a new bundle. See MIGRATION_PLAN.md. -->
-<script src="/dist/app.js?v=20260423d"></script>
+<script src="/dist/app.js?v=20260423e"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Archivo+Black&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -1239,40 +1239,45 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
         </div>
       </div>
     </div>
-    <!-- ✅ 오늘 할 일 v2 (accordion — 필수 루틴 + 오늘의 할일) -->
-    <div class="s-card accordion todo-card" id="tasks-card">
-      <div class="card-collapsed" onclick="toggleTasksCard()">
+    <!-- 🔁 루틴 카드 (매일 반복되는 필수 루틴) -->
+    <div class="s-card accordion" id="routine-card">
+      <div class="card-collapsed" onclick="toggleRoutineCard()">
         <div class="card-collapsed-left">
-          <span class="cc-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 12l3 3 5-5"/></svg></span>
-          <span class="cc-title">오늘 할 일</span>
+          <span class="cc-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/><path d="M3 21v-5h5"/></svg></span>
+          <span class="cc-title">루틴</span>
         </div>
-        <div class="cc-summary" id="tasks-summary">
-          <span class="summary-cta">할 일 추가하기 →</span>
+        <div class="cc-summary" id="routine-summary">
+          <span class="summary-cta">루틴 추가하기 →</span>
         </div>
         <span class="cc-chevron">▾</span>
       </div>
       <div class="card-body">
-        <!-- SECTION: 필수 루틴 -->
-        <div class="tasks-sec-label">
-          <span>필수 루틴</span>
-          <span class="s-badge" id="mand-badge">0/0</span>
-        </div>
-        <div class="check-rows" id="check-rows"></div>
+        <div class="check-rows" id="check-rows" style="padding-top:6px;"></div>
         <div class="add-row" onclick="event.stopPropagation(); openAddMandatoryModal();" style="color:var(--accent);font-weight:500;"><span style="font-size:16px;margin-right:6px;">＋</span> 루틴 추가</div>
+        <span id="mand-badge" style="display:none;" aria-hidden="true"></span>
+      </div>
+    </div>
 
-        <div class="s-divider"></div>
-
-        <!-- SECTION: 오늘의 할일 -->
-        <div class="tasks-sec-label">
-          <span>오늘의 할일</span>
-          <span class="s-badge" id="tgt-badge">0/0</span>
+    <!-- ✓ 할일 카드 (오늘 1회성 할일) -->
+    <div class="s-card accordion todo-card" id="targets-card">
+      <div class="card-collapsed" onclick="toggleTargetsCard()">
+        <div class="card-collapsed-left">
+          <span class="cc-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 12l3 3 5-5"/></svg></span>
+          <span class="cc-title">할일</span>
         </div>
-        <div class="check-rows" id="tgt-rows"></div>
+        <div class="cc-summary" id="targets-summary">
+          <span class="summary-cta">할일 추가하기 →</span>
+        </div>
+        <span class="cc-chevron">▾</span>
+      </div>
+      <div class="card-body">
+        <div class="check-rows" id="tgt-rows" style="padding-top:6px;"></div>
         <div class="add-tgt" onclick="event.stopPropagation(); toggleAddTgt();" style="color:var(--accent);font-weight:500;"><span style="font-size:16px;margin-right:6px;">＋</span> 할일 추가</div>
         <div class="add-tgt-input" id="add-tgt-input">
           <input type="text" id="tgt-inp" placeholder="오늘 무엇을 하고 싶나요?" onclick="event.stopPropagation();"/>
           <button class="add-tgt-go" onclick="event.stopPropagation(); addTarget();">추가</button>
         </div>
+        <span id="tgt-badge" style="display:none;" aria-hidden="true"></span>
       </div>
     </div>
 
@@ -7388,44 +7393,55 @@ function toggleWorkoutCard(){
   card.classList.toggle('expanded');
 }
 
-function toggleTasksCard(){
-  if(typeof window.setExclusiveCard==='function'){window.setExclusiveCard('tasks-card');return;}
-  const card=document.getElementById('tasks-card');
+function toggleRoutineCard(){
+  if(typeof window.setExclusiveCard==='function'){window.setExclusiveCard('routine-card');return;}
+  const card=document.getElementById('routine-card');
   if(!card)return;
   card.classList.toggle('expanded');
 }
 
-// Summary for the collapsed 오늘 할 일 header. Shows routine + target
-// progress as stacked chips (루틴 N/M · 할일 N/M) or a CTA when empty.
-// Applies today's dow filter to mandatory so badge matches the body.
-function renderTasksSummary(){
-  const sum=document.getElementById('tasks-summary');
+function toggleTargetsCard(){
+  if(typeof window.setExclusiveCard==='function'){window.setExclusiveCard('targets-card');return;}
+  const card=document.getElementById('targets-card');
+  if(!card)return;
+  card.classList.toggle('expanded');
+}
+
+// Summary for the collapsed 루틴 header. Respects today's dow filter
+// so the badge matches what the expanded body actually lists.
+function renderRoutineSummary(){
+  const sum=document.getElementById('routine-summary');
   if(!sum)return;
   const dow=(new Date().getDay()+6)%7;
-  const mandAll=(log.mandatory||[]).filter(m=>!m.days||m.days.includes(dow));
-  const mandDone=mandAll.filter(m=>m.done).length;
+  const items=(log.mandatory||[]).filter(m=>!m||m.type==='custom'?true:false)
+    .filter(m=>m&&(!m.days||m.days.includes(dow)));
+  if(items.length===0){
+    sum.innerHTML='<span class="summary-cta">루틴 추가하기 →</span>';
+    return;
+  }
+  const done=items.filter(m=>m.done).length;
+  if(done===items.length){
+    sum.innerHTML='<span style="color:var(--green);font-weight:600;">✓ 완료</span>';
+    return;
+  }
+  sum.innerHTML=`<span class="q-chip normal">루틴 <span class="n">${done}/${items.length}</span></span>`;
+}
+
+// Summary for the collapsed 할일 header.
+function renderTargetsSummary(){
+  const sum=document.getElementById('targets-summary');
+  if(!sum)return;
   const tgts=(log.targets||[]).filter(t=>t&&t.text);
-  const tgtDone=tgts.filter(t=>t.st==='done').length;
-  const totalItems=mandAll.length+tgts.length;
-  if(totalItems===0){
-    sum.innerHTML='<span class="summary-cta">할 일 추가하기 →</span>';
+  if(tgts.length===0){
+    sum.innerHTML='<span class="summary-cta">할일 추가하기 →</span>';
     return;
   }
-  const allDone=mandAll.length>0&&mandDone===mandAll.length&&tgts.length>0&&tgtDone===tgts.length;
-  if(allDone){
-    sum.innerHTML='<span style="color:var(--green);font-weight:600;">✓ 모두 완료</span>';
+  const done=tgts.filter(t=>t.st==='done').length;
+  if(done===tgts.length){
+    sum.innerHTML='<span style="color:var(--green);font-weight:600;">✓ 완료</span>';
     return;
   }
-  const parts=[];
-  if(mandAll.length>0){
-    const cls=mandDone===mandAll.length?'clean':mandDone>0?'normal':'normal';
-    parts.push(`<span class="q-chip ${cls}">루틴 <span class="n">${mandDone}/${mandAll.length}</span></span>`);
-  }
-  if(tgts.length>0){
-    const cls=tgtDone===tgts.length?'clean':tgtDone>0?'normal':'normal';
-    parts.push(`<span class="q-chip ${cls}">할일 <span class="n">${tgtDone}/${tgts.length}</span></span>`);
-  }
-  sum.innerHTML=`<span class="cc-summary-chips">${parts.join(' ')}</span>`;
+  sum.innerHTML=`<span class="q-chip normal">할일 <span class="n">${done}/${tgts.length}</span></span>`;
 }
 
 // Summary for the collapsed workout header. Priority: strength volume >
@@ -9321,7 +9337,7 @@ function renderMandatory(){
     const state={done:!!t.done, fail:!!t.fail};
     return renderCustomMandRow(t,realIdx,state,dow);
   }).join('');
-  try{renderTasksSummary();}catch(e){}
+  try{renderRoutineSummary();}catch(e){}
 }
 
 function renderCustomMandRow(t,i,state,dow){
@@ -9646,7 +9662,7 @@ function renderTargets(){
         <button onclick="delTgt(${i})" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:18px;padding:6px 8px;min-width:36px;touch-action:manipulation;">✕</button>
       </div>`;
     }).join('');
-  try{renderTasksSummary();}catch(e){}
+  try{renderTargetsSummary();}catch(e){}
 }
 
 // Tap = toggle done/undone
