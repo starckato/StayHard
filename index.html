@@ -3169,187 +3169,9 @@ const SB_URL='https://uvaosxhsjscigheyymus.supabase.co';
 const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV2YW9zeGhzanNjaWdoZXl5bXVzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1ODExNjQsImV4cCI6MjA5MDE1NzE2NH0.aS1ZxN0ds8CUs3q_dMTFlEwjvNFgCH7JwY-tg4q0NA8';
 const sb=supabase.createClient(SB_URL,SB_KEY);
 
-// ── CATALOGUES ──
-const CATS={
-  cardio:[{i:'🏃',n:'달리기',l1:'거리',u1:'km',l2:'시간',u2:'분'},{i:'🚴',n:'사이클',l1:'거리',u1:'km',l2:'시간',u2:'분'},{i:'🏊',n:'수영',l1:'거리',u1:'km',l2:'시간',u2:'분'},{i:'🚶',n:'걷기',l1:'거리',u1:'km',l2:'시간',u2:'분'}],
-  strength:[{i:'🏋️',n:'웨이트',l1:'총 볼륨',u1:'kg',l2:'세트',u2:'sets'},{i:'💪',n:'맨몸 운동',l1:'시간',u1:'분',l2:null,u2:null},{i:'🤸',n:'크로스핏',l1:'시간',u1:'분',l2:null,u2:null},{i:'🧲',n:'저항 운동',l1:'시간',u1:'분',l2:null,u2:null}],
-  sports:[{i:'🎾',n:'테니스',l1:'시간',u1:'분',l2:null,u2:null},{i:'⛳',n:'골프',l1:'홀',u1:'holes',l2:null,u2:null},{i:'🏀',n:'농구',l1:'시간',u1:'분',l2:null,u2:null},{i:'⚽',n:'축구',l1:'시간',u1:'분',l2:null,u2:null},{i:'🏸',n:'배드민턴',l1:'시간',u1:'분',l2:null,u2:null},{i:'🥊',n:'복싱',l1:'시간',u1:'분',l2:null,u2:null}],
-  mindfulness:[{i:'🧘',n:'요가',l1:'시간',u1:'분',l2:null,u2:null},{i:'🤸',n:'스트레칭',l1:'시간',u1:'분',l2:null,u2:null},{i:'🔫',n:'드라이 파이어',l1:'시간',u1:'분',l2:null,u2:null},{i:'🧠',n:'명상',l1:'시간',u1:'분',l2:null,u2:null}],
-};
+// CATS — moved to src/data/exercises.js (Phase 1.3). window.CATS via bundle.
 
-// ── EXERCISE LIBRARY DATA ──
-const EXERCISE_LIBRARY = [
-  // 가슴 (Chest)
-  {i:'🏋️',n:'벤치프레스',m:'가슴',e:'바벨'},
-  {i:'🏋️',n:'인클라인 벤치프레스',m:'가슴',e:'바벨'},
-  {i:'🏋️',n:'디클라인 벤치프레스',m:'가슴',e:'바벨'},
-  {i:'💪',n:'덤벨 벤치프레스',m:'가슴',e:'덤벨'},
-  {i:'💪',n:'인클라인 덤벨 프레스',m:'가슴',e:'덤벨'},
-  {i:'💪',n:'디클라인 덤벨 프레스',m:'가슴',e:'덤벨'},
-  {i:'💪',n:'덤벨 플라이',m:'가슴',e:'덤벨'},
-  {i:'💪',n:'인클라인 덤벨 플라이',m:'가슴',e:'덤벨'},
-  {i:'💪',n:'디클라인 덤벨 플라이',m:'가슴',e:'덤벨'},
-  {i:'🔩',n:'케이블 크로스오버',m:'가슴',e:'케이블'},
-  {i:'🔩',n:'하이 케이블 크로스오버',m:'가슴',e:'케이블'},
-  {i:'🔩',n:'로우 케이블 크로스오버',m:'가슴',e:'케이블'},
-  {i:'🔩',n:'케이블 체스트 프레스',m:'가슴',e:'케이블'},
-  {i:'🖥️',n:'펙덱 플라이',m:'가슴',e:'머신'},
-  {i:'🖥️',n:'머신 체스트 프레스',m:'가슴',e:'머신'},
-  {i:'🖥️',n:'스미스 머신 벤치프레스',m:'가슴',e:'머신'},
-  {i:'🤸',n:'슬로우 푸쉬업',m:'가슴',e:'맨몸'},
-  {i:'🖥️',n:'스미스 인클라인 프레스',m:'가슴',e:'머신'},
-  {i:'🖥️',n:'플라이 머신 (단측)',m:'가슴',e:'머신'},
-  {i:'🤸',n:'푸쉬업',m:'가슴',e:'맨몸'},
-  {i:'🤸',n:'인클라인 푸쉬업',m:'가슴',e:'맨몸'},
-  {i:'🤸',n:'디클라인 푸쉬업',m:'가슴',e:'맨몸'},
-  {i:'🤸',n:'와이드 푸쉬업',m:'가슴',e:'맨몸'},
-  {i:'🤸',n:'다이아몬드 푸쉬업',m:'가슴',e:'맨몸'},
-  {i:'🤸',n:'아처 푸쉬업',m:'가슴',e:'맨몸'},
-  {i:'🏋️',n:'플레이트 프레스',m:'가슴',e:'플레이트'},
-  {i:'🖥️',n:'디클라인 머신 프레스',m:'가슴',e:'머신'},
-  // 등 (Back)
-  {i:'🏋️',n:'데드리프트',m:'등',e:'바벨'},
-  {i:'🏋️',n:'루마니안 데드리프트',m:'등',e:'바벨'},
-  {i:'🏋️',n:'스모 데드리프트',m:'등',e:'바벨'},
-  {i:'🏋️',n:'랙 풀',m:'등',e:'바벨'},
-  {i:'🏋️',n:'바벨 로우',m:'등',e:'바벨'},
-  {i:'🏋️',n:'펜들레이 로우',m:'등',e:'바벨'},
-  {i:'🏋️',n:'굿모닝',m:'등',e:'바벨'},
-  {i:'💪',n:'덤벨 로우',m:'등',e:'덤벨'},
-  {i:'💪',n:'원암 덤벨 로우',m:'등',e:'덤벨'},
-  {i:'💪',n:'리버스 플라이',m:'등',e:'덤벨'},
-  {i:'🔩',n:'케이블 로우',m:'등',e:'케이블'},
-  {i:'🔩',n:'시티드 케이블 로우',m:'등',e:'케이블'},
-  {i:'🔩',n:'케이블 시티드 로우',m:'등',e:'케이블'},
-  {i:'🖥️',n:'어시스트 풀업',m:'등',e:'머신'},
-  {i:'🔩',n:'페이스풀',m:'등',e:'케이블'},
-  {i:'🖥️',n:'랫풀다운',m:'등',e:'머신'},
-  {i:'🖥️',n:'와이드 랫풀다운',m:'등',e:'머신'},
-  {i:'🖥️',n:'리버스 그립 랫풀다운',m:'등',e:'머신'},
-  {i:'🖥️',n:'티바 로우',m:'등',e:'머신'},
-  {i:'🖥️',n:'머신 로우',m:'등',e:'머신'},
-  {i:'🖥️',n:'리버스 펙덱',m:'등',e:'머신'},
-  {i:'🖥️',n:'백 익스텐션',m:'등',e:'머신'},
-  {i:'🤸',n:'풀업',m:'등',e:'맨몸'},
-  {i:'🤸',n:'친업',m:'등',e:'맨몸'},
-  {i:'🤸',n:'와이드 풀업',m:'등',e:'맨몸'},
-  {i:'🤸',n:'클로즈 풀업',m:'등',e:'맨몸'},
-  {i:'🤸',n:'슈퍼맨',m:'등',e:'맨몸'},
-  {i:'🖥️',n:'시티드 로우 머신',m:'등',e:'머신'},
-  {i:'🔩',n:'스트레이트 암 풀다운',m:'등',e:'케이블'},
-  {i:'💪',n:'덤벨 풀오버',m:'등',e:'덤벨'},
-  // 하체 (Legs)
-  {i:'🏋️',n:'스쿼트',m:'하체',e:'바벨'},
-  {i:'🏋️',n:'프론트 스쿼트',m:'하체',e:'바벨'},
-  {i:'🏋️',n:'박스 스쿼트',m:'하체',e:'바벨'},
-  {i:'🏋️',n:'힙 쓰러스트',m:'하체',e:'바벨'},
-  {i:'💪',n:'고블렛 스쿼트',m:'하체',e:'덤벨'},
-  {i:'💪',n:'런지',m:'하체',e:'덤벨'},
-  {i:'💪',n:'워킹 런지',m:'하체',e:'덤벨'},
-  {i:'💪',n:'리버스 런지',m:'하체',e:'덤벨'},
-  {i:'💪',n:'불가리안 스플릿 스쿼트',m:'하체',e:'덤벨'},
-  {i:'💪',n:'스텝업',m:'하체',e:'덤벨'},
-  {i:'🔩',n:'케이블 킥백',m:'하체',e:'케이블'},
-  {i:'🖥️',n:'레그 프레스',m:'하체',e:'머신'},
-  {i:'🖥️',n:'핵 스쿼트',m:'하체',e:'머신'},
-  {i:'🖥️',n:'스미스 스쿼트',m:'하체',e:'머신'},
-  {i:'🖥️',n:'레그 익스텐션',m:'하체',e:'머신'},
-  {i:'🖥️',n:'레그 컬',m:'하체',e:'머신'},
-  {i:'🖥️',n:'시티드 레그 컬',m:'하체',e:'머신'},
-  {i:'🖥️',n:'스탠딩 레그 컬',m:'하체',e:'머신'},
-  {i:'🖥️',n:'힙 어브덕션',m:'하체',e:'머신'},
-  {i:'🖥️',n:'힙 어덕션',m:'하체',e:'머신'},
-  {i:'🖥️',n:'카프 레이즈',m:'하체',e:'머신'},
-  {i:'🖥️',n:'스탠딩 카프 레이즈',m:'하체',e:'머신'},
-  {i:'🖥️',n:'시티드 카프 레이즈',m:'하체',e:'머신'},
-  {i:'🤸',n:'글루트 브릿지',m:'하체',e:'맨몸'},
-  {i:'🤸',n:'점프 스쿼트',m:'하체',e:'맨몸'},
-  {i:'💪',n:'덤벨 카프 레이즈',m:'하체',e:'덤벨'},
-  {i:'🏋️',n:'바벨 런지',m:'하체',e:'바벨'},
-  {i:'🖥️',n:'싱글 레그 프레스',m:'하체',e:'머신'},
-  {i:'🖥️',n:'레그 프레스 (와이드)',m:'하체',e:'머신'},
-  // 어깨 (Shoulders)
-  {i:'🏋️',n:'오버헤드 프레스',m:'어깨',e:'바벨'},
-  {i:'🏋️',n:'업라이트 로우',m:'어깨',e:'바벨'},
-  {i:'🏋️',n:'슈러그',m:'어깨',e:'바벨'},
-  {i:'💪',n:'덤벨 숄더 프레스',m:'어깨',e:'덤벨'},
-  {i:'💪',n:'스탠딩 덤벨 숄더 프레스',m:'어깨',e:'덤벨'},
-  {i:'🖥️',n:'리버스 팩덱 플라이',m:'어깨',e:'머신'},
-  {i:'💪',n:'아놀드 프레스',m:'어깨',e:'덤벨'},
-  {i:'💪',n:'레터럴 레이즈',m:'어깨',e:'덤벨'},
-  {i:'💪',n:'프론트 레이즈',m:'어깨',e:'덤벨'},
-  {i:'💪',n:'리어 델트 플라이',m:'어깨',e:'덤벨'},
-  {i:'💪',n:'덤벨 업라이트 로우',m:'어깨',e:'덤벨'},
-  {i:'💪',n:'덤벨 슈러그',m:'어깨',e:'덤벨'},
-  {i:'🔩',n:'케이블 레터럴 레이즈',m:'어깨',e:'케이블'},
-  {i:'🔩',n:'케이블 리어 델트 플라이',m:'어깨',e:'케이블'},
-  {i:'🖥️',n:'스미스 숄더 프레스',m:'어깨',e:'머신'},
-  {i:'🖥️',n:'머신 레터럴 레이즈',m:'어깨',e:'머신'},
-  {i:'🖥️',n:'리버스 펙덱 (어깨)',m:'어깨',e:'머신'},
-  {i:'🏋️',n:'플레이트 프론트 레이즈',m:'어깨',e:'플레이트'},
-  {i:'💪',n:'덤벨 Y레이즈',m:'어깨',e:'덤벨'},
-  {i:'🔩',n:'케이블 프론트 레이즈',m:'어깨',e:'케이블'},
-  {i:'🖥️',n:'머신 숄더 프레스',m:'어깨',e:'머신'},
-  // 팔 (Arms)
-  {i:'🏋️',n:'바벨 컬',m:'팔',e:'바벨'},
-  {i:'🏋️',n:'리버스 컬',m:'팔',e:'바벨'},
-  {i:'🏋️',n:'스컬 크러셔',m:'팔',e:'바벨'},
-  {i:'🏋️',n:'클로즈그립 벤치프레스',m:'팔',e:'바벨'},
-  {i:'💪',n:'덤벨 컬',m:'팔',e:'덤벨'},
-  {i:'💪',n:'해머 컬',m:'팔',e:'덤벨'},
-  {i:'💪',n:'컨센트레이션 컬',m:'팔',e:'덤벨'},
-  {i:'💪',n:'오버헤드 트라이셉스 익스텐션',m:'팔',e:'덤벨'},
-  {i:'💪',n:'덤벨 트라이셉스 킥백',m:'팔',e:'덤벨'},
-  {i:'🔩',n:'케이블 컬',m:'팔',e:'케이블'},
-  {i:'🔩',n:'트라이셉스 푸쉬다운',m:'팔',e:'케이블'},
-  {i:'🔩',n:'케이블 푸쉬다운',m:'팔',e:'케이블'},
-  {i:'🔩',n:'케이블 킥백 (팔)',m:'팔',e:'케이블'},
-  {i:'🖥️',n:'프리처 컬',m:'팔',e:'머신'},
-  {i:'🤸',n:'딥스',m:'팔',e:'맨몸'},
-  {i:'💪',n:'인클라인 덤벨 컬',m:'팔',e:'덤벨'},
-  {i:'🔩',n:'오버헤드 케이블 컬',m:'팔',e:'케이블'},
-  {i:'🔩',n:'리버스 그립 푸쉬다운',m:'팔',e:'케이블'},
-  {i:'🏋️',n:'EZ바 컬',m:'팔',e:'바벨'},
-  {i:'💪',n:'리스트 컬',m:'팔',e:'덤벨'},
-  // 복근 (Core)
-  {i:'🤸',n:'크런치',m:'복근',e:'맨몸'},
-  {i:'🤸',n:'싯업',m:'복근',e:'맨몸'},
-  {i:'🤸',n:'레그 레이즈',m:'복근',e:'맨몸'},
-  {i:'🤸',n:'행잉 레그 레이즈',m:'복근',e:'맨몸'},
-  {i:'🤸',n:'행잉 니업',m:'복근',e:'맨몸'},
-  {i:'🤸',n:'플랭크',m:'복근',e:'맨몸'},
-  {i:'🤸',n:'사이드 플랭크',m:'복근',e:'맨몸'},
-  {i:'🤸',n:'러시안 트위스트',m:'복근',e:'맨몸'},
-  {i:'🤸',n:'바이시클 크런치',m:'복근',e:'맨몸'},
-  {i:'🤸',n:'V업',m:'복근',e:'맨몸'},
-  {i:'🔩',n:'케이블 크런치',m:'복근',e:'케이블'},
-  {i:'🤸',n:'앱 롤아웃',m:'복근',e:'맨몸'},
-  {i:'🤸',n:'토 터치',m:'복근',e:'맨몸'},
-  {i:'🤸',n:'데드 버그',m:'복근',e:'맨몸'},
-  {i:'🤸',n:'힐 터치',m:'복근',e:'맨몸'},
-  // 전신 (Full Body)
-  {i:'🤸',n:'버피',m:'전신',e:'맨몸'},
-  {i:'🤸',n:'마운틴 클라이머',m:'전신',e:'맨몸'},
-  {i:'🏋️',n:'클린',m:'전신',e:'바벨'},
-  {i:'🏋️',n:'클린 앤 프레스',m:'전신',e:'바벨'},
-  {i:'🏋️',n:'스내치',m:'전신',e:'바벨'},
-  {i:'🏋️',n:'쓰러스터',m:'전신',e:'바벨'},
-  {i:'💪',n:'케틀벨 스윙',m:'전신',e:'덤벨'},
-  {i:'💪',n:'터키시 겟업',m:'전신',e:'덤벨'},
-  {i:'💪',n:'파머스 워크',m:'전신',e:'덤벨'},
-  {i:'🤸',n:'박스 점프',m:'전신',e:'맨몸'},
-  // 유산소
-  {i:'🏃',n:'달리기',m:'유산소',e:'유산소'},
-  {i:'🚴',n:'사이클',m:'유산소',e:'유산소'},
-  {i:'🏊',n:'수영',m:'유산소',e:'유산소'},
-  {i:'🚶',n:'걷기',m:'유산소',e:'유산소'},
-  {i:'🪢',n:'줄넘기',m:'유산소',e:'맨몸'},
-  {i:'🚣',n:'로잉 머신',m:'유산소',e:'머신'},
-];
-
-// ── EXERCISE GIF MAP (134 exercises → animated GIF URLs) ──
-const EX_GIF={'벤치프레스':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0025-EIeI8Vf.gif','인클라인 벤치프레스':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0047-3TZduzM.gif','디클라인 벤치프레스':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0033-GrO65fd.gif','덤벨 벤치프레스':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0289-SpYC0Kp.gif','인클라인 덤벨 프레스':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0314-ns0SIbU.gif','디클라인 덤벨 프레스':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0301-DwhEmmE.gif','덤벨 플라이':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0308-yz9nUhF.gif','인클라인 덤벨 플라이':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0319-ESOd5Pl.gif','디클라인 덤벨 플라이':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0302-xXm4nYq.gif','케이블 크로스오버':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/1269-UKWTJWR.gif','하이 케이블 크로스오버':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/1269-UKWTJWR.gif','로우 케이블 크로스오버':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0179-FVmZVhk.gif','케이블 체스트 프레스':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0151-7xI5MXA.gif','펙덱 플라이':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0596-v3xmPAR.gif','머신 체스트 프레스':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0577-T0yTjgW.gif','스미스 머신 벤치프레스':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0748-trqKQv2.gif','슬로우 푸쉬업':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0662-I4hDWkc.gif','스미스 인클라인 프레스':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0757-5v7KYld.gif','플라이 머신 (단측)':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0596-v3xmPAR.gif','푸쉬업':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0662-I4hDWkc.gif','인클라인 푸쉬업':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0493-B1EVP9F.gif','디클라인 푸쉬업':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0279-i5cEhka.gif','와이드 푸쉬업':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/1311-JmMVpR3.gif','다이아몬드 푸쉬업':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0283-soIB2rj.gif','아처 푸쉬업':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/3294-A9qxk2F.gif','플레이트 프레스':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0856-I1OBLnn.gif','데드리프트':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0032-ila4NZS.gif','루마니안 데드리프트':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0085-wQ2c4XD.gif','스모 데드리프트':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0117-KgI0tqW.gif','랙 풀':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0074-za9Ni4z.gif','바벨 로우':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0027-eZyBC3j.gif','펜들레이 로우':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0027-eZyBC3j.gif','굿모닝':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0044-XlZ4lAC.gif','덤벨 로우':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0293-BJ0Hz5L.gif','원암 덤벨 로우':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0064-Jsgsc27.gif','리버스 플라이':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0380-v1qBec9.gif','케이블 로우':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0861-fUBheHs.gif','시티드 케이블 로우':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0861-fUBheHs.gif','케이블 시티드 로우':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0861-fUBheHs.gif','어시스트 풀업':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0015-vrhHa6D.gif','페이스풀':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0205-SpsOSXk.gif','랫풀다운':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/2330-LEprlgG.gif','와이드 랫풀다운':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/1429-Qqi7bko.gif','리버스 그립 랫풀다운':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/2736-ky8FLU8.gif','티바 로우':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0606-aaXr7ld.gif','머신 로우':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0571-w2oRpuH.gif','리버스 펙덱':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0215-x825CZm.gif','백 익스텐션':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/1314-qLpO4vV.gif','풀업':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0652-lBDjFxJ.gif','친업':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/1431-7OeHptV.gif','와이드 풀업':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/1429-Qqi7bko.gif','클로즈 풀업':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0015-vrhHa6D.gif','슈퍼맨':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0803-4GqRrAk.gif','스쿼트':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0043-qXTaZnJ.gif','프론트 스쿼트':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0042-zG0zs85.gif','박스 스쿼트':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0043-qXTaZnJ.gif','힙 쓰러스트':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/1409-qKBpF7I.gif','고블렛 스쿼트':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/1760-yn8yg1r.gif','런지':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0336-RRWFUcw.gif','워킹 런지':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0336-RRWFUcw.gif','리버스 런지':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0381-SSsBDwB.gif','불가리안 스플릿 스쿼트':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0410-qx4fgX7.gif','스텝업':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/1684-76vfTdU.gif','케이블 킥백':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0168-hBGWILP.gif','레그 프레스':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/2287-V07qpXy.gif','핵 스쿼트':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0046-5VCj6iH.gif','스미스 스쿼트':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0750-Gu2rNJd.gif','레그 익스텐션':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0585-my33uHU.gif','레그 컬':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0586-17lJ1kr.gif','시티드 레그 컬':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0599-Zg3XY7P.gif','스탠딩 레그 컬':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0795-C5jncD2.gif','힙 어브덕션':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0597-CHpahtl.gif','힙 어덕션':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/1712-hC6oYY5.gif','카프 레이즈':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0605-ykUOVze.gif','스탠딩 카프 레이즈':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/1372-8ozhUIZ.gif','시티드 카프 레이즈':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0088-ktsFQAZ.gif','글루트 브릿지':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/1409-qKBpF7I.gif','점프 스쿼트':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0053-1gFNTZV.gif','오버헤드 프레스':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0050-xi0yckC.gif','업라이트 로우':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0120-UDlhcO8.gif','슈러그':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0095-dG7tG5y.gif','덤벨 숄더 프레스':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/2137-Xy4jlWA.gif','스탠딩 덤벨 숄더 프레스':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/2137-Xy4jlWA.gif','리버스 팩덱 플라이':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0993-sTfvVsG.gif','아놀드 프레스':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/2137-Xy4jlWA.gif','레터럴 레이즈':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0334-DsgkuIt.gif','프론트 레이즈':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0310-3eGE2JC.gif','리어 델트 플라이':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0380-v1qBec9.gif','덤벨 업라이트 로우':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0437-ainizkb.gif','덤벨 슈러그':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0406-NJzBsGJ.gif','케이블 레터럴 레이즈':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0178-goJ6ezq.gif','케이블 리어 델트 플라이':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0215-x825CZm.gif','스미스 숄더 프레스':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0747-Gpn4ADc.gif','머신 레터럴 레이즈':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0584-dRTfGZT.gif','리버스 펙덱 (어깨)':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0225-P5p0j8B.gif','플레이트 프론트 레이즈':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0310-3eGE2JC.gif','바벨 컬':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0031-25GPyDY.gif','리버스 컬':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0080-xNrS20v.gif','스컬 크러셔':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0061-iZop9xO.gif','클로즈그립 벤치프레스':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0030-J6Dx1Mu.gif','덤벨 컬':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0285-BU15nH4.gif','해머 컬':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0313-slDvUAU.gif','컨센트레이션 컬':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0297-gvsWLQw.gif','오버헤드 트라이셉스 익스텐션':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0362-nAuHPcD.gif','덤벨 트라이셉스 킥백':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0333-W6PxUkg.gif','케이블 컬':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0868-G08RZcQ.gif','트라이셉스 푸쉬다운':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0201-3ZflifB.gif','케이블 푸쉬다운':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0201-3ZflifB.gif','케이블 킥백 (팔)':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0149-Gchi5Tr.gif','프리처 컬':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0059-SYJ4Bkt.gif','딥스':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0009-PAgTVaK.gif','크런치':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0001-2gPfomN.gif','싯업':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0001-2gPfomN.gif','레그 레이즈':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0012-UGhRD1A.gif','행잉 레그 레이즈':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/2333-PXTIwgu.gif','행잉 니업':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0011-03lzqwk.gif','플랭크':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0464-CosupLu.gif','사이드 플랭크':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/3544-5VXmnV5.gif','러시안 트위스트':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0014-r7cT9YD.gif','바이시클 크런치':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0972-tZkGYZ9.gif','V업':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0969-ztAa1RK.gif','케이블 크런치':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0175-WW95auq.gif','버피':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/1160-dK9394r.gif','마운틴 클라이머':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/2466-9c6T1YX.gif','클린':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0648-SiWCcTN.gif','클린 앤 프레스':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0028-SGY8Zui.gif','스내치':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0067-xHKN2s8.gif','쓰러스터':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/3305-f7Y9eDZ.gif','케틀벨 스윙':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0549-UHJlbu3.gif','달리기':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/3666-rjiM4L3.gif','사이클':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/2138-H1PESYI.gif','수영':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/3433-SP3hUez.gif','걷기':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/3655-J9zIWig.gif','줄넘기':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/2612-e1e76I2.gif','디클라인 머신 프레스':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/1287-REGM1dE.gif','시티드 로우 머신':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0571-w2oRpuH.gif','스트레이트 암 풀다운':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0199-PskORrA.gif','덤벨 풀오버':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0288-vi8EhoE.gif','덤벨 카프 레이즈':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/1379-r29jP7S.gif','바벨 런지':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/1410-py1HSzx.gif','싱글 레그 프레스':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/2611-9KU9TYF.gif','레그 프레스 (와이드)':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/1425-WWD6FzI.gif','덤벨 Y레이즈':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/3541-PbzNu7c.gif','케이블 프론트 레이즈':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0162-u2X71Np.gif','머신 숄더 프레스':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0590-2KGnL6M.gif','인클라인 덤벨 컬':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0315-F3xgbjF.gif','오버헤드 케이블 컬':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/1636-wDUqY2u.gif','리버스 그립 푸쉬다운':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/2406-ThKP69G.gif','EZ바 컬':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/1682-Dsfz0Id.gif','리스트 컬':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0994-Ezpnw9d.gif','앱 롤아웃':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0103-xnInPfE.gif','토 터치':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/3214-RtyAsy1.gif','데드 버그':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0276-iny3m5y.gif','힐 터치':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0006-qaZVsGk.gif','터키시 겟업':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0551-Ha7SZ3y.gif','파머스 워크':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/2133-qPEzJjA.gif','박스 점프':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/1374-iPm26QU.gif','로잉 머신':'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0571-w2oRpuH.gif'};
-function exIcon(name,size){const s=size||20;const g=EX_GIF[name];if(g)return'<img src="'+g+'" width="'+s+'" height="'+s+'" style="border-radius:'+Math.round(s/4)+'px;object-fit:cover;background:var(--surface3);" loading="lazy">';const ex=EXERCISE_LIBRARY.find(e=>e.n===name);return'<span style="font-size:'+s+'px;line-height:1;">'+(ex?ex.i:'💪')+'</span>';}
+// EXERCISE_LIBRARY / EX_GIF / exIcon — moved to src/data/exercises.js (Phase 1.3). window.* via bundle.
 
 // ── LIBRARY STATE ──
 let libMuscleFilter='전체', libEquipFilter='전체', libContext='session', libRoutineEditIdx=null;
@@ -4706,57 +4528,7 @@ function closeRoomOverlay(){
 // ICO_PATHS / ico() — moved to src/lib/icons.js (Phase 1.2).
 // Available via window.ICO_PATHS / window.ico from /dist/app.js bundle.
 
-const SCORE_EVENTS={
-  // 물리적 단련 — 30점 기준 (하루 최대 근력+유산소=60)
-  workout_done:         {pts:30, label:'근력 운동 완료',       icon:'💪'},
-  workout_cardio_done:  {pts:30, label:'유산소 운동 완료',     icon:'🏃'},
-  cold_shower:          {pts:10, label:'찬물 샤워',           icon:'🚿'},
-  early_rise:           {pts:10, label:'새벽 기상',           icon:'🌅'},
-  goggins_4x4x48:       {pts:100,label:'4x4x48 챌린지',       icon:'🏃'},
-  pushup_challenge:     {pts:1,  label:'푸쉬업 챌린지',       icon:'💪'}, // 동적 ptsOverride: 오늘 누적 30회까지 1점/회, 이후 5회당 1점
-
-  // 체중
-  weight_record:        {pts:1,  label:'공복체중 기록',       icon:'⚖️'},
-  weight_loss:          {pts:5,  label:'체중 감량',           icon:'⬇️'},
-  weight_goal:          {pts:30, label:'목표 체중 달성',      icon:'🎯'},
-
-  // 습관 구조 (작지만 꾸준히)
-  routine_done:         {pts:1,  label:'필수 루틴 완료',      icon:'✅'},
-  target_done:          {pts:2,  label:'할일 완료',           icon:'📋'},
-
-  // 식단
-  diet_log:             {pts:1,  label:'식단 등록',           icon:'🥗'},
-  diet_log_only:        {pts:1,  label:'식단 등록',           icon:'🥗'}, // alias (레거시)
-  diet_clean:           {pts:10, label:'클린 식단',           icon:'🟢'},
-  diet_clean_register:  {pts:10, label:'클린 식단 등록',      icon:'🟢'},
-  cheat_bonus:          {pts:20, label:'치팅 절제 보너스',    icon:'💀'},
-  onboarding_bonus:     {pts:10, label:'첫 출발 보너스',      icon:'🎉'},
-
-  // 패널티
-  diet_junk:            {pts:-30,label:'금지 식단',           icon:'🔴'},
-  diet_alcohol_register:{pts:0,  label:'음주 기록',           icon:'🍺'},
-  routine_fail:         {pts:-1, label:'필수 루틴 실패',      icon:'❌'},
-  routine_skip:         {pts:-1, label:'필수 루틴 스킵',      icon:'⏭️'},
-  target_fail:          {pts:-2, label:'할일 실패',           icon:'💢'},
-  workout_delete:       {pts:0,  label:'운동 취소',           icon:'🗑️'},
-  workout_deleted:      {pts:0,  label:'운동 삭제',           icon:'🗑️'}, // alias (레거시)
-
-  // 취소 — 원래 부여분 반환 (장부 기록)
-  workout_done_cancel:  {pts:-30, label:'근력 운동 취소',     icon:'↩️'},
-  workout_cardio_done_cancel:{pts:-30,label:'유산소 운동 취소',icon:'↩️'},
-  routine_done_cancel:  {pts:-1,  label:'루틴 완료 취소',     icon:'↩️'},
-  target_done_cancel:   {pts:-2,  label:'할일 완료 취소',     icon:'↩️'},
-  diet_clean_delete:    {pts:-10, label:'클린 식단 삭제',     icon:'🟢'},
-  diet_clean_cancel:    {pts:-10, label:'클린 식단 취소',     icon:'🟢'},
-  diet_log_cancel:      {pts:-1,  label:'식단 등록 취소',     icon:'🥗'},
-  diet_log_only_cancel: {pts:-1,  label:'식단 등록 취소',     icon:'🥗'},
-  // 패널티 취소 — 패널티만큼 회복
-  diet_junk_cancel:     {pts:30,  label:'금지 식단 만회',     icon:'🔴'},
-  diet_alcohol_cancel:  {pts:0,   label:'음주 기록 취소',     icon:'🍺'},
-  routine_fail_cancel:  {pts:1,   label:'루틴 실패 취소',     icon:'↩️'},
-  routine_skip_cancel:  {pts:1,   label:'루틴 스킵 취소',     icon:'↩️'},
-  target_fail_cancel:   {pts:2,   label:'할일 실패 취소',     icon:'↩️'},
-};
+// SCORE_EVENTS — moved to src/data/score-events.js (Phase 1.3). window.SCORE_EVENTS via bundle.
 
 // 금지식단 만회 가드: 오늘 -30 페널티 개수 > 회복 개수일 때만 +30 회복 허용 (중복 회복 방지)
 function _canRefundJunk(){
@@ -4766,7 +4538,7 @@ function _canRefundJunk(){
   return junks>cancels;
 }
 // 푸쉬업 점수 함수: 30회까지 1점/회, 이후 5회당 1점
-function _pushupPtsFor(n){n=Math.max(0,+n||0);return n<=30?n:30+Math.floor((n-30)/5);}
+// _pushupPtsFor — moved to src/data/score-events.js (Phase 1.3).
 
 
 // 점수 로그는 daily_logs.targets에 특수 항목으로 저장 (별도 컬럼 불필요)
@@ -4862,19 +4634,7 @@ async function _saveScoreNow(){
 }
 
 // ── DAILY GOGGINS MOTTOS (10개, 하루씩 순환) ──
-const GOGGINS_MOTTOS=[
-  // Real David Goggins quotes — Korean translation
-  {ko:"우리가 능력의 40%에 도달하면, 우리의 뇌는 멈추라고 말한다. 하지만 그건 시작에 불과하다.", en:"When your mind is telling you that you're done, that you're exhausted, that you cannot possibly go any further, you're only actually 40% done."},
-  {ko:"당신을 편안하게 만드는 것들이 당신을 약하게 만든다.", en:"The things that we decide to run from are the truth. When you make excuses, you're running from the truth."},
-  {ko:"나는 고통을 즐기지 않는다. 다만 고통이 나를 막을 수 없다는 걸 안다.", en:"I don't stop when I'm tired. I stop when I'm done."},
-  {ko:"우리 대부분은 우리 삶의 관중이다. 선수가 되어라.", en:"Most of us are motivated by the wrong things. We seek comfort instead of character."},
-  {ko:"변명은 변명일 뿐이다. 결과만이 현실이다.", en:"Excuses are everywhere. Success is rare. The difference? Accountability."},
-  {ko:"어제의 너를 오늘 죽여라. 더 강한 네가 태어난다.", en:"You are in danger of living a life so comfortable and soft that you will die without ever realizing your true potential."},
-  {ko:"두려움이 있는 곳으로 달려가라. 그곳에 성장이 있다.", en:"Face everything that makes you uncomfortable. There is no growth in the comfort zone."},
-  {ko:"아무도 당신을 구하러 오지 않는다. 일어나서 직접 해결하라.", en:"Nobody is going to come and save you. You've got to save yourself."},
-  {ko:"모든 위대한 것은 고통으로부터 태어난다.", en:"All growth depends upon activity. There is no development physically or intellectually without effort, and effort means work and work means pain."},
-  {ko:"삶은 최선을 다한 자에게만 의미를 드러낸다.", en:"Life is one big tug of war between mediocrity and trying to find your best self."},
-];
+// GOGGINS_MOTTOS — moved to src/data/mottos.js (Phase 1.3). window.GOGGINS_MOTTOS via bundle.
 let _mottoIdx=-1;
 function showDailyMotto(){
   const el=document.getElementById('daily-motto');
