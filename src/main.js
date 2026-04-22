@@ -1,6 +1,6 @@
 // Stay Hard · modular bundle entry point
 //
-// Migration phase: 3 (feature modules — stats, onboarding, meal-photo)
+// Migration phase: 3 (feature modules)
 // See: document-private/MIGRATION_PLAN.md
 
 // Lib (pure utilities + infrastructure)
@@ -19,6 +19,7 @@ import * as toast from './ui/toast.js';
 import * as scoreEvents from './data/score-events.js';
 import * as mottos from './data/mottos.js';
 import * as exercises from './data/exercises.js';
+import * as muscle from './data/muscle.js';
 
 // Features
 import * as stats from './features/stats/index.js';
@@ -28,7 +29,7 @@ import * as onboarding from './features/onboarding/index.js';
 Object.assign(
   window,
   date, tier, icons, env, analytics, mealPhoto, toast,
-  scoreEvents, mottos, exercises,
+  scoreEvents, mottos, exercises, muscle,
   stats, onboarding
 );
 window.sb = sb;
