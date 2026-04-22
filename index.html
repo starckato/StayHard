@@ -20,7 +20,7 @@
      so window globals (dkey, normKey, ...) are set before inline code runs.
      Query version bumps cache when bundle content changes. Bump manually or
      via build script when shipping a new bundle. See MIGRATION_PLAN.md. -->
-<script src="/dist/app.js?v=20260423b"></script>
+<script src="/dist/app.js?v=20260423c"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Archivo+Black&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -330,6 +330,10 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
 .dh-grid{display:table;width:max-content;border-collapse:collapse;}
 .sel-day-label{text-align:center;font-size:11px;color:var(--text3);padding:6px 16px 0;font-family:'DM Mono',monospace;cursor:pointer;transition:color .15s;letter-spacing:.02em;}
 .sel-day-label:hover{color:var(--accent);}
+.dh-today-row{display:flex;justify-content:center;padding:8px 16px 2px;}
+.dh-today-btn{background:var(--surface2);border:1px solid var(--border2);color:var(--text2);padding:6px 14px;border-radius:100px;font-size:11px;font-family:'DM Sans',sans-serif;font-weight:600;letter-spacing:-.01em;cursor:pointer;transition:all .15s;touch-action:manipulation;}
+.dh-today-btn:active{background:var(--surface3);color:var(--text);}
+.dh-today-btn.is-today{opacity:0.5;color:var(--text3);}
 
 /* ACCORDION CARD (weight v2 — collapsed/expanded) */
 .s-card.accordion{margin:0 14px 8px;}
@@ -1081,7 +1085,9 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
       <div id="dh-scroll" class="dh-scroll" onscroll="dhOnScroll(this)">
         <div id="dh-grid" class="dh-grid"></div>
       </div>
-      <div class="sel-day-label" id="sel-day-label" onclick="jumpToToday()" title="오늘로 돌아가기"></div>
+      <div class="dh-today-row">
+        <button id="dh-today-btn" class="dh-today-btn" onclick="jumpToToday()">↩ 오늘로 돌아가기</button>
+      </div>
     </div>
 
     <!-- Weight card (v2 — collapsed/expanded accordion) -->
@@ -6906,11 +6912,11 @@ function buildSlider(){
   try{
     if(typeof window.buildHeatmapGrid==='function')window.buildHeatmapGrid();
   }catch(e){console.warn('buildHeatmapGrid failed',e);}
-  const d=selectedDate,isT=selectedKey===TODAY;
-  const labelEl=document.getElementById('sel-day-label');
-  if(!labelEl)return;
-  labelEl.textContent=(d.getMonth()+1)+'월 '+d.getDate()+'일 ('+['일','월','화','수','목','금','토'][d.getDay()]+')'+(isT?' — 오늘':'  ↩ 오늘로');
-  labelEl.style.color=isT?'var(--text2)':'var(--accent)';
+  const btn=document.getElementById('dh-today-btn');
+  if(!btn)return;
+  // Keep the button persistent; fade it when we're already on today so the
+  // visual state tells the user they can still tap without confusion.
+  btn.classList.toggle('is-today',selectedKey===TODAY);
 }
 async function selectDay(d,k){
   selectedDate=d;selectedKey=k;_perfectDayShown=false;
@@ -7084,7 +7090,7 @@ function scrollToSection(s){
   const el=document.getElementById(map[s]);
   if(el)el.scrollIntoView({behavior:'smooth',block:'center'});
 }
-function renderRoutine(){renderCharCard();renderSummaryCard();renderWeight();renderMeals();renderCheatBadge();renderWater();renderWorkouts();renderMandatory();renderTargets();updateGogginsHeader();revealStatusBand();try{renderFirstWeekCard();}catch(e){console.warn('[fw-card]',e);}try{renderInviteCard();}catch(e){console.warn('[invite-card]',e);}try{renderDay3ChallengeNudge();}catch(e){console.warn('[d3-nudge]',e);}try{renderWeeklyFeatureRibbon();}catch(e){console.warn('[wf-ribbon]',e);}}
+function renderRoutine(){renderCharCard();renderSummaryCard();renderWeight();renderMeals();renderCheatBadge();renderWater();renderWorkouts();renderMandatory();renderTargets();updateGogginsHeader();revealStatusBand();try{renderFirstWeekCard();}catch(e){console.warn('[fw-card]',e);}try{renderInviteCard();}catch(e){console.warn('[invite-card]',e);}try{renderDay3ChallengeNudge();}catch(e){console.warn('[d3-nudge]',e);}try{renderWeeklyFeatureRibbon();}catch(e){console.warn('[wf-ribbon]',e);}try{if(typeof window.buildHeatmapGrid==='function')window.buildHeatmapGrid();}catch(e){}}
 
 // ═══════════════════════════════════════════════
 // FIRST-WEEK MISSION CARD
