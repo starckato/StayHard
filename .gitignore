@@ -20,3 +20,11 @@ Thumbs.db
 # that should not be in a public repo.
 document-private/
 document/
+
+# v3-only character assets remaining on disk (production uses GymRat_*)
+# Files left from earlier experiments. Safe to delete manually anytime.
+assets/Tier[1-6]_*
+assets/tier2_*
+
+# Local index.html snapshots (rollback safety nets)
+index.html.backup-*
