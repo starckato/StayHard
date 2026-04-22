@@ -20,7 +20,7 @@
      so window globals (dkey, normKey, ...) are set before inline code runs.
      Query version bumps cache when bundle content changes. Bump manually or
      via build script when shipping a new bundle. See MIGRATION_PLAN.md. -->
-<script src="/dist/app.js?v=20260422b"></script>
+<script src="/dist/app.js?v=20260422c"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Archivo+Black&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -320,22 +320,16 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
 .s-badge.green{color:var(--green);}
 .s-divider{height:1px;background:var(--border);}
 
-/* DAY SLIDER */
-.day-slider-wrap{padding:6px 16px 10px;background:var(--bg);}
-.month-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
-.month-label{font-size:12px;font-weight:600;color:var(--text3);letter-spacing:.03em;}
-.mnav-btn{background:none;border:none;color:var(--text3);font-size:16px;cursor:pointer;padding:2px 6px;transition:color .15s;}
-.mnav-btn:active{color:var(--text);}
-.day-strip{display:flex;gap:3px;overflow-x:hidden;scrollbar-width:none;padding-bottom:2px;width:100%;}
-.day-strip::-webkit-scrollbar{display:none;}
-.day-pill-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;min-width:0;}
-.day-pill{width:100%;height:50px;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;background:var(--surface);border:1px solid var(--border);transition:all .15s;}
-.day-pill.active{background:var(--accent);border-color:var(--accent);box-shadow:0 2px 12px rgba(255,77,77,.2);}
-.dp-name{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--text3);}
-.dp-num{font-size:14px;font-weight:700;color:var(--text);font-family:'DM Mono',monospace;}
-.day-pill.active .dp-name,.day-pill.active .dp-num{color:#fff;}.day-pill.active.month-change .dp-name{color:rgba(255,255,255,0.75);}
-.dp-dot{width:4px;height:4px;border-radius:50%;}
-.sel-day-label{text-align:center;font-size:11px;color:var(--text3);padding:5px 0 8px;font-family:'DM Mono',monospace;cursor:pointer;transition:color .15s;letter-spacing:.02em;}.sel-day-label:hover{color:var(--accent);}
+/* DATE HEATMAP (replaces old day-slider + weekly tab) */
+.dh-wrap{padding:4px 0 8px;background:var(--bg);}
+.dh-hdr{display:flex;justify-content:space-between;align-items:baseline;padding:0 16px 6px;}
+.dh-title{font-size:13px;font-weight:700;color:var(--text);letter-spacing:-.005em;}
+.dh-hint{font-size:10px;color:var(--text3);letter-spacing:.03em;}
+.dh-scroll{overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:none;position:relative;}
+.dh-scroll::-webkit-scrollbar{display:none;}
+.dh-grid{display:table;width:max-content;border-collapse:collapse;}
+.sel-day-label{text-align:center;font-size:11px;color:var(--text3);padding:6px 16px 0;font-family:'DM Mono',monospace;cursor:pointer;transition:color .15s;letter-spacing:.02em;}
+.sel-day-label:hover{color:var(--accent);}
 
 /* WEIGHT */
 .wt-strip{display:flex;align-items:center;gap:10px;padding:12px 14px;}
@@ -524,30 +518,6 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
 .penalty-icon{font-size:15px;flex-shrink:0;margin-top:1px;}
 .penalty-text{font-size:11px;color:var(--red);line-height:1.5;}
 
-/* ─── WEEKLY VIEW ─── */
-#view-weekly{padding:0;}
-.wv-hdr{padding:12px 16px 8px;display:flex;justify-content:space-between;align-items:center;}
-.wv-title{font-size:15px;font-weight:600;}
-.wv-nav-btn{background:var(--surface2);border:1px solid var(--border);color:var(--text2);border-radius:10px;padding:10px 16px;font-size:14px;cursor:pointer;font-family:'DM Sans',sans-serif;min-height:44px;touch-action:manipulation;}
-.wv-week-label{font-size:10px;color:var(--text3);text-align:center;padding:2px 0 8px;font-family:'DM Mono',monospace;text-transform:uppercase;letter-spacing:.05em;}
-.wv-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;width:100%;}
-.wv-table{border-collapse:collapse;width:max-content;min-width:100%;}
-.wv-table th,.wv-table td{border:1px solid var(--border);text-align:center;padding:0;vertical-align:middle;font-family:'DM Sans',sans-serif;}
-.wv-table .row-sub{font-size:10px;color:var(--text2);text-align:right;padding:4px 8px;background:var(--surface);width:80px;border-right:1px solid var(--border2);}
-.wv-table .day-hd{font-size:10px;font-weight:600;padding:5px 4px;background:var(--surface);white-space:nowrap;min-width:52px;}
-.wv-table .day-hd.today-col{background:rgba(255,77,77,.12);color:var(--accent);}
-.wv-table .day-hd .hd-name{font-size:9px;font-weight:400;color:var(--text3);display:block;}
-.wv-table .day-hd .hd-num{font-size:13px;font-weight:600;}
-.wv-table .dc{font-size:10px;padding:4px 3px;min-width:52px;max-width:72px;height:28px;cursor:pointer;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;}
-.wv-table .dc.today-col{background:rgba(255,77,77,.06);}
-.wv-table .dc.c-green{background:rgba(52,211,153,.18);color:#1a4a28;}
-.wv-table .dc.c-red{background:rgba(255,77,77,.18);color:#6b1f1f;}
-.wv-table .dc.c-amber{background:rgba(245,158,11,.18);color:#4a3006;}
-.wv-table .dc.c-purple{background:rgba(255,77,77,.14);color:#2d2470;}
-.wv-table .dc.c-empty{background:var(--surface);color:var(--text3);}
-.wv-table .dc.c-future{background:var(--surface);color:var(--text3);opacity:.4;}
-.wv-table .section-hdr-row td{background:var(--surface2);font-size:10px;font-weight:600;color:var(--text2);padding:4px 8px;text-align:left;letter-spacing:.04em;text-transform:uppercase;border-top:1px solid var(--border2);}
-.wv-table .wt-cell{font-family:'DM Mono',monospace;font-size:11px;font-weight:500;}
 
 /* ─── COMPETITION TAB ─── */
 #view-competition{padding:0;padding-bottom:20px;}
@@ -767,17 +737,6 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
 .rt-card-meta{font-size:11px;color:var(--text2);}
 .rt-card-actions{display:flex;gap:6px;margin-top:10px;}
 
-/* ── WEEKLY MINI MODAL ── */
-#wv-mini-modal{position:fixed;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:10px;z-index:800;box-shadow:0 4px 20px rgba(0,0,0,.4);min-width:180px;display:none;}
-#wv-mini-modal.open{display:block;}
-.wv-mm-label{font-size:11px;color:var(--text2);margin-bottom:6px;}
-.wv-mm-inp{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:7px 10px;font-size:12px;color:var(--text);font-family:'DM Sans',sans-serif;outline:none;margin-bottom:6px;}
-.wv-mm-btns{display:flex;gap:6px;}
-.wv-mm-save{flex:1;background:var(--accent);border:none;border-radius:6px;color:#fff;font-size:11px;font-weight:500;padding:6px;cursor:pointer;font-family:'DM Sans',sans-serif;}
-.wv-mm-cancel{background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text2);font-size:11px;padding:6px 8px;cursor:pointer;font-family:'DM Sans',sans-serif;}
-.wv-day-pill{width:22px;height:22px;border-radius:50%;border:1px solid var(--border);font-size:10px;font-weight:500;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text3);background:var(--surface2);}
-.wv-day-pill.on{background:var(--accent);border-color:var(--accent);color:#fff;}
-
 /* ── CAMERA VISION OVERLAY ── */
 #cv-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:#000;z-index:550;display:none;flex-direction:column;max-width:430px;left:50%;transform:translateX(-50%);}
 #cv-overlay.open{display:flex;}
@@ -976,15 +935,14 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
          함수 로직 변경 없음. 컨테이너 전체는 .home-promo-block 으로 묶어 아래
          섹션에 배치. -->
 
-    <div class="day-slider-wrap">
-      <div class="month-row">
-        <div class="month-label" id="slider-month"></div>
-        <div style="display:flex;gap:4px;">
-          <button class="mnav-btn" onclick="shiftWeek(-1)">‹</button>
-          <button class="mnav-btn" onclick="shiftWeek(1)">›</button>
-        </div>
+    <div class="dh-wrap">
+      <div class="dh-hdr">
+        <div class="dh-title" id="dh-title">기록</div>
+        <div class="dh-hint" id="dh-hint">← 좌우 스크롤</div>
       </div>
-      <div class="day-strip" id="day-strip"></div>
+      <div id="dh-scroll" class="dh-scroll" onscroll="dhOnScroll(this)">
+        <div id="dh-grid" class="dh-grid"></div>
+      </div>
       <div class="sel-day-label" id="sel-day-label" onclick="jumpToToday()" title="오늘로 돌아가기"></div>
     </div>
 
@@ -1258,17 +1216,6 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
       <div style="font-size:12px;color:var(--text2);margin-bottom:10px;font-weight:500;">고긴스 등급</div>
       <div id="tier-ladder"></div>
       <div class="next-hint" id="next-hint"></div>
-    </div>
-  </div>
-
-  <!-- ══ WEEKLY ══ -->
-  <div class="view" id="view-weekly">
-    <div class="wv-hdr">
-      <div class="wv-title">주간 기록</div>
-      <div style="font-size:11px;color:var(--text3);">← 스크롤로 이전 주 보기</div>
-    </div>
-    <div id="wv-scroll-outer" style="overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;position:relative;" onscroll="wvOnScroll(this)">
-      <div id="wv-grid" style="display:table;width:max-content;border-collapse:collapse;"></div>
     </div>
   </div>
 
@@ -2241,15 +2188,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
       </svg>
       <div>기록</div>
     </div>
-    <div class="bni" onclick="switchTab('weekly',1)">
-      <svg class="bni-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <rect x="4" y="6" width="16" height="14" rx="2"/>
-        <path d="M4 11h16M8 3v4M16 3v4"/>
-        <circle cx="12" cy="15" r="1.1" fill="currentColor" stroke="none"/>
-      </svg>
-      <div>주간</div>
-    </div>
-    <div class="bni" onclick="switchTab('stats',2)" style="position:relative;">
+    <div class="bni" onclick="switchTab('stats',1)" style="position:relative;">
       <svg class="bni-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
         <path d="M4 20h16"/>
         <path d="M7 20v-6"/>
@@ -2259,7 +2198,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
       <div>통계</div>
       <span id="nav-badge-stats" class="nav-badge-dot" style="display:none;"></span>
     </div>
-    <div class="bni" onclick="switchTab('competition',3)">
+    <div class="bni" onclick="switchTab('competition',2)">
       <svg class="bni-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
         <path d="M7 4h10v6a5 5 0 0 1-10 0V4z"/>
         <path d="M7 7H4v1a3 3 0 0 0 3 3"/>
@@ -4675,8 +4614,8 @@ const now=new Date();
 // dkey / normKey — moved to src/lib/date.js (Phase 1).
 // Available via window.dkey / window.normKey from /dist/app.js bundle (loaded in <head>).
 const TODAY=dkey(now);
-let sliderOffset=0,selectedDate=new Date(now),selectedKey=TODAY;
-// wvOffset / wvLogs — moved to src/features/weekly-view/index.js as module state.
+let selectedDate=new Date(now),selectedKey=TODAY;
+// Date heatmap state lives in src/features/date-heatmap/index.js (module-local).
 const logCache={};
 
 // Expose state to module bundle — modules (e.g. src/features/stats/) read
@@ -5080,7 +5019,6 @@ function goToYesterdayFromBanner(){
   const yesterday=new Date(now);
   yesterday.setDate(yesterday.getDate()-1);
   const yKey=dkey(yesterday);
-  sliderOffset=yesterday<weekStart(0)?-1:0;
   selectDay(yesterday,yKey);
 }
 let _loadingTimeout=null;
@@ -5499,7 +5437,6 @@ async function doSignOut(){
   Object.keys(logCache).forEach(k=>delete logCache[k]);
   log=emptyLog();
   selectedDate=new Date();selectedKey=TODAY;
-  sliderOffset=0;
   userRoutines=[];
   _compLastFetch=0;
   closeModal('profile-modal');
@@ -6636,7 +6573,7 @@ function switchTab(name,idx){
   const bnis=document.querySelectorAll('.bni');if(bnis[idx])bnis[idx].classList.add('active');
   // 탭 상단으로 스크롤 복귀 — 이전 탭 깊은 위치가 남아있어 새 탭 바닥에서 시작되는 현상 방지
   try{window.scrollTo({top:0,behavior:'instant'});}catch(e){window.scrollTo(0,0);}
-  if(name==='weekly'){renderWeeklyView();}
+  if(name==='routine'){try{if(typeof window.renderDateHeatmap==='function')window.renderDateHeatmap();}catch(e){console.warn('renderDateHeatmap on tab switch',e);}}
   if(name==='stats'){loadStatsTab();try{consumeNavBadge('stats');}catch(e){}}
   if(name==='competition'){renderChallengeHome();loadPushupChallenge();}
   if(name==='goggins')renderGogginsTab();
@@ -6806,35 +6743,18 @@ async function renderGogginsTab(){
   updateGogginsHeader();
 }
 
-// ── DAY SLIDER ──
-function weekStart(offset){const d=new Date(now);d.setDate(d.getDate()-((d.getDay()+6)%7)+offset*7);d.setHours(0,0,0,0);return d;}
+// ── DATE HEATMAP (replaces old day-slider) ──
+// Implementation lives in src/features/date-heatmap/index.js and is exposed
+// via window.buildHeatmapGrid / window.renderDateHeatmap. We keep
+// buildSlider() as a thin compatibility wrapper so existing callers
+// (selectDay, jumpToToday, etc.) don't need to change.
 function buildSlider(){
-  const strip=document.getElementById('day-strip');strip.innerHTML='';
-  const ws=weekStart(sliderOffset);
-  // Show month of the leftmost (first) date in the current week view
-  document.getElementById('slider-month').textContent=(ws.getMonth()+1)+'월 '+ws.getFullYear();
-  for(let i=0;i<7;i++){
-    const d=new Date(ws);d.setDate(ws.getDate()+i);
-    const k=dkey(d),isT=k===TODAY,isSel=k===selectedKey,isFut=d>now&&!isT;
-    const cached=logCache[k];
-    let dotColor='transparent';
-    if(isT&&!isSel)dotColor='var(--accent)';
-    if(cached&&!isFut){const hasMeals=(cached.meals||[]).filter(m=>m.type).length>0;const hasWo=(cached.workouts||[]).filter(w=>w.status==='done').length>0;const hasMand=(cached.mandatory||[]).filter(m=>m.done).length>0;if(hasMeals||hasWo||hasMand)dotColor='var(--green)';}
-    const wrap=document.createElement('div');wrap.className='day-pill-wrap';
-    const dayLabel=['월','화','수','목','금','토','일'][(d.getDay()+6)%7];
-    // Show month prefix if this date is in a different month than week start
-    const showMonth=d.getMonth()!==ws.getMonth();
-    const topLabel=showMonth?`<div class="dp-name" style="color:var(--accent);">${d.getMonth()+1}월</div>`:`<div class="dp-name">${dayLabel}</div>`;
-    wrap.innerHTML=`<div class="day-pill${isSel?' active':''}${showMonth?' month-change':''}">
-      ${topLabel}
-      <div class="dp-num">${d.getDate()}</div>
-      <div class="dp-dot" style="background:${dotColor};"></div>
-    </div>`;
-    wrap.onclick=()=>selectDay(d,k);
-    strip.appendChild(wrap);
-  }
+  try{
+    if(typeof window.buildHeatmapGrid==='function')window.buildHeatmapGrid();
+  }catch(e){console.warn('buildHeatmapGrid failed',e);}
   const d=selectedDate,isT=selectedKey===TODAY;
   const labelEl=document.getElementById('sel-day-label');
+  if(!labelEl)return;
   labelEl.textContent=(d.getMonth()+1)+'월 '+d.getDate()+'일 ('+['일','월','화','수','목','금','토'][d.getDay()]+')'+(isT?' — 오늘':'  ↩ 오늘로');
   labelEl.style.color=isT?'var(--text2)':'var(--accent)';
 }
@@ -6861,7 +6781,7 @@ async function selectDay(d,k){
   finally{hide('loading');buildSlider();renderRoutine();}
 }
 async function jumpToToday(){
-  const alreadyToday=selectedKey===TODAY;sliderOffset=0;
+  const alreadyToday=selectedKey===TODAY;
   if(alreadyToday){buildSlider();return;}
   selectedDate=new Date(now);selectedKey=TODAY;
   const cached=logCache[TODAY];
@@ -6876,8 +6796,7 @@ async function jumpToToday(){
 }
 async function jumpToDateFromWeekly(k,yr,mo,day){
   const d=new Date(yr,mo,day);switchTab('routine',0);
-  const diffDays=Math.floor((d-now)/(1000*60*60*24));
-  sliderOffset=Math.floor(diffDays/7);selectedDate=d;selectedKey=k;
+  selectedDate=d;selectedKey=k;
   const cached=logCache[k];
   if(cached){
     log=cached;buildSlider();renderRoutine();
@@ -6888,7 +6807,7 @@ async function jumpToDateFromWeekly(k,yr,mo,day){
   try{await loadLog(k);}catch(e){console.warn('loadLog failed',e);}
   finally{hide('loading');buildSlider();renderRoutine();}
 }
-function shiftWeek(dir){sliderOffset+=dir;buildSlider();}
+// shiftWeek removed — heatmap has native horizontal scroll.
 
 // ── RENDER ROUTINE ──
 function renderSummaryCard(){
@@ -7141,7 +7060,7 @@ function fwGotoWorkout(){
 }
 function fwGotoTargets(){
   try{track('fw_mission_click',{mission:'targets'});}catch(e){}
-  try{switchTab('weekly');}catch(e){}
+  try{switchTab('routine',0);}catch(e){}
 }
 function fwGotoPushup(){
   try{track('fw_mission_click',{mission:'pushup'});}catch(e){}
@@ -11930,23 +11849,7 @@ function _retrySync(){
 window.addEventListener('online',()=>_updateOffline(false));
 window.addEventListener('offline',()=>_updateOffline(true));
 
-// ── Day slider swipe ──
-(function(){
-  let _sx=0,_sy=0,_swiping=false;
-  document.addEventListener('DOMContentLoaded',()=>{
-    const strip=document.getElementById('day-strip');
-    if(!strip)return;
-    strip.addEventListener('touchstart',e=>{_sx=e.touches[0].clientX;_sy=e.touches[0].clientY;_swiping=true;},{passive:true});
-    strip.addEventListener('touchend',e=>{
-      if(!_swiping)return;_swiping=false;
-      const dx=e.changedTouches[0].clientX-_sx;
-      const dy=e.changedTouches[0].clientY-_sy;
-      if(Math.abs(dx)>50&&Math.abs(dx)>Math.abs(dy)*1.5){
-        if(dx<0)shiftWeek(1);else shiftWeek(-1);
-      }
-    },{passive:true});
-  });
-})();
+// Day slider swipe removed — heatmap uses native horizontal scroll (touch-pan).
 
 init();
 // 초기 로드 시 모든 slider 컴포넌트 setup (모달 안에 있어도 가능)
@@ -12894,27 +12797,6 @@ function _cvDoStop(){
 // ══════════════════════════════════════════════════
 </script>
 
-<!-- WEEKLY VIEW MINI MODAL -->
-<div id="wv-mini-modal">
-  <div class="wv-mm-label" id="wv-mm-label">목표 추가</div>
-  <input class="wv-mm-inp" id="wv-mm-inp" placeholder="입력하세요..." onkeydown="if(event.key==='Enter')wvMmSave();if(event.key==='Escape')wvMmClose();"/>
-  <div id="wv-mm-days" style="display:none;margin-bottom:6px;">
-    <div style="font-size:10px;color:var(--text2);margin-bottom:4px;">반복 요일</div>
-    <div style="display:flex;gap:4px;">
-      <div class="wv-day-pill on" onclick="wvToggleDay(this,0)">월</div>
-      <div class="wv-day-pill on" onclick="wvToggleDay(this,1)">화</div>
-      <div class="wv-day-pill on" onclick="wvToggleDay(this,2)">수</div>
-      <div class="wv-day-pill on" onclick="wvToggleDay(this,3)">목</div>
-      <div class="wv-day-pill on" onclick="wvToggleDay(this,4)">금</div>
-      <div class="wv-day-pill on" onclick="wvToggleDay(this,5)">토</div>
-      <div class="wv-day-pill on" onclick="wvToggleDay(this,6)">일</div>
-    </div>
-  </div>
-  <div class="wv-mm-btns">
-    <button class="wv-mm-save" onclick="wvMmSave()">저장</button>
-    <button class="wv-mm-cancel" onclick="wvMmClose()">취소</button>
-  </div>
-</div>
 <script>
 if('serviceWorker' in navigator){
   navigator.serviceWorker.getRegistrations().then(regs=>{regs.forEach(r=>r.unregister());});

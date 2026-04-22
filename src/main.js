@@ -23,7 +23,7 @@ import * as stats from './features/stats/index.js';
 import * as onboarding from './features/onboarding/index.js';
 import * as weight from './features/weight/index.js';
 import * as rewards from './features/rewards/index.js';
-import * as weeklyView from './features/weekly-view/index.js';
+import * as dateHeatmap from './features/date-heatmap/index.js';
 
 // Platform abstractions (web/iOS/Android unified APIs)
 import * as platform from './platform/platform.js';
@@ -35,7 +35,7 @@ Object.assign(
   window,
   date, tier, icons, env, analytics, mealPhoto, cheat, toast,
   scoreEvents, mottos, exercises, muscle, rewardMessages, pushupCV,
-  stats, onboarding, weight, rewards, weeklyView
+  stats, onboarding, weight, rewards, dateHeatmap
 );
 window.sb = sb;
 
