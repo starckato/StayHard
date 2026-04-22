@@ -3165,9 +3165,8 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
 </div>
 
 <script>
-const SB_URL='https://uvaosxhsjscigheyymus.supabase.co';
-const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV2YW9zeGhzanNjaWdoZXl5bXVzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1ODExNjQsImV4cCI6MjA5MDE1NzE2NH0.aS1ZxN0ds8CUs3q_dMTFlEwjvNFgCH7JwY-tg4q0NA8';
-const sb=supabase.createClient(SB_URL,SB_KEY);
+// SB_URL / SB_KEY / sb — moved to src/lib/env.js + src/lib/supabase.js (Phase 2.1).
+// window.sb / window.SB_URL / window.SB_KEY via bundle (loaded in <head> before inline scripts).
 
 // CATS — moved to src/data/exercises.js (Phase 1.3). window.CATS via bundle.
 
