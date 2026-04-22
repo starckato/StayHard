@@ -20,7 +20,7 @@
      so window globals (dkey, normKey, ...) are set before inline code runs.
      Query version bumps cache when bundle content changes. Bump manually or
      via build script when shipping a new bundle. See MIGRATION_PLAN.md. -->
-<script src="/dist/app.js?v=20260422f"></script>
+<script src="/dist/app.js?v=20260422g"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Archivo+Black&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -381,23 +381,21 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
 .wc-axis-date{color:var(--text3);font-size:9px;text-transform:uppercase;letter-spacing:.06em;}
 .wc-axis-val{color:var(--text2);font-size:11px;}
 
-.wc-goal{margin:4px 12px 0;padding:11px 12px;background:var(--surface2);border-radius:10px;display:flex;align-items:center;justify-content:space-between;gap:10px;}
-.wc-goal-info{flex:1;min-width:0;}
-.wc-goal-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;font-family:'DM Mono',monospace;font-weight:500;margin-bottom:3px;}
-.wc-goal-main{display:flex;align-items:baseline;gap:8px;font-family:'DM Mono',monospace;flex-wrap:wrap;}
-.wc-goal-target{font-size:14px;font-weight:600;color:var(--text);letter-spacing:-.01em;}
-.wc-goal-remain{font-size:11px;color:var(--text2);}
-.wc-goal-remain .ok{color:var(--green);}
-.wc-goal-btn{background:transparent;border:1px solid var(--border2);color:var(--text2);padding:5px 10px;border-radius:6px;font-size:10px;font-family:'DM Sans',sans-serif;font-weight:500;cursor:pointer;transition:all .15s;}
-.wc-goal-btn:active{background:var(--surface3);color:var(--text);}
+.wc-meta-goal{color:var(--text2);font-weight:500;}
+.wc-meta-goal.achieved{color:var(--green);}
+.wc-meta-goal.unset{color:var(--text3);font-style:italic;}
 
-.wc-actions{display:flex;gap:8px;padding:12px 12px 14px;}
-.wc-btn-primary{flex:1;background:var(--accent);color:#0a0a0b;border:none;padding:11px;border-radius:10px;font-size:13px;font-family:'DM Sans',sans-serif;font-weight:600;cursor:pointer;letter-spacing:-.01em;transition:opacity .15s;}
+.wc-actions{display:flex;gap:8px;padding:12px 12px 14px;align-items:stretch;}
+.wc-btn-primary{flex:1;background:var(--accent);color:#0a0a0b;border:none;padding:11px;border-radius:10px;font-size:13px;font-family:'DM Sans',sans-serif;font-weight:600;cursor:pointer;letter-spacing:-.01em;transition:opacity .15s;min-height:42px;}
 .wc-btn-primary:active{opacity:.85;}
 .wc-btn-primary.cta{background:var(--amber);color:#0a0a0b;}
 .wc-btn-primary.urgent{background:var(--red);color:#fff;}
-.wc-btn-ghost{background:transparent;color:var(--text2);border:1px solid var(--border2);padding:11px 13px;border-radius:10px;font-size:12px;font-family:'DM Sans',sans-serif;font-weight:500;cursor:pointer;white-space:nowrap;letter-spacing:-.01em;}
+.wc-btn-ghost{background:transparent;color:var(--text2);border:1px solid var(--border2);padding:11px 13px;border-radius:10px;font-size:12px;font-family:'DM Sans',sans-serif;font-weight:500;cursor:pointer;white-space:nowrap;letter-spacing:-.01em;min-height:42px;}
 .wc-btn-ghost:active{background:var(--surface2);color:var(--text);}
+.wc-btn-ghost.cta{color:var(--amber);border-color:rgba(245,158,11,.35);}
+.wc-btn-icon{width:42px;height:42px;flex-shrink:0;background:transparent;color:var(--text2);border:1px solid var(--border2);border-radius:10px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;padding:0;}
+.wc-btn-icon:active{background:var(--surface2);color:var(--text);}
+.wc-btn-icon svg{display:block;}
 
 /* WEIGHT */
 .wt-strip{display:flex;align-items:center;gap:10px;padding:12px 14px;}
@@ -1034,6 +1032,8 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
           <span id="wt-meta-status">기록 없음</span>
           <span id="wt-meta-sep" style="color:var(--text3);display:none;">·</span>
           <span class="delta" id="wt-meta-delta" style="display:none;"></span>
+          <span id="wt-meta-goal-sep" style="color:var(--text3);display:none;">·</span>
+          <span class="wc-meta-goal" id="wt-meta-goal" style="display:none;"></span>
         </div>
         <div class="wc-main">
           <div class="wc-weight" id="wt-weight-wrap">
@@ -1067,19 +1067,12 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
             </div>
           </div>
         </div>
-        <div class="wc-goal" id="wt-goal-row">
-          <div class="wc-goal-info">
-            <div class="wc-goal-label">Target</div>
-            <div class="wc-goal-main">
-              <span class="wc-goal-target" id="wt-goal-target">미설정</span>
-              <span class="wc-goal-remain" id="wt-goal-remain"></span>
-            </div>
-          </div>
-          <button class="wc-goal-btn" onclick="event.stopPropagation(); openWeightModal();">편집</button>
-        </div>
         <div class="wc-actions">
-          <button class="wc-btn-primary" id="wt-primary-btn" onclick="event.stopPropagation(); openWeightModal();">수정</button>
-          <button class="wc-btn-ghost" onclick="event.stopPropagation(); toggleWeightInfo();">측정 팁</button>
+          <button class="wc-btn-primary" id="wt-primary-btn" onclick="event.stopPropagation(); openWeightModal('weight');">수정</button>
+          <button class="wc-btn-ghost" id="wt-goal-btn" onclick="event.stopPropagation(); openWeightModal('goal');">목표 설정</button>
+          <button class="wc-btn-icon" id="wt-info-btn" onclick="event.stopPropagation(); toggleWeightInfo();" title="측정 팁" aria-label="측정 팁">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><circle cx="12" cy="8" r=".9" fill="currentColor"/></svg>
+          </button>
         </div>
         <div id="wt-info-panel" style="display:none;padding:10px 16px 14px;font-size:12px;color:var(--text2);line-height:1.6;border-top:1px solid var(--border);">
           🌅 <strong>정확한 체중 측정법</strong><br>
@@ -2448,10 +2441,10 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
 <div class="modal-overlay" id="weight-modal">
   <div class="modal">
     <div class="mhandle"></div>
-    <div class="mtitle">공복 체중 기록</div>
+    <div class="mtitle" id="wt-modal-title">공복 체중 기록</div>
 
     <!-- 체중 (tap-to-open) -->
-    <div class="mfield">
+    <div class="mfield" data-wt-field="weight">
       <label class="mlabel">체중 (kg) <span style="font-size:10px;font-weight:600;padding:1px 6px;border-radius:5px;background:rgba(255,77,77,.10);color:#ff4d4d;border:1px solid rgba(255,77,77,.18);">필수</span></label>
       <input type="hidden" id="wt-inp">
       <div class="pk-chip pk-chip--empty" data-pk-for="wt-inp" data-pk-title="체중" data-pk-min="30" data-pk-max="150" data-pk-step="0.1" data-pk-unit="kg" data-pk-default="70" onclick="_pkOpenFromChip(this)">
@@ -2462,8 +2455,8 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
     </div>
 
     <!-- 목표 체중 (tap-to-open) -->
-    <div class="mfield">
-      <label class="mlabel">목표 체중 (kg) <span style="font-weight:400;color:var(--text3);font-size:11px;text-transform:none;letter-spacing:0;">선택사항</span></label>
+    <div class="mfield" data-wt-field="goal">
+      <label class="mlabel">목표 체중 (kg) <span id="wt-goal-label-hint" style="font-weight:400;color:var(--text3);font-size:11px;text-transform:none;letter-spacing:0;">선택사항</span></label>
       <input type="hidden" id="wt-goal-inp">
       <div class="pk-chip pk-chip--empty" data-pk-for="wt-goal-inp" data-pk-title="목표 체중" data-pk-min="40" data-pk-max="120" data-pk-step="0.1" data-pk-unit="kg" data-pk-default="65" onclick="_pkOpenFromChip(this)">
         <div class="pk-chip-left"><span class="pk-chip-val">—</span><span class="pk-chip-unit">kg</span></div>
