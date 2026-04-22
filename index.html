@@ -20,7 +20,7 @@
      so window globals (dkey, normKey, ...) are set before inline code runs.
      Query version bumps cache when bundle content changes. Bump manually or
      via build script when shipping a new bundle. See MIGRATION_PLAN.md. -->
-<script src="/dist/app.js?v=20260422g"></script>
+<script src="/dist/app.js?v=20260422h"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Archivo+Black&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -396,6 +396,78 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
 .wc-btn-icon{width:42px;height:42px;flex-shrink:0;background:transparent;color:var(--text2);border:1px solid var(--border2);border-radius:10px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;padding:0;}
 .wc-btn-icon:active{background:var(--surface2);color:var(--text);}
 .wc-btn-icon svg{display:block;}
+
+/* ── FOOD CARD v2 (accordion + restructured slots) ────────────────── */
+.s-card.food-v2{margin:0 14px 8px;}
+.s-card.food-v2 .cc-summary-chips{display:inline-flex;align-items:center;gap:5px;flex-wrap:nowrap;overflow:hidden;}
+.q-chip{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:100px;font-size:11px;font-weight:600;font-family:'DM Mono',monospace;letter-spacing:0;line-height:1.4;}
+.q-chip.clean{background:var(--green-bg);color:var(--green);}
+.q-chip.normal{background:rgba(161,161,170,.10);color:var(--text2);}
+.q-chip.bad{background:var(--red-bg);color:var(--red);}
+.q-chip .n{font-weight:700;}
+.water-mini{display:inline-flex;align-items:center;gap:3px;color:#60a5fa;font-family:'DM Mono',monospace;font-weight:600;font-size:11px;}
+.water-mini.done{color:var(--green);}
+.summary-cta{color:var(--accent);font-weight:600;}
+
+.food-body-meta{padding:12px 16px 4px;display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.food-cheat-badge{display:inline-flex;align-items:center;gap:5px;padding:4px 9px;border-radius:100px;font-size:10px;font-weight:600;background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-bd);cursor:pointer;touch-action:manipulation;}
+.food-cheat-badge.used-up{background:var(--red-bg);color:var(--red);border-color:var(--red-bd);}
+.food-count{font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;font-weight:500;}
+.food-count .n{color:var(--text);font-weight:600;}
+
+.meal-slot-list{padding:6px 14px 4px;display:flex;flex-direction:column;gap:6px;}
+.slot-empty{display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;cursor:pointer;transition:all .15s;touch-action:manipulation;}
+.slot-empty:active{background:var(--surface3);}
+.slot-empty.now{border-color:var(--accent-bd);background:rgba(255,77,77,.06);}
+.slot-empty.now:active{background:rgba(255,77,77,.12);}
+.slot-empty-icon{width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;color:var(--text3);flex-shrink:0;font-size:15px;}
+.slot-empty.now .slot-empty-icon{color:var(--accent);}
+.slot-empty-label{font-size:13px;color:var(--text2);font-weight:500;flex:1;letter-spacing:-.01em;}
+.slot-empty.now .slot-empty-label{color:var(--text);}
+.slot-now-tag{font-size:10px;color:var(--accent);font-weight:600;font-family:'DM Mono',monospace;padding:2px 6px;background:var(--accent-bg);border-radius:4px;letter-spacing:-.01em;}
+.slot-empty-arrow{color:var(--text3);flex-shrink:0;font-size:14px;opacity:.6;}
+
+.slot-filled{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;cursor:pointer;transition:all .15s;position:relative;overflow:hidden;touch-action:manipulation;}
+.slot-filled:active{background:var(--surface3);}
+.slot-filled.clean{border-left:3px solid var(--green);}
+.slot-filled.normal{border-left:3px solid var(--text3);}
+.slot-filled.bad,.slot-filled.alcohol{border-left:3px solid var(--red);}
+.slot-filled.cheat{border-left:3px solid var(--amber);}
+.slot-thumb{width:40px;height:40px;border-radius:6px;background:var(--surface3);display:inline-flex;align-items:center;justify-content:center;color:var(--text3);flex-shrink:0;overflow:hidden;font-size:16px;}
+.slot-thumb img{width:100%;height:100%;object-fit:cover;display:block;}
+.slot-body{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;}
+.slot-meta-row{display:flex;align-items:center;gap:6px;}
+.slot-meta-slot{color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.06em;font-family:'DM Mono',monospace;font-size:9px;}
+.slot-name{font-size:13px;color:var(--text);font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:-.01em;}
+.slot-name.empty{color:var(--text3);font-style:italic;font-weight:400;font-size:11px;}
+.slot-quality{display:inline-flex;align-items:center;padding:2px 6px;border-radius:4px;font-size:9px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;font-family:'DM Mono',monospace;flex-shrink:0;line-height:1.3;}
+.slot-quality.green,.slot-quality.clean{background:var(--green-bg);color:var(--green);}
+.slot-quality.normal{background:rgba(161,161,170,.10);color:var(--text2);}
+.slot-quality.cheat{background:var(--amber-bg);color:var(--amber);}
+.slot-quality.red,.slot-quality.bad{background:var(--red-bg);color:var(--red);}
+.slot-quality.alcohol{background:var(--red-bg);color:var(--red);}
+.slot-score{font-size:12px;font-weight:600;font-family:'DM Mono',monospace;letter-spacing:-.01em;flex-shrink:0;min-width:32px;text-align:right;}
+.slot-score.pos{color:var(--green);}
+.slot-score.neg{color:var(--red);}
+.slot-score.zero{color:var(--text3);}
+.slot-delete{width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;background:transparent;border:none;color:var(--text3);cursor:pointer;border-radius:4px;flex-shrink:0;font-size:12px;line-height:1;}
+.slot-delete:active{background:var(--surface3);color:var(--red);}
+
+.snack-divider{display:flex;align-items:center;gap:8px;padding:12px 16px 6px;margin-top:4px;}
+.snack-divider-line{flex:1;height:1px;background:var(--border);}
+.snack-divider-label{font-size:9px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.12em;font-family:'DM Mono',monospace;}
+
+.food-add-btn{margin:6px 14px 0;padding:11px 14px;background:transparent;border:1px dashed var(--border2);border-radius:10px;display:flex;align-items:center;justify-content:center;gap:6px;color:var(--text3);font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;cursor:pointer;transition:all .15s;letter-spacing:-.01em;width:calc(100% - 28px);touch-action:manipulation;}
+.food-add-btn:active{border-color:var(--accent-bd);color:var(--accent);background:var(--accent-bg);}
+
+/* Water section nested inside food body — keeps the existing water-cup
+   children and renderWater() logic intact. Just wraps the header+cups
+   in a surface-2 block per the v2 reference layout. */
+.food-water-section{margin:14px 14px 14px;padding:12px 14px 14px;background:var(--surface2);border-radius:10px;border:1px solid var(--border);}
+.food-water-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;gap:8px;}
+.food-water-hdr-left{display:flex;align-items:center;gap:8px;}
+.food-water-label{font-size:12px;font-weight:600;color:var(--text);letter-spacing:-.01em;}
+.food-water-meta{display:flex;align-items:center;gap:6px;}
 
 /* WEIGHT */
 .wt-strip{display:flex;align-items:center;gap:10px;padding:12px 14px;}
@@ -1082,47 +1154,55 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
       </div>
     </div>
 
-    <!-- 식단 카드 -->
-    <div class="s-card">
-      <div class="s-card-hdr">
-        <div class="s-card-title"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20C4 10 10 4 20 4c0 10-6 16-16 16z"/><path d="M4 20L13 11"/></svg>식단</div>
-        <div style="display:flex;align-items:center;gap:6px;">
-          <div id="cheat-quota-badge" style="display:none;font-size:11px;font-weight:600;padding:3px 8px;border-radius:10px;background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-bd);cursor:pointer;" onclick="openCheatSettings()"></div>
-          <div class="s-badge" id="diet-badge">0끼 기록</div>
+    <!-- 식단 카드 v2 (accordion + nested water) -->
+    <div class="s-card accordion food-v2 expanded" id="food-card">
+      <div class="card-collapsed" onclick="toggleFoodCard()">
+        <div class="card-collapsed-left">
+          <span class="cc-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20C4 10 10 4 20 4c0 10-6 16-16 16z"/><path d="M4 20L13 11"/></svg></span>
+          <span class="cc-title">식단</span>
         </div>
-      </div>
-      <div class="s-divider"></div>
-      <div class="meal-rows" id="meal-rows"></div>
-    </div>
-
-    <!-- 💧 물 카드 (식단에서 분리됨) -->
-    <div class="s-card">
-      <div class="s-card-hdr">
-        <div class="s-card-title"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3s7 7 7 12a7 7 0 0 1-14 0c0-5 7-12 7-12z"/></svg>물</div>
-        <div style="display:flex;align-items:center;gap:8px;">
-          <div class="s-badge" id="water-val"></div>
-          <button onclick="toggleWaterGoalPanel()" id="water-gear-btn" style="background:none;border:none;cursor:pointer;font-size:14px;color:var(--text3);padding:4px;touch-action:manipulation;" title="물 목표 설정">⚙️</button>
+        <div class="cc-summary" id="food-summary">
+          <span class="summary-cta">끼니 기록하기 →</span>
         </div>
+        <span class="cc-chevron">▾</span>
       </div>
-      <div class="s-divider"></div>
-      <div style="padding:12px 16px 14px;">
-        <div class="water-cups" id="water-cups" style="display:flex;gap:4px;flex-wrap:nowrap;overflow:hidden;"></div>
-      </div>
-      <div id="water-goal-panel" style="display:none;padding:10px 14px 14px;border-top:1px solid var(--border);animation:fadeIn .15s ease;">
-        <div style="font-size:10px;color:var(--text3);margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em;">하루 물 목표</div>
-        <div style="display:flex;gap:5px;flex-wrap:wrap;">
-          <div id="wg-btn-1" onclick="setWaterGoal(1)" class="wg-btn">0.5L</div>
-          <div id="wg-btn-2" onclick="setWaterGoal(2)" class="wg-btn">1.0L</div>
-          <div id="wg-btn-3" onclick="setWaterGoal(3)" class="wg-btn">1.5L</div>
-          <div id="wg-btn-4" onclick="setWaterGoal(4)" class="wg-btn">2.0L</div>
-          <div id="wg-btn-5" onclick="setWaterGoal(5)" class="wg-btn">2.5L</div>
-          <div id="wg-btn-6" onclick="setWaterGoal(6)" class="wg-btn">3.0L</div>
-          <div id="wg-btn-7" onclick="setWaterGoal(7)" class="wg-btn">3.5L</div>
-          <div id="wg-btn-8" onclick="setWaterGoal(8)" class="wg-btn">4.0L</div>
-          <div id="wg-btn-9" onclick="setWaterGoal(9)" class="wg-btn">4.5L</div>
-          <div id="wg-btn-10" onclick="setWaterGoal(10)" class="wg-btn">5.0L</div>
-          <div id="wg-btn-11" onclick="setWaterGoal(11)" class="wg-btn">5.5L</div>
-          <div id="wg-btn-12" onclick="setWaterGoal(12)" class="wg-btn">6.0L</div>
+      <div class="card-body">
+        <div class="food-body-meta">
+          <div id="cheat-quota-badge" class="food-cheat-badge" style="display:none;" onclick="event.stopPropagation(); openCheatSettings();"></div>
+          <div class="food-count"><span class="n" id="diet-count">0</span>끼 기록</div>
+        </div>
+        <div class="meal-slot-list" id="meal-rows"></div>
+        <!-- Water nested inside food body — uses existing IDs so renderWater(),
+             setWaterGoal(), toggleWaterGoalPanel() keep working unchanged. -->
+        <div class="food-water-section">
+          <div class="food-water-hdr">
+            <div class="food-water-hdr-left">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#60a5fa" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3s7 7 7 12a7 7 0 0 1-14 0c0-5 7-12 7-12z"/></svg>
+              <span class="food-water-label">물</span>
+            </div>
+            <div class="food-water-meta">
+              <div class="s-badge" id="water-val"></div>
+              <button onclick="event.stopPropagation(); toggleWaterGoalPanel();" id="water-gear-btn" style="background:none;border:none;cursor:pointer;font-size:14px;color:var(--text3);padding:4px;touch-action:manipulation;" title="물 목표 설정">⚙️</button>
+            </div>
+          </div>
+          <div class="water-cups" id="water-cups" style="display:flex;gap:4px;flex-wrap:nowrap;overflow:hidden;"></div>
+          <div id="water-goal-panel" style="display:none;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);animation:fadeIn .15s ease;">
+            <div style="font-size:10px;color:var(--text3);margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em;">하루 물 목표</div>
+            <div style="display:flex;gap:5px;flex-wrap:wrap;">
+              <div id="wg-btn-1" onclick="setWaterGoal(1)" class="wg-btn">0.5L</div>
+              <div id="wg-btn-2" onclick="setWaterGoal(2)" class="wg-btn">1.0L</div>
+              <div id="wg-btn-3" onclick="setWaterGoal(3)" class="wg-btn">1.5L</div>
+              <div id="wg-btn-4" onclick="setWaterGoal(4)" class="wg-btn">2.0L</div>
+              <div id="wg-btn-5" onclick="setWaterGoal(5)" class="wg-btn">2.5L</div>
+              <div id="wg-btn-6" onclick="setWaterGoal(6)" class="wg-btn">3.0L</div>
+              <div id="wg-btn-7" onclick="setWaterGoal(7)" class="wg-btn">3.5L</div>
+              <div id="wg-btn-8" onclick="setWaterGoal(8)" class="wg-btn">4.0L</div>
+              <div id="wg-btn-9" onclick="setWaterGoal(9)" class="wg-btn">4.5L</div>
+              <div id="wg-btn-10" onclick="setWaterGoal(10)" class="wg-btn">5.0L</div>
+              <div id="wg-btn-11" onclick="setWaterGoal(11)" class="wg-btn">5.5L</div>
+              <div id="wg-btn-12" onclick="setWaterGoal(12)" class="wg-btn">6.0L</div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -7137,9 +7217,8 @@ function renderMeals(){
   const slotKeys=['아침','점심','저녁'];
   const slotMeals=meals.filter(m=>m.type&&slotKeys.includes(m.time));
   const logged=slotMeals.length;
-  const b=document.getElementById('diet-badge');
-  b.textContent=logged+'끼 기록';
-  b.className='s-badge '+(logged>=3?'green':'');
+  const cntEl=document.getElementById('diet-count');
+  if(cntEl)cntEl.textContent=logged;
 
   const h=new Date().getHours();
   const curSlot=h>=5&&h<=10?'아침':h>=11&&h<=14?'점심':h>=18&&h<=22?'저녁':null;
@@ -7150,103 +7229,130 @@ function renderMeals(){
   // extras: 간식/음료/술안주
   const extras=meals.map((m,i)=>({...m,_idx:i})).filter(m=>!slotKeys.includes(m.time));
 
-  const SLOTS=[{key:'아침',icon:'🌅'},{key:'점심',icon:'☀️'},{key:'저녁',icon:'🌙'}];
-  const qualityLabel={green:'✅ 클린',normal:'🍚 일반',cheat:'🎉 치팅',red:'🚫 금지',alcohol:'🍺 음주'};
+  const SLOTS=[
+    {key:'아침',icon:'🌅',tag:'AM'},
+    {key:'점심',icon:'☀️',tag:'NOON'},
+    {key:'저녁',icon:'🌙',tag:'PM'}
+  ];
+  const qualityLabel={green:'클린',normal:'일반',cheat:'치팅',red:'금지',alcohol:'음주'};
   const qualityScore={green:'+15',normal:'+5',cheat:'±0',red:'−30',alcohol:'−30'};
-  const qualityScoreCls={green:'',normal:'neutral',cheat:'neutral',red:'neg',alcohol:'neg'};
+  const qualityScoreCls={green:'pos',normal:'zero',cheat:'zero',red:'neg',alcohol:'neg'};
+  const qualityClass={green:'clean',normal:'normal',cheat:'cheat',red:'bad',alcohol:'alcohol'};
 
-  function mealPhotoHtml(photo){
-    if(!photo)return`<div class="meal-item-photo"><div class="meal-item-photo-placeholder">🍽️</div></div>`;
-    // base64 camera preview (pre-upload) — 즉시 표시
+  function thumbHtml(photo,fallback){
+    if(!photo)return`<span class="slot-thumb">${fallback||'🍽️'}</span>`;
     if(typeof photo==='string'&&photo.startsWith('data:')){
-      return`<div class="meal-item-photo"><img src="${esc(photo)}" loading="lazy"></div>`;
-    }
-    // path or legacy URL — async hydration 후 src 채워짐
-    const path=_mealPhotoPath(photo);
-    if(!path)return`<div class="meal-item-photo"><div class="meal-item-photo-placeholder">🍽️</div></div>`;
-    // 캐시 hit 이면 바로 src 부여, 아니면 placeholder (hydrate 이 async 로 채움)
-    const cached=_mealPhotoSignedCache[path];
-    if(cached&&cached.expires>Date.now()){
-      return`<div class="meal-item-photo"><img data-meal-photo="${esc(path)}" data-hydrated="1" src="${esc(cached.url)}" loading="lazy"></div>`;
-    }
-    return`<div class="meal-item-photo"><img data-meal-photo="${esc(path)}" src="" loading="lazy" style="opacity:0;transition:opacity .25s;background:var(--surface2);"></div>`;
-  }
-  function snackPhotoHtml(photo,icon){
-    if(!photo)return`<div class="snack-item-photo">${icon}</div>`;
-    if(typeof photo==='string'&&photo.startsWith('data:')){
-      return`<div class="snack-item-photo"><img src="${esc(photo)}" loading="lazy"></div>`;
+      return`<span class="slot-thumb"><img src="${esc(photo)}" loading="lazy"></span>`;
     }
     const path=_mealPhotoPath(photo);
-    if(!path)return`<div class="snack-item-photo">${icon}</div>`;
+    if(!path)return`<span class="slot-thumb">${fallback||'🍽️'}</span>`;
     const cached=_mealPhotoSignedCache[path];
     if(cached&&cached.expires>Date.now()){
-      return`<div class="snack-item-photo"><img data-meal-photo="${esc(path)}" data-hydrated="1" src="${esc(cached.url)}" loading="lazy"></div>`;
+      return`<span class="slot-thumb"><img data-meal-photo="${esc(path)}" data-hydrated="1" src="${esc(cached.url)}" loading="lazy"></span>`;
     }
-    return`<div class="snack-item-photo"><img data-meal-photo="${esc(path)}" src="" loading="lazy" style="opacity:0;transition:opacity .25s;"></div>`;
+    return`<span class="slot-thumb"><img data-meal-photo="${esc(path)}" src="" loading="lazy" style="opacity:0;transition:opacity .25s;"></span>`;
   }
 
-  // 슬롯 HTML
-  const slotsHtml=SLOTS.map(({key,icon})=>{
+  // 주요 끼니 슬롯 HTML
+  const slotsHtml=SLOTS.map(({key,icon,tag})=>{
     const m=slotMap[key];
     if(m){
-      const qCls=m.type||'normal';
+      const qCls=qualityClass[m.type]||'normal';
       const scoreVal=qualityScore[m.type]||'';
-      const scoreCls=qualityScoreCls[m.type]||'';
-      return`<div class="meal-item" onclick="openEditMealModal(${m._idx})">
-        ${mealPhotoHtml(m.photo)}
-        <div class="meal-item-info">
-          <div class="meal-item-time">${icon} ${key}</div>
-          <div class="meal-item-name${m.name?'':' empty'}">${m.name||'탭하여 수정'}</div>
-          ${m.type?`<div class="meal-quality-pill ${qCls}">${qualityLabel[m.type]||m.type}</div>`:''}
+      const scoreCls=qualityScoreCls[m.type]||'zero';
+      return`<div class="slot-filled ${qCls}" onclick="openEditMealModal(${m._idx})">
+        ${thumbHtml(m.photo,icon)}
+        <div class="slot-body">
+          <div class="slot-meta-row"><span class="slot-meta-slot">${tag} · ${key}</span></div>
+          <div class="slot-name${m.name?'':' empty'}">${esc(m.name||'탭하여 수정')}</div>
         </div>
-        <div class="meal-item-right">
-          <button class="meal-item-delete" onclick="event.stopPropagation();deleteMeal(${m._idx})">✕</button>
-          ${m.type?`<div class="meal-item-score ${scoreCls}">${scoreVal}</div>`:''}
-        </div>
-      </div>`;
-    } else {
-      const hl=curSlot===key;
-      return`<div class="meal-empty-slot${hl?' highlight':''}" onclick="openSlotModal('${key}')">
-        <span class="meal-empty-slot-icon">${icon}</span>
-        <span class="meal-empty-slot-text">${key} 기록하기</span>
-        ${hl
-          ? `<span class="meal-empty-slot-hint">지금 ↗</span>`
-          : `<span class="meal-empty-slot-arrow">›</span>`
-        }
+        ${m.type?`<span class="slot-quality ${qCls}">${qualityLabel[m.type]||m.type}</span>`:''}
+        ${scoreVal?`<span class="slot-score ${scoreCls}">${scoreVal}</span>`:''}
+        <button class="slot-delete" onclick="event.stopPropagation();deleteMeal(${m._idx})" aria-label="삭제">✕</button>
       </div>`;
     }
+    const hl=curSlot===key;
+    return`<div class="slot-empty${hl?' now':''}" onclick="openSlotModal('${key}')">
+      <span class="slot-empty-icon">${icon}</span>
+      <span class="slot-empty-label">${key} 기록하기</span>
+      ${hl?`<span class="slot-now-tag">지금</span>`:''}
+      <span class="slot-empty-arrow">›</span>
+    </div>`;
   }).join('');
 
-  // 간식/음료/술안주 HTML
+  // 간식/음료/술안주 — 동일 .slot-filled 구조로
   let extrasHtml='';
   if(extras.length>0){
-    extrasHtml+=`<div class="meal-section-divider"><div class="meal-section-divider-line"></div><div class="meal-section-divider-text">간식 · 음료 · 기타</div><div class="meal-section-divider-line"></div></div>`;
+    extrasHtml+=`<div class="snack-divider"><div class="snack-divider-line"></div><span class="snack-divider-label">간식 · 음료 · 기타</span><div class="snack-divider-line"></div></div>`;
+    extrasHtml+=`<div class="meal-slot-list">`;
     extrasHtml+=extras.map(m=>{
       const catIcon=m.category==='snack'?'🍰':m.category==='drink'?'☕':m.category==='alcohol'?'🍺':'🍽️';
-      const catLabel=m.category==='snack'?'간식':m.category==='latenight'?'야식':m.category==='drink'?'음료':m.category==='alcohol'?'술·안주':'기타';
-      const qPillCls=m.category==='alcohol'?'alcohol':(m.type||'normal');
-      const qPillText=m.category==='alcohol'?'🍺 음주':(qualityLabel[m.type]||m.type||'');
-      return`<div class="snack-item" onclick="openEditMealModal(${m._idx})">
-        ${snackPhotoHtml(m.photo,catIcon)}
-        <div class="snack-item-info">
-          <div class="snack-item-name">${m.name||catLabel}</div>
-          <div class="snack-item-sub">${catIcon} ${catLabel}${m.type&&m.category!=='alcohol'?' · '+(qualityLabel[m.type]||m.type):''}</div>
+      const catLabel=m.category==='snack'?'SNACK':m.category==='latenight'?'LATE':m.category==='drink'?'DRINK':m.category==='alcohol'?'ALC':'OTHER';
+      const qCls=m.category==='alcohol'?'alcohol':(qualityClass[m.type]||'normal');
+      const qPill=m.category==='alcohol'?'음주':(qualityLabel[m.type]||'');
+      const scoreVal=m.category==='alcohol'?'−30':(qualityScore[m.type]||'');
+      const scoreCls=m.category==='alcohol'?'neg':(qualityScoreCls[m.type]||'zero');
+      return`<div class="slot-filled ${qCls}" onclick="openEditMealModal(${m._idx})">
+        ${thumbHtml(m.photo,catIcon)}
+        <div class="slot-body">
+          <div class="slot-meta-row"><span class="slot-meta-slot">${catLabel}</span></div>
+          <div class="slot-name${m.name?'':' empty'}">${esc(m.name||'탭하여 수정')}</div>
         </div>
-        ${qPillText?`<div class="meal-quality-pill ${qPillCls}" style="font-size:9px;">${qPillText}</div>`:''}
-        <button class="snack-item-delete" onclick="event.stopPropagation();deleteMeal(${m._idx})">✕</button>
+        ${qPill?`<span class="slot-quality ${qCls}">${qPill}</span>`:''}
+        ${scoreVal?`<span class="slot-score ${scoreCls}">${scoreVal}</span>`:''}
+        <button class="slot-delete" onclick="event.stopPropagation();deleteMeal(${m._idx})" aria-label="삭제">✕</button>
       </div>`;
     }).join('');
+    extrasHtml+=`</div>`;
   }
 
-  const addBtn=`<div class="add-snack-btn" onclick="openSnackModal()">
-    <span style="font-size:14px;color:var(--text2);">＋</span>
-    <span class="add-snack-btn-text">간식 / 음료 / 술 / 안주 추가</span>
-    <span style="font-size:12px;color:var(--text3);margin-left:auto;">›</span>
-  </div>`;
+  const addBtn=`<button class="food-add-btn" onclick="openSnackModal()">
+    <span style="font-size:14px;">＋</span>
+    간식 / 음료 / 술 / 안주 추가
+  </button>`;
 
   document.getElementById('meal-rows').innerHTML=slotsHtml+extrasHtml+addBtn;
-  // private bucket — signed URL async hydration (fire-and-forget)
+
+  // Collapsed header summary: quality chips + water mini (or CTA if empty)
+  renderFoodSummary(logged,extras);
+
   try{_hydrateMealPhotos();}catch(e){console.warn('[hydrate-meal]',e);}
+}
+
+function renderFoodSummary(loggedSlots,extras){
+  const sum=document.getElementById('food-summary');
+  if(!sum)return;
+  const meals=log.meals||[];
+  const all=meals.filter(m=>m.type);
+  const cleanN=all.filter(m=>m.type==='green').length;
+  const normalN=all.filter(m=>m.type==='normal'||m.type==='cheat').length;
+  const badN=all.filter(m=>m.type==='red'||m.type==='alcohol').length;
+
+  const waterCur=log.water_cups||0;
+  const waterGoal=(window.CP&&CP.water_goal)||4;
+  const waterDone=waterCur>=waterGoal;
+
+  if(all.length===0){
+    const h=new Date().getHours();
+    const curSlot=h>=5&&h<=10?'아침':h>=11&&h<=14?'점심':h>=18&&h<=22?'저녁':'끼니';
+    sum.innerHTML=`<span class="summary-cta">${curSlot} 기록하기 →</span>`;
+    return;
+  }
+  const chips=[];
+  if(cleanN)chips.push(`<span class="q-chip clean"><span class="n">${cleanN}</span>클린</span>`);
+  if(normalN)chips.push(`<span class="q-chip normal"><span class="n">${normalN}</span>일반</span>`);
+  if(badN)chips.push(`<span class="q-chip bad"><span class="n">${badN}</span>금지</span>`);
+  const waterHtml=waterDone
+    ?`<span class="water-mini done">💧 ${waterCur}/${waterGoal} ✓</span>`
+    :`<span class="water-mini">💧 ${waterCur}/${waterGoal}</span>`;
+  sum.innerHTML=`<span class="cc-summary-chips">${chips.join(' ')}</span><span class="sep">·</span>${waterHtml}`;
+}
+
+function toggleFoodCard(){
+  const card=document.getElementById('food-card');
+  if(!card)return;
+  card.classList.toggle('expanded');
+  try{window.sh?.haptics?.tap('light');}catch{}
 }
 
 async function deleteMeal(i){
@@ -7778,19 +7884,9 @@ function renderCheatBadge(){
   const used=getCheatUsed();
   const remaining=Math.max(0,quota-used);
   badge.style.display='inline-flex';
-  badge.style.alignItems='center';
-  badge.style.padding='3px 8px';
-  if(remaining<=0){
-    badge.style.background='var(--red-bg)';
-    badge.style.border='1px solid var(--red-bd)';
-    badge.style.color='var(--red)';
-    badge.innerHTML='치팅 초과';
-  } else {
-    badge.style.background='var(--amber-bg)';
-    badge.style.border='1px solid var(--amber-bd)';
-    badge.style.color='var(--amber)';
-    badge.innerHTML='치팅 '+remaining+'회 남음';
-  }
+  // Class-based styling; CSS (.food-cheat-badge / .used-up) drives colors.
+  badge.className='food-cheat-badge'+(remaining<=0?' used-up':'');
+  badge.textContent=remaining<=0?'치팅 초과':'치팅 '+remaining+'회 남음';
 }
 
 function openCheatSettings(){
@@ -8039,6 +8135,8 @@ function renderWater(){
   // Tint the gear button when goal is met
   const gear=document.getElementById('water-gear-btn');
   if(gear)gear.style.color=met?'var(--blue)':'var(--text3)';
+  // Keep the food card's collapsed summary in sync with water changes
+  try{renderFoodSummary();}catch(e){}
 }
 
 // ══════════════════════════════════════════════
