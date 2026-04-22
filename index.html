@@ -20,7 +20,7 @@
      so window globals (dkey, normKey, ...) are set before inline code runs.
      Query version bumps cache when bundle content changes. Bump manually or
      via build script when shipping a new bundle. See MIGRATION_PLAN.md. -->
-<script src="/dist/app.js?v=20260422i"></script>
+<script src="/dist/app.js?v=20260423a"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Archivo+Black&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -1207,20 +1207,29 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
       </div>
     </div>
 
-    <div class="s-card">
-      <div class="s-card-hdr">
-        <div class="s-card-title"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10v4M7 7v10M17 7v10M21 10v4"/><path d="M7 12h10"/></svg>운동</div>
-        <div class="s-badge" id="wo-badge">오늘 없음</div>
-      </div>
-      <div class="workout-rows" id="workout-rows"></div>
-      <div style="display:flex;gap:8px;margin:8px 12px 12px;">
-        <div id="wo-add-cta" onclick="openWorkoutStartScreen()" style="flex:1;display:flex;align-items:center;justify-content:center;gap:8px;padding:14px;background:linear-gradient(135deg,rgba(255,77,77,.10),rgba(255,77,77,.08));border:1px solid rgba(255,77,77,.25);border-radius:10px;cursor:pointer;touch-action:manipulation;">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          <span id="wo-add-cta-lbl" style="font-size:14px;font-weight:700;color:var(--accent);">운동 추가</span>
+    <!-- 운동 카드 v2 (accordion) -->
+    <div class="s-card accordion" id="workout-card">
+      <div class="card-collapsed" onclick="toggleWorkoutCard()">
+        <div class="card-collapsed-left">
+          <span class="cc-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10v4M7 7v10M17 7v10M21 10v4"/><path d="M7 12h10"/></svg></span>
+          <span class="cc-title">운동</span>
         </div>
-        <div onclick="openMuscleMap()" style="display:flex;align-items:center;justify-content:center;gap:6px;padding:14px 16px;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;cursor:pointer;touch-action:manipulation;">
-          <span style="font-size:14px;">💥</span>
-          <span style="font-size:12px;font-weight:600;color:var(--text2);">자극 부위</span>
+        <div class="cc-summary" id="workout-summary">
+          <span class="summary-cta">운동 추가하기 →</span>
+        </div>
+        <span class="cc-chevron">▾</span>
+      </div>
+      <div class="card-body">
+        <div class="workout-rows" id="workout-rows"></div>
+        <div style="display:flex;gap:8px;margin:8px 12px 12px;">
+          <div id="wo-add-cta" onclick="event.stopPropagation(); openWorkoutStartScreen();" style="flex:1;display:flex;align-items:center;justify-content:center;gap:8px;padding:12px;background:linear-gradient(135deg,rgba(255,77,77,.10),rgba(255,77,77,.08));border:1px solid rgba(255,77,77,.25);border-radius:10px;cursor:pointer;touch-action:manipulation;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            <span id="wo-add-cta-lbl" style="font-size:13px;font-weight:700;color:var(--accent);">운동 추가</span>
+          </div>
+          <div onclick="event.stopPropagation(); openMuscleMap();" style="display:flex;align-items:center;justify-content:center;gap:6px;padding:12px 14px;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;cursor:pointer;touch-action:manipulation;">
+            <span style="font-size:13px;">💥</span>
+            <span style="font-size:12px;font-weight:600;color:var(--text2);">자극 부위</span>
+          </div>
         </div>
       </div>
     </div>
@@ -7356,6 +7365,46 @@ function toggleFoodCard(){
   card.classList.toggle('expanded');
 }
 
+function toggleWorkoutCard(){
+  if(typeof window.setExclusiveCard==='function'){window.setExclusiveCard('workout-card');return;}
+  const card=document.getElementById('workout-card');
+  if(!card)return;
+  card.classList.toggle('expanded');
+}
+
+// Summary for the collapsed workout header. Priority: strength volume >
+// cardio distance > sport/recovery duration. Shows at most two KPIs.
+function renderWorkoutSummary(){
+  const sum=document.getElementById('workout-summary');
+  if(!sum)return;
+  const workouts=(log.workouts||[]).filter(w=>w.status==='done');
+  if(workouts.length===0){
+    sum.innerHTML='<span class="summary-cta">운동 추가하기 →</span>';
+    return;
+  }
+  const parts=[];
+  const gym=workouts.find(w=>w.type==='gym');
+  if(gym){
+    const t=(gym.totalVolume||0)/1000;
+    parts.push(t>=1?t.toFixed(1)+'t':Math.round((gym.totalVolume||0))+'kg');
+  }
+  const cardio=workouts.find(w=>w.type==='activity'&&(w.cat==='cardio'||w.cat==='running'));
+  if(cardio&&parts.length<2){
+    const km=cardio.meta&&(cardio.meta.km||cardio.meta.distance);
+    const min=cardio.meta&&(cardio.meta.min||cardio.meta.duration);
+    if(km)parts.push(km+'km');
+    else if(min)parts.push(min+'분');
+    else parts.push(cardio.name||'유산소');
+  }
+  if(parts.length===0){
+    const first=workouts[0];
+    parts.push(first.name||first.sessionName||(workouts.length+'개'));
+  }
+  const body=parts.map(p=>`<span class="main">${p}</span>`).join(' <span class="sep">+</span> ');
+  const extra=workouts.length>2?` <span class="sep">·</span> <span style="color:var(--text3);">+${workouts.length-2}</span>`:'';
+  sum.innerHTML=body+extra;
+}
+
 async function deleteMeal(i){
   const meal=log.meals[i];
   let scoreDelta=0;
@@ -8180,21 +8229,21 @@ function closeWorkoutStartScreen(){
 function renderWssRoutineTiles(){
   const el=document.getElementById('wss-routine-tiles');
   if(!el)return;
-  const freeTile=`<div onclick="startGymSession()" style="flex:0 0 70px;min-width:70px;background:rgba(255,77,77,.08);border:1px dashed rgba(255,77,77,.35);border-radius:10px;padding:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;cursor:pointer;touch-action:manipulation;">
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ff4d4d" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-    <span style="font-size:12px;color:#ff4d4d;text-align:center;font-weight:600;line-height:1.3;">자유<br>운동</span>
+  const freeTile=`<div onclick="startGymSession()" style="flex:0 0 58px;min-width:58px;background:rgba(255,77,77,.08);border:1px dashed rgba(255,77,77,.35);border-radius:9px;padding:7px 6px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;touch-action:manipulation;">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#ff4d4d" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    <span style="font-size:10px;color:#ff4d4d;text-align:center;font-weight:600;line-height:1.2;">자유<br>운동</span>
   </div>`;
   const routineTiles=(userRoutines||[]).map(r=>{
     const exPreview=(r.exercises||[]).slice(0,3).map(e=>e.name).join(' · ');
-    return`<div onclick="startSessionFromRoutine('${r.id}')" style="flex:0 0 120px;min-width:120px;background:var(--surface2);border:1px solid var(--border2);border-radius:12px;padding:12px 13px;cursor:pointer;touch-action:manipulation;">
-      <div style="font-size:11px;font-weight:700;letter-spacing:.04em;color:var(--text3);text-transform:uppercase;margin-bottom:3px;">루틴</div>
-      <div style="font-size:15px;font-weight:600;color:var(--text);margin-bottom:4px;">${r.name}</div>
-      <div style="font-size:11px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${exPreview||'종목 없음'}</div>
+    return`<div onclick="startSessionFromRoutine('${r.id}')" style="flex:0 0 96px;min-width:96px;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:8px 10px;cursor:pointer;touch-action:manipulation;">
+      <div style="font-size:9px;font-weight:700;letter-spacing:.04em;color:var(--text3);text-transform:uppercase;margin-bottom:2px;">루틴</div>
+      <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${r.name}</div>
+      <div style="font-size:10px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${exPreview||'종목 없음'}</div>
     </div>`;
   }).join('');
-  const addTile=`<div onclick="openRoutineModal()" style="flex:0 0 70px;min-width:70px;background:transparent;border:1px dashed var(--border2);border-radius:10px;padding:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer;touch-action:manipulation;">
-    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
-    <span style="font-size:12px;color:var(--text3);text-align:center;line-height:1.3;">루틴<br>추가</span>
+  const addTile=`<div onclick="openRoutineModal()" style="flex:0 0 58px;min-width:58px;background:transparent;border:1px dashed var(--border2);border-radius:9px;padding:7px 6px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;touch-action:manipulation;">
+    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+    <span style="font-size:10px;color:var(--text3);text-align:center;line-height:1.2;">루틴<br>추가</span>
   </div>`;
   el.innerHTML=freeTile+routineTiles+addTile;
 }
@@ -8210,13 +8259,13 @@ function renderWssCardioTiles(){
     {i:'🎾',n:'테니스',cat:'sports',idx:5},
   ];
   const catLabel={cardio:'유산소',sports:'스포츠',mindfulness:'마음챙김'};
-  const tiles=CARDIO_QUICK.map(a=>`<div onclick="openActivityModalPreset(${a.idx})" style="flex:0 0 90px;min-width:90px;background:rgba(96,165,250,0.12);border:1px solid rgba(96,165,250,0.28);border-radius:12px;padding:12px 11px;cursor:pointer;touch-action:manipulation;">
-    <div style="font-size:11px;font-weight:700;letter-spacing:.04em;color:#38bdf8;text-transform:uppercase;margin-bottom:2px;">${catLabel[a.cat]||a.cat}</div>
-    <div style="font-size:15px;font-weight:600;color:#38bdf8;margin-bottom:2px;">${a.i} ${a.n}</div>
+  const tiles=CARDIO_QUICK.map(a=>`<div onclick="openActivityModalPreset(${a.idx})" style="flex:0 0 74px;min-width:74px;background:rgba(96,165,250,0.12);border:1px solid rgba(96,165,250,0.28);border-radius:10px;padding:8px 9px;cursor:pointer;touch-action:manipulation;">
+    <div style="font-size:9px;font-weight:700;letter-spacing:.04em;color:#38bdf8;text-transform:uppercase;margin-bottom:2px;">${catLabel[a.cat]||a.cat}</div>
+    <div style="font-size:12px;font-weight:600;color:#38bdf8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${a.i} ${a.n}</div>
   </div>`).join('');
-  const moreTile=`<div onclick="openActivityModal('done')" style="flex:0 0 62px;min-width:62px;background:var(--surface2);border:1px solid rgba(96,165,250,0.35);border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;touch-action:manipulation;padding:8px 6px;">
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
-    <span style="font-size:10px;color:#38bdf8;font-weight:600;">더보기</span>
+  const moreTile=`<div onclick="openActivityModal('done')" style="flex:0 0 50px;min-width:50px;background:var(--surface2);border:1px solid rgba(96,165,250,0.35);border-radius:9px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer;touch-action:manipulation;padding:6px 4px;">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+    <span style="font-size:9px;color:#38bdf8;font-weight:600;">더보기</span>
   </div>`;
   el.innerHTML=tiles+moreTile;
 }
@@ -8233,30 +8282,19 @@ function renderWorkouts(){
   // 첫 주 미션 재평가 — 운동 추가/완료/삭제 시 미션 상태 바로 갱신
   try{if(typeof renderFirstWeekCard==='function')renderFirstWeekCard();}catch(e){}
   const workouts=log.workouts||[];
-  const done=workouts.filter(w=>w.status==='done');
-  const b=document.getElementById('wo-badge');
-  if(workouts.length===0){
-    b.textContent='오늘 없음';b.className='s-badge';
-  } else if(done.length===workouts.length){
-    b.textContent='완료';b.className='s-badge green';
-  } else {
-    b.textContent='진행 중';b.className='s-badge';
-    b.style.color='var(--amber)';b.style.background='rgba(245,158,11,0.1)';b.style.border='1px solid rgba(245,158,11,0.3)';
-  }
   // CTA label changes after logging
   const ctaLbl=document.getElementById('wo-add-cta-lbl');
   if(ctaLbl)ctaLbl.textContent=workouts.length>0?'운동 더 추가하기':'운동 추가하기';
 
   if(workouts.length===0){
     const wr=document.getElementById('workout-rows');
+    // Empty-state prompt without the +30/+30 reward chip (dropped per design)
     wr.innerHTML=`<div style="padding:14px 0 6px;text-align:center;">
       <div style="font-size:24px;margin-bottom:6px;">💪</div>
-      <div style="font-size:12px;color:var(--text3);margin-bottom:10px;line-height:1.5;">아직 오늘 운동 기록이 없어요<br>근력 · 유산소 · 활동 중 뭐든 OK</div>
-      <div style="display:inline-flex;align-items:center;gap:6px;font-size:10px;font-weight:600;padding:5px 10px;background:var(--surface2);border:1px solid var(--border2);border-radius:999px;color:var(--text3);letter-spacing:-.01em;">
-        <span style="color:var(--green);">+30pt</span>근력 · <span style="color:var(--green);">+30pt</span>유산소 <span style="color:var(--text3);opacity:0.7;">(하루 1회씩)</span>
-      </div>
+      <div style="font-size:12px;color:var(--text3);line-height:1.5;">아직 오늘 운동 기록이 없어요<br>근력 · 유산소 · 활동 중 뭐든 OK</div>
     </div>`;
     wr.style.cssText='';
+    try{renderWorkoutSummary();}catch(e){}
     return;
   }
 
@@ -8311,6 +8349,7 @@ function renderWorkouts(){
       </div>`;
     }
   }).join('');
+  try{renderWorkoutSummary();}catch(e){}
 }
 
 function toggleGymExpand(i){openSessionSummary(i);}
