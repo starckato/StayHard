@@ -1,6 +1,6 @@
 // Stay Hard · modular bundle entry point
 //
-// Migration phase: 3 (feature modules — stats, onboarding)
+// Migration phase: 3 (feature modules — stats, onboarding, meal-photo)
 // See: document-private/MIGRATION_PLAN.md
 
 // Lib (pure utilities + infrastructure)
@@ -10,6 +10,7 @@ import * as icons from './lib/icons.js';
 import * as env from './lib/env.js';
 import { sb } from './lib/supabase.js';
 import * as analytics from './lib/analytics.js';
+import * as mealPhoto from './lib/meal-photo.js';
 
 // UI (shared dumb components)
 import * as toast from './ui/toast.js';
@@ -26,7 +27,7 @@ import * as onboarding from './features/onboarding/index.js';
 // Window adapter — exposes module exports as globals for inline-handler compat.
 Object.assign(
   window,
-  date, tier, icons, env, analytics, toast,
+  date, tier, icons, env, analytics, mealPhoto, toast,
   scoreEvents, mottos, exercises,
   stats, onboarding
 );
