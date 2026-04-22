@@ -8,6 +8,7 @@ import * as env from './lib/env.js';
 import { sb } from './lib/supabase.js';
 import * as analytics from './lib/analytics.js';
 import * as mealPhoto from './lib/meal-photo.js';
+import * as cheat from './lib/cheat.js';
 
 import * as toast from './ui/toast.js';
 
@@ -26,7 +27,7 @@ import * as weeklyView from './features/weekly-view/index.js';
 
 Object.assign(
   window,
-  date, tier, icons, env, analytics, mealPhoto, toast,
+  date, tier, icons, env, analytics, mealPhoto, cheat, toast,
   scoreEvents, mottos, exercises, muscle, rewardMessages, pushupCV,
   stats, onboarding, weight, rewards, weeklyView
 );
