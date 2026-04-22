@@ -1,5 +1,5 @@
 // Stay Hard · modular bundle entry point
-// Migration phase: 3 (feature modules)
+// Migration phase: 3
 
 import * as date from './lib/date.js';
 import * as tier from './lib/tier.js';
@@ -20,11 +20,12 @@ import * as rewardMessages from './data/reward-messages.js';
 import * as stats from './features/stats/index.js';
 import * as onboarding from './features/onboarding/index.js';
 import * as weight from './features/weight/index.js';
+import * as rewards from './features/rewards/index.js';
 
 Object.assign(
   window,
   date, tier, icons, env, analytics, mealPhoto, toast,
   scoreEvents, mottos, exercises, muscle, rewardMessages,
-  stats, onboarding, weight
+  stats, onboarding, weight, rewards
 );
 window.sb = sb;
