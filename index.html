@@ -18,8 +18,9 @@
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <!-- v3.0 · Modular bundle (esbuild IIFE). MUST load before inline body scripts
      so window globals (dkey, normKey, ...) are set before inline code runs.
-     See document-private/MIGRATION_PLAN.md. -->
-<script src="/dist/app.js"></script>
+     Query version bumps cache when bundle content changes. Bump manually or
+     via build script when shipping a new bundle. See MIGRATION_PLAN.md. -->
+<script src="/dist/app.js?v=20260422b"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Archivo+Black&display=swap" rel="stylesheet">
 <style>
 :root{
