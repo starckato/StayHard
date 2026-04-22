@@ -16,6 +16,10 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<!-- v3.0 · Modular bundle (esbuild IIFE). MUST load before inline body scripts
+     so window globals (dkey, normKey, ...) are set before inline code runs.
+     See document-private/MIGRATION_PLAN.md. -->
+<script src="/dist/app.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Archivo+Black&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -4628,10 +4632,7 @@ function startSessionFromRoutine(id){
   renderSession();
 }
 
-const MONTHS=['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
-
-const WDAYS=['일','월','화','수','목','금','토'];
-const WDAYS_STRIP=['월','화','수','목','금','토','일'];
+// MONTHS / WDAYS / WDAYS_STRIP — removed Phase 1 (dead code, no usage in app).
 
 // ── GOGGINS TIERS (누적 점수 기반) ──
 // 티어 기준: ~"현실적 노력 하루" ≈ 30점 (운동+루틴 몇개+클린식단 1끼 수준) 가정.
@@ -4957,13 +4958,8 @@ let _workoutMode='now'; // 'now'=지금시작 | 'done'=이미했어요 | 'planne
 let compDurVal=14,compType='routine',compMeasureType='weight';
 let compSecs={diet:true,workout:true,mandatory:true,target:false};
 const now=new Date();
-function dkey(d){
-  const y=d.getFullYear();
-  const m=String(d.getMonth()+1).padStart(2,'0');
-  const day=String(d.getDate()).padStart(2,'0');
-  return y+'-'+m+'-'+day;
-}
-function normKey(s){return s?s.slice(0,10):null;}
+// dkey / normKey — moved to src/lib/date.js (Phase 1).
+// Available via window.dkey / window.normKey from /dist/app.js bundle (loaded in <head>).
 const TODAY=dkey(now);
 let sliderOffset=0,selectedDate=new Date(now),selectedKey=TODAY;
 let wvOffset=0,wvLogs={};
@@ -16153,8 +16149,5 @@ window.stopRoomScene = window.stopRoomScene || function(){};
   else{setTimeout(add,100);}
 })();
 </script>
-<!-- v3.0 · Modular bundle (esbuild). Phase 0: empty bootstrap, no behavior change.
-     See document-private/MIGRATION_PLAN.md for migration phases. -->
-<script type="module" src="/dist/app.js"></script>
 </body>
 </html>
