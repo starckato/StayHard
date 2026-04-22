@@ -16,6 +16,7 @@ import * as mottos from './data/mottos.js';
 import * as exercises from './data/exercises.js';
 import * as muscle from './data/muscle.js';
 import * as rewardMessages from './data/reward-messages.js';
+import * as pushupCV from './data/pushup-cv.js';
 
 import * as stats from './features/stats/index.js';
 import * as onboarding from './features/onboarding/index.js';
@@ -25,7 +26,7 @@ import * as rewards from './features/rewards/index.js';
 Object.assign(
   window,
   date, tier, icons, env, analytics, mealPhoto, toast,
-  scoreEvents, mottos, exercises, muscle, rewardMessages,
+  scoreEvents, mottos, exercises, muscle, rewardMessages, pushupCV,
   stats, onboarding, weight, rewards
 );
 window.sb = sb;
