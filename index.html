@@ -20,7 +20,7 @@
      so window globals (dkey, normKey, ...) are set before inline code runs.
      Query version bumps cache when bundle content changes. Bump manually or
      via build script when shipping a new bundle. See MIGRATION_PLAN.md. -->
-<script src="/dist/app.js?v=20260424c"></script>
+<script src="/dist/app.js?v=20260424d"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Archivo+Black&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -269,6 +269,12 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 .goggins-tier{font-size:10px;color:var(--text2);font-weight:600;}
 .avatar-btn{width:30px;height:30px;border-radius:50%;background:var(--surface2);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:13px;cursor:pointer;margin-left:6px;transition:border-color .15s;}
 .avatar-btn:active{border-color:var(--accent);}
+
+/* Header icon buttons (bell + avatar) */
+.hdr-icon-btn{position:relative;width:34px;height:34px;padding:0;margin:0;border-radius:50%;background:var(--surface2);border:1px solid var(--border2);color:var(--text2);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:border-color .15s,color .15s,background .15s;touch-action:manipulation;}
+.hdr-icon-btn:active{border-color:var(--accent);color:var(--text);}
+.hdr-icon-btn.avatar-btn{width:34px;height:34px;margin-left:0;}
+.hdr-icon-badge{position:absolute;top:-2px;right:-2px;min-width:16px;height:16px;padding:0 4px;border-radius:8px;background:var(--accent);color:#fff;font-size:9px;font-weight:800;font-family:'DM Mono',monospace;display:inline-flex;align-items:center;justify-content:center;border:2px solid var(--bg);letter-spacing:-.02em;}
 
 /* ═════ STATUS BAND — 기록 탭 히어로 (점수/티어/스트릭/오늘 Δ/요약) ═════ */
 .sb{margin:8px 14px 12px;padding:16px 18px 14px;border-radius:16px;background:linear-gradient(140deg,rgba(255,77,77,.12) 0%,rgba(255,107,53,.04) 55%,rgba(255,77,77,.08) 100%);border:1px solid var(--accent-bd);position:relative;overflow:hidden;}
@@ -1058,10 +1064,18 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
 <!-- ══ APP ══ -->
 <div id="app-screen">
   <div class="hdr">
-    <!-- 1행: 타이틀 + 아바타 (점수/티어/스트릭은 Status Band로 이관) -->
+    <!-- 1행: 타이틀 + 우측 액션 (알림 종 + 프로필) -->
     <div style="display:flex;align-items:center;justify-content:space-between;width:100%;">
       <div class="hdr-title" style="color:var(--accent);">Stay Hard</div>
-      <div class="avatar-btn" onclick="openProfileModal()">👤</div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <button id="notif-bell-btn" class="hdr-icon-btn" onclick="openNotificationsModal()" aria-label="알림">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          <span class="hdr-icon-badge" id="notif-bell-badge" style="display:none;"></span>
+        </button>
+        <button class="avatar-btn hdr-icon-btn" onclick="openProfileModal()" aria-label="프로필">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a8 8 0 0 1 16 0v1"/></svg>
+        </button>
+      </div>
     </div>
     <!-- 2행: 유저명 -->
     <div class="hdr-sub" id="hdr-sub" style="margin-top:2px;">로딩 중…</div>
@@ -2929,6 +2943,20 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
       <div id="iep-err" style="font-size:12px;color:var(--red);margin-bottom:10px;display:none;"></div>
       <button onclick="saveMyInbodyGoal()" style="width:100%;padding:14px;background:var(--accent);border:none;border-radius:12px;color:#fff;font-size:15px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer;touch-action:manipulation;">저장</button>
     </div>
+  </div>
+</div>
+
+<!-- ═══ Notifications Modal ═══ -->
+<div id="notifications-modal"
+  style="display:none;position:fixed;top:0;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;z-index:860;background:rgba(0,0,0,0.65);align-items:flex-start;justify-content:center;"
+  onclick="if(event.target===this)closeNotificationsModal()">
+  <div style="background:var(--surface);border-radius:0 0 22px 22px;border-bottom:0.5px solid var(--border2);width:100%;display:flex;flex-direction:column;max-height:80vh;margin-top:0;">
+    <div style="padding:14px 18px 10px;display:flex;justify-content:space-between;align-items:center;border-bottom:0.5px solid var(--border);flex-shrink:0;">
+      <div style="font-size:15px;font-weight:700;color:var(--text);">알림</div>
+      <button onclick="closeNotificationsModal()"
+        style="width:26px;height:26px;border-radius:50%;background:var(--surface2);border:none;color:var(--text2);font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
+    </div>
+    <div id="notifications-list" style="flex:1;overflow-y:auto;padding:12px 16px 20px;display:flex;flex-direction:column;gap:10px;"></div>
   </div>
 </div>
 
@@ -7230,7 +7258,88 @@ function scrollToSection(s){
   const el=document.getElementById(map[s]);
   if(el)el.scrollIntoView({behavior:'smooth',block:'center'});
 }
-function renderRoutine(){renderCharCard();renderSummaryCard();renderWeight();renderMeals();renderCheatBadge();renderWater();renderWorkouts();renderMandatory();renderTargets();updateGogginsHeader();revealStatusBand();try{renderFirstWeekCard();}catch(e){console.warn('[fw-card]',e);}try{renderInviteCard();}catch(e){console.warn('[invite-card]',e);}try{renderDay3ChallengeNudge();}catch(e){console.warn('[d3-nudge]',e);}try{renderWeeklyFeatureRibbon();}catch(e){console.warn('[wf-ribbon]',e);}try{if(typeof window.buildHeatmapGrid==='function')window.buildHeatmapGrid();}catch(e){}}
+function renderRoutine(){renderCharCard();renderSummaryCard();renderWeight();renderMeals();renderCheatBadge();renderWater();renderWorkouts();renderMandatory();renderTargets();updateGogginsHeader();revealStatusBand();try{renderFirstWeekCard();}catch(e){console.warn('[fw-card]',e);}try{renderInviteCard();}catch(e){console.warn('[invite-card]',e);}try{renderDay3ChallengeNudge();}catch(e){console.warn('[d3-nudge]',e);}try{renderWeeklyFeatureRibbon();}catch(e){console.warn('[wf-ribbon]',e);}try{if(typeof window.buildHeatmapGrid==='function')window.buildHeatmapGrid();}catch(e){}try{arrangePromos();}catch(e){console.warn('[promo-arrange]',e);}}
+
+// ── Priority gate for promo/notification cards ─────────────────────
+// Each existing render function (renderFirstWeekCard, renderInviteCard,
+// renderDay3ChallengeNudge, renderWeeklyFeatureRibbon, and the yesterday
+// ribbon show/hide flow) toggles display='' when active. arrangePromos
+// reads the active set, keeps ONLY the highest-priority one inline at the
+// top of the record tab, and publishes the rest to the bell modal.
+const PROMO_ORDER=[
+  {id:'yesterday-ribbon',  title:'어제 미완료',      kind:'carryover'},
+  {id:'day3-challenge-card',title:'3일차 챌린지',     kind:'day3'},
+  {id:'first-week-card',   title:'첫 주 미션',        kind:'onboarding'},
+  {id:'weekly-feature-card',title:'이번 주 기능',     kind:'weekly'},
+  {id:'invite-card',       title:'친구 초대',         kind:'invite'},
+];
+
+function arrangePromos(){
+  const activeIds=[];
+  PROMO_ORDER.forEach(p=>{
+    const el=document.getElementById(p.id);
+    if(!el)return;
+    const isActive=el.style.display!=='none'&&el.style.display!=='';
+    // Note: style.display may be '' when not set. Check computed.
+    const computed=window.getComputedStyle(el).display;
+    const visible=computed!=='none';
+    if(visible)activeIds.push(p.id);
+  });
+  const winner=activeIds[0]||null;
+  PROMO_ORDER.forEach(p=>{
+    const el=document.getElementById(p.id);
+    if(!el)return;
+    if(activeIds.includes(p.id)){
+      if(p.id===winner){
+        el.style.display='';
+        el.setAttribute('data-promo-state','inline');
+      } else {
+        el.style.display='none';
+        el.setAttribute('data-promo-state','muted-bell');
+      }
+    } else {
+      el.removeAttribute('data-promo-state');
+    }
+  });
+  // Bell badge
+  const badge=document.getElementById('notif-bell-badge');
+  if(badge){
+    const count=activeIds.length;
+    if(count>0){badge.style.display='inline-flex';badge.textContent=count;}
+    else{badge.style.display='none';}
+  }
+}
+
+function openNotificationsModal(){
+  const list=document.getElementById('notifications-list');
+  if(!list)return;
+  list.innerHTML='';
+  const activeIds=PROMO_ORDER.filter(p=>{
+    const el=document.getElementById(p.id);
+    return el&&(el.getAttribute('data-promo-state')==='inline'||el.getAttribute('data-promo-state')==='muted-bell');
+  });
+  if(activeIds.length===0){
+    list.innerHTML='<div style="text-align:center;padding:32px 0 36px;color:var(--text3);font-size:12px;letter-spacing:-.005em;">새 알림이 없어요</div>';
+  } else {
+    activeIds.forEach(p=>{
+      const src=document.getElementById(p.id);
+      if(!src)return;
+      // Clone the source card so the original DOM / event handlers stay intact.
+      const clone=src.cloneNode(true);
+      clone.id=p.id+'-modal';
+      clone.style.display='block';
+      clone.style.margin='0';
+      list.appendChild(clone);
+    });
+  }
+  document.getElementById('notifications-modal').style.display='flex';
+  document.body.style.overflow='hidden';
+}
+function closeNotificationsModal(){
+  const m=document.getElementById('notifications-modal');
+  if(m)m.style.display='none';
+  document.body.style.overflow='';
+}
 
 // ═══════════════════════════════════════════════
 // FIRST-WEEK MISSION CARD
