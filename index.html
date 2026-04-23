@@ -20,7 +20,7 @@
      so window globals (dkey, normKey, ...) are set before inline code runs.
      Query version bumps cache when bundle content changes. Bump manually or
      via build script when shipping a new bundle. See MIGRATION_PLAN.md. -->
-<script src="/dist/app.js?v=20260424e"></script>
+<script src="/dist/app.js?v=20260424f"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Archivo+Black&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -7353,13 +7353,32 @@ function closeNotificationsModal(){
 // without a stacked sheet in the way.
 function _rebindPromoClone(clone, id){
   if(!clone)return;
-  // Close-the-modal wrapper for any button that advances to another screen.
+  // CTA (navigational) wrapper — closes the modal then runs the action.
   const wrapNav=(btn, fn)=>{
     if(!btn)return;
     btn.onclick=(e)=>{
       try{e&&e.stopPropagation&&e.stopPropagation();}catch(_){}
       try{closeNotificationsModal();}catch(_){}
       try{fn&&fn();}catch(err){console.warn('[promo-clone]',err);}
+    };
+  };
+  // Dismiss wrapper — removes the card from the modal list, dismisses the
+  // underlying promo, but keeps the modal open so the user can see other
+  // notifications. If it was the last one, swap to the empty state.
+  const wrapDismiss=(btn, fn)=>{
+    if(!btn)return;
+    btn.onclick=(e)=>{
+      try{e&&e.stopPropagation&&e.stopPropagation();}catch(_){}
+      try{fn&&fn();}catch(err){console.warn('[promo-clone:dismiss]',err);}
+      try{clone.remove();}catch(_){}
+      try{
+        const list=document.getElementById('notifications-list');
+        if(list && !list.querySelector('[id$="-modal"]')){
+          list.innerHTML='<div style="text-align:center;padding:32px 0 36px;color:var(--text3);font-size:12px;letter-spacing:-.005em;">새 알림이 없어요</div>';
+        }
+        // Refresh inline priority gate + bell badge count.
+        if(typeof arrangePromos==='function')arrangePromos();
+      }catch(_){}
     };
   };
   if(id==='weekly-feature-card'){
@@ -7374,17 +7393,17 @@ function _rebindPromoClone(clone, id){
       }
     }catch(e){console.warn('[promo-clone:wf]',e);}
   }
-  // Other promo cards use inline onclick attributes, which cloneNode keeps.
-  // No explicit rebind needed, but we still want each action to close the
-  // modal first. Strip the inline onclick and re-wrap via wrapNav.
+  // Inline onclick buttons — cloneNode keeps the attribute, but we want our
+  // own wrapper (modal-close for nav, list-remove for dismiss). Split by
+  // intent: aria-label="닫기" OR function name starting with dismiss = dismiss.
   clone.querySelectorAll('button[onclick]').forEach(btn=>{
     const expr=btn.getAttribute('onclick');
     if(!expr)return;
     btn.removeAttribute('onclick');
-    wrapNav(btn, ()=>{
-      // Evaluate in global scope — functions like shareInvite, gotoChallengeTab etc.
-      try{(new Function(expr))();}catch(e){console.warn('[promo-clone:inline]',expr,e);}
-    });
+    const isDismiss = btn.getAttribute('aria-label')==='닫기' || /^\s*dismiss/i.test(expr);
+    const invoke=()=>{try{(new Function(expr))();}catch(e){console.warn('[promo-clone:inline]',expr,e);}};
+    if(isDismiss) wrapDismiss(btn, invoke);
+    else wrapNav(btn, invoke);
   });
 }
 
