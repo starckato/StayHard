@@ -16,6 +16,9 @@ import { RAGE_MSGS, RAGE_HEAVY, WIN_MSGS, CHAEK_SENTENCES } from '../../data/rew
 import { showToast } from '../../ui/toast.js';
 
 export function showChaekpipty(mealName) {
+  // Cube mode: 식단 금지 음식은 crimson cube 팝오버로 이미 전달. legacy rage /
+  // chaek(형량) 모달 중복 표시 안 함.
+  if(typeof window!=='undefined'&&window.CUBE_UI_MODE===true)return;
   // 오늘 이미 형량이 집행 중이면 중복 추가 방지
   const curLog=window.logCache[window.selectedKey]||log;
   if((curLog.workouts||[]).some(w=>w._isChaek&&w.status==='planned')){
@@ -73,6 +76,8 @@ export function closeRage(){
 }
 
 export function showRage(){
+  // Cube mode: 패널티 rage 모달 제거. crimson cube 팝오버가 담당.
+  if(typeof window!=='undefined'&&window.CUBE_UI_MODE===true)return;
   // 20% 기존, 80% 강력 메시지
   let r;
   if(Math.random()<0.8){
