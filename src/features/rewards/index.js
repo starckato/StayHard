@@ -107,6 +107,10 @@ export function showSystemNotice(msg){
 export let _winShowing=false;
 
 export function showWin(type, pts=null, title=null){
+  // Cube mode: 기존 점수 win-pill / confetti 피드백은 완전 억제. 큐브 팝오버가
+  // 유일한 시각 피드백. pts===100 (goggins 100점) 는 서사적으로 중요하므로 유지.
+  // 다른 모든 이벤트는 early-return.
+  if(typeof window!=='undefined'&&window.CUBE_UI_MODE===true&&pts!==100)return;
   try{console.log('[showWin]',{type,pts,title,_winShowing,qlen:_winQueue.length});}catch(e){}
   if(pts===100){
     const el=document.getElementById('goggins-100');
@@ -174,6 +178,8 @@ export function _renderWinBody({type,pts,title}){
 
 export let _confettiLock=false;
 export function launchConfetti(){
+  // Cube mode: confetti 제거. 큐브 팝오버가 유일한 피드백.
+  if(typeof window!=='undefined'&&window.CUBE_UI_MODE===true)return;
   if(_confettiLock)return;
   _confettiLock=true;
   setTimeout(()=>_confettiLock=false,1200);

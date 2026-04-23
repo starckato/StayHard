@@ -20,7 +20,7 @@
      so window globals (dkey, normKey, ...) are set before inline code runs.
      Query version bumps cache when bundle content changes. Bump manually or
      via build script when shipping a new bundle. See MIGRATION_PLAN.md. -->
-<script src="/dist/app.js?v=20260424k"></script>
+<script src="/dist/app.js?v=20260424l"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Archivo+Black&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -5864,6 +5864,130 @@ window.addEventListener('visibilitychange', ()=>{
 function saveNow(msg){ queueSave(); }
 function scheduleSave(){ queueSave(); }
 
+// ── Will Cube mode 토글 ─────────────────────────────────────
+// true: 기존 점수 UI (showWin / showScoreGain / confetti / checkPerfectDay) 전부
+// 억제하고 큐브 팝오버를 유일한 시각 피드백으로 사용.
+// Phase 1 의 addScore 는 _ptsLog 기록용으로 계속 돌아감 — DB 호환 유지.
+window.CUBE_UI_MODE = true;
+
+// ── Will Cube Phase 3a: 색 변경 감지 & 팝오버 피드백 ───────
+// recomputeCubesHook 직전에 log.cubes 스냅샷 → 재계산 후 diff → showCubeEvent.
+// 색 승격(gray→silver/gold, silver→gold) 만 긍정 피드백.
+// crimson 전환은 Goggins 톤 토스트.
+// bonus 새로 추가된 항목은 별도 이벤트.
+const CUBE_CHANGE_COPY={
+  diet:{
+    gold:    {title:'식단 gold', body:'clean 2끼 이상', delta:'+3'},
+    silver:  {title:'식단 silver', body:'기록 하나 채움', delta:'+2'},
+    crimson: {title:'식단 crimson', body:'오늘 한 번 흔들렸다', delta:'−3'},
+  },
+  exercise:{
+    gold:    {title:'운동 gold', body:'땀 흘린 하루', delta:'+3'},
+    crimson: {title:'운동 crimson', body:'', delta:'−3'},
+  },
+  routine:{
+    gold:    {title:'루틴 gold', body:'모든 루틴 완수', delta:'+3'},
+    silver:  {title:'루틴 silver', body:'실패 없이 부분 완수', delta:'+2'},
+    crimson: {title:'루틴 crimson', body:'실패도 기록이다', delta:'−3'},
+  },
+  tasks:{
+    gold:    {title:'할일 gold', body:'모든 할일 완수', delta:'+3'},
+    silver:  {title:'할일 silver', body:'부분 완수', delta:'+2'},
+    crimson: {title:'할일 crimson', body:'오늘 한 번 졌다', delta:'−3'},
+  },
+};
+// 팝오버 중첩 큐 — 동시 변경 여러 개면 0.7초 간격으로 순차 노출.
+let _cubeEventQueue=[];
+let _cubeEventShowing=false;
+function _cubeColorMeta(color){
+  if(color==='gold')    return {fg:'#ffd54a',border:'rgba(255,213,74,0.55)',bg:'linear-gradient(135deg,rgba(255,241,168,0.15) 0%,rgba(255,213,74,0.10) 100%)'};
+  if(color==='silver')  return {fg:'#b5c0cc',border:'rgba(181,192,204,0.50)',bg:'linear-gradient(135deg,rgba(242,244,247,0.12) 0%,rgba(181,192,204,0.08) 100%)'};
+  if(color==='crimson') return {fg:'#ff6b6b',border:'rgba(255,77,77,0.45)',bg:'rgba(255,77,77,0.10)'};
+  return {fg:'#eaeaf0',border:'rgba(255,255,255,0.14)',bg:'rgba(20,20,24,0.92)'};
+}
+function _cubeEventChip(ev){
+  const meta=_cubeColorMeta(ev.color);
+  const deltaColor=ev.color==='crimson'?'#ff6b6b':ev.color==='gold'?'#ffd54a':ev.color==='silver'?'#b5c0cc':'#eaeaf0';
+  const swatch=ev.color?`<span style="display:inline-block;width:10px;height:10px;border-radius:2px;flex-shrink:0;${
+    ev.color==='gold'   ?'background:linear-gradient(135deg,#fff1a8 0%,#ffd54a 45%,#c48c1a 100%);border:1px solid rgba(255,233,128,0.70);box-shadow:0 0 3px rgba(255,213,74,0.50);':
+    ev.color==='silver' ?'background:linear-gradient(135deg,#f2f4f7 0%,#b5c0cc 45%,#6d7682 100%);border:1px solid rgba(210,218,228,0.55);':
+    ev.color==='crimson'?'background:rgba(255,77,77,0.32);border:1px solid rgba(255,77,77,0.45);':''
+  }"></span>`:'';
+  return (
+    `<div class="cube-event-chip" style="position:fixed;left:50%;top:max(72px,env(safe-area-inset-top,0px));transform:translate(-50%,-14px);z-index:10001;display:inline-flex;align-items:center;gap:10px;padding:10px 14px;border-radius:12px;background:${meta.bg};backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid ${meta.border};box-shadow:0 10px 30px rgba(0,0,0,0.45);opacity:0;transition:opacity 180ms ease-out,transform 220ms cubic-bezier(0.16,1,0.3,1);pointer-events:none;max-width:calc(100vw - 32px);white-space:nowrap;">`+
+      swatch+
+      `<span style="font-size:12px;font-weight:800;color:var(--text);letter-spacing:-0.005em;">${ev.title||''}</span>`+
+      (ev.body?`<span style="font-size:11px;color:var(--text3);letter-spacing:-0.005em;">${ev.body}</span>`:'')+
+      (ev.delta?`<span style="font-size:12px;font-weight:900;color:${deltaColor};letter-spacing:-0.01em;">${ev.delta}</span>`:'')+
+    `</div>`
+  );
+}
+function _showNextCubeEvent(){
+  if(!_cubeEventQueue.length){_cubeEventShowing=false;return;}
+  _cubeEventShowing=true;
+  const ev=_cubeEventQueue.shift();
+  const wrap=document.createElement('div');
+  wrap.innerHTML=_cubeEventChip(ev);
+  const chip=wrap.firstElementChild;
+  document.body.appendChild(chip);
+  requestAnimationFrame(()=>{chip.style.opacity='1';chip.style.transform='translate(-50%,0)';});
+  setTimeout(()=>{
+    chip.style.opacity='0';chip.style.transform='translate(-50%,-10px)';
+    setTimeout(()=>{if(chip.parentNode)chip.parentNode.removeChild(chip);_showNextCubeEvent();},220);
+  },1800);
+}
+function showCubeEvent(ev){
+  _cubeEventQueue.push(ev);
+  if(!_cubeEventShowing)_showNextCubeEvent();
+}
+
+// 이전/이후 cubes 비교해서 변화점 추출. 색 "승급"만 이벤트로 인정.
+// (gray→anything, silver→gold, anything→crimson 는 이벤트. 반대 방향 cancel 은 조용히.)
+function _diffCubes(before,after){
+  const events=[];
+  const cats=['diet','exercise','routine','tasks'];
+  const RANK={gold:3,silver:2,crimson:1,gray:0};
+  for(const cat of cats){
+    const b=(before&&before[cat])||null;
+    const a=(after&&after[cat])||null;
+    if(a===b)continue;
+    if(a==null)continue; // 큐브가 사라지는 케이스 (할일 전부 삭제 등) — 조용히
+    if(a==='crimson'&&b!=='crimson'){
+      const copy=CUBE_CHANGE_COPY[cat]&&CUBE_CHANGE_COPY[cat].crimson;
+      if(copy)events.push({type:'color',cat,color:'crimson',...copy});
+      continue;
+    }
+    const bRank=b?RANK[b]:0;
+    const aRank=RANK[a]||0;
+    if(aRank>bRank){
+      const copy=CUBE_CHANGE_COPY[cat]&&CUBE_CHANGE_COPY[cat][a];
+      if(copy)events.push({type:'color',cat,color:a,...copy});
+    }
+  }
+  // Bonus diff — 새로 추가된 항목만.
+  const bBonus=(before&&Array.isArray(before.bonus))?before.bonus:[];
+  const aBonus=(after&&Array.isArray(after.bonus))?after.bonus:[];
+  if(aBonus.length>bBonus.length){
+    const newOnes=aBonus.slice(bBonus.length);
+    for(const b of newOnes){
+      if(!b)continue;
+      const count=typeof b.count==='number'?b.count:1;
+      if(b.type==='pr'){
+        const name=b.exerciseName||'운동';
+        const kindLbl=b.kind==='one_rm'?'1RM':b.kind==='volume'?'볼륨':b.kind==='rep_max'?((b.reps||'')+'rep'):'PR';
+        const kg=(typeof b.kg==='number')?(Number.isInteger(b.kg)?b.kg+'kg':b.kg.toFixed(1)+'kg'):'';
+        events.push({type:'bonus',color:'gold',title:'PR 갱신',body:`${name} ${kindLbl} ${kg}`.trim(),delta:`🟡 ×${count}`});
+      } else if(typeof b.type==='string'&&b.type.indexOf('streak_')===0){
+        const days=b.type.split('_')[1]||'';
+        events.push({type:'bonus',color:'gold',title:`${days}일 스트릭`,body:'',delta:`🟡 ×${count}`});
+      } else {
+        events.push({type:'bonus',color:'gold',title:b.name||'보너스',body:'',delta:`🟡 ×${count}`});
+      }
+    }
+  }
+  return events;
+}
+
 // ── Will Cube Phase 2b: accordion 카드 헤더 큐브 렌더 ─────
 // TODAY 의 log.cubes 를 읽어 각 카드의 cc-cube chip 을 갱신.
 // 과거/미래 날짜 선택 중이면 selectedKey 의 cubes 를 그대로 보여줌.
@@ -5902,6 +6026,8 @@ function recomputeCubesHook(key){
     if(!k)return;
     const l=logCache[k];
     if(!l)return;
+    // Cube diff 를 위한 snapshot — recompute 전에 이전 색상 캐시.
+    const beforeCubes=l.cubes?JSON.parse(JSON.stringify(l.cubes)):null;
     // 오늘의 요일 — selectedKey 기준 (과거 날짜 이동했을 때도 정확)
     const weekday=new Date(k+'T00:00:00').getDay();
     // Streak milestone 감지는 오늘 날짜일 때만 + claimedMilestones 는 CP 에 누적
@@ -5926,6 +6052,13 @@ function recomputeCubesHook(key){
     renderCardCubes();
     // 히트맵도 재렌더 — tile 의 4개 cube 가 새 판정 색으로 전환되도록.
     try{if(typeof window.buildHeatmapGrid==='function')window.buildHeatmapGrid();}catch(e){}
+    // Cube 변화 팝오버 — 오늘 날짜일 때만. 과거 로그 수정은 조용히.
+    try{
+      if(k===TODAY){
+        const events=_diffCubes(beforeCubes,l.cubes);
+        for(const ev of events)showCubeEvent(ev);
+      }
+    }catch(e){console.warn('[cube-diff]',e&&e.message);}
     // 프로필 쪽 누적 상태 갱신 — 새 PR/마일스톤이 잡혔을 때만 upsert.
     if(res){
       const promises=[];
@@ -6047,6 +6180,9 @@ async function captureShareCard(){
 
 let _perfectDayShown=false;
 function checkPerfectDay(){
+  // Cube mode: "완벽한 하루" 자동 감지/confetti 억제. 큐브 4개 all-gold 는
+  // recomputeCubesHook 의 diff 로 자연스럽게 팝오버 스택으로 전달됨.
+  if(window.CUBE_UI_MODE===true)return;
   // 100점 오버레이가 떠있으면 skip
   if(document.getElementById('goggins-100').style.display==='flex')return;
   const scores=calcGogginsScore(log);
@@ -7015,6 +7151,8 @@ function revealStatusBand(){
 
 // 액션 위치 → Status Band 점수로 +N pt chip 비행 애니메이션
 function showScoreGain(pts, originEl){
+  // Cube mode: 기존 +N score chip 완전 억제. 큐브 팝오버가 유일한 피드백.
+  if(window.CUBE_UI_MODE===true)return;
   if(!pts||!originEl)return;
   const target=document.getElementById('hdr-score');
   if(!target)return;
