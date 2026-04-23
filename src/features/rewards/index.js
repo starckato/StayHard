@@ -101,7 +101,7 @@ export function showSystemNotice(msg){
   el.id='system-notice-modal';
   el.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;z-index:9999;padding:24px;';
   el.innerHTML=`<div style="background:var(--card);border-radius:20px;padding:28px 24px;max-width:340px;width:100%;text-align:center;box-shadow:0 8px 40px rgba(0,0,0,.4);">
-    <div style="font-size:40px;margin-bottom:12px;">📣</div>
+    <div style="margin-bottom:12px;display:flex;justify-content:center;"><svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="color:var(--accent);"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg></div>
     <div style="font-size:16px;font-weight:700;color:var(--text1);margin-bottom:12px;">공지사항</div>
     <div style="font-size:14px;color:var(--text2);line-height:1.6;white-space:pre-wrap;margin-bottom:20px;">${msg}</div>
     <button onclick="document.getElementById('system-notice-modal').remove()" style="background:var(--accent);color:#fff;border:none;border-radius:12px;padding:12px 32px;font-size:15px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;">확인</button>

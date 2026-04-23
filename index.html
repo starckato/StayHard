@@ -20,7 +20,7 @@
      so window globals (dkey, normKey, ...) are set before inline code runs.
      Query version bumps cache when bundle content changes. Bump manually or
      via build script when shipping a new bundle. See MIGRATION_PLAN.md. -->
-<script src="/dist/app.js?v=20260424y"></script>
+<script src="/dist/app.js?v=20260424z"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Archivo+Black&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -5639,6 +5639,53 @@ async function _prefetchWeekLogs(){
         if(logCache[selectedKey])log=logCache[selectedKey];
         else if(logCache[today])log=logCache[today];
       }
+      // ── Will Cube Phase 5: legacy 유저 과거 데이터 auto-fill ──
+      // cube migration 이전 daily_logs 는 cubes=null. prefetch 시 fetch 된
+      // 과거 로그 중 cubes 없는 날을 silent 재계산해서 채움. 점수는 자연스레
+      // 복구됨 (유저 액션 없이도 앱 열면 지난 2주 cube 가 자동 populated).
+      try{
+        if(window.Cubes&&typeof window.Cubes.recomputeCubesInLog==='function'){
+          let filled=0;
+          for(const d of data){
+            const k=d.log_date?d.log_date.slice(0,10):null;
+            if(!k)continue;
+            const l=logCache[k];
+            if(!l||l.cubes)continue; // 이미 있으면 skip
+            const weekday=(new Date(k+'T00:00:00').getDay()+6)%7;
+            window.Cubes.recomputeCubesInLog(l,{weekday,dateKey:k});
+            _dirtyKeys.add(k);
+            filled++;
+          }
+          // 채워진 날들 DB upsert — saveLog 개별 호출 (queueSave 는 selectedKey 만)
+          if(filled>0){
+            console.log('[cubes] auto-fill prefetched days:',filled);
+            for(const k of Array.from(_dirtyKeys)){
+              if(!logCache[k]||!logCache[k].cubes)continue;
+              saveLog(k,true).catch(()=>{});
+              _dirtyKeys.delete(k);
+            }
+            // Total_score 재계산 — silent delta: 새 cubes 의 점수를 합산해서 CP.total_score 에 추가.
+            // (기존 total_score 는 migration 으로 0. 여기서 과거 cube 기여도 복구.)
+            if(CP&&window.Cubes&&typeof window.Cubes.scoreFromCubes==='function'){
+              let gained=0;
+              for(const k of Object.keys(logCache)){
+                if(k===TODAY)continue; // 오늘은 sb-today 로 따로 표시
+                const l=logCache[k];
+                if(!l||!l.cubes)continue;
+                gained+=window.Cubes.scoreFromCubes(l.cubes);
+              }
+              // 과거 합계가 CP.total_score 보다 크면 차이만큼 보정 (여러 번 실행해도 상한선 유지).
+              const targetScore=Math.max(+(CP.total_score)||0,Math.max(0,gained));
+              if(targetScore!==+(CP.total_score)){
+                CP.total_score=targetScore;
+                try{if(CU)localStorage.setItem('score_'+CU.id,String(CP.total_score));}catch(_){}
+                try{_flushScoreUpdate();}catch(_){}
+                try{updateGogginsHeader();}catch(_){}
+              }
+            }
+          }
+        }
+      }catch(e){console.warn('[cubes] auto-fill failed',e&&e.message);}
       buildSlider();
       renderRoutine();
       // 스냅샷 갱신 → 다음 방문 시 최신 데이터로 즉시 복원
