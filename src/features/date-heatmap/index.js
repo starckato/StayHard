@@ -475,9 +475,15 @@ export function dhShowCubeTooltip(event, dateKey, cat) {
     const dl = window.logCache?.[dateKey] || dhLogs[dateKey];
     const color = _cubeColorForCat(dl, cat) || _legacyColorForCat(dl, cat);
     const text = (CUBE_TOOLTIP_COPY[cat] && CUBE_TOOLTIP_COPY[cat][color]) || '기록 없음';
+    // ⚠️ 측정 순서 중요 — selectDay() 는 buildHeatmapGrid 를 trigger 해서 event.target
+    // 을 DOM 에서 분리시킨다. 먼저 좌표를 캐시한 뒤 selectDay 를 호출.
+    let x = 0, y = 0;
+    const t = event && event.target && event.target.getBoundingClientRect && event.target.getBoundingClientRect();
+    if (t) { x = t.left + t.width / 2; y = t.top; }
+    else if (event && (event.clientX != null)) { x = event.clientX; y = event.clientY; }
     // 해당 날짜로 포커스 이동 — 탭한 날이 선택되지 않은 상태면 먼저 선택.
+    // 이미 selected 면 스킵 (불필요한 re-render 방지).
     if (dateKey !== window.selectedKey && typeof window.dhSelectDate === 'function') {
-      // parse date for selectDay
       const d = new Date(dateKey + 'T00:00:00');
       if (!isNaN(d)) window.dhSelectDate(dateKey, d.getTime());
     }
@@ -505,13 +511,7 @@ export function dhShowCubeTooltip(event, dateKey, cat) {
       'white-space:nowrap',
       'max-width:160px',
     ].join(';');
-    // 탭 좌표 기준 살짝 위쪽으로 띄움
-    let x = 0, y = 0;
-    const t = event && event.target && event.target.getBoundingClientRect && event.target.getBoundingClientRect();
-    if (t) { x = t.left + t.width / 2; y = t.top; }
-    else if (event && (event.clientX != null)) { x = event.clientX; y = event.clientY; }
     document.body.appendChild(chip);
-    // Position — measure then center above origin
     requestAnimationFrame(() => {
       const w = chip.offsetWidth;
       const h = chip.offsetHeight;

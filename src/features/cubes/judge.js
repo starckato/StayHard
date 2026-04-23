@@ -4,9 +4,9 @@
 
 // ── 식단 큐브 ──
 // - 금지식(type==='red') or 주류(category==='alcohol')가 1건이라도 있음 → crimson
-// - 식사 기록 0건 → gray
-// - 모든 끼니 type==='green' (at least 1 meal) → gold
-// - 그 외 (일부 청정 / 일반식 혼재) → silver
+// - 식사 기록 0건 (혹은 drink 만) → gray
+// - green (청정) ≥ 2건 + red/alcohol 없음 → gold (2026-04-23 규칙 완화)
+// - 그 외 (green 1건 + 일반식 / 전부 일반식) → silver
 export function judgeDiet(meals) {
   const list = Array.isArray(meals) ? meals : [];
   if (list.length === 0) return 'gray';
@@ -14,8 +14,8 @@ export function judgeDiet(meals) {
   if (hasRed) return 'crimson';
   const nonDrink = list.filter((m) => m && m.category !== 'drink');
   if (nonDrink.length === 0) return 'gray';
-  const allGreen = nonDrink.every((m) => m.type === 'green');
-  if (allGreen) return 'gold';
+  const greenCount = nonDrink.filter((m) => m.type === 'green').length;
+  if (greenCount >= 2) return 'gold';
   return 'silver';
 }
 

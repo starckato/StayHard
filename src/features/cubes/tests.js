@@ -23,12 +23,16 @@ function t(name, fn) { _cases.push({ name, fn }); }
 t('diet · 기록 0건 → gray', () => judgeDiet([]) === 'gray');
 t('diet · 주류 1건 → crimson', () => judgeDiet([{ type: 'normal', category: 'alcohol' }]) === 'crimson');
 t('diet · red 1건 → crimson', () => judgeDiet([{ type: 'red', category: 'snack' }, { type: 'green', category: 'lunch' }]) === 'crimson');
-t('diet · 모든 끼니 green → gold', () => judgeDiet([
+t('diet · green 2개 이상 → gold (규칙 완화)', () => judgeDiet([
   { type: 'green', category: 'breakfast' },
   { type: 'green', category: 'lunch' },
-  { type: 'green', category: 'dinner' },
 ]) === 'gold');
-t('diet · 일부 green 나머지 normal → silver', () => judgeDiet([
+t('diet · green 2 + normal 1 → gold', () => judgeDiet([
+  { type: 'green', category: 'breakfast' },
+  { type: 'green', category: 'lunch' },
+  { type: 'normal', category: 'dinner' },
+]) === 'gold');
+t('diet · green 1 + normal 1 → silver', () => judgeDiet([
   { type: 'green', category: 'breakfast' },
   { type: 'normal', category: 'lunch' },
 ]) === 'silver');
@@ -36,6 +40,10 @@ t('diet · 전부 normal → silver', () => judgeDiet([
   { type: 'normal', category: 'breakfast' },
   { type: 'normal', category: 'lunch' },
 ]) === 'silver');
+t('diet · green 1 + red 1 → crimson (red 우선)', () => judgeDiet([
+  { type: 'green', category: 'breakfast' },
+  { type: 'red', category: 'dinner' },
+]) === 'crimson');
 t('diet · drink(물)만 있음 → gray', () => judgeDiet([{ type: 'normal', category: 'drink' }]) === 'gray');
 
 // ── 운동 ─────────────────────────────────────────────
