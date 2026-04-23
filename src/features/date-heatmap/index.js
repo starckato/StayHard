@@ -108,18 +108,21 @@ function cellStatus(dl, cat, isFuture) {
 }
 
 // 운동 슬롯에 exercise_bonus gold 가 있으면 2개 겹친 double-cube 로 렌더.
-// 없으면 단일 사각형.
-function workoutIndicator(dl, isFuture, size) {
+// 없으면 단일 사각형. dateKey 받아서 tooltip 트리거 바인딩.
+function workoutIndicator(dl, isFuture, size, dateKey) {
   const status = cellStatus(dl, 'workout', isFuture);
   const hasBonus = !isFuture && dl && dl.cubes && dl.cubes.exercise === 'gold' && dl.cubes.exercise_bonus === 'gold';
+  const tapHandler = isFuture
+    ? ''
+    : `onclick="event.stopPropagation();window.dhShowCubeTooltip&&window.dhShowCubeTooltip(event,'${dateKey}','workout')"`;
   if (!hasBonus) {
-    return `<span style="display:inline-block;width:${size}px;height:${size}px;border-radius:2px;box-sizing:border-box;${indicatorStyle(status)}"></span>`;
+    return `<span ${tapHandler} style="display:inline-block;width:${size}px;height:${size}px;border-radius:2px;box-sizing:border-box;cursor:pointer;touch-action:manipulation;${indicatorStyle(status)}"></span>`;
   }
   // Double-cube: back square (offset) + front square — 3px overlap.
   const overlap = 3;
   const totalW = size + overlap;
   return (
-    `<span style="display:inline-block;position:relative;width:${totalW}px;height:${size}px;flex-shrink:0;">` +
+    `<span ${tapHandler} style="display:inline-block;position:relative;width:${totalW}px;height:${size}px;flex-shrink:0;cursor:pointer;touch-action:manipulation;">` +
       `<span style="position:absolute;left:${overlap}px;top:0;width:${size}px;height:${size}px;border-radius:2px;box-sizing:border-box;${indicatorStyle(status)}opacity:0.6;"></span>` +
       `<span style="position:absolute;left:0;top:0;width:${size}px;height:${size}px;border-radius:2px;box-sizing:border-box;${indicatorStyle(status)}"></span>` +
     `</span>`
@@ -127,15 +130,18 @@ function workoutIndicator(dl, isFuture, size) {
 }
 
 // bonus 배열이 비어있지 않으면 tile 우상단에 작은 황금 ★ 표시.
-// Phase 2a 에선 아이콘만. 탭 → 팝오버 breakdown 은 Phase 2b.
-function bonusStarBadge(dl, isFuture) {
+// 탭 시 dhOpenBonusPopover(dateKey) 로 breakdown 팝오버 오픈.
+function bonusStarBadge(dl, isFuture, dateKey) {
   if (isFuture || !dl || !dl.cubes || !Array.isArray(dl.cubes.bonus) || dl.cubes.bonus.length === 0) return '';
-  // 합산 count — ★ 뱃지에 숫자 표시하지 않고 아이콘만. 카운트는 Phase 2b 팝오버에서.
   return (
-    `<svg width="9" height="9" viewBox="0 0 24 24" fill="url(#dh-gold-grad)" ` +
-    `style="position:absolute;top:4px;right:4px;filter:drop-shadow(0 0 2px rgba(255,213,74,0.6));">` +
-      `<polygon points="12,2 15,9 22,9 17,14 19,22 12,18 5,22 7,14 2,9 9,9"/>` +
-    `</svg>`
+    `<button onclick="event.stopPropagation();window.dhOpenBonusPopover&&window.dhOpenBonusPopover('${dateKey}')" ` +
+    `aria-label="보너스 내역" ` +
+    `style="position:absolute;top:2px;right:2px;width:14px;height:14px;padding:0;background:transparent;border:none;cursor:pointer;touch-action:manipulation;line-height:0;">` +
+      `<svg width="10" height="10" viewBox="0 0 24 24" fill="url(#dh-gold-grad)" ` +
+      `style="filter:drop-shadow(0 0 2px rgba(255,213,74,0.6));">` +
+        `<polygon points="12,2 15,9 22,9 17,14 19,22 12,18 5,22 7,14 2,9 9,9"/>` +
+      `</svg>` +
+    `</button>`
   );
 }
 
@@ -210,11 +216,14 @@ export function buildHeatmapGrid() {
     // 운동 자리는 exercise_bonus 가 있으면 double-cube 로 살짝 넓어짐 (overlap 3px).
     const indicatorSize = Math.floor((DH_TILE_W - 10 - 2 * 3) / 4);
     const indicators = DH_ROWS.map(cat => {
-      if (cat.key === 'workout') return workoutIndicator(dl, isFuture, indicatorSize);
+      if (cat.key === 'workout') return workoutIndicator(dl, isFuture, indicatorSize, k);
       const status = cellStatus(dl, cat.key, isFuture);
-      return `<span style="display:inline-block;width:${indicatorSize}px;height:${indicatorSize}px;border-radius:2px;box-sizing:border-box;${indicatorStyle(status)}"></span>`;
+      const tapHandler = isFuture
+        ? ''
+        : `onclick="event.stopPropagation();window.dhShowCubeTooltip&&window.dhShowCubeTooltip(event,'${k}','${cat.key}')"`;
+      return `<span ${tapHandler} style="display:inline-block;width:${indicatorSize}px;height:${indicatorSize}px;border-radius:2px;box-sizing:border-box;cursor:pointer;touch-action:manipulation;${indicatorStyle(status)}"></span>`;
     }).join('');
-    const bonusStar = bonusStarBadge(dl, isFuture);
+    const bonusStar = bonusStarBadge(dl, isFuture, k);
 
     // Tile container — selected lifts via ivory outline + subtle surface
     // wash (stays in the neutral family so it doesn't collide with the
@@ -411,4 +420,202 @@ export function dhTapFeedback() {
   try {
     if (window.sh?.haptics?.tap) window.sh.haptics.tap('light');
   } catch { /* noop */ }
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// Phase 2b — 큐브 tap 툴팁 + bonus ★ 팝오버
+// ══════════════════════════════════════════════════════════════════════════
+
+// 색 + 카테고리별 Korean 메시지. Goggins / editorial 톤 유지.
+const CUBE_TOOLTIP_COPY = {
+  meal: {
+    gold:    '모든 끼니 청정',
+    silver:  '일부 청정, 흔들림 없이',
+    crimson: '오늘 한 번 흔들렸다',
+    gray:    '식사 기록 없음',
+  },
+  workout: {
+    gold:    '운동 완료',
+    gray:    '운동 기록 없음',
+  },
+  routine: {
+    gold:    '모든 루틴 완수',
+    silver:  '일부 완수, 실패 없음',
+    crimson: '루틴 실패 있음',
+    gray:    '루틴 기록 없음',
+  },
+  tasks: {
+    gold:    '모든 할일 완수',
+    silver:  '부분 완수, 실패 없음',
+    crimson: '할일 실패 있음',
+    gray:    '할일 미등록',
+  },
+};
+
+function _cubeColorForCat(dl, cat) {
+  if (!dl || !dl.cubes) return null;
+  const key = cat === 'meal' ? 'diet' : cat === 'workout' ? 'exercise' : cat;
+  return dl.cubes[key];
+}
+
+function _legacyColorForCat(dl, cat) {
+  const status = cellStatus(dl, cat, false);
+  // cellStatus → cube color (역매핑)
+  if (status === 'pass') return 'gold';
+  if (status === 'partial') return 'silver';
+  if (status === 'fail') return 'crimson';
+  return 'gray';
+}
+
+// 큐브 탭 시 짧은 floating chip. 1.8s 후 자동 사라짐. 다음 tap 으로 덮어쓰기.
+let _cubeTooltipEl = null;
+let _cubeTooltipTimer = null;
+export function dhShowCubeTooltip(event, dateKey, cat) {
+  try {
+    const dl = window.logCache?.[dateKey] || dhLogs[dateKey];
+    const color = _cubeColorForCat(dl, cat) || _legacyColorForCat(dl, cat);
+    const text = (CUBE_TOOLTIP_COPY[cat] && CUBE_TOOLTIP_COPY[cat][color]) || '기록 없음';
+    // 해당 날짜로 포커스 이동 — 탭한 날이 선택되지 않은 상태면 먼저 선택.
+    if (dateKey !== window.selectedKey && typeof window.dhSelectDate === 'function') {
+      // parse date for selectDay
+      const d = new Date(dateKey + 'T00:00:00');
+      if (!isNaN(d)) window.dhSelectDate(dateKey, d.getTime());
+    }
+    if (_cubeTooltipEl && _cubeTooltipEl.parentNode) _cubeTooltipEl.parentNode.removeChild(_cubeTooltipEl);
+    clearTimeout(_cubeTooltipTimer);
+    const chip = document.createElement('div');
+    chip.textContent = text;
+    chip.style.cssText = [
+      'position:fixed',
+      'z-index:9999',
+      'padding:6px 10px',
+      'border-radius:8px',
+      'background:rgba(20,20,24,0.94)',
+      'border:1px solid rgba(255,255,255,0.14)',
+      'color:#eaeaf0',
+      'font-size:11px',
+      'font-weight:600',
+      'letter-spacing:-0.005em',
+      'line-height:1.2',
+      'box-shadow:0 6px 18px rgba(0,0,0,0.35)',
+      'pointer-events:none',
+      'opacity:0',
+      'transform:translateY(4px)',
+      'transition:opacity 140ms ease-out,transform 140ms ease-out',
+      'white-space:nowrap',
+      'max-width:160px',
+    ].join(';');
+    // 탭 좌표 기준 살짝 위쪽으로 띄움
+    let x = 0, y = 0;
+    const t = event && event.target && event.target.getBoundingClientRect && event.target.getBoundingClientRect();
+    if (t) { x = t.left + t.width / 2; y = t.top; }
+    else if (event && (event.clientX != null)) { x = event.clientX; y = event.clientY; }
+    document.body.appendChild(chip);
+    // Position — measure then center above origin
+    requestAnimationFrame(() => {
+      const w = chip.offsetWidth;
+      const h = chip.offsetHeight;
+      const leftClamp = Math.max(6, Math.min(window.innerWidth - w - 6, x - w / 2));
+      const topClamp = Math.max(6, y - h - 8);
+      chip.style.left = leftClamp + 'px';
+      chip.style.top = topClamp + 'px';
+      chip.style.opacity = '1';
+      chip.style.transform = 'translateY(0)';
+    });
+    _cubeTooltipEl = chip;
+    _cubeTooltipTimer = setTimeout(() => {
+      if (chip.parentNode) {
+        chip.style.opacity = '0';
+        chip.style.transform = 'translateY(4px)';
+        setTimeout(() => { if (chip.parentNode) chip.parentNode.removeChild(chip); }, 160);
+      }
+    }, 1800);
+  } catch (e) { /* silent */ }
+}
+
+// ── Bonus ★ 탭 → 팝오버 breakdown ──────────────────────────
+// body 에 overlay + 중앙 sheet. 탭 바깥 or 닫기로 해제.
+function _bonusItemLabel(b) {
+  if (!b || !b.type) return '보너스';
+  if (b.type === 'pr') {
+    const name = b.exerciseName || '운동';
+    const kindLbl = b.kind === 'one_rm' ? '1RM'
+      : b.kind === 'volume' ? '볼륨'
+      : b.kind === 'rep_max' ? (b.reps ? b.reps + 'rep' : 'rep') : 'PR';
+    const kg = (b.kg != null) ? (typeof b.kg === 'number' ? b.kg : parseFloat(b.kg)) : null;
+    const kgStr = (kg != null && !isNaN(kg)) ? (Number.isInteger(kg) ? kg + 'kg' : kg.toFixed(1) + 'kg') : '';
+    return `PR 갱신 — ${name} ${kindLbl} ${kgStr}`.trim();
+  }
+  if (b.type && b.type.startsWith('streak_')) {
+    const days = b.type.split('_')[1] || '';
+    return `${days}일 스트릭`;
+  }
+  if (b.type === 'race' || b.name) {
+    return (b.name ? (b.name + ' ') : '') + '완주';
+  }
+  return b.type;
+}
+
+export function dhOpenBonusPopover(dateKey) {
+  try {
+    dhCloseBonusPopover();
+    const dl = window.logCache?.[dateKey] || dhLogs[dateKey];
+    const bonus = (dl && dl.cubes && Array.isArray(dl.cubes.bonus)) ? dl.cubes.bonus : [];
+    if (!bonus.length) return;
+    const overlay = document.createElement('div');
+    overlay.id = 'dh-bonus-overlay';
+    overlay.setAttribute('onclick', 'if(event.target===this)window.dhCloseBonusPopover&&window.dhCloseBonusPopover()');
+    overlay.style.cssText = [
+      'position:fixed',
+      'inset:0',
+      'z-index:10000',
+      'background:rgba(0,0,0,0.6)',
+      'backdrop-filter:blur(6px)',
+      '-webkit-backdrop-filter:blur(6px)',
+      'display:flex',
+      'align-items:flex-end',
+      'justify-content:center',
+      'padding:0',
+      'animation:dhFadeIn 160ms ease-out',
+    ].join(';');
+    // 날짜 라벨
+    const d = new Date(dateKey + 'T00:00:00');
+    const mo = d.getMonth() + 1;
+    const dd = d.getDate();
+    const wk = ['일','월','화','수','목','금','토'][d.getDay()];
+    const rows = bonus.map(b => {
+      const count = typeof b.count === 'number' ? b.count : 1;
+      return (
+        `<div style="display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid rgba(255,255,255,0.06);">` +
+          `<span style="display:inline-flex;align-items:center;gap:4px;padding:4px 8px;border-radius:8px;background:linear-gradient(135deg,rgba(255,241,168,0.14),rgba(255,213,74,0.10));border:1px solid rgba(255,213,74,0.35);font-size:11px;font-weight:700;color:#ffd54a;letter-spacing:-0.005em;white-space:nowrap;">` +
+            `<svg width="9" height="9" viewBox="0 0 24 24" fill="url(#dh-gold-grad)"><polygon points="12,2 15,9 22,9 17,14 19,22 12,18 5,22 7,14 2,9 9,9"/></svg>` +
+            `×${count}` +
+          `</span>` +
+          `<div style="flex:1;min-width:0;font-size:12px;color:var(--text);letter-spacing:-0.005em;line-height:1.3;">${escapeHtml(_bonusItemLabel(b))}</div>` +
+        `</div>`
+      );
+    }).join('');
+    const totalCount = bonus.reduce((s, b) => s + (typeof b.count === 'number' ? b.count : 1), 0);
+    overlay.innerHTML =
+      `<style>@keyframes dhFadeIn{from{opacity:0}to{opacity:1}}@keyframes dhSlideUp{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}</style>` +
+      DH_SVG_DEFS +
+      `<div role="dialog" aria-label="보너스 내역" style="width:100%;max-width:420px;background:var(--surface);border-top:1px solid rgba(255,255,255,0.08);border-radius:14px 14px 0 0;padding:6px 0 10px;margin-bottom:0;animation:dhSlideUp 220ms cubic-bezier(0.16,1,0.3,1);box-shadow:0 -12px 40px rgba(0,0,0,0.4);">` +
+        `<div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px 10px;border-bottom:1px solid rgba(255,255,255,0.06);">` +
+          `<div>` +
+            `<div style="font-size:10px;color:var(--text3);font-weight:700;letter-spacing:0.06em;text-transform:uppercase;">${mo}월 ${dd}일 (${wk})</div>` +
+            `<div style="font-size:14px;color:var(--text);font-weight:800;letter-spacing:-0.01em;margin-top:2px;">보너스 ×${totalCount}</div>` +
+          `</div>` +
+          `<button onclick="window.dhCloseBonusPopover&&window.dhCloseBonusPopover()" aria-label="닫기" style="background:transparent;border:none;color:var(--text3);font-size:18px;cursor:pointer;padding:6px 8px;line-height:1;touch-action:manipulation;">✕</button>` +
+        `</div>` +
+        `<div>${rows}</div>` +
+      `</div>`;
+    document.body.appendChild(overlay);
+    document.body.style.overflow = 'hidden';
+  } catch (e) { /* silent */ }
+}
+
+export function dhCloseBonusPopover() {
+  const el = document.getElementById('dh-bonus-overlay');
+  if (el && el.parentNode) el.parentNode.removeChild(el);
+  document.body.style.overflow = '';
 }
