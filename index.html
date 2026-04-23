@@ -20,7 +20,7 @@
      so window globals (dkey, normKey, ...) are set before inline code runs.
      Query version bumps cache when bundle content changes. Bump manually or
      via build script when shipping a new bundle. See MIGRATION_PLAN.md. -->
-<script src="/dist/app.js?v=20260423k"></script>
+<script src="/dist/app.js?v=20260423l"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Archivo+Black&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -93,6 +93,21 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 .stats-hero-cell{flex:1;min-width:0;}
 .stats-hero-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;font-weight:600;margin-bottom:4px;}
 .stats-tier-bar{height:6px;border-radius:6px;background:rgba(255,255,255,.08);overflow:hidden;}
+
+/* STATS HERO v2 (slim) — one-line streak + grade + tier bar */
+.stats-hero.stats-hero-slim{padding:14px 16px 13px;margin-bottom:10px;}
+.stats-hero-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px;}
+.stats-hero-streak{display:inline-flex;align-items:baseline;gap:6px;color:var(--text);font-family:'DM Mono',monospace;}
+.stats-hero-streak-fire{font-size:18px;line-height:1;}
+.stats-hero-streak-num{font-size:28px;font-weight:800;color:var(--accent);letter-spacing:-.02em;line-height:1;}
+.stats-hero-streak-unit{font-size:11px;font-weight:600;color:var(--text3);letter-spacing:-.01em;}
+.stats-hero-grade-wrap{display:inline-flex;align-items:baseline;gap:6px;}
+.stats-hero-grade{font-size:26px;font-weight:900;color:var(--text);letter-spacing:-.03em;line-height:1;font-family:'DM Mono',monospace;}
+.stats-hero-grade-sub{font-size:10px;font-weight:600;color:var(--text3);letter-spacing:.02em;}
+.stats-hero-tier-row{display:flex;align-items:center;gap:8px;}
+.stats-hero-tier-from,.stats-hero-tier-to{font-size:9px;color:var(--text3);font-family:'DM Mono',monospace;letter-spacing:-.01em;white-space:nowrap;flex-shrink:0;}
+.stats-hero-tier-to{text-align:right;}
+.stats-tier-bar-slim{flex:1;height:4px;}
 .stats-tier-fill{height:100%;background:var(--accent-grad);transition:width .4s ease;box-shadow:0 0 6px rgba(255,77,77,.3);}
 .stats-sec-nav{display:flex;gap:6px;padding:0 16px 12px;overflow-x:auto;scrollbar-width:none;position:sticky;top:0;z-index:20;background:var(--bg);}
 .stats-sec-nav::-webkit-scrollbar{display:none;}
@@ -1450,30 +1465,28 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
       <div class="spinner" style="margin:0 auto 10px;"></div>데이터 불러오는 중…
     </div>
 
-    <!-- 히어로 배너: 스트릭 / 오늘 점수 / 티어 -->
-    <div class="stats-hero" id="st-hero" style="display:none;">
-      <div class="stats-hero-top">
-        <div class="stats-hero-cell">
-          <div class="stats-hero-label">🔥 연속 달성</div>
-          <div class="stats-hero-num" style="font-size:34px;color:#ff4d4d;"><span id="st-hero-streak">0</span><span style="font-size:14px;color:var(--text3);margin-left:3px;">일</span></div>
+    <!-- 히어로 배너 v2 — 연속 + 등급 한 줄 (오늘 pt 는 홈 상단에 이미 있어 제거) -->
+    <div class="stats-hero stats-hero-slim" id="st-hero" style="display:none;">
+      <div class="stats-hero-row">
+        <div class="stats-hero-streak">
+          <span class="stats-hero-streak-fire">🔥</span>
+          <span class="stats-hero-streak-num" id="st-hero-streak">0</span>
+          <span class="stats-hero-streak-unit">일 연속</span>
         </div>
-        <div class="stats-hero-cell" style="text-align:center;">
-          <div class="stats-hero-label">오늘</div>
-          <div class="stats-hero-num" style="font-size:28px;color:var(--accent);"><span id="st-hero-today">+0</span><span style="font-size:13px;color:var(--text3);margin-left:2px;">pt</span></div>
-        </div>
-        <div class="stats-hero-cell" style="text-align:right;">
-          <div class="stats-hero-label">성적</div>
-          <div class="stats-hero-num" style="font-size:34px;font-weight:900;color:var(--text);line-height:1;" id="st-hero-grade">—</div>
-          <div style="font-size:10px;color:var(--text3);margin-top:2px;font-weight:600;" id="st-hero-grade-sub">기간 종합</div>
-          <!-- legacy tier hook (kept for backwards compat; invisible) -->
-          <span id="st-hero-tier" style="display:none;"></span>
+        <div class="stats-hero-grade-wrap">
+          <span class="stats-hero-grade" id="st-hero-grade">—</span>
+          <span class="stats-hero-grade-sub" id="st-hero-grade-sub">기간 종합</span>
         </div>
       </div>
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:4px;">
-        <div style="font-size:10px;color:var(--text3);" id="st-hero-tier-from">0점</div>
-        <div style="font-size:10px;color:var(--text3);" id="st-hero-tier-to">다음까지 —</div>
+      <!-- Tier progress bar — 프로필 누적 점수 기준이라 고긴스 여정 지표로 의미있음. 유지하되 한 줄로 축소 -->
+      <div class="stats-hero-tier-row">
+        <span class="stats-hero-tier-from" id="st-hero-tier-from"></span>
+        <div class="stats-tier-bar stats-tier-bar-slim"><div class="stats-tier-fill" id="st-hero-tier-fill" style="width:0%;"></div></div>
+        <span class="stats-hero-tier-to" id="st-hero-tier-to"></span>
       </div>
-      <div class="stats-tier-bar"><div class="stats-tier-fill" id="st-hero-tier-fill" style="width:0%;"></div></div>
+      <!-- Legacy hooks kept hidden so old hero render paths don't crash -->
+      <span id="st-hero-today" style="display:none;" aria-hidden="true"></span>
+      <span id="st-hero-tier" style="display:none;" aria-hidden="true"></span>
       <!-- Legacy hero-focus hooks kept hidden; the new standalone card below
            the bento supersedes them. Old stRenderHero still writes into
            these until the refactor settles. -->
