@@ -63,21 +63,22 @@ function deriveState() {
 // in logCache. `offsetDays` lets the caller anchor the search relative to
 // the displayed value — e.g. in carryover state the shown weight is 3 days
 // old, so we want the entry BEFORE that, not the gap between today and 3d.
-// Returns just the signed delta string (no '어제' / 'N일 전' label).
+// Returns the signed delta string (no '어제' / 'N일 전' label). 120 day
+// window so even sparse weigh-in schedules surface a comparison.
 function formatDelta(w, offsetDays) {
   if (w == null) return null;
   const anchor = new Date(window.selectedDate);
   const start = (offsetDays || 0) + 1;
-  for (let i = start; i <= 60; i++) {
+  for (let i = start; i <= 120; i++) {
     const d = new Date(anchor); d.setDate(anchor.getDate() - i);
     const k = window.dkey(d);
     const l = window.logCache?.[k];
     const prev = l?.weight != null ? parseFloat(l.weight) : null;
-    if (prev == null) continue;
+    if (prev == null || !isFinite(prev)) continue;
     const diff = w - prev;
-    if (Math.abs(diff) < 0.05) return { text: '±0.0', cls: '' };
-    if (diff < 0) return { text: diff.toFixed(1), cls: 'down pos' };
-    return { text: '+' + diff.toFixed(1), cls: 'up neg' };
+    if (Math.abs(diff) < 0.05) return { text: '±0.0', cls: '', daysAgo: i };
+    if (diff < 0) return { text: diff.toFixed(1) + 'kg', cls: 'down pos', daysAgo: i };
+    return { text: '+' + diff.toFixed(1) + 'kg', cls: 'up neg', daysAgo: i };
   }
   return null;
 }
@@ -109,13 +110,13 @@ export function renderWeight() {
     }
     if (ccSep) ccSep.style.display = '';
     if (ccDelta) {
-      // Signed kg vs the record BEFORE the displayed value. If there is
-      // no prior record to compare against, hide the delta entirely so we
-      // don't clutter the row with '첫 기록' noise — the kg value is
-      // enough on its own.
+      // Signed kg vs the most recent prior record (search walks back up
+      // to 120 days). '1일 전 대비 -0.3kg' / '7일 전 대비 +0.2kg' etc.
+      // Hides entirely only when there's truly no prior comparison point.
       const d = formatDelta(info.value, info.daysSince || 0);
       if (d) {
-        ccDelta.textContent = d.text;
+        const whenLabel = d.daysAgo === 1 ? '어제 대비' : d.daysAgo + '일 전 대비';
+        ccDelta.textContent = `${whenLabel} ${d.text}`;
         ccDelta.className = d.cls.split(' ').map(c => c === 'down' ? 'pos' : c === 'up' ? 'neg' : c).join(' ');
         ccSep && (ccSep.style.display = '');
       } else {
@@ -159,7 +160,12 @@ export function renderWeight() {
     const d = formatDelta(info.value, info.daysSince || 0);
     if (d) {
       if (metaSep) metaSep.style.display = '';
-      if (metaDelta) { metaDelta.style.display = ''; metaDelta.textContent = d.text; metaDelta.className = 'delta ' + d.cls.split(' ')[0]; }
+      if (metaDelta) {
+        const whenLabel = d.daysAgo === 1 ? '어제 대비' : d.daysAgo + '일 전 대비';
+        metaDelta.style.display = '';
+        metaDelta.textContent = `${whenLabel} ${d.text}`;
+        metaDelta.className = 'delta ' + d.cls.split(' ')[0];
+      }
     } else {
       if (metaSep) metaSep.style.display = 'none';
       if (metaDelta) metaDelta.style.display = 'none';
