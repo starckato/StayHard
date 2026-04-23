@@ -86,17 +86,15 @@ function cellStatus(dl, cat, isFuture) {
   return 'empty';
 }
 
-// Ember Ladder palette (v6) — brand-red family with no glow. Flat, editorial,
-// fits the Goggins dark-theme shell. pass = muted brand red; partial = neutral
-// gray; fail = faint red with dashed stroke (still in the family, but broken);
-// empty/future = outlined emptiness.
+// Palette v7 — "red = bad, ivory = good" so the heatmap shares the semantic
+// language the food card already uses (🚫 금지 = 빨강). Flat, no glow.
 function indicatorStyle(status) {
   if (status === 'pass')
-    return 'background:rgba(255,77,77,0.36);border:1px solid rgba(255,77,77,0.18);';
+    return 'background:rgba(234,234,240,0.70);border:1px solid rgba(255,255,255,0.05);';
   if (status === 'partial')
-    return 'background:rgba(255,255,255,0.14);border:1px solid rgba(255,255,255,0.06);';
+    return 'background:rgba(234,234,240,0.22);border:1px solid rgba(255,255,255,0.04);';
   if (status === 'fail')
-    return 'background:rgba(255,77,77,0.08);border:1px dashed rgba(255,77,77,0.42);';
+    return 'background:rgba(255,77,77,0.32);border:1px solid rgba(255,77,77,0.45);';
   if (status === 'future')
     return 'background:transparent;border:1px dashed rgba(255,255,255,0.08);';
   // empty
@@ -147,16 +145,18 @@ export function buildHeatmapGrid() {
       return `<span style="display:inline-block;width:${indicatorSize}px;height:${indicatorSize}px;border-radius:2px;box-sizing:border-box;${indicatorStyle(status)}"></span>`;
     }).join('');
 
-    // Tile container — selected gets a subtle lift + accent border
+    // Tile container — selected lifts via ivory outline + subtle surface
+    // wash (stays in the neutral family so it doesn't collide with the
+    // fail indicator's red). Brand red remains solely on the 'today' dot.
     const tileBg = isSel
-      ? 'rgba(255,77,77,0.06)'
+      ? 'rgba(255,255,255,0.05)'
       : isFuture ? 'transparent' : 'var(--surface)';
     const tileBorder = isSel
-      ? 'border:1px solid rgba(255,77,77,0.38);'
+      ? 'border:1px solid rgba(234,234,240,0.38);'
       : isFuture ? 'border:1px dashed rgba(255,255,255,0.08);'
       : 'border:1px solid rgba(255,255,255,0.06);';
     const tileOpacity = isFuture ? 0.55 : 1;
-    const tileShadow = isSel ? 'box-shadow:0 0 0 1px rgba(255,77,77,0.12);' : '';
+    const tileShadow = isSel ? 'box-shadow:0 0 0 1px rgba(234,234,240,0.10);' : '';
 
     const monthLabel = showMonth
       ? `<div style="position:absolute;top:-18px;left:0;font-size:9px;font-weight:700;color:var(--text3);letter-spacing:.05em;white-space:nowrap;">${d.getMonth() + 1}월</div>`
