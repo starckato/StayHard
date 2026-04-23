@@ -20,7 +20,7 @@
      so window globals (dkey, normKey, ...) are set before inline code runs.
      Query version bumps cache when bundle content changes. Bump manually or
      via build script when shipping a new bundle. See MIGRATION_PLAN.md. -->
-<script src="/dist/app.js?v=20260423j"></script>
+<script src="/dist/app.js?v=20260423k"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Archivo+Black&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -150,6 +150,14 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 .stats-focus-evidence{display:flex;gap:10px;margin-top:10px;font-size:10px;color:var(--text3);font-family:'DM Mono',monospace;}
 .stats-focus-evidence span{display:inline-flex;align-items:center;gap:3px;}
 .stats-focus-evidence b{color:var(--text);font-weight:600;}
+
+/* STATS ACCORDION — chart cards fold by default so the scan is faster */
+.stats-card.accordion{transition:border-color .15s;}
+.stats-card.accordion > .stats-card-title{cursor:pointer;user-select:none;margin-bottom:0;display:flex;align-items:center;gap:6px;padding:2px 0;touch-action:manipulation;}
+.stats-card.accordion > .stats-card-title::after{content:'▾';margin-left:auto;color:var(--text3);font-size:11px;transition:transform .25s;flex-shrink:0;}
+.stats-card.accordion.expanded > .stats-card-title::after{transform:rotate(180deg);}
+.stats-card.accordion:not(.expanded) > *:not(.stats-card-title){display:none !important;}
+.stats-card.accordion:not(.expanded){padding:12px 14px;}
 .stats-headline{display:flex;gap:14px;margin:2px 0 14px;}
 .stats-headline-cell{flex:1;min-width:0;}
 .stats-headline-label{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;font-weight:700;margin-bottom:3px;}
@@ -1475,8 +1483,8 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
       </span>
     </div>
 
-    <!-- 섹션 핀 탭 -->
-    <div class="stats-sec-nav" id="st-sec-nav" style="display:none;">
+    <!-- 섹션 핀 탭 (Phase 3 에서 완전히 숨김 — 아코디언 단일 스크롤로 대체) -->
+    <div class="stats-sec-nav" id="st-sec-nav" style="display:none !important;">
       <button class="stats-sec-pill active" data-sec="overview" onclick="statsSetSection('overview')"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16"/><path d="M7 20v-6"/><path d="M12 20V8"/><path d="M17 20v-3"/></svg>종합</button>
       <button class="stats-sec-pill" data-sec="training" onclick="statsSetSection('training')"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10v4M7 7v10M17 7v10M21 10v4"/><path d="M7 12h10"/></svg>훈련</button>
       <button class="stats-sec-pill" data-sec="nutrition" onclick="statsSetSection('nutrition')"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20C4 10 10 4 20 4c0 10-6 16-16 16z"/><path d="M4 20L13 11"/></svg>식단</button>
@@ -1556,51 +1564,51 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
         <div id="st-insights-list"></div>
       </div>
 
-      <div class="stats-card stats-featured">
-        <div class="stats-card-title">🔥 점수 추이</div>
+      <div class="stats-card accordion" data-acc="score">
+        <div class="stats-card-title" onclick="toggleStatsCard('score')">🔥 점수 추이</div>
         <div class="stats-meta" id="st-score-meta"></div>
         <div style="position:relative;height:200px;"><canvas id="st-chart-score"></canvas></div>
         <div id="st-score-empty" class="stats-empty" style="display:none;">점수 기록이 없어요</div>
       </div>
 
-      <div class="stats-card" id="st-pts-breakdown-card" style="display:none;">
-        <div class="stats-card-title">📊 점수 구성</div>
+      <div class="stats-card accordion" id="st-pts-breakdown-card" data-acc="pts-breakdown" style="display:none;">
+        <div class="stats-card-title" onclick="toggleStatsCard('pts-breakdown')">📊 점수 구성</div>
         <div id="st-pts-breakdown"></div>
       </div>
     </div>
 
-    <!-- 훈련 -->
-    <div class="stats-section-panel hidden" id="st-sec-training">
-      <div class="stats-card stats-featured">
-        <div class="stats-card-title"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10v4M7 7v10M17 7v10M21 10v4"/><path d="M7 12h10"/></svg>운동 볼륨 (주별)</div>
+    <!-- 훈련 섹션 (pill 탭 제거 — 모두 단일 스크롤로) -->
+    <div class="stats-section-panel" id="st-sec-training">
+      <div class="stats-card accordion" data-acc="vol">
+        <div class="stats-card-title" onclick="toggleStatsCard('vol')"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10v4M7 7v10M17 7v10M21 10v4"/><path d="M7 12h10"/></svg>운동 볼륨 (주별)</div>
         <div class="stats-meta" id="st-vol-meta"></div>
         <div style="position:relative;height:200px;"><canvas id="st-chart-vol"></canvas></div>
         <div id="st-vol-empty" class="stats-empty" style="display:none;">운동 볼륨 기록이 없어요</div>
       </div>
 
-      <div class="stats-card" id="st-muscle-dist-card" style="display:none;">
-        <div class="stats-card-title">🎯 부위별 볼륨 분포</div>
+      <div class="stats-card accordion" id="st-muscle-dist-card" data-acc="muscle" style="display:none;">
+        <div class="stats-card-title" onclick="toggleStatsCard('muscle')">🎯 부위별 볼륨 분포</div>
         <div id="st-muscle-dist"></div>
       </div>
 
-      <div class="stats-card" id="st-pr-card" style="display:none;">
-        <div class="stats-card-title">🏆 개인 기록 (PR)</div>
+      <div class="stats-card accordion" id="st-pr-card" data-acc="pr" style="display:none;">
+        <div class="stats-card-title" onclick="toggleStatsCard('pr')">🏆 개인 기록 (PR)</div>
         <div class="stats-meta" id="st-pr-meta"></div>
         <div id="st-pr-list" style="display:flex;flex-direction:column;gap:6px;"></div>
       </div>
 
-      <div class="stats-card">
-        <div class="stats-card-title">💪 운동별 추이</div>
+      <div class="stats-card accordion" data-acc="exlist">
+        <div class="stats-card-title" onclick="toggleStatsCard('exlist')">💪 운동별 추이</div>
         <div class="stats-meta" id="st-exlist-meta"></div>
         <div id="st-exlist" style="display:flex;flex-direction:column;gap:6px;"></div>
         <div id="st-exlist-empty" class="stats-empty" style="display:none;">운동 기록이 없어요</div>
       </div>
     </div>
 
-    <!-- 식단 -->
-    <div class="stats-section-panel hidden" id="st-sec-nutrition">
-      <div class="stats-card stats-featured">
-        <div class="stats-card-title"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20C4 10 10 4 20 4c0 10-6 16-16 16z"/><path d="M4 20L13 11"/></svg>식단 품질 (끼니별)</div>
+    <!-- 식단 섹션 -->
+    <div class="stats-section-panel" id="st-sec-nutrition">
+      <div class="stats-card accordion" data-acc="meal">
+        <div class="stats-card-title" onclick="toggleStatsCard('meal')"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20C4 10 10 4 20 4c0 10-6 16-16 16z"/><path d="M4 20L13 11"/></svg>식단 품질 (끼니별)</div>
         <div class="stats-meta" id="st-meal-meta"></div>
         <div id="st-meal-heatmap"></div>
         <div style="display:flex;gap:12px;margin-top:10px;flex-wrap:wrap;">
@@ -1613,37 +1621,37 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
         <div id="st-meal-empty" class="stats-empty" style="display:none;">식단 기록이 없어요</div>
       </div>
 
-      <div class="stats-card stats-featured" id="st-meal-quality-card" style="display:none;">
-        <div class="stats-card-title">📈 식단 품질 추이</div>
+      <div class="stats-card accordion" id="st-meal-quality-card" data-acc="meal-quality" style="display:none;">
+        <div class="stats-card-title" onclick="toggleStatsCard('meal-quality')">📈 식단 품질 추이</div>
         <div class="stats-meta" id="st-meal-quality-meta"></div>
         <div style="position:relative;height:160px;"><canvas id="st-chart-meal-quality"></canvas></div>
       </div>
     </div>
 
-    <!-- 습관 / 몸 -->
-    <div class="stats-section-panel hidden" id="st-sec-habits">
-      <div class="stats-card stats-featured">
-        <div class="stats-card-title"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="14" width="18" height="6" rx="1.5"/><path d="M8 14v-2a4 4 0 0 1 8 0v2"/><circle cx="12" cy="18" r=".9" fill="currentColor"/></svg>체중 추이 (kg)</div>
+    <!-- 습관 / 몸 섹션 -->
+    <div class="stats-section-panel" id="st-sec-habits">
+      <div class="stats-card accordion" data-acc="weight">
+        <div class="stats-card-title" onclick="toggleStatsCard('weight')"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="14" width="18" height="6" rx="1.5"/><path d="M8 14v-2a4 4 0 0 1 8 0v2"/><circle cx="12" cy="18" r=".9" fill="currentColor"/></svg>체중 추이 (kg)</div>
         <div class="stats-meta" id="st-weight-meta"></div>
         <div style="position:relative;height:200px;"><canvas id="st-chart-weight"></canvas></div>
         <div id="st-weight-empty" class="stats-empty" style="display:none;">체중 기록이 없어요</div>
       </div>
 
-      <div class="stats-card stats-featured" id="st-bodycomp-card" style="display:none;">
-        <div class="stats-card-title">🏋️ 체성분 추이</div>
+      <div class="stats-card accordion" id="st-bodycomp-card" data-acc="bodycomp" style="display:none;">
+        <div class="stats-card-title" onclick="toggleStatsCard('bodycomp')">🏋️ 체성분 추이</div>
         <div class="stats-meta" id="st-bodycomp-meta"></div>
         <div style="position:relative;height:200px;"><canvas id="st-chart-bodycomp"></canvas></div>
       </div>
 
-      <div class="stats-card">
-        <div class="stats-card-title"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-5"/></svg>루틴 완료율 추이 (%)</div>
+      <div class="stats-card accordion" data-acc="routine">
+        <div class="stats-card-title" onclick="toggleStatsCard('routine')"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-5"/></svg>루틴 완료율 추이 (%)</div>
         <div class="stats-meta" id="st-routine-meta"></div>
         <div style="position:relative;height:160px;"><canvas id="st-chart-routine"></canvas></div>
         <div id="st-routine-empty" class="stats-empty" style="display:none;">루틴 기록이 없어요</div>
       </div>
 
-      <div class="stats-card" id="st-routine-breakdown-card" style="display:none;">
-        <div class="stats-card-title">📊 루틴별 완료율 & 연속 기록</div>
+      <div class="stats-card accordion" id="st-routine-breakdown-card" data-acc="routine-breakdown" style="display:none;">
+        <div class="stats-card-title" onclick="toggleStatsCard('routine-breakdown')">📊 루틴별 완료율 & 연속 기록</div>
         <div id="st-routine-breakdown"></div>
       </div>
     </div>

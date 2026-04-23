@@ -148,23 +148,35 @@ export function stRenderAll(rows){
   statsSetSection(saved, true);
 }
 
-// ── 섹션 전환 ──
-export function statsSetSection(key,skipSave){
-  const valid=['overview','training','nutrition','habits'];
-  if(!valid.includes(key))key='overview';
-  if(!skipSave)localStorage.setItem('stats_section',key);
-  document.querySelectorAll('#st-sec-nav .stats-sec-pill').forEach(b=>{
-    b.classList.toggle('active',b.dataset.sec===key);
+// ── 섹션 전환 (Phase 3 — 사실상 no-op) ──
+// 섹션 핀 탭이 제거됐고 모든 panel 이 항상 노출됨. 여전히 호출되는
+// 레거시 경로 (overview 초기화, fwGotoStats 등) 를 깨뜨리지 않기 위해
+// 함수만 남겨둠. 항상 모든 섹션을 unhide 로 유지.
+export function statsSetSection(_key,_skipSave){
+  document.querySelectorAll('.stats-section-panel').forEach(el=>{
+    el.classList.remove('hidden');
   });
-  valid.forEach(k=>{
-    const el=document.getElementById('st-sec-'+k);
-    if(el)el.classList.toggle('hidden',k!==key);
-  });
-  // Resize charts that became visible
-  setTimeout(()=>{
-    const chartMap={overview:['score'],training:['vol'],nutrition:['mealquality'],habits:['weight','routine','bodycomp']};
-    (chartMap[key]||[]).forEach(k=>{if(stCharts[k]){try{stCharts[k].resize();}catch(_){}}});
-  },30);
+}
+
+// Stats accordion toggle — independent (not exclusive) so users can
+// compare multiple charts. Resize the embedded chart after the DOM
+// settles so Chart.js doesn't draw at height:0.
+export function toggleStatsCard(key){
+  const card=document.querySelector('.stats-card.accordion[data-acc="'+key+'"]');
+  if(!card)return;
+  card.classList.toggle('expanded');
+  if(card.classList.contains('expanded')){
+    const map={
+      score:'score',vol:'vol','meal-quality':'mealquality',
+      weight:'weight',routine:'routine',bodycomp:'bodycomp',
+    };
+    const cKey=map[key];
+    if(cKey){
+      setTimeout(()=>{
+        try{stCharts[cKey]&&stCharts[cKey].resize();}catch(_){}
+      },120);
+    }
+  }
 }
 
 // ── 기간 종합 성적 계산 (히어로 + 성적표 카드 공통) ──
