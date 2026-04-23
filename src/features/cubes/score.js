@@ -1,5 +1,9 @@
 // Will Cube 점수 환산 — 순수 함수.
-// gold: +3, silver: +2, crimson: −3, gray: +1, null: 0
+// gold: +3, silver: +2, crimson: −3, gray: 0, null: 0
+// 2026-04-24 규칙 변경: gray = 0점. "큐브 얻기 전까지 점수 없음".
+// 유저가 루틴/할일/식단/운동을 "등록" 만 한 상태는 무점수. 완료/금지 등
+// 의미 있는 상태 전환이 일어나야 cube 와 점수가 붙음.
+//
 // bonus 항목: count × 3 (각 count 는 이미 "몇 개의 황금 큐브 가치인지"로 계산됨)
 //   예: PR 1건 { color:'gold', count: 2 } → +6
 //       풀마라톤 { color:'gold', count: 5 } → +15
@@ -8,7 +12,7 @@ const BASE_SCORE = {
   gold: 3,
   silver: 2,
   crimson: -3,
-  gray: 1,
+  gray: 0,
 };
 
 // 단일 큐브 색 → 점수

@@ -20,7 +20,7 @@
      so window globals (dkey, normKey, ...) are set before inline code runs.
      Query version bumps cache when bundle content changes. Bump manually or
      via build script when shipping a new bundle. See MIGRATION_PLAN.md. -->
-<script src="/dist/app.js?v=20260424u"></script>
+<script src="/dist/app.js?v=20260424v"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Archivo+Black&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -5962,7 +5962,8 @@ const CUBE_CHANGE_COPY={
   },
 };
 // 색상별 절대 점수 — Phase 1 src/features/cubes/score.js 의 BASE_SCORE 와 동일 유지.
-const _CUBE_COLOR_POINTS={gold:3,silver:2,crimson:-3,gray:1};
+// 2026-04-24: gray = 0 (큐브 얻기 전까지 점수 없음).
+const _CUBE_COLOR_POINTS={gold:3,silver:2,crimson:-3,gray:0};
 function _cubeColorPoints(c){if(c==null)return 0;return _CUBE_COLOR_POINTS[c]||0;}
 function _formatCubeDelta(n){return n>0?('+'+n):n<0?('−'+Math.abs(n)):'0';}
 // 팝오버 중첩 큐 — 동시 변경 여러 개면 0.7초 간격으로 순차 노출.
@@ -6177,23 +6178,18 @@ async function runDailyCubeRecap(){
 
 // 이전/이후 cubes 비교해서 변화점 추출. 색 "승급"만 이벤트로 인정.
 // (gray→anything, silver→gold, anything→crimson 는 이벤트. 반대 방향 cancel 은 조용히.)
-// logSrc: 현재 log (meals 개수 체크용). 식단은 끼니 2개 이상부터 팝오버 노출 —
-// 1끼만 등록한 상태에선 chip / score 는 조용히 업데이트하고 애니메이션 없음.
-function _diffCubes(before,after,logSrc){
+// gray 는 이제 0점이므로 gray → gray 전환은 자연스레 delta 0, event 없음.
+// "1끼 등록해도 gray" 규칙이 judge 레벨에서 처리되므로 _diffCubes 특수 gate 불필요.
+function _diffCubes(before,after){
   const events=[];
   const cats=['diet','exercise','routine','tasks'];
   const RANK={gold:3,silver:2,crimson:1,gray:0};
-  // 식단 팝오버 노출 조건: 비-drink 끼니 ≥ 2.
-  const mealCount=(logSrc&&Array.isArray(logSrc.meals))
-    ?logSrc.meals.filter(m=>m&&m.category!=='drink').length:0;
-  const dietPopoverAllowed=mealCount>=2;
   for(const cat of cats){
     const b=(before&&before[cat])||null;
     const a=(after&&after[cat])||null;
     if(a===b)continue;
     if(a==null)continue; // 큐브가 사라지는 케이스 (할일 전부 삭제 등) — 조용히
-    // 식단은 끼니 2개 이상부터만 팝오버 노출. chip/score 는 이미 업데이트됨.
-    if(cat==='diet'&&!dietPopoverAllowed)continue;
+    if(a==='gray')continue; // gray 승급 (silver→gray 등) 은 조용히. 큐브 상실.
     // 실제 점수 delta = (새 색 점수) - (이전 색 점수). hdr-score 변동량과 정확히 일치.
     const deltaPts=_cubeColorPoints(a)-_cubeColorPoints(b);
     if(a==='crimson'&&b!=='crimson'){
@@ -6346,7 +6342,7 @@ function recomputeCubesHook(key,opts){
     // Cube 변화 팝오버 — 오늘 날짜일 때만. 과거 로그 수정 / silent sync 는 조용히.
     try{
       if(k===TODAY&&!silent){
-        const events=_diffCubes(beforeCubes,l.cubes,l);
+        const events=_diffCubes(beforeCubes,l.cubes);
         for(const ev of events)showCubeEvent(ev);
       }
     }catch(e){console.warn('[cube-diff]',e&&e.message);}

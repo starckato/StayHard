@@ -23,7 +23,16 @@ function t(name, fn) { _cases.push({ name, fn }); }
 t('diet · 기록 0건 → gray', () => judgeDiet([]) === 'gray');
 t('diet · 주류 1건 → crimson', () => judgeDiet([{ type: 'normal', category: 'alcohol' }]) === 'crimson');
 t('diet · red 1건 → crimson', () => judgeDiet([{ type: 'red', category: 'snack' }, { type: 'green', category: 'lunch' }]) === 'crimson');
-t('diet · green 2개 이상 → gold (규칙 완화)', () => judgeDiet([
+t('diet · 1끼 클린만 → gray (큐브 얻기 전)', () => judgeDiet([
+  { type: 'green', category: 'breakfast' },
+]) === 'gray');
+t('diet · 1끼 일반만 → gray', () => judgeDiet([
+  { type: 'normal', category: 'breakfast' },
+]) === 'gray');
+t('diet · 1끼 red → crimson (즉시 패널티)', () => judgeDiet([
+  { type: 'red', category: 'dinner' },
+]) === 'crimson');
+t('diet · green 2개 → gold', () => judgeDiet([
   { type: 'green', category: 'breakfast' },
   { type: 'green', category: 'lunch' },
 ]) === 'gold');
@@ -32,11 +41,11 @@ t('diet · green 2 + normal 1 → gold', () => judgeDiet([
   { type: 'green', category: 'lunch' },
   { type: 'normal', category: 'dinner' },
 ]) === 'gold');
-t('diet · green 1 + normal 1 → silver', () => judgeDiet([
+t('diet · green 1 + normal 1 → silver (2끼 임계치 충족)', () => judgeDiet([
   { type: 'green', category: 'breakfast' },
   { type: 'normal', category: 'lunch' },
 ]) === 'silver');
-t('diet · 전부 normal → silver', () => judgeDiet([
+t('diet · 전부 normal 2끼 → silver', () => judgeDiet([
   { type: 'normal', category: 'breakfast' },
   { type: 'normal', category: 'lunch' },
 ]) === 'silver');
@@ -109,16 +118,16 @@ t('tasks · 전부 미완료 (실패 없음) → gray (등록만)', () => judgeT
 t('score · gold 4개 = +12', () => scoreFromCubes({
   diet: 'gold', exercise: 'gold', exercise_bonus: null, routine: 'gold', tasks: 'gold', bonus: [],
 }) === 12);
-t('score · gold 4 + exercise_bonus gold + PR bonus 1 = +12+3+6 = 21', () => scoreFromCubes({
+t('score · gold 4 + exercise_bonus gold + PR bonus 1 = 15+6 = 21', () => scoreFromCubes({
   diet: 'gold', exercise: 'gold', exercise_bonus: 'gold', routine: 'gold', tasks: 'gold',
   bonus: [{ type: 'pr', color: 'gold', count: 2 }],
 }) === 3 + 3 + 3 + 3 + 3 + 6);
-t('score · crimson 1 = −3', () => scoreFromCubes({
+t('score · crimson 1 + gray 2 = −3', () => scoreFromCubes({
   diet: 'crimson', exercise: 'gray', exercise_bonus: null, routine: 'gray', tasks: null, bonus: [],
-}) === -3 + 1 + 1);
-t('score · 전부 gray (기록 없음) = 3 (diet/ex/routine)', () => scoreFromCubes({
+}) === -3);
+t('score · 전부 gray (큐브 없음) = 0 (2026-04-24 규칙)', () => scoreFromCubes({
   diet: 'gray', exercise: 'gray', exercise_bonus: null, routine: 'gray', tasks: null, bonus: [],
-}) === 3);
+}) === 0);
 
 // ── PR 감지 ──────────────────────────────────────────
 t('pr · 첫 기록은 PR 로 인정', () => {
