@@ -20,7 +20,7 @@
      so window globals (dkey, normKey, ...) are set before inline code runs.
      Query version bumps cache when bundle content changes. Bump manually or
      via build script when shipping a new bundle. See MIGRATION_PLAN.md. -->
-<script src="/dist/app.js?v=20260424s"></script>
+<script src="/dist/app.js?v=20260424t"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Archivo+Black&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -8336,6 +8336,7 @@ async function deleteMeal(i){
   renderMeals();
   renderCheatBadge();
   renderCharCard();
+  recomputeCubesHook();
   updateGogginsHeader();
   renderSummaryCard();
   saveNow();
@@ -8474,6 +8475,7 @@ function quickMeal(time,type){
   log.meals.push(entry);
   renderMeals();
   applyMealScore(null,type,true,'meal');
+  recomputeCubesHook();
   saveNow();checkPerfectDay();
 }
 
@@ -8508,6 +8510,7 @@ async function saveSlotMeal(){
 
     const isNew=mealIdx===null;
     applyMealScore(prevType,foodType,isNew,'meal');
+    recomputeCubesHook();
     saveNow();checkPerfectDay();
   }finally{_slotSaving=false;if(btn)btn.disabled=false;}
 }
@@ -8683,6 +8686,7 @@ async function saveSnackMeal(){
 
     const isNew=mealIdx===null;
     applyMealScore(prevType,mealCategory==='alcohol'?'alcohol':foodType,isNew,mealCategory);
+    recomputeCubesHook();
     saveNow();checkPerfectDay();
   }finally{_snackSaving=false;if(btn)btn.disabled=false;}
 }
