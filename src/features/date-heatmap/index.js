@@ -85,15 +85,16 @@ function cellStatus(dl, cat, isFuture) {
   return 'empty';
 }
 
-// Editorial palette v3 — muted cooler green, deeper olive-ochre, terracotta.
-// Pulls closer to monochrome so the grid reads as subtle texture rather
-// than a rainbow. All values stay in the same luminance band.
+// Editorial monochrome palette (v4) — pure brightness ladder, no hue.
+// Intensity maps to commitment: bright ivory fill = completed, mid-gray =
+// partial, dark charcoal = missed. Empty is a thin outline so the grid
+// rhythm stays visible even on untouched days.
 function cellColor(status) {
-  if (status === 'future')  return { bg: 'rgba(255,255,255,0.02)' };
-  if (status === 'pass')    return { bg: 'rgba(94,156,134,0.30)' };   // desaturated mint-teal
-  if (status === 'partial') return { bg: 'rgba(156,128,80,0.28)' };   // darker olive (less yellow)
-  if (status === 'fail')    return { bg: 'rgba(182,96,82,0.28)' };    // terracotta
-  return { bg: 'rgba(255,255,255,0.04)' };
+  if (status === 'pass')    return { bg: 'rgba(234,234,240,0.78)', fg: '#0a0a0c' };
+  if (status === 'partial') return { bg: 'rgba(234,234,240,0.32)', fg: 'var(--text)' };
+  if (status === 'fail')    return { bg: 'rgba(44,44,52,0.95)', fg: 'var(--text3)', outline: 'rgba(255,255,255,0.08)' };
+  if (status === 'future')  return { bg: 'transparent', outline: 'rgba(255,255,255,0.08)', dashed: true };
+  return { bg: 'transparent', outline: 'rgba(255,255,255,0.10)' };
 }
 
 function taskPreview(dl) {
@@ -175,19 +176,24 @@ export function buildHeatmapGrid() {
       const dayIdx = (d.getDay() + 6) % 7;
       const isMon = dayIdx === 0 && i > 0;
       const status = cellStatus(dl, cat.key, isFuture);
-      const { bg } = cellColor(status);
+      const { bg, fg, outline, dashed } = cellColor(status);
 
       let inner = '';
       if (cat.key === 'tasks' && !isFuture) {
         const { text, count } = taskPreview(dl);
         if (text) {
           const label = escapeHtml(text);
-          const extra = count > 1 ? `<span style="font-size:8px;color:var(--text3);margin-left:2px;">+${count - 1}</span>` : '';
-          inner = `<span style="font-size:9px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:${DH_DAY_W - 6}px;">${label}</span>${extra}`;
+          const textColor = status === 'pass' ? '#0a0a0c' : 'var(--text2)';
+          const extraColor = status === 'pass' ? 'rgba(10,10,12,0.55)' : 'var(--text3)';
+          const extra = count > 1 ? `<span style="font-size:8px;color:${extraColor};margin-left:2px;">+${count - 1}</span>` : '';
+          inner = `<span style="font-size:9px;color:${textColor};font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:${DH_DAY_W - 6}px;">${label}</span>${extra}`;
         }
       }
 
-      row += `<div onclick="dhSelectDate('${k}',${d.getTime()})" style="${cellStyle(isSel, isMon)}"><div style="height:20px;border-radius:4px;background:${bg};display:flex;align-items:center;justify-content:center;padding:0 4px;overflow:hidden;">${inner}</div></div>`;
+      const borderDecl = outline
+        ? `border:1px ${dashed ? 'dashed' : 'solid'} ${outline};`
+        : 'border:1px solid transparent;';
+      row += `<div onclick="dhSelectDate('${k}',${d.getTime()})" style="${cellStyle(isSel, isMon)}"><div style="height:20px;border-radius:4px;background:${bg};${borderDecl}display:flex;align-items:center;justify-content:center;padding:0 4px;overflow:hidden;box-sizing:border-box;">${inner}</div></div>`;
     });
     row += '</div>';
     return row;
