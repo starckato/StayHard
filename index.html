@@ -20,7 +20,7 @@
      so window globals (dkey, normKey, ...) are set before inline code runs.
      Query version bumps cache when bundle content changes. Bump manually or
      via build script when shipping a new bundle. See MIGRATION_PLAN.md. -->
-<script src="/dist/app.js?v=20260424a"></script>
+<script src="/dist/app.js?v=20260424b"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Archivo+Black&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -7387,10 +7387,16 @@ function renderMeals(){
   // extras: 간식/음료/술안주
   const extras=meals.map((m,i)=>({...m,_idx:i})).filter(m=>!slotKeys.includes(m.time));
 
+  // Meal-slot icons — inline SVG so they inherit currentColor and stay
+  // consistent with the rest of the record-tab iconography (no emoji).
+  const svgSunrise='<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 18a5 5 0 0 0-10 0"/><line x1="12" y1="2" x2="12" y2="9"/><line x1="4.22" y1="10.22" x2="5.64" y2="11.64"/><line x1="1" y1="18" x2="3" y2="18"/><line x1="21" y1="18" x2="23" y2="18"/><line x1="18.36" y1="11.64" x2="19.78" y2="10.22"/><line x1="23" y1="22" x2="1" y2="22"/><polyline points="8 6 12 2 16 6"/></svg>';
+  const svgSun='<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22"/><line x1="4.93" y1="4.93" x2="6.34" y2="6.34"/><line x1="17.66" y1="17.66" x2="19.07" y2="19.07"/><line x1="2" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="22" y2="12"/><line x1="4.93" y1="19.07" x2="6.34" y2="17.66"/><line x1="17.66" y1="6.34" x2="19.07" y2="4.93"/></svg>';
+  const svgMoon='<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
+  const svgPlate='<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5" stroke-dasharray="2 2"/></svg>';
   const SLOTS=[
-    {key:'아침',icon:'🌅',tag:'AM'},
-    {key:'점심',icon:'☀️',tag:'NOON'},
-    {key:'저녁',icon:'🌙',tag:'PM'}
+    {key:'아침',icon:svgSunrise,tag:'AM'},
+    {key:'점심',icon:svgSun,tag:'NOON'},
+    {key:'저녁',icon:svgMoon,tag:'PM'}
   ];
   const qualityLabel={green:'클린',normal:'일반',cheat:'치팅',red:'금지',alcohol:'음주'};
   const qualityScore={green:'+15',normal:'+5',cheat:'±0',red:'−30',alcohol:'−30'};
@@ -7398,12 +7404,12 @@ function renderMeals(){
   const qualityClass={green:'clean',normal:'normal',cheat:'cheat',red:'bad',alcohol:'alcohol'};
 
   function thumbHtml(photo,fallback){
-    if(!photo)return`<span class="slot-thumb">${fallback||'🍽️'}</span>`;
+    if(!photo)return`<span class="slot-thumb">${fallback||svgPlate}</span>`;
     if(typeof photo==='string'&&photo.startsWith('data:')){
       return`<span class="slot-thumb"><img src="${esc(photo)}" loading="lazy"></span>`;
     }
     const path=_mealPhotoPath(photo);
-    if(!path)return`<span class="slot-thumb">${fallback||'🍽️'}</span>`;
+    if(!path)return`<span class="slot-thumb">${fallback||svgPlate}</span>`;
     const cached=_mealPhotoSignedCache[path];
     if(cached&&cached.expires>Date.now()){
       return`<span class="slot-thumb"><img data-meal-photo="${esc(path)}" data-hydrated="1" src="${esc(cached.url)}" loading="lazy"></span>`;
@@ -7443,8 +7449,13 @@ function renderMeals(){
   if(extras.length>0){
     extrasHtml+=`<div class="snack-divider"><div class="snack-divider-line"></div><span class="snack-divider-label">간식 · 음료 · 기타</span><div class="snack-divider-line"></div></div>`;
     extrasHtml+=`<div class="meal-slot-list">`;
+    // Category fallback icons — inline SVG (no emoji) per the app's
+    // no-emoji policy. Each one sized to match the slot thumb SVG.
+    const svgSnack='<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 10 10 4 4 0 0 1-5-5 4 4 0 0 1-5-5z"/><circle cx="8.5" cy="8.5" r=".8" fill="currentColor"/><circle cx="15" cy="14" r=".8" fill="currentColor"/><circle cx="9" cy="15" r=".8" fill="currentColor"/></svg>';
+    const svgDrink='<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4h12l-1 16H7z"/><path d="M8 9h8"/><path d="M18 6h2a2 2 0 0 1 0 4h-2"/></svg>';
+    const svgAlcohol='<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3h8l-1 9a3 3 0 0 1-6 0L8 3z"/><line x1="12" y1="15" x2="12" y2="21"/><line x1="8" y1="21" x2="16" y2="21"/></svg>';
     extrasHtml+=extras.map(m=>{
-      const catIcon=m.category==='snack'?'🍰':m.category==='drink'?'☕':m.category==='alcohol'?'🍺':'🍽️';
+      const catIcon=m.category==='snack'?svgSnack:m.category==='drink'?svgDrink:m.category==='alcohol'?svgAlcohol:svgPlate;
       const catLabel=m.category==='snack'?'SNACK':m.category==='latenight'?'LATE':m.category==='drink'?'DRINK':m.category==='alcohol'?'ALC':'OTHER';
       const qCls=m.category==='alcohol'?'alcohol':(qualityClass[m.type]||'normal');
       const qPill=m.category==='alcohol'?'음주':(qualityLabel[m.type]||'');

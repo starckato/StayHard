@@ -97,8 +97,8 @@ export function renderWeight() {
   const ccDelta = document.getElementById('wt-cc-delta');
   const ccSep = document.getElementById('wt-cc-sep');
   if (info.state === 'empty') {
-    if (ccMain) { ccMain.textContent = '기록 없음'; ccMain.className = 'empty'; }
-    if (ccDelta) { ccDelta.textContent = '첫 기록 시작 →'; ccDelta.className = ''; }
+    if (ccMain) { ccMain.textContent = '기록 필요'; ccMain.className = 'empty'; }
+    if (ccDelta) { ccDelta.textContent = ''; ccDelta.className = ''; }
     if (ccSep) ccSep.style.display = 'none';
   } else {
     if (ccMain) {
@@ -109,16 +109,19 @@ export function renderWeight() {
     }
     if (ccSep) ccSep.style.display = '';
     if (ccDelta) {
-      // Delta is always signed kg vs the record BEFORE the displayed value.
-      // In carryover/stale the displayed value is `daysSince` days old, so
-      // we start the search one day further back.
+      // Signed kg vs the record BEFORE the displayed value. If there is
+      // no prior record to compare against, hide the delta entirely so we
+      // don't clutter the row with '첫 기록' noise — the kg value is
+      // enough on its own.
       const d = formatDelta(info.value, info.daysSince || 0);
       if (d) {
         ccDelta.textContent = d.text;
         ccDelta.className = d.cls.split(' ').map(c => c === 'down' ? 'pos' : c === 'up' ? 'neg' : c).join(' ');
+        ccSep && (ccSep.style.display = '');
       } else {
-        ccDelta.textContent = '첫 기록';
+        ccDelta.textContent = '';
         ccDelta.className = '';
+        ccSep && (ccSep.style.display = 'none');
       }
     }
   }
@@ -235,9 +238,9 @@ export function renderWeight() {
   // ─── Primary CTA state ───
   if (primaryBtn) {
     primaryBtn.className = 'wc-btn-primary';
-    primaryBtn.textContent = '수정';
+    primaryBtn.textContent = '입력';
     if (info.state === 'overdue') { primaryBtn.classList.add('urgent'); primaryBtn.textContent = '오늘 체중 입력'; }
-    else if (info.state === 'empty') { primaryBtn.classList.add('cta'); primaryBtn.textContent = '첫 기록 시작 →'; }
+    else if (info.state === 'empty') { primaryBtn.classList.add('cta'); primaryBtn.textContent = '입력'; }
     else if (info.state === 'stale') { primaryBtn.classList.add('cta'); primaryBtn.textContent = '업데이트'; }
   }
 
