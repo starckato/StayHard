@@ -85,14 +85,14 @@ function cellStatus(dl, cat, isFuture) {
   return 'empty';
 }
 
-// Editorial palette — soft translucent fills, no visible borders. Uses the
-// Discipline sage/mustard/coral hues but at lower alpha so the grid reads
-// as rhythm of color blocks rather than a spreadsheet.
+// Editorial palette v3 — muted cooler green, deeper olive-ochre, terracotta.
+// Pulls closer to monochrome so the grid reads as subtle texture rather
+// than a rainbow. All values stay in the same luminance band.
 function cellColor(status) {
   if (status === 'future')  return { bg: 'rgba(255,255,255,0.02)' };
-  if (status === 'pass')    return { bg: 'rgba(122,169,153,0.24)' };
-  if (status === 'partial') return { bg: 'rgba(184,151,91,0.22)' };
-  if (status === 'fail')    return { bg: 'rgba(184,96,77,0.24)' };
+  if (status === 'pass')    return { bg: 'rgba(94,156,134,0.30)' };   // desaturated mint-teal
+  if (status === 'partial') return { bg: 'rgba(156,128,80,0.28)' };   // darker olive (less yellow)
+  if (status === 'fail')    return { bg: 'rgba(182,96,82,0.28)' };    // terracotta
   return { bg: 'rgba(255,255,255,0.04)' };
 }
 
