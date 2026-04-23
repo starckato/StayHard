@@ -20,7 +20,7 @@
      so window globals (dkey, normKey, ...) are set before inline code runs.
      Query version bumps cache when bundle content changes. Bump manually or
      via build script when shipping a new bundle. See MIGRATION_PLAN.md. -->
-<script src="/dist/app.js?v=20260424v"></script>
+<script src="/dist/app.js?v=20260424w"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Archivo+Black&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -6189,29 +6189,30 @@ function _diffCubes(before,after){
     const a=(after&&after[cat])||null;
     if(a===b)continue;
     if(a==null)continue; // 큐브가 사라지는 케이스 (할일 전부 삭제 등) — 조용히
-    if(a==='gray')continue; // gray 승급 (silver→gray 등) 은 조용히. 큐브 상실.
-    // 실제 점수 delta = (새 색 점수) - (이전 색 점수). hdr-score 변동량과 정확히 일치.
-    const deltaPts=_cubeColorPoints(a)-_cubeColorPoints(b);
+    if(a==='gray')continue; // gray 로 내려가는 전환은 조용히.
+    // 팝오버 delta = **새 큐브의 절대값**. (유저 모델: "이전 +2 은 자동 취소되고
+    // gold 받으면 +3 으로 표시". 실제 hdr 변동은 recomputeCubesHook 에서
+    // (new - old) delta 로 처리 — 누적은 항상 큐브 값과 일치.)
+    const absPts=_cubeColorPoints(a);
     if(a==='crimson'&&b!=='crimson'){
       const copy=CUBE_CHANGE_COPY[cat]&&CUBE_CHANGE_COPY[cat].crimson;
-      if(copy)events.push({type:'color',cat,color:'crimson',...copy,delta:_formatCubeDelta(deltaPts)});
+      if(copy)events.push({type:'color',cat,color:'crimson',...copy,delta:_formatCubeDelta(absPts)});
       continue;
     }
     const bRank=b?RANK[b]:0;
     const aRank=RANK[a]||0;
     if(aRank>bRank){
       const copy=CUBE_CHANGE_COPY[cat]&&CUBE_CHANGE_COPY[cat][a];
-      if(copy)events.push({type:'color',cat,color:a,...copy,delta:_formatCubeDelta(deltaPts)});
+      if(copy)events.push({type:'color',cat,color:a,...copy,delta:_formatCubeDelta(absPts)});
     }
   }
-  // exercise_bonus: null → 'gold' 전환만 이벤트 (헬스+유산소 둘 다 완료 순간).
+  // exercise_bonus: null → 'gold' 전환만 이벤트. 팝오버는 gold 절대값 (+3).
   const bBonusEx=(before&&before.exercise_bonus)||null;
   const aBonusEx=(after&&after.exercise_bonus)||null;
   if(!bBonusEx&&aBonusEx==='gold'){
     const copy=CUBE_CHANGE_COPY.exercise_bonus&&CUBE_CHANGE_COPY.exercise_bonus.gold;
     if(copy){
-      const deltaPts=_cubeColorPoints('gold')-_cubeColorPoints(bBonusEx);
-      events.push({type:'color',cat:'exercise_bonus',color:'gold',...copy,delta:_formatCubeDelta(deltaPts)});
+      events.push({type:'color',cat:'exercise_bonus',color:'gold',...copy,delta:_formatCubeDelta(_cubeColorPoints('gold'))});
     }
   }
   // Bonus diff — 새로 추가된 항목만.
@@ -6309,8 +6310,10 @@ function recomputeCubesHook(key,opts){
     // 히트맵도 재렌더 — tile 의 4개 cube 가 새 판정 색으로 전환되도록.
     try{if(typeof window.buildHeatmapGrid==='function')window.buildHeatmapGrid();}catch(e){}
     // ── Phase 5: cube 점수 delta 를 CP.total_score 에 적용 ───────────
-    // 단일 source of truth: 오늘 점수는 scoreFromCubes(l.cubes), 누적은 CP.total_score
-    // 를 cube delta 로 점진 업데이트. 팝오버 delta 와 hdr-score / sb-today 가 정확히 일치.
+    // hdr 는 delta (new_cube - old_cube) 로 점진 업데이트. 누적 값은 항상
+    // scoreFromCubes(cubes) 와 일치 → 팝오버가 절대값을 표시해도 hdr 는 정확.
+    // (silver→gold 예: 팝오버 "+3" 표시, hdr 는 +1 움직임. 누적 total = silver의 +2
+    //  취소 + gold의 +3 = 결과적으로 +3 = gold 절대값.)
     // silent (renderRoutine 의 auto-sync) 에선 delta 적용 금지 — 페이지 로드마다
     // total_score 가 드리프트하는 것 방지.
     try{
