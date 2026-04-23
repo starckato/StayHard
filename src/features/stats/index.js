@@ -144,19 +144,35 @@ export function stRenderAll(rows){
   try{stRenderMealHeatmap(filtered);}catch(e){console.warn('stRenderMealHeatmap error:',e);}
   try{stRenderScoreChart(filtered);}catch(e){console.warn('stRenderScoreChart error:',e);}
 
-  // Apply stored active section (default: overview)
-  const saved=localStorage.getItem('stats_section')||'overview';
+  // Apply stored active section (default: 체중 — P1 감량러 우선)
+  const saved=localStorage.getItem('stats_section')||'habits';
   statsSetSection(saved, true);
 }
 
-// ── 섹션 전환 (Phase 3 — 사실상 no-op) ──
-// 섹션 핀 탭이 제거됐고 모든 panel 이 항상 노출됨. 여전히 호출되는
-// 레거시 경로 (overview 초기화, fwGotoStats 등) 를 깨뜨리지 않기 위해
-// 함수만 남겨둠. 항상 모든 섹션을 unhide 로 유지.
-export function statsSetSection(_key,_skipSave){
-  document.querySelectorAll('.stats-section-panel').forEach(el=>{
-    el.classList.remove('hidden');
+// ── 섹션 전환 ──
+// 분석 탭은 체중 / 운동 / 식단 / 루틴 4개 카테고리로 필터링. 선택된
+// 섹션만 보이고 나머지는 .hidden. Pill 하이라이트도 같이 스왑.
+export function statsSetSection(key,skipSave){
+  const valid=['overview','training','nutrition','habits'];
+  if(!valid.includes(key))key='habits';
+  if(!skipSave){try{localStorage.setItem('stats_section',key);}catch(e){}}
+  document.querySelectorAll('#st-sec-nav .stats-sec-pill').forEach(b=>{
+    b.classList.toggle('active',b.dataset.sec===key);
   });
+  valid.forEach(k=>{
+    const el=document.getElementById('st-sec-'+k);
+    if(el)el.classList.toggle('hidden',k!==key);
+  });
+  // Resize charts in the newly-visible section so Chart.js doesn't paint at 0
+  setTimeout(()=>{
+    const chartMap={
+      overview:['score','routine'],
+      training:['vol','mealquality'],
+      nutrition:['mealquality'],
+      habits:['weight','bodycomp'],
+    };
+    (chartMap[key]||[]).forEach(k=>{if(stCharts[k]){try{stCharts[k].resize();}catch(_){}}});
+  },40);
 }
 
 // Stats accordion toggle — independent (not exclusive) so users can

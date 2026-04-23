@@ -20,7 +20,7 @@
      so window globals (dkey, normKey, ...) are set before inline code runs.
      Query version bumps cache when bundle content changes. Bump manually or
      via build script when shipping a new bundle. See MIGRATION_PLAN.md. -->
-<script src="/dist/app.js?v=20260423t"></script>
+<script src="/dist/app.js?v=20260423u"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Archivo+Black&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -131,26 +131,26 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 .stats-kpi-spark{height:28px;margin-top:6px;}
 .stats-kpi-spark canvas{display:block;width:100%;height:100%;}
 
-/* STATS BENTO v2 — 2×2 hero KPI grid, one value at a time per persona need */
-.stats-bento{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 14px;margin-bottom:14px;}
-.bento{position:relative;padding:14px;border-radius:var(--radius);background:var(--surface);border:1px solid var(--border);overflow:hidden;min-height:104px;display:flex;flex-direction:column;gap:6px;}
+/* STATS BENTO v3 — 4-across compact KPI row */
+.stats-bento{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;padding:0 12px;margin-bottom:14px;}
+.bento{position:relative;padding:10px 8px 9px;border-radius:10px;background:var(--surface);border:1px solid var(--border);overflow:hidden;display:flex;flex-direction:column;gap:3px;min-width:0;}
 .bento::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;opacity:.85;background:var(--text3);}
 .bento.b-weight::before{background:var(--accent);}
 .bento.b-workout::before{background:#ff6b35;}
 .bento.b-meal::before{background:var(--green);}
 .bento.b-routine::before{background:var(--amber);}
-.bento-label{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;display:flex;align-items:center;gap:5px;}
-.bento-label svg{flex-shrink:0;opacity:.9;}
-.bento-main{display:flex;align-items:baseline;gap:4px;margin-top:2px;}
-.bento-val{font-size:28px;font-weight:800;font-family:'DM Mono',monospace;line-height:1;letter-spacing:-.02em;color:var(--text);}
-.bento-unit{font-size:12px;font-weight:600;color:var(--text2);letter-spacing:-.01em;}
-.bento-delta{display:inline-flex;align-items:center;gap:3px;margin-left:auto;font-size:11px;font-weight:700;font-family:'DM Mono',monospace;letter-spacing:-.02em;}
+.bento-label{font-size:9px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;display:flex;align-items:center;gap:3px;}
+.bento-label svg{flex-shrink:0;opacity:.9;width:10px;height:10px;}
+.bento-main{display:flex;align-items:baseline;gap:2px;margin-top:1px;flex-wrap:nowrap;}
+.bento-val{font-size:18px;font-weight:800;font-family:'DM Mono',monospace;line-height:1.05;letter-spacing:-.02em;color:var(--text);white-space:nowrap;}
+.bento-unit{font-size:10px;font-weight:600;color:var(--text2);letter-spacing:-.01em;}
+.bento-delta{display:inline-flex;align-items:center;gap:2px;font-size:9px;font-weight:700;font-family:'DM Mono',monospace;letter-spacing:-.02em;margin-top:1px;}
 .bento-delta.up{color:var(--accent);}
 .bento-delta.down{color:var(--green);}
 .bento-delta.flat{color:var(--text3);}
 .bento-delta.good-up{color:var(--green);}
 .bento-delta.bad-up{color:var(--accent);}
-.bento-sub{font-size:10px;color:var(--text3);letter-spacing:-.005em;margin-top:auto;}
+.bento-sub{display:none;}
 
 /* STATS FOCUS CARD — "next week focus" manifesto */
 .stats-focus{margin:0 14px 14px;padding:14px 14px 15px;border-radius:var(--radius);background:linear-gradient(135deg,rgba(255,77,77,0.06),rgba(255,77,77,0.02));border:1px solid rgba(255,77,77,.22);}
@@ -1497,56 +1497,54 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
       </span>
     </div>
 
-    <!-- 섹션 핀 탭 (Phase 3 에서 완전히 숨김 — 아코디언 단일 스크롤로 대체) -->
-    <div class="stats-sec-nav" id="st-sec-nav" style="display:none !important;">
-      <button class="stats-sec-pill active" data-sec="overview" onclick="statsSetSection('overview')"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16"/><path d="M7 20v-6"/><path d="M12 20V8"/><path d="M17 20v-3"/></svg>종합</button>
-      <button class="stats-sec-pill" data-sec="training" onclick="statsSetSection('training')"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10v4M7 7v10M17 7v10M21 10v4"/><path d="M7 12h10"/></svg>훈련</button>
+    <!-- 분석 섹션 탭 (체중/운동/식단/루틴) — bento 바로 아래, focus 카드 위 -->
+    <div class="stats-sec-nav" id="st-sec-nav">
+      <button class="stats-sec-pill active" data-sec="habits" onclick="statsSetSection('habits')"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="14" width="18" height="6" rx="1.5"/><path d="M8 14v-2a4 4 0 0 1 8 0v2"/></svg>체중</button>
+      <button class="stats-sec-pill" data-sec="training" onclick="statsSetSection('training')"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10v4M7 7v10M17 7v10M21 10v4"/><path d="M7 12h10"/></svg>운동</button>
       <button class="stats-sec-pill" data-sec="nutrition" onclick="statsSetSection('nutrition')"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20C4 10 10 4 20 4c0 10-6 16-16 16z"/><path d="M4 20L13 11"/></svg>식단</button>
-      <button class="stats-sec-pill" data-sec="habits" onclick="statsSetSection('habits')"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7H8a4 4 0 0 0-4 4"/><path d="M7 4L4 7l3 3"/><path d="M4 17h12a4 4 0 0 0 4-4"/><path d="M17 20l3-3-3-3"/></svg>습관</button>
+      <button class="stats-sec-pill" data-sec="overview" onclick="statsSetSection('overview')"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-5"/></svg>루틴</button>
     </div>
 
-    <!-- 종합 -->
-    <div class="stats-section-panel" id="st-sec-overview">
-      <!-- 2×2 bento: four top-of-mind metrics for 3-second scan.
-           Hidden spark canvases keep the old renderer happy until that
-           logic is fully ported; delta + sub lines are the new headline. -->
+    <!-- Always-visible: bento KPI + focus card (outside of category panels
+         so they don't get hidden by statsSetSection). -->
+    <div style="padding-top:0;">
       <div id="st-kpi-section">
         <div class="stats-bento">
           <div class="bento b-weight">
-            <div class="bento-label"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="14" width="18" height="6" rx="1.5"/><path d="M8 14v-2a4 4 0 0 1 8 0v2"/></svg>체중</div>
+            <div class="bento-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="14" width="18" height="6" rx="1.5"/><path d="M8 14v-2a4 4 0 0 1 8 0v2"/></svg>체중</div>
             <div class="bento-main">
               <span class="bento-val" id="st-bento-weight">—</span>
               <span class="bento-unit" id="st-bento-weight-unit">kg</span>
-              <span class="bento-delta" id="st-bento-weight-delta"></span>
             </div>
-            <div class="bento-sub" id="st-bento-weight-sub"></div>
+            <span class="bento-delta" id="st-bento-weight-delta"></span>
+            <span id="st-bento-weight-sub" style="display:none;"></span>
           </div>
           <div class="bento b-workout">
-            <div class="bento-label"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10v4M7 7v10M17 7v10M21 10v4"/><path d="M7 12h10"/></svg>운동</div>
+            <div class="bento-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10v4M7 7v10M17 7v10M21 10v4"/><path d="M7 12h10"/></svg>운동</div>
             <div class="bento-main">
               <span class="bento-val" id="st-bento-workout">—</span>
               <span class="bento-unit" id="st-bento-workout-unit"></span>
-              <span class="bento-delta" id="st-bento-workout-delta"></span>
             </div>
-            <div class="bento-sub" id="st-bento-workout-sub"></div>
+            <span class="bento-delta" id="st-bento-workout-delta"></span>
+            <span id="st-bento-workout-sub" style="display:none;"></span>
           </div>
           <div class="bento b-meal">
-            <div class="bento-label"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20C4 10 10 4 20 4c0 10-6 16-16 16z"/><path d="M4 20L13 11"/></svg>클린식</div>
+            <div class="bento-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20C4 10 10 4 20 4c0 10-6 16-16 16z"/><path d="M4 20L13 11"/></svg>클린식</div>
             <div class="bento-main">
               <span class="bento-val" id="st-bento-clean">—</span>
               <span class="bento-unit">%</span>
-              <span class="bento-delta" id="st-bento-clean-delta"></span>
             </div>
-            <div class="bento-sub" id="st-bento-clean-sub"></div>
+            <span class="bento-delta" id="st-bento-clean-delta"></span>
+            <span id="st-bento-clean-sub" style="display:none;"></span>
           </div>
           <div class="bento b-routine">
-            <div class="bento-label"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-5"/></svg>루틴</div>
+            <div class="bento-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-5"/></svg>루틴</div>
             <div class="bento-main">
               <span class="bento-val" id="st-bento-routine">—</span>
               <span class="bento-unit">%</span>
-              <span class="bento-delta" id="st-bento-routine-delta"></span>
             </div>
-            <div class="bento-sub" id="st-bento-routine-sub"></div>
+            <span class="bento-delta" id="st-bento-routine-delta"></span>
+            <span id="st-bento-routine-sub" style="display:none;"></span>
           </div>
         </div>
         <!-- Legacy KPI hooks — hidden. Old stRenderKPI still writes here
@@ -1561,7 +1559,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
       </div>
 
       <!-- Focus / Weakness card — Goggins-tone, rule-based suggestion -->
-      <div class="stats-focus" id="st-focus-card" style="display:none;">
+      <div class="stats-focus" id="st-focus-card" style="display:none;margin-left:14px;margin-right:14px;">
         <div class="stats-focus-hdr">
           <span class="stats-focus-tag" id="st-focus-tag">다음 주</span>
           <span class="stats-focus-kind" id="st-focus-kind"></span>
@@ -1569,7 +1567,10 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
         <div class="stats-focus-msg" id="st-focus-msg"></div>
         <div class="stats-focus-evidence" id="st-focus-evidence"></div>
       </div>
+    </div>
 
+    <!-- ═══ 루틴 탭 (구 overview) — 점수/루틴 관련 ═══ -->
+    <div class="stats-section-panel hidden" id="st-sec-overview">
       <div id="st-score-sources" style="margin-bottom:10px;"></div>
       <div id="st-report-card" style="margin-bottom:14px;"></div>
 
@@ -1589,10 +1590,23 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
         <div class="stats-card-title" onclick="toggleStatsCard('pts-breakdown')">📊 점수 구성</div>
         <div id="st-pts-breakdown"></div>
       </div>
+
+      <!-- 루틴 관련 차트 (구 habits 에서 이동) -->
+      <div class="stats-card accordion" data-acc="routine">
+        <div class="stats-card-title" onclick="toggleStatsCard('routine')"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-5"/></svg>루틴 완료율 추이 (%)</div>
+        <div class="stats-meta" id="st-routine-meta"></div>
+        <div style="position:relative;height:160px;"><canvas id="st-chart-routine"></canvas></div>
+        <div id="st-routine-empty" class="stats-empty" style="display:none;">루틴 기록이 없어요</div>
+      </div>
+
+      <div class="stats-card accordion" id="st-routine-breakdown-card" data-acc="routine-breakdown" style="display:none;">
+        <div class="stats-card-title" onclick="toggleStatsCard('routine-breakdown')">📊 루틴별 완료율 & 연속 기록</div>
+        <div id="st-routine-breakdown"></div>
+      </div>
     </div>
 
-    <!-- 훈련 섹션 (pill 탭 제거 — 모두 단일 스크롤로) -->
-    <div class="stats-section-panel" id="st-sec-training">
+    <!-- 운동 섹션 -->
+    <div class="stats-section-panel hidden" id="st-sec-training">
       <div class="stats-card accordion" data-acc="vol">
         <div class="stats-card-title" onclick="toggleStatsCard('vol')"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10v4M7 7v10M17 7v10M21 10v4"/><path d="M7 12h10"/></svg>운동 볼륨 (주별)</div>
         <div class="stats-meta" id="st-vol-meta"></div>
@@ -1620,7 +1634,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
     </div>
 
     <!-- 식단 섹션 -->
-    <div class="stats-section-panel" id="st-sec-nutrition">
+    <div class="stats-section-panel hidden" id="st-sec-nutrition">
       <div class="stats-card accordion" data-acc="meal">
         <div class="stats-card-title" onclick="toggleStatsCard('meal')"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20C4 10 10 4 20 4c0 10-6 16-16 16z"/><path d="M4 20L13 11"/></svg>식단 품질 (끼니별)</div>
         <div class="stats-meta" id="st-meal-meta"></div>
@@ -1642,8 +1656,8 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
       </div>
     </div>
 
-    <!-- 습관 / 몸 섹션 -->
-    <div class="stats-section-panel" id="st-sec-habits">
+    <!-- 체중 섹션 (구 habits) — 체중 + 체성분만 -->
+    <div class="stats-section-panel hidden" id="st-sec-habits">
       <div class="stats-card accordion" data-acc="weight">
         <div class="stats-card-title" onclick="toggleStatsCard('weight')"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="14" width="18" height="6" rx="1.5"/><path d="M8 14v-2a4 4 0 0 1 8 0v2"/><circle cx="12" cy="18" r=".9" fill="currentColor"/></svg>체중 추이 (kg)</div>
         <div class="stats-meta" id="st-weight-meta"></div>
@@ -1655,18 +1669,6 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
         <div class="stats-card-title" onclick="toggleStatsCard('bodycomp')">🏋️ 체성분 추이</div>
         <div class="stats-meta" id="st-bodycomp-meta"></div>
         <div style="position:relative;height:200px;"><canvas id="st-chart-bodycomp"></canvas></div>
-      </div>
-
-      <div class="stats-card accordion" data-acc="routine">
-        <div class="stats-card-title" onclick="toggleStatsCard('routine')"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-5"/></svg>루틴 완료율 추이 (%)</div>
-        <div class="stats-meta" id="st-routine-meta"></div>
-        <div style="position:relative;height:160px;"><canvas id="st-chart-routine"></canvas></div>
-        <div id="st-routine-empty" class="stats-empty" style="display:none;">루틴 기록이 없어요</div>
-      </div>
-
-      <div class="stats-card accordion" id="st-routine-breakdown-card" data-acc="routine-breakdown" style="display:none;">
-        <div class="stats-card-title" onclick="toggleStatsCard('routine-breakdown')">📊 루틴별 완료율 & 연속 기록</div>
-        <div id="st-routine-breakdown"></div>
       </div>
     </div>
 
