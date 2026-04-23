@@ -18,7 +18,7 @@ import { TIERS, getTier } from '../../lib/tier.js';
 // STATS 탭 — 전체 구현
 // ══════════════════════════════════════════════════════
 export let statsPeriod=30;
-export let stPeriod=30;  // stats 탭 전용 — 기본 1달
+export let stPeriod=7;  // stats 탭 전용 — 기본 1주
 export let statsCharts={weight:null,vol:null,routine:null,score:null};
 export let stCharts={weight:null,vol:null,routine:null,score:null};
 export let _stData=null;  // 캐시
@@ -898,25 +898,88 @@ export function stRenderWeightChart(rows){
     {label:'시작 대비',value:(diff>0?'+':'')+diff.toFixed(1),unit:'kg'},
     {label:'목표까지',value:goal?(Math.abs(current-goal).toFixed(1)):'—',unit:goal?'kg':'',delta:goal?stDelta(current,prevCurrent,{inverse:goal<start}):''}
   ]);
-  const c=getChartColors();
+
+  // ── Multi-metric overlay (TEST) ───────────────────────────────────
+  // Align all metrics to the same x labels as the weight points so
+  // Chart.js can render them on a single axis with a secondary %-scale.
+  const labels=pts.map(p=>p.x.slice(5).replace('-','/'));
+  const keyByLabel=pts.map(p=>p.x);
+  const rowByKey=Object.fromEntries(rows.map(r=>[r._key,r]));
+  const cleanPct=[], routinePct=[], volKg=[];
+  keyByLabel.forEach(k=>{
+    const r=rowByKey[k];
+    if(!r){cleanPct.push(null);routinePct.push(null);volKg.push(null);return;}
+    const meals=(r.meals||[]).filter(m=>['아침','점심','저녁'].includes(m.time)&&m.type);
+    cleanPct.push(meals.length?Math.round(meals.filter(m=>m.type==='green').length/meals.length*100):null);
+    const mand=r.mandatory||[];
+    routinePct.push(mand.length?Math.round(mand.filter(x=>x.done).length/mand.length*100):null);
+    const vol=(r.workouts||[]).filter(w=>w.type==='gym'&&w.status==='done').reduce((a,w)=>a+(w.totalVolume||0),0);
+    volKg.push(vol>0?vol:null);
+  });
+
   stDestroyChart('weight');
   stCharts.weight=new window.Chart(canvas,{
     type:'line',
     data:{
-      labels:pts.map(p=>p.x.slice(5).replace('-','/')),
-      datasets:[{
-        data:vals,borderColor:'#38bdf8',borderWidth:2.5,
-        backgroundColor:ctx=>stGradient(ctx.chart.ctx,'96,165,250',[[0,0.32],[1,0.0]]),
-        pointRadius:0,pointHoverRadius:6,pointHoverBorderWidth:2,
-        pointHoverBackgroundColor:'#38bdf8',pointHoverBorderColor:'#fff',
-        fill:true,tension:0.4
-      }]
+      labels,
+      datasets:[
+        // Weight — primary line, filled
+        {
+          label:'체중',yAxisID:'y',data:vals,
+          borderColor:'#38bdf8',borderWidth:2.5,
+          backgroundColor:ctx=>stGradient(ctx.chart.ctx,'96,165,250',[[0,0.32],[1,0.0]]),
+          pointRadius:0,pointHoverRadius:6,pointHoverBorderWidth:2,
+          pointHoverBackgroundColor:'#38bdf8',pointHoverBorderColor:'#fff',
+          fill:true,tension:0.4,order:1,
+        },
+        // Clean meal % — thin green line on secondary axis
+        {
+          label:'클린식 %',yAxisID:'yPct',data:cleanPct,
+          borderColor:'rgba(74,222,128,0.70)',borderWidth:1.4,borderDash:[4,3],
+          pointRadius:0,pointHoverRadius:4,spanGaps:true,
+          fill:false,tension:0.3,order:3,
+        },
+        // Routine % — thin amber line on secondary axis
+        {
+          label:'루틴 %',yAxisID:'yPct',data:routinePct,
+          borderColor:'rgba(245,158,11,0.70)',borderWidth:1.4,borderDash:[4,3],
+          pointRadius:0,pointHoverRadius:4,spanGaps:true,
+          fill:false,tension:0.3,order:4,
+        },
+        // Workout volume — red bar-like dots on days with a session
+        {
+          label:'운동 볼륨',yAxisID:'yVol',type:'bar',data:volKg,
+          backgroundColor:'rgba(255,77,77,0.32)',
+          borderColor:'rgba(255,77,77,0.55)',borderWidth:1,
+          barThickness:4,order:5,
+        },
+      ]
     },
-    options:{...stDashCfg({
-      yCallback:v=>v+'kg',
-      yScale:{min:Math.floor(Math.min(...vals,goal||Infinity)-1),max:Math.ceil(Math.max(...vals,goal||-Infinity)+1)},
-      tooltip:{label:ctx=>ctx.parsed.y.toFixed(1)+' kg',title:items=>items[0].label}
-    }),plugins:{...stDashCfg().plugins,stTargetLine:goal?{value:goal,color:'rgba(245,158,11,0.7)',label:'목표 '+goal+'kg'}:null}}
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      interaction:{mode:'index',intersect:false},
+      plugins:{
+        legend:{display:true,position:'bottom',labels:{color:'var(--text3)',font:{size:10},boxWidth:10,boxHeight:6,padding:8}},
+        tooltip:{enabled:true,backgroundColor:'rgba(20,20,24,0.95)',borderColor:'rgba(255,255,255,0.08)',borderWidth:1,titleColor:'#eaeaea',bodyColor:'#eaeaea',padding:8,callbacks:{
+          label:ctx=>{
+            const v=ctx.parsed.y;
+            if(ctx.dataset.label==='체중')return `체중 ${v.toFixed(1)} kg`;
+            if(ctx.dataset.label==='운동 볼륨')return `볼륨 ${v>=1000?(v/1000).toFixed(1)+'t':v+'kg'}`;
+            if(ctx.dataset.label==='클린식 %')return `클린식 ${v}%`;
+            if(ctx.dataset.label==='루틴 %')return `루틴 ${v}%`;
+            return v;
+          }
+        }},
+        stTargetLine:goal?{value:goal,color:'rgba(245,158,11,0.7)',label:'목표 '+goal+'kg'}:null,
+      },
+      scales:{
+        x:{grid:{display:false},ticks:{color:'rgba(255,255,255,0.35)',font:{size:10},maxRotation:0}},
+        y:{position:'left',grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'rgba(255,255,255,0.55)',font:{size:10},callback:v=>v+'kg'},
+          min:Math.floor(Math.min(...vals,goal||Infinity)-1),max:Math.ceil(Math.max(...vals,goal||-Infinity)+1)},
+        yPct:{position:'right',display:true,min:0,max:100,grid:{display:false},ticks:{color:'rgba(255,255,255,0.35)',font:{size:9},callback:v=>v+'%',stepSize:50}},
+        yVol:{position:'right',display:false,min:0,beginAtZero:true},
+      },
+    }
   });
 }
 
