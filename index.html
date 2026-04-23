@@ -20,7 +20,7 @@
      so window globals (dkey, normKey, ...) are set before inline code runs.
      Query version bumps cache when bundle content changes. Bump manually or
      via build script when shipping a new bundle. See MIGRATION_PLAN.md. -->
-<script src="/dist/app.js?v=20260424w"></script>
+<script src="/dist/app.js?v=20260424x"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Archivo+Black&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -8347,7 +8347,9 @@ async function deleteMeal(i){
   updateGogginsHeader();
   renderSummaryCard();
   saveNow();
-  const scoreStr=scoreDelta<0?' ('+scoreDelta+'점)':scoreDelta>0?' (+'+scoreDelta+'점)':'';
+  // CUBE mode: 점수 문자열 생략 — cube 큐브 업데이트로 대신 피드백.
+  const scoreStr=window.CUBE_UI_MODE===true?'':
+    (scoreDelta<0?' ('+scoreDelta+'점)':scoreDelta>0?' (+'+scoreDelta+'점)':'');
   showToast('🗑️ '+mealName+' 삭제됨'+scoreStr);
 }
 
@@ -9752,10 +9754,12 @@ function delWO(i){
   log.workouts.splice(i,1);
   renderWorkouts();
   renderCharCard();
+  recomputeCubesHook();
   updateGogginsHeader();
   renderSummaryCard();
   saveNow();
-  const scoreStr=scoreDelta<0?' ('+scoreDelta+'점)':'';
+  // CUBE mode: 점수 문자열 생략 — cube 큐브 업데이트로 대신 피드백.
+  const scoreStr=window.CUBE_UI_MODE===true?'':(scoreDelta<0?' ('+scoreDelta+'점)':'');
   showToast('🗑️ '+name+' 삭제됨'+scoreStr);
 }
 
