@@ -153,12 +153,18 @@ export function stRenderAll(rows){
 }
 
 // ── 섹션 전환 ──
-// 분석 탭은 체중 / 운동 / 식단 / 루틴 4개 카테고리로 필터링. 선택된
-// 섹션만 보이고 나머지는 .hidden. Pill 하이라이트도 같이 스왑.
+// 분석 탭은 체중 / 운동 / 식단 / 루틴 4개 카테고리로 필터링. bento 카드
+// 가 곧 탭 역할을 함 (.bento[data-sec]). 선택된 섹션 panel 만 show,
+// 나머지는 .hidden.
 export function statsSetSection(key,skipSave){
   const valid=['overview','training','nutrition','habits'];
   if(!valid.includes(key))key='habits';
   if(!skipSave){try{localStorage.setItem('stats_section',key);}catch(e){}}
+  // Bento-as-nav: active 클래스 스왑
+  document.querySelectorAll('.stats-bento .bento').forEach(b=>{
+    b.classList.toggle('active',b.dataset.sec===key);
+  });
+  // Legacy pill nav 도 같이 (숨어있어도 호환)
   document.querySelectorAll('#st-sec-nav .stats-sec-pill').forEach(b=>{
     b.classList.toggle('active',b.dataset.sec===key);
   });
@@ -504,21 +510,10 @@ function _pickFocus(rows, ctx){
   };
 }
 
-export function stRenderFocus(rows, ctx){
+export function stRenderFocus(_rows, _ctx){
+  // 보류: insight 카피가 더 깊이 기획되어야 함. 일단 hidden 유지.
   const card=document.getElementById('st-focus-card');
-  const tag=document.getElementById('st-focus-tag');
-  const kind=document.getElementById('st-focus-kind');
-  const msg=document.getElementById('st-focus-msg');
-  const ev=document.getElementById('st-focus-evidence');
-  if(!card)return;
-  const focus=_pickFocus(rows||[],ctx||{});
-  if(!focus){card.style.display='none';return;}
-  card.style.display='block';
-  card.className='stats-focus '+(focus.tone==='good'?'tone-good':focus.tone==='warn'?'tone-warn':'');
-  if(tag)tag.textContent=focus.tone==='good'?'잘 가고 있음':'다음 주';
-  if(kind)kind.textContent=focus.kind;
-  if(msg)msg.textContent=focus.msg;
-  if(ev)ev.innerHTML=(focus.evidence||[]).map(e=>`<span>${e}</span>`).join('');
+  if(card)card.style.display='none';
 }
 
 // Previous-period rows for delta calc. Returns null when we don't have

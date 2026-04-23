@@ -20,7 +20,7 @@
      so window globals (dkey, normKey, ...) are set before inline code runs.
      Query version bumps cache when bundle content changes. Bump manually or
      via build script when shipping a new bundle. See MIGRATION_PLAN.md. -->
-<script src="/dist/app.js?v=20260423z"></script>
+<script src="/dist/app.js?v=20260424a"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Archivo+Black&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -131,10 +131,13 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 .stats-kpi-spark{height:28px;margin-top:6px;}
 .stats-kpi-spark canvas{display:block;width:100%;height:100%;}
 
-/* STATS BENTO v3 — 4-across compact KPI row */
+/* STATS BENTO v4 — 4-across compact KPI row + interactive tab behavior */
 .stats-bento{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;padding:0 12px;margin-bottom:14px;}
-.bento{position:relative;padding:10px 8px 9px;border-radius:10px;background:var(--surface);border:1px solid var(--border);overflow:hidden;display:flex;flex-direction:column;gap:3px;min-width:0;}
-.bento::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;opacity:.85;background:var(--text3);}
+.bento{position:relative;padding:10px 8px 9px;border-radius:10px;background:var(--surface);border:1px solid var(--border);overflow:hidden;display:flex;flex-direction:column;gap:3px;min-width:0;cursor:pointer;transition:background .15s,border-color .15s,opacity .15s;opacity:.72;touch-action:manipulation;}
+.bento:active{transform:scale(.985);}
+.bento.active{opacity:1;background:var(--surface2);border-color:var(--border2);}
+.bento::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;opacity:.55;background:var(--text3);transition:opacity .15s,height .15s;}
+.bento.active::before{opacity:1;height:3px;}
 .bento.b-weight::before{background:var(--accent);}
 .bento.b-workout::before{background:#ff6b35;}
 .bento.b-meal::before{background:var(--green);}
@@ -1497,20 +1500,16 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
       </span>
     </div>
 
-    <!-- 분석 섹션 탭 (체중/운동/식단/루틴) — bento 바로 아래, focus 카드 위 -->
-    <div class="stats-sec-nav" id="st-sec-nav">
-      <button class="stats-sec-pill active" data-sec="habits" onclick="statsSetSection('habits')"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="14" width="18" height="6" rx="1.5"/><path d="M8 14v-2a4 4 0 0 1 8 0v2"/></svg>체중</button>
-      <button class="stats-sec-pill" data-sec="training" onclick="statsSetSection('training')"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10v4M7 7v10M17 7v10M21 10v4"/><path d="M7 12h10"/></svg>운동</button>
-      <button class="stats-sec-pill" data-sec="nutrition" onclick="statsSetSection('nutrition')"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20C4 10 10 4 20 4c0 10-6 16-16 16z"/><path d="M4 20L13 11"/></svg>식단</button>
-      <button class="stats-sec-pill" data-sec="overview" onclick="statsSetSection('overview')"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-5"/></svg>루틴</button>
-    </div>
+    <!-- 섹션 pill nav 제거됨 — bento 카드 자체가 카테고리 탭 역할 (#st-kpi-section
+         의 .bento[data-sec] 참조). 레거시 호출 호환 위해 stub 만 hidden 유지. -->
+    <div class="stats-sec-nav" id="st-sec-nav" style="display:none !important;" aria-hidden="true"></div>
 
     <!-- Always-visible: bento KPI + focus card (outside of category panels
          so they don't get hidden by statsSetSection). -->
     <div style="padding-top:0;">
       <div id="st-kpi-section">
         <div class="stats-bento">
-          <div class="bento b-weight">
+          <div class="bento b-weight active" data-sec="habits" onclick="statsSetSection('habits')">
             <div class="bento-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="14" width="18" height="6" rx="1.5"/><path d="M8 14v-2a4 4 0 0 1 8 0v2"/></svg>체중</div>
             <div class="bento-main">
               <span class="bento-val" id="st-bento-weight">—</span>
@@ -1519,7 +1518,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
             <span class="bento-delta" id="st-bento-weight-delta"></span>
             <span id="st-bento-weight-sub" style="display:none;"></span>
           </div>
-          <div class="bento b-workout">
+          <div class="bento b-workout" data-sec="training" onclick="statsSetSection('training')">
             <div class="bento-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10v4M7 7v10M17 7v10M21 10v4"/><path d="M7 12h10"/></svg>운동</div>
             <div class="bento-main">
               <span class="bento-val" id="st-bento-workout">—</span>
@@ -1528,7 +1527,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
             <span class="bento-delta" id="st-bento-workout-delta"></span>
             <span id="st-bento-workout-sub" style="display:none;"></span>
           </div>
-          <div class="bento b-meal">
+          <div class="bento b-meal" data-sec="nutrition" onclick="statsSetSection('nutrition')">
             <div class="bento-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20C4 10 10 4 20 4c0 10-6 16-16 16z"/><path d="M4 20L13 11"/></svg>클린식</div>
             <div class="bento-main">
               <span class="bento-val" id="st-bento-clean">—</span>
@@ -1537,7 +1536,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
             <span class="bento-delta" id="st-bento-clean-delta"></span>
             <span id="st-bento-clean-sub" style="display:none;"></span>
           </div>
-          <div class="bento b-routine">
+          <div class="bento b-routine" data-sec="overview" onclick="statsSetSection('overview')">
             <div class="bento-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-5"/></svg>루틴</div>
             <div class="bento-main">
               <span class="bento-val" id="st-bento-routine">—</span>
