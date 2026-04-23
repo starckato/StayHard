@@ -86,11 +86,16 @@ function cellStatus(dl, cat, isFuture) {
   return 'empty';
 }
 
-// Palette v8 — "pass = 밝은 황금 (#ffd54a)" 성취/메달 메타포.
-// 브랜드 레드는 fail 에만 (식단 금지와 같은 언어). 회색은 partial 중립.
+// Palette v9 — real metallic gold. Pass gets a three-stop gradient (highlight
+// → deep gold → shadow) + inset top highlight + outer gold glow so the tiny
+// 9×9 indicator reads like a gold leaf rather than a flat color.
 function indicatorStyle(status) {
   if (status === 'pass')
-    return 'background:rgba(255,213,74,0.62);border:1px solid rgba(255,213,74,0.55);';
+    return (
+      'background:linear-gradient(135deg,#fff1a8 0%,#ffd54a 45%,#c48c1a 100%);' +
+      'border:1px solid rgba(255,233,128,0.70);' +
+      'box-shadow:0 0 4px rgba(255,213,74,0.55),inset 0 1px 0 rgba(255,255,255,0.45),inset 0 -1px 0 rgba(0,0,0,0.25);'
+    );
   if (status === 'partial')
     return 'background:rgba(234,234,240,0.22);border:1px solid rgba(255,255,255,0.04);';
   if (status === 'fail')
