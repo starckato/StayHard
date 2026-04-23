@@ -20,7 +20,7 @@
      so window globals (dkey, normKey, ...) are set before inline code runs.
      Query version bumps cache when bundle content changes. Bump manually or
      via build script when shipping a new bundle. See MIGRATION_PLAN.md. -->
-<script src="/dist/app.js?v=20260423s"></script>
+<script src="/dist/app.js?v=20260423t"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Archivo+Black&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -1451,7 +1451,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
 
     <!-- 헤더 + 기간 선택 -->
     <div style="padding:16px 16px 4px;display:flex;align-items:center;justify-content:space-between;">
-      <div style="font-size:18px;font-weight:800;letter-spacing:-.01em;">📊 통계</div>
+      <div style="font-size:18px;font-weight:800;letter-spacing:-.01em;">분석</div>
       <div style="display:flex;gap:4px;" id="st-period-btns">
         <button class="stats-period-btn" onclick="stSetPeriod(7,this)">1주</button>
         <button class="stats-period-btn active" onclick="stSetPeriod(30,this)">1달</button>
@@ -1465,8 +1465,9 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
       <div class="spinner" style="margin:0 auto 10px;"></div>데이터 불러오는 중…
     </div>
 
-    <!-- 히어로 배너 v2 — 연속 + 등급 한 줄 (오늘 pt 는 홈 상단에 이미 있어 제거) -->
-    <div class="stats-hero stats-hero-slim" id="st-hero" style="display:none;">
+    <!-- Hero 제거됨 — 연속/등급은 bento 의 상단 컨텍스트로 충분. 레거시 DOM 은
+         stRenderHero 가 계속 쓸 수 있도록 숨긴 채 유지. -->
+    <div class="stats-hero stats-hero-slim" id="st-hero" style="display:none !important;">
       <div class="stats-hero-row">
         <div class="stats-hero-streak">
           <span class="stats-hero-streak-fire">🔥</span>
@@ -2450,7 +2451,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
         <path d="M12 20V9"/>
         <path d="M17 20v-3"/>
       </svg>
-      <div>통계</div>
+      <div>분석</div>
       <span id="nav-badge-stats" class="nav-badge-dot" style="display:none;"></span>
     </div>
     <div class="bni" onclick="switchTab('competition',2)">
@@ -7458,9 +7459,10 @@ function renderFoodSummary(loggedSlots,extras){
   if(cleanN)chips.push(`<span class="q-chip clean"><span class="n">${cleanN}</span>클린</span>`);
   if(normalN)chips.push(`<span class="q-chip normal"><span class="n">${normalN}</span>일반</span>`);
   if(badN)chips.push(`<span class="q-chip bad"><span class="n">${badN}</span>금지</span>`);
+  const dropSvg='<svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M12 3s7 7 7 12a7 7 0 0 1-14 0c0-5 7-12 7-12z"/></svg>';
   const waterHtml=waterDone
-    ?`<span class="water-mini done">💧 ${waterCur}/${waterGoal} ✓</span>`
-    :`<span class="water-mini">💧 ${waterCur}/${waterGoal}</span>`;
+    ?`<span class="water-mini done">${dropSvg}${waterCur}/${waterGoal} ✓</span>`
+    :`<span class="water-mini">${dropSvg}${waterCur}/${waterGoal}</span>`;
   sum.innerHTML=`<span class="cc-summary-chips">${chips.join(' ')}</span><span class="sep">·</span>${waterHtml}`;
 }
 

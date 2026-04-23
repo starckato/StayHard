@@ -122,8 +122,9 @@ export function stRenderAll(rows){
     return;
   }
   document.getElementById('st-empty').style.display='none';
-  if(hero)hero.style.display='';
-  if(nav)nav.style.display='';
+  // Hero + section-nav are retired (Phase 3/5). Don't re-show them here —
+  // the inline display:none !important in index.html wins on render but an
+  // unconditional '' reset would bring them back.
 
   try{stRenderHero(filtered);}catch(e){console.warn('stRenderHero error:',e);}
   try{stRenderKPI(filtered);}catch(e){console.warn('stRenderKPI error:',e);}
