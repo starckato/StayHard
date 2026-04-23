@@ -1372,8 +1372,15 @@ export function stRenderMealQuality(rows){
     const avg=meals.reduce((a,m)=>a+(scoreMap[m.type]??1),0)/meals.length;
     return{x:r._key,y:Math.round(avg*100)/100};
   }).filter(Boolean);
-  if(pts.length<3){card.style.display='none';return;}
+  // Show the card even with little data so the primary insight per tab
+  // stays visible. Empty state handled inline below.
   card.style.display='';
+  if(!pts.length){
+    if(canvas)canvas.style.display='none';
+    if(metaEl)metaEl.innerHTML='<div style="font-size:12px;color:var(--text3);padding:16px 0;text-align:center;">아직 클린식 기록이 부족해요</div>';
+    return;
+  }
+  if(canvas)canvas.style.display='block';
   const vals=pts.map(p=>p.y);
   const avg=(vals.reduce((a,v)=>a+v,0)/vals.length).toFixed(1);
   const recent7=vals.slice(-7);const recent7Avg=recent7.length?(recent7.reduce((a,v)=>a+v,0)/recent7.length).toFixed(1):'—';
