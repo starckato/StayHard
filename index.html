@@ -20,7 +20,7 @@
      so window globals (dkey, normKey, ...) are set before inline code runs.
      Query version bumps cache when bundle content changes. Bump manually or
      via build script when shipping a new bundle. See MIGRATION_PLAN.md. -->
-<script src="/dist/app.js?v=20260424d"></script>
+<script src="/dist/app.js?v=20260424e"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Archivo+Black&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -6641,7 +6641,7 @@ function dismissWeeklyFeature(){
   const c=document.getElementById('weekly-feature-card');if(c)c.style.display='none';
   try{track('wf_dismissed',{});}catch(e){}
 }
-function gotoStatsTab(){try{track('wf_goto',{to:'stats'});}catch(e){}try{switchTab('stats',2);}catch(e){}}
+function gotoStatsTab(){try{track('wf_goto',{to:'stats'});}catch(e){}try{switchTab('stats',1);}catch(e){}}
 
 // ── Milestone reveals (M2) — 첫 이벤트 발생 시 깊은 기능 공개 ──
 function unlockNavBadge(tab){
@@ -7268,7 +7268,7 @@ function renderRoutine(){renderCharCard();renderSummaryCard();renderWeight();ren
 // top of the record tab, and publishes the rest to the bell modal.
 const PROMO_ORDER=[
   {id:'yesterday-ribbon',  title:'어제 미완료',      kind:'carryover'},
-  {id:'day3-challenge-card',title:'3일차 챌린지',     kind:'day3'},
+  {id:'day3-nudge-card',   title:'3일차 챌린지',     kind:'day3'},
   {id:'first-week-card',   title:'첫 주 미션',        kind:'onboarding'},
   {id:'weekly-feature-card',title:'이번 주 기능',     kind:'weekly'},
   {id:'invite-card',       title:'친구 초대',         kind:'invite'},
@@ -7324,11 +7324,16 @@ function openNotificationsModal(){
     activeIds.forEach(p=>{
       const src=document.getElementById(p.id);
       if(!src)return;
-      // Clone the source card so the original DOM / event handlers stay intact.
       const clone=src.cloneNode(true);
       clone.id=p.id+'-modal';
       clone.style.display='block';
       clone.style.margin='0';
+      // cloneNode copies inline onclick attributes but NOT onclick properties
+      // assigned via JS (ctaEl.onclick=...). Re-bind the handlers that the
+      // render functions wire up imperatively. Also close the modal on CTA
+      // tap so the user lands on the target screen with no bell modal in
+      // the way.
+      _rebindPromoClone(clone, p.id);
       list.appendChild(clone);
     });
   }
@@ -7339,6 +7344,48 @@ function closeNotificationsModal(){
   const m=document.getElementById('notifications-modal');
   if(m)m.style.display='none';
   document.body.style.overflow='';
+}
+// cloneNode preserves inline onclick attributes but drops property-assigned
+// handlers (element.onclick = fn). weekly-feature-card wires its main CTA
+// imperatively in renderWeeklyFeatureRibbon, so the clone inside the bell
+// modal would do nothing on tap. Re-bind here. Also wrap every CTA so it
+// closes the modal before firing — user should land on the target screen
+// without a stacked sheet in the way.
+function _rebindPromoClone(clone, id){
+  if(!clone)return;
+  // Close-the-modal wrapper for any button that advances to another screen.
+  const wrapNav=(btn, fn)=>{
+    if(!btn)return;
+    btn.onclick=(e)=>{
+      try{e&&e.stopPropagation&&e.stopPropagation();}catch(_){}
+      try{closeNotificationsModal();}catch(_){}
+      try{fn&&fn();}catch(err){console.warn('[promo-clone]',err);}
+    };
+  };
+  if(id==='weekly-feature-card'){
+    try{
+      const feat=(typeof _currentWeekFeature==='function')?_currentWeekFeature():null;
+      const ctaEl=clone.querySelector('.wf-cta');
+      if(ctaEl&&feat){
+        wrapNav(ctaEl, ()=>{
+          try{track('wf_cta_click',{title:feat.title,src:'bell'});}catch(e){}
+          try{window[feat.fn]&&window[feat.fn]();}catch(e){console.warn('[wf]',e);}
+        });
+      }
+    }catch(e){console.warn('[promo-clone:wf]',e);}
+  }
+  // Other promo cards use inline onclick attributes, which cloneNode keeps.
+  // No explicit rebind needed, but we still want each action to close the
+  // modal first. Strip the inline onclick and re-wrap via wrapNav.
+  clone.querySelectorAll('button[onclick]').forEach(btn=>{
+    const expr=btn.getAttribute('onclick');
+    if(!expr)return;
+    btn.removeAttribute('onclick');
+    wrapNav(btn, ()=>{
+      // Evaluate in global scope — functions like shareInvite, gotoChallengeTab etc.
+      try{(new Function(expr))();}catch(e){console.warn('[promo-clone:inline]',expr,e);}
+    });
+  });
 }
 
 // ═══════════════════════════════════════════════
