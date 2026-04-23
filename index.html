@@ -20,7 +20,7 @@
      so window globals (dkey, normKey, ...) are set before inline code runs.
      Query version bumps cache when bundle content changes. Bump manually or
      via build script when shipping a new bundle. See MIGRATION_PLAN.md. -->
-<script src="/dist/app.js?v=20260424d"></script>
+<script src="/dist/app.js?v=20260424z"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Archivo+Black&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -318,7 +318,51 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
   .sb-reveal,.sb-reveal *{animation:none!important;}
 }
 
-/* ═════ SCORE GAIN CHIP — 액션 위치 → Status Band 점수 비행 ═════ */
+/* ═════ WILL CUBE IMPACT ANIMATION — 심플 3-stage ═════
+   1) 등장 (0~280ms): fade + scale + 살짝 튀어나오는 느낌
+   2) 정지 (280~480ms): 라벨 읽기
+   3) 회전+비상 (480~1180ms): Y축 1회 회전 + 상단으로 스르륵 fade out
+   총 1.18초. 복잡한 keyframe 없이 CSS transition 으로 제어. */
+.cube-event-stage{position:fixed;inset:0;z-index:10001;pointer-events:none;display:flex;align-items:center;justify-content:center;contain:layout style paint;transform:translateZ(0);}
+.cube-event-stage.dim{background:radial-gradient(circle at center,rgba(0,0,0,0.22) 0%,transparent 55%);opacity:0;transition:opacity 280ms ease-out;}
+.cube-event-stage.dim.on{opacity:1;}
+.cube-event-wrap{position:relative;display:flex;flex-direction:column;align-items:center;gap:14px;opacity:0;transform:translateY(16px) scale(0.7);transition:opacity 280ms ease-out,transform 340ms cubic-bezier(0.16,1,0.3,1);will-change:transform,opacity;backface-visibility:hidden;}
+.cube-event-wrap.show{opacity:1;transform:translateY(0) scale(1);}
+.cube-event-wrap.depart{opacity:0;transform:translateY(calc(-50vh + 40px)) scale(0.24);transition:opacity 760ms ease-in,transform 900ms cubic-bezier(0.4,0,0.2,1);}
+/* 3D 큐브 — preserve-3d, 초기 회전 각도 + .depart 시 1회전. */
+.cube-event-cube{width:72px;height:72px;position:relative;transform-style:preserve-3d;transform:rotateX(-16deg) rotateY(-22deg);transition:transform 900ms cubic-bezier(0.4,0,0.2,1);will-change:transform;backface-visibility:hidden;}
+.cube-event-wrap.depart .cube-event-cube{transform:rotateX(-16deg) rotateY(338deg);}
+.cube-face{position:absolute;width:72px;height:72px;border-radius:6px;backface-visibility:hidden;}
+.cube-event[data-color="gold"] .cube-face{background:linear-gradient(135deg,#fff1a8 0%,#ffd54a 45%,#c48c1a 100%);border:1px solid rgba(255,233,128,0.85);box-shadow:0 0 1px rgba(255,255,255,0.9) inset,0 -6px 12px rgba(0,0,0,0.35) inset;}
+.cube-event[data-color="silver"] .cube-face{background:linear-gradient(135deg,#f2f4f7 0%,#b5c0cc 45%,#6d7682 100%);border:1px solid rgba(210,218,228,0.75);box-shadow:0 0 1px rgba(255,255,255,0.85) inset,0 -6px 12px rgba(0,0,0,0.30) inset;}
+.cube-event[data-color="crimson"] .cube-face{background:linear-gradient(135deg,#ff8080 0%,#ff4d4d 45%,#8b1515 100%);border:1px solid rgba(255,77,77,0.80);box-shadow:0 0 1px rgba(255,255,255,0.55) inset,0 -6px 12px rgba(0,0,0,0.45) inset;}
+.cube-face.f-front  {transform:translateZ(36px);}
+.cube-face.f-back   {transform:translateZ(-36px) rotateY(180deg);}
+.cube-face.f-right  {transform:rotateY(90deg) translateZ(36px);}
+.cube-face.f-left   {transform:rotateY(-90deg) translateZ(36px);}
+.cube-face.f-top    {transform:rotateX(90deg) translateZ(36px);}
+.cube-face.f-bottom {transform:rotateX(-90deg) translateZ(36px);}
+/* 라벨 — wrap 의 fade 에 맞춰 같이 등장 */
+.cube-event-label{display:flex;flex-direction:column;align-items:center;gap:2px;}
+.cube-event-title{font-size:13px;font-weight:800;color:var(--text);letter-spacing:-0.005em;text-shadow:0 1px 4px rgba(0,0,0,0.5);}
+.cube-event-body{font-size:11px;font-weight:600;color:var(--text2);letter-spacing:-0.005em;text-shadow:0 1px 3px rgba(0,0,0,0.5);}
+.cube-event-delta{font-size:14px;font-weight:900;font-family:'DM Mono',monospace;letter-spacing:-0.02em;text-shadow:0 1px 4px rgba(0,0,0,0.5);}
+.cube-event[data-color="gold"] .cube-event-delta{color:#ffd54a;}
+.cube-event[data-color="silver"] .cube-event-delta{color:#d8dfe7;}
+.cube-event[data-color="crimson"] .cube-event-delta{color:#ff6b6b;}
+/* Aura — 큐브 뒤 radial glow. show 시 fade in. */
+.cube-event-aura{position:absolute;top:50%;left:50%;width:280px;height:280px;margin:-140px 0 0 -140px;border-radius:50%;pointer-events:none;opacity:0;transform:scale(0.7);transition:opacity 320ms ease-out,transform 420ms cubic-bezier(0.16,1,0.3,1);}
+.cube-event[data-color="gold"] .cube-event-aura{background:radial-gradient(circle,rgba(255,213,74,0.50) 0%,rgba(255,213,74,0.22) 30%,transparent 70%);}
+.cube-event[data-color="silver"] .cube-event-aura{background:radial-gradient(circle,rgba(210,220,232,0.40) 0%,rgba(210,220,232,0.18) 30%,transparent 70%);}
+.cube-event[data-color="crimson"] .cube-event-aura{background:radial-gradient(circle,rgba(255,60,60,0.50) 0%,rgba(100,0,0,0.25) 30%,transparent 70%);}
+.cube-event-aura.on{opacity:1;transform:scale(1.1);}
+@media (prefers-reduced-motion: reduce){
+  .cube-event-wrap,.cube-event-wrap.show,.cube-event-wrap.depart,.cube-event-cube,.cube-event-aura{transition:none !important;}
+  .cube-event-wrap{opacity:1;transform:none;}
+  .cube-event-aura{opacity:1;}
+}
+
+/* ═════ SCORE GAIN CHIP — 액션 위치 → Status Band 점수 비행 (legacy, CUBE_UI_MODE off 시 유지) ═════ */
 .score-chip{position:fixed;padding:6px 13px;border-radius:22px;background:linear-gradient(135deg,#ff4d4d 0%,#ff6b35 100%);color:#fff;font-weight:900;font-family:'DM Mono',monospace;font-size:14px;z-index:1050;pointer-events:none;box-shadow:0 6px 24px rgba(255,77,77,.55),0 0 0 2px rgba(255,77,77,.35),0 0 20px rgba(255,77,77,.35);letter-spacing:-.02em;white-space:nowrap;will-change:transform,opacity;}
 .score-chip.neg{background:linear-gradient(135deg,#ff4d4d 0%,#b71c1c 100%);}
 .score-chip.init{transition:none;opacity:1;transform:translate(-50%,-50%) scale(1);}
@@ -410,6 +454,16 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
 .s-card .card-collapsed-left{display:flex;align-items:center;gap:9px;flex-shrink:0;}
 .s-card .cc-icon{color:var(--accent);display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;}
 .s-card .cc-title{font-size:13px;font-weight:700;color:var(--text);letter-spacing:-.01em;}
+/* Will Cube card-header chip — 오늘의 큐브 색상을 accordion 타이틀 우측에 소형 square 로 표시.
+   heatmap indicator 와 동일한 gold/silver/crimson 팔레트. display:none 인 상태는 빈 날. */
+.s-card .cc-cube{display:inline-block;width:12px;height:12px;margin-left:8px;border-radius:3px;box-sizing:border-box;vertical-align:-1px;cursor:pointer;touch-action:manipulation;flex-shrink:0;}
+.s-card .cc-cube[data-color="gold"]{background:linear-gradient(135deg,#fff1a8 0%,#ffd54a 45%,#c48c1a 100%);border:1px solid rgba(255,233,128,0.70);box-shadow:0 0 3px rgba(255,213,74,0.50),inset 0 1px 0 rgba(255,255,255,0.45),inset 0 -1px 0 rgba(0,0,0,0.25);}
+.s-card .cc-cube[data-color="silver"]{background:linear-gradient(135deg,#f2f4f7 0%,#b5c0cc 45%,#6d7682 100%);border:1px solid rgba(210,218,228,0.55);box-shadow:0 0 3px rgba(181,192,204,0.40),inset 0 1px 0 rgba(255,255,255,0.32),inset 0 -1px 0 rgba(0,0,0,0.22);}
+.s-card .cc-cube[data-color="crimson"]{background:rgba(255,77,77,0.32);border:1px solid rgba(255,77,77,0.45);}
+.s-card .cc-cube[data-color="gray"]{background:transparent;border:1px solid rgba(255,255,255,0.14);}
+/* 운동 exercise_bonus 가 gold 일 때 card-cube 에 gold halo — filter drop-shadow 로
+   기존 box-shadow(inset) 와 충돌 없이 바깥쪽으로 은은한 빛 확산. */
+.s-card .cc-cube[data-bonus="gold"]{filter:drop-shadow(0 0 4px rgba(255,213,74,0.75)) drop-shadow(0 0 8px rgba(255,213,74,0.35));}
 .s-card .cc-summary{font-size:12px;color:var(--text2);font-family:'DM Mono',monospace;font-weight:500;display:flex;align-items:center;gap:6px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;justify-content:flex-end;}
 .s-card .cc-summary .sep{color:var(--text3);font-size:10px;}
 .s-card .cc-summary .main{color:var(--text);font-weight:600;}
@@ -1241,6 +1295,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
         <div class="card-collapsed-left">
           <span class="cc-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20C4 10 10 4 20 4c0 10-6 16-16 16z"/><path d="M4 20L13 11"/></svg></span>
           <span class="cc-title">식단</span>
+          <span class="cc-cube" id="cc-cube-diet" data-cat="meal" style="display:none;" onclick="event.stopPropagation();dhShowCubeTooltip&&dhShowCubeTooltip(event,TODAY,'meal')"></span>
         </div>
         <div class="cc-summary" id="food-summary">
           <span class="summary-cta">끼니 기록하기 →</span>
@@ -1294,6 +1349,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
         <div class="card-collapsed-left">
           <span class="cc-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10v4M7 7v10M17 7v10M21 10v4"/><path d="M7 12h10"/></svg></span>
           <span class="cc-title">운동</span>
+          <span class="cc-cube" id="cc-cube-exercise" data-cat="workout" style="display:none;" onclick="event.stopPropagation();dhShowCubeTooltip&&dhShowCubeTooltip(event,TODAY,'workout')"></span>
         </div>
         <div class="cc-summary" id="workout-summary">
           <span class="summary-cta">운동 추가하기 →</span>
@@ -1320,6 +1376,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
         <div class="card-collapsed-left">
           <span class="cc-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/><path d="M3 21v-5h5"/></svg></span>
           <span class="cc-title">루틴</span>
+          <span class="cc-cube" id="cc-cube-routine" data-cat="routine" style="display:none;" onclick="event.stopPropagation();dhShowCubeTooltip&&dhShowCubeTooltip(event,TODAY,'routine')"></span>
         </div>
         <div class="cc-summary" id="routine-summary">
           <span class="summary-cta">루틴 추가하기 →</span>
@@ -1339,6 +1396,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
         <div class="card-collapsed-left">
           <span class="cc-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 12l3 3 5-5"/></svg></span>
           <span class="cc-title">할일</span>
+          <span class="cc-cube" id="cc-cube-tasks" data-cat="tasks" style="display:none;" onclick="event.stopPropagation();dhShowCubeTooltip&&dhShowCubeTooltip(event,TODAY,'tasks')"></span>
         </div>
         <div class="cc-summary" id="targets-summary">
           <span class="summary-cta">할일 추가하기 →</span>
@@ -4457,6 +4515,7 @@ function saveSessionToLog(){
     log.workouts.push(sessionEntry);
   }
   renderWorkouts();
+  recomputeCubesHook();
   scheduleSave();
 }
 // finishSession is defined below in the redesigned workout system
@@ -4782,6 +4841,11 @@ function getAccumulatedScore(){
 
 function getTodayScore(){
   const l=logCache[TODAY]||log;
+  // CUBE mode: 오늘 점수 = 오늘 cubes 의 합. 팝오버 delta 와 완전 일치.
+  if(window.CUBE_UI_MODE===true&&l&&l.cubes&&window.Cubes&&typeof window.Cubes.scoreFromCubes==='function'){
+    return window.Cubes.scoreFromCubes(l.cubes);
+  }
+  // legacy: _ptsLog 합산
   if(!l._ptsLog)return 0;
   return l._ptsLog.reduce((a,e)=>a+e.pts,0);
 }
@@ -4789,11 +4853,21 @@ function getTodayScore(){
 function addScore(type, note='', ptsOverride=null, silent=false){
   const ev=SCORE_EVENTS[type];if(!ev)return;
   const pts=ptsOverride!==null?ptsOverride:ev.pts;
-  // 1. 오늘 로그에 기록 (내역용)
+  // 1. 오늘 로그에 기록 (내역용) — CUBE mode 에서도 history 는 유지.
   const l=logCache[TODAY]||log;
   if(!l._ptsLog)l._ptsLog=[];
   l._ptsLog.push({type,pts,label:ev.label,icon:ev.icon,ts:new Date().toISOString(),note});
   logCache[TODAY]=l;
+  // CUBE mode: CP.total_score / 토스트 / 티어업 로직은 recomputeCubesHook 이 담당.
+  // addScore 는 _ptsLog 기록 + save queue 만. 점수 math / UI 업데이트 없음.
+  if(window.CUBE_UI_MODE===true){
+    _dirtyKeys.add(TODAY);
+    clearTimeout(_saveTimer);
+    _saveTimer=setTimeout(_flushSave,500);
+    try{if(pts>0&&typeof _appendCompActivity==='function')_appendCompActivity(type,pts);}catch(e){}
+    return;
+  }
+  // ===== 아래는 legacy path (CUBE_UI_MODE off 시에만) =====
   // 2. CP.total_score에 즉시 반영
   if(!CP)return;
   const _prevScore=+(CP.total_score)||0;
@@ -5450,6 +5524,9 @@ async function onLogin(user){
   }
   // 슬라이더 dot 표시를 위해 이번주 날짜 백그라운드 fetch
   _prefetchWeekLogs();
+  // Will Cube recap — 다음날 첫 접속 시 어제 cubes/bonus 촤르륵 재생.
+  // prefetch 끝나길 기다리지 않고 별도 fetch — 2초 정도 뒤에 시작해서 초기 로딩 훔친 느낌 방지.
+  setTimeout(()=>{try{runDailyCubeRecap();}catch(e){}},2000);
   // 이전 세션 저장 실패분 복구 (localStorage pendingSave_* 키)
   _recoverPendingSaves();
   // 치팅 월 초기화 체크
@@ -5532,7 +5609,7 @@ async function _prefetchWeekLogs(){
   try{
     const from=toISO(keys[0]),to=toISO(keys[keys.length-1]);
     const{data,error}=await sb.from('daily_logs')
-      .select('log_date,weight,water_cups,meals,workouts,mandatory,targets,points_log')
+      .select('log_date,weight,water_cups,meals,workouts,mandatory,targets,points_log,cubes')
       .eq('user_id',CU.id)
       .gte('log_date',from)
       .lte('log_date',to);
@@ -5553,7 +5630,8 @@ async function _prefetchWeekLogs(){
           workouts:d.workouts||[],
           mandatory:(d.mandatory&&d.mandatory.length>0)?d.mandatory:(existing?.mandatory||[]),
           targets:d.targets||[],
-          _ptsLog:existing?._ptsLog||d.points_log||[]
+          _ptsLog:existing?._ptsLog||d.points_log||[],
+          cubes:d.cubes||existing?.cubes||null
         };
       });
       // 저장 중이 아닐 때만 log 참조 갱신 (미저장 변경 유실 방지)
@@ -5561,6 +5639,53 @@ async function _prefetchWeekLogs(){
         if(logCache[selectedKey])log=logCache[selectedKey];
         else if(logCache[today])log=logCache[today];
       }
+      // ── Will Cube Phase 5: legacy 유저 과거 데이터 auto-fill ──
+      // cube migration 이전 daily_logs 는 cubes=null. prefetch 시 fetch 된
+      // 과거 로그 중 cubes 없는 날을 silent 재계산해서 채움. 점수는 자연스레
+      // 복구됨 (유저 액션 없이도 앱 열면 지난 2주 cube 가 자동 populated).
+      try{
+        if(window.Cubes&&typeof window.Cubes.recomputeCubesInLog==='function'){
+          let filled=0;
+          for(const d of data){
+            const k=d.log_date?d.log_date.slice(0,10):null;
+            if(!k)continue;
+            const l=logCache[k];
+            if(!l||l.cubes)continue; // 이미 있으면 skip
+            const weekday=(new Date(k+'T00:00:00').getDay()+6)%7;
+            window.Cubes.recomputeCubesInLog(l,{weekday,dateKey:k});
+            _dirtyKeys.add(k);
+            filled++;
+          }
+          // 채워진 날들 DB upsert — saveLog 개별 호출 (queueSave 는 selectedKey 만)
+          if(filled>0){
+            console.log('[cubes] auto-fill prefetched days:',filled);
+            for(const k of Array.from(_dirtyKeys)){
+              if(!logCache[k]||!logCache[k].cubes)continue;
+              saveLog(k,true).catch(()=>{});
+              _dirtyKeys.delete(k);
+            }
+            // Total_score 재계산 — silent delta: 새 cubes 의 점수를 합산해서 CP.total_score 에 추가.
+            // (기존 total_score 는 migration 으로 0. 여기서 과거 cube 기여도 복구.)
+            if(CP&&window.Cubes&&typeof window.Cubes.scoreFromCubes==='function'){
+              let gained=0;
+              for(const k of Object.keys(logCache)){
+                if(k===TODAY)continue; // 오늘은 sb-today 로 따로 표시
+                const l=logCache[k];
+                if(!l||!l.cubes)continue;
+                gained+=window.Cubes.scoreFromCubes(l.cubes);
+              }
+              // 과거 합계가 CP.total_score 보다 크면 차이만큼 보정 (여러 번 실행해도 상한선 유지).
+              const targetScore=Math.max(+(CP.total_score)||0,Math.max(0,gained));
+              if(targetScore!==+(CP.total_score)){
+                CP.total_score=targetScore;
+                try{if(CU)localStorage.setItem('score_'+CU.id,String(CP.total_score));}catch(_){}
+                try{_flushScoreUpdate();}catch(_){}
+                try{updateGogginsHeader();}catch(_){}
+              }
+            }
+          }
+        }
+      }catch(e){console.warn('[cubes] auto-fill failed',e&&e.message);}
       buildSlider();
       renderRoutine();
       // 스냅샷 갱신 → 다음 방문 시 최신 데이터로 즉시 복원
@@ -5758,7 +5883,7 @@ async function loadLog(key,force=false){
     }
     let mandatory=data.mandatory&&data.mandatory.length>0?data.mandatory:null;
     if(!mandatory){const defs=await loadRoutineDefinitions();mandatory=defs.length>0?defs.map(r=>({...r,done:false})):JSON.parse(JSON.stringify(DEFAULT_MAND));}
-    const l={weight:data.weight!==null?parseFloat(data.weight):null,muscle_mass:data.muscle_mass!=null?parseFloat(data.muscle_mass):null,body_fat_pct:data.body_fat_pct!=null?parseFloat(data.body_fat_pct):null,water_cups:data.water_cups||0,meals,workouts:data.workouts||[],mandatory,targets:data.targets||[],_ptsLog:data.points_log||[]};
+    const l={weight:data.weight!==null?parseFloat(data.weight):null,muscle_mass:data.muscle_mass!=null?parseFloat(data.muscle_mass):null,body_fat_pct:data.body_fat_pct!=null?parseFloat(data.body_fat_pct):null,water_cups:data.water_cups||0,meals,workouts:data.workouts||[],mandatory,targets:data.targets||[],_ptsLog:data.points_log||[],cubes:data.cubes||null};
     logCache[key]=l;log=l;
   }else{
     const routineDefs=await loadRoutineDefinitions();
@@ -5847,6 +5972,450 @@ window.addEventListener('visibilitychange', ()=>{
 // 하위 호환성 — saveNow 호출은 queueSave로 리다이렉트
 function saveNow(msg){ queueSave(); }
 function scheduleSave(){ queueSave(); }
+
+// ── Will Cube mode 토글 ─────────────────────────────────────
+// true: 기존 점수 UI (showWin / showScoreGain / confetti / checkPerfectDay) 전부
+// 억제하고 큐브 팝오버를 유일한 시각 피드백으로 사용.
+// Phase 1 의 addScore 는 _ptsLog 기록용으로 계속 돌아감 — DB 호환 유지.
+window.CUBE_UI_MODE = true;
+
+// ── Will Cube Phase 3a: 색 변경 감지 & 팝오버 피드백 ───────
+// recomputeCubesHook 직전에 log.cubes 스냅샷 → 재계산 후 diff → showCubeEvent.
+// 색 승격(gray→silver/gold, silver→gold) 만 긍정 피드백.
+// crimson 전환은 Goggins 톤 토스트.
+// bonus 새로 추가된 항목은 별도 이벤트.
+const CUBE_CHANGE_COPY={
+  diet:{
+    gold:    {title:'식단 gold', body:'clean 2끼 이상'},
+    silver:  {title:'식단 silver', body:'기록 하나 채움'},
+    crimson: {title:'식단 crimson', body:'오늘 한 번 흔들렸다'},
+  },
+  exercise:{
+    gold:    {title:'운동 gold', body:'땀 흘린 하루'},
+    crimson: {title:'운동 crimson', body:''},
+  },
+  exercise_bonus:{
+    gold:    {title:'이중 큐브', body:'헬스 + 유산소 완료'},
+  },
+  routine:{
+    gold:    {title:'루틴 gold', body:'모든 루틴 완수'},
+    silver:  {title:'루틴 silver', body:'실패 없이 부분 완수'},
+    crimson: {title:'루틴 crimson', body:'실패도 기록이다'},
+  },
+  tasks:{
+    gold:    {title:'할일 gold', body:'모든 할일 완수'},
+    silver:  {title:'할일 silver', body:'부분 완수'},
+    crimson: {title:'할일 crimson', body:'오늘 한 번 졌다'},
+  },
+};
+// 색상별 절대 점수 — Phase 1 src/features/cubes/score.js 의 BASE_SCORE 와 동일 유지.
+// 2026-04-24: gray = 0 (큐브 얻기 전까지 점수 없음).
+const _CUBE_COLOR_POINTS={gold:3,silver:2,crimson:-3,gray:0};
+function _cubeColorPoints(c){if(c==null)return 0;return _CUBE_COLOR_POINTS[c]||0;}
+function _formatCubeDelta(n){return n>0?('+'+n):n<0?('−'+Math.abs(n)):'0';}
+// 팝오버 중첩 큐 — 동시 변경 여러 개면 0.7초 간격으로 순차 노출.
+let _cubeEventQueue=[];
+let _cubeEventShowing=false;
+function _cubeColorMeta(color){
+  if(color==='gold')    return {fg:'#ffd54a',border:'rgba(255,213,74,0.55)',bg:'linear-gradient(135deg,rgba(255,241,168,0.15) 0%,rgba(255,213,74,0.10) 100%)'};
+  if(color==='silver')  return {fg:'#b5c0cc',border:'rgba(181,192,204,0.50)',bg:'linear-gradient(135deg,rgba(242,244,247,0.12) 0%,rgba(181,192,204,0.08) 100%)'};
+  if(color==='crimson') return {fg:'#ff6b6b',border:'rgba(255,77,77,0.45)',bg:'rgba(255,77,77,0.10)'};
+  return {fg:'#eaeaf0',border:'rgba(255,255,255,0.14)',bg:'rgba(20,20,24,0.92)'};
+}
+// 타이밍 상수 — CSS 와 일치시켜야 함. 유저 피드백 (2026-04-24): 글씨 읽기
+// 전에 depart 가 너무 빨리 시작됨 → linger 500ms / depart 900ms 로 확장.
+const _CUBE_SHOW_MS=280;   // fade + scale in
+const _CUBE_LINGER_MS=500; // 정지 구간 — 라벨 읽을 시간
+const _CUBE_DEPART_MS=900; // 회전 + 비상 + fade out — 천천히 사라짐
+
+// GPU warmup — 첫 번째 cube 렌더 시 compositor 가 3D layer 를 처음 구성하면서
+// 200~400ms 프레임 드랍이 생긴다. 앱 로드 후 1회 invisible 한 cube 를 생성해
+// transform-style:preserve-3d / backface-visibility:hidden / 6-face 레이아웃을
+// 미리 컴파일시킨다.
+let _cubeWarmedUp=false;
+function _warmupCube3D(){
+  if(_cubeWarmedUp)return;
+  _cubeWarmedUp=true;
+  try{
+    const stage=document.createElement('div');
+    stage.className='cube-event-stage';
+    stage.style.cssText='visibility:hidden;pointer-events:none;';
+    const outer=document.createElement('div');
+    outer.className='cube-event';
+    outer.setAttribute('data-color','gold');
+    const wrap=document.createElement('div');
+    wrap.className='cube-event-wrap';
+    const cube=document.createElement('div');
+    cube.className='cube-event-cube';
+    ['f-front','f-back','f-right','f-left','f-top','f-bottom'].forEach(f=>{
+      const face=document.createElement('div');face.className='cube-face '+f;cube.appendChild(face);
+    });
+    wrap.appendChild(cube);
+    outer.appendChild(wrap);
+    stage.appendChild(outer);
+    document.body.appendChild(stage);
+    // 800ms 후 제거 — compositor 가 layer 구축할 시간 확보.
+    setTimeout(()=>{if(stage.parentNode)stage.parentNode.removeChild(stage);},800);
+  }catch(e){}
+}
+// 앱 로드 직후 한 번 pre-warm. CUB_UI_MODE 켜진 상태일 때만.
+if(typeof window!=='undefined'){
+  (typeof requestIdleCallback==='function'
+    ? requestIdleCallback(()=>_warmupCube3D(),{timeout:2000})
+    : setTimeout(_warmupCube3D,800));
+}
+
+// 이벤트 1건 렌더 — show → linger → depart (회전+비상+fade) 3단계.
+function _playCubeEvent(ev, onDone){
+  const stage=document.createElement('div');
+  stage.className='cube-event-stage dim';
+  const outer=document.createElement('div');
+  outer.className='cube-event';
+  outer.setAttribute('data-color',ev.color||'gray');
+  const aura=document.createElement('div');
+  aura.className='cube-event-aura';
+  outer.appendChild(aura);
+  const wrap=document.createElement('div');
+  wrap.className='cube-event-wrap';
+  outer.appendChild(wrap);
+  // 3D 큐브 6면
+  const cube=document.createElement('div');
+  cube.className='cube-event-cube';
+  ['f-front','f-back','f-right','f-left','f-top','f-bottom'].forEach(f=>{
+    const face=document.createElement('div');
+    face.className='cube-face '+f;
+    cube.appendChild(face);
+  });
+  wrap.appendChild(cube);
+  // 라벨
+  const lbl=document.createElement('div');
+  lbl.className='cube-event-label';
+  if(ev.title){const t=document.createElement('div');t.className='cube-event-title';t.textContent=ev.title;lbl.appendChild(t);}
+  if(ev.body) {const b=document.createElement('div');b.className='cube-event-body';b.textContent=ev.body;lbl.appendChild(b);}
+  if(ev.delta){const d=document.createElement('div');d.className='cube-event-delta';d.textContent=ev.delta;lbl.appendChild(d);}
+  wrap.appendChild(lbl);
+  stage.appendChild(outer);
+  document.body.appendChild(stage);
+
+  // 2프레임 기다린 뒤 .show → CSS transition 으로 fade + scale in.
+  // (1프레임은 Chromium 에서 가끔 transition 트리거 안 됨 — 2프레임이 안전)
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    stage.classList.add('on');
+    wrap.classList.add('show');
+    aura.classList.add('on');
+  }));
+
+  // linger 후 depart (회전 + 비상 + fade). show 가 끝난 뒤 linger.
+  setTimeout(()=>{
+    wrap.classList.add('depart');
+  },_CUBE_SHOW_MS+_CUBE_LINGER_MS);
+
+  // cleanup
+  setTimeout(()=>{
+    if(stage.parentNode)stage.parentNode.removeChild(stage);
+    onDone&&onDone();
+  },_CUBE_SHOW_MS+_CUBE_LINGER_MS+_CUBE_DEPART_MS);
+}
+
+function _showNextCubeEvent(){
+  if(!_cubeEventQueue.length){_cubeEventShowing=false;return;}
+  _cubeEventShowing=true;
+  const ev=_cubeEventQueue.shift();
+  _playCubeEvent(ev,()=>{
+    // 다음 이벤트 간격 — 150ms 짧은 텀으로 "촤르륵" 느낌.
+    setTimeout(_showNextCubeEvent,150);
+  });
+}
+function showCubeEvent(ev){
+  if(!ev)return;
+  _cubeEventQueue.push(ev);
+  if(!_cubeEventShowing)_showNextCubeEvent();
+}
+
+// ── 다음날 첫 접속 recap ──────────────────────────────────
+// 유저가 오늘 처음 앱을 켰을 때, 어제 확정된 cubes + bonus 를 한 번에 촤르륵
+// 재생. localStorage 로 중복 방지. gray cube 는 스킵 (유의미한 것만).
+async function runDailyCubeRecap(){
+  try{
+    if(!CU||!CU.id)return;
+    const yest=new Date();yest.setDate(yest.getDate()-1);
+    const yk=dkey(yest);
+    const seenKey='cube_recap_seen_'+CU.id+'_'+yk;
+    if(localStorage.getItem(seenKey)==='1')return;
+    // 어제 log 먼저 확보. cache 없으면 Supabase fetch.
+    let yl=logCache[yk];
+    if(!yl){
+      try{
+        const{data}=await sb.from('daily_logs').select('*').eq('user_id',CU.id).eq('log_date',yk).maybeSingle();
+        if(data){
+          yl={
+            weight:data.weight!==null?parseFloat(data.weight):null,
+            water_cups:data.water_cups||0,
+            meals:data.meals||[],workouts:data.workouts||[],
+            mandatory:data.mandatory||[],targets:data.targets||[],
+            _ptsLog:data.points_log||[],
+            cubes:data.cubes||null,
+          };
+          logCache[yk]=yl;
+        }
+      }catch(e){/* silent */}
+    }
+    if(!yl||!yl.cubes){
+      // cubes 없는 날 — skip (소급 계산 없이 조용히 패스)
+      localStorage.setItem(seenKey,'1');
+      return;
+    }
+    const events=[];
+    // 4개 카테고리 — gray/null 은 건너뜀
+    const cats=[
+      {key:'diet', cat:'diet'},
+      {key:'exercise', cat:'exercise'},
+      {key:'routine', cat:'routine'},
+      {key:'tasks', cat:'tasks'},
+    ];
+    for(const c of cats){
+      const color=yl.cubes[c.key];
+      if(!color||color==='gray')continue;
+      const copy=CUBE_CHANGE_COPY[c.cat]&&CUBE_CHANGE_COPY[c.cat][color];
+      if(copy){
+        // 어제의 recap — 그 색깔의 절대 점수 (null→color delta).
+        const pts=_cubeColorPoints(color);
+        events.push({type:'color',cat:c.cat,color,...copy,delta:_formatCubeDelta(pts)});
+      }
+    }
+    // bonus 항목
+    const bonus=Array.isArray(yl.cubes.bonus)?yl.cubes.bonus:[];
+    for(const b of bonus){
+      if(!b)continue;
+      const count=typeof b.count==='number'?b.count:1;
+      const bonusPts=count*3;
+      if(b.type==='pr'){
+        const name=b.exerciseName||'운동';
+        const kindLbl=b.kind==='one_rm'?'1RM':b.kind==='volume'?'볼륨':b.kind==='rep_max'?((b.reps||'')+'rep'):'PR';
+        const kg=(typeof b.kg==='number')?(Number.isInteger(b.kg)?b.kg+'kg':b.kg.toFixed(1)+'kg'):'';
+        events.push({type:'bonus',color:'gold',title:'PR 갱신',body:`${name} ${kindLbl} ${kg}`.trim(),delta:_formatCubeDelta(bonusPts)});
+      } else if(typeof b.type==='string'&&b.type.indexOf('streak_')===0){
+        const days=b.type.split('_')[1]||'';
+        events.push({type:'bonus',color:'gold',title:`${days}일 스트릭`,body:'어제 달성',delta:_formatCubeDelta(bonusPts)});
+      } else {
+        events.push({type:'bonus',color:'gold',title:b.name||'보너스',body:'',delta:_formatCubeDelta(bonusPts)});
+      }
+    }
+    if(!events.length){
+      localStorage.setItem(seenKey,'1');
+      return;
+    }
+    // 인트로 작은 헤더 토스트 먼저 1.2초. 이후 큐 흐름.
+    try{
+      const intro=document.createElement('div');
+      intro.style.cssText='position:fixed;top:max(60px,env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%) translateY(-12px);z-index:10000;padding:8px 16px;border-radius:10px;background:rgba(20,20,24,0.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,0.14);color:var(--text);font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;box-shadow:0 10px 30px rgba(0,0,0,0.45);opacity:0;transition:opacity 220ms ease-out,transform 260ms cubic-bezier(0.16,1,0.3,1);pointer-events:none;';
+      intro.textContent='어제의 큐브';
+      document.body.appendChild(intro);
+      requestAnimationFrame(()=>{intro.style.opacity='1';intro.style.transform='translateX(-50%) translateY(0)';});
+      setTimeout(()=>{
+        intro.style.opacity='0';intro.style.transform='translateX(-50%) translateY(-8px)';
+        setTimeout(()=>{if(intro.parentNode)intro.parentNode.removeChild(intro);},260);
+      },1400);
+    }catch(e){}
+    // 0.5초 delay 로 intro 노출되는 동안 큐브 연속 재생.
+    setTimeout(()=>{for(const ev of events)showCubeEvent(ev);},500);
+    localStorage.setItem(seenKey,'1');
+  }catch(e){console.warn('[cube-recap]',e&&e.message);}
+}
+
+// 이전/이후 cubes 비교해서 변화점 추출. 색 "승급"만 이벤트로 인정.
+// (gray→anything, silver→gold, anything→crimson 는 이벤트. 반대 방향 cancel 은 조용히.)
+// gray 는 이제 0점이므로 gray → gray 전환은 자연스레 delta 0, event 없음.
+// "1끼 등록해도 gray" 규칙이 judge 레벨에서 처리되므로 _diffCubes 특수 gate 불필요.
+function _diffCubes(before,after){
+  const events=[];
+  const cats=['diet','exercise','routine','tasks'];
+  const RANK={gold:3,silver:2,crimson:1,gray:0};
+  for(const cat of cats){
+    const b=(before&&before[cat])||null;
+    const a=(after&&after[cat])||null;
+    if(a===b)continue;
+    if(a==null)continue; // 큐브가 사라지는 케이스 (할일 전부 삭제 등) — 조용히
+    if(a==='gray')continue; // gray 로 내려가는 전환은 조용히.
+    // 팝오버 delta = **새 큐브의 절대값**. (유저 모델: "이전 +2 은 자동 취소되고
+    // gold 받으면 +3 으로 표시". 실제 hdr 변동은 recomputeCubesHook 에서
+    // (new - old) delta 로 처리 — 누적은 항상 큐브 값과 일치.)
+    const absPts=_cubeColorPoints(a);
+    if(a==='crimson'&&b!=='crimson'){
+      const copy=CUBE_CHANGE_COPY[cat]&&CUBE_CHANGE_COPY[cat].crimson;
+      if(copy)events.push({type:'color',cat,color:'crimson',...copy,delta:_formatCubeDelta(absPts)});
+      continue;
+    }
+    const bRank=b?RANK[b]:0;
+    const aRank=RANK[a]||0;
+    if(aRank>bRank){
+      const copy=CUBE_CHANGE_COPY[cat]&&CUBE_CHANGE_COPY[cat][a];
+      if(copy)events.push({type:'color',cat,color:a,...copy,delta:_formatCubeDelta(absPts)});
+    }
+  }
+  // exercise_bonus: null → 'gold' 전환만 이벤트. 팝오버는 gold 절대값 (+3).
+  const bBonusEx=(before&&before.exercise_bonus)||null;
+  const aBonusEx=(after&&after.exercise_bonus)||null;
+  if(!bBonusEx&&aBonusEx==='gold'){
+    const copy=CUBE_CHANGE_COPY.exercise_bonus&&CUBE_CHANGE_COPY.exercise_bonus.gold;
+    if(copy){
+      events.push({type:'color',cat:'exercise_bonus',color:'gold',...copy,delta:_formatCubeDelta(_cubeColorPoints('gold'))});
+    }
+  }
+  // Bonus diff — 새로 추가된 항목만.
+  const bBonus=(before&&Array.isArray(before.bonus))?before.bonus:[];
+  const aBonus=(after&&Array.isArray(after.bonus))?after.bonus:[];
+  if(aBonus.length>bBonus.length){
+    const newOnes=aBonus.slice(bBonus.length);
+    for(const b of newOnes){
+      if(!b)continue;
+      const count=typeof b.count==='number'?b.count:1;
+      // Bonus delta = count × 3 (gold cube 1개 = +3). hdr-score 변동과 일치.
+      const bonusPts=count*3;
+      if(b.type==='pr'){
+        const name=b.exerciseName||'운동';
+        const kindLbl=b.kind==='one_rm'?'1RM':b.kind==='volume'?'볼륨':b.kind==='rep_max'?((b.reps||'')+'rep'):'PR';
+        const kg=(typeof b.kg==='number')?(Number.isInteger(b.kg)?b.kg+'kg':b.kg.toFixed(1)+'kg'):'';
+        events.push({type:'bonus',color:'gold',title:'PR 갱신',body:`${name} ${kindLbl} ${kg}`.trim(),delta:_formatCubeDelta(bonusPts)});
+      } else if(typeof b.type==='string'&&b.type.indexOf('streak_')===0){
+        const days=b.type.split('_')[1]||'';
+        events.push({type:'bonus',color:'gold',title:`${days}일 스트릭`,body:'',delta:_formatCubeDelta(bonusPts)});
+      } else {
+        events.push({type:'bonus',color:'gold',title:b.name||'보너스',body:'',delta:_formatCubeDelta(bonusPts)});
+      }
+    }
+  }
+  return events;
+}
+
+// ── Will Cube Phase 2b: accordion 카드 헤더 큐브 렌더 ─────
+// TODAY 의 log.cubes 를 읽어 각 카드의 cc-cube chip 을 갱신.
+// 과거/미래 날짜 선택 중이면 selectedKey 의 cubes 를 그대로 보여줌.
+function renderCardCubes(){
+  try{
+    const key=selectedKey||TODAY;
+    const l=(window.logCache&&window.logCache[key])||null;
+    const cubes=l&&l.cubes;
+    const map={
+      'cc-cube-diet':cubes?cubes.diet:null,
+      'cc-cube-exercise':cubes?cubes.exercise:null,
+      'cc-cube-routine':cubes?cubes.routine:null,
+      'cc-cube-tasks':cubes?cubes.tasks:null,
+    };
+    Object.keys(map).forEach(id=>{
+      const el=document.getElementById(id);
+      if(!el)return;
+      const color=map[id];
+      if(!color){el.style.display='none';el.removeAttribute('data-color');el.removeAttribute('data-bonus');return;}
+      el.style.display='inline-block';
+      el.setAttribute('data-color',color);
+      // 운동 카드에만 exercise_bonus glow
+      if(id==='cc-cube-exercise'&&cubes&&cubes.exercise_bonus==='gold')el.setAttribute('data-bonus','gold');
+      else el.removeAttribute('data-bonus');
+    });
+  }catch(e){/* silent */}
+}
+
+// ── Will Cube Phase 1: 실시간 판정 훅 ──────────────────────
+// 식사/운동/루틴/할일이 변경될 때마다 호출. 순수 판정 함수는 src/features/cubes/ 에.
+// side-effect: log.cubes 를 갱신. 기존 점수/UI 는 건드리지 않음 (Phase 5 에서 교체).
+function recomputeCubesHook(key,opts){
+  try{
+    if(!window.Cubes||typeof window.Cubes.recomputeCubesInLog!=='function')return;
+    const k=key||selectedKey;
+    if(!k)return;
+    const l=logCache[k];
+    if(!l)return;
+    const silent=!!(opts&&opts.silent);
+    // Cube diff 를 위한 snapshot — recompute 전에 이전 색상 캐시.
+    const beforeCubes=l.cubes?JSON.parse(JSON.stringify(l.cubes)):null;
+    // 오늘의 요일 — renderMandatory 와 동일한 Monday-based 인코딩.
+    // t.days 배열은 [월=0, 화=1, ..., 일=6] 로 저장됨. JS 표준 (Sun=0) 과 어긋나므로
+    // +6 shift 필수. (DEFAULT_MAND 주석의 "0=Sun" 은 실제 동작과 불일치 — render
+    // 기준이 진실.)
+    const weekday=(new Date(k+'T00:00:00').getDay()+6)%7;
+    // Streak milestone 감지는 오늘 날짜일 때만 + claimedMilestones 는 CP 에 누적
+    const isToday=(k===TODAY);
+    const claimedMilestones=(CP&&Array.isArray(CP.streak_milestones))?CP.streak_milestones:[];
+    const prHistory=(CP&&CP.pr_records)?CP.pr_records:null;
+    const ctx={
+      weekday,
+      dateKey:k,
+      claimedMilestones,
+      prHistory,
+    };
+    if(isToday){
+      // streak 은 현재 calcStreak() 가 있으면 사용
+      try{ctx.newStreak=(typeof calcStreak==='function')?calcStreak():undefined;}catch(_){}
+      // PR 감지는 오늘 gym 세션이 done 일 때만
+      const hasGym=Array.isArray(l.workouts)&&l.workouts.some(w=>w&&w.type==='gym'&&w.status==='done');
+      if(hasGym)ctx.detectPRs=true;
+    }
+    const res=window.Cubes.recomputeCubesInLog(l,ctx);
+    // 카드 헤더 큐브 칩 즉시 갱신 (실시간 반영).
+    renderCardCubes();
+    // 히트맵도 재렌더 — tile 의 4개 cube 가 새 판정 색으로 전환되도록.
+    try{if(typeof window.buildHeatmapGrid==='function')window.buildHeatmapGrid();}catch(e){}
+    // ── Phase 5: cube 점수 delta 를 CP.total_score 에 적용 ───────────
+    // hdr 는 delta (new_cube - old_cube) 로 점진 업데이트. 누적 값은 항상
+    // scoreFromCubes(cubes) 와 일치 → 팝오버가 절대값을 표시해도 hdr 는 정확.
+    // (silver→gold 예: 팝오버 "+3" 표시, hdr 는 +1 움직임. 누적 total = silver의 +2
+    //  취소 + gold의 +3 = 결과적으로 +3 = gold 절대값.)
+    // silent (renderRoutine 의 auto-sync) 에선 delta 적용 금지 — 페이지 로드마다
+    // total_score 가 드리프트하는 것 방지.
+    try{
+      if(!silent&&k===TODAY&&window.Cubes&&typeof window.Cubes.scoreFromCubes==='function'&&CP){
+        const oldCubeScore=beforeCubes?window.Cubes.scoreFromCubes(beforeCubes):0;
+        const newCubeScore=window.Cubes.scoreFromCubes(l.cubes);
+        const delta=newCubeScore-oldCubeScore;
+        if(delta!==0){
+          const prev=+(CP.total_score)||0;
+          CP.total_score=Math.max(0,prev+delta);
+          try{if(CU)localStorage.setItem('score_'+CU.id,String(CP.total_score));}catch(_){}
+          try{_flushScoreUpdate();}catch(_){}
+          // 티어업 감지 — cube delta 로 상승한 경우에만 룸 오픈 (100점 돌파 등은 cube 0점이라 무효).
+          try{
+            const prevTier=getTier(prev);
+            const newTier=getTier(CP.total_score);
+            if(prevTier.name!==newTier.name&&!silent){
+              setTimeout(()=>{
+                try{if(typeof openRoomOverlay==='function')openRoomOverlay();}catch(_){}
+                try{if(typeof showTierUpShareCTA==='function')showTierUpShareCTA(newTier);}catch(_){}
+              },800);
+            }
+          }catch(_){}
+        }
+      }
+    }catch(e){console.warn('[cube-score-sync]',e&&e.message);}
+    // hdr-score / sb-today 실시간 refresh — 모든 점수 표시 한꺼번에.
+    try{updateGogginsHeader();}catch(e){}
+    // Cube 변화 팝오버 — 오늘 날짜일 때만. 과거 로그 수정 / silent sync 는 조용히.
+    try{
+      if(k===TODAY&&!silent){
+        const events=_diffCubes(beforeCubes,l.cubes);
+        for(const ev of events)showCubeEvent(ev);
+      }
+    }catch(e){console.warn('[cube-diff]',e&&e.message);}
+    // 프로필 쪽 누적 상태 갱신 — 새 PR/마일스톤이 잡혔을 때만 upsert.
+    if(res){
+      const promises=[];
+      if(Array.isArray(res.newMilestones)&&res.newMilestones.length>0&&CP&&CU){
+        CP.streak_milestones=res.nextClaimed;
+        promises.push(
+          sb.from('profiles').update({streak_milestones:res.nextClaimed}).eq('id',CU.id)
+        );
+      }
+      if(Array.isArray(res.newPRs)&&res.newPRs.length>0&&res.nextPrHistory&&CP&&CU){
+        CP.pr_records=res.nextPrHistory;
+        promises.push(
+          sb.from('profiles').update({pr_records:res.nextPrHistory}).eq('id',CU.id)
+        );
+      }
+      // fire-and-forget — 실패해도 cubes 는 저장됨
+      promises.forEach(p=>p.then&&p.then(()=>{},e=>console.warn('[cubes] profile sync',e&&e.message)));
+    }
+  }catch(e){console.warn('[cubes] recompute hook failed',e&&e.message);}
+}
 async function saveLog(key,silent=false){
   if(!CU)return;
   const l=logCache[key];if(!l)return;
@@ -5859,6 +6428,9 @@ async function saveLog(key,silent=false){
     mandatory:l.mandatory||[],targets:l.targets||[]
   };
   p.points_log=l._ptsLog||[];
+  // Will Cube Phase 1 — cubes JSONB. 판정은 recomputeCubesHook() 에서 실시간으로 log.cubes 에 기록됨.
+  // 과거 데이터 호환: cubes 없으면 null 로 저장 (백필 스크립트가 소급 계산).
+  if(l.cubes)p.cubes=l.cubes;
   // 5초 타임아웃으로 빠르게 실패 처리
   const _upsertWithTimeout=()=>Promise.race([
     sb.from('daily_logs').upsert(p,{onConflict:'user_id,log_date'}),
@@ -5945,6 +6517,9 @@ async function captureShareCard(){
 
 let _perfectDayShown=false;
 function checkPerfectDay(){
+  // Cube mode: "완벽한 하루" 자동 감지/confetti 억제. 큐브 4개 all-gold 는
+  // recomputeCubesHook 의 diff 로 자연스럽게 팝오버 스택으로 전달됨.
+  if(window.CUBE_UI_MODE===true)return;
   // 100점 오버레이가 떠있으면 skip
   if(document.getElementById('goggins-100').style.display==='flex')return;
   const scores=calcGogginsScore(log);
@@ -6641,7 +7216,7 @@ function dismissWeeklyFeature(){
   const c=document.getElementById('weekly-feature-card');if(c)c.style.display='none';
   try{track('wf_dismissed',{});}catch(e){}
 }
-function gotoStatsTab(){try{track('wf_goto',{to:'stats'});}catch(e){}try{switchTab('stats',2);}catch(e){}}
+function gotoStatsTab(){try{track('wf_goto',{to:'stats'});}catch(e){}try{switchTab('stats',1);}catch(e){}}
 
 // ── Milestone reveals (M2) — 첫 이벤트 발생 시 깊은 기능 공개 ──
 function unlockNavBadge(tab){
@@ -6913,6 +7488,8 @@ function revealStatusBand(){
 
 // 액션 위치 → Status Band 점수로 +N pt chip 비행 애니메이션
 function showScoreGain(pts, originEl){
+  // Cube mode: 기존 +N score chip 완전 억제. 큐브 팝오버가 유일한 피드백.
+  if(window.CUBE_UI_MODE===true)return;
   if(!pts||!originEl)return;
   const target=document.getElementById('hdr-score');
   if(!target)return;
@@ -7135,8 +7712,13 @@ function renderSummaryModal(){
   const weekday=['일','월','화','수','목','금','토'][d.getDay()];
   const dateStr=(d.getMonth()+1)+'월 '+d.getDate()+'일 ('+weekday+')';
   document.getElementById('summ-modal-date').textContent=dateStr+(isToday?' · 오늘':'');
-  // 점수
-  const dayPts=(l._ptsLog||[]).reduce((a,e)=>a+e.pts,0);
+  // 점수 — CUBE mode: scoreFromCubes(l.cubes) 가 single source of truth.
+  let dayPts=0;
+  if(window.CUBE_UI_MODE===true&&l&&l.cubes&&window.Cubes&&typeof window.Cubes.scoreFromCubes==='function'){
+    dayPts=window.Cubes.scoreFromCubes(l.cubes);
+  } else {
+    dayPts=(l._ptsLog||[]).reduce((a,e)=>a+e.pts,0);
+  }
   const ptsEl=document.getElementById('summ-pts-modal');
   ptsEl.textContent=(dayPts>=0?'+':'')+dayPts+'pt';
   ptsEl.style.color=dayPts>0?'var(--accent)':dayPts<0?'var(--red)':'var(--text3)';
@@ -7258,7 +7840,7 @@ function scrollToSection(s){
   const el=document.getElementById(map[s]);
   if(el)el.scrollIntoView({behavior:'smooth',block:'center'});
 }
-function renderRoutine(){renderCharCard();renderSummaryCard();renderWeight();renderMeals();renderCheatBadge();renderWater();renderWorkouts();renderMandatory();renderTargets();updateGogginsHeader();revealStatusBand();try{renderFirstWeekCard();}catch(e){console.warn('[fw-card]',e);}try{renderInviteCard();}catch(e){console.warn('[invite-card]',e);}try{renderDay3ChallengeNudge();}catch(e){console.warn('[d3-nudge]',e);}try{renderWeeklyFeatureRibbon();}catch(e){console.warn('[wf-ribbon]',e);}try{if(typeof window.buildHeatmapGrid==='function')window.buildHeatmapGrid();}catch(e){}try{arrangePromos();}catch(e){console.warn('[promo-arrange]',e);}}
+function renderRoutine(){try{recomputeCubesHook(null,{silent:true});}catch(e){}renderCharCard();renderSummaryCard();renderWeight();renderMeals();renderCheatBadge();renderWater();renderWorkouts();renderMandatory();renderTargets();updateGogginsHeader();revealStatusBand();try{renderFirstWeekCard();}catch(e){console.warn('[fw-card]',e);}try{renderInviteCard();}catch(e){console.warn('[invite-card]',e);}try{renderDay3ChallengeNudge();}catch(e){console.warn('[d3-nudge]',e);}try{renderWeeklyFeatureRibbon();}catch(e){console.warn('[wf-ribbon]',e);}try{if(typeof window.buildHeatmapGrid==='function')window.buildHeatmapGrid();}catch(e){}try{renderCardCubes();}catch(e){console.warn('[card-cubes]',e);}try{arrangePromos();}catch(e){console.warn('[promo-arrange]',e);}}
 
 // ── Priority gate for promo/notification cards ─────────────────────
 // Each existing render function (renderFirstWeekCard, renderInviteCard,
@@ -7268,7 +7850,7 @@ function renderRoutine(){renderCharCard();renderSummaryCard();renderWeight();ren
 // top of the record tab, and publishes the rest to the bell modal.
 const PROMO_ORDER=[
   {id:'yesterday-ribbon',  title:'어제 미완료',      kind:'carryover'},
-  {id:'day3-challenge-card',title:'3일차 챌린지',     kind:'day3'},
+  {id:'day3-nudge-card',   title:'3일차 챌린지',     kind:'day3'},
   {id:'first-week-card',   title:'첫 주 미션',        kind:'onboarding'},
   {id:'weekly-feature-card',title:'이번 주 기능',     kind:'weekly'},
   {id:'invite-card',       title:'친구 초대',         kind:'invite'},
@@ -7324,11 +7906,16 @@ function openNotificationsModal(){
     activeIds.forEach(p=>{
       const src=document.getElementById(p.id);
       if(!src)return;
-      // Clone the source card so the original DOM / event handlers stay intact.
       const clone=src.cloneNode(true);
       clone.id=p.id+'-modal';
       clone.style.display='block';
       clone.style.margin='0';
+      // cloneNode copies inline onclick attributes but NOT onclick properties
+      // assigned via JS (ctaEl.onclick=...). Re-bind the handlers that the
+      // render functions wire up imperatively. Also close the modal on CTA
+      // tap so the user lands on the target screen with no bell modal in
+      // the way.
+      _rebindPromoClone(clone, p.id);
       list.appendChild(clone);
     });
   }
@@ -7339,6 +7926,67 @@ function closeNotificationsModal(){
   const m=document.getElementById('notifications-modal');
   if(m)m.style.display='none';
   document.body.style.overflow='';
+}
+// cloneNode preserves inline onclick attributes but drops property-assigned
+// handlers (element.onclick = fn). weekly-feature-card wires its main CTA
+// imperatively in renderWeeklyFeatureRibbon, so the clone inside the bell
+// modal would do nothing on tap. Re-bind here. Also wrap every CTA so it
+// closes the modal before firing — user should land on the target screen
+// without a stacked sheet in the way.
+function _rebindPromoClone(clone, id){
+  if(!clone)return;
+  // CTA (navigational) wrapper — closes the modal then runs the action.
+  const wrapNav=(btn, fn)=>{
+    if(!btn)return;
+    btn.onclick=(e)=>{
+      try{e&&e.stopPropagation&&e.stopPropagation();}catch(_){}
+      try{closeNotificationsModal();}catch(_){}
+      try{fn&&fn();}catch(err){console.warn('[promo-clone]',err);}
+    };
+  };
+  // Dismiss wrapper — removes the card from the modal list, dismisses the
+  // underlying promo, but keeps the modal open so the user can see other
+  // notifications. If it was the last one, swap to the empty state.
+  const wrapDismiss=(btn, fn)=>{
+    if(!btn)return;
+    btn.onclick=(e)=>{
+      try{e&&e.stopPropagation&&e.stopPropagation();}catch(_){}
+      try{fn&&fn();}catch(err){console.warn('[promo-clone:dismiss]',err);}
+      try{clone.remove();}catch(_){}
+      try{
+        const list=document.getElementById('notifications-list');
+        if(list && !list.querySelector('[id$="-modal"]')){
+          list.innerHTML='<div style="text-align:center;padding:32px 0 36px;color:var(--text3);font-size:12px;letter-spacing:-.005em;">새 알림이 없어요</div>';
+        }
+        // Refresh inline priority gate + bell badge count.
+        if(typeof arrangePromos==='function')arrangePromos();
+      }catch(_){}
+    };
+  };
+  if(id==='weekly-feature-card'){
+    try{
+      const feat=(typeof _currentWeekFeature==='function')?_currentWeekFeature():null;
+      const ctaEl=clone.querySelector('.wf-cta');
+      if(ctaEl&&feat){
+        wrapNav(ctaEl, ()=>{
+          try{track('wf_cta_click',{title:feat.title,src:'bell'});}catch(e){}
+          try{window[feat.fn]&&window[feat.fn]();}catch(e){console.warn('[wf]',e);}
+        });
+      }
+    }catch(e){console.warn('[promo-clone:wf]',e);}
+  }
+  // Inline onclick buttons — cloneNode keeps the attribute, but we want our
+  // own wrapper (modal-close for nav, list-remove for dismiss). Split by
+  // intent: aria-label="닫기" OR function name starting with dismiss = dismiss.
+  clone.querySelectorAll('button[onclick]').forEach(btn=>{
+    const expr=btn.getAttribute('onclick');
+    if(!expr)return;
+    btn.removeAttribute('onclick');
+    const isDismiss = btn.getAttribute('aria-label')==='닫기' || /^\s*dismiss/i.test(expr);
+    const invoke=()=>{try{(new Function(expr))();}catch(e){console.warn('[promo-clone:inline]',expr,e);}};
+    if(isDismiss) wrapDismiss(btn, invoke);
+    else wrapNav(btn, invoke);
+  });
 }
 
 // ═══════════════════════════════════════════════
@@ -7508,6 +8156,8 @@ function renderMeals(){
     {key:'저녁',icon:svgMoon,tag:'PM'}
   ];
   const qualityLabel={green:'클린',normal:'일반',cheat:'치팅',red:'금지',alcohol:'음주'};
+  // CUBE mode: 끼니별 +15/-30 표시 제거. 점수는 cube 큐브로만 전달.
+  const showLegacyScore=window.CUBE_UI_MODE!==true;
   const qualityScore={green:'+15',normal:'+5',cheat:'±0',red:'−30',alcohol:'−30'};
   const qualityScoreCls={green:'pos',normal:'zero',cheat:'zero',red:'neg',alcohol:'neg'};
   const qualityClass={green:'clean',normal:'normal',cheat:'cheat',red:'bad',alcohol:'alcohol'};
@@ -7540,7 +8190,7 @@ function renderMeals(){
           <div class="slot-name${m.name?'':' empty'}">${esc(m.name||'탭하여 수정')}</div>
         </div>
         ${m.type?`<span class="slot-quality ${qCls}">${qualityLabel[m.type]||m.type}</span>`:''}
-        ${scoreVal?`<span class="slot-score ${scoreCls}">${scoreVal}</span>`:''}
+        ${showLegacyScore&&scoreVal?`<span class="slot-score ${scoreCls}">${scoreVal}</span>`:''}
         <button class="slot-delete" onclick="event.stopPropagation();deleteMeal(${m._idx})" aria-label="삭제">✕</button>
       </div>`;
     }
@@ -7577,7 +8227,7 @@ function renderMeals(){
           <div class="slot-name${m.name?'':' empty'}">${esc(m.name||'탭하여 수정')}</div>
         </div>
         ${qPill?`<span class="slot-quality ${qCls}">${qPill}</span>`:''}
-        ${scoreVal?`<span class="slot-score ${scoreCls}">${scoreVal}</span>`:''}
+        ${showLegacyScore&&scoreVal?`<span class="slot-score ${scoreCls}">${scoreVal}</span>`:''}
         <button class="slot-delete" onclick="event.stopPropagation();deleteMeal(${m._idx})" aria-label="삭제">✕</button>
       </div>`;
     }).join('');
@@ -7745,10 +8395,13 @@ async function deleteMeal(i){
   renderMeals();
   renderCheatBadge();
   renderCharCard();
+  recomputeCubesHook();
   updateGogginsHeader();
   renderSummaryCard();
   saveNow();
-  const scoreStr=scoreDelta<0?' ('+scoreDelta+'점)':scoreDelta>0?' (+'+scoreDelta+'점)':'';
+  // CUBE mode: 점수 문자열 생략 — cube 큐브 업데이트로 대신 피드백.
+  const scoreStr=window.CUBE_UI_MODE===true?'':
+    (scoreDelta<0?' ('+scoreDelta+'점)':scoreDelta>0?' (+'+scoreDelta+'점)':'');
   showToast('🗑️ '+mealName+' 삭제됨'+scoreStr);
 }
 
@@ -7883,6 +8536,7 @@ function quickMeal(time,type){
   log.meals.push(entry);
   renderMeals();
   applyMealScore(null,type,true,'meal');
+  recomputeCubesHook();
   saveNow();checkPerfectDay();
 }
 
@@ -7917,6 +8571,7 @@ async function saveSlotMeal(){
 
     const isNew=mealIdx===null;
     applyMealScore(prevType,foodType,isNew,'meal');
+    recomputeCubesHook();
     saveNow();checkPerfectDay();
   }finally{_slotSaving=false;if(btn)btn.disabled=false;}
 }
@@ -8092,6 +8747,7 @@ async function saveSnackMeal(){
 
     const isNew=mealIdx===null;
     applyMealScore(prevType,mealCategory==='alcohol'?'alcohol':foodType,isNew,mealCategory);
+    recomputeCubesHook();
     saveNow();checkPerfectDay();
   }finally{_snackSaving=false;if(btn)btn.disabled=false;}
 }
@@ -8393,6 +9049,7 @@ async function _doSaveMeal(){
   // 점수 처리
   const isNew=mealIdx===null;
   applyMealScore(prevType,foodType,isNew,mealCategory);
+  recomputeCubesHook();
   saveNow();
   checkPerfectDay();
 }
@@ -9076,6 +9733,7 @@ function markWorkoutDone(i){
     addScore('workout_done'); // 근력 운동 — 하루 1회
     setTimeout(()=>{showWin('workout',SCORE_EVENTS.workout_done.pts,'근력 운동 완료!');launchConfetti();},200);
   }
+  recomputeCubesHook();
   queueSave();
 }
 
@@ -9113,6 +9771,7 @@ function markActivityDone(i){
     const alreadyScored=todayPtsLog.some(e=>e.type==='workout_cardio_done');
     if(!alreadyScored){addScore('workout_cardio_done');setTimeout(()=>{showWin('workout',SCORE_EVENTS.workout_cardio_done.pts,'유산소 완료!');launchConfetti();},200);}
   }
+  recomputeCubesHook();
   queueSave();
 }
 
@@ -9147,10 +9806,12 @@ function delWO(i){
   log.workouts.splice(i,1);
   renderWorkouts();
   renderCharCard();
+  recomputeCubesHook();
   updateGogginsHeader();
   renderSummaryCard();
   saveNow();
-  const scoreStr=scoreDelta<0?' ('+scoreDelta+'점)':'';
+  // CUBE mode: 점수 문자열 생략 — cube 큐브 업데이트로 대신 피드백.
+  const scoreStr=window.CUBE_UI_MODE===true?'':(scoreDelta<0?' ('+scoreDelta+'점)':'');
   showToast('🗑️ '+name+' 삭제됨'+scoreStr);
 }
 
@@ -9347,6 +10008,7 @@ function saveActivity(){
     if(!alreadyScored)addScore('workout_cardio_done');
     setTimeout(()=>{showWin('workout',SCORE_EVENTS.workout_cardio_done.pts,'유산소 완료!');launchConfetti();},300);
   }
+  recomputeCubesHook();
   saveNow(status==='planned'?'📅 운동 일정 등록됨':'💪 운동 저장됨');
 }
 
@@ -9432,6 +10094,7 @@ async function finishSession(){
   }
 
   renderWorkouts();
+  recomputeCubesHook();
   // UI 즉시 닫기 + 팡파레 즉시 (저장 기다리지 않음)
   wsCloseSheets();
   document.getElementById('workout-session-overlay').classList.remove('open');
@@ -9631,7 +10294,7 @@ function togMand(i){
   const _originRect=_origin?_origin.getBoundingClientRect():null;
   log.mandatory[i].done=!wasDone;
   if(wasFail&&!wasDone){log.mandatory[i].fail=false;} // 실패→완료 시 실패 해제
-  renderMandatory();saveNow();
+  renderMandatory();recomputeCubesHook();saveNow();
   if(!wasDone){
     const specialType=log.mandatory[i]._scoreType;
     if(specialType){addScore(specialType);}
@@ -9710,7 +10373,7 @@ function markMandFail(i){
   } else {
     addScore('routine_fail_cancel'); // now 0점 — Q3=C 패널티 제거
   }
-  renderMandatory();saveNow();
+  renderMandatory();recomputeCubesHook();saveNow();
 }
 let _mandEndDate=null; // 'YYYY-MM-DD' or null
 
@@ -9922,7 +10585,7 @@ function togTgt(i){
   const _origin=document.querySelectorAll('#tgt-rows .tgt-btn')[i]||null;
   const _originRect=_origin?_origin.getBoundingClientRect():null;
   log.targets[i].st=nowDone?'done':'';
-  renderTargets();saveNow();
+  renderTargets();recomputeCubesHook();saveNow();
   if(nowDone){
     addScore('target_done');
     if(_originRect){
@@ -9950,7 +10613,7 @@ function markFail(i){
   } else {
     addScore('target_fail_cancel'); // now 0점 — Q3=C 패널티 제거
   }
-  renderTargets();saveNow();
+  renderTargets();recomputeCubesHook();saveNow();
 }
 
 // Touch: simple tap only (fail button replaces long press)

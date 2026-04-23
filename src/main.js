@@ -24,6 +24,8 @@ import * as onboarding from './features/onboarding/index.js';
 import * as weight from './features/weight/index.js';
 import * as rewards from './features/rewards/index.js';
 import * as dateHeatmap from './features/date-heatmap/index.js';
+import * as cubes from './features/cubes/index.js';
+import './features/cubes/tests.js'; // window.runCubeTests() 콘솔에서 호출 가능
 
 // Platform abstractions (web/iOS/Android unified APIs)
 import * as platform from './platform/platform.js';
@@ -38,6 +40,8 @@ Object.assign(
   stats, onboarding, weight, rewards, dateHeatmap
 );
 window.sb = sb;
+// Will Cube 모듈 — 네임스페이스로 노출. 기존 전역과 이름 충돌 방지.
+window.Cubes = cubes;
 
 // Namespace platform APIs under window.sh — inline code uses e.g.
 // window.sh.camera.pickImage() to reach unified web/native camera.

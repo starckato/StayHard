@@ -16,6 +16,9 @@ import { RAGE_MSGS, RAGE_HEAVY, WIN_MSGS, CHAEK_SENTENCES } from '../../data/rew
 import { showToast } from '../../ui/toast.js';
 
 export function showChaekpipty(mealName) {
+  // Cube mode: 식단 금지 음식은 crimson cube 팝오버로 이미 전달. legacy rage /
+  // chaek(형량) 모달 중복 표시 안 함.
+  if(typeof window!=='undefined'&&window.CUBE_UI_MODE===true)return;
   // 오늘 이미 형량이 집행 중이면 중복 추가 방지
   const curLog=window.logCache[window.selectedKey]||log;
   if((curLog.workouts||[]).some(w=>w._isChaek&&w.status==='planned')){
@@ -73,6 +76,8 @@ export function closeRage(){
 }
 
 export function showRage(){
+  // Cube mode: 패널티 rage 모달 제거. crimson cube 팝오버가 담당.
+  if(typeof window!=='undefined'&&window.CUBE_UI_MODE===true)return;
   // 20% 기존, 80% 강력 메시지
   let r;
   if(Math.random()<0.8){
@@ -96,7 +101,7 @@ export function showSystemNotice(msg){
   el.id='system-notice-modal';
   el.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;z-index:9999;padding:24px;';
   el.innerHTML=`<div style="background:var(--card);border-radius:20px;padding:28px 24px;max-width:340px;width:100%;text-align:center;box-shadow:0 8px 40px rgba(0,0,0,.4);">
-    <div style="font-size:40px;margin-bottom:12px;">📣</div>
+    <div style="margin-bottom:12px;display:flex;justify-content:center;"><svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="color:var(--accent);"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg></div>
     <div style="font-size:16px;font-weight:700;color:var(--text1);margin-bottom:12px;">공지사항</div>
     <div style="font-size:14px;color:var(--text2);line-height:1.6;white-space:pre-wrap;margin-bottom:20px;">${msg}</div>
     <button onclick="document.getElementById('system-notice-modal').remove()" style="background:var(--accent);color:#fff;border:none;border-radius:12px;padding:12px 32px;font-size:15px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;">확인</button>
@@ -107,6 +112,10 @@ export function showSystemNotice(msg){
 export let _winShowing=false;
 
 export function showWin(type, pts=null, title=null){
+  // Cube mode: 기존 점수 win-pill / confetti 피드백은 완전 억제. 큐브 팝오버가
+  // 유일한 시각 피드백. pts===100 (goggins 100점) 는 서사적으로 중요하므로 유지.
+  // 다른 모든 이벤트는 early-return.
+  if(typeof window!=='undefined'&&window.CUBE_UI_MODE===true&&pts!==100)return;
   try{console.log('[showWin]',{type,pts,title,_winShowing,qlen:_winQueue.length});}catch(e){}
   if(pts===100){
     const el=document.getElementById('goggins-100');
@@ -174,6 +183,8 @@ export function _renderWinBody({type,pts,title}){
 
 export let _confettiLock=false;
 export function launchConfetti(){
+  // Cube mode: confetti 제거. 큐브 팝오버가 유일한 피드백.
+  if(typeof window!=='undefined'&&window.CUBE_UI_MODE===true)return;
   if(_confettiLock)return;
   _confettiLock=true;
   setTimeout(()=>_confettiLock=false,1200);
