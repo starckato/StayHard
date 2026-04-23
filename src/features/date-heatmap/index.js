@@ -86,11 +86,11 @@ function cellStatus(dl, cat, isFuture) {
   return 'empty';
 }
 
-// Palette v7 — "red = bad, ivory = good" so the heatmap shares the semantic
-// language the food card already uses (🚫 금지 = 빨강). Flat, no glow.
+// Palette v8 — "pass = 밝은 황금 (#ffd54a)" 성취/메달 메타포.
+// 브랜드 레드는 fail 에만 (식단 금지와 같은 언어). 회색은 partial 중립.
 function indicatorStyle(status) {
   if (status === 'pass')
-    return 'background:rgba(234,234,240,0.70);border:1px solid rgba(255,255,255,0.05);';
+    return 'background:rgba(255,213,74,0.62);border:1px solid rgba(255,213,74,0.55);';
   if (status === 'partial')
     return 'background:rgba(234,234,240,0.22);border:1px solid rgba(255,255,255,0.04);';
   if (status === 'fail')
