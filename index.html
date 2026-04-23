@@ -20,7 +20,7 @@
      so window globals (dkey, normKey, ...) are set before inline code runs.
      Query version bumps cache when bundle content changes. Bump manually or
      via build script when shipping a new bundle. See MIGRATION_PLAN.md. -->
-<script src="/dist/app.js?v=20260423n"></script>
+<script src="/dist/app.js?v=20260423o"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Archivo+Black&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -383,9 +383,9 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
 .dh-hdr{display:flex;justify-content:space-between;align-items:baseline;padding:0 16px 6px;}
 .dh-title{font-size:13px;font-weight:700;color:var(--text);letter-spacing:-.005em;}
 .dh-hint{font-size:10px;color:var(--text3);letter-spacing:.03em;}
-.dh-scroll{overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:none;position:relative;}
+.dh-scroll{overflow-x:auto;overflow-y:visible;-webkit-overflow-scrolling:touch;scrollbar-width:none;position:relative;}
 .dh-scroll::-webkit-scrollbar{display:none;}
-.dh-grid{display:table;width:max-content;border-collapse:collapse;}
+.dh-grid{width:max-content;position:relative;}
 .sel-day-label{text-align:center;font-size:11px;color:var(--text3);padding:6px 16px 0;font-family:'DM Mono',monospace;cursor:pointer;transition:color .15s;letter-spacing:.02em;}
 .sel-day-label:hover{color:var(--accent);}
 .dh-today-row{display:flex;justify-content:center;padding:8px 16px 2px;}
