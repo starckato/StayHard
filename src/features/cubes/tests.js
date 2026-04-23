@@ -101,9 +101,9 @@ t('tasks · 모두 done → gold', () => judgeTasks([
 t('tasks · 일부 done → silver', () => judgeTasks([
   { text: 'a', st: 'done' }, { text: 'b', st: '' },
 ]) === 'silver');
-t('tasks · 전부 미완료 (실패 없음) → silver', () => judgeTasks([
+t('tasks · 전부 미완료 (실패 없음) → gray (등록만)', () => judgeTasks([
   { text: 'a', st: '' }, { text: 'b', st: '' },
-]) === 'silver');
+]) === 'gray');
 
 // ── 점수 환산 ────────────────────────────────────────
 t('score · gold 4개 = +12', () => scoreFromCubes({

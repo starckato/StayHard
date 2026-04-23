@@ -20,7 +20,7 @@
      so window globals (dkey, normKey, ...) are set before inline code runs.
      Query version bumps cache when bundle content changes. Bump manually or
      via build script when shipping a new bundle. See MIGRATION_PLAN.md. -->
-<script src="/dist/app.js?v=20260424l"></script>
+<script src="/dist/app.js?v=20260424m"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Archivo+Black&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -318,7 +318,91 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
   .sb-reveal,.sb-reveal *{animation:none!important;}
 }
 
-/* ═════ SCORE GAIN CHIP — 액션 위치 → Status Band 점수 비행 ═════ */
+/* ═════ WILL CUBE IMPACT ANIMATION — 3D 큐브가 pop → hold → 상단으로 적립 ═════ */
+/* 하나의 이벤트 = 1.6초 타임라인.
+   0.0~0.45s: pop-in (scale 0.2 → 1.3 → 1.0, rotate + bounce)
+   0.45~1.15s: hold (천천히 회전 + aura pulse)
+   1.15~1.60s: deposit (상단으로 비행 + scale 축소 + fade) */
+.cube-event-stage{position:fixed;inset:0;z-index:10001;pointer-events:none;display:flex;align-items:center;justify-content:center;}
+.cube-event-wrap{position:relative;display:flex;flex-direction:column;align-items:center;gap:14px;will-change:transform,opacity;}
+.cube-event-cube{width:72px;height:72px;position:relative;transform-style:preserve-3d;will-change:transform;}
+.cube-face{position:absolute;width:72px;height:72px;border-radius:6px;backface-visibility:hidden;}
+.cube-event[data-color="gold"] .cube-face{background:linear-gradient(135deg,#fff1a8 0%,#ffd54a 45%,#c48c1a 100%);border:1px solid rgba(255,233,128,0.85);box-shadow:0 0 1px rgba(255,255,255,0.9) inset,0 -6px 12px rgba(0,0,0,0.35) inset;}
+.cube-event[data-color="silver"] .cube-face{background:linear-gradient(135deg,#f2f4f7 0%,#b5c0cc 45%,#6d7682 100%);border:1px solid rgba(210,218,228,0.75);box-shadow:0 0 1px rgba(255,255,255,0.85) inset,0 -6px 12px rgba(0,0,0,0.30) inset;}
+.cube-event[data-color="crimson"] .cube-face{background:linear-gradient(135deg,#ff8080 0%,#ff4d4d 45%,#8b1515 100%);border:1px solid rgba(255,77,77,0.80);box-shadow:0 0 1px rgba(255,255,255,0.55) inset,0 -6px 12px rgba(0,0,0,0.45) inset;}
+.cube-face.f-front  {transform:translateZ(36px);}
+.cube-face.f-back   {transform:translateZ(-36px) rotateY(180deg);}
+.cube-face.f-right  {transform:rotateY(90deg) translateZ(36px);}
+.cube-face.f-left   {transform:rotateY(-90deg) translateZ(36px);}
+.cube-face.f-top    {transform:rotateX(90deg) translateZ(36px);}
+.cube-face.f-bottom {transform:rotateX(-90deg) translateZ(36px);}
+.cube-event-label{display:flex;flex-direction:column;align-items:center;gap:2px;opacity:0;transform:translateY(8px);transition:opacity 220ms ease-out 260ms,transform 220ms cubic-bezier(0.16,1,0.3,1) 260ms;}
+.cube-event-title{font-size:13px;font-weight:800;color:var(--text);letter-spacing:-0.005em;text-shadow:0 1px 4px rgba(0,0,0,0.5);}
+.cube-event-body{font-size:11px;font-weight:600;color:var(--text2);letter-spacing:-0.005em;text-shadow:0 1px 3px rgba(0,0,0,0.5);}
+.cube-event-delta{font-size:14px;font-weight:900;font-family:'DM Mono',monospace;letter-spacing:-0.02em;text-shadow:0 1px 4px rgba(0,0,0,0.5);}
+.cube-event[data-color="gold"] .cube-event-delta{color:#ffd54a;}
+.cube-event[data-color="silver"] .cube-event-delta{color:#d8dfe7;}
+.cube-event[data-color="crimson"] .cube-event-delta{color:#ff6b6b;}
+/* Aura: 큐브 뒤로 퍼지는 radial glow. 색별 3가지. */
+.cube-event-aura{position:absolute;top:50%;left:50%;width:280px;height:280px;margin:-140px 0 0 -140px;border-radius:50%;pointer-events:none;opacity:0;transform:scale(0.5);transition:opacity 320ms ease-out,transform 420ms cubic-bezier(0.16,1,0.3,1);}
+.cube-event[data-color="gold"] .cube-event-aura{background:radial-gradient(circle,rgba(255,213,74,0.55) 0%,rgba(255,213,74,0.25) 30%,transparent 70%);}
+.cube-event[data-color="silver"] .cube-event-aura{background:radial-gradient(circle,rgba(210,220,232,0.45) 0%,rgba(210,220,232,0.20) 30%,transparent 70%);}
+.cube-event[data-color="crimson"] .cube-event-aura{background:radial-gradient(circle,rgba(255,60,60,0.55) 0%,rgba(100,0,0,0.30) 30%,transparent 70%);}
+/* Particle sparkles — gold 전용 */
+.cube-spark{position:absolute;top:50%;left:50%;width:4px;height:4px;border-radius:50%;background:radial-gradient(circle,#fff 0%,#ffd54a 50%,transparent 100%);pointer-events:none;opacity:0;will-change:transform,opacity;}
+/* 백드롭 디머 — 큐브 한 동안 주변 UI 은은하게 낮춤 */
+.cube-event-stage.dim{background:radial-gradient(circle at center,rgba(0,0,0,0.28) 0%,transparent 60%);}
+/* Animations */
+@keyframes cubePopIn{
+  0%  {transform:scale(0.2) rotateX(-30deg) rotateY(-30deg);opacity:0;}
+  55% {transform:scale(1.35) rotateX(8deg) rotateY(18deg);opacity:1;}
+  75% {transform:scale(0.92) rotateX(-2deg) rotateY(-4deg);}
+  100%{transform:scale(1) rotateX(-12deg) rotateY(-18deg);opacity:1;}
+}
+@keyframes cubeRotate{
+  0%  {transform:scale(1) rotateX(-12deg) rotateY(-18deg);}
+  100%{transform:scale(1) rotateX(-12deg) rotateY(342deg);}
+}
+@keyframes cubeShake{
+  0%,100%{transform:scale(1) rotateX(-8deg) rotateY(0deg) translateX(0);}
+  15%{transform:scale(1.05) rotateX(-8deg) rotateY(-4deg) translateX(-5px);}
+  30%{transform:scale(1.05) rotateX(-8deg) rotateY(4deg) translateX(6px);}
+  45%{transform:scale(1.03) rotateX(-8deg) rotateY(-2deg) translateX(-4px);}
+  60%{transform:scale(1.02) rotateX(-8deg) rotateY(2deg) translateX(3px);}
+  80%{transform:scale(1.01) rotateX(-8deg) rotateY(0) translateX(-1px);}
+}
+@keyframes cubeDeposit{
+  0%  {transform:translate(0,0) scale(1);opacity:1;}
+  100%{transform:translate(0,calc(-1 * (50vh - 40px))) scale(0.22);opacity:0;}
+}
+@keyframes cubeFlash{
+  0%  {opacity:0;transform:scale(0.3);}
+  40% {opacity:0.9;transform:scale(1.2);}
+  100%{opacity:0;transform:scale(2.2);}
+}
+@keyframes sparkFly{
+  0%  {opacity:0;transform:translate(0,0) scale(0.3);}
+  25% {opacity:1;transform:translate(var(--sx,0),var(--sy,0)) scale(1);}
+  100%{opacity:0;transform:translate(calc(var(--sx,0) * 1.6),calc(var(--sy,0) * 1.6)) scale(0.4);}
+}
+/* 상태 진행용 class */
+.cube-event-wrap.pop{animation:cubePopIn 480ms cubic-bezier(0.16,1,0.3,1) forwards;}
+.cube-event-wrap.pop.shake{animation:cubePopIn 480ms cubic-bezier(0.16,1,0.3,1) forwards,cubeShake 420ms ease-out 480ms;}
+.cube-event-wrap.hold .cube-event-cube{animation:cubeRotate 2200ms linear infinite;}
+.cube-event-wrap.deposit{animation:cubeDeposit 520ms cubic-bezier(0.4,0,0.2,1) forwards;}
+.cube-event-wrap.show-label .cube-event-label{opacity:1;transform:translateY(0);}
+.cube-event-aura.fire{opacity:1;transform:scale(1.15);}
+.cube-spark.go{animation:sparkFly 620ms cubic-bezier(0.16,1,0.3,1) forwards;}
+/* Flash — pop 타이밍에 한 번 */
+.cube-event-flash{position:absolute;top:50%;left:50%;width:140px;height:140px;margin:-70px 0 0 -70px;border-radius:50%;pointer-events:none;opacity:0;background:radial-gradient(circle,rgba(255,255,255,0.9) 0%,rgba(255,255,255,0.3) 40%,transparent 70%);}
+.cube-event-flash.go{animation:cubeFlash 480ms ease-out forwards;}
+@media (prefers-reduced-motion: reduce){
+  .cube-event-wrap.pop,.cube-event-wrap.pop.shake,.cube-event-wrap.hold .cube-event-cube,.cube-event-wrap.deposit,.cube-spark.go,.cube-event-flash.go{animation:none !important;}
+  .cube-event-wrap{opacity:1;}
+  .cube-event-label{opacity:1;transform:none;transition:none;}
+}
+
+/* ═════ SCORE GAIN CHIP — 액션 위치 → Status Band 점수 비행 (legacy, CUBE_UI_MODE off 시 유지) ═════ */
 .score-chip{position:fixed;padding:6px 13px;border-radius:22px;background:linear-gradient(135deg,#ff4d4d 0%,#ff6b35 100%);color:#fff;font-weight:900;font-family:'DM Mono',monospace;font-size:14px;z-index:1050;pointer-events:none;box-shadow:0 6px 24px rgba(255,77,77,.55),0 0 0 2px rgba(255,77,77,.35),0 0 20px rgba(255,77,77,.35);letter-spacing:-.02em;white-space:nowrap;will-change:transform,opacity;}
 .score-chip.neg{background:linear-gradient(135deg,#ff4d4d 0%,#b71c1c 100%);}
 .score-chip.init{transition:none;opacity:1;transform:translate(-50%,-50%) scale(1);}
@@ -5465,6 +5549,9 @@ async function onLogin(user){
   }
   // 슬라이더 dot 표시를 위해 이번주 날짜 백그라운드 fetch
   _prefetchWeekLogs();
+  // Will Cube recap — 다음날 첫 접속 시 어제 cubes/bonus 촤르륵 재생.
+  // prefetch 끝나길 기다리지 않고 별도 fetch — 2초 정도 뒤에 시작해서 초기 로딩 훔친 느낌 방지.
+  setTimeout(()=>{try{runDailyCubeRecap();}catch(e){}},2000);
   // 이전 세션 저장 실패분 복구 (localStorage pendingSave_* 키)
   _recoverPendingSaves();
   // 치팅 월 초기화 체크
@@ -5905,40 +5992,193 @@ function _cubeColorMeta(color){
   if(color==='crimson') return {fg:'#ff6b6b',border:'rgba(255,77,77,0.45)',bg:'rgba(255,77,77,0.10)'};
   return {fg:'#eaeaf0',border:'rgba(255,255,255,0.14)',bg:'rgba(20,20,24,0.92)'};
 }
-function _cubeEventChip(ev){
-  const meta=_cubeColorMeta(ev.color);
-  const deltaColor=ev.color==='crimson'?'#ff6b6b':ev.color==='gold'?'#ffd54a':ev.color==='silver'?'#b5c0cc':'#eaeaf0';
-  const swatch=ev.color?`<span style="display:inline-block;width:10px;height:10px;border-radius:2px;flex-shrink:0;${
-    ev.color==='gold'   ?'background:linear-gradient(135deg,#fff1a8 0%,#ffd54a 45%,#c48c1a 100%);border:1px solid rgba(255,233,128,0.70);box-shadow:0 0 3px rgba(255,213,74,0.50);':
-    ev.color==='silver' ?'background:linear-gradient(135deg,#f2f4f7 0%,#b5c0cc 45%,#6d7682 100%);border:1px solid rgba(210,218,228,0.55);':
-    ev.color==='crimson'?'background:rgba(255,77,77,0.32);border:1px solid rgba(255,77,77,0.45);':''
-  }"></span>`:'';
-  return (
-    `<div class="cube-event-chip" style="position:fixed;left:50%;top:max(72px,env(safe-area-inset-top,0px));transform:translate(-50%,-14px);z-index:10001;display:inline-flex;align-items:center;gap:10px;padding:10px 14px;border-radius:12px;background:${meta.bg};backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid ${meta.border};box-shadow:0 10px 30px rgba(0,0,0,0.45);opacity:0;transition:opacity 180ms ease-out,transform 220ms cubic-bezier(0.16,1,0.3,1);pointer-events:none;max-width:calc(100vw - 32px);white-space:nowrap;">`+
-      swatch+
-      `<span style="font-size:12px;font-weight:800;color:var(--text);letter-spacing:-0.005em;">${ev.title||''}</span>`+
-      (ev.body?`<span style="font-size:11px;color:var(--text3);letter-spacing:-0.005em;">${ev.body}</span>`:'')+
-      (ev.delta?`<span style="font-size:12px;font-weight:900;color:${deltaColor};letter-spacing:-0.01em;">${ev.delta}</span>`:'')+
-    `</div>`
-  );
+// 색상별 스파크 개수 — gold 만 화려하게. silver/crimson 은 스파크 없음.
+function _cubeSparkCount(color){return color==='gold'?6:0;}
+
+// 이벤트 1건 렌더 + 재생. Promise-like 완료 콜백으로 큐 순차 처리.
+function _playCubeEvent(ev, onDone){
+  // 1) DOM 구축
+  const stage=document.createElement('div');
+  stage.className='cube-event-stage dim';
+  const outer=document.createElement('div');
+  outer.className='cube-event';
+  outer.setAttribute('data-color',ev.color||'gray');
+  const aura=document.createElement('div');
+  aura.className='cube-event-aura';
+  outer.appendChild(aura);
+  const flash=document.createElement('div');
+  flash.className='cube-event-flash';
+  outer.appendChild(flash);
+  const wrap=document.createElement('div');
+  wrap.className='cube-event-wrap';
+  outer.appendChild(wrap);
+  // 큐브 6개 면
+  const cube=document.createElement('div');
+  cube.className='cube-event-cube';
+  ['f-front','f-back','f-right','f-left','f-top','f-bottom'].forEach(f=>{
+    const face=document.createElement('div');
+    face.className='cube-face '+f;
+    cube.appendChild(face);
+  });
+  wrap.appendChild(cube);
+  // 라벨
+  const lbl=document.createElement('div');
+  lbl.className='cube-event-label';
+  if(ev.title){const t=document.createElement('div');t.className='cube-event-title';t.textContent=ev.title;lbl.appendChild(t);}
+  if(ev.body) {const b=document.createElement('div');b.className='cube-event-body';b.textContent=ev.body;lbl.appendChild(b);}
+  if(ev.delta){const d=document.createElement('div');d.className='cube-event-delta';d.textContent=ev.delta;lbl.appendChild(d);}
+  wrap.appendChild(lbl);
+  // 스파크 (gold only)
+  const sparkCount=_cubeSparkCount(ev.color);
+  const sparks=[];
+  for(let i=0;i<sparkCount;i++){
+    const sp=document.createElement('div');
+    sp.className='cube-spark';
+    const angle=(Math.PI*2*i)/sparkCount;
+    const dist=80+Math.random()*30;
+    sp.style.setProperty('--sx',(Math.cos(angle)*dist)+'px');
+    sp.style.setProperty('--sy',(Math.sin(angle)*dist)+'px');
+    wrap.appendChild(sp);
+    sparks.push(sp);
+  }
+  stage.appendChild(outer);
+  document.body.appendChild(stage);
+
+  // 2) 애니메이션 시퀀스
+  const isCrimson=ev.color==='crimson';
+  // reduced motion — pop 스킵하고 1초 hold 후 deposit
+  const prm=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // Phase A: pop-in + aura + flash
+  requestAnimationFrame(()=>{
+    wrap.classList.add('pop'+(isCrimson?' shake':''));
+    aura.classList.add('fire');
+    flash.classList.add('go');
+    // 스파크는 pop 정점 근처에 발사 (250ms)
+    setTimeout(()=>{sparks.forEach(sp=>sp.classList.add('go'));},prm?0:250);
+  });
+
+  // Phase B: hold (회전) — pop 480ms + shake(crimson) 420ms 후
+  const popDuration=prm?60:(isCrimson?900:480);
+  setTimeout(()=>{
+    wrap.classList.remove('pop','shake');
+    wrap.classList.add('hold','show-label');
+  },popDuration);
+
+  // Phase C: deposit (상단으로 비행 + fade) — 960ms hold 후
+  const holdDuration=prm?900:720;
+  setTimeout(()=>{
+    wrap.classList.remove('hold');
+    wrap.classList.add('deposit');
+  },popDuration+holdDuration);
+
+  // Phase D: cleanup — deposit 520ms 후
+  const depositDuration=prm?60:520;
+  setTimeout(()=>{
+    if(stage.parentNode)stage.parentNode.removeChild(stage);
+    onDone&&onDone();
+  },popDuration+holdDuration+depositDuration);
 }
+
 function _showNextCubeEvent(){
   if(!_cubeEventQueue.length){_cubeEventShowing=false;return;}
   _cubeEventShowing=true;
   const ev=_cubeEventQueue.shift();
-  const wrap=document.createElement('div');
-  wrap.innerHTML=_cubeEventChip(ev);
-  const chip=wrap.firstElementChild;
-  document.body.appendChild(chip);
-  requestAnimationFrame(()=>{chip.style.opacity='1';chip.style.transform='translate(-50%,0)';});
-  setTimeout(()=>{
-    chip.style.opacity='0';chip.style.transform='translate(-50%,-10px)';
-    setTimeout(()=>{if(chip.parentNode)chip.parentNode.removeChild(chip);_showNextCubeEvent();},220);
-  },1800);
+  _playCubeEvent(ev,()=>{
+    // 다음 이벤트 간격 — 150ms 짧은 텀으로 "촤르륵" 느낌.
+    setTimeout(_showNextCubeEvent,150);
+  });
 }
 function showCubeEvent(ev){
+  if(!ev)return;
   _cubeEventQueue.push(ev);
   if(!_cubeEventShowing)_showNextCubeEvent();
+}
+
+// ── 다음날 첫 접속 recap ──────────────────────────────────
+// 유저가 오늘 처음 앱을 켰을 때, 어제 확정된 cubes + bonus 를 한 번에 촤르륵
+// 재생. localStorage 로 중복 방지. gray cube 는 스킵 (유의미한 것만).
+async function runDailyCubeRecap(){
+  try{
+    if(!CU||!CU.id)return;
+    const yest=new Date();yest.setDate(yest.getDate()-1);
+    const yk=dkey(yest);
+    const seenKey='cube_recap_seen_'+CU.id+'_'+yk;
+    if(localStorage.getItem(seenKey)==='1')return;
+    // 어제 log 먼저 확보. cache 없으면 Supabase fetch.
+    let yl=logCache[yk];
+    if(!yl){
+      try{
+        const{data}=await sb.from('daily_logs').select('*').eq('user_id',CU.id).eq('log_date',yk).maybeSingle();
+        if(data){
+          yl={
+            weight:data.weight!==null?parseFloat(data.weight):null,
+            water_cups:data.water_cups||0,
+            meals:data.meals||[],workouts:data.workouts||[],
+            mandatory:data.mandatory||[],targets:data.targets||[],
+            _ptsLog:data.points_log||[],
+            cubes:data.cubes||null,
+          };
+          logCache[yk]=yl;
+        }
+      }catch(e){/* silent */}
+    }
+    if(!yl||!yl.cubes){
+      // cubes 없는 날 — skip (소급 계산 없이 조용히 패스)
+      localStorage.setItem(seenKey,'1');
+      return;
+    }
+    const events=[];
+    // 4개 카테고리 — gray/null 은 건너뜀
+    const cats=[
+      {key:'diet', cat:'diet'},
+      {key:'exercise', cat:'exercise'},
+      {key:'routine', cat:'routine'},
+      {key:'tasks', cat:'tasks'},
+    ];
+    for(const c of cats){
+      const color=yl.cubes[c.key];
+      if(!color||color==='gray')continue;
+      const copy=CUBE_CHANGE_COPY[c.cat]&&CUBE_CHANGE_COPY[c.cat][color];
+      if(copy)events.push({type:'color',cat:c.cat,color,...copy});
+    }
+    // bonus 항목
+    const bonus=Array.isArray(yl.cubes.bonus)?yl.cubes.bonus:[];
+    for(const b of bonus){
+      if(!b)continue;
+      const count=typeof b.count==='number'?b.count:1;
+      if(b.type==='pr'){
+        const name=b.exerciseName||'운동';
+        const kindLbl=b.kind==='one_rm'?'1RM':b.kind==='volume'?'볼륨':b.kind==='rep_max'?((b.reps||'')+'rep'):'PR';
+        const kg=(typeof b.kg==='number')?(Number.isInteger(b.kg)?b.kg+'kg':b.kg.toFixed(1)+'kg'):'';
+        events.push({type:'bonus',color:'gold',title:'PR 갱신',body:`${name} ${kindLbl} ${kg}`.trim(),delta:`🟡 ×${count}`});
+      } else if(typeof b.type==='string'&&b.type.indexOf('streak_')===0){
+        const days=b.type.split('_')[1]||'';
+        events.push({type:'bonus',color:'gold',title:`${days}일 스트릭`,body:'어제 달성',delta:`🟡 ×${count}`});
+      } else {
+        events.push({type:'bonus',color:'gold',title:b.name||'보너스',body:'',delta:`🟡 ×${count}`});
+      }
+    }
+    if(!events.length){
+      localStorage.setItem(seenKey,'1');
+      return;
+    }
+    // 인트로 작은 헤더 토스트 먼저 1.2초. 이후 큐 흐름.
+    try{
+      const intro=document.createElement('div');
+      intro.style.cssText='position:fixed;top:max(60px,env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%) translateY(-12px);z-index:10000;padding:8px 16px;border-radius:10px;background:rgba(20,20,24,0.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,0.14);color:var(--text);font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;box-shadow:0 10px 30px rgba(0,0,0,0.45);opacity:0;transition:opacity 220ms ease-out,transform 260ms cubic-bezier(0.16,1,0.3,1);pointer-events:none;';
+      intro.textContent='어제의 큐브';
+      document.body.appendChild(intro);
+      requestAnimationFrame(()=>{intro.style.opacity='1';intro.style.transform='translateX(-50%) translateY(0)';});
+      setTimeout(()=>{
+        intro.style.opacity='0';intro.style.transform='translateX(-50%) translateY(-8px)';
+        setTimeout(()=>{if(intro.parentNode)intro.parentNode.removeChild(intro);},260);
+      },1400);
+    }catch(e){}
+    // 0.5초 delay 로 intro 노출되는 동안 큐브 연속 재생.
+    setTimeout(()=>{for(const ev of events)showCubeEvent(ev);},500);
+    localStorage.setItem(seenKey,'1');
+  }catch(e){console.warn('[cube-recap]',e&&e.message);}
 }
 
 // 이전/이후 cubes 비교해서 변화점 추출. 색 "승급"만 이벤트로 인정.

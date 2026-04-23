@@ -71,6 +71,7 @@ export function judgeRoutine(mandatory, weekday) {
 // - st==='fail' 1건이라도 → crimson
 // - 모두 'done' → gold
 // - 일부 'done', 나머지 '' (fail 없음) → silver
+// - 등록만 됐고 전부 미완료 (0 done, 0 fail) → gray (2026-04-23: 유저 피드백. 등록만 됐을 때 silver 오인식 버그 수정)
 export function judgeTasks(targets) {
   const list = Array.isArray(targets) ? targets : [];
   const real = list.filter((t) => t && !t._meta);
@@ -78,8 +79,7 @@ export function judgeTasks(targets) {
   const hasFail = real.some((t) => t.st === 'fail');
   if (hasFail) return 'crimson';
   const doneCount = real.filter((t) => t.st === 'done').length;
-  if (doneCount === 0) return 'silver'; // 등록만 되고 미완료. 전부 빈 상태 = silver (부분 완료 없음)
-  // spec: "부분 완료 (실패 없음) → silver" / "모두 완료 → gold"
+  if (doneCount === 0) return 'gray';
   if (doneCount === real.length) return 'gold';
   return 'silver';
 }
