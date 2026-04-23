@@ -20,7 +20,7 @@
      so window globals (dkey, normKey, ...) are set before inline code runs.
      Query version bumps cache when bundle content changes. Bump manually or
      via build script when shipping a new bundle. See MIGRATION_PLAN.md. -->
-<script src="/dist/app.js?v=20260424p"></script>
+<script src="/dist/app.js?v=20260424q"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Archivo+Black&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -4841,6 +4841,11 @@ function getAccumulatedScore(){
 
 function getTodayScore(){
   const l=logCache[TODAY]||log;
+  // CUBE mode: 오늘 점수 = 오늘 cubes 의 합. 팝오버 delta 와 완전 일치.
+  if(window.CUBE_UI_MODE===true&&l&&l.cubes&&window.Cubes&&typeof window.Cubes.scoreFromCubes==='function'){
+    return window.Cubes.scoreFromCubes(l.cubes);
+  }
+  // legacy: _ptsLog 합산
   if(!l._ptsLog)return 0;
   return l._ptsLog.reduce((a,e)=>a+e.pts,0);
 }
@@ -4848,11 +4853,21 @@ function getTodayScore(){
 function addScore(type, note='', ptsOverride=null, silent=false){
   const ev=SCORE_EVENTS[type];if(!ev)return;
   const pts=ptsOverride!==null?ptsOverride:ev.pts;
-  // 1. 오늘 로그에 기록 (내역용)
+  // 1. 오늘 로그에 기록 (내역용) — CUBE mode 에서도 history 는 유지.
   const l=logCache[TODAY]||log;
   if(!l._ptsLog)l._ptsLog=[];
   l._ptsLog.push({type,pts,label:ev.label,icon:ev.icon,ts:new Date().toISOString(),note});
   logCache[TODAY]=l;
+  // CUBE mode: CP.total_score / 토스트 / 티어업 로직은 recomputeCubesHook 이 담당.
+  // addScore 는 _ptsLog 기록 + save queue 만. 점수 math / UI 업데이트 없음.
+  if(window.CUBE_UI_MODE===true){
+    _dirtyKeys.add(TODAY);
+    clearTimeout(_saveTimer);
+    _saveTimer=setTimeout(_flushSave,500);
+    try{if(pts>0&&typeof _appendCompActivity==='function')_appendCompActivity(type,pts);}catch(e){}
+    return;
+  }
+  // ===== 아래는 legacy path (CUBE_UI_MODE off 시에만) =====
   // 2. CP.total_score에 즉시 반영
   if(!CP)return;
   const _prevScore=+(CP.total_score)||0;
@@ -6270,6 +6285,37 @@ function recomputeCubesHook(key,opts){
     renderCardCubes();
     // 히트맵도 재렌더 — tile 의 4개 cube 가 새 판정 색으로 전환되도록.
     try{if(typeof window.buildHeatmapGrid==='function')window.buildHeatmapGrid();}catch(e){}
+    // ── Phase 5: cube 점수 delta 를 CP.total_score 에 적용 ───────────
+    // 단일 source of truth: 오늘 점수는 scoreFromCubes(l.cubes), 누적은 CP.total_score
+    // 를 cube delta 로 점진 업데이트. 팝오버 delta 와 hdr-score / sb-today 가 정확히 일치.
+    // silent (renderRoutine 의 auto-sync) 에선 delta 적용 금지 — 페이지 로드마다
+    // total_score 가 드리프트하는 것 방지.
+    try{
+      if(!silent&&k===TODAY&&window.Cubes&&typeof window.Cubes.scoreFromCubes==='function'&&CP){
+        const oldCubeScore=beforeCubes?window.Cubes.scoreFromCubes(beforeCubes):0;
+        const newCubeScore=window.Cubes.scoreFromCubes(l.cubes);
+        const delta=newCubeScore-oldCubeScore;
+        if(delta!==0){
+          const prev=+(CP.total_score)||0;
+          CP.total_score=Math.max(0,prev+delta);
+          try{if(CU)localStorage.setItem('score_'+CU.id,String(CP.total_score));}catch(_){}
+          try{_flushScoreUpdate();}catch(_){}
+          // 티어업 감지 — cube delta 로 상승한 경우에만 룸 오픈 (100점 돌파 등은 cube 0점이라 무효).
+          try{
+            const prevTier=getTier(prev);
+            const newTier=getTier(CP.total_score);
+            if(prevTier.name!==newTier.name&&!silent){
+              setTimeout(()=>{
+                try{if(typeof openRoomOverlay==='function')openRoomOverlay();}catch(_){}
+                try{if(typeof showTierUpShareCTA==='function')showTierUpShareCTA(newTier);}catch(_){}
+              },800);
+            }
+          }catch(_){}
+        }
+      }
+    }catch(e){console.warn('[cube-score-sync]',e&&e.message);}
+    // hdr-score / sb-today 실시간 refresh — 모든 점수 표시 한꺼번에.
+    try{updateGogginsHeader();}catch(e){}
     // Cube 변화 팝오버 — 오늘 날짜일 때만. 과거 로그 수정 / silent sync 는 조용히.
     try{
       if(k===TODAY&&!silent){
