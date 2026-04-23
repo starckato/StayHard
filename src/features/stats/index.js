@@ -61,7 +61,8 @@ export async function loadStatsTab(){
   // 로딩 표시
   const loadEl=document.getElementById('st-loading');
   if(loadEl)loadEl.style.display='block';
-  ['st-hero','st-sec-nav','st-empty'].forEach(id=>{
+  // hero/empty 는 일시적으로 숨기고, sec-nav (분석 카테고리 탭) 는 유지.
+  ['st-hero','st-empty'].forEach(id=>{
     const el=document.getElementById(id);if(el)el.style.display='none';
   });
 
@@ -122,16 +123,16 @@ export function stRenderAll(rows){
     return;
   }
   document.getElementById('st-empty').style.display='none';
-  // Hero + section-nav are retired (Phase 3/5). Don't re-show them here —
-  // the inline display:none !important in index.html wins on render but an
-  // unconditional '' reset would bring them back.
+  // Hero stays retired; but the category pill nav needs to be explicitly
+  // shown because stLoadStats used to hide it during loading.
+  if(nav)nav.style.display='';
 
   try{stRenderHero(filtered);}catch(e){console.warn('stRenderHero error:',e);}
   try{stRenderKPI(filtered);}catch(e){console.warn('stRenderKPI error:',e);}
   try{stRenderInsights(filtered);}catch(e){console.warn('stRenderInsights error:',e);}
   try{stRenderScoreSources();}catch(e){console.warn('stRenderScoreSources error:',e);}
   try{stRenderReportCard(filtered);}catch(e){console.warn('stRenderReportCard error:',e);}
-  try{stRenderPtsBreakdown(filtered);}catch(e){console.warn('stRenderPtsBreakdown error:',e);}
+  // stRenderPtsBreakdown 은 이제 오늘의 요약 모달에서 담당 — 분석 탭에서 호출 X
   try{stRenderMealQuality(filtered);}catch(e){console.warn('stRenderMealQuality error:',e);}
   try{stRenderWeightChart(filtered);}catch(e){console.warn('stRenderWeightChart error:',e);}
   try{stRenderVolChart(filtered);}catch(e){console.warn('stRenderVolChart error:',e);}
@@ -144,8 +145,10 @@ export function stRenderAll(rows){
   try{stRenderMealHeatmap(filtered);}catch(e){console.warn('stRenderMealHeatmap error:',e);}
   try{stRenderScoreChart(filtered);}catch(e){console.warn('stRenderScoreChart error:',e);}
 
-  // Apply stored active section (default: 체중 — P1 감량러 우선)
-  const saved=localStorage.getItem('stats_section')||'habits';
+  // Apply stored active section (default: 체중). 옛 'overview' 저장값은
+  // 새 탭 구조의 루틴 탭과 의미가 달라서 habits 로 리셋.
+  let saved=localStorage.getItem('stats_section')||'habits';
+  if(!['habits','training','nutrition','overview'].includes(saved))saved='habits';
   statsSetSection(saved, true);
 }
 
