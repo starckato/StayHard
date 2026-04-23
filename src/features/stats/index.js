@@ -898,6 +898,14 @@ export function stRenderWeightChart(rows){
     {label:'시작 대비',value:(diff>0?'+':'')+diff.toFixed(1),unit:'kg'},
     {label:'목표까지',value:goal?(Math.abs(current-goal).toFixed(1)):'—',unit:goal?'kg':'',delta:goal?stDelta(current,prevCurrent,{inverse:goal<start}):''}
   ]);
+  // Inline subtitle explaining the overlay so user knows what each line is
+  const metaElHint=document.getElementById('st-weight-meta');
+  if(metaElHint){
+    const subtitle=document.createElement('div');
+    subtitle.style.cssText='font-size:10px;color:var(--text3);margin-top:8px;letter-spacing:-.005em;line-height:1.4;';
+    subtitle.textContent='같은 기간의 운동 볼륨(빨강 bar)·클린식 %(초록)·루틴 %(앰버) 를 함께 겹쳐봐';
+    metaElHint.appendChild(subtitle);
+  }
 
   // ── Multi-metric overlay (TEST) ───────────────────────────────────
   // Align all metrics to the same x labels as the weight points so
