@@ -20,7 +20,7 @@
      so window globals (dkey, normKey, ...) are set before inline code runs.
      Query version bumps cache when bundle content changes. Bump manually or
      via build script when shipping a new bundle. See MIGRATION_PLAN.md. -->
-<script src="/dist/app.js?v=20260424o"></script>
+<script src="/dist/app.js?v=20260424p"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Archivo+Black&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -328,9 +328,9 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 .cube-event-stage.dim.on{opacity:1;}
 .cube-event-wrap{position:relative;display:flex;flex-direction:column;align-items:center;gap:14px;opacity:0;transform:translateY(16px) scale(0.7);transition:opacity 280ms ease-out,transform 340ms cubic-bezier(0.16,1,0.3,1);will-change:transform,opacity;backface-visibility:hidden;}
 .cube-event-wrap.show{opacity:1;transform:translateY(0) scale(1);}
-.cube-event-wrap.depart{opacity:0;transform:translateY(calc(-50vh + 40px)) scale(0.24);transition:opacity 520ms ease-in,transform 620ms cubic-bezier(0.4,0,0.2,1);}
+.cube-event-wrap.depart{opacity:0;transform:translateY(calc(-50vh + 40px)) scale(0.24);transition:opacity 760ms ease-in,transform 900ms cubic-bezier(0.4,0,0.2,1);}
 /* 3D 큐브 — preserve-3d, 초기 회전 각도 + .depart 시 1회전. */
-.cube-event-cube{width:72px;height:72px;position:relative;transform-style:preserve-3d;transform:rotateX(-16deg) rotateY(-22deg);transition:transform 620ms cubic-bezier(0.4,0,0.2,1);will-change:transform;backface-visibility:hidden;}
+.cube-event-cube{width:72px;height:72px;position:relative;transform-style:preserve-3d;transform:rotateX(-16deg) rotateY(-22deg);transition:transform 900ms cubic-bezier(0.4,0,0.2,1);will-change:transform;backface-visibility:hidden;}
 .cube-event-wrap.depart .cube-event-cube{transform:rotateX(-16deg) rotateY(338deg);}
 .cube-face{position:absolute;width:72px;height:72px;border-radius:6px;backface-visibility:hidden;}
 .cube-event[data-color="gold"] .cube-face{background:linear-gradient(135deg,#fff1a8 0%,#ffd54a 45%,#c48c1a 100%);border:1px solid rgba(255,233,128,0.85);box-shadow:0 0 1px rgba(255,255,255,0.9) inset,0 -6px 12px rgba(0,0,0,0.35) inset;}
@@ -5932,6 +5932,9 @@ const CUBE_CHANGE_COPY={
     gold:    {title:'운동 gold', body:'땀 흘린 하루', delta:'+3'},
     crimson: {title:'운동 crimson', body:'', delta:'−3'},
   },
+  exercise_bonus:{
+    gold:    {title:'이중 큐브', body:'헬스 + 유산소 완료', delta:'+3'},
+  },
   routine:{
     gold:    {title:'루틴 gold', body:'모든 루틴 완수', delta:'+3'},
     silver:  {title:'루틴 silver', body:'실패 없이 부분 완수', delta:'+2'},
@@ -5952,10 +5955,11 @@ function _cubeColorMeta(color){
   if(color==='crimson') return {fg:'#ff6b6b',border:'rgba(255,77,77,0.45)',bg:'rgba(255,77,77,0.10)'};
   return {fg:'#eaeaf0',border:'rgba(255,255,255,0.14)',bg:'rgba(20,20,24,0.92)'};
 }
-// 타이밍 상수 — CSS 와 일치시켜야 함.
+// 타이밍 상수 — CSS 와 일치시켜야 함. 유저 피드백 (2026-04-24): 글씨 읽기
+// 전에 depart 가 너무 빨리 시작됨 → linger 500ms / depart 900ms 로 확장.
 const _CUBE_SHOW_MS=280;   // fade + scale in
-const _CUBE_LINGER_MS=200; // 정지 구간
-const _CUBE_DEPART_MS=620; // 회전 + 비상 + fade out
+const _CUBE_LINGER_MS=500; // 정지 구간 — 라벨 읽을 시간
+const _CUBE_DEPART_MS=900; // 회전 + 비상 + fade out — 천천히 사라짐
 
 // GPU warmup — 첫 번째 cube 렌더 시 compositor 가 3D layer 를 처음 구성하면서
 // 200~400ms 프레임 드랍이 생긴다. 앱 로드 후 1회 invisible 한 cube 를 생성해
@@ -6169,6 +6173,13 @@ function _diffCubes(before,after){
       const copy=CUBE_CHANGE_COPY[cat]&&CUBE_CHANGE_COPY[cat][a];
       if(copy)events.push({type:'color',cat,color:a,...copy});
     }
+  }
+  // exercise_bonus: null → 'gold' 전환만 이벤트 (헬스+유산소 둘 다 완료 순간).
+  const bBonusEx=(before&&before.exercise_bonus)||null;
+  const aBonusEx=(after&&after.exercise_bonus)||null;
+  if(!bBonusEx&&aBonusEx==='gold'){
+    const copy=CUBE_CHANGE_COPY.exercise_bonus&&CUBE_CHANGE_COPY.exercise_bonus.gold;
+    if(copy)events.push({type:'color',cat:'exercise_bonus',color:'gold',...copy});
   }
   // Bonus diff — 새로 추가된 항목만.
   const bBonus=(before&&Array.isArray(before.bonus))?before.bonus:[];
@@ -9863,6 +9874,7 @@ function saveActivity(){
     if(!alreadyScored)addScore('workout_cardio_done');
     setTimeout(()=>{showWin('workout',SCORE_EVENTS.workout_cardio_done.pts,'유산소 완료!');launchConfetti();},300);
   }
+  recomputeCubesHook();
   saveNow(status==='planned'?'📅 운동 일정 등록됨':'💪 운동 저장됨');
 }
 
