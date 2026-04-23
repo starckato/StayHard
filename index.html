@@ -20,7 +20,7 @@
      so window globals (dkey, normKey, ...) are set before inline code runs.
      Query version bumps cache when bundle content changes. Bump manually or
      via build script when shipping a new bundle. See MIGRATION_PLAN.md. -->
-<script src="/dist/app.js?v=20260423i"></script>
+<script src="/dist/app.js?v=20260423j"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Archivo+Black&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -136,6 +136,20 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 .bento-delta.good-up{color:var(--green);}
 .bento-delta.bad-up{color:var(--accent);}
 .bento-sub{font-size:10px;color:var(--text3);letter-spacing:-.005em;margin-top:auto;}
+
+/* STATS FOCUS CARD — "next week focus" manifesto */
+.stats-focus{margin:0 14px 14px;padding:14px 14px 15px;border-radius:var(--radius);background:linear-gradient(135deg,rgba(255,77,77,0.06),rgba(255,77,77,0.02));border:1px solid rgba(255,77,77,.22);}
+.stats-focus.tone-good{background:linear-gradient(135deg,rgba(52,211,153,.08),rgba(52,211,153,.02));border-color:rgba(52,211,153,.28);}
+.stats-focus.tone-warn{background:linear-gradient(135deg,rgba(245,158,11,.08),rgba(245,158,11,.02));border-color:rgba(245,158,11,.3);}
+.stats-focus-hdr{display:flex;align-items:center;gap:7px;margin-bottom:8px;}
+.stats-focus-tag{font-size:9px;font-weight:800;color:var(--accent);text-transform:uppercase;letter-spacing:.12em;padding:3px 8px;background:rgba(255,77,77,.12);border-radius:4px;}
+.stats-focus.tone-good .stats-focus-tag{color:var(--green);background:var(--green-bg);}
+.stats-focus.tone-warn .stats-focus-tag{color:var(--amber);background:var(--amber-bg);}
+.stats-focus-kind{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;}
+.stats-focus-msg{font-size:14px;font-weight:700;color:var(--text);line-height:1.45;letter-spacing:-.01em;word-break:keep-all;}
+.stats-focus-evidence{display:flex;gap:10px;margin-top:10px;font-size:10px;color:var(--text3);font-family:'DM Mono',monospace;}
+.stats-focus-evidence span{display:inline-flex;align-items:center;gap:3px;}
+.stats-focus-evidence b{color:var(--text);font-weight:600;}
 .stats-headline{display:flex;gap:14px;margin:2px 0 14px;}
 .stats-headline-cell{flex:1;min-width:0;}
 .stats-headline-label{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;font-weight:700;margin-bottom:3px;}
@@ -1452,11 +1466,13 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
         <div style="font-size:10px;color:var(--text3);" id="st-hero-tier-to">다음까지 —</div>
       </div>
       <div class="stats-tier-bar"><div class="stats-tier-fill" id="st-hero-tier-fill" style="width:0%;"></div></div>
-      <!-- Sprint D1: 약점 → 다음 주 집중 포인트 -->
-      <div id="st-hero-focus" style="display:none;margin-top:12px;padding:11px 13px;background:rgba(10,10,12,.4);border:1px solid rgba(255,77,77,.22);border-radius:11px;display:flex;align-items:flex-start;gap:10px;">
-        <span id="st-hero-focus-tag" style="font-size:9px;font-weight:800;color:var(--accent);text-transform:uppercase;letter-spacing:.1em;padding:3px 7px;background:rgba(255,77,77,.12);border-radius:5px;flex-shrink:0;margin-top:1px;">다음 주</span>
-        <span id="st-hero-focus-msg" style="font-size:12px;font-weight:600;color:var(--text);line-height:1.5;letter-spacing:-.01em;word-break:keep-all;"></span>
-      </div>
+      <!-- Legacy hero-focus hooks kept hidden; the new standalone card below
+           the bento supersedes them. Old stRenderHero still writes into
+           these until the refactor settles. -->
+      <span id="st-hero-focus" style="display:none;" aria-hidden="true">
+        <span id="st-hero-focus-tag"></span>
+        <span id="st-hero-focus-msg"></span>
+      </span>
     </div>
 
     <!-- 섹션 핀 탭 -->
@@ -1520,6 +1536,16 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
           <span id="st-kpi-workout"></span><span id="st-kpi-workout-sub"></span><canvas id="st-spark-workout"></canvas>
           <span id="st-kpi-water"></span><span id="st-kpi-water-sub"></span><canvas id="st-spark-water"></canvas>
         </div>
+      </div>
+
+      <!-- Focus / Weakness card — Goggins-tone, rule-based suggestion -->
+      <div class="stats-focus" id="st-focus-card" style="display:none;">
+        <div class="stats-focus-hdr">
+          <span class="stats-focus-tag" id="st-focus-tag">다음 주</span>
+          <span class="stats-focus-kind" id="st-focus-kind"></span>
+        </div>
+        <div class="stats-focus-msg" id="st-focus-msg"></div>
+        <div class="stats-focus-evidence" id="st-focus-evidence"></div>
       </div>
 
       <div id="st-score-sources" style="margin-bottom:10px;"></div>

@@ -361,6 +361,132 @@ export function stRenderKPI(rows){
 
   // ── Bento 2×2 (Phase 1) — 체중 / 운동 / 클린식 / 루틴 ──
   stRenderBento(rows,{mandDone,mandTotal,routinePct,mealClean,mealAll,cleanPct,woCnt});
+
+  // ── Focus card (Phase 2) — 약점 탐지 + 구체 행동 제안 ──
+  stRenderFocus(rows,{routinePct,cleanPct,woCnt});
+}
+
+// ── Focus card (Phase 2) ──────────────────────────────────────────────
+// Rule-based weakness detection: checks several patterns and picks the
+// single most actionable insight. Returns null when everything looks good
+// OR when there isn't enough data to judge (avoid shouting at new users).
+const DAY_KR = ['월','화','수','목','금','토','일'];
+
+function _pickFocus(rows, ctx){
+  if(!rows||rows.length<4)return null;
+
+  // A · 전체 성적이 A면 응원 메시지 (부드러운 톤)
+  if(ctx.routinePct>=85&&ctx.cleanPct>=70&&ctx.woCnt>=Math.max(3,Math.floor((stPeriod||rows.length)/7)*2)){
+    return {
+      tone:'good',
+      kind:'유지',
+      msg:'지금 페이스 그대로. 흔들리지만 않으면 돼.',
+      evidence:[`루틴 ${ctx.routinePct}%`,`클린식 ${ctx.cleanPct}%`,`운동 ${ctx.woCnt}회`],
+    };
+  }
+
+  // B · 주말 클린식 무너짐 (토/일 vs 월-금)
+  const mealsByDay=rows.map(r=>{
+    const ms=(r.meals||[]).filter(m=>['아침','점심','저녁'].includes(m.time)&&m.type);
+    const clean=ms.filter(m=>m.type==='green').length;
+    const d=new Date(r._key);
+    return {dow:(d.getDay()+6)%7, total:ms.length, clean};
+  }).filter(x=>x.total>0);
+  if(mealsByDay.length>=6){
+    const wkEnd=mealsByDay.filter(x=>x.dow>=5);
+    const wkDay=mealsByDay.filter(x=>x.dow<5);
+    const endClean=wkEnd.reduce((a,x)=>a+x.clean,0);
+    const endTotal=wkEnd.reduce((a,x)=>a+x.total,0);
+    const dayClean=wkDay.reduce((a,x)=>a+x.clean,0);
+    const dayTotal=wkDay.reduce((a,x)=>a+x.total,0);
+    if(endTotal>=4&&dayTotal>=4){
+      const endPct=Math.round(endClean/endTotal*100);
+      const dayPct=Math.round(dayClean/dayTotal*100);
+      if(dayPct-endPct>=20&&endPct<60){
+        return {
+          tone:'warn',
+          kind:'주말 약점',
+          msg:`주말에 무너져. 토요일 저녁 한 끼만 클린으로 바꿔.`,
+          evidence:[`평일 <b>${dayPct}%</b>`,`주말 <b>${endPct}%</b>`],
+        };
+      }
+    }
+  }
+
+  // C · 루틴 요일 패턴 — 특정 요일 N주 연속 미완료
+  const mandByDay={};
+  rows.forEach(r=>{
+    const d=new Date(r._key);
+    const dow=(d.getDay()+6)%7;
+    const items=(r.mandatory||[]).filter(m=>!m.days||m.days.includes(dow));
+    if(!items.length)return;
+    const done=items.filter(m=>m.done).length;
+    const pct=items.length?done/items.length:1;
+    if(!mandByDay[dow])mandByDay[dow]={n:0,sum:0};
+    mandByDay[dow].n++;
+    mandByDay[dow].sum+=pct;
+  });
+  let worstDow=null,worstAvg=1;
+  Object.entries(mandByDay).forEach(([k,v])=>{
+    if(v.n<2)return;
+    const avg=v.sum/v.n;
+    if(avg<worstAvg){worstAvg=avg;worstDow=+k;}
+  });
+  if(worstDow!=null&&worstAvg<0.5){
+    return {
+      tone:'warn',
+      kind:'요일 약점',
+      msg:`${DAY_KR[worstDow]}요일이 약점이야. 다음 주 ${DAY_KR[worstDow]} 아침 하나만 해내.`,
+      evidence:[`${DAY_KR[worstDow]} 평균 <b>${Math.round(worstAvg*100)}%</b>`,`관찰 ${mandByDay[worstDow].n}회`],
+    };
+  }
+
+  // D · 가장 낮은 카테고리 + 구체 권장
+  const scores={
+    훈련:ctx.woCnt>=6?90:ctx.woCnt>=4?70:ctx.woCnt>=2?50:20,
+    식단:ctx.cleanPct,
+    루틴:ctx.routinePct,
+  };
+  let worstCat=null,worstScore=Infinity;
+  Object.entries(scores).forEach(([k,v])=>{if(v!=null&&v<worstScore){worstCat=k;worstScore=v;}});
+  if(worstCat&&worstScore<60){
+    const lines={
+      훈련:`운동이 부족해. 다음 주 주 3회만 채워.`,
+      식단:`클린식 ${ctx.cleanPct}%. 아침 한 끼만 단백질로 시작해.`,
+      루틴:`루틴 ${ctx.routinePct}%. 매일 하는 하나만 지켜. 나머지는 버려.`,
+    };
+    return {
+      tone:'warn',
+      kind:worstCat+' 개선',
+      msg:lines[worstCat],
+      evidence:worstCat==='훈련'?[`이번 기간 ${ctx.woCnt}회`]:[`${worstCat} <b>${worstScore}%</b>`],
+    };
+  }
+
+  // E · 기본: 모든 지표가 중간 이상 → 격려
+  return {
+    tone:'good',
+    kind:'한 걸음 더',
+    msg:'다 괜찮아. 그래도 가장 약한 거 하나 더 조여.',
+    evidence:[`루틴 ${ctx.routinePct}%`,`클린식 ${ctx.cleanPct}%`,`운동 ${ctx.woCnt}회`],
+  };
+}
+
+export function stRenderFocus(rows, ctx){
+  const card=document.getElementById('st-focus-card');
+  const tag=document.getElementById('st-focus-tag');
+  const kind=document.getElementById('st-focus-kind');
+  const msg=document.getElementById('st-focus-msg');
+  const ev=document.getElementById('st-focus-evidence');
+  if(!card)return;
+  const focus=_pickFocus(rows||[],ctx||{});
+  if(!focus){card.style.display='none';return;}
+  card.style.display='block';
+  card.className='stats-focus '+(focus.tone==='good'?'tone-good':focus.tone==='warn'?'tone-warn':'');
+  if(tag)tag.textContent=focus.tone==='good'?'잘 가고 있음':'다음 주';
+  if(kind)kind.textContent=focus.kind;
+  if(msg)msg.textContent=focus.msg;
+  if(ev)ev.innerHTML=(focus.evidence||[]).map(e=>`<span>${e}</span>`).join('');
 }
 
 // Previous-period rows for delta calc. Returns null when we don't have
