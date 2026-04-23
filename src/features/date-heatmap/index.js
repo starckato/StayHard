@@ -28,9 +28,10 @@ let dhDidInitialScroll = false;
 const DH_MAX_PAST_WEEKS = 52;
 const DH_MAX_FUTURE_WEEKS = 4;
 
-const DH_DAY_W = 44;
-const DH_LABEL_W = 46;
-const DH_GAP = 2;
+// Day-tile layout (v6 · no-grid) — each day is its own rounded tile, scrolled horizontally.
+const DH_TILE_W = 56;
+const DH_TILE_H = 78;
+const DH_GAP = 5;
 
 const DH_ROWS = [
   { key: 'meal',    lbl: '식단' },
@@ -85,19 +86,21 @@ function cellStatus(dl, cat, isFuture) {
   return 'empty';
 }
 
-// Editorial monochrome palette (v5) — pure brightness ladder + ivory glow
-// on pass cells so completed days visually "burn" against the dark grid.
-// Partial stays a flat mid-gray fill (matter-of-fact, no celebration).
-function cellColor(status) {
-  if (status === 'pass')    return {
-    bg: 'rgba(234,234,240,0.92)', fg: '#0a0a0c',
-    // Soft ivory halo — two layers for close punch + wider ambient bloom.
-    glow: '0 0 6px rgba(234,234,240,0.55), 0 0 14px rgba(234,234,240,0.22)',
-  };
-  if (status === 'partial') return { bg: 'rgba(234,234,240,0.28)', fg: 'var(--text)' };
-  if (status === 'fail')    return { bg: 'rgba(44,44,52,0.95)', fg: 'var(--text3)', outline: 'rgba(255,255,255,0.08)' };
-  if (status === 'future')  return { bg: 'transparent', outline: 'rgba(255,255,255,0.08)', dashed: true };
-  return { bg: 'transparent', outline: 'rgba(255,255,255,0.10)' };
+// Ember Ladder palette (v6) — brand-red family with no glow. Flat, editorial,
+// fits the Goggins dark-theme shell. pass = muted brand red; partial = neutral
+// gray; fail = faint red with dashed stroke (still in the family, but broken);
+// empty/future = outlined emptiness.
+function indicatorStyle(status) {
+  if (status === 'pass')
+    return 'background:rgba(255,77,77,0.36);border:1px solid rgba(255,77,77,0.18);';
+  if (status === 'partial')
+    return 'background:rgba(255,255,255,0.14);border:1px solid rgba(255,255,255,0.06);';
+  if (status === 'fail')
+    return 'background:rgba(255,77,77,0.08);border:1px dashed rgba(255,77,77,0.42);';
+  if (status === 'future')
+    return 'background:transparent;border:1px dashed rgba(255,255,255,0.08);';
+  // empty
+  return 'background:transparent;border:1px solid rgba(255,255,255,0.10);';
 }
 
 function taskPreview(dl) {
@@ -123,87 +126,62 @@ export function buildHeatmapGrid() {
     return;
   }
   const DAY_NAMES = ['월', '화', '수', '목', '금', '토', '일'];
-  // Selected column tint lives on EVERY cell in the matching column so the
-  // highlight reads as a vertical bar spanning all rows.
-  const SEL_TINT = 'rgba(255,255,255,0.07)';
-  const MON_SEP = 'rgba(255,255,255,0.06)';
-  const lbl = `display:table-cell;vertical-align:middle;position:sticky;left:0;z-index:2;background:var(--bg);width:${DH_LABEL_W}px;min-width:${DH_LABEL_W}px;padding:3px 8px 3px 10px;`;
-  const dayBase = `display:table-cell;vertical-align:middle;width:${DH_DAY_W}px;min-width:${DH_DAY_W}px;padding:${DH_GAP}px;`;
-  const cellStyle = (isSel, isMon) =>
-    `${dayBase}cursor:pointer;${isSel ? `background:${SEL_TINT};` : ''}${isMon ? `border-left:1px solid ${MON_SEP};` : ''}`;
 
-  // Row 1 — today dot + day-of-week letter, month tag on first date of a month
-  let rDay = '<div style="display:table-row;">';
-  rDay += `<div style="${lbl}"></div>`;
-  dhAllDates.forEach((d, i) => {
+  const tiles = dhAllDates.map((d, i) => {
     const k = dkey(d);
     const isT = k === window.TODAY;
     const isSel = k === window.selectedKey;
+    const isFuture = d > window.now && !isT;
     const dayIdx = (d.getDay() + 6) % 7;
-    const isMon = dayIdx === 0 && i > 0;
     const prev = i > 0 ? dhAllDates[i - 1] : null;
     const monthChanged = !prev || prev.getMonth() !== d.getMonth();
     const showMonth = i === 0 || monthChanged;
-    const monthTag = showMonth
-      ? `<div style="font-size:9px;font-weight:700;color:var(--text3);margin-bottom:1px;">${d.getMonth() + 1}월</div>`
-      : '<div style="font-size:9px;margin-bottom:1px;opacity:0;">·</div>';
-    const todayDot = isT
-      ? '<div style="width:5px;height:5px;border-radius:50%;background:var(--accent);margin:0 auto 2px;"></div>'
-      : '<div style="width:5px;height:5px;margin:0 auto 2px;opacity:0;"></div>';
-    rDay += `<div onclick="dhSelectDate('${k}',${d.getTime()})" style="${cellStyle(isSel, isMon)}text-align:center;">${monthTag}${todayDot}<div style="font-size:10px;font-weight:700;letter-spacing:.04em;color:${isSel ? 'var(--text)' : 'var(--text3)'};">${DAY_NAMES[dayIdx]}</div></div>`;
-  });
-  rDay += '</div>';
 
-  // Row 2 — date number
-  let rNum = '<div style="display:table-row;">';
-  rNum += `<div style="${lbl}"></div>`;
-  dhAllDates.forEach((d, i) => {
-    const k = dkey(d);
-    const isSel = k === window.selectedKey;
-    const dayIdx = (d.getDay() + 6) % 7;
-    const isMon = dayIdx === 0 && i > 0;
-    const fg = isSel ? 'var(--text)' : 'var(--text2)';
-    rNum += `<div onclick="dhSelectDate('${k}',${d.getTime()})" style="${cellStyle(isSel, isMon)}text-align:center;padding-top:0;padding-bottom:5px;"><div style="font-size:13px;font-weight:600;color:${fg};">${d.getDate()}</div></div>`;
-  });
-  rNum += '</div>';
-
-  // Category rows — borderless filled cells only, column-wide tint for selected
-  const catRows = DH_ROWS.map(cat => {
-    let row = '<div style="display:table-row;">';
-    row += `<div style="${lbl}padding:4px 8px 4px 10px;"><span style="font-size:10px;font-weight:600;color:var(--text3);letter-spacing:.02em;">${cat.lbl}</span></div>`;
-    dhAllDates.forEach((d, i) => {
-      const k = dkey(d);
-      const dl = window.logCache?.[k] || dhLogs[k];
-      const isFuture = d > window.now && k !== window.TODAY;
-      const isSel = k === window.selectedKey;
-      const dayIdx = (d.getDay() + 6) % 7;
-      const isMon = dayIdx === 0 && i > 0;
+    const dl = window.logCache?.[k] || dhLogs[k];
+    // Four tiny status squares at the bottom of each tile — same order as
+    // the old grid rows (식단/운동/루틴/할일). Width is tuned so all four
+    // fit within the tile with a 2px gap.
+    const indicatorSize = Math.floor((DH_TILE_W - 10 - 2 * 3) / 4); // 4 squares + 3 gaps inside 10px padding
+    const indicators = DH_ROWS.map(cat => {
       const status = cellStatus(dl, cat.key, isFuture);
-      const { bg, fg, outline, dashed, glow } = cellColor(status);
+      return `<span style="display:inline-block;width:${indicatorSize}px;height:${indicatorSize}px;border-radius:2px;box-sizing:border-box;${indicatorStyle(status)}"></span>`;
+    }).join('');
 
-      let inner = '';
-      if (cat.key === 'tasks' && !isFuture) {
-        const { text, count } = taskPreview(dl);
-        if (text) {
-          const label = escapeHtml(text);
-          const textColor = status === 'pass' ? '#0a0a0c' : 'var(--text2)';
-          const extraColor = status === 'pass' ? 'rgba(10,10,12,0.55)' : 'var(--text3)';
-          const extra = count > 1 ? `<span style="font-size:8px;color:${extraColor};margin-left:2px;">+${count - 1}</span>` : '';
-          inner = `<span style="font-size:9px;color:${textColor};font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:${DH_DAY_W - 6}px;">${label}</span>${extra}`;
-        }
-      }
+    // Tile container — selected gets a subtle lift + accent border
+    const tileBg = isSel
+      ? 'rgba(255,77,77,0.06)'
+      : isFuture ? 'transparent' : 'var(--surface)';
+    const tileBorder = isSel
+      ? 'border:1px solid rgba(255,77,77,0.38);'
+      : isFuture ? 'border:1px dashed rgba(255,255,255,0.08);'
+      : 'border:1px solid rgba(255,255,255,0.06);';
+    const tileOpacity = isFuture ? 0.55 : 1;
+    const tileShadow = isSel ? 'box-shadow:0 0 0 1px rgba(255,77,77,0.12);' : '';
 
-      const borderDecl = outline
-        ? `border:1px ${dashed ? 'dashed' : 'solid'} ${outline};`
-        : 'border:1px solid transparent;';
-      const glowDecl = glow ? `box-shadow:${glow};` : '';
-      row += `<div onclick="dhSelectDate('${k}',${d.getTime()})" style="${cellStyle(isSel, isMon)}"><div style="height:20px;border-radius:4px;background:${bg};${borderDecl}${glowDecl}display:flex;align-items:center;justify-content:center;padding:0 4px;overflow:hidden;box-sizing:border-box;">${inner}</div></div>`;
-    });
-    row += '</div>';
-    return row;
+    const monthLabel = showMonth
+      ? `<div style="position:absolute;top:-18px;left:0;font-size:9px;font-weight:700;color:var(--text3);letter-spacing:.05em;white-space:nowrap;">${d.getMonth() + 1}월</div>`
+      : '';
+
+    const todayDot = isT
+      ? '<div style="width:4px;height:4px;border-radius:50%;background:var(--accent);"></div>'
+      : '<div style="width:4px;height:4px;"></div>';
+
+    const dayColor = isSel ? 'var(--text)' : 'var(--text3)';
+    const numColor = isSel ? '#fff' : isFuture ? 'var(--text3)' : 'var(--text)';
+
+    return `
+      <div onclick="dhSelectDate('${k}',${d.getTime()})"
+           style="position:relative;flex-shrink:0;width:${DH_TILE_W}px;height:${DH_TILE_H}px;background:${tileBg};${tileBorder}${tileShadow}border-radius:10px;display:flex;flex-direction:column;align-items:center;padding:7px 5px 8px;cursor:pointer;opacity:${tileOpacity};box-sizing:border-box;touch-action:manipulation;">
+        ${monthLabel}
+        ${todayDot}
+        <div style="font-size:9px;font-weight:700;letter-spacing:.06em;color:${dayColor};margin-top:3px;">${DAY_NAMES[dayIdx]}</div>
+        <div style="font-size:18px;font-weight:700;color:${numColor};font-family:'DM Mono',monospace;line-height:1;margin-top:2px;margin-bottom:auto;">${d.getDate()}</div>
+        <div style="display:flex;gap:3px;align-items:center;justify-content:center;">${indicators}</div>
+      </div>
+    `;
   }).join('');
 
-  grid.innerHTML = rDay + rNum + catRows;
+  grid.innerHTML = `<div style="display:flex;gap:${DH_GAP}px;padding:22px 14px 8px;">${tiles}</div>`;
 }
 
 async function fetchHeatmapRange(dates) {
@@ -285,8 +263,9 @@ function centerOnSelected() {
     const targetKey = window.selectedKey || window.TODAY;
     const idx = dhAllDates.findIndex(d => dkey(d) === targetKey);
     if (idx < 0) return;
-    const cellLeft = DH_LABEL_W + idx * (DH_DAY_W + DH_GAP * 2);
-    outer.scrollLeft = Math.max(0, cellLeft - (outer.clientWidth - DH_DAY_W) / 2);
+    // 14px left padding of the row + idx tiles offset
+    const tileLeft = 14 + idx * (DH_TILE_W + DH_GAP);
+    outer.scrollLeft = Math.max(0, tileLeft - (outer.clientWidth - DH_TILE_W) / 2);
     dhDidInitialScroll = true;
   });
 }
