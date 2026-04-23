@@ -36,7 +36,8 @@ const LIMIT = parseInt((args.find((a) => a.startsWith('--limit=')) || '').split(
 const sb = createClient(URL, KEY, { auth: { persistSession: false } });
 
 function weekdayFromKey(logDate) {
-  return new Date(logDate + 'T00:00:00').getDay();
+  // Monday-based — renderMandatory / judgeRoutine 과 동일 인코딩 (Mon=0 ... Sun=6).
+  return (new Date(logDate + 'T00:00:00').getDay() + 6) % 7;
 }
 
 async function fetchLogs() {

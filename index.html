@@ -20,7 +20,7 @@
      so window globals (dkey, normKey, ...) are set before inline code runs.
      Query version bumps cache when bundle content changes. Bump manually or
      via build script when shipping a new bundle. See MIGRATION_PLAN.md. -->
-<script src="/dist/app.js?v=20260424r"></script>
+<script src="/dist/app.js?v=20260424s"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Archivo+Black&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -6277,8 +6277,11 @@ function recomputeCubesHook(key,opts){
     const silent=!!(opts&&opts.silent);
     // Cube diff 를 위한 snapshot — recompute 전에 이전 색상 캐시.
     const beforeCubes=l.cubes?JSON.parse(JSON.stringify(l.cubes)):null;
-    // 오늘의 요일 — selectedKey 기준 (과거 날짜 이동했을 때도 정확)
-    const weekday=new Date(k+'T00:00:00').getDay();
+    // 오늘의 요일 — renderMandatory 와 동일한 Monday-based 인코딩.
+    // t.days 배열은 [월=0, 화=1, ..., 일=6] 로 저장됨. JS 표준 (Sun=0) 과 어긋나므로
+    // +6 shift 필수. (DEFAULT_MAND 주석의 "0=Sun" 은 실제 동작과 불일치 — render
+    // 기준이 진실.)
+    const weekday=(new Date(k+'T00:00:00').getDay()+6)%7;
     // Streak milestone 감지는 오늘 날짜일 때만 + claimedMilestones 는 CP 에 누적
     const isToday=(k===TODAY);
     const claimedMilestones=(CP&&Array.isArray(CP.streak_milestones))?CP.streak_milestones:[];
@@ -8094,6 +8097,8 @@ function renderMeals(){
     {key:'저녁',icon:svgMoon,tag:'PM'}
   ];
   const qualityLabel={green:'클린',normal:'일반',cheat:'치팅',red:'금지',alcohol:'음주'};
+  // CUBE mode: 끼니별 +15/-30 표시 제거. 점수는 cube 큐브로만 전달.
+  const showLegacyScore=window.CUBE_UI_MODE!==true;
   const qualityScore={green:'+15',normal:'+5',cheat:'±0',red:'−30',alcohol:'−30'};
   const qualityScoreCls={green:'pos',normal:'zero',cheat:'zero',red:'neg',alcohol:'neg'};
   const qualityClass={green:'clean',normal:'normal',cheat:'cheat',red:'bad',alcohol:'alcohol'};
@@ -8126,7 +8131,7 @@ function renderMeals(){
           <div class="slot-name${m.name?'':' empty'}">${esc(m.name||'탭하여 수정')}</div>
         </div>
         ${m.type?`<span class="slot-quality ${qCls}">${qualityLabel[m.type]||m.type}</span>`:''}
-        ${scoreVal?`<span class="slot-score ${scoreCls}">${scoreVal}</span>`:''}
+        ${showLegacyScore&&scoreVal?`<span class="slot-score ${scoreCls}">${scoreVal}</span>`:''}
         <button class="slot-delete" onclick="event.stopPropagation();deleteMeal(${m._idx})" aria-label="삭제">✕</button>
       </div>`;
     }
@@ -8163,7 +8168,7 @@ function renderMeals(){
           <div class="slot-name${m.name?'':' empty'}">${esc(m.name||'탭하여 수정')}</div>
         </div>
         ${qPill?`<span class="slot-quality ${qCls}">${qPill}</span>`:''}
-        ${scoreVal?`<span class="slot-score ${scoreCls}">${scoreVal}</span>`:''}
+        ${showLegacyScore&&scoreVal?`<span class="slot-score ${scoreCls}">${scoreVal}</span>`:''}
         <button class="slot-delete" onclick="event.stopPropagation();deleteMeal(${m._idx})" aria-label="삭제">✕</button>
       </div>`;
     }).join('');

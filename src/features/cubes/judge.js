@@ -48,6 +48,9 @@ export function judgeExercise(workouts) {
 // - 모두 done (fail 없음) → gold
 // - 일부 done, 나머지 미기록 (fail 없음) → silver
 // - 전부 미기록 (fail 0, done 0) → gray
+// ⚠️ weekday 는 **Monday-based** (Mon=0, Tue=1, ..., Sun=6). renderMandatory
+//    의 `(getDay()+6)%7` 인코딩과 동일해야 UI 와 judge 결과가 일치. 호출자가
+//    정확한 값을 건네줄 것. (JS 표준 Sun=0 쓰면 러닝 등 요일 배열 해석이 어긋남)
 export function judgeRoutine(mandatory, weekday) {
   const all = Array.isArray(mandatory) ? mandatory : [];
   // 오늘 요일(weekday)에 해당하는 항목만. days 배열이 없으면 매일.
