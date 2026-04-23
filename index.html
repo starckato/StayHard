@@ -20,7 +20,7 @@
      so window globals (dkey, normKey, ...) are set before inline code runs.
      Query version bumps cache when bundle content changes. Bump manually or
      via build script when shipping a new bundle. See MIGRATION_PLAN.md. -->
-<script src="/dist/app.js?v=20260424f"></script>
+<script src="/dist/app.js?v=20260424g"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Archivo+Black&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -4457,6 +4457,7 @@ function saveSessionToLog(){
     log.workouts.push(sessionEntry);
   }
   renderWorkouts();
+  recomputeCubesHook();
   scheduleSave();
 }
 // finishSession is defined below in the redesigned workout system
@@ -5847,6 +5848,57 @@ window.addEventListener('visibilitychange', ()=>{
 // 하위 호환성 — saveNow 호출은 queueSave로 리다이렉트
 function saveNow(msg){ queueSave(); }
 function scheduleSave(){ queueSave(); }
+
+// ── Will Cube Phase 1: 실시간 판정 훅 ──────────────────────
+// 식사/운동/루틴/할일이 변경될 때마다 호출. 순수 판정 함수는 src/features/cubes/ 에.
+// side-effect: log.cubes 를 갱신. 기존 점수/UI 는 건드리지 않음 (Phase 5 에서 교체).
+function recomputeCubesHook(key){
+  try{
+    if(!window.Cubes||typeof window.Cubes.recomputeCubesInLog!=='function')return;
+    const k=key||selectedKey;
+    if(!k)return;
+    const l=logCache[k];
+    if(!l)return;
+    // 오늘의 요일 — selectedKey 기준 (과거 날짜 이동했을 때도 정확)
+    const weekday=new Date(k+'T00:00:00').getDay();
+    // Streak milestone 감지는 오늘 날짜일 때만 + claimedMilestones 는 CP 에 누적
+    const isToday=(k===TODAY);
+    const claimedMilestones=(CP&&Array.isArray(CP.streak_milestones))?CP.streak_milestones:[];
+    const prHistory=(CP&&CP.pr_records)?CP.pr_records:null;
+    const ctx={
+      weekday,
+      dateKey:k,
+      claimedMilestones,
+      prHistory,
+    };
+    if(isToday){
+      // streak 은 현재 calcStreak() 가 있으면 사용
+      try{ctx.newStreak=(typeof calcStreak==='function')?calcStreak():undefined;}catch(_){}
+      // PR 감지는 오늘 gym 세션이 done 일 때만
+      const hasGym=Array.isArray(l.workouts)&&l.workouts.some(w=>w&&w.type==='gym'&&w.status==='done');
+      if(hasGym)ctx.detectPRs=true;
+    }
+    const res=window.Cubes.recomputeCubesInLog(l,ctx);
+    // 프로필 쪽 누적 상태 갱신 — 새 PR/마일스톤이 잡혔을 때만 upsert.
+    if(res){
+      const promises=[];
+      if(Array.isArray(res.newMilestones)&&res.newMilestones.length>0&&CP&&CU){
+        CP.streak_milestones=res.nextClaimed;
+        promises.push(
+          sb.from('profiles').update({streak_milestones:res.nextClaimed}).eq('id',CU.id)
+        );
+      }
+      if(Array.isArray(res.newPRs)&&res.newPRs.length>0&&res.nextPrHistory&&CP&&CU){
+        CP.pr_records=res.nextPrHistory;
+        promises.push(
+          sb.from('profiles').update({pr_records:res.nextPrHistory}).eq('id',CU.id)
+        );
+      }
+      // fire-and-forget — 실패해도 cubes 는 저장됨
+      promises.forEach(p=>p.then&&p.then(()=>{},e=>console.warn('[cubes] profile sync',e&&e.message)));
+    }
+  }catch(e){console.warn('[cubes] recompute hook failed',e&&e.message);}
+}
 async function saveLog(key,silent=false){
   if(!CU)return;
   const l=logCache[key];if(!l)return;
@@ -5859,6 +5911,9 @@ async function saveLog(key,silent=false){
     mandatory:l.mandatory||[],targets:l.targets||[]
   };
   p.points_log=l._ptsLog||[];
+  // Will Cube Phase 1 — cubes JSONB. 판정은 recomputeCubesHook() 에서 실시간으로 log.cubes 에 기록됨.
+  // 과거 데이터 호환: cubes 없으면 null 로 저장 (백필 스크립트가 소급 계산).
+  if(l.cubes)p.cubes=l.cubes;
   // 5초 타임아웃으로 빠르게 실패 처리
   const _upsertWithTimeout=()=>Promise.race([
     sb.from('daily_logs').upsert(p,{onConflict:'user_id,log_date'}),
@@ -8459,6 +8514,7 @@ async function _doSaveMeal(){
   // 점수 처리
   const isNew=mealIdx===null;
   applyMealScore(prevType,foodType,isNew,mealCategory);
+  recomputeCubesHook();
   saveNow();
   checkPerfectDay();
 }
@@ -9697,7 +9753,7 @@ function togMand(i){
   const _originRect=_origin?_origin.getBoundingClientRect():null;
   log.mandatory[i].done=!wasDone;
   if(wasFail&&!wasDone){log.mandatory[i].fail=false;} // 실패→완료 시 실패 해제
-  renderMandatory();saveNow();
+  renderMandatory();recomputeCubesHook();saveNow();
   if(!wasDone){
     const specialType=log.mandatory[i]._scoreType;
     if(specialType){addScore(specialType);}
@@ -9776,7 +9832,7 @@ function markMandFail(i){
   } else {
     addScore('routine_fail_cancel'); // now 0점 — Q3=C 패널티 제거
   }
-  renderMandatory();saveNow();
+  renderMandatory();recomputeCubesHook();saveNow();
 }
 let _mandEndDate=null; // 'YYYY-MM-DD' or null
 
@@ -9988,7 +10044,7 @@ function togTgt(i){
   const _origin=document.querySelectorAll('#tgt-rows .tgt-btn')[i]||null;
   const _originRect=_origin?_origin.getBoundingClientRect():null;
   log.targets[i].st=nowDone?'done':'';
-  renderTargets();saveNow();
+  renderTargets();recomputeCubesHook();saveNow();
   if(nowDone){
     addScore('target_done');
     if(_originRect){
@@ -10016,7 +10072,7 @@ function markFail(i){
   } else {
     addScore('target_fail_cancel'); // now 0점 — Q3=C 패널티 제거
   }
-  renderTargets();saveNow();
+  renderTargets();recomputeCubesHook();saveNow();
 }
 
 // Touch: simple tap only (fail button replaces long press)
