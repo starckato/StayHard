@@ -20,7 +20,7 @@
      so window globals (dkey, normKey, ...) are set before inline code runs.
      Query version bumps cache when bundle content changes. Bump manually or
      via build script when shipping a new bundle. See MIGRATION_PLAN.md. -->
-<script src="/dist/app.js?v=20260424m"></script>
+<script src="/dist/app.js?v=20260424n"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Archivo+Black&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -323,9 +323,11 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
    0.0~0.45s: pop-in (scale 0.2 → 1.3 → 1.0, rotate + bounce)
    0.45~1.15s: hold (천천히 회전 + aura pulse)
    1.15~1.60s: deposit (상단으로 비행 + scale 축소 + fade) */
-.cube-event-stage{position:fixed;inset:0;z-index:10001;pointer-events:none;display:flex;align-items:center;justify-content:center;}
-.cube-event-wrap{position:relative;display:flex;flex-direction:column;align-items:center;gap:14px;will-change:transform,opacity;}
-.cube-event-cube{width:72px;height:72px;position:relative;transform-style:preserve-3d;will-change:transform;}
+.cube-event-stage{position:fixed;inset:0;z-index:10001;pointer-events:none;display:flex;align-items:center;justify-content:center;contain:layout style paint;transform:translateZ(0);}
+/* 기본 상태: 완전 invisible + 축소. .pop 클래스 붙으면 animation 이 opacity/transform
+   overriding 하면서 표시. DOM 추가 직후 1프레임 visible-flash 방지. */
+.cube-event-wrap{position:relative;display:flex;flex-direction:column;align-items:center;gap:14px;will-change:transform,opacity;opacity:0;transform:scale(0.2) rotateX(-30deg) rotateY(-30deg);backface-visibility:hidden;}
+.cube-event-cube{width:72px;height:72px;position:relative;transform-style:preserve-3d;will-change:transform;backface-visibility:hidden;}
 .cube-face{position:absolute;width:72px;height:72px;border-radius:6px;backface-visibility:hidden;}
 .cube-event[data-color="gold"] .cube-face{background:linear-gradient(135deg,#fff1a8 0%,#ffd54a 45%,#c48c1a 100%);border:1px solid rgba(255,233,128,0.85);box-shadow:0 0 1px rgba(255,255,255,0.9) inset,0 -6px 12px rgba(0,0,0,0.35) inset;}
 .cube-event[data-color="silver"] .cube-face{background:linear-gradient(135deg,#f2f4f7 0%,#b5c0cc 45%,#6d7682 100%);border:1px solid rgba(210,218,228,0.75);box-shadow:0 0 1px rgba(255,255,255,0.85) inset,0 -6px 12px rgba(0,0,0,0.30) inset;}
@@ -5995,6 +5997,43 @@ function _cubeColorMeta(color){
 // 색상별 스파크 개수 — gold 만 화려하게. silver/crimson 은 스파크 없음.
 function _cubeSparkCount(color){return color==='gold'?6:0;}
 
+// GPU warmup — 첫 번째 cube 렌더 시 compositor 가 3D layer 를 처음 구성하면서
+// 200~400ms 프레임 드랍이 생긴다. 앱 로드 후 1회 invisible 한 cube 를 생성해
+// transform-style:preserve-3d / backface-visibility:hidden / 6-face 레이아웃을
+// 미리 컴파일시킨다.
+let _cubeWarmedUp=false;
+function _warmupCube3D(){
+  if(_cubeWarmedUp)return;
+  _cubeWarmedUp=true;
+  try{
+    const stage=document.createElement('div');
+    stage.className='cube-event-stage';
+    stage.style.cssText='visibility:hidden;pointer-events:none;';
+    const outer=document.createElement('div');
+    outer.className='cube-event';
+    outer.setAttribute('data-color','gold');
+    const wrap=document.createElement('div');
+    wrap.className='cube-event-wrap';
+    const cube=document.createElement('div');
+    cube.className='cube-event-cube';
+    ['f-front','f-back','f-right','f-left','f-top','f-bottom'].forEach(f=>{
+      const face=document.createElement('div');face.className='cube-face '+f;cube.appendChild(face);
+    });
+    wrap.appendChild(cube);
+    outer.appendChild(wrap);
+    stage.appendChild(outer);
+    document.body.appendChild(stage);
+    // 800ms 후 제거 — compositor 가 layer 구축할 시간 확보.
+    setTimeout(()=>{if(stage.parentNode)stage.parentNode.removeChild(stage);},800);
+  }catch(e){}
+}
+// 앱 로드 직후 한 번 pre-warm. CUB_UI_MODE 켜진 상태일 때만.
+if(typeof window!=='undefined'){
+  (typeof requestIdleCallback==='function'
+    ? requestIdleCallback(()=>_warmupCube3D(),{timeout:2000})
+    : setTimeout(_warmupCube3D,800));
+}
+
 // 이벤트 1건 렌더 + 재생. Promise-like 완료 콜백으로 큐 순차 처리.
 function _playCubeEvent(ev, onDone){
   // 1) DOM 구축
@@ -6259,13 +6298,14 @@ function renderCardCubes(){
 // ── Will Cube Phase 1: 실시간 판정 훅 ──────────────────────
 // 식사/운동/루틴/할일이 변경될 때마다 호출. 순수 판정 함수는 src/features/cubes/ 에.
 // side-effect: log.cubes 를 갱신. 기존 점수/UI 는 건드리지 않음 (Phase 5 에서 교체).
-function recomputeCubesHook(key){
+function recomputeCubesHook(key,opts){
   try{
     if(!window.Cubes||typeof window.Cubes.recomputeCubesInLog!=='function')return;
     const k=key||selectedKey;
     if(!k)return;
     const l=logCache[k];
     if(!l)return;
+    const silent=!!(opts&&opts.silent);
     // Cube diff 를 위한 snapshot — recompute 전에 이전 색상 캐시.
     const beforeCubes=l.cubes?JSON.parse(JSON.stringify(l.cubes)):null;
     // 오늘의 요일 — selectedKey 기준 (과거 날짜 이동했을 때도 정확)
@@ -6292,9 +6332,9 @@ function recomputeCubesHook(key){
     renderCardCubes();
     // 히트맵도 재렌더 — tile 의 4개 cube 가 새 판정 색으로 전환되도록.
     try{if(typeof window.buildHeatmapGrid==='function')window.buildHeatmapGrid();}catch(e){}
-    // Cube 변화 팝오버 — 오늘 날짜일 때만. 과거 로그 수정은 조용히.
+    // Cube 변화 팝오버 — 오늘 날짜일 때만. 과거 로그 수정 / silent sync 는 조용히.
     try{
-      if(k===TODAY){
+      if(k===TODAY&&!silent){
         const events=_diffCubes(beforeCubes,l.cubes);
         for(const ev of events)showCubeEvent(ev);
       }
@@ -7738,7 +7778,7 @@ function scrollToSection(s){
   const el=document.getElementById(map[s]);
   if(el)el.scrollIntoView({behavior:'smooth',block:'center'});
 }
-function renderRoutine(){renderCharCard();renderSummaryCard();renderWeight();renderMeals();renderCheatBadge();renderWater();renderWorkouts();renderMandatory();renderTargets();updateGogginsHeader();revealStatusBand();try{renderFirstWeekCard();}catch(e){console.warn('[fw-card]',e);}try{renderInviteCard();}catch(e){console.warn('[invite-card]',e);}try{renderDay3ChallengeNudge();}catch(e){console.warn('[d3-nudge]',e);}try{renderWeeklyFeatureRibbon();}catch(e){console.warn('[wf-ribbon]',e);}try{if(typeof window.buildHeatmapGrid==='function')window.buildHeatmapGrid();}catch(e){}try{renderCardCubes();}catch(e){console.warn('[card-cubes]',e);}try{arrangePromos();}catch(e){console.warn('[promo-arrange]',e);}}
+function renderRoutine(){try{recomputeCubesHook(null,{silent:true});}catch(e){}renderCharCard();renderSummaryCard();renderWeight();renderMeals();renderCheatBadge();renderWater();renderWorkouts();renderMandatory();renderTargets();updateGogginsHeader();revealStatusBand();try{renderFirstWeekCard();}catch(e){console.warn('[fw-card]',e);}try{renderInviteCard();}catch(e){console.warn('[invite-card]',e);}try{renderDay3ChallengeNudge();}catch(e){console.warn('[d3-nudge]',e);}try{renderWeeklyFeatureRibbon();}catch(e){console.warn('[wf-ribbon]',e);}try{if(typeof window.buildHeatmapGrid==='function')window.buildHeatmapGrid();}catch(e){}try{renderCardCubes();}catch(e){console.warn('[card-cubes]',e);}try{arrangePromos();}catch(e){console.warn('[promo-arrange]',e);}}
 
 // ── Priority gate for promo/notification cards ─────────────────────
 // Each existing render function (renderFirstWeekCard, renderInviteCard,
@@ -9623,6 +9663,7 @@ function markWorkoutDone(i){
     addScore('workout_done'); // 근력 운동 — 하루 1회
     setTimeout(()=>{showWin('workout',SCORE_EVENTS.workout_done.pts,'근력 운동 완료!');launchConfetti();},200);
   }
+  recomputeCubesHook();
   queueSave();
 }
 
@@ -9660,6 +9701,7 @@ function markActivityDone(i){
     const alreadyScored=todayPtsLog.some(e=>e.type==='workout_cardio_done');
     if(!alreadyScored){addScore('workout_cardio_done');setTimeout(()=>{showWin('workout',SCORE_EVENTS.workout_cardio_done.pts,'유산소 완료!');launchConfetti();},200);}
   }
+  recomputeCubesHook();
   queueSave();
 }
 
@@ -9979,6 +10021,7 @@ async function finishSession(){
   }
 
   renderWorkouts();
+  recomputeCubesHook();
   // UI 즉시 닫기 + 팡파레 즉시 (저장 기다리지 않음)
   wsCloseSheets();
   document.getElementById('workout-session-overlay').classList.remove('open');
