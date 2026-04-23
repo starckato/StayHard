@@ -20,7 +20,7 @@
      so window globals (dkey, normKey, ...) are set before inline code runs.
      Query version bumps cache when bundle content changes. Bump manually or
      via build script when shipping a new bundle. See MIGRATION_PLAN.md. -->
-<script src="/dist/app.js?v=20260423v"></script>
+<script src="/dist/app.js?v=20260423w"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Archivo+Black&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -1579,12 +1579,12 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
       </div>
 
       <div class="stats-card accordion" id="st-routine-breakdown-card" data-acc="routine-breakdown" style="display:none;">
-        <div class="stats-card-title" onclick="toggleStatsCard('routine-breakdown')">📊 루틴별 완료율 & 연속 기록</div>
+        <div class="stats-card-title" onclick="toggleStatsCard('routine-breakdown')">루틴별 완료율 & 연속 기록</div>
         <div id="st-routine-breakdown"></div>
       </div>
 
       <div class="stats-card accordion" data-acc="score">
-        <div class="stats-card-title" onclick="toggleStatsCard('score')">🔥 점수 추이</div>
+        <div class="stats-card-title" onclick="toggleStatsCard('score')">점수 추이</div>
         <div class="stats-meta" id="st-score-meta"></div>
         <div style="position:relative;height:200px;"><canvas id="st-chart-score"></canvas></div>
         <div id="st-score-empty" class="stats-empty" style="display:none;">점수 기록이 없어요</div>
@@ -1604,7 +1604,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
 
     <!-- 운동 섹션 -->
     <div class="stats-section-panel hidden" id="st-sec-training">
-      <div class="stats-card accordion" data-acc="vol">
+      <div class="stats-card accordion expanded" data-acc="vol">
         <div class="stats-card-title" onclick="toggleStatsCard('vol')"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10v4M7 7v10M17 7v10M21 10v4"/><path d="M7 12h10"/></svg>운동 볼륨 (주별)</div>
         <div class="stats-meta" id="st-vol-meta"></div>
         <div style="position:relative;height:200px;"><canvas id="st-chart-vol"></canvas></div>
@@ -1612,18 +1612,18 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
       </div>
 
       <div class="stats-card accordion" id="st-muscle-dist-card" data-acc="muscle" style="display:none;">
-        <div class="stats-card-title" onclick="toggleStatsCard('muscle')">🎯 부위별 볼륨 분포</div>
+        <div class="stats-card-title" onclick="toggleStatsCard('muscle')">부위별 볼륨 분포</div>
         <div id="st-muscle-dist"></div>
       </div>
 
       <div class="stats-card accordion" id="st-pr-card" data-acc="pr" style="display:none;">
-        <div class="stats-card-title" onclick="toggleStatsCard('pr')">🏆 개인 기록 (PR)</div>
+        <div class="stats-card-title" onclick="toggleStatsCard('pr')">개인 기록 (PR)</div>
         <div class="stats-meta" id="st-pr-meta"></div>
         <div id="st-pr-list" style="display:flex;flex-direction:column;gap:6px;"></div>
       </div>
 
       <div class="stats-card accordion" data-acc="exlist">
-        <div class="stats-card-title" onclick="toggleStatsCard('exlist')">💪 운동별 추이</div>
+        <div class="stats-card-title" onclick="toggleStatsCard('exlist')">운동별 추이</div>
         <div class="stats-meta" id="st-exlist-meta"></div>
         <div id="st-exlist" style="display:flex;flex-direction:column;gap:6px;"></div>
         <div id="st-exlist-empty" class="stats-empty" style="display:none;">운동 기록이 없어요</div>
@@ -1633,8 +1633,8 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
     <!-- 식단 섹션 -->
     <div class="stats-section-panel hidden" id="st-sec-nutrition">
       <!-- 클린식 추이 먼저 — 카테고리 메인 인사이트 -->
-      <div class="stats-card accordion expanded" id="st-meal-quality-card" data-acc="meal-quality" style="display:none;">
-        <div class="stats-card-title" onclick="toggleStatsCard('meal-quality')">📈 클린식 추이</div>
+      <div class="stats-card accordion expanded" id="st-meal-quality-card" data-acc="meal-quality">
+        <div class="stats-card-title" onclick="toggleStatsCard('meal-quality')">클린식 추이</div>
         <div class="stats-meta" id="st-meal-quality-meta"></div>
         <div style="position:relative;height:180px;"><canvas id="st-chart-meal-quality"></canvas></div>
       </div>
@@ -1656,7 +1656,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
 
     <!-- 체중 섹션 (구 habits) — 체중 + 체성분만 -->
     <div class="stats-section-panel hidden" id="st-sec-habits">
-      <div class="stats-card accordion" data-acc="weight">
+      <div class="stats-card accordion expanded" data-acc="weight">
         <div class="stats-card-title" onclick="toggleStatsCard('weight')"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="14" width="18" height="6" rx="1.5"/><path d="M8 14v-2a4 4 0 0 1 8 0v2"/><circle cx="12" cy="18" r=".9" fill="currentColor"/></svg>체중 추이 (kg)</div>
         <div class="stats-meta" id="st-weight-meta"></div>
         <div style="position:relative;height:200px;"><canvas id="st-chart-weight"></canvas></div>
@@ -1664,7 +1664,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
       </div>
 
       <div class="stats-card accordion" id="st-bodycomp-card" data-acc="bodycomp" style="display:none;">
-        <div class="stats-card-title" onclick="toggleStatsCard('bodycomp')">🏋️ 체성분 추이</div>
+        <div class="stats-card-title" onclick="toggleStatsCard('bodycomp')">체성분 추이</div>
         <div class="stats-meta" id="st-bodycomp-meta"></div>
         <div style="position:relative;height:200px;"><canvas id="st-chart-bodycomp"></canvas></div>
       </div>
@@ -2970,23 +2970,23 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
       <!-- 항목 리스트 -->
       <div style="display:flex;flex-direction:column;gap:0;">
         <div style="display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:0.5px solid var(--border);">
-          <span style="font-size:13px;color:var(--text2);">⚖️ 체중</span>
+          <span style="font-size:13px;color:var(--text2);">체중</span>
           <span id="summ-w" style="font-size:13px;font-weight:600;"></span>
         </div>
         <div style="display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:0.5px solid var(--border);">
-          <span style="font-size:13px;color:var(--text2);">🍽 식단</span>
+          <span style="font-size:13px;color:var(--text2);">식단</span>
           <span id="summ-d" style="font-size:12px;font-weight:500;text-align:right;"></span>
         </div>
         <div style="display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:0.5px solid var(--border);">
-          <span style="font-size:13px;color:var(--text2);">💪 운동</span>
+          <span style="font-size:13px;color:var(--text2);">운동</span>
           <span id="summ-wo" style="font-size:13px;font-weight:600;"></span>
         </div>
         <div style="display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:0.5px solid var(--border);">
-          <span style="font-size:13px;color:var(--text2);">✅ 필수 루틴</span>
+          <span style="font-size:13px;color:var(--text2);">필수 루틴</span>
           <span id="summ-rt" style="font-size:13px;font-weight:600;"></span>
         </div>
         <div style="display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:0.5px solid var(--border);">
-          <span style="font-size:13px;color:var(--text2);">📌 오늘의 할일</span>
+          <span style="font-size:13px;color:var(--text2);">오늘의 할일</span>
           <span id="summ-tg" style="font-size:13px;font-weight:600;"></span>
         </div>
       </div>
@@ -7183,10 +7183,10 @@ function renderSummaryModal(){
         byType[t].count++;
       });
       const labelMap={
-        weight_record:'⚖️ 체중 기록', weight_loss:'📉 감량 성공', weight_goal:'🎯 목표 달성',
-        diet_clean:'🥗 클린식', diet_normal:'🍚 일반식', diet_cheat:'🎉 치팅', diet_junk:'🚫 금지식', diet_alcohol:'🍺 음주',
-        workout_done:'💪 운동 완료', routine_done:'✅ 루틴 완료', target_done:'📌 할일 완료',
-        cold_shower:'🚿 찬물 샤워', early_rise:'🌅 일찍 기상', perfect_day:'🏆 퍼펙트 데이',
+        weight_record:'체중 기록', weight_loss:'감량 성공', weight_goal:'목표 달성',
+        diet_clean:'클린식', diet_normal:'일반식', diet_cheat:'치팅', diet_junk:'금지식', diet_alcohol:'음주',
+        workout_done:'운동 완료', routine_done:'루틴 완료', target_done:'할일 완료',
+        cold_shower:'찬물 샤워', early_rise:'일찍 기상', perfect_day:'퍼펙트 데이',
       };
       list.innerHTML=Object.entries(byType)
         .sort(([,a],[,b])=>b.pts-a.pts)
