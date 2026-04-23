@@ -85,13 +85,16 @@ function cellStatus(dl, cat, isFuture) {
   return 'empty';
 }
 
-// Editorial monochrome palette (v4) — pure brightness ladder, no hue.
-// Intensity maps to commitment: bright ivory fill = completed, mid-gray =
-// partial, dark charcoal = missed. Empty is a thin outline so the grid
-// rhythm stays visible even on untouched days.
+// Editorial monochrome palette (v5) — pure brightness ladder + ivory glow
+// on pass cells so completed days visually "burn" against the dark grid.
+// Partial stays a flat mid-gray fill (matter-of-fact, no celebration).
 function cellColor(status) {
-  if (status === 'pass')    return { bg: 'rgba(234,234,240,0.78)', fg: '#0a0a0c' };
-  if (status === 'partial') return { bg: 'rgba(234,234,240,0.32)', fg: 'var(--text)' };
+  if (status === 'pass')    return {
+    bg: 'rgba(234,234,240,0.92)', fg: '#0a0a0c',
+    // Soft ivory halo — two layers for close punch + wider ambient bloom.
+    glow: '0 0 6px rgba(234,234,240,0.55), 0 0 14px rgba(234,234,240,0.22)',
+  };
+  if (status === 'partial') return { bg: 'rgba(234,234,240,0.28)', fg: 'var(--text)' };
   if (status === 'fail')    return { bg: 'rgba(44,44,52,0.95)', fg: 'var(--text3)', outline: 'rgba(255,255,255,0.08)' };
   if (status === 'future')  return { bg: 'transparent', outline: 'rgba(255,255,255,0.08)', dashed: true };
   return { bg: 'transparent', outline: 'rgba(255,255,255,0.10)' };
@@ -176,7 +179,7 @@ export function buildHeatmapGrid() {
       const dayIdx = (d.getDay() + 6) % 7;
       const isMon = dayIdx === 0 && i > 0;
       const status = cellStatus(dl, cat.key, isFuture);
-      const { bg, fg, outline, dashed } = cellColor(status);
+      const { bg, fg, outline, dashed, glow } = cellColor(status);
 
       let inner = '';
       if (cat.key === 'tasks' && !isFuture) {
@@ -193,7 +196,8 @@ export function buildHeatmapGrid() {
       const borderDecl = outline
         ? `border:1px ${dashed ? 'dashed' : 'solid'} ${outline};`
         : 'border:1px solid transparent;';
-      row += `<div onclick="dhSelectDate('${k}',${d.getTime()})" style="${cellStyle(isSel, isMon)}"><div style="height:20px;border-radius:4px;background:${bg};${borderDecl}display:flex;align-items:center;justify-content:center;padding:0 4px;overflow:hidden;box-sizing:border-box;">${inner}</div></div>`;
+      const glowDecl = glow ? `box-shadow:${glow};` : '';
+      row += `<div onclick="dhSelectDate('${k}',${d.getTime()})" style="${cellStyle(isSel, isMon)}"><div style="height:20px;border-radius:4px;background:${bg};${borderDecl}${glowDecl}display:flex;align-items:center;justify-content:center;padding:0 4px;overflow:hidden;box-sizing:border-box;">${inner}</div></div>`;
     });
     row += '</div>';
     return row;
