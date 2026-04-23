@@ -20,7 +20,7 @@
      so window globals (dkey, normKey, ...) are set before inline code runs.
      Query version bumps cache when bundle content changes. Bump manually or
      via build script when shipping a new bundle. See MIGRATION_PLAN.md. -->
-<script src="/dist/app.js?v=20260424x"></script>
+<script src="/dist/app.js?v=20260424y"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Archivo+Black&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -7665,8 +7665,13 @@ function renderSummaryModal(){
   const weekday=['일','월','화','수','목','금','토'][d.getDay()];
   const dateStr=(d.getMonth()+1)+'월 '+d.getDate()+'일 ('+weekday+')';
   document.getElementById('summ-modal-date').textContent=dateStr+(isToday?' · 오늘':'');
-  // 점수
-  const dayPts=(l._ptsLog||[]).reduce((a,e)=>a+e.pts,0);
+  // 점수 — CUBE mode: scoreFromCubes(l.cubes) 가 single source of truth.
+  let dayPts=0;
+  if(window.CUBE_UI_MODE===true&&l&&l.cubes&&window.Cubes&&typeof window.Cubes.scoreFromCubes==='function'){
+    dayPts=window.Cubes.scoreFromCubes(l.cubes);
+  } else {
+    dayPts=(l._ptsLog||[]).reduce((a,e)=>a+e.pts,0);
+  }
   const ptsEl=document.getElementById('summ-pts-modal');
   ptsEl.textContent=(dayPts>=0?'+':'')+dayPts+'pt';
   ptsEl.style.color=dayPts>0?'var(--accent)':dayPts<0?'var(--red)':'var(--text3)';
