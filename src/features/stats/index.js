@@ -358,6 +358,109 @@ export function stRenderKPI(rows){
   renderSparkline('st-spark-workout','spark_workout',workoutDaily,'255,77,77');
   const waterDaily=rows.map(r=>r.water_cups||0);
   renderSparkline('st-spark-water','spark_water',waterDaily,'56,189,248');
+
+  // ── Bento 2×2 (Phase 1) — 체중 / 운동 / 클린식 / 루틴 ──
+  stRenderBento(rows,{mandDone,mandTotal,routinePct,mealClean,mealAll,cleanPct,woCnt});
+}
+
+// Previous-period rows for delta calc. Returns null when we don't have
+// enough history (e.g. brand-new user or 전체 view) so callers can hide
+// the delta fragment.
+function _stPrevRows(){
+  if(!_stData||!stPeriod)return null;
+  const endPrev=new Date(now);endPrev.setDate(endPrev.getDate()-stPeriod);
+  const startPrev=new Date(endPrev);startPrev.setDate(endPrev.getDate()-(stPeriod-1));
+  const sK=dkey(startPrev),eK=dkey(endPrev);
+  const prev=_stData.filter(r=>r._key>=sK&&r._key<=eK);
+  if(prev.length<Math.max(3,Math.floor(stPeriod/4)))return null;
+  return prev;
+}
+
+// Apply a signed-delta fragment to one of the bento cards. `kind` decides
+// the color mapping: 'loss-good' means down is a win (weight, fail count),
+// 'gain-good' means up is a win (clean %, routine %, volume).
+function _setBentoDelta(elId,delta,kind,unit){
+  const el=document.getElementById(elId);
+  if(!el)return;
+  if(delta==null||!isFinite(delta)){el.textContent='';el.className='bento-delta';return;}
+  const rounded=unit==='kg'?Number(delta.toFixed(1)):Math.round(delta);
+  if(Math.abs(rounded)<(unit==='kg'?0.1:1)){el.textContent='→ ±0';el.className='bento-delta flat';return;}
+  const arrow=rounded>0?'▲':'▼';
+  const sign=rounded>0?'+':'';
+  let cls='flat';
+  if(kind==='gain-good')cls=rounded>0?'good-up':'down';
+  else if(kind==='loss-good')cls=rounded<0?'down':'up';
+  el.textContent=`${arrow} ${sign}${rounded}${unit==='kg'?'':unit||''}`;
+  el.className='bento-delta '+cls;
+}
+
+export function stRenderBento(rows,ctx){
+  const prev=_stPrevRows();
+
+  // ── 체중 — 기간 내 순 변화 (마지막 - 첫 기록) ──
+  const wEntries=rows.map(r=>r.weight!=null?parseFloat(r.weight):null).filter(v=>v!=null&&isFinite(v));
+  const wVal=document.getElementById('st-bento-weight');
+  const wUnit=document.getElementById('st-bento-weight-unit');
+  const wSub=document.getElementById('st-bento-weight-sub');
+  const wDeltaEl=document.getElementById('st-bento-weight-delta');
+  if(wEntries.length<2){
+    wVal.textContent=wEntries.length?wEntries[0].toFixed(1):'—';
+    wUnit.textContent='kg';
+    wSub.textContent=wEntries.length?'기록 1회 — 추이 계산 불가':'기록 없음';
+    wDeltaEl.textContent='';wDeltaEl.className='bento-delta';
+  }else{
+    const first=wEntries[0],last=wEntries[wEntries.length-1];
+    const diff=last-first;
+    wVal.textContent=(diff>=0?'+':'')+diff.toFixed(1);
+    wUnit.textContent='kg';
+    wSub.textContent=`${first.toFixed(1)} → ${last.toFixed(1)}kg · 기록 ${wEntries.length}회`;
+    wDeltaEl.textContent='';wDeltaEl.className='bento-delta';
+    // Tint the value directly since the sign IS the story
+    wVal.style.color=Math.abs(diff)<0.1?'var(--text3)':(diff<0?'var(--green)':'var(--accent)');
+  }
+
+  // ── 운동 — 기간 총 볼륨 (1t 이상이면 t, 아니면 회) ──
+  const totalVol=rows.reduce((a,r)=>a+(r.workouts||[]).filter(w=>w.type==='gym'&&w.status==='done').reduce((b,w)=>b+(w.totalVolume||0),0),0);
+  const totalGymSessions=rows.reduce((a,r)=>a+(r.workouts||[]).filter(w=>w.type==='gym'&&w.status==='done').length,0);
+  const useTons=totalVol>=1000;
+  document.getElementById('st-bento-workout').textContent=useTons?(totalVol/1000).toFixed(1):(ctx.woCnt||totalGymSessions||0);
+  document.getElementById('st-bento-workout-unit').textContent=useTons?'t':'회';
+  const periodDays=stPeriod||rows.length;
+  const woPerWeek=((ctx.woCnt||0)/(periodDays/7)).toFixed(1);
+  document.getElementById('st-bento-workout-sub').textContent=useTons
+    ? `${totalGymSessions}회 · 주 ${woPerWeek}`
+    : `주 평균 ${woPerWeek}회`;
+  if(prev){
+    const prevVol=prev.reduce((a,r)=>a+(r.workouts||[]).filter(w=>w.type==='gym'&&w.status==='done').reduce((b,w)=>b+(w.totalVolume||0),0),0);
+    const prevCnt=prev.reduce((a,r)=>a+(r.workouts||[]).filter(w=>w.status==='done').length,0);
+    if(useTons&&prevVol>0){
+      _setBentoDelta('st-bento-workout-delta',((totalVol-prevVol)/1000),'gain-good','t');
+    } else if(prevCnt>0){
+      _setBentoDelta('st-bento-workout-delta',(ctx.woCnt||0)-prevCnt,'gain-good','회');
+    } else { document.getElementById('st-bento-workout-delta').textContent=''; }
+  } else { document.getElementById('st-bento-workout-delta').textContent=''; }
+
+  // ── 클린식 — 비율 % ──
+  document.getElementById('st-bento-clean').textContent=ctx.cleanPct;
+  document.getElementById('st-bento-clean-sub').textContent=`${ctx.mealClean}/${ctx.mealAll}끼 클린`;
+  if(prev){
+    const pms=prev.flatMap(r=>(r.meals||[]).filter(m=>['아침','점심','저녁'].includes(m.time)&&m.type));
+    const pClean=pms.length?Math.round(pms.filter(m=>m.type==='green').length/pms.length*100):null;
+    if(pClean!=null){
+      _setBentoDelta('st-bento-clean-delta',ctx.cleanPct-pClean,'gain-good','%');
+    } else { document.getElementById('st-bento-clean-delta').textContent=''; }
+  } else { document.getElementById('st-bento-clean-delta').textContent=''; }
+
+  // ── 루틴 — 완료 비율 % ──
+  document.getElementById('st-bento-routine').textContent=ctx.routinePct;
+  document.getElementById('st-bento-routine-sub').textContent=`${ctx.mandDone}/${ctx.mandTotal}개 완료`;
+  if(prev){
+    let pd=0,pt=0;prev.forEach(r=>{const m=r.mandatory||[];pt+=m.length;pd+=m.filter(x=>x.done).length;});
+    const pRoutine=pt>0?Math.round(pd/pt*100):null;
+    if(pRoutine!=null){
+      _setBentoDelta('st-bento-routine-delta',ctx.routinePct-pRoutine,'gain-good','%');
+    } else { document.getElementById('st-bento-routine-delta').textContent=''; }
+  } else { document.getElementById('st-bento-routine-delta').textContent=''; }
 }
 
 // ── 스파크라인 (mini) ──

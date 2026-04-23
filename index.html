@@ -20,7 +20,7 @@
      so window globals (dkey, normKey, ...) are set before inline code runs.
      Query version bumps cache when bundle content changes. Bump manually or
      via build script when shipping a new bundle. See MIGRATION_PLAN.md. -->
-<script src="/dist/app.js?v=20260423h"></script>
+<script src="/dist/app.js?v=20260423i"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Archivo+Black&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -103,7 +103,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 .stats-section-panel.hidden{display:none;}
 .stats-featured canvas{max-height:220px;}
 .stats-featured{padding:18px;}
-.stats-kpi-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
+.stats-kpi-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;padding:0 14px;}
 .stats-kpi{padding:14px 14px 12px;border-radius:var(--radius);background:var(--surface);border:1px solid var(--border);position:relative;overflow:hidden;}
 .stats-kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--accent);opacity:.8;}
 .stats-kpi.kpi-green::before{background:var(--green);}
@@ -115,6 +115,27 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 .stats-kpi-sub{font-size:10px;color:var(--text3);min-height:12px;}
 .stats-kpi-spark{height:28px;margin-top:6px;}
 .stats-kpi-spark canvas{display:block;width:100%;height:100%;}
+
+/* STATS BENTO v2 — 2×2 hero KPI grid, one value at a time per persona need */
+.stats-bento{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 14px;margin-bottom:14px;}
+.bento{position:relative;padding:14px;border-radius:var(--radius);background:var(--surface);border:1px solid var(--border);overflow:hidden;min-height:104px;display:flex;flex-direction:column;gap:6px;}
+.bento::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;opacity:.85;background:var(--text3);}
+.bento.b-weight::before{background:var(--accent);}
+.bento.b-workout::before{background:#ff6b35;}
+.bento.b-meal::before{background:var(--green);}
+.bento.b-routine::before{background:var(--amber);}
+.bento-label{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;display:flex;align-items:center;gap:5px;}
+.bento-label svg{flex-shrink:0;opacity:.9;}
+.bento-main{display:flex;align-items:baseline;gap:4px;margin-top:2px;}
+.bento-val{font-size:28px;font-weight:800;font-family:'DM Mono',monospace;line-height:1;letter-spacing:-.02em;color:var(--text);}
+.bento-unit{font-size:12px;font-weight:600;color:var(--text2);letter-spacing:-.01em;}
+.bento-delta{display:inline-flex;align-items:center;gap:3px;margin-left:auto;font-size:11px;font-weight:700;font-family:'DM Mono',monospace;letter-spacing:-.02em;}
+.bento-delta.up{color:var(--accent);}
+.bento-delta.down{color:var(--green);}
+.bento-delta.flat{color:var(--text3);}
+.bento-delta.good-up{color:var(--green);}
+.bento-delta.bad-up{color:var(--accent);}
+.bento-sub{font-size:10px;color:var(--text3);letter-spacing:-.005em;margin-top:auto;}
 .stats-headline{display:flex;gap:14px;margin:2px 0 14px;}
 .stats-headline-cell{flex:1;min-width:0;}
 .stats-headline-label{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;font-weight:700;margin-bottom:3px;}
@@ -1448,38 +1469,56 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
 
     <!-- 종합 -->
     <div class="stats-section-panel" id="st-sec-overview">
+      <!-- 2×2 bento: four top-of-mind metrics for 3-second scan.
+           Hidden spark canvases keep the old renderer happy until that
+           logic is fully ported; delta + sub lines are the new headline. -->
       <div id="st-kpi-section">
-        <div class="stats-kpi-grid">
-          <div class="stats-kpi kpi-green">
-            <div class="stats-kpi-label"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-5"/></svg>루틴 완료율</div>
-            <div class="stats-kpi-value" style="color:var(--green);" id="st-kpi-routine">—</div>
-            <div class="stats-kpi-sub" id="st-kpi-routine-sub"></div>
-            <div class="stats-kpi-spark"><canvas id="st-spark-routine"></canvas></div>
+        <div class="stats-bento">
+          <div class="bento b-weight">
+            <div class="bento-label"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="14" width="18" height="6" rx="1.5"/><path d="M8 14v-2a4 4 0 0 1 8 0v2"/></svg>체중</div>
+            <div class="bento-main">
+              <span class="bento-val" id="st-bento-weight">—</span>
+              <span class="bento-unit" id="st-bento-weight-unit">kg</span>
+              <span class="bento-delta" id="st-bento-weight-delta"></span>
+            </div>
+            <div class="bento-sub" id="st-bento-weight-sub"></div>
           </div>
-          <div class="stats-kpi kpi-amber">
-            <div class="stats-kpi-label"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/></svg>할일 완료율</div>
-            <div class="stats-kpi-value" style="color:var(--amber);" id="st-kpi-target">—</div>
-            <div class="stats-kpi-sub" id="st-kpi-target-sub"></div>
-            <div class="stats-kpi-spark"><canvas id="st-spark-target"></canvas></div>
+          <div class="bento b-workout">
+            <div class="bento-label"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10v4M7 7v10M17 7v10M21 10v4"/><path d="M7 12h10"/></svg>운동</div>
+            <div class="bento-main">
+              <span class="bento-val" id="st-bento-workout">—</span>
+              <span class="bento-unit" id="st-bento-workout-unit"></span>
+              <span class="bento-delta" id="st-bento-workout-delta"></span>
+            </div>
+            <div class="bento-sub" id="st-bento-workout-sub"></div>
           </div>
-          <div class="stats-kpi kpi-green">
-            <div class="stats-kpi-label"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20C4 10 10 4 20 4c0 10-6 16-16 16z"/><path d="M4 20L13 11"/></svg>클린식 비율</div>
-            <div class="stats-kpi-value" style="color:var(--green);" id="st-kpi-clean">—</div>
-            <div class="stats-kpi-sub" id="st-kpi-clean-sub"></div>
-            <div class="stats-kpi-spark"><canvas id="st-spark-clean"></canvas></div>
+          <div class="bento b-meal">
+            <div class="bento-label"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20C4 10 10 4 20 4c0 10-6 16-16 16z"/><path d="M4 20L13 11"/></svg>클린식</div>
+            <div class="bento-main">
+              <span class="bento-val" id="st-bento-clean">—</span>
+              <span class="bento-unit">%</span>
+              <span class="bento-delta" id="st-bento-clean-delta"></span>
+            </div>
+            <div class="bento-sub" id="st-bento-clean-sub"></div>
           </div>
-          <div class="stats-kpi">
-            <div class="stats-kpi-label"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10v4M7 7v10M17 7v10M21 10v4"/><path d="M7 12h10"/></svg>운동 횟수</div>
-            <div class="stats-kpi-value" style="color:var(--accent);" id="st-kpi-workout">—</div>
-            <div class="stats-kpi-sub" id="st-kpi-workout-sub"></div>
-            <div class="stats-kpi-spark"><canvas id="st-spark-workout"></canvas></div>
+          <div class="bento b-routine">
+            <div class="bento-label"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-5"/></svg>루틴</div>
+            <div class="bento-main">
+              <span class="bento-val" id="st-bento-routine">—</span>
+              <span class="bento-unit">%</span>
+              <span class="bento-delta" id="st-bento-routine-delta"></span>
+            </div>
+            <div class="bento-sub" id="st-bento-routine-sub"></div>
           </div>
-          <div class="stats-kpi kpi-blue">
-            <div class="stats-kpi-label"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3s7 7 7 12a7 7 0 0 1-14 0c0-5 7-12 7-12z"/></svg>수분 섭취</div>
-            <div class="stats-kpi-value" style="color:var(--blue);" id="st-kpi-water">—</div>
-            <div class="stats-kpi-sub" id="st-kpi-water-sub"></div>
-            <div class="stats-kpi-spark"><canvas id="st-spark-water"></canvas></div>
-          </div>
+        </div>
+        <!-- Legacy KPI hooks — hidden. Old stRenderKPI still writes here
+             until it's fully ported to the bento renderer. -->
+        <div style="display:none;" aria-hidden="true">
+          <span id="st-kpi-routine"></span><span id="st-kpi-routine-sub"></span><canvas id="st-spark-routine"></canvas>
+          <span id="st-kpi-target"></span><span id="st-kpi-target-sub"></span><canvas id="st-spark-target"></canvas>
+          <span id="st-kpi-clean"></span><span id="st-kpi-clean-sub"></span><canvas id="st-spark-clean"></canvas>
+          <span id="st-kpi-workout"></span><span id="st-kpi-workout-sub"></span><canvas id="st-spark-workout"></canvas>
+          <span id="st-kpi-water"></span><span id="st-kpi-water-sub"></span><canvas id="st-spark-water"></canvas>
         </div>
       </div>
 
