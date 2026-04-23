@@ -20,7 +20,7 @@
      so window globals (dkey, normKey, ...) are set before inline code runs.
      Query version bumps cache when bundle content changes. Bump manually or
      via build script when shipping a new bundle. See MIGRATION_PLAN.md. -->
-<script src="/dist/app.js?v=20260424n"></script>
+<script src="/dist/app.js?v=20260424o"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Archivo+Black&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -318,16 +318,20 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
   .sb-reveal,.sb-reveal *{animation:none!important;}
 }
 
-/* ═════ WILL CUBE IMPACT ANIMATION — 3D 큐브가 pop → hold → 상단으로 적립 ═════ */
-/* 하나의 이벤트 = 1.6초 타임라인.
-   0.0~0.45s: pop-in (scale 0.2 → 1.3 → 1.0, rotate + bounce)
-   0.45~1.15s: hold (천천히 회전 + aura pulse)
-   1.15~1.60s: deposit (상단으로 비행 + scale 축소 + fade) */
+/* ═════ WILL CUBE IMPACT ANIMATION — 심플 3-stage ═════
+   1) 등장 (0~280ms): fade + scale + 살짝 튀어나오는 느낌
+   2) 정지 (280~480ms): 라벨 읽기
+   3) 회전+비상 (480~1180ms): Y축 1회 회전 + 상단으로 스르륵 fade out
+   총 1.18초. 복잡한 keyframe 없이 CSS transition 으로 제어. */
 .cube-event-stage{position:fixed;inset:0;z-index:10001;pointer-events:none;display:flex;align-items:center;justify-content:center;contain:layout style paint;transform:translateZ(0);}
-/* 기본 상태: 완전 invisible + 축소. .pop 클래스 붙으면 animation 이 opacity/transform
-   overriding 하면서 표시. DOM 추가 직후 1프레임 visible-flash 방지. */
-.cube-event-wrap{position:relative;display:flex;flex-direction:column;align-items:center;gap:14px;will-change:transform,opacity;opacity:0;transform:scale(0.2) rotateX(-30deg) rotateY(-30deg);backface-visibility:hidden;}
-.cube-event-cube{width:72px;height:72px;position:relative;transform-style:preserve-3d;will-change:transform;backface-visibility:hidden;}
+.cube-event-stage.dim{background:radial-gradient(circle at center,rgba(0,0,0,0.22) 0%,transparent 55%);opacity:0;transition:opacity 280ms ease-out;}
+.cube-event-stage.dim.on{opacity:1;}
+.cube-event-wrap{position:relative;display:flex;flex-direction:column;align-items:center;gap:14px;opacity:0;transform:translateY(16px) scale(0.7);transition:opacity 280ms ease-out,transform 340ms cubic-bezier(0.16,1,0.3,1);will-change:transform,opacity;backface-visibility:hidden;}
+.cube-event-wrap.show{opacity:1;transform:translateY(0) scale(1);}
+.cube-event-wrap.depart{opacity:0;transform:translateY(calc(-50vh + 40px)) scale(0.24);transition:opacity 520ms ease-in,transform 620ms cubic-bezier(0.4,0,0.2,1);}
+/* 3D 큐브 — preserve-3d, 초기 회전 각도 + .depart 시 1회전. */
+.cube-event-cube{width:72px;height:72px;position:relative;transform-style:preserve-3d;transform:rotateX(-16deg) rotateY(-22deg);transition:transform 620ms cubic-bezier(0.4,0,0.2,1);will-change:transform;backface-visibility:hidden;}
+.cube-event-wrap.depart .cube-event-cube{transform:rotateX(-16deg) rotateY(338deg);}
 .cube-face{position:absolute;width:72px;height:72px;border-radius:6px;backface-visibility:hidden;}
 .cube-event[data-color="gold"] .cube-face{background:linear-gradient(135deg,#fff1a8 0%,#ffd54a 45%,#c48c1a 100%);border:1px solid rgba(255,233,128,0.85);box-shadow:0 0 1px rgba(255,255,255,0.9) inset,0 -6px 12px rgba(0,0,0,0.35) inset;}
 .cube-event[data-color="silver"] .cube-face{background:linear-gradient(135deg,#f2f4f7 0%,#b5c0cc 45%,#6d7682 100%);border:1px solid rgba(210,218,228,0.75);box-shadow:0 0 1px rgba(255,255,255,0.85) inset,0 -6px 12px rgba(0,0,0,0.30) inset;}
@@ -338,70 +342,24 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 .cube-face.f-left   {transform:rotateY(-90deg) translateZ(36px);}
 .cube-face.f-top    {transform:rotateX(90deg) translateZ(36px);}
 .cube-face.f-bottom {transform:rotateX(-90deg) translateZ(36px);}
-.cube-event-label{display:flex;flex-direction:column;align-items:center;gap:2px;opacity:0;transform:translateY(8px);transition:opacity 220ms ease-out 260ms,transform 220ms cubic-bezier(0.16,1,0.3,1) 260ms;}
+/* 라벨 — wrap 의 fade 에 맞춰 같이 등장 */
+.cube-event-label{display:flex;flex-direction:column;align-items:center;gap:2px;}
 .cube-event-title{font-size:13px;font-weight:800;color:var(--text);letter-spacing:-0.005em;text-shadow:0 1px 4px rgba(0,0,0,0.5);}
 .cube-event-body{font-size:11px;font-weight:600;color:var(--text2);letter-spacing:-0.005em;text-shadow:0 1px 3px rgba(0,0,0,0.5);}
 .cube-event-delta{font-size:14px;font-weight:900;font-family:'DM Mono',monospace;letter-spacing:-0.02em;text-shadow:0 1px 4px rgba(0,0,0,0.5);}
 .cube-event[data-color="gold"] .cube-event-delta{color:#ffd54a;}
 .cube-event[data-color="silver"] .cube-event-delta{color:#d8dfe7;}
 .cube-event[data-color="crimson"] .cube-event-delta{color:#ff6b6b;}
-/* Aura: 큐브 뒤로 퍼지는 radial glow. 색별 3가지. */
-.cube-event-aura{position:absolute;top:50%;left:50%;width:280px;height:280px;margin:-140px 0 0 -140px;border-radius:50%;pointer-events:none;opacity:0;transform:scale(0.5);transition:opacity 320ms ease-out,transform 420ms cubic-bezier(0.16,1,0.3,1);}
-.cube-event[data-color="gold"] .cube-event-aura{background:radial-gradient(circle,rgba(255,213,74,0.55) 0%,rgba(255,213,74,0.25) 30%,transparent 70%);}
-.cube-event[data-color="silver"] .cube-event-aura{background:radial-gradient(circle,rgba(210,220,232,0.45) 0%,rgba(210,220,232,0.20) 30%,transparent 70%);}
-.cube-event[data-color="crimson"] .cube-event-aura{background:radial-gradient(circle,rgba(255,60,60,0.55) 0%,rgba(100,0,0,0.30) 30%,transparent 70%);}
-/* Particle sparkles — gold 전용 */
-.cube-spark{position:absolute;top:50%;left:50%;width:4px;height:4px;border-radius:50%;background:radial-gradient(circle,#fff 0%,#ffd54a 50%,transparent 100%);pointer-events:none;opacity:0;will-change:transform,opacity;}
-/* 백드롭 디머 — 큐브 한 동안 주변 UI 은은하게 낮춤 */
-.cube-event-stage.dim{background:radial-gradient(circle at center,rgba(0,0,0,0.28) 0%,transparent 60%);}
-/* Animations */
-@keyframes cubePopIn{
-  0%  {transform:scale(0.2) rotateX(-30deg) rotateY(-30deg);opacity:0;}
-  55% {transform:scale(1.35) rotateX(8deg) rotateY(18deg);opacity:1;}
-  75% {transform:scale(0.92) rotateX(-2deg) rotateY(-4deg);}
-  100%{transform:scale(1) rotateX(-12deg) rotateY(-18deg);opacity:1;}
-}
-@keyframes cubeRotate{
-  0%  {transform:scale(1) rotateX(-12deg) rotateY(-18deg);}
-  100%{transform:scale(1) rotateX(-12deg) rotateY(342deg);}
-}
-@keyframes cubeShake{
-  0%,100%{transform:scale(1) rotateX(-8deg) rotateY(0deg) translateX(0);}
-  15%{transform:scale(1.05) rotateX(-8deg) rotateY(-4deg) translateX(-5px);}
-  30%{transform:scale(1.05) rotateX(-8deg) rotateY(4deg) translateX(6px);}
-  45%{transform:scale(1.03) rotateX(-8deg) rotateY(-2deg) translateX(-4px);}
-  60%{transform:scale(1.02) rotateX(-8deg) rotateY(2deg) translateX(3px);}
-  80%{transform:scale(1.01) rotateX(-8deg) rotateY(0) translateX(-1px);}
-}
-@keyframes cubeDeposit{
-  0%  {transform:translate(0,0) scale(1);opacity:1;}
-  100%{transform:translate(0,calc(-1 * (50vh - 40px))) scale(0.22);opacity:0;}
-}
-@keyframes cubeFlash{
-  0%  {opacity:0;transform:scale(0.3);}
-  40% {opacity:0.9;transform:scale(1.2);}
-  100%{opacity:0;transform:scale(2.2);}
-}
-@keyframes sparkFly{
-  0%  {opacity:0;transform:translate(0,0) scale(0.3);}
-  25% {opacity:1;transform:translate(var(--sx,0),var(--sy,0)) scale(1);}
-  100%{opacity:0;transform:translate(calc(var(--sx,0) * 1.6),calc(var(--sy,0) * 1.6)) scale(0.4);}
-}
-/* 상태 진행용 class */
-.cube-event-wrap.pop{animation:cubePopIn 480ms cubic-bezier(0.16,1,0.3,1) forwards;}
-.cube-event-wrap.pop.shake{animation:cubePopIn 480ms cubic-bezier(0.16,1,0.3,1) forwards,cubeShake 420ms ease-out 480ms;}
-.cube-event-wrap.hold .cube-event-cube{animation:cubeRotate 2200ms linear infinite;}
-.cube-event-wrap.deposit{animation:cubeDeposit 520ms cubic-bezier(0.4,0,0.2,1) forwards;}
-.cube-event-wrap.show-label .cube-event-label{opacity:1;transform:translateY(0);}
-.cube-event-aura.fire{opacity:1;transform:scale(1.15);}
-.cube-spark.go{animation:sparkFly 620ms cubic-bezier(0.16,1,0.3,1) forwards;}
-/* Flash — pop 타이밍에 한 번 */
-.cube-event-flash{position:absolute;top:50%;left:50%;width:140px;height:140px;margin:-70px 0 0 -70px;border-radius:50%;pointer-events:none;opacity:0;background:radial-gradient(circle,rgba(255,255,255,0.9) 0%,rgba(255,255,255,0.3) 40%,transparent 70%);}
-.cube-event-flash.go{animation:cubeFlash 480ms ease-out forwards;}
+/* Aura — 큐브 뒤 radial glow. show 시 fade in. */
+.cube-event-aura{position:absolute;top:50%;left:50%;width:280px;height:280px;margin:-140px 0 0 -140px;border-radius:50%;pointer-events:none;opacity:0;transform:scale(0.7);transition:opacity 320ms ease-out,transform 420ms cubic-bezier(0.16,1,0.3,1);}
+.cube-event[data-color="gold"] .cube-event-aura{background:radial-gradient(circle,rgba(255,213,74,0.50) 0%,rgba(255,213,74,0.22) 30%,transparent 70%);}
+.cube-event[data-color="silver"] .cube-event-aura{background:radial-gradient(circle,rgba(210,220,232,0.40) 0%,rgba(210,220,232,0.18) 30%,transparent 70%);}
+.cube-event[data-color="crimson"] .cube-event-aura{background:radial-gradient(circle,rgba(255,60,60,0.50) 0%,rgba(100,0,0,0.25) 30%,transparent 70%);}
+.cube-event-aura.on{opacity:1;transform:scale(1.1);}
 @media (prefers-reduced-motion: reduce){
-  .cube-event-wrap.pop,.cube-event-wrap.pop.shake,.cube-event-wrap.hold .cube-event-cube,.cube-event-wrap.deposit,.cube-spark.go,.cube-event-flash.go{animation:none !important;}
-  .cube-event-wrap{opacity:1;}
-  .cube-event-label{opacity:1;transform:none;transition:none;}
+  .cube-event-wrap,.cube-event-wrap.show,.cube-event-wrap.depart,.cube-event-cube,.cube-event-aura{transition:none !important;}
+  .cube-event-wrap{opacity:1;transform:none;}
+  .cube-event-aura{opacity:1;}
 }
 
 /* ═════ SCORE GAIN CHIP — 액션 위치 → Status Band 점수 비행 (legacy, CUBE_UI_MODE off 시 유지) ═════ */
@@ -5994,8 +5952,10 @@ function _cubeColorMeta(color){
   if(color==='crimson') return {fg:'#ff6b6b',border:'rgba(255,77,77,0.45)',bg:'rgba(255,77,77,0.10)'};
   return {fg:'#eaeaf0',border:'rgba(255,255,255,0.14)',bg:'rgba(20,20,24,0.92)'};
 }
-// 색상별 스파크 개수 — gold 만 화려하게. silver/crimson 은 스파크 없음.
-function _cubeSparkCount(color){return color==='gold'?6:0;}
+// 타이밍 상수 — CSS 와 일치시켜야 함.
+const _CUBE_SHOW_MS=280;   // fade + scale in
+const _CUBE_LINGER_MS=200; // 정지 구간
+const _CUBE_DEPART_MS=620; // 회전 + 비상 + fade out
 
 // GPU warmup — 첫 번째 cube 렌더 시 compositor 가 3D layer 를 처음 구성하면서
 // 200~400ms 프레임 드랍이 생긴다. 앱 로드 후 1회 invisible 한 cube 를 생성해
@@ -6034,9 +5994,8 @@ if(typeof window!=='undefined'){
     : setTimeout(_warmupCube3D,800));
 }
 
-// 이벤트 1건 렌더 + 재생. Promise-like 완료 콜백으로 큐 순차 처리.
+// 이벤트 1건 렌더 — show → linger → depart (회전+비상+fade) 3단계.
 function _playCubeEvent(ev, onDone){
-  // 1) DOM 구축
   const stage=document.createElement('div');
   stage.className='cube-event-stage dim';
   const outer=document.createElement('div');
@@ -6045,13 +6004,10 @@ function _playCubeEvent(ev, onDone){
   const aura=document.createElement('div');
   aura.className='cube-event-aura';
   outer.appendChild(aura);
-  const flash=document.createElement('div');
-  flash.className='cube-event-flash';
-  outer.appendChild(flash);
   const wrap=document.createElement('div');
   wrap.className='cube-event-wrap';
   outer.appendChild(wrap);
-  // 큐브 6개 면
+  // 3D 큐브 6면
   const cube=document.createElement('div');
   cube.className='cube-event-cube';
   ['f-front','f-back','f-right','f-left','f-top','f-bottom'].forEach(f=>{
@@ -6067,56 +6023,27 @@ function _playCubeEvent(ev, onDone){
   if(ev.body) {const b=document.createElement('div');b.className='cube-event-body';b.textContent=ev.body;lbl.appendChild(b);}
   if(ev.delta){const d=document.createElement('div');d.className='cube-event-delta';d.textContent=ev.delta;lbl.appendChild(d);}
   wrap.appendChild(lbl);
-  // 스파크 (gold only)
-  const sparkCount=_cubeSparkCount(ev.color);
-  const sparks=[];
-  for(let i=0;i<sparkCount;i++){
-    const sp=document.createElement('div');
-    sp.className='cube-spark';
-    const angle=(Math.PI*2*i)/sparkCount;
-    const dist=80+Math.random()*30;
-    sp.style.setProperty('--sx',(Math.cos(angle)*dist)+'px');
-    sp.style.setProperty('--sy',(Math.sin(angle)*dist)+'px');
-    wrap.appendChild(sp);
-    sparks.push(sp);
-  }
   stage.appendChild(outer);
   document.body.appendChild(stage);
 
-  // 2) 애니메이션 시퀀스
-  const isCrimson=ev.color==='crimson';
-  // reduced motion — pop 스킵하고 1초 hold 후 deposit
-  const prm=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // 2프레임 기다린 뒤 .show → CSS transition 으로 fade + scale in.
+  // (1프레임은 Chromium 에서 가끔 transition 트리거 안 됨 — 2프레임이 안전)
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    stage.classList.add('on');
+    wrap.classList.add('show');
+    aura.classList.add('on');
+  }));
 
-  // Phase A: pop-in + aura + flash
-  requestAnimationFrame(()=>{
-    wrap.classList.add('pop'+(isCrimson?' shake':''));
-    aura.classList.add('fire');
-    flash.classList.add('go');
-    // 스파크는 pop 정점 근처에 발사 (250ms)
-    setTimeout(()=>{sparks.forEach(sp=>sp.classList.add('go'));},prm?0:250);
-  });
-
-  // Phase B: hold (회전) — pop 480ms + shake(crimson) 420ms 후
-  const popDuration=prm?60:(isCrimson?900:480);
+  // linger 후 depart (회전 + 비상 + fade). show 가 끝난 뒤 linger.
   setTimeout(()=>{
-    wrap.classList.remove('pop','shake');
-    wrap.classList.add('hold','show-label');
-  },popDuration);
+    wrap.classList.add('depart');
+  },_CUBE_SHOW_MS+_CUBE_LINGER_MS);
 
-  // Phase C: deposit (상단으로 비행 + fade) — 960ms hold 후
-  const holdDuration=prm?900:720;
-  setTimeout(()=>{
-    wrap.classList.remove('hold');
-    wrap.classList.add('deposit');
-  },popDuration+holdDuration);
-
-  // Phase D: cleanup — deposit 520ms 후
-  const depositDuration=prm?60:520;
+  // cleanup
   setTimeout(()=>{
     if(stage.parentNode)stage.parentNode.removeChild(stage);
     onDone&&onDone();
-  },popDuration+holdDuration+depositDuration);
+  },_CUBE_SHOW_MS+_CUBE_LINGER_MS+_CUBE_DEPART_MS);
 }
 
 function _showNextCubeEvent(){
