@@ -86,9 +86,12 @@ function cellStatus(dl, cat, isFuture) {
   return 'empty';
 }
 
-// Palette v9 — real metallic gold. Pass gets a three-stop gradient (highlight
-// → deep gold → shadow) + inset top highlight + outer gold glow so the tiny
-// 9×9 indicator reads like a gold leaf rather than a flat color.
+// Palette v10 — metal medal ladder.
+//   pass    = 황금 gold leaf gradient + warm halo (gold medal)
+//   partial = 은 silver gradient + cool halo (silver medal — 금 직전)
+//   fail    = brand red (식단 금지와 같은 언어)
+//   empty   = solid outline only
+//   future  = dashed outline only
 function indicatorStyle(status) {
   if (status === 'pass')
     return (
@@ -97,7 +100,11 @@ function indicatorStyle(status) {
       'box-shadow:0 0 4px rgba(255,213,74,0.55),inset 0 1px 0 rgba(255,255,255,0.45),inset 0 -1px 0 rgba(0,0,0,0.25);'
     );
   if (status === 'partial')
-    return 'background:rgba(234,234,240,0.22);border:1px solid rgba(255,255,255,0.04);';
+    return (
+      'background:linear-gradient(135deg,#f2f4f7 0%,#b5c0cc 45%,#6d7682 100%);' +
+      'border:1px solid rgba(210,218,228,0.55);' +
+      'box-shadow:0 0 3px rgba(181,192,204,0.40),inset 0 1px 0 rgba(255,255,255,0.32),inset 0 -1px 0 rgba(0,0,0,0.22);'
+    );
   if (status === 'fail')
     return 'background:rgba(255,77,77,0.32);border:1px solid rgba(255,77,77,0.45);';
   if (status === 'future')
