@@ -1,0 +1,56 @@
+{
+  "asset": "qrok_three_stage_lowpoly_prototype.glb",
+  "stages": {
+    "bystander": {
+      "prefix": "stage1_bystander",
+      "label": "방관자"
+    },
+    "awakened": {
+      "prefix": "stage2_awakened",
+      "label": "각성자"
+    },
+    "complete": {
+      "prefix": "stage3_complete",
+      "label": "완전체"
+    }
+  },
+  "growthNodes": {
+    "chest": [
+      "chest",
+      "chest_plate_L",
+      "chest_plate_R"
+    ],
+    "back": [
+      "back"
+    ],
+    "shoulders": [
+      "shoulders_L",
+      "shoulders_R"
+    ],
+    "arms": [
+      "arms_upper_L",
+      "arms_upper_R",
+      "arms_forearm_L",
+      "arms_forearm_R",
+      "fist_L",
+      "fist_R"
+    ],
+    "legs": [
+      "legs_thigh_L",
+      "legs_thigh_R",
+      "legs_calf_L",
+      "legs_calf_R",
+      "foot_L",
+      "foot_R"
+    ],
+    "abs": [
+      "abs",
+      "abs_plate_1",
+      "abs_plate_2",
+      "abs_plate_3"
+    ],
+    "core": [
+      "core_cube"
+    ]
+  }
+}

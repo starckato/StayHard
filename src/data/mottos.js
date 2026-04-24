@@ -1,25 +1,25 @@
-// Stay Hard · daily mottos (neutral placeholder pool)
+// 큐록 · daily mottos
 //
-// 2026-04-24 rebrand phase 1: Goggins 인용·번역 전량 제거 (저작권 리스크).
-// 마케팅 대체 문구 공급 전까지 임시 neutral pool 로 동작. 문구 공급 시 아래 배열만 교체.
+// Manifesto register · 무출처 · 이모지 0 · 10~25자 이내 · 해라체 or 명사구.
+// 마케팅 최종 락인 (DEV_ANSWER_20260424.md §1, 2026-04-24).
+// 온보딩 3화면 · 스크린샷 · 공유 카드 전역에서 재사용되는 카피와 연속성 확보.
 //
 // Rotates via showDailyMotto() in index.html (DOM-coupled).
 
 /** @typedef {{ko:string, en?:string}} Motto */
 /** @type {Motto[]} */
 export const DAILY_MOTTOS = [
-  { ko: '오늘의 증거는 너만 남길 수 있다.' },
-  { ko: '빈칸은 변명하지 않는다. 기록이 말한다.' },
-  { ko: '편한 길은 내일을 약하게 만든다.' },
-  { ko: '고통은 기록될 때 성장으로 바뀐다.' },
-  { ko: '어제의 너를 이기는 가장 조용한 방법 — 한 줄 더.' },
-  { ko: '변명 없음. 기록 있음.' },
-  { ko: '잘한 날은 쌓이고, 못한 날도 쌓인다. 둘 다 너다.' },
-  { ko: '오늘 남긴 한 줄이 내일의 기준이다.' },
-  { ko: '말은 잊히고, 기록은 남는다.' },
-  { ko: '계속 가. 조용히, 매일.' },
+  { ko: '전부 해내야 변한다.' },
+  { ko: '오늘의 칸을 비우지 마라.' },
+  { ko: '하루는 말보다 정직하다.' },
+  { ko: '기록하지 않은 하루는 없다.' },
+  { ko: '빠진 칸은 변명하지 않는다.' },
+  { ko: '붉은 칸도 네 하루다. 숨기지 마라.' },
+  { ko: '다짐은 사라진다. 남는 것은 오늘 채운 칸이다.' },
+  { ko: '네 하루는 네 기록만큼 남는다.' },
+  { ko: '나는 내가 쌓은 기록이다.' },
+  { ko: '편한 쪽은 함정이다.' },
 ];
 
-// Legacy export alias — stale bundle 이 GOGGINS_MOTTOS 참조 시 throw 방지.
-// Phase 1 rename 확정 후 다음 릴리스에서 제거.
+// Legacy export alias — stale bundle 보호. Phase 2 에서 제거 예정.
 export const GOGGINS_MOTTOS = DAILY_MOTTOS;

@@ -37,6 +37,10 @@ import * as pLocalNotifications from './platform/local-notifications.js';
 // Friends feature (phase 1: MVP) — 친구 코드 + nudge inbox.
 import * as friends from './features/friends/index.js';
 
+// Retention Phase 2 infra — feature flags + metric events (SERVICE_EVALUATION §6).
+import * as flags from './features/flags/index.js';
+import * as metrics from './features/metrics/index.js';
+
 Object.assign(
   window,
   date, tier, icons, env, analytics, mealPhoto, cheat, toast,
@@ -56,6 +60,12 @@ window.sh.haptics = pHaptics;
 window.sh.notifications = pNotifications;
 window.sh.localNotifications = pLocalNotifications;
 window.sh.friends = friends;
+window.sh.flags = flags;
+window.sh.metrics = metrics;
+// Shortcut globals for inline use
+window.FF = flags;
+window.logEvent = metrics.logEvent;
+window.EVT = metrics.EVT;
 
 // Start unread-badge poller once DOM is ready. Polls every 60s; live-replaced
 // by realtime subscription in Phase 2.
