@@ -20,7 +20,7 @@
      so window globals (dkey, normKey, ...) are set before inline code runs.
      Query version bumps cache when bundle content changes. Bump manually or
      via build script when shipping a new bundle. See MIGRATION_PLAN.md. -->
-<script src="/dist/app.js?v=20260425k"></script>
+<script src="/dist/app.js?v=20260425l"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Archivo+Black&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -282,31 +282,38 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 .sb>*{position:relative;}
 .sb-head{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
 .sb-canvas{flex-shrink:0;cursor:pointer;image-rendering:pixelated;touch-action:manipulation;}
-/* ══ Tier 2 (저항자) 룸 씬 · 2026-04-24 ══
-   bg: tier2_room.png (gym 룸, 2048×2078). fg: 4 개별 프레임 JS 순환.
-   캐릭터는 룸 바닥 앞쪽에 서있는 포지션 (bottom:10%, scale 0.55). */
-#room-scene-tier2{display:none;}
-#room-scene-tier2.active{display:flex;}
-.tier2-throw-img{
-  width:55%;height:auto;
-  max-width:320px;
-  max-height:70%;
-  object-fit:contain;
-  image-rendering:pixelated;
-  margin-bottom:8%;
-  filter:drop-shadow(0 6px 18px rgba(0,0,0,0.7));
+/* ══ Tier 2/3 룸 씬 · 2026-04-24 ══
+   방관자 (tier 1) 룸과 정확히 동일한 비율/포지션을 사용하기 위해
+   가상 520×520 stage (canvas 흉내) + 캐릭터 relative 포지션.
+   tier 1 sprites.js: W=H=520, FLOOR_Y=408, CHAR_H=190
+   → 캐릭터 height = 36.5% stage, bottom = 21.5% stage. */
+#room-scene-tier2,#room-scene-tier3{display:none;}
+#room-scene-tier2.active,#room-scene-tier3.active{display:flex;}
+.tier-stage{
+  position:relative;
+  width:100%;height:100%;
+  max-width:min(100%,520px);
+  aspect-ratio:1/1;
+  max-height:100%;
+  margin:auto;
 }
-/* Tier 3 (수련자) walking 4프레임 · 600ms 간격 JS src swap */
-#room-scene-tier3{display:none;}
-#room-scene-tier3.active{display:flex;}
-.tier3-walk-img{
-  width:45%;height:auto;
-  max-width:260px;
-  max-height:78%;
-  object-fit:contain;
+.tier-stage-bg{
+  position:absolute;inset:0;
+  width:100%;height:100%;
+  object-fit:fill; /* tier 1 drawImage(roomImg,0,0,520,520) 와 동일 - 정사각형 stretch */
   image-rendering:pixelated;
-  margin-bottom:6%;
-  filter:drop-shadow(0 6px 18px rgba(0,0,0,0.7));
+  pointer-events:none;
+}
+.tier-stage-char{
+  position:absolute;
+  left:50%;
+  bottom:21.5%; /* FLOOR_Y 408/520 → bottom 112/520 */
+  transform:translateX(-50%);
+  height:36.5%; /* CHAR_H 190/520 */
+  width:auto;
+  image-rendering:pixelated;
+  filter:drop-shadow(0 4px 10px rgba(0,0,0,0.5));
+  pointer-events:none;
 }
 .sb-meta{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;}
 .sb-tier{font-size:13px;font-weight:700;color:var(--text);cursor:pointer;letter-spacing:-.01em;width:fit-content;touch-action:manipulation;}
@@ -3224,14 +3231,18 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
   <!-- 캔버스 씬 (전체 채움) -->
   <div style="position:relative;width:100%;flex:1;overflow:hidden;">
     <canvas id="room-canvas" width="520" height="520" style="display:block;width:100%;height:100%;object-fit:contain;image-rendering:pixelated;cursor:default;"></canvas>
-    <!-- Tier 2 (저항자) 전용 gym 룸 + throwing-hamburger 애니메이션.
-         배경: tier2_room.png (bench+덤벨), 전경: 4개 개별 프레임 JS 순환. -->
-    <div id="room-scene-tier2" style="position:absolute;inset:0;background:#0a0a10 url('/assets/tier2/tier2_room.png') center center/contain no-repeat;image-rendering:pixelated;align-items:flex-end;justify-content:center;">
-      <img id="tier2-throw-img" class="tier2-throw-img" src="/assets/tier2/Tier2_cha_throwingBurgur1.png" alt="" aria-hidden="true">
+    <!-- 각성자 (tier idx 1) — gym 룸 + 햄버거 던지기. 방관자와 동일 520×520 stage. -->
+    <div id="room-scene-tier2" style="position:absolute;inset:0;background:#0a0a10;align-items:center;justify-content:center;">
+      <div class="tier-stage">
+        <img class="tier-stage-bg" src="/assets/tier2/tier2_room.png" alt="" aria-hidden="true">
+        <img id="tier2-throw-img" class="tier-stage-char" src="/assets/tier2/Tier2_cha_throwingBurgur1.png" alt="" aria-hidden="true">
+      </div>
     </div>
-    <!-- Tier 3 (수련자) 전용 walking 애니메이션. 룸 BG 는 아직 없음 → 그라디언트 fallback. -->
-    <div id="room-scene-tier3" style="position:absolute;inset:0;background:radial-gradient(ellipse at center 70%,#1f1a2a 0%,#0a0a10 75%);align-items:flex-end;justify-content:center;">
-      <img id="tier3-walk-img" class="tier3-walk-img" src="/assets/tier3/Tier3_cha_walking1.png" alt="" aria-hidden="true">
+    <!-- 저항자 (tier idx 2) — walking. 룸 BG 미제공 → 그라디언트 stage. -->
+    <div id="room-scene-tier3" style="position:absolute;inset:0;background:#0a0a10;align-items:center;justify-content:center;">
+      <div class="tier-stage" style="background:radial-gradient(ellipse at center 70%,#1f1a2a 0%,#0a0a10 75%);">
+        <img id="tier3-walk-img" class="tier-stage-char" src="/assets/tier3/Tier3_cha_walking1.png" alt="" aria-hidden="true">
+      </div>
     </div>
     <div id="room-toast" style="position:absolute;top:42%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.85);color:#FFD700;font-family:monospace;font-size:12px;padding:6px 16px;border-radius:6px;pointer-events:none;opacity:0;transition:opacity 0.3s;white-space:nowrap;z-index:10;text-align:center;"></div>
     <div style="position:absolute;top:42%;right:8%;color:rgba(255,255,255,0.35);font-family:monospace;font-size:10px;pointer-events:none;text-align:center;">💪<br>탭!</div>
