@@ -60,9 +60,10 @@ function _skeletonHTML() {
         <div class="fr-mycode-row">
           <code class="fr-mycode-value" id="fr-code-value">········</code>
           <button class="fr-btn-ghost" id="fr-copy-btn" type="button">복사</button>
+          <button class="fr-btn-ghost" id="fr-share-btn" type="button">공유</button>
           <button class="fr-btn-ghost" id="fr-rotate-btn" type="button" title="코드 재발급">재발급</button>
         </div>
-        <div class="fr-mycode-hint">친구한테 이 코드 주면 너 찾을 수 있어.</div>
+        <div class="fr-mycode-hint">코드 또는 초대 링크로 친구 추가.</div>
       </section>
 
       <section class="fr-addbox">
@@ -119,6 +120,29 @@ function bindHeaderActions() {
       toast('코드 복사됨.');
     } catch {
       toast('복사 실패.');
+    }
+  });
+
+  // Share Sheet — deeplink 기반 초대 링크 공유
+  const shareBtn = document.getElementById('fr-share-btn');
+  shareBtn?.addEventListener('click', async () => {
+    const code = document.getElementById('fr-code-value')?.textContent?.trim();
+    if (!code || code === '········') return;
+    const url = (window.sh && window.sh.deeplink && window.sh.deeplink.buildInviteUrl)
+      ? window.sh.deeplink.buildInviteUrl(code)
+      : `${location.origin}/add/${code}`;
+    const text = `큐록 초대 · 내 코드 ${code}`;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: '큐록 초대', text, url });
+        try { if (window.logEvent && window.EVT) window.logEvent(window.EVT.FRIEND_CODE_SHARED, { via: 'native_share' }); } catch {}
+      } else {
+        await navigator.clipboard.writeText(url);
+        toast('초대 링크 복사됨.');
+        try { if (window.logEvent && window.EVT) window.logEvent(window.EVT.FRIEND_CODE_SHARED, { via: 'clipboard' }); } catch {}
+      }
+    } catch (e) {
+      console.warn('[friends] share', e);
     }
   });
 

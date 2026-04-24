@@ -16,7 +16,11 @@ export async function sendNudge(recipientId, presetId) {
     p_preset_id: presetId,
   });
   if (error) return { ok: false, error: 'network' };
-  return data || { ok: false, error: 'unknown' };
+  const res = data || { ok: false, error: 'unknown' };
+  if (res.ok) {
+    try { if (window.logEvent && window.EVT) window.logEvent(window.EVT.NUDGE_SENT, { preset_id: presetId }); } catch {}
+  }
+  return res;
 }
 
 /**

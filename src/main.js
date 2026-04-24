@@ -42,6 +42,10 @@ import * as flags from './features/flags/index.js';
 import * as metrics from './features/metrics/index.js';
 import * as firstCube from './features/activation/first-cube.js';
 import * as returnerGrace from './features/returner/grace.js';
+import * as exempt from './features/exempt/index.js';
+import * as deeplink from './features/deeplink/index.js';
+import * as notifOptIn from './features/notif/opt-in-scheduler.js';
+import * as volumeDelta from './features/volume-delta/index.js';
 
 Object.assign(
   window,
@@ -66,6 +70,10 @@ window.sh.flags = flags;
 window.sh.metrics = metrics;
 window.sh.firstCube = firstCube;
 window.sh.returnerGrace = returnerGrace;
+window.sh.exempt = exempt;
+window.sh.deeplink = deeplink;
+window.sh.notifOptIn = notifOptIn;
+window.sh.volumeDelta = volumeDelta;
 // Shortcut globals for inline use
 window.FF = flags;
 window.logEvent = metrics.logEvent;

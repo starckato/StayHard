@@ -95,6 +95,8 @@ export function startRealtimeNudges(userId, badgeEl) {
         (payload) => {
           const n = payload?.new;
           if (!n) return;
+          // M5 metric: NUDGE_RECEIVED
+          try { if (window.logEvent && window.EVT) window.logEvent(window.EVT.NUDGE_RECEIVED, { preset_id: n.preset_id }); } catch {}
           // Badge bump.
           if (badgeEl) {
             const cur = parseInt(badgeEl.textContent || '0', 10) || 0;

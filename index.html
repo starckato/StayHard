@@ -20,7 +20,7 @@
      so window globals (dkey, normKey, ...) are set before inline code runs.
      Query version bumps cache when bundle content changes. Bump manually or
      via build script when shipping a new bundle. See MIGRATION_PLAN.md. -->
-<script src="/dist/app.js?v=20260425w"></script>
+<script src="/dist/app.js?v=20260425x"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Archivo+Black&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -75,6 +75,78 @@
 .fc-dot.on{background:var(--accent);box-shadow:0 0 8px rgba(255,77,77,.55);}
 .fc-complete{background:linear-gradient(135deg,rgba(52,211,153,0.08) 0%,rgba(52,211,153,0.02) 100%);border-color:var(--green-bd);}
 .fc-complete .fc-kicker{color:var(--green);}
+
+/* Exempt 1-tap — Phase 2A */
+.exempt-row{display:flex;justify-content:center;padding:6px 16px 2px;}
+.exempt-btn{display:inline-flex;align-items:center;gap:8px;padding:7px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:999px;color:var(--text2);font-family:'DM Sans',sans-serif;font-size:11.5px;cursor:pointer;letter-spacing:-.005em;transition:border-color .15s,color .15s;touch-action:manipulation;}
+.exempt-btn:hover{border-color:var(--border2);color:var(--text);}
+.exempt-btn.active{background:rgba(156,163,175,0.15);border-color:rgba(156,163,175,0.35);color:var(--text3);}
+.exempt-icon-dot{width:6px;height:6px;border-radius:50%;background:var(--text3);display:inline-block;}
+.exempt-btn.active .exempt-icon-dot{background:var(--green);box-shadow:0 0 6px rgba(52,211,153,0.55);}
+.exempt-quota{font-family:'DM Mono',monospace;font-size:10px;opacity:.7;}
+
+.exempt-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.72);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);z-index:9990;display:flex;align-items:center;justify-content:center;padding:24px;}
+.exempt-modal{background:var(--surface);border:1px solid var(--border2);border-radius:16px;padding:22px 22px 18px;width:100%;max-width:360px;}
+.exempt-modal-title{font-family:'Noto Serif KR',serif;font-size:17px;font-weight:700;color:var(--text);margin-bottom:6px;letter-spacing:-.01em;}
+.exempt-modal-body{font-size:12px;color:var(--text2);line-height:1.55;margin-bottom:14px;}
+.exempt-modal-reasons{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;}
+.exempt-reason{padding:10px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text2);font-size:13px;cursor:pointer;text-align:center;touch-action:manipulation;transition:border-color .15s,color .15s;font-family:'DM Sans',sans-serif;}
+.exempt-reason:hover{border-color:var(--border2);color:var(--text);}
+.exempt-reason.selected{border-color:var(--accent);color:var(--accent);background:rgba(255,77,77,0.06);}
+.exempt-modal-footer{display:flex;gap:8px;}
+.exempt-btn-ghost{flex:1;padding:10px;background:transparent;border:1px solid var(--border2);border-radius:10px;color:var(--text2);font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;}
+.exempt-btn-confirm{flex:2;padding:10px;background:var(--accent);border:none;border-radius:10px;color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;}
+.exempt-btn-confirm:disabled{opacity:.4;cursor:not-allowed;}
+
+/* Layout v2 — Phase 2B. Status Band 축소 + 식단 카드 상단 (CSS order 기반).
+   body.layout-v2 클래스 토글로 활성. 기본 off. 렌더 시 FF 로 토글. */
+body.layout-v2 .sb{padding:12px 14px;}
+body.layout-v2 .sb .sb-score{font-size:38px;letter-spacing:-1.5px;}
+body.layout-v2 .sb-head{gap:10px;}
+body.layout-v2 .sb-canvas-wrap{width:36px;height:44px;}
+body.layout-v2 .sb-canvas-wrap canvas{width:36px;height:44px;}
+body.layout-v2 .sb-tier{font-size:14px;}
+body.layout-v2 .sb-score-row{margin-top:6px;}
+
+/* Volume Delta mini-chart — Phase 3A */
+.vd-card{margin:0 16px 8px;padding:14px 16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);}
+.vd-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px;}
+.vd-title{font-size:11px;color:var(--text3);letter-spacing:.16em;text-transform:uppercase;font-weight:700;}
+.vd-sub{font-size:10px;color:var(--text3);font-family:'DM Mono',monospace;}
+.vd-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;font-size:11px;}
+.vd-row:last-child{margin-bottom:0;}
+.vd-label{width:32px;color:var(--text2);}
+.vd-bar-wrap{flex:1;display:flex;flex-direction:column;gap:3px;}
+.vd-bar-track{height:4px;background:var(--surface2);border-radius:2px;overflow:hidden;position:relative;}
+.vd-bar-fill{height:100%;background:var(--accent);border-radius:2px;transition:width .45s cubic-bezier(.2,.8,.3,1);}
+.vd-bar-prev{height:100%;background:var(--border2);border-radius:2px;opacity:.5;}
+.vd-delta{min-width:50px;text-align:right;font-family:'DM Mono',monospace;font-size:10.5px;font-weight:700;}
+.vd-delta.up{color:var(--green);}
+.vd-delta.down{color:var(--red);}
+.vd-delta.flat{color:var(--text3);}
+
+/* Accent presets — Phase 3B. body[data-accent="..."] 로 토글. */
+body[data-accent="charcoal"]{
+  --accent:#6b7280;--accent-bg:rgba(107,114,128,0.10);--accent-bd:rgba(107,114,128,0.28);
+  --accent-red:#6b7280;
+  --accent-grad:linear-gradient(135deg,#6b7280 0%,#4b5563 100%);
+  --glow:0 0 20px rgba(107,114,128,0.15);
+}
+body[data-accent="deep_green"]{
+  --accent:#047857;--accent-bg:rgba(4,120,87,0.10);--accent-bd:rgba(4,120,87,0.28);
+  --accent-red:#047857;
+  --accent-grad:linear-gradient(135deg,#047857 0%,#065f46 100%);
+  --glow:0 0 20px rgba(4,120,87,0.15);
+}
+
+/* Accent picker UI in profile modal */
+.accent-picker{display:flex;gap:8px;margin-top:6px;}
+.accent-chip{flex:1;padding:10px 8px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text2);font-size:11px;cursor:pointer;text-align:center;font-family:'DM Sans',sans-serif;touch-action:manipulation;transition:border-color .15s;}
+.accent-chip.selected{border-color:currentColor;background:var(--surface3);}
+.accent-chip[data-accent="crimson"]{color:#ff4d4d;}
+.accent-chip[data-accent="charcoal"]{color:#6b7280;}
+.accent-chip[data-accent="deep_green"]{color:#10b981;}
+.accent-swatch{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:middle;background:currentColor;}
 
 /* ═════ Primary CTA — use on all main action buttons ═════ */
 .btn-primary,.abtn,.ws-done-btn,.mbtn{
@@ -1351,8 +1423,30 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
       <span id="char-pts" style="display:none;"></span>
     </div>
 
+    <!-- Exempt 1-tap — FF exempt_tap 뒤. Status Band 직하단. 주 2회 상한. -->
+    <div id="exempt-row" class="exempt-row" hidden>
+      <button id="exempt-btn" class="exempt-btn" onclick="openExemptModal()" type="button">
+        <span class="exempt-icon-dot"></span>
+        <span id="exempt-btn-label">오늘 면제</span>
+        <span class="exempt-quota" id="exempt-quota">2/2</span>
+      </button>
+    </div>
+
     <!-- First Cube 체험 카드 — FF first_cube_card + onboarding_state 미완료 유저만 -->
     <div id="first-cube-card" class="fc-card" hidden></div>
+
+    <!-- Exempt 모달 -->
+    <div id="exempt-modal" class="exempt-modal-overlay" hidden>
+      <div class="exempt-modal">
+        <div class="exempt-modal-title">오늘 판정을 비운다.</div>
+        <div class="exempt-modal-body">streak 은 유지된다. 크림슨 없이 gray 로 남는다.</div>
+        <div class="exempt-modal-reasons" id="exempt-modal-reasons"></div>
+        <div class="exempt-modal-footer">
+          <button class="exempt-btn-ghost" onclick="closeExemptModal()" type="button">취소</button>
+          <button id="exempt-modal-confirm" class="exempt-btn-confirm" onclick="confirmExempt()" type="button" disabled>적용</button>
+        </div>
+      </div>
+    </div>
 
     <!-- Promotional cards (weekly feature, day-3, invite, first-week) moved
          below primary inputs so 입력창이 위로 올라오도록 — id 는 유지, render
@@ -1523,6 +1617,9 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
         </div>
       </div>
     </div>
+    <!-- Volume Delta mini-chart — FF volume_delta_card 뒤, P3 전용 -->
+    <div id="vd-card" class="vd-card" hidden></div>
+
     <!-- 🔁 루틴 카드 (매일 반복되는 필수 루틴) -->
     <div class="s-card accordion" id="routine-card">
       <div class="card-collapsed" onclick="toggleRoutineCard()">
@@ -3656,6 +3753,17 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
     </div>
 
     <!-- 알림 설정 (로컬) -->
+    <!-- Accent Picker (FF accent_picker 뒤) -->
+    <div id="accent-picker-card" style="margin:0 0 12px;padding:14px;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;" hidden>
+      <div style="font-size:10px;font-weight:700;color:var(--text3);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:8px;">액센트 컬러</div>
+      <div class="accent-picker" id="accent-picker-list">
+        <button class="accent-chip" data-accent="crimson" type="button" onclick="selectAccent('crimson')"><span class="accent-swatch"></span>Crimson</button>
+        <button class="accent-chip" data-accent="charcoal" type="button" onclick="selectAccent('charcoal')"><span class="accent-swatch"></span>Charcoal</button>
+        <button class="accent-chip" data-accent="deep_green" type="button" onclick="selectAccent('deep_green')"><span class="accent-swatch"></span>Deep Green</button>
+      </div>
+      <div style="font-size:10.5px;color:var(--text3);margin-top:8px;line-height:1.5;">앱 전체 포인트 컬러가 바뀐다. 기록은 그대로.</div>
+    </div>
+
     <div id="notif-prefs-card" style="margin:0 0 12px;padding:14px;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
         <div style="font-size:10px;font-weight:700;color:var(--text3);letter-spacing:0.08em;text-transform:uppercase;">알림</div>
@@ -5796,8 +5904,37 @@ async function onLogin(user){
   }catch(e){console.warn('[local-notif] restore',e);}
   // Feature flags 로드 — Phase 1-3 신규 기능 gating.
   try{
-    if(window.sh&&window.sh.flags){window.sh.flags.loadFlags().then(()=>{try{renderFirstCubeCard();}catch(_){}}).catch(()=>{});}
+    if(window.sh&&window.sh.flags){window.sh.flags.loadFlags().then(()=>{
+      try{renderFirstCubeCard();renderExemptRow();
+        // Layout v2 toggle
+        const v2=window.FF&&window.FF.get('layout_v2',false);
+        document.body.classList.toggle('layout-v2',!!v2);
+        // Accent preference (Phase 3B)
+        const acc=(CP&&CP.accent_preference)||'crimson';
+        document.body.setAttribute('data-accent',acc);
+      }catch(_){}
+    }).catch(()=>{});}
   }catch(e){console.warn('[FF] load',e);}
+  // Deep link 처리 — URL 에 invite 코드 있으면 친구 탭 오픈 + prefill.
+  try{
+    if(window.sh&&window.sh.deeplink){
+      const code=window.sh.deeplink.consumeInviteFromUrl();
+      if(code){
+        setTimeout(()=>{
+          try{switchTab('competition',2);}catch(_){}
+          setTimeout(()=>{
+            try{switchSubTab&&switchSubTab('friends');}catch(_){}
+            setTimeout(()=>{
+              const inp=document.getElementById('fr-add-input');
+              if(inp){inp.value=code;inp.focus();}
+              try{window.sh.deeplink.trackInviteSource(code,'deeplink');}catch(_){}
+            },400);
+          },300);
+        },600);
+      }
+    }
+  }catch(e){console.warn('[deeplink] consume',e);}
+
   // Returner Grace activation — 3일+ 갭 감지 → 72h 보호구간 세팅.
   try{
     if(window.sh&&window.sh.returnerGrace&&window.FF&&window.FF.get('returner_grace',false)){
@@ -6176,6 +6313,26 @@ function openProfileModal(){
   openModal('profile-modal');
   // 알림 섹션 렌더
   try{renderNotifPrefs();}catch(e){console.warn('[notif-prefs]',e);}
+  // Accent 섹션 렌더 (FF accent_picker)
+  try{renderAccentPicker();}catch(e){console.warn('[accent]',e);}
+}
+
+function renderAccentPicker(){
+  const card=document.getElementById('accent-picker-card');if(!card)return;
+  const FF=window.FF;
+  if(!FF||!FF.get('accent_picker',false)){card.hidden=true;return;}
+  card.hidden=false;
+  const current=(CP&&CP.accent_preference)||'crimson';
+  document.querySelectorAll('#accent-picker-list .accent-chip').forEach(btn=>{
+    btn.classList.toggle('selected',btn.getAttribute('data-accent')===current);
+  });
+}
+async function selectAccent(name){
+  if(!['crimson','charcoal','deep_green'].includes(name))return;
+  if(CP)CP.accent_preference=name;
+  document.body.setAttribute('data-accent',name);
+  try{await sb.from('profiles').update({accent_preference:name}).eq('id',CU.id);}catch(_){}
+  renderAccentPicker();
 }
 
 // ── 로컬 알림 설정 UI ───────────────────────────────────────
@@ -6846,6 +7003,15 @@ function renderCardCubes(){
         }
       }
     }catch(_){}
+    // Exempt postprocess — 오늘 면제 시 전 축 gray 강제. FF + today only.
+    try{
+      if(cubes&&key===TODAY&&window.FF&&window.FF.get('exempt_tap',false)&&window.sh&&window.sh.exempt){
+        const xlog=(CP&&CP.exempt_log)||[];
+        if(window.sh.exempt.isTodayExempted(xlog)){
+          cubes=window.sh.exempt.applyExemptToCubes(cubes,xlog);
+        }
+      }
+    }catch(_){}
     const map={
       'cc-cube-diet':cubes?cubes.diet:null,
       'cc-cube-exercise':cubes?cubes.exercise:null,
@@ -6871,8 +7037,8 @@ function renderCardCubes(){
 // side-effect: log.cubes 를 갱신. 기존 점수/UI 는 건드리지 않음 (Phase 5 에서 교체).
 function recomputeCubesHook(key,opts){
   try{
-    // First-cube 카드 갱신 — 액션마다 태스크 완료 판정 재평가.
-    try{renderFirstCubeCard();}catch(_){}
+    // First-cube 카드 + Exempt row + D3 opt-in + Volume Delta + Perfect day 메트릭.
+    try{renderFirstCubeCard();renderExemptRow();checkD3OptInRequest();renderVolumeDelta();_checkPerfectDayMetric();}catch(_){}
     if(!window.Cubes||typeof window.Cubes.recomputeCubesInLog!=='function')return;
     const k=key||selectedKey;
     if(!k)return;
@@ -8012,6 +8178,197 @@ function renderFirstCubeCard(){
   }catch(e){console.warn('[first-cube] render',e);}
 }
 
+// ── M9: Status Band dwell — IntersectionObserver ─────────────
+(function(){
+  if(typeof window==='undefined')return;
+  const start={t:0,inView:false};
+  const log=()=>{
+    try{
+      if(!start.t)return;
+      const seconds=Math.round((Date.now()-start.t)/1000);
+      if(seconds>=1){
+        window.logEvent&&window.EVT&&window.logEvent(window.EVT.STATUS_BAND_DWELL,{seconds});
+      }
+      start.t=0;start.inView=false;
+    }catch(_){}
+  };
+  const attach=()=>{
+    const el=document.querySelector('.sb');if(!el)return false;
+    try{
+      const io=new IntersectionObserver(entries=>{
+        entries.forEach(e=>{
+          if(e.isIntersecting&&!start.inView){start.inView=true;start.t=Date.now();}
+          else if(!e.isIntersecting&&start.inView){log();}
+        });
+      },{threshold:0.5});
+      io.observe(el);
+      // flush on page hide
+      document.addEventListener('visibilitychange',()=>{if(document.hidden&&start.inView)log();});
+      return true;
+    }catch(_){return false;}
+  };
+  const boot=()=>{if(!attach())setTimeout(boot,1500);};
+  if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',()=>setTimeout(boot,800));}
+  else{setTimeout(boot,800);}
+})();
+
+// ── Perfect day 자동 감지 — M8 ──────────────────────────────
+function _checkPerfectDayMetric(){
+  try{
+    const l=logCache&&logCache[TODAY];if(!l||!l.cubes)return;
+    const c=l.cubes;
+    const goldCount=['diet','exercise','routine','tasks'].filter(k=>c[k]==='gold').length;
+    if(goldCount>=3){
+      const key='perfect_logged_'+TODAY;
+      if(localStorage.getItem(key))return;
+      localStorage.setItem(key,'1');
+      window.logEvent&&window.EVT&&window.logEvent(window.EVT.PERFECT_DAY_ACHIEVED,{gold_count:goldCount,date:TODAY});
+    }
+  }catch(_){}
+}
+
+// ── Volume Delta — Phase 3A ──────────────────────────────────
+function renderVolumeDelta(){
+  try{
+    const card=document.getElementById('vd-card');if(!card)return;
+    const FF=window.FF;const vd=window.sh&&window.sh.volumeDelta;
+    if(!FF||!FF.get('volume_delta_card',false)||!vd){card.hidden=true;return;}
+    const delta=vd.computeDelta(logCache||{});
+    // total 이 0 이면 의미 없음 — 숨김
+    if(!delta||delta.total.curr===0&&delta.total.prev===0){card.hidden=true;return;}
+    card.hidden=false;
+    const buckets=['chest','back','shoulder','leg','arm'];
+    const labels=vd.BUCKET_LABELS;
+    const maxVol=Math.max(1,...buckets.map(b=>Math.max(delta[b].curr,delta[b].prev)));
+    const rows=buckets.map(b=>{
+      const d=delta[b];
+      const pctNow=(d.curr/maxVol)*100;
+      const pctPrev=(d.prev/maxVol)*100;
+      const sign=d.deltaPct>0?'+':'';
+      const dirCls=d.dir;
+      return `<div class="vd-row">
+        <div class="vd-label">${labels[b]}</div>
+        <div class="vd-bar-wrap">
+          <div class="vd-bar-track"><div class="vd-bar-fill" style="width:${pctNow.toFixed(1)}%"></div></div>
+          <div class="vd-bar-track"><div class="vd-bar-prev" style="width:${pctPrev.toFixed(1)}%"></div></div>
+        </div>
+        <div class="vd-delta ${dirCls}">${sign}${d.deltaPct}%</div>
+      </div>`;
+    }).join('');
+    card.innerHTML=`<div class="vd-head"><div class="vd-title">이번 주 vs 지난 주</div><div class="vd-sub">총 ${delta.total.curr.toLocaleString()}kg</div></div>${rows}`;
+  }catch(e){console.warn('[vd] render',e);}
+}
+
+// ── D3 Opt-in 2차 요청 — Phase 2D ────────────────────────────
+async function checkD3OptInRequest(){
+  try{
+    const FF=window.FF;if(!FF||!FF.get('opt_in_d3',false))return;
+    const mod=window.sh&&window.sh.notifOptIn;if(!mod||!CP||!CU)return;
+    const streak=(typeof calcStreak==='function')?calcStreak():0;
+    if(!mod.shouldRequestD3(CP,streak))return;
+    // 10초 뒤 모달 (액션 직후 방해 없게)
+    if(window._d3OptInPending)return;
+    window._d3OptInPending=true;
+    setTimeout(async()=>{
+      try{
+        const ln=window.sh&&window.sh.localNotifications;if(!ln){window._d3OptInPending=false;return;}
+        // 이미 granted 인지 재확인
+        const perm=await ln.checkPermission();
+        if(perm==='granted'){
+          await mod.recordOptIn(sb,CU.id,CP,'d3_streak','granted');
+          window._d3OptInPending=false;return;
+        }
+        // 소프트 컨펌
+        const ok=confirm('3일 스트릭 달성.\n흐름을 지킬 수 있게 알림 켤까?');
+        if(!ok){
+          await mod.recordOptIn(sb,CU.id,CP,'d3_streak','dismissed');
+          window._d3OptInPending=false;return;
+        }
+        const granted=await ln.requestPermission();
+        await mod.recordOptIn(sb,CU.id,CP,'d3_streak',granted?'granted':'denied');
+        if(granted){showToast('알림 켜짐. 흐름을 지키자.');}
+        window._d3OptInPending=false;
+      }catch(e){window._d3OptInPending=false;console.warn('[d3-optin]',e);}
+    },10000);
+  }catch(_){}
+}
+
+// ── Exempt 1-tap — Phase 2A ─────────────────────────────────
+let _exemptSelReason=null;
+function renderExemptRow(){
+  try{
+    const row=document.getElementById('exempt-row');
+    const btn=document.getElementById('exempt-btn');
+    const lbl=document.getElementById('exempt-btn-label');
+    const q=document.getElementById('exempt-quota');
+    if(!row||!btn||!lbl||!q)return;
+    const FF=window.FF;const ex=window.sh&&window.sh.exempt;
+    if(!FF||!FF.get('exempt_tap',false)||!ex){row.hidden=true;return;}
+    row.hidden=false;
+    const list=(CP&&CP.exempt_log)||[];
+    const rem=ex.remainingThisWeek(list);
+    const isToday=ex.isTodayExempted(list);
+    q.textContent=rem+'/2';
+    if(isToday){btn.classList.add('active');lbl.textContent='오늘 면제 중 (탭=취소)';}
+    else{btn.classList.remove('active');lbl.textContent=rem>0?'오늘 면제':'이번주 소진';}
+    btn.disabled=rem===0&&!isToday;
+  }catch(e){console.warn('[exempt] render',e);}
+}
+function openExemptModal(){
+  const ex=window.sh&&window.sh.exempt;if(!ex)return;
+  const list=(CP&&CP.exempt_log)||[];
+  // 이미 면제중이면 취소 confirm
+  if(ex.isTodayExempted(list)){
+    if(!confirm('오늘 면제를 취소할까요? 큐브 판정이 복구됩니다.'))return;
+    const res=ex.cancelTodayExempt(list);
+    if(res.ok){
+      if(CP)CP.exempt_log=res.log;
+      ex.persistExemptLog(sb,CU.id,res.log).catch(()=>{});
+      renderExemptRow();
+      try{recomputeCubesHook(TODAY,{silent:true});}catch(_){}
+      showToast('면제 취소. 오늘 판정 복구.');
+    }
+    return;
+  }
+  if(ex.remainingThisWeek(list)<=0){showToast('이번 주 면제 2회 다 썼어요.');return;}
+  _exemptSelReason=null;
+  const el=document.getElementById('exempt-modal');
+  const r=document.getElementById('exempt-modal-reasons');
+  const c=document.getElementById('exempt-modal-confirm');
+  if(!el||!r||!c)return;
+  r.innerHTML=ex.EXEMPT_REASONS.map(x=>`<button class="exempt-reason" type="button" onclick="selectExemptReason('${x.id}',this)">${x.label}</button>`).join('');
+  c.disabled=true;
+  el.hidden=false;
+  document.body.style.overflow='hidden';
+}
+function selectExemptReason(id,el){
+  _exemptSelReason=id;
+  document.querySelectorAll('.exempt-reason').forEach(e=>e.classList.toggle('selected',e===el));
+  document.getElementById('exempt-modal-confirm').disabled=false;
+}
+function closeExemptModal(){
+  document.getElementById('exempt-modal').hidden=true;
+  document.body.style.overflow='';
+  _exemptSelReason=null;
+}
+async function confirmExempt(){
+  const ex=window.sh&&window.sh.exempt;if(!ex||!_exemptSelReason)return;
+  const list=(CP&&CP.exempt_log)||[];
+  const res=ex.requestExempt(list,_exemptSelReason);
+  if(!res.ok){
+    showToast(res.error==='weekly_limit'?'이번 주 2회 소진.':'처리 실패.');
+    return;
+  }
+  if(CP)CP.exempt_log=res.log;
+  const save=await ex.persistExemptLog(sb,CU.id,res.log);
+  if(!save.ok){showToast('저장 실패');return;}
+  try{window.logEvent&&window.logEvent(window.EVT.EXEMPT_USED,{reason:_exemptSelReason,week:res.wk});}catch(_){}
+  closeExemptModal();
+  try{recomputeCubesHook(TODAY,{silent:true});}catch(_){}
+  renderExemptRow();
+  showToast('오늘 판정 면제. streak 유지.');
+}
+
 // URL hash 가드 — bookmark #view-status / #view-goggins 접근 시 빈 hash 로 리다이렉트.
 if(typeof window!=='undefined'){
   const _deadHashes=['#view-status','#view-goggins'];
@@ -8028,6 +8385,8 @@ if(typeof window!=='undefined'){
 function switchTab(name,idx){
   // Dead tab guard — view-status 제거됨 (2026-04-25 Phase 1B). 혹시 호출되면 routine 으로 fallback.
   if(name==='status'||name==='goggins'){name='routine';idx=0;}
+  // M10: TAB_VISIT
+  try{window.logEvent&&window.EVT&&window.logEvent(window.EVT.TAB_VISIT,{tab:name});}catch(_){}
   // 탭 전환 시 body 스크롤 잠금 해제 — 모달/오버레이에서 닫기 경로가 누락돼도 복구
   document.body.style.overflow='';
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));

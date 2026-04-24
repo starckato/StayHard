@@ -42,6 +42,13 @@ export async function getMyFriendCode() {
     console.warn('[friends] getMyFriendCode', error);
     return null;
   }
+  // M4 metric: FRIEND_CODE_VIEWED (first-view only, dedupe per session via sessionStorage)
+  try {
+    if (typeof sessionStorage !== 'undefined' && !sessionStorage.getItem('friend_code_viewed')) {
+      sessionStorage.setItem('friend_code_viewed', '1');
+      if (window.logEvent && window.EVT) window.logEvent(window.EVT.FRIEND_CODE_VIEWED, {});
+    }
+  } catch {}
   return data?.friend_code || null;
 }
 
@@ -60,9 +67,14 @@ export async function rotateMyFriendCode() {
  * @returns {Promise<{ok:boolean, error?:string, pending?:boolean, auto_accepted?:boolean}>}
  */
 export async function sendFriendRequestByCode(code) {
+  try { if (window.logEvent && window.EVT) window.logEvent(window.EVT.FRIEND_CODE_ENTERED, { code_head: (code||'').slice(0,3) }); } catch {}
   const { data, error } = await sb.rpc('send_friend_request_by_code', { p_code: code });
   if (error) return { ok: false, error: 'network' };
-  return data || { ok: false, error: 'unknown' };
+  const res = data || { ok: false, error: 'unknown' };
+  if (res.ok) {
+    try { if (window.logEvent && window.EVT) window.logEvent(window.EVT.FRIEND_ADDED, { auto_accepted: !!res.auto_accepted }); } catch {}
+  }
+  return res;
 }
 
 /**
