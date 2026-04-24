@@ -6430,11 +6430,15 @@ function _clearMicroBanner(){
   _microBannerEl=null;
 }
 function playMicroReward(cat,color){
-  // Haptic — light tap. Native only; 웹은 조용.
+  // Haptic —
+  //   Native (Capacitor iOS/Android): @capacitor/haptics ImpactStyle.Light
+  //   Web Android: navigator.vibrate(18) — 대부분 브라우저 지원
+  //   Web iOS Safari / Desktop: vibrate API 없음/무시 — 조용히 noop
   try{
-    if(window.sh&&window.sh.haptics&&typeof window.sh.haptics.tap==='function'){
+    const native=window.sh&&window.sh.platform&&typeof window.sh.platform.isNative==='function'&&window.sh.platform.isNative();
+    if(native&&window.sh.haptics&&typeof window.sh.haptics.tap==='function'){
       window.sh.haptics.tap('light');
-    } else if(typeof navigator!=='undefined'&&navigator.vibrate){
+    } else if(typeof navigator!=='undefined'&&typeof navigator.vibrate==='function'){
       navigator.vibrate(18);
     }
   }catch(_){}
