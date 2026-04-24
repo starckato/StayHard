@@ -10,7 +10,7 @@
 
 import { isNative } from './platform.js';
 
-/** @typedef {'morning_routine'|'meal_dinner'|'evening_wrap'|'streak_risk'} NotifCategory */
+/** @typedef {'diet_check'|'workout_check'|'routine_check'|'task_check'} NotifCategory */
 
 /**
  * @typedef {Object} NotifPref
@@ -19,34 +19,35 @@ import { isNative } from './platform.js';
  * @property {number} min    0|30
  */
 
-/** 각 카테고리 고정 id 오프셋 — OS 에 같은 id 로 schedule 하면 덮어씀 (idempotent). */
+/** 각 카테고리 고정 id 오프셋 — OS 에 같은 id 로 schedule 하면 덮어씀 (idempotent).
+ *  Will Cube 4 카테고리 (diet/workout/routine/tasks) 와 1:1 매칭. */
 const CATEGORY_IDS = {
-  morning_routine: 1001,
-  meal_dinner:     1002,
-  evening_wrap:    1003,
-  streak_risk:     1004,
+  diet_check:    1001,
+  workout_check: 1002,
+  routine_check: 1003,
+  task_check:    1004,
 };
 
 const COPY = {
-  morning_routine: [
-    '일어났나. 오늘 첫 줄을 그어라.',
-    '어제 잠든 너는 버려. 지금 시작해.',
-    '하루가 시작됐다.',
+  diet_check: [
+    '점심. 식단 기록했나.',
+    '한 끼 남겼나.',
+    '오늘 뭐 먹었는지 기록해.',
   ],
-  meal_dinner: [
-    '저녁. 기록했나.',
-    '밥은 먹었지.',
-    '오늘 몸에 들어간 걸 남겨.',
+  workout_check: [
+    '운동 했나.',
+    '땀 흘렸나.',
+    '오늘 몸 썼나.',
   ],
-  evening_wrap: [
-    '하루가 끝난다. 남은 걸 채워라.',
-    '빈칸 남았다. 확인해.',
-    '잠들기 전에 한 줄.',
+  routine_check: [
+    '루틴 체크했나.',
+    '오늘 정한 것들, 다 밀었나.',
+    '루틴 남았다. 확인해.',
   ],
-  streak_risk: [
-    '지금 아니면 끊긴다.',
-    '쌓은 걸 놓치지 마.',
-    '10초면 충분하다.',
+  task_check: [
+    '할일 정리했나.',
+    '오늘 리스트 비웠나.',
+    '끝내야 할 것 남아있다.',
   ],
 };
 
@@ -150,31 +151,45 @@ export async function onActionPerformed(cb) {
   }
 }
 
-/** Default prefs used on first-time opt-in. */
+/** Default prefs used on first-time opt-in. Will Cube 4 카테고리 매칭. */
 export const DEFAULT_PREFS = {
   enabled: false, // master off by default (opt-in via onboarding card)
-  morning_routine: { on: true,  hour: 8,  min: 0 },
-  meal_dinner:     { on: true,  hour: 20, min: 30 },
-  evening_wrap:    { on: false, hour: 22, min: 0 },
-  streak_risk:     { on: true,  hour: 23, min: 30 },
+  diet_check:    { on: true, hour: 13, min: 0 },  // 점심 끝나고
+  workout_check: { on: true, hour: 20, min: 0 },  // 저녁 8시
+  routine_check: { on: true, hour: 18, min: 0 },  // 6시 이후
+  task_check:    { on: true, hour: 18, min: 30 }, // 루틴과 stagger (6시 반)
   lastSyncedAt: null,
   backoff: {},
 };
 
 export const CATEGORY_META = {
-  morning_routine: { label: '아침 루틴',  sub: '하루의 첫 줄' },
-  meal_dinner:     { label: '저녁 기록',  sub: '하루 식단 정리' },
-  evening_wrap:    { label: '하루 마감',  sub: '남은 빈칸 확인' },
-  streak_risk:     { label: '스트릭 리스크', sub: '끊기기 직전' },
+  diet_check:    { label: '식단',  sub: '점심 이후 기록 확인' },
+  workout_check: { label: '운동',  sub: '저녁 운동 체크' },
+  routine_check: { label: '루틴',  sub: '저녁 루틴 점검' },
+  task_check:    { label: '할일',  sub: '오늘 리스트 마무리' },
 };
 
-/** Read prefs from localStorage with user-scoped key. Returns DEFAULT_PREFS if missing. */
+// Legacy key 정리 — v1 카테고리명 (morning_routine/meal_dinner/evening_wrap/streak_risk)
+// 으로 저장된 localStorage prefs 는 새 키로 마이그레이션. 동일 CATEGORY_IDS 재사용이라
+// OS 에 남은 스케줄은 cancel → 새 예약으로 자연 교체됨.
+const LEGACY_KEY_MAP = {
+  morning_routine: null,          // 대응 없음 — 폐기
+  meal_dinner:     null,          // 폐기
+  evening_wrap:    null,          // 폐기
+  streak_risk:     null,          // 폐기
+};
+
+/** Read prefs from localStorage with user-scoped key. Returns DEFAULT_PREFS if missing.
+ *  Also strips legacy v1 keys so they don't pollute the merged object. */
 export function loadPrefs(userId) {
   try {
     const raw = localStorage.getItem(`notif_prefs_${userId || 'anon'}`);
     if (!raw) return { ...DEFAULT_PREFS };
     const parsed = JSON.parse(raw);
-    // Shallow merge to pick up new fields added in later versions.
+    // Drop legacy keys.
+    for (const legacy of Object.keys(LEGACY_KEY_MAP)) {
+      delete parsed[legacy];
+    }
     return { ...DEFAULT_PREFS, ...parsed };
   } catch {
     return { ...DEFAULT_PREFS };
