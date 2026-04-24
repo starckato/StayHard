@@ -35,8 +35,13 @@ export const TIER_ASSETS = {
   2: {
     char: '/assets/tier2/Tier2_cha_nobg.png',
     room: '/assets/tier2/Tier2_cha_concept.png',
-    throwSheet: '/assets/tier2/Tier2_cha_throwingHamburgur.png', // 4-frame horizontal sprite (1774×887 → frame 443.5×887)
-    throwFrames: 4,
+    // 2026-04-24: sprite sheet 대신 4개 개별 프레임 (각 675×685). JS 로 순환.
+    throwFramesSrc: [
+      '/assets/tier2/Tier2_cha_throwingBurgur1.png',
+      '/assets/tier2/Tier2_cha_throwingBurgur2.png',
+      '/assets/tier2/Tier2_cha_throwingBurgur3.png',
+      '/assets/tier2/Tier2_cha_throwingBurgur4.png',
+    ],
   },
   3: { char: `${ASSET_BASE}/GymRat_Tier3_character.png`, room: `${ASSET_BASE}/GymRat_Tier3_room.png` },
   4: { char: `${ASSET_BASE}/GymRat_Tier4_character.png`, room: `${ASSET_BASE}/GymRat_Tier4_room.png` },
