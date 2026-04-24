@@ -34,7 +34,7 @@ export const TIER_ASSETS = {
   1: { char: `${ASSET_BASE}/GymRat_Tier1_character.png`, room: `${ASSET_BASE}/GymRat_Tier1_room.png` },
   2: {
     char: '/assets/tier2/Tier2_cha_nobg.png',
-    room: '/assets/tier2/Tier2_cha_concept.png',
+    room: '/assets/tier2/tier2_room.png', // 2026-04-24: gym 룸 (bench + 덤벨)
     // 2026-04-24: sprite sheet 대신 4개 개별 프레임 (각 675×685). JS 로 순환.
     throwFramesSrc: [
       '/assets/tier2/Tier2_cha_throwingBurgur1.png',
