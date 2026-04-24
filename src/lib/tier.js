@@ -43,7 +43,17 @@ export const TIER_ASSETS = {
       '/assets/tier2/Tier2_cha_throwingBurgur4.png',
     ],
   },
-  3: { char: `${ASSET_BASE}/GymRat_Tier3_character.png`, room: `${ASSET_BASE}/GymRat_Tier3_room.png` },
+  3: {
+    char: '/assets/tier3/Tier3_cha_nobg.png',
+    room: `${ASSET_BASE}/GymRat_Tier3_room.png`, // 룸은 유저가 아직 안 줌 — supabase 유지
+    // 2026-04-24: 4 프레임 walking 애니메이션 (각 ~347×1006). JS 로 순환.
+    walkFramesSrc: [
+      '/assets/tier3/Tier3_cha_walking1.png',
+      '/assets/tier3/Tier3_cha_walking2.png',
+      '/assets/tier3/Tier3_cha_walking3.png',
+      '/assets/tier3/Tier3_cha_walking4.png',
+    ],
+  },
   4: { char: `${ASSET_BASE}/GymRat_Tier4_character.png`, room: `${ASSET_BASE}/GymRat_Tier4_room.png` },
   5: { char: `${ASSET_BASE}/GymRat_Tier4_character.png`, room: `${ASSET_BASE}/GymRat_Tier4_room.png` }
 };

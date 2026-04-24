@@ -20,7 +20,7 @@
      so window globals (dkey, normKey, ...) are set before inline code runs.
      Query version bumps cache when bundle content changes. Bump manually or
      via build script when shipping a new bundle. See MIGRATION_PLAN.md. -->
-<script src="/dist/app.js?v=20260425g"></script>
+<script src="/dist/app.js?v=20260425h"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Archivo+Black&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -294,6 +294,18 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
   object-fit:contain;
   image-rendering:pixelated;
   margin-bottom:8%;
+  filter:drop-shadow(0 6px 18px rgba(0,0,0,0.7));
+}
+/* Tier 3 (수련자) walking 4프레임 · 600ms 간격 JS src swap */
+#room-scene-tier3{display:none;}
+#room-scene-tier3.active{display:flex;}
+.tier3-walk-img{
+  width:45%;height:auto;
+  max-width:260px;
+  max-height:78%;
+  object-fit:contain;
+  image-rendering:pixelated;
+  margin-bottom:6%;
   filter:drop-shadow(0 6px 18px rgba(0,0,0,0.7));
 }
 .sb-meta{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;}
@@ -1185,8 +1197,10 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
       <div class="sb-head">
         <div class="sb-canvas-wrap" style="position:relative;width:44px;height:52px;flex-shrink:0;" onclick="openRoomOverlay()">
           <canvas id="char-mini-canvas" class="sb-canvas" width="44" height="52" style="width:44px;height:52px;"></canvas>
-          <!-- Tier 2 (저항자) 전용 정적 프로필. CUBE mode 에선 tier >=600 일 때만 display 됨. -->
+          <!-- Tier 2 (저항자) 전용 정적 프로필. -->
           <img id="char-mini-tier2" src="/assets/tier2/Tier2_cha_nobg.png" alt="" style="display:none;position:absolute;inset:0;width:44px;height:52px;object-fit:contain;image-rendering:pixelated;pointer-events:none;" />
+          <!-- Tier 3 (수련자) 전용 정적 프로필. -->
+          <img id="char-mini-tier3" src="/assets/tier3/Tier3_cha_nobg.png" alt="" style="display:none;position:absolute;inset:0;width:44px;height:52px;object-fit:contain;image-rendering:pixelated;pointer-events:none;" />
         </div>
         <div class="sb-meta">
           <div class="sb-tier" id="hdr-tier" onclick="openScoreGuide()">😴 방관자</div>
@@ -3215,6 +3229,10 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
     <div id="room-scene-tier2" style="display:none;position:absolute;inset:0;background:#0a0a10 url('/assets/tier2/tier2_room.png') center center/cover no-repeat;image-rendering:pixelated;align-items:flex-end;justify-content:center;">
       <img id="tier2-throw-img" class="tier2-throw-img" src="/assets/tier2/Tier2_cha_throwingBurgur1.png" alt="" aria-hidden="true">
     </div>
+    <!-- Tier 3 (수련자) 전용 walking 애니메이션. 룸 BG 는 아직 없음 → 그라디언트 fallback. -->
+    <div id="room-scene-tier3" style="display:none;position:absolute;inset:0;background:radial-gradient(ellipse at center 70%,#1f1a2a 0%,#0a0a10 75%);align-items:flex-end;justify-content:center;">
+      <img id="tier3-walk-img" class="tier3-walk-img" src="/assets/tier3/Tier3_cha_walking1.png" alt="" aria-hidden="true">
+    </div>
     <div id="room-toast" style="position:absolute;top:42%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.85);color:#FFD700;font-family:monospace;font-size:12px;padding:6px 16px;border-radius:6px;pointer-events:none;opacity:0;transition:opacity 0.3s;white-space:nowrap;z-index:10;text-align:center;"></div>
     <div style="position:absolute;top:42%;right:8%;color:rgba(255,255,255,0.35);font-family:monospace;font-size:10px;pointer-events:none;text-align:center;">💪<br>탭!</div>
   </div>
@@ -4851,13 +4869,17 @@ function renderCharCard(){
   // Status Band 렌더: 캔버스는 hdr-score 존재 여부로 가드 (char-card 제거됨)
   if(!document.getElementById('hdr-score'))return;
   if(typeof initMiniChar==='function')initMiniChar(tier.color);
-  // Tier 2 (저항자) 전용 프로필 이미지 토글 — canvas 위에 정적 image 덮어씀.
-  // sprites.js 는 tier 1 base64 만 그리므로 tier 2 는 DOM 오버레이로 대체.
+  // Tier 2 / 3 전용 프로필 이미지 토글 — canvas 위에 정적 image 덮어씀.
+  // sprites.js 는 tier 1 base64 만 그리므로 tier 2/3 는 DOM 오버레이로 대체.
   const mini=document.getElementById('char-mini-canvas');
   const miniT2=document.getElementById('char-mini-tier2');
-  if(miniT2&&mini){
-    if(tierIdx===2){miniT2.style.display='block';mini.style.opacity='0';}
-    else{miniT2.style.display='none';mini.style.opacity='';}
+  const miniT3=document.getElementById('char-mini-tier3');
+  if(mini){
+    const showT2=(tierIdx===2);
+    const showT3=(tierIdx===3);
+    if(miniT2)miniT2.style.display=showT2?'block':'none';
+    if(miniT3)miniT3.style.display=showT3?'block':'none';
+    mini.style.opacity=(showT2||showT3)?'0':'';
   }
   const quotes=TIER_QUOTES[tier.name]||TIER_QUOTES['방관자'];
   const quote=quotes[Math.floor(Math.random()*quotes.length)];
@@ -4897,17 +4919,19 @@ function openRoomOverlay(){
   document.body.style.overflow='hidden';
   const el=document.getElementById('room-overlay');
   el.style.display='flex';
-  // Tier 2 (저항자) 전용 씬 토글 — 햄버거 던지기 4 개별 프레임 JS 순환.
+  // Tier 2 / 3 전용 씬 토글 — 4 개별 프레임 JS 순환.
   const roomT2=document.getElementById('room-scene-tier2');
+  const roomT3=document.getElementById('room-scene-tier3');
   const roomCanvas=document.getElementById('room-canvas');
-  if(roomT2&&roomCanvas){
-    if(tierIdx===2){
-      roomT2.classList.add('active');roomCanvas.style.display='none';
-      _tier2ThrowStart();
-    } else {
-      roomT2.classList.remove('active');roomCanvas.style.display='block';
-      _tier2ThrowStop();
-    }
+  if(roomCanvas){
+    const showT2=(tierIdx===2);
+    const showT3=(tierIdx===3);
+    if(roomT2)roomT2.classList.toggle('active',showT2);
+    if(roomT3)roomT3.classList.toggle('active',showT3);
+    roomCanvas.style.display=(showT2||showT3)?'none':'block';
+    if(showT2){_tier2ThrowStart();_tier3WalkStop();}
+    else if(showT3){_tier3WalkStart();_tier2ThrowStop();}
+    else {_tier2ThrowStop();_tier3WalkStop();}
   }
   startRoomScene();
 }
@@ -4943,9 +4967,39 @@ function _tier2ThrowStop(){
   if(_tier2Timer){clearInterval(_tier2Timer);_tier2Timer=null;}
 }
 
+// Tier 3 walking 프레임 순환. 160ms 간격 × 4프레임 = 640ms 루프 (자연스런 걸음).
+const _TIER3_FRAMES=[
+  '/assets/tier3/Tier3_cha_walking1.png',
+  '/assets/tier3/Tier3_cha_walking2.png',
+  '/assets/tier3/Tier3_cha_walking3.png',
+  '/assets/tier3/Tier3_cha_walking4.png',
+];
+let _tier3FrameIdx=0;
+let _tier3Timer=null;
+function _tier3WalkStart(){
+  _tier3WalkStop();
+  const img=document.getElementById('tier3-walk-img');
+  if(!img)return;
+  try{
+    if(window.matchMedia&&window.matchMedia('(prefers-reduced-motion:reduce)').matches){
+      img.src=_TIER3_FRAMES[0];return;
+    }
+  }catch(_){}
+  _tier3FrameIdx=0;
+  img.src=_TIER3_FRAMES[0];
+  _tier3Timer=setInterval(()=>{
+    _tier3FrameIdx=(_tier3FrameIdx+1)%_TIER3_FRAMES.length;
+    img.src=_TIER3_FRAMES[_tier3FrameIdx];
+  },160);
+}
+function _tier3WalkStop(){
+  if(_tier3Timer){clearInterval(_tier3Timer);_tier3Timer=null;}
+}
+
 function closeRoomOverlay(){
   stopRoomScene();
   try{_tier2ThrowStop();}catch(_){}
+  try{_tier3WalkStop();}catch(_){}
   document.getElementById('room-overlay').style.display='none';
   document.body.style.overflow='';
 }
