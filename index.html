@@ -6451,28 +6451,35 @@ function playMicroReward(cat,color){
   _microBannerTimers.push(setTimeout(()=>{if(el.parentNode)el.parentNode.removeChild(el);if(_microBannerEl===el)_microBannerEl=null;},1420));
 }
 
+// 2026-04-24 유저 피드백 반영:
+//   첫 번째 전환 (gray→silver) = cube 연출 + 배너 모두 (특별 모먼트)
+//   이후 (silver 유지) = 배너만 (_tryMicroReward 가 담당)
+//   gold (silver→gold) = 기존 cube 연출 (완결 모먼트)
+// _cubeEventJustFired: silver 큐브 이벤트가 방금 직접 배너를 쐈는지 플래그 — _tryMicroReward 가 중복으로 쏘지 않게.
+let _cubeSilverJustFired=0;
 function showCubeEvent(ev){
   if(!ev)return;
-  // Silver (진행 중) 은 micro-banner 로 전환. Gold / crimson / bonus 는 cube 연출 유지.
-  // bonus event 는 ev.type==='bonus' — cat 없을 수 있음 → cube 유지.
+  // Silver 전환 = 배너 + cube 둘 다. bonus/crimson/gold 는 cube 만 (배너는 해당 타입에 맞지 않음).
   if(ev.type==='color'&&ev.color==='silver'&&ev.cat){
     playMicroReward(ev.cat,'silver');
-    return;
+    _cubeSilverJustFired=Date.now();
   }
-  // Crimson 은 일단 cube 유지 (실패의 모먼트). 유저 피드백 보고 추후 조정.
   _cubeEventQueue.push(ev);
   if(!_cubeEventShowing)_showNextCubeEvent();
 }
 
 // 개별 행동 후 호출 — 현재 카테고리의 cube 상태에 따라 micro-reward 발사.
-// gold (완결) 이면 이미 cube 연출이 담당하므로 skip.
-// silver/gray/crimson 이면 조용한 cheer.
+// gold (완결) 이면 cube 연출이 담당하므로 skip.
+// silver 전환이 방금 일어나 이미 배너가 떴으면 skip (중복 방지).
+// 그 외 silver 유지 / crimson 이면 조용한 cheer.
 function _tryMicroReward(cat){
   try{
     const l=(typeof log!=='undefined')?log:null;
     const cubes=l&&l.cubes;
     const color=(cubes&&cubes[cat])||'silver';
     if(color==='gold')return; // gold 는 cube 연출이 담당
+    // 방금 silver 전환으로 배너가 떴으면 중복 쏘지 않음 (500ms 내).
+    if(Date.now()-_cubeSilverJustFired<500)return;
     playMicroReward(cat,color==='crimson'?'crimson':'silver');
   }catch(_){}
 }
