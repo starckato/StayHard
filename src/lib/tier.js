@@ -27,10 +27,17 @@ export function getTier(score) {
 export const ASSET_BASE = 'https://uvaosxhsjscigheyymus.supabase.co/storage/v1/object/public/game-assets';
 
 /** Per-tier-index asset URLs. Tier 1 shares art with Tier 0, Tier 5 with Tier 4. */
+// 2026-04-24: tier 2 (저항자) 는 로컬 assets/tier2/ 로 전환. throw sprite sheet 4-frame.
+// 다른 tier 는 Supabase 유지 — 점진적 전환.
 export const TIER_ASSETS = {
   0: { char: `${ASSET_BASE}/GymRat_Tier1_character.png`, room: `${ASSET_BASE}/GymRat_Tier1_room.png` },
   1: { char: `${ASSET_BASE}/GymRat_Tier1_character.png`, room: `${ASSET_BASE}/GymRat_Tier1_room.png` },
-  2: { char: `${ASSET_BASE}/GymRat_Tier2_character.png`, room: `${ASSET_BASE}/GymRat_Tier2_room.png` },
+  2: {
+    char: '/assets/tier2/Tier2_cha_nobg.png',
+    room: '/assets/tier2/Tier2_cha_concept.png',
+    throwSheet: '/assets/tier2/Tier2_cha_throwingHamburgur.png', // 4-frame horizontal sprite (1774×887 → frame 443.5×887)
+    throwFrames: 4,
+  },
   3: { char: `${ASSET_BASE}/GymRat_Tier3_character.png`, room: `${ASSET_BASE}/GymRat_Tier3_room.png` },
   4: { char: `${ASSET_BASE}/GymRat_Tier4_character.png`, room: `${ASSET_BASE}/GymRat_Tier4_room.png` },
   5: { char: `${ASSET_BASE}/GymRat_Tier4_character.png`, room: `${ASSET_BASE}/GymRat_Tier4_room.png` }
