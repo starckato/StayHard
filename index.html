@@ -20,7 +20,7 @@
      so window globals (dkey, normKey, ...) are set before inline code runs.
      Query version bumps cache when bundle content changes. Bump manually or
      via build script when shipping a new bundle. See MIGRATION_PLAN.md. -->
-<script src="/dist/app.js?v=20260425p"></script>
+<script src="/dist/app.js?v=20260425q"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Archivo+Black&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -546,6 +546,21 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 .fr-nudge-body{font-family:'Noto Serif KR',serif;font-size:15px;color:var(--text);letter-spacing:-.01em;margin-bottom:2px;}
 .fr-nudge-sub{font-size:10px;color:var(--text3);letter-spacing:.16em;text-transform:uppercase;font-family:'DM Sans',sans-serif;}
 .fr-nudge-foot{font-size:10.5px;color:var(--text3);text-align:center;letter-spacing:.04em;}
+
+/* Inbox (received nudges) */
+.fr-section-head-right{display:flex;align-items:center;gap:12px;}
+.fr-link-btn{background:transparent;border:none;color:var(--text3);font-family:'DM Sans',sans-serif;font-size:11px;cursor:pointer;padding:4px 6px;letter-spacing:-.005em;border-radius:6px;touch-action:manipulation;}
+.fr-link-btn:hover{color:var(--text2);}
+.fr-inbox-row{display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--surface);border:1px solid var(--border);border-radius:12px;transition:border-color .15s,background .15s;cursor:default;}
+.fr-inbox-row.unread{border-color:rgba(255,77,77,.35);background:rgba(255,77,77,.04);cursor:pointer;}
+.fr-inbox-row.unread:hover{border-color:var(--accent);}
+.fr-inbox-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+.fr-inbox-dot.on{background:var(--accent);box-shadow:0 0 6px rgba(255,77,77,.65);}
+.fr-inbox-dot.off{background:var(--border);}
+.fr-inbox-main{flex:1;min-width:0;}
+.fr-inbox-body{font-family:'Noto Serif KR',serif;font-size:14.5px;letter-spacing:-.01em;color:var(--text);line-height:1.35;margin-bottom:3px;}
+.fr-inbox-meta{font-size:10.5px;color:var(--text3);font-family:'DM Sans',sans-serif;letter-spacing:-.005em;}
+.fr-inbox-empty{padding:20px;text-align:center;font-size:12px;color:var(--text3);background:var(--surface);border:1px dashed var(--border);border-radius:12px;}
 .bni{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:8px 0;color:var(--text3);font-size:10px;font-weight:600;letter-spacing:.02em;transition:color .15s;touch-action:manipulation;position:relative;}
 .bni.active{color:var(--accent);}
 .bni.active::after{content:'';position:absolute;top:4px;left:50%;transform:translateX(-50%);width:4px;height:4px;border-radius:50%;background:var(--accent);box-shadow:0 0 8px var(--accent);}
@@ -5406,6 +5421,7 @@ async function init(){
     if(event==='SIGNED_OUT'){
       _initDone=false;CU=null;CP=null;
       try{localStorage.removeItem('lastUserId');localStorage.removeItem('lastUserEmail');}catch(e){}
+      try{window.sh&&window.sh.friends&&window.sh.friends.stopRealtimeNudges&&window.sh.friends.stopRealtimeNudges();}catch(e){}
       hide('loading');showAuth();
     }
   });
@@ -5793,6 +5809,12 @@ async function onLogin(user){
     localStorage.setItem('lastUserId',user.id);
     localStorage.setItem('lastUserEmail',user.email||'');
   }catch(e){}
+  // Friends realtime: incoming nudge 구독 — INSERT 발생 시 배너 + 배지 갱신.
+  try{
+    if(window.sh&&window.sh.friends&&typeof window.sh.friends.startRealtimeNudges==='function'){
+      window.sh.friends.startRealtimeNudges(user.id, document.getElementById('fr-unread-badge'));
+    }
+  }catch(e){console.warn('[friends] realtime start failed',e);}
   // ── 스냅샷 즉시 복원 (init에서 이미 paint 했으면 skip, 다른 유저 전환 시에는 paint) ──
   const _snap=_loadSnapshot(user.id);
   let _snapPainted=window._paintedUserId===user.id; // init이 같은 유저로 이미 그렸음

@@ -6,6 +6,8 @@
 
 import * as ui from './ui.js';
 import * as nudgeApi from './nudge.js';
+import { sb } from '../../lib/supabase.js';
+import { presetBody } from './presets.js';
 
 let _mounted = false;
 let _badgeTickerId = null;
@@ -57,6 +59,73 @@ export function startUnreadBadgePoll(badgeEl, pollMs = 60000) {
 
 export function stopUnreadBadgePoll() {
   if (_badgeTickerId) { clearInterval(_badgeTickerId); _badgeTickerId = null; }
+}
+
+// ── Realtime subscription for incoming nudges ─────────────────
+// Listens to INSERT on public.nudges filtered to the current user. On hit:
+// 1) Refresh inbox render (friends sub-tab, if mounted).
+// 2) Bump the unread badge.
+// 3) Show a top-center toast ("○○에서 nudge") as in-app notification.
+// Falls back silently if realtime not configured for the table.
+let _channel = null;
+let _channelUserId = null;
+
+/**
+ * Start realtime subscription. Call once per session after auth.
+ * @param {string} userId — auth.uid()
+ * @param {HTMLElement|null} badgeEl — optional badge to live-increment
+ */
+export function startRealtimeNudges(userId, badgeEl) {
+  if (!userId) return;
+  if (_channel && _channelUserId === userId) return; // already subscribed
+  stopRealtimeNudges();
+  _channelUserId = userId;
+
+  try {
+    _channel = sb
+      .channel(`friends-nudges-${userId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'nudges',
+          filter: `recipient_id=eq.${userId}`,
+        },
+        (payload) => {
+          const n = payload?.new;
+          if (!n) return;
+          // Badge bump.
+          if (badgeEl) {
+            const cur = parseInt(badgeEl.textContent || '0', 10) || 0;
+            const next = cur + 1;
+            badgeEl.hidden = false;
+            badgeEl.textContent = next > 9 ? '9+' : String(next);
+          }
+          // Toast — use window.showToast if available.
+          const body = presetBody(n.preset_id);
+          if (typeof window !== 'undefined' && typeof window.showToast === 'function') {
+            window.showToast(`친구에게서 nudge · ${body}`);
+          }
+          // If user is currently on friends sub-tab, refresh inbox.
+          const subFriends = document.getElementById('sub-friends');
+          if (subFriends && !subFriends.hidden) {
+            ui.refresh();
+          }
+        }
+      )
+      .subscribe();
+  } catch (e) {
+    console.warn('[friends] realtime subscribe failed', e);
+  }
+}
+
+export function stopRealtimeNudges() {
+  if (_channel) {
+    try { sb.removeChannel(_channel); } catch {}
+    _channel = null;
+    _channelUserId = null;
+  }
 }
 
 export { ui as friendsUI, nudgeApi as nudgeAPI };

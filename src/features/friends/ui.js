@@ -27,14 +27,29 @@ export async function mount(root) {
 /** Re-fetch + re-render. */
 export async function refresh() {
   if (!_rootEl) return;
-  const [code, incoming, friends] = await Promise.all([
+  const [code, incoming, friends, inbox] = await Promise.all([
     api.getMyFriendCode(),
     api.listIncomingRequests(),
     api.listFriends(),
+    nudgeApi.listInbox({ limit: 30 }),
   ]);
   setMyCode(code);
   renderIncoming(incoming);
+  renderInbox(inbox);
   renderFriendList(friends);
+}
+
+/**
+ * Push a single new incoming nudge into the inbox without full re-fetch.
+ * Called by realtime subscription in index.js.
+ * @param {Object} nudge — { id, sender_id, sender_display_name?, sender_username?, preset_id, read_at, created_at }
+ */
+export async function injectNewNudge(nudge) {
+  if (!_rootEl || !nudge) return;
+  // Realtime event doesn't come with JOIN'd sender profile — re-fetch inbox
+  // instead of trying to synthesize the row client-side.
+  const inbox = await nudgeApi.listInbox({ limit: 30 });
+  renderInbox(inbox);
 }
 
 function _skeletonHTML() {
@@ -66,6 +81,17 @@ function _skeletonHTML() {
           <div class="fr-section-count" id="fr-incoming-count">0</div>
         </div>
         <div class="fr-list" id="fr-incoming-list"></div>
+      </section>
+
+      <section class="fr-section" id="fr-inbox-section" hidden>
+        <div class="fr-section-head">
+          <div class="fr-section-title">받은 Nudge</div>
+          <div class="fr-section-head-right">
+            <button class="fr-link-btn" id="fr-inbox-toggle" type="button" data-mode="unread">전체 보기</button>
+            <div class="fr-section-count" id="fr-inbox-count">0</div>
+          </div>
+        </div>
+        <div class="fr-list" id="fr-inbox-list"></div>
       </section>
 
       <section class="fr-section">
@@ -173,6 +199,110 @@ function _incomingRowHTML(r) {
       </div>
     </div>
   `;
+}
+
+// ── Nudge inbox ────────────────────────────────────────────────
+let _inboxCache = [];
+let _inboxMode = 'unread'; // 'unread' | 'all'
+
+function renderInbox(rows) {
+  _inboxCache = Array.isArray(rows) ? rows.slice() : [];
+  const section = document.getElementById('fr-inbox-section');
+  const list    = document.getElementById('fr-inbox-list');
+  const count   = document.getElementById('fr-inbox-count');
+  const toggle  = document.getElementById('fr-inbox-toggle');
+  if (!section || !list || !count) return;
+
+  // Bind toggle once.
+  if (toggle && !toggle.dataset.bound) {
+    toggle.dataset.bound = '1';
+    toggle.addEventListener('click', () => {
+      _inboxMode = _inboxMode === 'unread' ? 'all' : 'unread';
+      toggle.dataset.mode = _inboxMode;
+      toggle.textContent = _inboxMode === 'unread' ? '전체 보기' : '안 읽은 것만';
+      _paintInbox();
+    });
+  }
+
+  if (_inboxCache.length === 0) { section.hidden = true; list.innerHTML = ''; count.textContent = '0'; return; }
+  section.hidden = false;
+  _paintInbox();
+}
+
+function _paintInbox() {
+  const list  = document.getElementById('fr-inbox-list');
+  const count = document.getElementById('fr-inbox-count');
+  if (!list || !count) return;
+
+  const rows = _inboxMode === 'unread'
+    ? _inboxCache.filter(r => !r.read_at)
+    : _inboxCache;
+  const unread = _inboxCache.filter(r => !r.read_at).length;
+  count.textContent = String(unread);
+
+  if (rows.length === 0) {
+    list.innerHTML = `<div class="fr-inbox-empty">${_inboxMode === 'unread' ? '안 읽은 nudge 없음.' : 'nudge 받은 기록 없음.'}</div>`;
+    return;
+  }
+  list.innerHTML = rows.map(r => _inboxRowHTML(r)).join('');
+
+  list.querySelectorAll('[data-reply]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const fid  = btn.getAttribute('data-reply');
+      const name = btn.getAttribute('data-name') || '';
+      openNudgeSheet(fid, name);
+    });
+  });
+  list.querySelectorAll('.fr-inbox-row[data-unread="1"]').forEach(row => {
+    const id = row.getAttribute('data-id');
+    row.addEventListener('click', () => _markOneRead(id, row));
+  });
+}
+
+function _inboxRowHTML(n) {
+  const name = escapeHTML(n.sender_display_name || n.sender_username || '이름 없음');
+  const body = escapeHTML(presetBody(n.preset_id));
+  const time = _timeAgo(n.created_at);
+  const unread = !n.read_at;
+  return `
+    <div class="fr-inbox-row ${unread ? 'unread' : ''}" data-unread="${unread ? '1' : '0'}" data-id="${n.id}">
+      <div class="fr-inbox-dot ${unread ? 'on' : 'off'}"></div>
+      <div class="fr-inbox-main">
+        <div class="fr-inbox-body">${body}</div>
+        <div class="fr-inbox-meta">${name} · ${time}</div>
+      </div>
+      <button class="fr-btn-small" data-reply="${n.sender_id}" data-name="${name}" type="button">응답</button>
+    </div>
+  `;
+}
+
+async function _markOneRead(id, rowEl) {
+  if (!id) return;
+  // Optimistic UI: flip style immediately.
+  if (rowEl) {
+    rowEl.classList.remove('unread');
+    rowEl.setAttribute('data-unread', '0');
+    const dot = rowEl.querySelector('.fr-inbox-dot'); if (dot) { dot.classList.remove('on'); dot.classList.add('off'); }
+  }
+  const cached = _inboxCache.find(r => r.id === id);
+  if (cached) cached.read_at = new Date().toISOString();
+  // Re-paint count (inbox filter may shift in unread-only mode).
+  const unread = _inboxCache.filter(r => !r.read_at).length;
+  const count = document.getElementById('fr-inbox-count');
+  if (count) count.textContent = String(unread);
+  // Fire-and-forget server write.
+  nudgeApi.markRead([id]).catch(() => {});
+}
+
+// Time-ago: 방금 / N분 전 / N시간 전 / N일 전.
+function _timeAgo(iso) {
+  const t = new Date(iso).getTime();
+  const s = Math.floor((Date.now() - t) / 1000);
+  if (s < 45)           return '방금';
+  if (s < 60 * 60)      return `${Math.floor(s / 60)}분 전`;
+  if (s < 60 * 60 * 24) return `${Math.floor(s / 3600)}시간 전`;
+  return `${Math.floor(s / 86400)}일 전`;
 }
 
 async function handleRespond(id, accept) {
