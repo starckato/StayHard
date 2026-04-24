@@ -426,7 +426,7 @@ export function dhTapFeedback() {
 // Phase 2b — 큐브 tap 툴팁 + bonus ★ 팝오버
 // ══════════════════════════════════════════════════════════════════════════
 
-// 색 + 카테고리별 Korean 메시지. Goggins / editorial 톤 유지.
+// 색 + 카테고리별 Korean 메시지. manifesto / editorial 톤 유지.
 const CUBE_TOOLTIP_COPY = {
   meal: {
     gold:    '모든 끼니 청정',

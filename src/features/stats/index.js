@@ -228,7 +228,7 @@ export function stCalcOverallGrade(rows){
   return{grade,color,avgScore,sub:rows.length+'일 기준',woPerWeek,cleanPct,routinePct,targetPct};
 }
 
-// ── 약점 카테고리 → 다음 주 집중 포인트 문장 (Goggins voice) ──
+// ── 약점 카테고리 → 다음 주 집중 포인트 문장 (manifesto voice) ──
 // 입력: stCalcOverallGrade 결과 g, rows — 출력: {text, tag, borderColor} or null
 export function _stFocusSentence(g, rows){
   if(!g||!rows||!rows.length)return null;
@@ -248,7 +248,7 @@ export function _stFocusSentence(g, rows){
   let worst=null,worstScore=Infinity;
   Object.entries(scores).forEach(([k,v])=>{if(v!==null&&v!==undefined&&v<worstScore){worst=k;worstScore=v;}});
   if(!worst)return null;
-  // 카테고리별 Goggins voice 템플릿
+  // 카테고리별 manifesto voice 템플릿
   const templates={
     훈련:[
       '훈련이 약해. 다음 주 1회만 더.',
@@ -295,7 +295,7 @@ export function stRenderHero(rows){
     if(gradeEl){gradeEl.textContent=g.grade;gradeEl.style.color=g.color;}
     if(gradeSub)gradeSub.textContent=g.sub;
 
-    // Sprint D1: 약점 카테고리 → 한 줄 집중 포인트 (Goggins 톤)
+    // Sprint D1: 약점 카테고리 → 한 줄 집중 포인트 (manifesto 톤)
     const focusEl=document.getElementById('st-hero-focus');
     const focusMsg=document.getElementById('st-hero-focus-msg');
     const focusTag=document.getElementById('st-hero-focus-tag');

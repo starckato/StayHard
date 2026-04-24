@@ -20,7 +20,7 @@
      so window globals (dkey, normKey, ...) are set before inline code runs.
      Query version bumps cache when bundle content changes. Bump manually or
      via build script when shipping a new bundle. See MIGRATION_PLAN.md. -->
-<script src="/dist/app.js?v=20260425t"></script>
+<script src="/dist/app.js?v=20260425u"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Archivo+Black&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -32,13 +32,13 @@
   --amber:#f59e0b;--amber-bg:rgba(245,158,11,0.12);--amber-bd:rgba(245,158,11,0.30);
   --blue:#38bdf8;--blue-bg:rgba(56,189,248,0.12);
   --accent:#ff4d4d;--accent-bg:rgba(255,77,77,0.10);--accent-bd:rgba(255,77,77,0.25);
-  --goggins:#ff4d4d;
+  --accent-red:#ff4d4d;
   --accent-grad:linear-gradient(135deg,#ff4d4d 0%,#ff6b35 100%);
   --radius:12px;--radius-sm:10px;
   --glow:0 0 20px rgba(255,77,77,0.15);
 }
 
-/* ═════ Goggins primary CTA — use on all main action buttons ═════ */
+/* ═════ Primary CTA — use on all main action buttons ═════ */
 .btn-primary,.abtn,.ws-done-btn,.mbtn{
   background:var(--accent-grad)!important;
   border:none;color:#fff;font-weight:700;letter-spacing:.01em;
@@ -188,18 +188,18 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 
 /* ── MICRO INTERACTIONS ── */
 
-/* Goggins Rage Overlay */
-#goggins-rage{position:fixed;inset:0;z-index:1000;display:none;flex-direction:column;align-items:center;justify-content:center;padding:32px;text-align:center;background:rgba(255,77,77,0.97);}
-#goggins-rage .rage-face{font-size:72px;margin-bottom:16px;animation:rageBounce .4s ease infinite alternate;}
-#goggins-rage .rage-msg{font-size:18px;font-weight:800;color:#fff;line-height:1.6;margin-bottom:24px;letter-spacing:-.3px;max-width:280px;word-break:keep-all;white-space:pre-line;}
-#goggins-rage .rage-close{padding:14px 40px;background:#fff;border:none;border-radius:30px;font-size:15px;font-weight:700;color:#ff4d4d;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;}
+/* Rage Overlay */
+#rage-overlay{position:fixed;inset:0;z-index:1000;display:none;flex-direction:column;align-items:center;justify-content:center;padding:32px;text-align:center;background:rgba(255,77,77,0.97);}
+#rage-overlay .rage-face{font-size:72px;margin-bottom:16px;animation:rageBounce .4s ease infinite alternate;}
+#rage-overlay .rage-msg{font-size:18px;font-weight:800;color:#fff;line-height:1.6;margin-bottom:24px;letter-spacing:-.3px;max-width:280px;word-break:keep-all;white-space:pre-line;}
+#rage-overlay .rage-close{padding:14px 40px;background:#fff;border:none;border-radius:30px;font-size:15px;font-weight:700;color:#ff4d4d;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;}
 @keyframes rageBounce{0%{transform:scale(1) rotate(-5deg);}100%{transform:scale(1.15) rotate(5deg);}}
 @keyframes rageFlash{0%,100%{opacity:1;}50%{opacity:.6;}}
 
 /* Win Confetti Overlay */
-#goggins-win{position:fixed;inset:0;z-index:1000;display:none;flex-direction:column;align-items:center;justify-content:center;padding:32px;text-align:center;pointer-events:none;}
-#goggins-win .win-emoji{font-size:64px;animation:winPop .5s cubic-bezier(.17,.67,.35,1.3);}
-#goggins-win .win-msg{font-size:16px;font-weight:700;color:var(--green);margin-top:16px;animation:winSlide .4s ease;background:rgba(10,10,12,0.85);backdrop-filter:blur(12px);border:1px solid var(--green-bd);border-radius:12px;padding:12px 20px;max-width:280px;text-align:center;line-height:1.6;white-space:pre-line;word-break:keep-all;}
+#win-overlay{position:fixed;inset:0;z-index:1000;display:none;flex-direction:column;align-items:center;justify-content:center;padding:32px;text-align:center;pointer-events:none;}
+#win-overlay .win-emoji{font-size:64px;animation:winPop .5s cubic-bezier(.17,.67,.35,1.3);}
+#win-overlay .win-msg{font-size:16px;font-weight:700;color:var(--green);margin-top:16px;animation:winSlide .4s ease;background:rgba(10,10,12,0.85);backdrop-filter:blur(12px);border:1px solid var(--green-bd);border-radius:12px;padding:12px 20px;max-width:280px;text-align:center;line-height:1.6;white-space:pre-line;word-break:keep-all;}
 @keyframes winPop{0%{transform:scale(0);}100%{transform:scale(1);}}
 @keyframes winSlide{0%{opacity:0;transform:translateY(10px);}100%{opacity:1;transform:translateY(0);}}
 
@@ -259,14 +259,14 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 .hdr-left{flex:1;}
 .hdr-title{font-size:18px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;}
 .hdr-sub{font-size:10px;color:var(--text3);margin-top:2px;font-family:'DM Mono',monospace;letter-spacing:.03em;}
-/* Goggins badge in header */
-.goggins-badge{display:flex;align-items:center;gap:5px;background:var(--surface);border:1px solid var(--border2);border-radius:20px;padding:5px 11px;cursor:pointer;transition:all .2s;backdrop-filter:blur(8px);}
-.goggins-badge:hover{border-color:var(--goggins);box-shadow:var(--glow);}
-.goggins-flame{font-size:14px;}
-.goggins-streak{font-size:11px;font-weight:700;color:var(--amber);font-family:'DM Mono',monospace;}
-.goggins-score{font-size:11px;font-weight:700;color:var(--text);font-family:'DM Mono',monospace;}
-.goggins-dot{width:2px;height:2px;border-radius:50%;background:var(--text3);}
-.goggins-tier{font-size:10px;color:var(--text2);font-weight:600;}
+/* Tier badge in header */
+.tier-badge{display:flex;align-items:center;gap:5px;background:var(--surface);border:1px solid var(--border2);border-radius:20px;padding:5px 11px;cursor:pointer;transition:all .2s;backdrop-filter:blur(8px);}
+.tier-badge:hover{border-color:var(--accent-red);box-shadow:var(--glow);}
+.tier-flame{font-size:14px;}
+.tier-streak{font-size:11px;font-weight:700;color:var(--amber);font-family:'DM Mono',monospace;}
+.tier-score{font-size:11px;font-weight:700;color:var(--text);font-family:'DM Mono',monospace;}
+.tier-dot{width:2px;height:2px;border-radius:50%;background:var(--text3);}
+.tier-label{font-size:10px;color:var(--text2);font-weight:600;}
 .avatar-btn{width:30px;height:30px;border-radius:50%;background:var(--surface2);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:13px;cursor:pointer;margin-left:6px;transition:border-color .15s;}
 .avatar-btn:active{border-color:var(--accent);}
 
@@ -849,9 +849,9 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
 .check-rows{padding:4px 16px 4px;}
 .tasks-sec-label{font-size:10px;font-weight:700;color:var(--text2);padding:12px 16px 6px;text-transform:uppercase;letter-spacing:.09em;display:flex;align-items:center;justify-content:space-between;}
 .tasks-sec-label .s-badge{font-size:11px;font-weight:600;}
-/* Mandatory derived rows — Goggins red left border */
-.ck-row.derived{border-left:3px solid var(--goggins);padding-left:10px;margin-left:-13px;border-bottom:1px solid var(--border);}
-.ck-row.derived .ck-box.done{background:var(--goggins);border-color:var(--goggins);color:#fff;}
+/* Mandatory derived rows — Accent red left border */
+.ck-row.derived{border-left:3px solid var(--accent-red);padding-left:10px;margin-left:-13px;border-bottom:1px solid var(--border);}
+.ck-row.derived .ck-box.done{background:var(--accent-red);border-color:var(--accent-red);color:#fff;}
 .ck-row.custom{border-left:3px solid var(--accent-bd);padding-left:10px;margin-left:-13px;}
 .ck-row.tgt-type{border-left:3px solid var(--border2);padding-left:10px;margin-left:-13px;}
 .ck-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);touch-action:manipulation;-webkit-tap-highlight-color:transparent;min-height:48px;}
@@ -873,7 +873,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
 .tgt-btn.done{background:var(--green-bg);border-color:var(--green);color:var(--green);}
 .tgt-btn.fail{background:var(--red-bg);border-color:var(--red);color:var(--red);}
 /* Routine badge — makes "this is a recurring routine" unambiguous */
-.routine-pill{font-size:9px;font-weight:700;padding:2px 6px;border-radius:5px;background:rgba(255,77,77,.12);color:var(--goggins);border:0.5px solid rgba(255,77,77,.4);margin-left:6px;vertical-align:middle;letter-spacing:.04em;text-transform:uppercase;}
+.routine-pill{font-size:9px;font-weight:700;padding:2px 6px;border-radius:5px;background:rgba(255,77,77,.12);color:var(--accent-red);border:0.5px solid rgba(255,77,77,.4);margin-left:6px;vertical-align:middle;letter-spacing:.04em;text-transform:uppercase;}
 .routine-pill.auto{background:rgba(255,77,77,.12);color:var(--accent);border-color:var(--accent-bd);}
 .tgt-text.fail{text-decoration:line-through;color:var(--text3);}
 .tgt-text{font-size:16px;flex:1;}
@@ -886,10 +886,10 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
 .add-tgt-input input:focus{border-color:var(--accent);}
 .add-tgt-go{padding:12px 18px;background:var(--accent);color:#fff;border:none;border-radius:var(--radius-sm);font-family:'DM Sans',sans-serif;font-size:15px;font-weight:500;cursor:pointer;min-height:48px;touch-action:manipulation;}
 
-/* ─── GOGGINS TAB ─── */
-#view-goggins{padding:0 16px 8px;}
-.goggins-hero{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:10px;display:flex;flex-direction:column;align-items:center;}
-.goggins-ring-wrap{position:relative;width:120px;height:120px;margin-bottom:12px;}
+/* ─── STATUS TAB ─── */
+#view-status{padding:0 16px 8px;}
+.status-hero{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:10px;display:flex;flex-direction:column;align-items:center;}
+.status-ring-wrap{position:relative;width:120px;height:120px;margin-bottom:12px;}
 .g-ring-svg{width:120px;height:120px;transform:rotate(-90deg);}
 .g-ring-track{fill:none;stroke:var(--surface3);stroke-width:9;}
 .g-ring-fill{fill:none;stroke-width:9;stroke-linecap:round;stroke-dasharray:314;transition:stroke-dashoffset .6s cubic-bezier(.4,0,.2,1);}
@@ -1633,11 +1633,11 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
     </div>
   </div>
 
-  <!-- ══ GOGGINS TAB ══ -->
-  <div class="view" id="view-goggins">
+  <!-- ══ STATUS TAB ══ -->
+  <div class="view" id="view-status">
     <!-- hero ring -->
-    <div class="goggins-hero" id="goggins-hero">
-      <div class="goggins-ring-wrap">
+    <div class="status-hero" id="status-hero">
+      <div class="status-ring-wrap">
         <svg class="g-ring-svg" viewBox="0 0 120 120">
           <circle class="g-ring-track" cx="60" cy="60" r="50"/>
           <circle class="g-ring-fill" id="g-ring-fill" cx="60" cy="60" r="50" stroke="#ff4d4d" style="stroke-dashoffset:314;"/>
@@ -1790,7 +1790,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
         </div>
       </div>
 
-      <!-- Focus / Weakness card — Goggins-tone, rule-based suggestion -->
+      <!-- Focus / Weakness card — manifesto-tone, rule-based suggestion -->
       <div class="stats-focus" id="st-focus-card" style="display:none;margin-left:14px;margin-right:14px;">
         <div class="stats-focus-hdr">
           <span class="stats-focus-tag" id="st-focus-tag">다음 주</span>
@@ -1932,7 +1932,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
       <!-- Today's progress — 메인 숫자 + 바 (상태 문구는 바 안에 통합) -->
       <div style="display:flex;align-items:baseline;justify-content:space-between;gap:6px;margin-bottom:6px;">
         <div id="puc-status" style="font-size:11px;font-weight:600;color:var(--text2);">목표까지 30개 더!</div>
-        <div><span id="puc-today" style="font-size:34px;font-weight:800;color:var(--goggins);font-family:'DM Mono',monospace;">0</span><span style="font-size:13px;color:var(--text3);"> / <span id="puc-goal">30</span>개</span></div>
+        <div><span id="puc-today" style="font-size:34px;font-weight:800;color:var(--accent-red);font-family:'DM Mono',monospace;">0</span><span style="font-size:13px;color:var(--text3);"> / <span id="puc-goal">30</span>개</span></div>
       </div>
       <div style="height:8px;background:var(--surface2);border-radius:999px;overflow:hidden;margin-bottom:14px;">
         <div id="puc-bar" style="height:100%;width:0%;background:linear-gradient(90deg,var(--accent),#ff4d4d);border-radius:999px;transition:width .4s ease;"></div>
@@ -2024,7 +2024,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
     <div id="sg-my-status" style="padding:16px 20px;background:var(--surface2);border-bottom:1px solid var(--border);flex-shrink:0;display:flex;align-items:center;gap:16px;"></div>
     <!-- 스크롤 영역 -->
     <div style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 20px 40px;">
-      <!-- Goggins-voice explainer (M6) -->
+      <!-- manifesto-voice explainer (M6) -->
       <div style="margin-top:14px;padding:12px 14px;background:rgba(255,77,77,0.06);border:1px solid rgba(255,77,77,0.18);border-radius:12px;font-size:12px;color:var(--text2);line-height:1.6;">
         점수는 일회성 이벤트 아냐.<br>
         매일 체크, 매일 쌓아.<br>
@@ -2473,7 +2473,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
         <!-- Step 1: 환영 + 앱 철학 + 4축 기능 소개 -->
         <div id="ob-s1" style="padding:28px 22px 22px;text-align:center;">
           <div style="font-size:11px;color:var(--text3);letter-spacing:0.12em;font-weight:600;margin-bottom:6px;">환영한다<span id="ob-name-wrap">, <span id="ob-name"></span></span></div>
-          <div style="font-family:'Archivo Black',sans-serif;font-size:30px;letter-spacing:-.02em;color:#fff;margin-bottom:4px;line-height:1;">STAY HARD</div>
+          <div style="font-family:'Archivo Black',sans-serif;font-size:30px;letter-spacing:-.02em;color:#fff;margin-bottom:4px;line-height:1;">QROK</div>
           <div style="font-size:12px;color:#ff9f43;font-weight:700;margin-bottom:18px;letter-spacing:-.01em;">매일 작은 체크, 꾸준한 성장</div>
 
           <div style="font-size:13px;color:var(--text2);line-height:1.65;margin-bottom:20px;padding:0 6px;">
@@ -2647,16 +2647,16 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
     </div>
   </div>
 
-  <!-- GOGGINS RAGE OVERLAY -->
-  <div id="goggins-rage">
+  <!-- RAGE OVERLAY -->
+  <div id="rage-overlay">
     <div class="rage-face" id="rage-face">😤</div>
     <div class="rage-msg" id="rage-msg"></div>
     <button class="rage-close" onclick="closeRage()">알겠어, 다시 일어선다</button>
   </div>
 
-  <!-- GOGGINS WIN OVERLAY -->
-  <!-- GOGGINS 100점 특별 팡파레 -->
-<div id="goggins-100" style="display:none;position:fixed;inset:0;z-index:1000;flex-direction:column;align-items:center;justify-content:center;padding:32px;text-align:center;background:rgba(0,0,0,.92);" onclick="document.getElementById('goggins-100').style.display='none';document.body.style.overflow='';">
+  <!-- WIN OVERLAY -->
+  <!-- WIN 100 특별 팡파레 -->
+<div id="win-100-overlay" style="display:none;position:fixed;inset:0;z-index:1000;flex-direction:column;align-items:center;justify-content:center;padding:32px;text-align:center;background:rgba(0,0,0,.92);" onclick="document.getElementById('win-100-overlay').style.display='none';document.body.style.overflow='';">
   <div id="g100-icon" style="font-size:80px;margin-bottom:16px;animation:rageBounce .4s ease infinite alternate;">💀</div>
   <div style="font-size:36px;font-weight:900;color:#a855f7;margin-bottom:8px;letter-spacing:-1px;">+100점</div>
   <div style="font-size:20px;font-weight:800;color:#fff;margin-bottom:12px;">고긴스 챌린지 달성!</div>
@@ -2666,7 +2666,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
   <div style="font-size:12px;color:rgba(255,255,255,.4);">탭해서 닫기</div>
 </div>
 
-<div id="goggins-win">
+<div id="win-overlay">
     <div class="win-emoji" id="win-emoji">🔥</div>
     <div id="win-title" style="display:none;font-size:13px;font-weight:700;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.1em;margin-top:14px;"></div>
     <div class="win-msg" id="win-msg"></div>
@@ -2852,7 +2852,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
         </div>
         <button id="msn-alcohol-cheat-toggle" onclick="toggleAlcoholCheat()" style="padding:5px 12px;border-radius:20px;border:1.5px solid var(--red-bd);background:transparent;color:var(--red);font-size:11px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">치팅 적용</button>
       </div>
-      <div id="msn-alcohol-penalty-label" style="font-size:11px;color:var(--red);opacity:0.8;line-height:1.6;padding-top:6px;border-top:0.5px solid var(--red-bd);">고정 <strong>−30점</strong> 패널티 · Goggins가 실망합니다</div>
+      <div id="msn-alcohol-penalty-label" style="font-size:11px;color:var(--red);opacity:0.8;line-height:1.6;padding-top:6px;border-top:0.5px solid var(--red-bd);">고정 <strong>−30점</strong> 패널티</div>
     </div>
 
     <!-- 음식 이름 -->
@@ -5038,10 +5038,10 @@ function startSessionFromRoutine(id){
 
 // MONTHS / WDAYS / WDAYS_STRIP — removed Phase 1 (dead code, no usage in app).
 
-// ── GOGGINS TIERS (누적 점수 기반) ──
+// ── TIERS (누적 점수 기반) ──
 // 티어 기준: ~"현실적 노력 하루" ≈ 30점 (운동+루틴 몇개+클린식단 1끼 수준) 가정.
 // 각성자=200 (1주 노력), 저항자=600 (1개월), 수련자=1500 (2-3개월),
-// 지배자=3500 (반년 이상), Goggins=7000 (1년+ 지속).
+// 지배자=3500 (반년 이상), tier6=7000 (1년+ 지속).
 // TIERS / getTier / ASSET_BASE / TIER_ASSETS / getTierAssets / TIER_QUOTES
 // — moved to src/lib/tier.js (Phase 1.2). Available via window.* from /dist/app.js bundle.
 function renderCharCard(){
@@ -5191,7 +5191,7 @@ function closeRoomOverlay(){
   document.body.style.overflow='';
 }
 
-// ── 점수 이벤트 타입 (Goggins-weighted: 물리적 단련 우선) ──
+// ── 점수 이벤트 타입 (physical-emphasis: 물리적 단련 우선) ──
 // 규칙:
 //   • 긍정 행동만 점수 부여. "실패"/"금지"/"음주" 등 패널티 이벤트는 0점.
 //   • 취소(_cancel / _delete) 이벤트는 원래 부여된 점수를 그대로 차감 (장부 기록용).
@@ -5275,7 +5275,7 @@ function addScore(type, note='', ptsOverride=null, silent=false){
   _dirtyKeys.add(TODAY);
   clearTimeout(_saveTimer);
   _saveTimer=setTimeout(_flushSave, 500);
-  updateGogginsHeader();
+  updateHeaderStatus();
   renderCharCard();
   // 첫 주 미션 재평가 — weight/workout/routine 등 어떤 스코어 이벤트든 체크 상태 갱신
   try{if(typeof renderFirstWeekCard==='function')renderFirstWeekCard();}catch(e){}
@@ -5320,22 +5320,22 @@ async function _saveScoreNow(){
   }catch(e){console.warn('score flush error:',e.message);}
 }
 
-// ── DAILY GOGGINS MOTTOS (10개, 하루씩 순환) ──
-// GOGGINS_MOTTOS — moved to src/data/mottos.js (Phase 1.3). window.GOGGINS_MOTTOS via bundle.
+// ── DAILY MOTTOS (10개, 하루씩 순환) ──
+// DAILY_MOTTOS — moved to src/data/mottos.js (Phase 1.3). window.DAILY_MOTTOS via bundle.
 let _mottoIdx=-1;
 function showDailyMotto(){
   const el=document.getElementById('daily-motto');
   if(!el)return;
   // Pick a new random quote each session (different from last shown)
   let idx;
-  do{idx=Math.floor(Math.random()*GOGGINS_MOTTOS.length);}while(idx===_mottoIdx&&GOGGINS_MOTTOS.length>1);
+  do{idx=Math.floor(Math.random()*DAILY_MOTTOS.length);}while(idx===_mottoIdx&&DAILY_MOTTOS.length>1);
   _mottoIdx=idx;
-  el.textContent='"'+GOGGINS_MOTTOS[idx].ko+'"';
+  el.textContent='"'+DAILY_MOTTOS[idx].ko+'"';
 }
 
-function calcGogginsScore(l){
+function calcDailyScore(l){
   // Today breakdown — EVERY _ptsLog entry contributes to total (no silent drops).
-  // Categories group by domain prefix so Goggins tab bars reflect reality.
+  // Categories group by domain prefix so status tab bars reflect reality.
   if(!l)return{total:0,diet:0,wo:0,mand:0,tgt:0,other:0};
   const pts=l._ptsLog||[];
   let diet=0,wo=0,mand=0,tgt=0,other=0;
@@ -5618,7 +5618,7 @@ function dismissYesterdayRibbon(){
 }
 
 // Sprint E2: 복귀 사용자 전용 soft ribbon (rage 대신 warmth)
-// N일 공백 감지 시 호출. 쉬운 루틴 1개 스포트라이트 + 완만한 Goggins 톤.
+// N일 공백 감지 시 호출. 쉬운 루틴 1개 스포트라이트 + 완만한 manifesto 톤.
 function showReturnerRibbon(gapDays){
   const ribbon=document.getElementById('yesterday-ribbon');
   if(!ribbon)return;
@@ -5911,7 +5911,7 @@ async function onLogin(user){
   // 스냅샷으로 이미 그렸으면 최신 데이터로 re-render 만. 아니면 첫 페인트.
   if(_snapPainted){
     renderRoutine();
-    updateGogginsHeader();
+    updateHeaderStatus();
   } else {
     _paintInitialUI(user);
   }
@@ -5948,7 +5948,7 @@ async function onLogin(user){
   }
   // Admin-issued bonus celebration — runs after reminder so it doesn't overlap
   setTimeout(checkBonusGrants, 2200);
-  // Day-1 저녁 Goggins nudge (empty-log 유저에게 gentle 부스트) — 3초 뒤 체크
+  // Day-1 저녁 nudge (empty-log 유저에게 gentle 부스트) — 3초 뒤 체크
   setTimeout(()=>{try{checkDay1EveningNudge();}catch(e){}},3000);
 }
 
@@ -5965,7 +5965,7 @@ function _paintInitialUI(user){
   showApp();
   buildSlider();
   renderRoutine();
-  updateGogginsHeader();
+  updateHeaderStatus();
 }
 
 // ── LOCALSTORAGE SNAPSHOT — 재방문 시 즉시 복원 ──
@@ -6084,7 +6084,7 @@ async function _prefetchWeekLogs(){
                 CP.total_score=targetScore;
                 try{if(CU)localStorage.setItem('score_'+CU.id,String(CP.total_score));}catch(_){}
                 try{_flushScoreUpdate();}catch(_){}
-                try{updateGogginsHeader();}catch(_){}
+                try{updateHeaderStatus();}catch(_){}
               }
             }
           }
@@ -6473,7 +6473,7 @@ window.CUBE_UI_MODE = true;
 // ── Will Cube Phase 3a: 색 변경 감지 & 팝오버 피드백 ───────
 // recomputeCubesHook 직전에 log.cubes 스냅샷 → 재계산 후 diff → showCubeEvent.
 // 색 승격(gray→silver/gold, silver→gold) 만 긍정 피드백.
-// crimson 전환은 Goggins 톤 토스트.
+// crimson 전환은 manifesto 톤 토스트.
 // bonus 새로 추가된 항목은 별도 이벤트.
 const CUBE_CHANGE_COPY={
   diet:{
@@ -6964,7 +6964,7 @@ function recomputeCubesHook(key,opts){
       }
     }catch(e){console.warn('[cube-score-sync]',e&&e.message);}
     // hdr-score / sb-today 실시간 refresh — 모든 점수 표시 한꺼번에.
-    try{updateGogginsHeader();}catch(e){}
+    try{updateHeaderStatus();}catch(e){}
     // Cube 변화 팝오버 — 오늘 날짜일 때만. 과거 로그 수정 / silent sync 는 조용히.
     try{
       if(k===TODAY&&!silent){
@@ -7014,14 +7014,14 @@ async function saveLog(key,silent=false){
   ]);
   try{
     const{error}=await _upsertWithTimeout();
-    if(!error){if(!silent)updateGogginsHeader();_saveSnapshot();return;}
+    if(!error){if(!silent)updateHeaderStatus();_saveSnapshot();return;}
     throw new Error(error.message);
   }catch(e){
     console.warn('saveLog failed, retrying:',e.message);
     await new Promise(r=>setTimeout(r,2000));
     try{
       const{error:err2}=await _upsertWithTimeout();
-      if(!err2){if(!silent)updateGogginsHeader();_saveSnapshot();return;}
+      if(!err2){if(!silent)updateHeaderStatus();_saveSnapshot();return;}
       throw new Error(err2.message);
     }catch(e2){
       console.error('saveLog failed:',e2.message);
@@ -7097,8 +7097,8 @@ function checkPerfectDay(){
   // recomputeCubesHook 의 diff 로 자연스럽게 팝오버 스택으로 전달됨.
   if(window.CUBE_UI_MODE===true)return;
   // 100점 오버레이가 떠있으면 skip
-  if(document.getElementById('goggins-100').style.display==='flex')return;
-  const scores=calcGogginsScore(log);
+  if(document.getElementById('win-100-overlay').style.display==='flex')return;
+  const scores=calcDailyScore(log);
   if(scores.total===100){
     if(_perfectDayShown)return; // 이미 발동됨 — confetti 중복 생성 방지
     _perfectDayShown=true;
@@ -7590,7 +7590,7 @@ async function claimBonusGrant(){
     if(error){console.warn('[bonus] claim failed',error);showToast('⚠️ 점수 적용 실패 — 잠시 후 다시 시도');return;}
     if(data&&data.ok){
       if(typeof data.total_score==='number'&&CP)CP.total_score=data.total_score;
-      try{updateGogginsHeader();}catch(e){}
+      try{updateHeaderStatus();}catch(e){}
       try{renderCharCard();}catch(e){}
       try{renderSummaryCard();}catch(e){}
       showToast('🔥 +'+(data.points||0)+'점 적립!');
@@ -7629,7 +7629,7 @@ async function shareBonusGrant(){
   // they come out as solid filled rectangles. Use solid accent color with text-shadow glow instead.
   card.innerHTML=`
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
-      <div style="font-family:'Archivo Black',sans-serif;font-size:15px;letter-spacing:.1em;color:#fff;">STAY HARD</div>
+      <div style="font-family:'Archivo Black',sans-serif;font-size:15px;letter-spacing:.1em;color:#fff;">QROK</div>
       <div style="font-size:11px;color:#8a8a94;font-family:'DM Mono',monospace;">${dateStr}</div>
     </div>
     <div style="text-align:center;padding:30px 0 18px;">
@@ -7644,7 +7644,7 @@ async function shareBonusGrant(){
     </div>
     <div style="border-top:1px dashed rgba(255,255,255,.14);padding-top:14px;display:flex;align-items:center;justify-content:space-between;gap:8px;">
       <div style="font-size:11px;color:#8a8a94;font-family:'DM Mono',monospace;letter-spacing:-.01em;">${displayDomain}</div>
-      <div style="font-size:10px;color:#5a5a66;letter-spacing:.1em;font-weight:700;">STAY HARD</div>
+      <div style="font-size:10px;color:#5a5a66;letter-spacing:.1em;font-weight:700;">QROK</div>
     </div>
   `;
   document.body.appendChild(card);
@@ -7660,7 +7660,7 @@ async function shareBonusGrant(){
     const shareText=(g.title||'')+' 🔥 Stay Hard 에서 너도 도전해봐 → '+shareUrl;
     try{
       if(navigator.canShare&&navigator.canShare({files:[file]})){
-        await navigator.share({files:[file],title:g.title||'STAY HARD',text:shareText});
+        await navigator.share({files:[file],title:g.title||'QROK',text:shareText});
         try{track('bonus_share',{event_key:g.event_key,channel:'web_share'});}catch(e){}
         // Keep modal open — user returns from share sheet
         document.body.style.overflow=prevOverflow;
@@ -7815,7 +7815,7 @@ function maybeUnlockStatsOnWorkout(scoreType){
   try{unlockNavBadge('stats');}catch(e){}
 }
 
-// ── Day-1 evening nudge (P2.3) — 첫날 저녁까지 점수 없을 때 Goggins-voice 격려 ──
+// ── Day-1 evening nudge (P2.3) — 첫날 저녁까지 점수 없을 때 manifesto-voice 격려 ──
 function checkDay1EveningNudge(){
   if(!CU||!CU.id)return;
   try{
@@ -7948,7 +7948,7 @@ async function shareInvite(){
   const safeName=String(userName).replace(/</g,'&lt;');
   card.innerHTML=`
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
-      <div style="font-family:'Archivo Black',sans-serif;font-size:15px;letter-spacing:.1em;color:#fff;">STAY HARD</div>
+      <div style="font-family:'Archivo Black',sans-serif;font-size:15px;letter-spacing:.1em;color:#fff;">QROK</div>
       <div style="font-size:11px;color:#8a8a94;font-family:'DM Mono',monospace;">초대장</div>
     </div>
     <div style="text-align:center;padding:30px 0 18px;">
@@ -7966,7 +7966,7 @@ async function shareInvite(){
     </div>
     <div style="border-top:1px dashed rgba(255,255,255,.14);padding-top:14px;display:flex;align-items:center;justify-content:space-between;gap:8px;">
       <div style="font-size:11px;color:#8a8a94;font-family:'DM Mono',monospace;letter-spacing:-.01em;">${displayUrl}</div>
-      <div style="font-size:10px;color:#5a5a66;letter-spacing:.1em;font-weight:700;">STAY HARD</div>
+      <div style="font-size:10px;color:#5a5a66;letter-spacing:.1em;font-weight:700;">QROK</div>
     </div>
   `;
   document.body.appendChild(card);
@@ -7981,7 +7981,7 @@ async function shareInvite(){
     document.body.style.overflow='';
     try{
       if(navigator.canShare&&navigator.canShare({files:[file]})){
-        await navigator.share({files:[file],title:'STAY HARD — 초대장',text:shareText});
+        await navigator.share({files:[file],title:'QROK — 초대장',text:shareText});
         try{track('invite_share',{channel:'web_share'});}catch(e){}
         document.body.style.overflow=prevOverflow;
         return;
@@ -8018,7 +8018,7 @@ function switchTab(name,idx){
   if(name==='routine'){try{if(typeof window.renderDateHeatmap==='function')window.renderDateHeatmap();}catch(e){console.warn('renderDateHeatmap on tab switch',e);}}
   if(name==='stats'){loadStatsTab();try{consumeNavBadge('stats');}catch(e){}}
   if(name==='competition'){renderChallengeHome();loadPushupChallenge();}
-  if(name==='goggins')renderGogginsTab();
+  if(name==='status')renderStatusTab();
   // Safety: release any stale scroll lock on tab change
   _forceUnlockScroll();
 }
@@ -8044,7 +8044,7 @@ function switchSubTab(name){
   try{window.scrollTo({top:0,behavior:'instant'});}catch(e){window.scrollTo(0,0);}
 }
 
-// ── GOGGINS ──
+// ── STATUS ──
 // mottos already declared above
 // Status Band reveal state
 let _statusBandRevealed=false;
@@ -8072,7 +8072,7 @@ function revealStatusBand(){
   if(!sb)return;
   _statusBandRevealed=true;
   sb.classList.add('sb-reveal');
-  // score count-up — hdr-score already has target value from updateGogginsHeader
+  // score count-up — hdr-score already has target value from updateHeaderStatus
   const scoreEl=document.getElementById('hdr-score');
   if(scoreEl){
     const target=+(CP?.total_score)||0;
@@ -8121,7 +8121,7 @@ function showScoreGain(pts, originEl){
   },920);
 }
 
-function updateGogginsHeader(){
+function updateHeaderStatus(){
   const total=getAccumulatedScore();
   const todayPts=getTodayScore();
   const streak=calcStreak();
@@ -8164,7 +8164,7 @@ function calcStreak(){
   }
   return streak;
 }
-async function renderGogginsTab(){
+async function renderStatusTab(){
   const dates=[];for(let i=6;i>=0;i--){const d=new Date(now);d.setDate(d.getDate()-i);dates.push(d);}
   const keys=dates.map(d=>dkey(d));const from=keys[0],to=keys[keys.length-1];
   // Only fetch days not already in cache
@@ -8179,7 +8179,7 @@ async function renderGogginsTab(){
     });
   }
   if(logCache[TODAY])log=logCache[TODAY];
-  const todayScores=calcGogginsScore(logCache[TODAY]||log);
+  const todayScores=calcDailyScore(logCache[TODAY]||log);
   const tier=getTier(todayScores.total);
   const circumference=314;
   const offset=circumference-(circumference*todayScores.total/100);
@@ -8192,7 +8192,7 @@ async function renderGogginsTab(){
   document.getElementById('g-tier-badge').style.color=tier.color;
   document.getElementById('g-tier-badge').style.border='1px solid '+tier.color+'55';
   const yKey=dkey(new Date(now.getFullYear(),now.getMonth(),now.getDate()-1));
-  const yLog=logCache[yKey];const yScore=yLog?calcGogginsScore(yLog).total:null;
+  const yLog=logCache[yKey];const yScore=yLog?calcDailyScore(yLog).total:null;
   const diff=yScore!==null?todayScores.total-yScore:null;
   document.getElementById('g-score-change').textContent=diff===null?'오늘 첫 기록':diff>0?'어제보다 +'+diff+'점 상승':diff<0?'어제보다 '+diff+'점 하락':'어제와 동일';
   [['diet',todayScores.diet,'gbr-diet','gbv-diet'],['wo',todayScores.wo,'gbr-wo','gbv-wo'],['mand',todayScores.mand,'gbr-mand','gbv-mand'],['tgt',todayScores.tgt,'gbr-tgt','gbv-tgt']].forEach(([k,v,bid,vid])=>{document.getElementById(bid).style.width=v+'%';document.getElementById(vid).textContent=v+'%';});
@@ -8200,12 +8200,12 @@ async function renderGogginsTab(){
   document.getElementById('streak-num').textContent=streak;
   document.getElementById('streak-best').textContent='최고: '+streak+'일';
   const barRow=document.getElementById('streak-bar-row');barRow.innerHTML='';
-  dates.forEach(d=>{const k=dkey(d),l=logCache[k];const s=l?calcGogginsScore(l).total:0;const bar=document.createElement('div');bar.className='streak-bar-day';bar.style.background=s>60?'#34d399':s>30?'#f59e0b':s>0?'#ff4d4d':'#2a2a32';barRow.appendChild(bar);});
+  dates.forEach(d=>{const k=dkey(d),l=logCache[k];const s=l?calcDailyScore(l).total:0;const bar=document.createElement('div');bar.className='streak-bar-day';bar.style.background=s>60?'#34d399':s>30?'#f59e0b':s>0?'#ff4d4d':'#2a2a32';barRow.appendChild(bar);});
   const ladderEl=document.getElementById('tier-ladder');
   ladderEl.innerHTML=TIERS.map(t=>{const isCurrent=todayScores.total>=t.min&&todayScores.total<=t.max;return`<div class="tier-row ${isCurrent?'current':''}"><div class="tier-icon">${t.icon}</div><div class="tier-info"><div class="tier-name" style="${isCurrent?'color:'+t.color:''}">${t.name}</div><div class="tier-range">${t.min} – ${t.max}점</div></div>${isCurrent?`<div class="tier-you">현재</div>`:''}</div>`;}).join('');
   const nextTier=TIERS.find(t=>todayScores.total<t.min);
   document.getElementById('next-hint').textContent=nextTier?nextTier.name+' 달성까지 '+(nextTier.min-todayScores.total)+'점 남았습니다 →':'최고 등급 달성! 💀';
-  updateGogginsHeader();
+  updateHeaderStatus();
 }
 
 // ── DATE HEATMAP (replaces old day-slider) ──
@@ -8437,7 +8437,7 @@ function scrollToSection(s){
   const el=document.getElementById(map[s]);
   if(el)el.scrollIntoView({behavior:'smooth',block:'center'});
 }
-function renderRoutine(){try{recomputeCubesHook(null,{silent:true});}catch(e){}renderCharCard();renderSummaryCard();renderWeight();renderMeals();renderCheatBadge();renderWater();renderWorkouts();renderMandatory();renderTargets();updateGogginsHeader();revealStatusBand();try{renderFirstWeekCard();}catch(e){console.warn('[fw-card]',e);}try{renderInviteCard();}catch(e){console.warn('[invite-card]',e);}try{renderDay3ChallengeNudge();}catch(e){console.warn('[d3-nudge]',e);}try{renderWeeklyFeatureRibbon();}catch(e){console.warn('[wf-ribbon]',e);}try{if(typeof window.buildHeatmapGrid==='function')window.buildHeatmapGrid();}catch(e){}try{renderCardCubes();}catch(e){console.warn('[card-cubes]',e);}try{arrangePromos();}catch(e){console.warn('[promo-arrange]',e);}}
+function renderRoutine(){try{recomputeCubesHook(null,{silent:true});}catch(e){}renderCharCard();renderSummaryCard();renderWeight();renderMeals();renderCheatBadge();renderWater();renderWorkouts();renderMandatory();renderTargets();updateHeaderStatus();revealStatusBand();try{renderFirstWeekCard();}catch(e){console.warn('[fw-card]',e);}try{renderInviteCard();}catch(e){console.warn('[invite-card]',e);}try{renderDay3ChallengeNudge();}catch(e){console.warn('[d3-nudge]',e);}try{renderWeeklyFeatureRibbon();}catch(e){console.warn('[wf-ribbon]',e);}try{if(typeof window.buildHeatmapGrid==='function')window.buildHeatmapGrid();}catch(e){}try{renderCardCubes();}catch(e){console.warn('[card-cubes]',e);}try{arrangePromos();}catch(e){console.warn('[promo-arrange]',e);}}
 
 // ── Priority gate for promo/notification cards ─────────────────────
 // Each existing render function (renderFirstWeekCard, renderInviteCard,
@@ -8633,7 +8633,7 @@ const _TOUR_SLIDES=[
     subtitle:'오늘도 도전하자',
     body:`
       <div style="text-align:center;padding:12px 0 8px;">
-        <div style="font-family:'Archivo Black',sans-serif;font-size:28px;color:var(--accent);letter-spacing:-.02em;margin-bottom:8px;">STAY HARD</div>
+        <div style="font-family:'Archivo Black',sans-serif;font-size:28px;color:var(--accent);letter-spacing:-.02em;margin-bottom:8px;">QROK</div>
         <div style="font-size:13px;color:var(--text);line-height:1.7;margin-bottom:16px;">
           고긴스의 광기가 아니라<br>
           너의 <span style="color:var(--accent);font-weight:800;">매일</span>이 너를 만든다
@@ -9156,7 +9156,7 @@ async function deleteMeal(i){
   renderCheatBadge();
   renderCharCard();
   recomputeCubesHook();
-  updateGogginsHeader();
+  updateHeaderStatus();
   renderSummaryCard();
   saveNow();
   // CUBE mode: 점수 문자열 생략 — cube 큐브 업데이트로 대신 피드백.
@@ -9639,7 +9639,7 @@ function _updateAlcoholCheatUI(){
   } else {
     btn.style.background='transparent';btn.style.borderColor='var(--red-bd)';btn.style.color='var(--red)';
     btn.textContent='치팅 적용';
-    label.innerHTML='고정 <strong>−30점</strong> 패널티 · Goggins가 실망합니다';
+    label.innerHTML='고정 <strong>−30점</strong> 패널티';
     label.style.opacity='0.8';
     if(hint)hint.textContent=remaining>0?'이번주 음주 쿼터 '+remaining+'회 남음':'이번주 음주 쿼터 소진';
   }
@@ -10451,7 +10451,7 @@ function renderSummaryToCanvas(w){
   y=H-PAD-40;
   ctx.fillStyle='rgba(255,255,255,0.3)';
   ctx.font='700 18px "Archivo Black",sans-serif';
-  ctx.fillText('STAY HARD',PAD,y);
+  ctx.fillText('QROK',PAD,y);
   ctx.fillStyle='rgba(255,255,255,0.3)';
   ctx.font='500 13px "DM Mono",monospace';
   ctx.textAlign='right';
@@ -10570,7 +10570,7 @@ function markWorkoutDone(i){
   queueSave();
 }
 
-const GOGGINS_ENCOURAGE = [
+const DAILY_ENCOURAGE = [
   '고통은 일시적이다.\n하지만 포기는 영원히 남는다.',
   '넌 지금 자신과 싸우고 있어.\n그 싸움에서 지지 마.',
   '힘들면 올바른 방향으로 가고 있는 거야.\n계속 가.',
@@ -10587,16 +10587,16 @@ function markActivityDone(i){
   if(w._isChaek){
     // 징역 완료 — 금지식단 -30 → +30 만회 (중복 회복 가드)
     if(_canRefundJunk())addScore('diet_junk_cancel','형량 완료 만회');
-    const msg=GOGGINS_ENCOURAGE[Math.floor(Math.random()*GOGGINS_ENCOURAGE.length)];
+    const msg=DAILY_ENCOURAGE[Math.floor(Math.random()*DAILY_ENCOURAGE.length)];
     const faceEl=document.getElementById('rage-face');
     const msgEl=document.getElementById('rage-msg');
-    const closeBtn=document.querySelector('#goggins-rage .rage-close');
+    const closeBtn=document.querySelector('#rage-overlay .rage-close');
     const escBtn=document.getElementById('chaek-escape-btn');
     if(faceEl)faceEl.textContent='💪';
     if(msgEl)msgEl.textContent=msg;
     if(closeBtn){closeBtn.textContent='계속 간다';closeBtn.onclick=closeRage;}
     if(escBtn)escBtn.style.display='none';
-    document.getElementById('goggins-rage').style.display='flex';
+    document.getElementById('rage-overlay').style.display='flex';
     if(navigator.vibrate)navigator.vibrate([100,50,200]);
   } else {
     // activity는 유산소 계열 — 별도 버킷 (하루 1회)
@@ -10640,7 +10640,7 @@ function delWO(i){
   renderWorkouts();
   renderCharCard();
   recomputeCubesHook();
-  updateGogginsHeader();
+  updateHeaderStatus();
   renderSummaryCard();
   saveNow();
   // CUBE mode: 점수 문자열 생략 — cube 큐브 업데이트로 대신 피드백.
@@ -12469,7 +12469,7 @@ async function shareMuscleMap(){
       <div style="display:flex;align-items:center;gap:10px;">
         <div style="width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,#ff4d4d,#ff6b35);display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 4px 14px rgba(255,77,77,0.35);">💥</div>
         <div>
-          <div style="font-size:15px;font-weight:900;color:#eaeaea;letter-spacing:0.8px;">STAY HARD</div>
+          <div style="font-size:15px;font-weight:900;color:#eaeaea;letter-spacing:0.8px;">QROK</div>
           <div style="font-size:10px;color:#6b6b78;margin-top:1px;">자극 부위 · ${modeLabel} · ${viewLabel}</div>
         </div>
       </div>
@@ -12496,7 +12496,7 @@ async function shareMuscleMap(){
         <div style="font-size:14px;font-weight:800;color:#ff4d4d;letter-spacing:0.2px;">${punchline}</div>
         <div style="font-size:10px;color:#6b6b78;margin-top:2px;">stayhard.app · ${tease}</div>
       </div>
-      <div style="padding:9px 13px;background:linear-gradient(135deg,#ff4d4d,#ff6b35);border-radius:10px;font-size:11px;font-weight:900;color:#fff;letter-spacing:0.5px;box-shadow:0 4px 12px rgba(255,77,77,0.3);">💪 STAY HARD</div>
+      <div style="padding:9px 13px;background:linear-gradient(135deg,#ff4d4d,#ff6b35);border-radius:10px;font-size:11px;font-weight:900;color:#fff;letter-spacing:0.5px;box-shadow:0 4px 12px rgba(255,77,77,0.3);">💪 QROK</div>
     </div>
   `;
   document.body.appendChild(comp);
@@ -12592,13 +12592,13 @@ async function quitChallenge(){
   if(!activeComp||!CU)return;
   // Mark as failed in DB
   await sb.from('competitions').update({status:'failed'}).eq('id',activeComp.id);
-  // Goggins score penalty — CP.total_score에 즉시 반영
+  // Score penalty — CP.total_score에 즉시 반영
   addScore('routine_fail','챌린지 포기');
   scheduleSave();
   activeComp=null;
   document.getElementById('challenge-room').style.display='none';
   // Show rage
-  const el=document.getElementById('goggins-rage');
+  const el=document.getElementById('rage-overlay');
   document.getElementById('rage-face').textContent='💀';
   document.getElementById('rage-msg').textContent='Little Loser.\n챌린지를 포기했어.\n네 고긴스 점수에 기록됐어. 영원히.';
   el.style.display='flex';
@@ -13301,7 +13301,7 @@ async function renderCompetition(){
   const memberData=members.map((uid,mi)=>{
     const prof=profiles?.find(p=>p.id===uid);
     const l=logs?.find(l=>l.user_id===uid)||null;
-    const scores=calcGogginsScore(l);
+    const scores=calcDailyScore(l);
     const tier=getTier(scores.total);
     const isMe=uid===CU.id;
     return{uid,name:prof?.display_name||prof?.username||'멤버',scores,tier,l,isMe,avatar:AVATARS[mi%AVATARS.length]};
@@ -13422,7 +13422,7 @@ function _isAnyOverlayOpen(){
   // Check all full-screen overlay elements that lock scroll directly
   const overlayIds=['workout-session-overlay','workout-start-screen','room-overlay',
     'challenge-room','ch-create-overlay','ch-join-overlay','summary-modal',
-    'session-summary-modal','score-guide-modal','goggins-100','inbody-popup','inbody-edit-popup',
+    'session-summary-modal','score-guide-modal','win-100-overlay','inbody-popup','inbody-edit-popup',
     'add-exercise-modal','cv-list-modal'];
   for(const id of overlayIds){
     const el=document.getElementById(id);
@@ -13534,7 +13534,7 @@ function tipMeal(){showTip('meal','식단 품질 가이드','✅ <b>클린</b> �
 function tipWorkout(){showTip('workout','운동 세션 사용법','무게와 반복 횟수를 입력하고 ✓ 체크하면 세트 완료!<br>＋ 버튼으로 종목 추가, 완료되면 아래 버튼 탭.');}
 function tipWater(){showTip('water','물 마시기','컵을 탭하면 채워져요.<br>같은 컵을 다시 탭하면 취소됩니다.<br>⚙️ 아이콘으로 목표량 설정 가능!');}
 // Ship 5 — tips 레지스트리 확장 (M5)
-function tipStatusBand(){showTip('status-band','점수 · 티어 · 스트릭','점수는 행동할 때마다 쌓여.<br>티어는 방관자 → Goggins 6단계.<br>스트릭은 하루라도 안 기록하면 끊겨.<br>탭하면 전체 점수 규칙 보여.');}
+function tipStatusBand(){showTip('status-band','점수 · 티어 · 스트릭','점수는 행동할 때마다 쌓여.<br>티어는 방관자부터 6단계.<br>스트릭은 하루라도 안 기록하면 끊겨.<br>탭하면 전체 점수 규칙 보여.');}
 function tipDaySlider(){showTip('day-slider','날짜 이동','좌우로 밀어서 다른 날 확인.<br>과거 기록 수정 가능, 미래는 미리 계획.<br>날짜 숫자 탭하면 오늘로 복귀.');}
 function tipMuscleMap(){showTip('muscle-map','자극 부위 맵','운동 기록하면 근육맵에 누적돼.<br>전면 · 후면 동시 표시.<br>탭해서 타격 부위별 세트 · 볼륨 확인.<br>↗ FAB 로 친구한테 자랑하자.');}
 function tipInvite(){showTip('invite','친구랑 같이 Stay Hard','혼자 하면 3일 가.<br>친구 초대해서 같이 챌린지.<br>서로 자극 주면 진짜 꾸준함.');}

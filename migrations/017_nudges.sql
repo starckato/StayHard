@@ -3,10 +3,10 @@
 -- No free text. Client renders copy from src/features/friends/presets.js
 -- using preset_id as lookup.
 --
--- IP NOTE (2026-04-24): Preset ids intentionally avoid "Goggins"/"Stay Hard"
--- references per AGENT_COORDINATION.md marketing blocker. Replacement id
--- `no_retreat` with body "물러서지 마." takes the slot formerly held by
--- `hard_hour` / "Stay hard." in the plan draft.
+-- IP NOTE (2026-04-24): Preset ids intentionally avoid brand-sensitive text
+-- per AGENT_COORDINATION.md marketing blocker. Replacement id `no_retreat`
+-- with body "물러서지 마." takes the slot formerly reserved for a
+-- brand-sensitive phrase in an earlier plan draft.
 
 -- ── Preset whitelist (server-authoritative) ────────────────────
 CREATE TABLE IF NOT EXISTS public.nudge_presets (

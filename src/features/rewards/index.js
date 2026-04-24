@@ -34,7 +34,7 @@ export function showChaekpipty(mealName) {
   if(faceEl) faceEl.textContent = '⚖️';
   if(msgEl) msgEl.textContent = pick.sentence;
   // 버튼: 형량 수락
-  const closeBtn = document.querySelector('#goggins-rage .rage-close');
+  const closeBtn = document.querySelector('#rage-overlay .rage-close');
   if(closeBtn){
     closeBtn.textContent = '💀 형량 수락 — 운동 추가';
     closeBtn.onclick = () => {
@@ -67,9 +67,9 @@ export function showChaekpipty(mealName) {
 }
 
 export function closeRage(){
-  document.getElementById('goggins-rage').style.display='none';
+  document.getElementById('rage-overlay').style.display='none';
   // 버튼 원복
-  const closeBtn=document.querySelector('#goggins-rage .rage-close');
+  const closeBtn=document.querySelector('#rage-overlay .rage-close');
   if(closeBtn){closeBtn.textContent='알겠어, 다시 일어선다';closeBtn.onclick=closeRage;}
   const escBtn=document.getElementById('chaek-escape-btn');
   if(escBtn)escBtn.style.display='none';
@@ -87,7 +87,7 @@ export function showRage(){
   }
   document.getElementById('rage-face').textContent=r.face;
   document.getElementById('rage-msg').textContent=r.msg;
-  const el=document.getElementById('goggins-rage');
+  const el=document.getElementById('rage-overlay');
   el.style.display='flex';
   if(navigator.vibrate)navigator.vibrate([100,50,100,50,200]);
 }
@@ -116,12 +116,12 @@ export let _winShowing=false;
 
 export function showWin(type, pts=null, title=null){
   // Cube mode: 기존 점수 win-pill / confetti 피드백은 완전 억제. 큐브 팝오버가
-  // 유일한 시각 피드백. pts===100 (goggins 100점) 는 서사적으로 중요하므로 유지.
+  // 유일한 시각 피드백. pts===100 은 서사적으로 중요하므로 유지.
   // 다른 모든 이벤트는 early-return.
   if(typeof window!=='undefined'&&window.CUBE_UI_MODE===true&&pts!==100)return;
   try{console.log('[showWin]',{type,pts,title,_winShowing,qlen:_winQueue.length});}catch(e){}
   if(pts===100){
-    const el=document.getElementById('goggins-100');
+    const el=document.getElementById('win-100-overlay');
     el.style.display='flex';
     document.body.style.overflow='hidden';
     if(navigator.vibrate)navigator.vibrate([100,50,100,50,500]);
@@ -141,7 +141,7 @@ export function _showNextWin(){
     // On failure, reset queue state so subsequent shows aren't blocked forever
     console.error('[showWin] render failed — resetting queue',e);
     _winShowing=false; _winQueue.length=0;
-    const el=document.getElementById('goggins-win');
+    const el=document.getElementById('win-overlay');
     if(el)el.style.display='none';
   }
 }
@@ -157,7 +157,7 @@ export function _renderWinBody({type,pts,title}){
   const msgs=WIN_MSGS[type]||WIN_MSGS[type==='weight'||type==='weight_loss'||type==='weight_goal'?'routine':type]||WIN_MSGS.routine;
   const msg=msgs[Math.floor(Math.random()*msgs.length)];
 
-  const el=document.getElementById('goggins-win');
+  const el=document.getElementById('win-overlay');
   document.getElementById('win-emoji').textContent=emoji;
 
   // 제목

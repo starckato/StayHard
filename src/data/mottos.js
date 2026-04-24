@@ -1,19 +1,25 @@
-// Stay Hard · David Goggins daily mottos
-// Korean translations + original English. Rotates via showDailyMotto()
-// which remains in index.html (DOM-coupled).
+// Stay Hard · daily mottos (neutral placeholder pool)
+//
+// 2026-04-24 rebrand phase 1: Goggins 인용·번역 전량 제거 (저작권 리스크).
+// 마케팅 대체 문구 공급 전까지 임시 neutral pool 로 동작. 문구 공급 시 아래 배열만 교체.
+//
+// Rotates via showDailyMotto() in index.html (DOM-coupled).
 
-/** @typedef {{ko:string, en:string}} Motto */
+/** @typedef {{ko:string, en?:string}} Motto */
 /** @type {Motto[]} */
-export const GOGGINS_MOTTOS = [
-  // Real David Goggins quotes — Korean translation
-  { ko: "우리가 능력의 40%에 도달하면, 우리의 뇌는 멈추라고 말한다. 하지만 그건 시작에 불과하다.", en: "When your mind is telling you that you're done, that you're exhausted, that you cannot possibly go any further, you're only actually 40% done." },
-  { ko: "당신을 편안하게 만드는 것들이 당신을 약하게 만든다.", en: "The things that we decide to run from are the truth. When you make excuses, you're running from the truth." },
-  { ko: "나는 고통을 즐기지 않는다. 다만 고통이 나를 막을 수 없다는 걸 안다.", en: "I don't stop when I'm tired. I stop when I'm done." },
-  { ko: "우리 대부분은 우리 삶의 관중이다. 선수가 되어라.", en: "Most of us are motivated by the wrong things. We seek comfort instead of character." },
-  { ko: "변명은 변명일 뿐이다. 결과만이 현실이다.", en: "Excuses are everywhere. Success is rare. The difference? Accountability." },
-  { ko: "어제의 너를 오늘 죽여라. 더 강한 네가 태어난다.", en: "You are in danger of living a life so comfortable and soft that you will die without ever realizing your true potential." },
-  { ko: "두려움이 있는 곳으로 달려가라. 그곳에 성장이 있다.", en: "Face everything that makes you uncomfortable. There is no growth in the comfort zone." },
-  { ko: "아무도 당신을 구하러 오지 않는다. 일어나서 직접 해결하라.", en: "Nobody is going to come and save you. You've got to save yourself." },
-  { ko: "모든 위대한 것은 고통으로부터 태어난다.", en: "All growth depends upon activity. There is no development physically or intellectually without effort, and effort means work and work means pain." },
-  { ko: "삶은 최선을 다한 자에게만 의미를 드러낸다.", en: "Life is one big tug of war between mediocrity and trying to find your best self." }
+export const DAILY_MOTTOS = [
+  { ko: '오늘의 증거는 너만 남길 수 있다.' },
+  { ko: '빈칸은 변명하지 않는다. 기록이 말한다.' },
+  { ko: '편한 길은 내일을 약하게 만든다.' },
+  { ko: '고통은 기록될 때 성장으로 바뀐다.' },
+  { ko: '어제의 너를 이기는 가장 조용한 방법 — 한 줄 더.' },
+  { ko: '변명 없음. 기록 있음.' },
+  { ko: '잘한 날은 쌓이고, 못한 날도 쌓인다. 둘 다 너다.' },
+  { ko: '오늘 남긴 한 줄이 내일의 기준이다.' },
+  { ko: '말은 잊히고, 기록은 남는다.' },
+  { ko: '계속 가. 조용히, 매일.' },
 ];
+
+// Legacy export alias — stale bundle 이 GOGGINS_MOTTOS 참조 시 throw 방지.
+// Phase 1 rename 확정 후 다음 릴리스에서 제거.
+export const GOGGINS_MOTTOS = DAILY_MOTTOS;
