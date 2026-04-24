@@ -20,7 +20,7 @@
      so window globals (dkey, normKey, ...) are set before inline code runs.
      Query version bumps cache when bundle content changes. Bump manually or
      via build script when shipping a new bundle. See MIGRATION_PLAN.md. -->
-<script src="/dist/app.js?v=20260425h"></script>
+<script src="/dist/app.js?v=20260425i"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Archivo+Black&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -1197,9 +1197,9 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
       <div class="sb-head">
         <div class="sb-canvas-wrap" style="position:relative;width:44px;height:52px;flex-shrink:0;" onclick="openRoomOverlay()">
           <canvas id="char-mini-canvas" class="sb-canvas" width="44" height="52" style="width:44px;height:52px;"></canvas>
-          <!-- Tier 2 (저항자) 전용 정적 프로필. -->
+          <!-- 각성자 (tier index 1, 200-599pt) — assets/tier2/ 햄버거 던지기 캐릭터 정적 프로필. -->
           <img id="char-mini-tier2" src="/assets/tier2/Tier2_cha_nobg.png" alt="" style="display:none;position:absolute;inset:0;width:44px;height:52px;object-fit:contain;image-rendering:pixelated;pointer-events:none;" />
-          <!-- Tier 3 (수련자) 전용 정적 프로필. -->
+          <!-- 저항자 (tier index 2, 600-1499pt) — assets/tier3/ walking 근육질 캐릭터 정적 프로필. -->
           <img id="char-mini-tier3" src="/assets/tier3/Tier3_cha_nobg.png" alt="" style="display:none;position:absolute;inset:0;width:44px;height:52px;object-fit:contain;image-rendering:pixelated;pointer-events:none;" />
         </div>
         <div class="sb-meta">
@@ -4869,17 +4869,19 @@ function renderCharCard(){
   // Status Band 렌더: 캔버스는 hdr-score 존재 여부로 가드 (char-card 제거됨)
   if(!document.getElementById('hdr-score'))return;
   if(typeof initMiniChar==='function')initMiniChar(tier.color);
-  // Tier 2 / 3 전용 프로필 이미지 토글 — canvas 위에 정적 image 덮어씀.
-  // sprites.js 는 tier 1 base64 만 그리므로 tier 2/3 는 DOM 오버레이로 대체.
+  // 각성자 (tier index 1) / 저항자 (tier index 2) 전용 프로필 오버레이.
+  // sprites.js 는 방관자 (index 0) base64 만 그리므로 각성자/저항자는 DOM 으로 대체.
+  // (char-mini-tier2 img = 각성자 art, char-mini-tier3 img = 저항자 art — ID 는
+  //  asset 폴더 이름 기준으로 유지, 실제 활성 tierIdx 는 1/2.)
   const mini=document.getElementById('char-mini-canvas');
   const miniT2=document.getElementById('char-mini-tier2');
   const miniT3=document.getElementById('char-mini-tier3');
   if(mini){
-    const showT2=(tierIdx===2);
-    const showT3=(tierIdx===3);
-    if(miniT2)miniT2.style.display=showT2?'block':'none';
-    if(miniT3)miniT3.style.display=showT3?'block':'none';
-    mini.style.opacity=(showT2||showT3)?'0':'';
+    const showAwakened=(tierIdx===1); // 각성자
+    const showResister=(tierIdx===2); // 저항자
+    if(miniT2)miniT2.style.display=showAwakened?'block':'none';
+    if(miniT3)miniT3.style.display=showResister?'block':'none';
+    mini.style.opacity=(showAwakened||showResister)?'0':'';
   }
   const quotes=TIER_QUOTES[tier.name]||TIER_QUOTES['방관자'];
   const quote=quotes[Math.floor(Math.random()*quotes.length)];
@@ -4919,18 +4921,20 @@ function openRoomOverlay(){
   document.body.style.overflow='hidden';
   const el=document.getElementById('room-overlay');
   el.style.display='flex';
-  // Tier 2 / 3 전용 씬 토글 — 4 개별 프레임 JS 순환.
+  // 각성자 (index 1) / 저항자 (index 2) 전용 룸 씬 토글.
+  // (scene-tier2 = 각성자 햄버거 던지기 씬, scene-tier3 = 저항자 walking 씬 —
+  //  DOM ID 는 asset 폴더 기준 유지, 실제 tierIdx 1/2 에 대응.)
   const roomT2=document.getElementById('room-scene-tier2');
   const roomT3=document.getElementById('room-scene-tier3');
   const roomCanvas=document.getElementById('room-canvas');
   if(roomCanvas){
-    const showT2=(tierIdx===2);
-    const showT3=(tierIdx===3);
-    if(roomT2)roomT2.classList.toggle('active',showT2);
-    if(roomT3)roomT3.classList.toggle('active',showT3);
-    roomCanvas.style.display=(showT2||showT3)?'none':'block';
-    if(showT2){_tier2ThrowStart();_tier3WalkStop();}
-    else if(showT3){_tier3WalkStart();_tier2ThrowStop();}
+    const showAwakened=(tierIdx===1); // 각성자 — 햄버거 던지기
+    const showResister=(tierIdx===2); // 저항자 — walking
+    if(roomT2)roomT2.classList.toggle('active',showAwakened);
+    if(roomT3)roomT3.classList.toggle('active',showResister);
+    roomCanvas.style.display=(showAwakened||showResister)?'none':'block';
+    if(showAwakened){_tier2ThrowStart();_tier3WalkStop();}
+    else if(showResister){_tier3WalkStart();_tier2ThrowStop();}
     else {_tier2ThrowStop();_tier3WalkStop();}
   }
   startRoomScene();

@@ -26,16 +26,19 @@ export function getTier(score) {
 /** Supabase public storage base for tier character/room art. */
 export const ASSET_BASE = 'https://uvaosxhsjscigheyymus.supabase.co/storage/v1/object/public/game-assets';
 
-/** Per-tier-index asset URLs. Tier 1 shares art with Tier 0, Tier 5 with Tier 4. */
-// 2026-04-24: tier 2 (저항자) 는 로컬 assets/tier2/ 로 전환. throw sprite sheet 4-frame.
-// 다른 tier 는 Supabase 유지 — 점진적 전환.
+/** Per-tier-index asset URLs.
+ * 유저 folder 명명:
+ *   tier1/ = 방관자 (index 0)
+ *   tier2/ = 각성자 (index 1) — hamburger throwing
+ *   tier3/ = 저항자 (index 2) — walking (gym-ready, tank top)
+ * 각성자 (index 1) 은 더 이상 tier 1 art 와 공유하지 않음 — 자체 로컬 art.
+ */
 export const TIER_ASSETS = {
   0: { char: `${ASSET_BASE}/GymRat_Tier1_character.png`, room: `${ASSET_BASE}/GymRat_Tier1_room.png` },
-  1: { char: `${ASSET_BASE}/GymRat_Tier1_character.png`, room: `${ASSET_BASE}/GymRat_Tier1_room.png` },
-  2: {
+  1: {
+    // 각성자 (200-599) — 햄버거 던지기 4프레임. 2026-04-24 assets/tier2 → index 1 로 재매핑.
     char: '/assets/tier2/Tier2_cha_nobg.png',
-    room: '/assets/tier2/tier2_room.png', // 2026-04-24: gym 룸 (bench + 덤벨)
-    // 2026-04-24: sprite sheet 대신 4개 개별 프레임 (각 675×685). JS 로 순환.
+    room: '/assets/tier2/tier2_room.png',
     throwFramesSrc: [
       '/assets/tier2/Tier2_cha_throwingBurgur1.png',
       '/assets/tier2/Tier2_cha_throwingBurgur2.png',
@@ -43,10 +46,10 @@ export const TIER_ASSETS = {
       '/assets/tier2/Tier2_cha_throwingBurgur4.png',
     ],
   },
-  3: {
+  2: {
+    // 저항자 (600-1499) — walking 4프레임. 2026-04-24 assets/tier3 → index 2 로 재매핑.
     char: '/assets/tier3/Tier3_cha_nobg.png',
     room: `${ASSET_BASE}/GymRat_Tier3_room.png`, // 룸은 유저가 아직 안 줌 — supabase 유지
-    // 2026-04-24: 4 프레임 walking 애니메이션 (각 ~347×1006). JS 로 순환.
     walkFramesSrc: [
       '/assets/tier3/Tier3_cha_walking1.png',
       '/assets/tier3/Tier3_cha_walking2.png',
@@ -54,6 +57,7 @@ export const TIER_ASSETS = {
       '/assets/tier3/Tier3_cha_walking4.png',
     ],
   },
+  3: { char: `${ASSET_BASE}/GymRat_Tier3_character.png`, room: `${ASSET_BASE}/GymRat_Tier3_room.png` },
   4: { char: `${ASSET_BASE}/GymRat_Tier4_character.png`, room: `${ASSET_BASE}/GymRat_Tier4_room.png` },
   5: { char: `${ASSET_BASE}/GymRat_Tier4_character.png`, room: `${ASSET_BASE}/GymRat_Tier4_room.png` }
 };
