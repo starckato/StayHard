@@ -40,6 +40,8 @@ import * as friends from './features/friends/index.js';
 // Retention Phase 2 infra — feature flags + metric events (SERVICE_EVALUATION §6).
 import * as flags from './features/flags/index.js';
 import * as metrics from './features/metrics/index.js';
+import * as firstCube from './features/activation/first-cube.js';
+import * as returnerGrace from './features/returner/grace.js';
 
 Object.assign(
   window,
@@ -62,6 +64,8 @@ window.sh.localNotifications = pLocalNotifications;
 window.sh.friends = friends;
 window.sh.flags = flags;
 window.sh.metrics = metrics;
+window.sh.firstCube = firstCube;
+window.sh.returnerGrace = returnerGrace;
 // Shortcut globals for inline use
 window.FF = flags;
 window.logEvent = metrics.logEvent;

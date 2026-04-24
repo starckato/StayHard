@@ -20,7 +20,7 @@
      so window globals (dkey, normKey, ...) are set before inline code runs.
      Query version bumps cache when bundle content changes. Bump manually or
      via build script when shipping a new bundle. See MIGRATION_PLAN.md. -->
-<script src="/dist/app.js?v=20260425v"></script>
+<script src="/dist/app.js?v=20260425w"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Archivo+Black&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -46,6 +46,35 @@
   --share-accent:#B91C1C;
   --share-gold:#C9A34E;
 }
+
+/* First Cube Activation Card — Phase 1C */
+.fc-card{
+  background:linear-gradient(135deg,rgba(255,77,77,0.06) 0%,rgba(255,77,77,0.02) 100%);
+  border:1px solid var(--accent-bd);
+  border-radius:var(--radius);
+  padding:18px 20px;
+  margin:10px 16px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  position:relative;
+  overflow:hidden;
+}
+.fc-card::before{
+  content:"";
+  position:absolute;
+  top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent 0%,var(--accent) 50%,transparent 100%);
+  opacity:.4;
+}
+.fc-kicker{font-size:10px;color:var(--accent);letter-spacing:.18em;text-transform:uppercase;font-weight:800;}
+.fc-title{font-family:'Noto Serif KR',serif;font-size:19px;font-weight:700;line-height:1.3;letter-spacing:-0.01em;color:var(--text);}
+.fc-hint{font-size:12px;color:var(--text2);line-height:1.5;}
+.fc-progress{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;}
+.fc-dot{width:8px;height:8px;border-radius:50%;background:var(--border);display:inline-block;transition:background .3s;}
+.fc-dot.on{background:var(--accent);box-shadow:0 0 8px rgba(255,77,77,.55);}
+.fc-complete{background:linear-gradient(135deg,rgba(52,211,153,0.08) 0%,rgba(52,211,153,0.02) 100%);border-color:var(--green-bd);}
+.fc-complete .fc-kicker{color:var(--green);}
 
 /* ═════ Primary CTA — use on all main action buttons ═════ */
 .btn-primary,.abtn,.ws-done-btn,.mbtn{
@@ -894,55 +923,6 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
 .add-tgt-input input{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:'DM Sans',sans-serif;font-size:16px;padding:13px 14px;outline:none;min-height:48px;}
 .add-tgt-input input:focus{border-color:var(--accent);}
 .add-tgt-go{padding:12px 18px;background:var(--accent);color:#fff;border:none;border-radius:var(--radius-sm);font-family:'DM Sans',sans-serif;font-size:15px;font-weight:500;cursor:pointer;min-height:48px;touch-action:manipulation;}
-
-/* ─── STATUS TAB ─── */
-#view-status{padding:0 16px 8px;}
-.status-hero{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:10px;display:flex;flex-direction:column;align-items:center;}
-.status-ring-wrap{position:relative;width:120px;height:120px;margin-bottom:12px;}
-.g-ring-svg{width:120px;height:120px;transform:rotate(-90deg);}
-.g-ring-track{fill:none;stroke:var(--surface3);stroke-width:9;}
-.g-ring-fill{fill:none;stroke-width:9;stroke-linecap:round;stroke-dasharray:314;transition:stroke-dashoffset .6s cubic-bezier(.4,0,.2,1);}
-.g-ring-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
-.g-score-num{font-size:28px;font-weight:600;font-family:'DM Mono',monospace;}
-.g-score-sub{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-top:2px;}
-.g-tier-badge{padding:5px 14px;border-radius:20px;font-size:12px;font-weight:600;margin-bottom:6px;}
-.g-score-change{font-size:11px;color:var(--text3);}
-.g-breakdown{width:100%;margin-top:14px;padding-top:14px;border-top:1px solid var(--border);}
-.g-breakdown-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
-.g-breakdown-row:last-child{margin-bottom:0;}
-.g-br-label{font-size:11px;color:var(--text2);width:56px;flex-shrink:0;}
-.g-br-track{flex:1;height:5px;background:var(--surface3);border-radius:3px;overflow:hidden;}
-.g-br-fill{height:100%;border-radius:3px;transition:width .5s;}
-.g-br-val{font-size:10px;font-family:'DM Mono',monospace;color:var(--text3);width:28px;text-align:right;}
-
-/* Streak card */
-.streak-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:10px;}
-.streak-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
-.streak-left{display:flex;align-items:center;gap:8px;}
-.streak-flame{font-size:20px;}
-.streak-num{font-size:22px;font-weight:600;font-family:'DM Mono',monospace;}
-.streak-unit{font-size:12px;color:var(--text2);margin-left:2px;}
-.streak-best{font-size:11px;color:var(--text3);}
-.streak-bar-row{display:flex;gap:3px;}
-.streak-bar-day{flex:1;height:6px;border-radius:2px;}
-
-/* Tier ladder */
-.tier-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:10px;}
-.tier-row{display:flex;align-items:center;gap:10px;padding:9px 8px;border-radius:9px;margin-bottom:2px;}
-.tier-row.current{background:rgba(255,77,77,.08);border:1px solid var(--accent-bd);}
-.tier-icon{font-size:18px;width:26px;text-align:center;flex-shrink:0;}
-.tier-info{flex:1;}
-.tier-name{font-size:13px;font-weight:500;}
-.tier-range{font-size:10px;color:var(--text3);margin-top:1px;}
-.tier-you{font-size:10px;padding:2px 8px;border-radius:10px;background:var(--accent-bg);color:var(--accent);border:1px solid var(--accent-bd);}
-.next-hint{font-size:11px;color:var(--text3);text-align:center;padding:4px 0;}
-
-/* Penalty warning */
-.penalty-box{background:var(--red-bg);border:1px solid var(--red-bd);border-radius:var(--radius-sm);padding:10px 12px;margin-bottom:10px;display:flex;align-items:flex-start;gap:8px;}
-.penalty-icon{font-size:15px;flex-shrink:0;margin-top:1px;}
-.penalty-text{font-size:11px;color:var(--red);line-height:1.5;}
-
-
 /* ─── COMPETITION TAB ─── */
 #view-competition{padding:0;padding-bottom:20px;}
 .setup-screen{display:none;padding:0 16px;}.setup-screen.active{display:block;padding:0 16px 40px;}
@@ -1371,6 +1351,9 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
       <span id="char-pts" style="display:none;"></span>
     </div>
 
+    <!-- First Cube 체험 카드 — FF first_cube_card + onboarding_state 미완료 유저만 -->
+    <div id="first-cube-card" class="fc-card" hidden></div>
+
     <!-- Promotional cards (weekly feature, day-3, invite, first-week) moved
          below primary inputs so 입력창이 위로 올라오도록 — id 는 유지, render
          함수 로직 변경 없음. 컨테이너 전체는 .home-promo-block 으로 묶어 아래
@@ -1642,54 +1625,6 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
     </div>
   </div>
 
-  <!-- ══ STATUS TAB ══ -->
-  <div class="view" id="view-status">
-    <!-- hero ring -->
-    <div class="status-hero" id="status-hero">
-      <div class="status-ring-wrap">
-        <svg class="g-ring-svg" viewBox="0 0 120 120">
-          <circle class="g-ring-track" cx="60" cy="60" r="50"/>
-          <circle class="g-ring-fill" id="g-ring-fill" cx="60" cy="60" r="50" stroke="#ff4d4d" style="stroke-dashoffset:314;"/>
-        </svg>
-        <div class="g-ring-center">
-          <div class="g-score-num" id="g-score-num">0</div>
-          <div class="g-score-sub">/ 100</div>
-        </div>
-      </div>
-      <div class="g-tier-badge" id="g-tier-badge">😴 일반인</div>
-      <div class="g-score-change" id="g-score-change">오늘 점수를 계산 중…</div>
-      <div class="g-breakdown">
-        <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px;">섹션별 기여도</div>
-        <div class="g-breakdown-row"><div class="g-br-label">식단</div><div class="g-br-track"><div class="g-br-fill" id="gbr-diet" style="width:0%;background:var(--green);"></div></div><div class="g-br-val" id="gbv-diet">0%</div></div>
-        <div class="g-breakdown-row"><div class="g-br-label">운동</div><div class="g-br-track"><div class="g-br-fill" id="gbr-wo" style="width:0%;background:var(--amber);"></div></div><div class="g-br-val" id="gbv-wo">0%</div></div>
-        <div class="g-breakdown-row"><div class="g-br-label">필수 루틴</div><div class="g-br-track"><div class="g-br-fill" id="gbr-mand" style="width:0%;background:var(--accent);"></div></div><div class="g-br-val" id="gbv-mand">0%</div></div>
-        <div class="g-breakdown-row"><div class="g-br-label">목표</div><div class="g-br-track"><div class="g-br-fill" id="gbr-tgt" style="width:0%;background:var(--blue);"></div></div><div class="g-br-val" id="gbv-tgt">0%</div></div>
-      </div>
-    </div>
-
-    <!-- streak -->
-    <div class="streak-card" id="streak-card">
-      <div class="streak-top">
-        <div class="streak-left">
-          <div class="streak-flame">🔥</div>
-          <div class="streak-num" id="streak-num">0</div>
-          <div class="streak-unit">일 연속</div>
-        </div>
-        <div class="streak-best" id="streak-best">최고: 0일</div>
-      </div>
-      <div class="streak-bar-row" id="streak-bar-row"></div>
-      <div style="font-size:9px;color:var(--text3);display:flex;justify-content:space-between;margin-top:4px;">
-        <span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span><span>일</span>
-      </div>
-    </div>
-
-    <!-- tier ladder -->
-    <div class="tier-card">
-      <div style="font-size:12px;color:var(--text2);margin-bottom:10px;font-weight:500;">티어</div>
-      <div id="tier-ladder"></div>
-      <div class="next-hint" id="next-hint"></div>
-    </div>
-  </div>
 
   <!-- ══ STATS ══ -->
   <div class="view" id="view-stats" style="padding:0 0 80px;">
@@ -5861,8 +5796,24 @@ async function onLogin(user){
   }catch(e){console.warn('[local-notif] restore',e);}
   // Feature flags 로드 — Phase 1-3 신규 기능 gating.
   try{
-    if(window.sh&&window.sh.flags){window.sh.flags.loadFlags().catch(()=>{});}
+    if(window.sh&&window.sh.flags){window.sh.flags.loadFlags().then(()=>{try{renderFirstCubeCard();}catch(_){}}).catch(()=>{});}
   }catch(e){console.warn('[FF] load',e);}
+  // Returner Grace activation — 3일+ 갭 감지 → 72h 보호구간 세팅.
+  try{
+    if(window.sh&&window.sh.returnerGrace&&window.FF&&window.FF.get('returner_grace',false)){
+      const rg=window.sh.returnerGrace;
+      const prevState=(p&&p.return_state)||null;
+      const next=rg.computeActivation(prevState);
+      if(next&&JSON.stringify(next)!==JSON.stringify(prevState)){
+        if(CP)CP.return_state=next;
+        rg.persist(sb,user.id,next).then(()=>{
+          if(window.logEvent&&window.EVT&&rg.isWithinGrace(next)&&!rg.isWithinGrace(prevState)){
+            window.logEvent(window.EVT.RETURNER_GRACE_ACTIVATED,{hours:72});
+          }
+        }).catch(()=>{});
+      }
+    }
+  }catch(e){console.warn('[returner] activation',e);}
   // ── 스냅샷 즉시 복원 (init에서 이미 paint 했으면 skip, 다른 유저 전환 시에는 paint) ──
   const _snap=_loadSnapshot(user.id);
   let _snapPainted=window._paintedUserId===user.id; // init이 같은 유저로 이미 그렸음
@@ -5873,7 +5824,7 @@ async function onLogin(user){
     try{ _paintInitialUI(user); _snapPainted=true; window._paintedUserId=user.id; }catch(e){console.warn('snap paint failed',e);}
   }
   // 첫 페인트 경로를 병렬화 — profile + 오늘 로그 + 루틴 + 챌린지 동시 fetch
-  const profilePromise=sb.from('profiles').select('id,username,display_name,water_goal,onboarded,total_score,weight_goal,cheat_quota,cheat_used,cheat_reset_month,cheat_reset_week,system_notice,is_admin').eq('id',user.id).maybeSingle();
+  const profilePromise=sb.from('profiles').select('id,username,display_name,water_goal,onboarded,total_score,weight_goal,cheat_quota,cheat_used,cheat_reset_month,cheat_reset_week,system_notice,is_admin,feature_flags,return_state,exempt_log,accent_preference,notif_opt_in_history,onboarding_state').eq('id',user.id).maybeSingle();
   const [profileRes]=await Promise.all([
     profilePromise,
     loadLog(TODAY, _snapPainted), // 스냅샷으로 이미 그린 경우 강제 revalidate
@@ -6884,7 +6835,17 @@ function renderCardCubes(){
   try{
     const key=selectedKey||TODAY;
     const l=(window.logCache&&window.logCache[key])||null;
-    const cubes=l&&l.cubes;
+    let cubes=l&&l.cubes;
+    // Returner Grace postprocess — 오늘 날짜 + grace 활성 + FF on 조건 하에 crimson → gray.
+    // 원본 log.cubes 는 변경하지 않음.
+    try{
+      if(cubes&&key===TODAY&&window.FF&&window.FF.get('returner_grace',false)&&window.sh&&window.sh.returnerGrace){
+        const rs=CP&&CP.return_state;
+        if(rs&&window.sh.returnerGrace.isWithinGrace(rs)){
+          cubes=window.sh.returnerGrace.applyGraceToCubes(cubes,rs);
+        }
+      }
+    }catch(_){}
     const map={
       'cc-cube-diet':cubes?cubes.diet:null,
       'cc-cube-exercise':cubes?cubes.exercise:null,
@@ -6910,6 +6871,8 @@ function renderCardCubes(){
 // side-effect: log.cubes 를 갱신. 기존 점수/UI 는 건드리지 않음 (Phase 5 에서 교체).
 function recomputeCubesHook(key,opts){
   try{
+    // First-cube 카드 갱신 — 액션마다 태스크 완료 판정 재평가.
+    try{renderFirstCubeCard();}catch(_){}
     if(!window.Cubes||typeof window.Cubes.recomputeCubesInLog!=='function')return;
     const k=key||selectedKey;
     if(!k)return;
@@ -8017,21 +7980,67 @@ async function shareInvite(){
 // showToast — moved to src/ui/toast.js (Phase 2.2). window.showToast via bundle.
 
 // ── TABS ──
+// First Cube 체험 카드 렌더 — FF gate + onboarding_state 체크.
+// 호출처: onLogin 이후, recomputeCubesHook 이후, saveNow 이후.
+function renderFirstCubeCard(){
+  try{
+    const el=document.getElementById('first-cube-card');
+    if(!el)return;
+    const fc=window.sh&&window.sh.firstCube;if(!fc)return;
+    const FF=window.FF;
+    if(!CP||fc.hasEarned(CP)){el.hidden=true;el.innerHTML='';return;}
+    if(!FF||!FF.get('first_cube_card',false)){el.hidden=true;return;}
+    const task=fc.pickTask(CU&&CU.id);
+    const res=fc.checkCompletion(log,task.id);
+    el.hidden=false;
+    if(res.done){
+      // Earn and mark.
+      el.classList.add('fc-complete');
+      el.innerHTML='<div class="fc-kicker">완료</div><div class="fc-title">첫 칸을 채웠다.</div><div class="fc-hint">'+task.hint+' → '+res.evidence+'</div>';
+      // Fire-and-forget server write. 중복 호출 방지 in-memory flag.
+      if(!window._firstCubeMarked){
+        window._firstCubeMarked=true;
+        fc.markEarned(sb,CU.id,task.id).then(()=>{
+          if(CP){CP.onboarding_state={...(CP.onboarding_state||{}),first_cube_task:task.id,first_cube_earned_at:new Date().toISOString()};}
+          setTimeout(()=>{el.hidden=true;el.classList.remove('fc-complete');},2400);
+        });
+      }
+    }else{
+      el.classList.remove('fc-complete');
+      el.innerHTML='<div class="fc-kicker">첫 칸</div><div class="fc-title">'+task.title+'</div><div class="fc-hint">'+task.hint+'</div><div class="fc-progress"><span class="fc-dot"></span>기다리는 중…</div>';
+    }
+  }catch(e){console.warn('[first-cube] render',e);}
+}
+
+// URL hash 가드 — bookmark #view-status / #view-goggins 접근 시 빈 hash 로 리다이렉트.
+if(typeof window!=='undefined'){
+  const _deadHashes=['#view-status','#view-goggins'];
+  if(_deadHashes.includes(location.hash)){
+    try{history.replaceState(null,'',location.pathname+location.search);}catch(e){location.hash='';}
+  }
+  window.addEventListener('hashchange',()=>{
+    if(_deadHashes.includes(location.hash)){
+      try{history.replaceState(null,'',location.pathname+location.search);}catch(e){location.hash='';}
+    }
+  });
+}
+
 function switchTab(name,idx){
+  // Dead tab guard — view-status 제거됨 (2026-04-25 Phase 1B). 혹시 호출되면 routine 으로 fallback.
+  if(name==='status'||name==='goggins'){name='routine';idx=0;}
   // 탭 전환 시 body 스크롤 잠금 해제 — 모달/오버레이에서 닫기 경로가 누락돼도 복구
   document.body.style.overflow='';
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   document.querySelectorAll('.tbar-tab').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.bni').forEach(n=>n.classList.remove('active'));
-  document.getElementById('view-'+name).classList.add('active');
+  const _view=document.getElementById('view-'+name);
+  if(_view){_view.classList.add('active');}else{document.getElementById('view-routine')?.classList.add('active');}
   const tabs=document.querySelectorAll('.tbar-tab');if(tabs[idx])tabs[idx].classList.add('active');
   const bnis=document.querySelectorAll('.bni');if(bnis[idx])bnis[idx].classList.add('active');
   // 탭 상단으로 스크롤 복귀 — 이전 탭 깊은 위치가 남아있어 새 탭 바닥에서 시작되는 현상 방지
   try{window.scrollTo({top:0,behavior:'instant'});}catch(e){window.scrollTo(0,0);}
   if(name==='routine'){try{if(typeof window.renderDateHeatmap==='function')window.renderDateHeatmap();}catch(e){console.warn('renderDateHeatmap on tab switch',e);}}
   if(name==='stats'){loadStatsTab();try{consumeNavBadge('stats');}catch(e){}}
-  if(name==='competition'){renderChallengeHome();loadPushupChallenge();}
-  if(name==='status')renderStatusTab();
   // Safety: release any stale scroll lock on tab change
   _forceUnlockScroll();
 }
@@ -8176,49 +8185,6 @@ function calcStreak(){
     else break;
   }
   return streak;
-}
-async function renderStatusTab(){
-  const dates=[];for(let i=6;i>=0;i--){const d=new Date(now);d.setDate(d.getDate()-i);dates.push(d);}
-  const keys=dates.map(d=>dkey(d));const from=keys[0],to=keys[keys.length-1];
-  // Only fetch days not already in cache
-  const missingKeys=keys.filter(k=>!logCache[k]);
-  if(missingKeys.length>0){
-    const{data}=await sb.from('daily_logs').select('*').eq('user_id',CU.id).gte('log_date',missingKeys[0]).lte('log_date',missingKeys[missingKeys.length-1]);
-    if(data)data.forEach(d=>{
-      let gmeals=d.meals||[];
-      if(!gmeals.length){for(let n=1;n<=4;n++){if(d['meal_'+n+'_type']||d['meal_'+n+'_name']){gmeals.push({name:d['meal_'+n+'_name']||'',type:d['meal_'+n+'_type']||null,photo:d['meal_'+n+'_photo']||null});}}}
-      const l={weight:d.weight!==null?parseFloat(d.weight):null,muscle_mass:d.muscle_mass!=null?parseFloat(d.muscle_mass):null,body_fat_pct:d.body_fat_pct!=null?parseFloat(d.body_fat_pct):null,water_cups:d.water_cups||0,meals:gmeals,workouts:d.workouts||[],mandatory:d.mandatory?d.mandatory:[],targets:d.targets||[],_ptsLog:d.points_log||[]};
-      logCache[normKey(d.log_date)]=l;
-    });
-  }
-  if(logCache[TODAY])log=logCache[TODAY];
-  const todayScores=calcDailyScore(logCache[TODAY]||log);
-  const tier=getTier(todayScores.total);
-  const circumference=314;
-  const offset=circumference-(circumference*todayScores.total/100);
-  document.getElementById('g-ring-fill').style.strokeDashoffset=offset;
-  document.getElementById('g-ring-fill').style.stroke=tier.color;
-  document.getElementById('g-score-num').textContent=todayScores.total;
-  document.getElementById('g-score-num').style.color=tier.color;
-  document.getElementById('g-tier-badge').textContent=tier.icon+' '+tier.name;
-  document.getElementById('g-tier-badge').style.background=tier.color+'22';
-  document.getElementById('g-tier-badge').style.color=tier.color;
-  document.getElementById('g-tier-badge').style.border='1px solid '+tier.color+'55';
-  const yKey=dkey(new Date(now.getFullYear(),now.getMonth(),now.getDate()-1));
-  const yLog=logCache[yKey];const yScore=yLog?calcDailyScore(yLog).total:null;
-  const diff=yScore!==null?todayScores.total-yScore:null;
-  document.getElementById('g-score-change').textContent=diff===null?'오늘 첫 기록':diff>0?'어제보다 +'+diff+'점 상승':diff<0?'어제보다 '+diff+'점 하락':'어제와 동일';
-  [['diet',todayScores.diet,'gbr-diet','gbv-diet'],['wo',todayScores.wo,'gbr-wo','gbv-wo'],['mand',todayScores.mand,'gbr-mand','gbv-mand'],['tgt',todayScores.tgt,'gbr-tgt','gbv-tgt']].forEach(([k,v,bid,vid])=>{document.getElementById(bid).style.width=v+'%';document.getElementById(vid).textContent=v+'%';});
-  const streak=calcStreak();
-  document.getElementById('streak-num').textContent=streak;
-  document.getElementById('streak-best').textContent='최고: '+streak+'일';
-  const barRow=document.getElementById('streak-bar-row');barRow.innerHTML='';
-  dates.forEach(d=>{const k=dkey(d),l=logCache[k];const s=l?calcDailyScore(l).total:0;const bar=document.createElement('div');bar.className='streak-bar-day';bar.style.background=s>60?'#34d399':s>30?'#f59e0b':s>0?'#ff4d4d':'#2a2a32';barRow.appendChild(bar);});
-  const ladderEl=document.getElementById('tier-ladder');
-  ladderEl.innerHTML=TIERS.map(t=>{const isCurrent=todayScores.total>=t.min&&todayScores.total<=t.max;return`<div class="tier-row ${isCurrent?'current':''}"><div class="tier-icon">${t.icon}</div><div class="tier-info"><div class="tier-name" style="${isCurrent?'color:'+t.color:''}">${t.name}</div><div class="tier-range">${t.min} – ${t.max}점</div></div>${isCurrent?`<div class="tier-you">현재</div>`:''}</div>`;}).join('');
-  const nextTier=TIERS.find(t=>todayScores.total<t.min);
-  document.getElementById('next-hint').textContent=nextTier?nextTier.name+' 달성까지 '+(nextTier.min-todayScores.total)+'점 남았습니다 →':'최고 등급 달성! 💀';
-  updateHeaderStatus();
 }
 
 // ── DATE HEATMAP (replaces old day-slider) ──
