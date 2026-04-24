@@ -20,7 +20,7 @@
      so window globals (dkey, normKey, ...) are set before inline code runs.
      Query version bumps cache when bundle content changes. Bump manually or
      via build script when shipping a new bundle. See MIGRATION_PLAN.md. -->
-<script src="/dist/app.js?v=20260425a"></script>
+<script src="/dist/app.js?v=20260425b"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Archivo+Black&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -282,6 +282,35 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 .sb>*{position:relative;}
 .sb-head{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
 .sb-canvas{flex-shrink:0;cursor:pointer;image-rendering:pixelated;touch-action:manipulation;}
+/* ══ Tier 2 (저항자) 캐릭터 · 2026-04-24 ══
+   햄버거 던지기 sprite sheet 4-frame 애니메이션.
+   원본 1774×887 → frame 443.5×887. CSS steps(4) 로 순환.
+   각 프레임 600ms, 총 루프 2.4s. */
+#room-scene-tier2{display:none;}
+#room-scene-tier2.active{display:flex;}
+.tier2-throw-sprite{
+  width:443.5px;height:887px;
+  max-width:100%;max-height:100%;
+  background-image:url('/assets/tier2/Tier2_cha_throwingHamburgur.png');
+  background-repeat:no-repeat;
+  background-size:1774px 887px;
+  background-position:0 0;
+  image-rendering:pixelated;
+  animation:tier2Throw 2.4s steps(1) infinite;
+  transform:scale(0.55);transform-origin:center;
+}
+@keyframes tier2Throw{
+  0%,24%  {background-position:0 0;}
+  25%,49% {background-position:-443.5px 0;}
+  50%,74% {background-position:-887px 0;}
+  75%,100%{background-position:-1330.5px 0;}
+}
+@media (max-width:520px){
+  .tier2-throw-sprite{transform:scale(0.38);}
+}
+@media (prefers-reduced-motion:reduce){
+  .tier2-throw-sprite{animation:none;background-position:-443.5px 0;}
+}
 .sb-meta{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;}
 .sb-tier{font-size:13px;font-weight:700;color:var(--text);cursor:pointer;letter-spacing:-.01em;width:fit-content;touch-action:manipulation;}
 .sb-streak{font-size:11px;color:var(--text2);font-family:'DM Mono',monospace;font-weight:600;display:flex;align-items:center;gap:5px;}
@@ -1166,7 +1195,11 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
     <!-- STATUS BAND — unified hero: score/tier/streak/today Δ/quote/progress/summary -->
     <div class="sb">
       <div class="sb-head">
-        <canvas id="char-mini-canvas" class="sb-canvas" width="44" height="52" onclick="openRoomOverlay()"></canvas>
+        <div class="sb-canvas-wrap" style="position:relative;width:44px;height:52px;flex-shrink:0;" onclick="openRoomOverlay()">
+          <canvas id="char-mini-canvas" class="sb-canvas" width="44" height="52" style="width:44px;height:52px;"></canvas>
+          <!-- Tier 2 (저항자) 전용 정적 프로필. CUBE mode 에선 tier >=600 일 때만 display 됨. -->
+          <img id="char-mini-tier2" src="/assets/tier2/Tier2_cha_nobg.png" alt="" style="display:none;position:absolute;inset:0;width:44px;height:52px;object-fit:contain;image-rendering:pixelated;pointer-events:none;" />
+        </div>
         <div class="sb-meta">
           <div class="sb-tier" id="hdr-tier" onclick="openScoreGuide()">😴 방관자</div>
           <div class="sb-streak"><span class="streak-fire">🔥</span> <span id="hdr-streak">0일</span></div>
@@ -3129,6 +3162,10 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
   <!-- 캔버스 씬 (전체 채움) -->
   <div style="position:relative;width:100%;flex:1;overflow:hidden;">
     <canvas id="room-canvas" width="520" height="520" style="display:block;width:100%;height:100%;object-fit:contain;image-rendering:pixelated;cursor:default;"></canvas>
+    <!-- Tier 2 (저항자) 전용 throwing-hamburger 스프라이트 시트 애니메이션. CSS steps(4) 로 4프레임 반복. -->
+    <div id="room-scene-tier2" style="display:none;position:absolute;inset:0;background:radial-gradient(ellipse at center 70%,#2a1a2e 0%,#0a0a10 70%);align-items:center;justify-content:center;">
+      <div class="tier2-throw-sprite" aria-hidden="true"></div>
+    </div>
     <div id="room-toast" style="position:absolute;top:42%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.85);color:#FFD700;font-family:monospace;font-size:12px;padding:6px 16px;border-radius:6px;pointer-events:none;opacity:0;transition:opacity 0.3s;white-space:nowrap;z-index:10;text-align:center;"></div>
     <div style="position:absolute;top:42%;right:8%;color:rgba(255,255,255,0.35);font-family:monospace;font-size:10px;pointer-events:none;text-align:center;">💪<br>탭!</div>
   </div>
@@ -4761,6 +4798,14 @@ function renderCharCard(){
   // Status Band 렌더: 캔버스는 hdr-score 존재 여부로 가드 (char-card 제거됨)
   if(!document.getElementById('hdr-score'))return;
   if(typeof initMiniChar==='function')initMiniChar(tier.color);
+  // Tier 2 (저항자) 전용 프로필 이미지 토글 — canvas 위에 정적 image 덮어씀.
+  // sprites.js 는 tier 1 base64 만 그리므로 tier 2 는 DOM 오버레이로 대체.
+  const mini=document.getElementById('char-mini-canvas');
+  const miniT2=document.getElementById('char-mini-tier2');
+  if(miniT2&&mini){
+    if(tierIdx===2){miniT2.style.display='block';mini.style.opacity='0';}
+    else{miniT2.style.display='none';mini.style.opacity='';}
+  }
   const quotes=TIER_QUOTES[tier.name]||TIER_QUOTES['방관자'];
   const quote=quotes[Math.floor(Math.random()*quotes.length)];
   const quoteEl=document.getElementById('char-quote');
@@ -4799,6 +4844,13 @@ function openRoomOverlay(){
   document.body.style.overflow='hidden';
   const el=document.getElementById('room-overlay');
   el.style.display='flex';
+  // Tier 2 (저항자) 전용 씬 토글 — 햄버거 던지기 sprite sheet 애니메이션.
+  const roomT2=document.getElementById('room-scene-tier2');
+  const roomCanvas=document.getElementById('room-canvas');
+  if(roomT2&&roomCanvas){
+    if(tierIdx===2){roomT2.classList.add('active');roomCanvas.style.display='none';}
+    else{roomT2.classList.remove('active');roomCanvas.style.display='block';}
+  }
   startRoomScene();
 }
 
