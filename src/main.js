@@ -33,6 +33,9 @@ import * as pCamera from './platform/camera.js';
 import * as pHaptics from './platform/haptics.js';
 import * as pNotifications from './platform/notifications.js';
 
+// Friends feature (phase 1: MVP) — 친구 코드 + nudge inbox.
+import * as friends from './features/friends/index.js';
+
 Object.assign(
   window,
   date, tier, icons, env, analytics, mealPhoto, cheat, toast,
@@ -50,3 +53,20 @@ window.sh.platform = platform;
 window.sh.camera = pCamera;
 window.sh.haptics = pHaptics;
 window.sh.notifications = pNotifications;
+window.sh.friends = friends;
+
+// Start unread-badge poller once DOM is ready. Polls every 60s; live-replaced
+// by realtime subscription in Phase 2.
+if (typeof window !== 'undefined') {
+  const startPoll = () => {
+    const badgeEl = document.getElementById('fr-unread-badge');
+    if (badgeEl && typeof friends.startUnreadBadgePoll === 'function') {
+      friends.startUnreadBadgePoll(badgeEl, 60000);
+    }
+  };
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', startPoll);
+  } else {
+    setTimeout(startPoll, 0);
+  }
+}

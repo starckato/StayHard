@@ -20,7 +20,7 @@
      so window globals (dkey, normKey, ...) are set before inline code runs.
      Query version bumps cache when bundle content changes. Bump manually or
      via build script when shipping a new bundle. See MIGRATION_PLAN.md. -->
-<script src="/dist/app.js?v=20260425n"></script>
+<script src="/dist/app.js?v=20260425p"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Archivo+Black&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -483,6 +483,69 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 
 /* BOTTOM NAV */
 .bnav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:rgba(10,10,12,.97);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid var(--border);display:flex;padding:6px 0 20px;z-index:200;}
+
+/* ── Friends sub-tab ──────────────────────────────────────────────
+   Segment bar in competition tab. Minimal chrome — editorial/dark. */
+.fr-segbar{display:flex;gap:0;margin:14px 0 16px;border:1px solid var(--border);border-radius:12px;background:var(--surface2);padding:3px;position:relative;}
+.fr-segbtn{flex:1;padding:9px 12px;background:transparent;border:none;color:var(--text3);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;border-radius:9px;transition:background .18s,color .18s;position:relative;letter-spacing:-.01em;}
+.fr-segbtn.on{background:var(--accent);color:#fff;box-shadow:0 2px 8px rgba(255,77,77,.28);}
+.fr-segbadge{position:absolute;top:2px;right:4px;min-width:16px;height:16px;background:#ff4d4d;color:#fff;border-radius:9px;font-size:9px;font-weight:800;line-height:16px;padding:0 4px;font-family:'DM Mono',monospace;}
+
+.fr-wrap{display:flex;flex-direction:column;gap:16px;padding-top:4px;}
+.fr-mycode{background:linear-gradient(135deg,rgba(255,77,77,.08) 0%,rgba(255,77,77,.04) 100%);border:1px solid rgba(255,77,77,.2);border-radius:14px;padding:14px 16px;}
+.fr-mycode-label{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--text3);margin-bottom:8px;}
+.fr-mycode-row{display:flex;align-items:center;gap:10px;}
+.fr-mycode-value{font-family:'DM Mono',monospace;font-size:22px;font-weight:700;letter-spacing:.18em;color:var(--accent);flex:1;}
+.fr-mycode-hint{font-size:11px;color:var(--text3);margin-top:8px;}
+.fr-btn{background:var(--accent);color:#fff;border:none;border-radius:10px;padding:10px 16px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;cursor:pointer;letter-spacing:-.005em;touch-action:manipulation;}
+.fr-btn:disabled{opacity:.5;cursor:not-allowed;}
+.fr-btn-ghost{background:transparent;color:var(--text2);border:1px solid var(--border);border-radius:10px;padding:8px 12px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;touch-action:manipulation;}
+.fr-btn-ghost:hover{color:var(--text);}
+.fr-btn-small{background:transparent;color:var(--text2);border:1px solid var(--border);border-radius:8px;padding:7px 12px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;touch-action:manipulation;}
+.fr-btn-small.fr-btn-accept{background:var(--accent);color:#fff;border-color:var(--accent);}
+.fr-btn-icon{background:transparent;color:var(--text3);border:none;padding:6px 8px;font-size:15px;cursor:pointer;border-radius:6px;touch-action:manipulation;}
+.fr-btn-icon:hover{color:var(--text);background:rgba(255,255,255,.05);}
+
+.fr-addbox{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;}
+.fr-addbox-label{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--text3);margin-bottom:8px;display:block;}
+.fr-addbox-row{display:flex;gap:8px;}
+.fr-addbox-input{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;color:var(--text);font-family:'DM Mono',monospace;font-size:14px;letter-spacing:.14em;outline:none;}
+.fr-addbox-input:focus{border-color:var(--accent);}
+.fr-addbox-msg{font-size:11px;color:var(--red);margin-top:8px;min-height:14px;line-height:1.4;}
+
+.fr-section{display:flex;flex-direction:column;gap:10px;}
+.fr-section-head{display:flex;align-items:baseline;justify-content:space-between;}
+.fr-section-title{font-family:'Noto Serif KR',serif;font-size:15px;font-weight:500;letter-spacing:-.015em;color:var(--text);}
+.fr-section-count{font-family:'DM Mono',monospace;font-size:12px;color:var(--text3);}
+.fr-list{display:flex;flex-direction:column;gap:8px;}
+
+.fr-incoming-row,.fr-friend-row{display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--surface);border:1px solid var(--border);border-radius:12px;}
+.fr-incoming-main,.fr-friend-main{flex:1;min-width:0;}
+.fr-row-name{font-size:14px;font-weight:600;color:var(--text);letter-spacing:-.005em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.fr-row-sub{font-size:11px;color:var(--text3);margin-top:2px;font-family:'DM Mono',monospace;letter-spacing:.02em;}
+.fr-incoming-actions{display:flex;gap:6px;}
+.fr-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.fr-dot.on{background:#34d399;box-shadow:0 0 8px rgba(52,211,153,.55);}
+.fr-dot.off{background:var(--border);}
+
+.fr-empty{padding:32px 20px;text-align:center;background:var(--surface);border:1px dashed var(--border);border-radius:12px;}
+.fr-empty-title{font-family:'Noto Serif KR',serif;font-size:15px;color:var(--text);margin-bottom:6px;letter-spacing:-.01em;}
+.fr-empty-body{font-size:12px;color:var(--text3);line-height:1.55;}
+
+/* Nudge bottom sheet */
+.fr-nudge-sheet-overlay{position:fixed;inset:0;background:rgba(0,0,0,.62);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);z-index:950;display:flex;align-items:flex-end;justify-content:center;opacity:0;transition:opacity .2s ease;}
+.fr-nudge-sheet-overlay.on{opacity:1;}
+.fr-nudge-sheet{width:100%;max-width:430px;background:var(--surface);border-radius:18px 18px 0 0;padding:18px 18px 28px;max-height:80vh;overflow-y:auto;transform:translateY(16px);transition:transform .26s cubic-bezier(.16,1,.3,1);-webkit-overflow-scrolling:touch;border-top:1px solid var(--border2);}
+.fr-nudge-sheet-overlay.on .fr-nudge-sheet{transform:translateY(0);}
+.fr-nudge-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.fr-nudge-title{font-family:'Noto Serif KR',serif;font-size:16px;font-weight:500;letter-spacing:-.015em;}
+.fr-nudge-list{display:flex;flex-direction:column;gap:6px;margin-bottom:14px;}
+.fr-nudge-item{width:100%;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:11px;cursor:pointer;text-align:left;transition:border-color .15s,background .15s;font-family:inherit;}
+.fr-nudge-item:hover{border-color:var(--accent);background:rgba(255,77,77,.04);}
+.fr-nudge-item:disabled{opacity:.5;cursor:not-allowed;}
+.fr-nudge-body{font-family:'Noto Serif KR',serif;font-size:15px;color:var(--text);letter-spacing:-.01em;margin-bottom:2px;}
+.fr-nudge-sub{font-size:10px;color:var(--text3);letter-spacing:.16em;text-transform:uppercase;font-family:'DM Sans',sans-serif;}
+.fr-nudge-foot{font-size:10.5px;color:var(--text3);text-align:center;letter-spacing:.04em;}
 .bni{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:8px 0;color:var(--text3);font-size:10px;font-weight:600;letter-spacing:.02em;transition:color .15s;touch-action:manipulation;position:relative;}
 .bni.active{color:var(--accent);}
 .bni.active::after{content:'';position:absolute;top:4px;left:50%;transform:translateX(-50%);width:4px;height:4px;border-radius:50%;background:var(--accent);box-shadow:0 0 8px var(--accent);}
@@ -1834,6 +1897,16 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
   <!-- ══ COMPETITION ══ -->
   <div class="view" id="view-competition" style="padding:0 16px 80px;">
 
+    <!-- Segment bar: 챌린지 / 친구 -->
+    <div class="fr-segbar" id="comp-segbar">
+      <button class="fr-segbtn on" data-sub="competition" type="button" onclick="switchSubTab('competition')">챌린지</button>
+      <button class="fr-segbtn" data-sub="friends" type="button" onclick="switchSubTab('friends')">
+        친구
+        <span class="fr-segbadge" id="fr-unread-badge" hidden></span>
+      </button>
+    </div>
+
+    <div id="sub-competition">
     <!-- 푸쉬업 챌린지 (최상단 — 사용자 선호) -->
     <div id="puc-card" style="margin-top:16px;background:linear-gradient(135deg,rgba(255,77,77,.14) 0%,rgba(255,77,77,.12) 100%);border:1px solid var(--accent-bd);border-radius:18px;padding:18px;display:none;">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
@@ -2621,6 +2694,9 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
       </div>
       <div style="text-align:center;margin-top:10px;font-size:10px;color:#444;">스크린샷을 찍거나 캡쳐 버튼을 눌러 공유하세요</div>
     </div>
+    </div><!-- /#sub-competition -->
+
+    <div id="sub-friends" hidden></div><!-- mounted by src/features/friends -->
   </div>
 
   <div class="bnav">
@@ -7801,6 +7877,27 @@ function switchTab(name,idx){
   if(name==='goggins')renderGogginsTab();
   // Safety: release any stale scroll lock on tab change
   _forceUnlockScroll();
+}
+
+// Competition 탭 내부 sub-tab 전환 (챌린지 ↔ 친구).
+function switchSubTab(name){
+  const sc=document.getElementById('sub-competition');
+  const sf=document.getElementById('sub-friends');
+  if(!sc||!sf)return;
+  document.querySelectorAll('.fr-segbtn').forEach(b=>{
+    b.classList.toggle('on', b.getAttribute('data-sub')===name);
+  });
+  if(name==='friends'){
+    sc.hidden=true;sf.hidden=false;
+    try{
+      if(window.sh&&window.sh.friends&&typeof window.sh.friends.mountFriendsTab==='function'){
+        window.sh.friends.mountFriendsTab(sf);
+      }
+    }catch(e){console.warn('[friends] mount',e);}
+  } else {
+    sc.hidden=false;sf.hidden=true;
+  }
+  try{window.scrollTo({top:0,behavior:'instant'});}catch(e){window.scrollTo(0,0);}
 }
 
 // ── GOGGINS ──
