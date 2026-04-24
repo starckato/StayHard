@@ -20,7 +20,7 @@
      so window globals (dkey, normKey, ...) are set before inline code runs.
      Query version bumps cache when bundle content changes. Bump manually or
      via build script when shipping a new bundle. See MIGRATION_PLAN.md. -->
-<script src="/dist/app.js?v=20260425r"></script>
+<script src="/dist/app.js?v=20260425s"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Archivo+Black&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -3711,6 +3711,27 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
       </div>
     </div>
 
+    <!-- 알림 설정 (로컬) -->
+    <div id="notif-prefs-card" style="margin:0 0 12px;padding:14px;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <div style="font-size:10px;font-weight:700;color:var(--text3);letter-spacing:0.08em;text-transform:uppercase;">알림</div>
+        <label style="display:flex;align-items:center;gap:7px;cursor:pointer;">
+          <input type="checkbox" id="notif-master" style="width:16px;height:16px;accent-color:var(--accent);cursor:pointer;">
+          <span style="font-size:11px;color:var(--text2);font-weight:600;">전체 켜기</span>
+        </label>
+      </div>
+      <div id="notif-cat-list" style="display:flex;flex-direction:column;gap:8px;"></div>
+      <div id="notif-cta-permission" style="display:none;margin-top:10px;padding:10px;background:rgba(255,77,77,0.08);border:1px solid rgba(255,77,77,0.2);border-radius:8px;font-size:11px;color:var(--red);line-height:1.5;">
+        기기 설정에서 Stay Hard 알림을 허용해 주세요.
+      </div>
+      <div id="notif-cta-web" style="display:none;margin-top:10px;padding:10px;background:var(--bg);border:1px dashed var(--border2);border-radius:8px;font-size:11px;color:var(--text3);line-height:1.5;">
+        네이티브 앱에서만 동작해요. 웹에선 저장만 되고 알림은 안 와요.
+      </div>
+      <div style="margin-top:10px;font-size:10px;color:var(--text3);line-height:1.5;">
+        기록 완료 여부와 상관없이 정해진 시간에 울려요. 카테고리별로 끄거나 시간 조정 가능.
+      </div>
+    </div>
+
     <button onclick="closeModal('profile-modal');openTourModal();" style="width:100%;padding:12px;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;color:var(--text);font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;letter-spacing:-.005em;margin-bottom:8px;display:flex;align-items:center;justify-content:center;gap:8px;">
       <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.3-1 1-1 1.7"/><line x1="12" y1="17" x2="12" y2="17.01"/></svg>
       앱 사용법 다시 보기
@@ -5422,6 +5443,7 @@ async function init(){
       _initDone=false;CU=null;CP=null;
       try{localStorage.removeItem('lastUserId');localStorage.removeItem('lastUserEmail');}catch(e){}
       try{window.sh&&window.sh.friends&&window.sh.friends.stopRealtimeNudges&&window.sh.friends.stopRealtimeNudges();}catch(e){}
+      try{window.sh&&window.sh.localNotifications&&window.sh.localNotifications.cancelAll();}catch(e){}
       hide('loading');showAuth();
     }
   });
@@ -5821,6 +5843,13 @@ async function onLogin(user){
       window.sh.notifications.registerForPush().catch(e=>console.warn('[push] register',e));
     }
   }catch(e){console.warn('[push] start failed',e);}
+  // 로컬 알림 예약 복원 — 앱 재설치/OS 재부팅 등으로 스케줄 소실된 경우 대비. 저장된 prefs 재적용.
+  try{
+    if(window.sh&&window.sh.localNotifications){
+      const prefs=window.sh.localNotifications.loadPrefs(user.id);
+      if(prefs&&prefs.enabled){window.sh.localNotifications.applyPrefs(prefs).catch(()=>{});}
+    }
+  }catch(e){console.warn('[local-notif] restore',e);}
   // ── 스냅샷 즉시 복원 (init에서 이미 paint 했으면 skip, 다른 유저 전환 시에는 paint) ──
   const _snap=_loadSnapshot(user.id);
   let _snapPainted=window._paintedUserId===user.id; // init이 같은 유저로 이미 그렸음
@@ -6181,6 +6210,93 @@ function openProfileModal(){
   const inp=document.getElementById('p-nickname-inp');
   if(inp)inp.value=CP?.display_name||'';
   openModal('profile-modal');
+  // 알림 섹션 렌더
+  try{renderNotifPrefs();}catch(e){console.warn('[notif-prefs]',e);}
+}
+
+// ── 로컬 알림 설정 UI ───────────────────────────────────────
+async function renderNotifPrefs(){
+  const LN=window.sh&&window.sh.localNotifications;if(!LN)return;
+  const isNative=window.sh&&window.sh.platform&&window.sh.platform.isNative();
+  const userId=(window.CU&&window.CU.id)||null;
+  const prefs=LN.loadPrefs(userId);
+  const master=document.getElementById('notif-master');
+  const list=document.getElementById('notif-cat-list');
+  const permBox=document.getElementById('notif-cta-permission');
+  const webBox=document.getElementById('notif-cta-web');
+  if(!master||!list)return;
+
+  // 웹 안내
+  if(!isNative){
+    webBox.style.display='block';
+    permBox.style.display='none';
+  } else {
+    webBox.style.display='none';
+    const perm=await LN.checkPermission();
+    permBox.style.display=(perm==='denied')?'block':'none';
+  }
+
+  master.checked=!!prefs.enabled;
+  master.onchange=async()=>{
+    prefs.enabled=master.checked;
+    // 처음 켤 때 권한 요청
+    if(prefs.enabled && isNative){
+      const granted=await LN.requestPermission();
+      if(!granted){prefs.enabled=false;master.checked=false;permBox.style.display='block';return;}
+    }
+    await LN.savePrefs(userId,prefs);
+    _paintNotifList(list,prefs,userId,LN);
+  };
+  _paintNotifList(list,prefs,userId,LN);
+}
+
+function _paintNotifList(list,prefs,userId,LN){
+  const meta=LN.CATEGORY_META;
+  const cats=Object.keys(meta);
+  const disabled=!prefs.enabled;
+  list.innerHTML=cats.map(cat=>{
+    const p=prefs[cat]||{on:false,hour:9,min:0};
+    const timeStr=String(p.hour).padStart(2,'0')+':'+String(p.min).padStart(2,'0');
+    return `<div class="notif-cat" style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--bg);border:1px solid var(--border);border-radius:9px;opacity:${disabled?0.45:1};">
+      <label style="display:flex;align-items:center;gap:9px;flex:1;cursor:${disabled?'default':'pointer'};min-width:0;">
+        <input type="checkbox" data-cat="${cat}" ${p.on?'checked':''} ${disabled?'disabled':''} style="width:15px;height:15px;accent-color:var(--accent);flex-shrink:0;">
+        <div style="min-width:0;">
+          <div style="font-size:12.5px;font-weight:600;color:var(--text);letter-spacing:-.005em;">${meta[cat].label}</div>
+          <div style="font-size:10px;color:var(--text3);margin-top:1px;">${meta[cat].sub}</div>
+        </div>
+      </label>
+      <select data-cat-time="${cat}" ${disabled||!p.on?'disabled':''} style="background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:6px 8px;font-family:'DM Mono',monospace;font-size:12px;color:var(--text);cursor:pointer;">
+        ${_timeOptions(timeStr)}
+      </select>
+    </div>`;
+  }).join('');
+  list.querySelectorAll('input[data-cat]').forEach(cb=>{
+    cb.addEventListener('change',async()=>{
+      const cat=cb.getAttribute('data-cat');
+      prefs[cat]={...prefs[cat],on:cb.checked};
+      await LN.savePrefs(userId,prefs);
+      _paintNotifList(list,prefs,userId,LN);
+    });
+  });
+  list.querySelectorAll('select[data-cat-time]').forEach(sel=>{
+    sel.addEventListener('change',async()=>{
+      const cat=sel.getAttribute('data-cat-time');
+      const [h,m]=sel.value.split(':').map(n=>parseInt(n,10));
+      prefs[cat]={...prefs[cat],hour:h,min:m};
+      await LN.savePrefs(userId,prefs);
+    });
+  });
+}
+
+function _timeOptions(selected){
+  const out=[];
+  for(let h=6;h<=23;h++){
+    for(const m of [0,30]){
+      const v=String(h).padStart(2,'0')+':'+String(m).padStart(2,'0');
+      out.push(`<option value="${v}" ${v===selected?'selected':''}>${v}</option>`);
+    }
+  }
+  return out.join('');
 }
 async function saveNickname(){
   const inp=document.getElementById('p-nickname-inp');

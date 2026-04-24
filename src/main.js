@@ -32,6 +32,7 @@ import * as platform from './platform/platform.js';
 import * as pCamera from './platform/camera.js';
 import * as pHaptics from './platform/haptics.js';
 import * as pNotifications from './platform/notifications.js';
+import * as pLocalNotifications from './platform/local-notifications.js';
 
 // Friends feature (phase 1: MVP) — 친구 코드 + nudge inbox.
 import * as friends from './features/friends/index.js';
@@ -53,6 +54,7 @@ window.sh.platform = platform;
 window.sh.camera = pCamera;
 window.sh.haptics = pHaptics;
 window.sh.notifications = pNotifications;
+window.sh.localNotifications = pLocalNotifications;
 window.sh.friends = friends;
 
 // Start unread-badge poller once DOM is ready. Polls every 60s; live-replaced
