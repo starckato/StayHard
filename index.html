@@ -20,7 +20,7 @@
      so window globals (dkey, normKey, ...) are set before inline code runs.
      Query version bumps cache when bundle content changes. Bump manually or
      via build script when shipping a new bundle. See MIGRATION_PLAN.md. -->
-<script src="/dist/app.js?v=20260425q"></script>
+<script src="/dist/app.js?v=20260425r"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Archivo+Black&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -5815,6 +5815,12 @@ async function onLogin(user){
       window.sh.friends.startRealtimeNudges(user.id, document.getElementById('fr-unread-badge'));
     }
   }catch(e){console.warn('[friends] realtime start failed',e);}
+  // 네이티브 푸시 등록 — iOS/Android 만 실행. 웹은 no-op. push_tokens upsert 포함.
+  try{
+    if(window.sh&&window.sh.notifications&&typeof window.sh.notifications.registerForPush==='function'){
+      window.sh.notifications.registerForPush().catch(e=>console.warn('[push] register',e));
+    }
+  }catch(e){console.warn('[push] start failed',e);}
   // ── 스냅샷 즉시 복원 (init에서 이미 paint 했으면 skip, 다른 유저 전환 시에는 paint) ──
   const _snap=_loadSnapshot(user.id);
   let _snapPainted=window._paintedUserId===user.id; // init이 같은 유저로 이미 그렸음
