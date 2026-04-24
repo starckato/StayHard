@@ -20,7 +20,7 @@
      so window globals (dkey, normKey, ...) are set before inline code runs.
      Query version bumps cache when bundle content changes. Bump manually or
      via build script when shipping a new bundle. See MIGRATION_PLAN.md. -->
-<script src="/dist/app.js?v=20260425m"></script>
+<script src="/dist/app.js?v=20260425n"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Archivo+Black&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -4880,16 +4880,15 @@ function renderCharCard(){
   // Status Band 렌더: 캔버스는 hdr-score 존재 여부로 가드 (char-card 제거됨)
   if(!document.getElementById('hdr-score'))return;
   if(typeof initMiniChar==='function')initMiniChar(tier.color);
-  // 각성자 (tier index 1) / 저항자 (tier index 2) 전용 프로필 오버레이.
-  // sprites.js 는 방관자 (index 0) base64 만 그리므로 각성자/저항자는 DOM 으로 대체.
-  // (char-mini-tier2 img = 각성자 art, char-mini-tier3 img = 저항자 art — ID 는
-  //  asset 폴더 이름 기준으로 유지, 실제 활성 tierIdx 는 1/2.)
+  // 각성자/저항자 전용 프로필 오버레이 — 캐릭터 퀄리티 WIP 때문에 임시 비활성.
+  // 활성화 하려면 window.TIER_CHAR_OVERRIDE_ENABLED=true.
   const mini=document.getElementById('char-mini-canvas');
   const miniT2=document.getElementById('char-mini-tier2');
   const miniT3=document.getElementById('char-mini-tier3');
   if(mini){
-    const showAwakened=(tierIdx===1); // 각성자
-    const showResister=(tierIdx===2); // 저항자
+    const enabled=window.TIER_CHAR_OVERRIDE_ENABLED===true;
+    const showAwakened=enabled&&(tierIdx===1);
+    const showResister=enabled&&(tierIdx===2);
     if(miniT2)miniT2.style.display=showAwakened?'block':'none';
     if(miniT3)miniT3.style.display=showResister?'block':'none';
     mini.style.opacity=(showAwakened||showResister)?'0':'';
@@ -4932,15 +4931,14 @@ function openRoomOverlay(){
   document.body.style.overflow='hidden';
   const el=document.getElementById('room-overlay');
   el.style.display='flex';
-  // 각성자 (index 1) / 저항자 (index 2) 전용 룸 씬 토글.
-  // (scene-tier2 = 각성자 햄버거 던지기 씬, scene-tier3 = 저항자 walking 씬 —
-  //  DOM ID 는 asset 폴더 기준 유지, 실제 tierIdx 1/2 에 대응.)
+  // 각성자/저항자 룸 씬 토글 — 캐릭터 퀄리티 WIP 임시 비활성 (위와 동일 flag).
   const roomT2=document.getElementById('room-scene-tier2');
   const roomT3=document.getElementById('room-scene-tier3');
   const roomCanvas=document.getElementById('room-canvas');
   if(roomCanvas){
-    const showAwakened=(tierIdx===1); // 각성자 — 햄버거 던지기
-    const showResister=(tierIdx===2); // 저항자 — walking
+    const enabled=window.TIER_CHAR_OVERRIDE_ENABLED===true;
+    const showAwakened=enabled&&(tierIdx===1);
+    const showResister=enabled&&(tierIdx===2);
     if(roomT2)roomT2.classList.toggle('active',showAwakened);
     if(roomT3)roomT3.classList.toggle('active',showResister);
     roomCanvas.style.display=(showAwakened||showResister)?'none':'block';
