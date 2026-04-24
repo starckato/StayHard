@@ -95,12 +95,17 @@ export function obSelectGoal(goal){
 export function obBuildRoutineChips(){
   obSelectedRoutines=[];
   const routines=_obGoal?OB_GOAL_ROUTINES[_obGoal]:OB_GOAL_ROUTINES.habit;
-  // 아이콘/타이틀 업데이트
-  const icons={diet:'⚖️',muscle:'💪',habit:'🔥'};
+  // 아이콘/타이틀 업데이트 — SVG (이모지 금지)
+  const iconSvg={
+    diet: '<svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 6.5h11l1 11a2 2 0 0 1-2 2H7.5a2 2 0 0 1-2-2l1-11z"/><path d="M9 6.5a3 3 0 0 1 6 0"/></svg>',
+    muscle:'<svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10v4M7 7v10M17 7v10M21 10v4"/><path d="M7 12h10"/></svg>',
+    habit: '<svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/><path d="M3 21v-5h5"/></svg>',
+  };
+  const fallbackSvg='<svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 12l3 3 5-5"/></svg>';
   const titles={diet:'다이어트 추천 루틴',muscle:'근성장 추천 루틴',habit:'습관 형성 추천 루틴'};
   const descs={diet:'목표 체중을 설정하고 루틴을 골라보세요',muscle:'근성장을 위한 루틴을 골라보세요',habit:'매일 반복할 루틴을 골라보세요'};
   if(_obGoal){
-    document.getElementById('ob-s3-icon').textContent=icons[_obGoal]||'✅';
+    document.getElementById('ob-s3-icon').innerHTML=iconSvg[_obGoal]||fallbackSvg;
     document.getElementById('ob-s3-title').textContent=titles[_obGoal]||'추천 루틴';
     document.getElementById('ob-s3-desc').textContent=descs[_obGoal]||'탭해서 추가할 루틴을 선택하세요';
   }
@@ -192,11 +197,17 @@ export async function obFinish(){
   if(_obGoal)profileUpdate.goal=_obGoal;
   await sb.from('profiles').update(profileUpdate).eq('id',window.CU.id);
   if(window.CP){window.CP.onboarded=true;if(_obGoal)window.CP.goal=_obGoal;}
-  // 첫 출발 보너스 +10pt — 첫 화면 점수 0 대신 10 으로 시작
+  // Will Cube mode: 첫 출발 보너스 제거. "큐브가 나와야 점수" 원칙 유지.
+  // legacy 모드 fallback 은 addScore 만 (showWin 은 CUBE_UI_MODE gate 에 걸림).
+  if(window.CUBE_UI_MODE!==true){
+    try{addScore('onboarding_bonus','온보딩 완료');}catch(e){}
+  }
+  // 온보딩 종료 → 앱 사용법 투어 자동 오픈 (큐브 시스템 안내 + 탭별 핵심 기능).
   try{
-    addScore('onboarding_bonus','온보딩 완료');
-    setTimeout(()=>{try{showWin('bonus',10,'환영 🎉');}catch(e){}},300);
-  }catch(e){console.warn('[ob] welcome bonus',e);}
+    setTimeout(()=>{
+      if(typeof window.openTourModal==='function')window.openTourModal();
+    },400);
+  }catch(e){}
   track('onboard_complete',{path:'full',goal:_obGoal,routines:obSelectedRoutines?.length||0});
   queueSave();
 }

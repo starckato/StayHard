@@ -20,7 +20,7 @@
      so window globals (dkey, normKey, ...) are set before inline code runs.
      Query version bumps cache when bundle content changes. Bump manually or
      via build script when shipping a new bundle. See MIGRATION_PLAN.md. -->
-<script src="/dist/app.js?v=20260425e"></script>
+<script src="/dist/app.js?v=20260425f"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Archivo+Black&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -1136,6 +1136,9 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
     <div style="display:flex;align-items:center;justify-content:space-between;width:100%;">
       <div class="hdr-title" style="color:var(--accent);">Stay Hard</div>
       <div style="display:flex;align-items:center;gap:8px;">
+        <button id="hdr-help-btn" class="hdr-icon-btn" onclick="openTourModal()" aria-label="앱 사용법">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.3-1 1-1 1.7"/><line x1="12" y1="17" x2="12" y2="17.01"/></svg>
+        </button>
         <button id="notif-bell-btn" class="hdr-icon-btn" onclick="openNotificationsModal()" aria-label="알림">
           <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
           <span class="hdr-icon-badge" id="notif-bell-badge" style="display:none;"></span>
@@ -2330,22 +2333,22 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
 
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:18px;">
             <div style="padding:12px 10px;background:var(--surface2);border:1px solid var(--border2);border-radius:12px;text-align:left;">
-              <div style="font-size:20px;line-height:1;margin-bottom:6px;">⚖️</div>
+              <div style="line-height:1;margin-bottom:6px;color:#ff4d4d;"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 6.5h11l1 11a2 2 0 0 1-2 2H7.5a2 2 0 0 1-2-2l1-11z"/><path d="M9 6.5a3 3 0 0 1 6 0"/><path d="M12 12v4"/></svg></div>
               <div style="font-size:12px;font-weight:800;color:var(--text);margin-bottom:1px;">공복 체중</div>
               <div style="font-size:10px;color:var(--text3);line-height:1.3;">매일 아침 한 번</div>
             </div>
             <div style="padding:12px 10px;background:var(--surface2);border:1px solid var(--border2);border-radius:12px;text-align:left;">
-              <div style="font-size:20px;line-height:1;margin-bottom:6px;">🥗</div>
+              <div style="line-height:1;margin-bottom:6px;color:#ff4d4d;"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20C4 10 10 4 20 4c0 10-6 16-16 16z"/><path d="M4 20L13 11"/></svg></div>
               <div style="font-size:12px;font-weight:800;color:var(--text);margin-bottom:1px;">클린 식단</div>
               <div style="font-size:10px;color:var(--text3);line-height:1.3;">뭘 먹었는지 체크</div>
             </div>
             <div style="padding:12px 10px;background:var(--surface2);border:1px solid var(--border2);border-radius:12px;text-align:left;">
-              <div style="font-size:20px;line-height:1;margin-bottom:6px;">💪</div>
+              <div style="line-height:1;margin-bottom:6px;color:#ff4d4d;"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10v4M7 7v10M17 7v10M21 10v4"/><path d="M7 12h10"/></svg></div>
               <div style="font-size:12px;font-weight:800;color:var(--text);margin-bottom:1px;">운동 기록</div>
               <div style="font-size:10px;color:var(--text3);line-height:1.3;">근력 · 유산소 · 활동</div>
             </div>
             <div style="padding:12px 10px;background:var(--surface2);border:1px solid var(--border2);border-radius:12px;text-align:left;">
-              <div style="font-size:20px;line-height:1;margin-bottom:6px;">✅</div>
+              <div style="line-height:1;margin-bottom:6px;color:#ff4d4d;"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 12l3 3 5-5"/></svg></div>
               <div style="font-size:12px;font-weight:800;color:var(--text);margin-bottom:1px;">루틴 · 할일</div>
               <div style="font-size:10px;color:var(--text3);line-height:1.3;">오늘 해낸 것들</div>
             </div>
@@ -2363,27 +2366,29 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
         <!-- Step 2: 목표 선택 -->
         <div id="ob-s2" style="display:none;padding:28px 24px 24px;">
           <div style="text-align:center;margin-bottom:20px;">
-            <div style="font-size:36px;margin-bottom:10px;">🎯</div>
+            <div style="margin-bottom:10px;display:flex;justify-content:center;color:#ff4d4d;">
+              <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2" fill="currentColor"/></svg>
+            </div>
             <div style="font-size:18px;font-weight:700;margin-bottom:6px;">목표가 뭔가요?</div>
             <div style="font-size:13px;color:var(--text2);">목표에 맞는 루틴을 추천해드릴게요</div>
           </div>
           <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:24px;">
             <div id="ob-goal-diet" onclick="obSelectGoal('diet')" style="display:flex;align-items:center;gap:14px;padding:16px;border-radius:14px;border:2px solid var(--border);background:var(--surface2);cursor:pointer;touch-action:manipulation;">
-              <div style="font-size:28px;">⚖️</div>
+              <div style="color:#ff4d4d;display:flex;"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 6.5h11l1 11a2 2 0 0 1-2 2H7.5a2 2 0 0 1-2-2l1-11z"/><path d="M9 6.5a3 3 0 0 1 6 0"/></svg></div>
               <div style="flex:1;">
                 <div style="font-size:15px;font-weight:700;">다이어트</div>
                 <div style="font-size:12px;color:var(--text3);margin-top:2px;">체중 감량 · 식단 관리 · 유산소</div>
               </div>
             </div>
             <div id="ob-goal-muscle" onclick="obSelectGoal('muscle')" style="display:flex;align-items:center;gap:14px;padding:16px;border-radius:14px;border:2px solid var(--border);background:var(--surface2);cursor:pointer;touch-action:manipulation;">
-              <div style="font-size:28px;">💪</div>
+              <div style="color:#ff4d4d;display:flex;"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10v4M7 7v10M17 7v10M21 10v4"/><path d="M7 12h10"/></svg></div>
               <div style="flex:1;">
                 <div style="font-size:15px;font-weight:700;">근성장</div>
                 <div style="font-size:12px;color:var(--text3);margin-top:2px;">근력 향상 · 헬스 · 단백질 식단</div>
               </div>
             </div>
             <div id="ob-goal-habit" onclick="obSelectGoal('habit')" style="display:flex;align-items:center;gap:14px;padding:16px;border-radius:14px;border:2px solid var(--border);background:var(--surface2);cursor:pointer;touch-action:manipulation;">
-              <div style="font-size:28px;">🔥</div>
+              <div style="color:#ff4d4d;display:flex;"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/><path d="M3 21v-5h5"/></svg></div>
               <div style="flex:1;">
                 <div style="font-size:15px;font-weight:700;">습관 형성</div>
                 <div style="font-size:12px;color:var(--text3);margin-top:2px;">자기관리 · 루틴 구축 · 성장</div>
@@ -2397,7 +2402,9 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
         <!-- Step 3: 목표 체중 + 루틴 추천 -->
         <div id="ob-s3" style="display:none;padding:28px 24px 24px;">
           <div style="text-align:center;margin-bottom:20px;">
-            <div style="font-size:36px;margin-bottom:10px;" id="ob-s3-icon">✅</div>
+            <div style="margin-bottom:10px;display:flex;justify-content:center;color:#ff4d4d;" id="ob-s3-icon">
+              <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 12l3 3 5-5"/></svg>
+            </div>
             <div style="font-size:18px;font-weight:700;margin-bottom:6px;" id="ob-s3-title">추천 루틴</div>
             <div style="font-size:13px;color:var(--text2);" id="ob-s3-desc">탭해서 추가할 루틴을 선택하세요</div>
           </div>
@@ -2429,31 +2436,61 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
           <button onclick="obNext(4)" style="width:100%;padding:10px;background:none;border:none;color:var(--text3);font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;margin-top:6px;touch-action:manipulation;">건너뛰기</button>
         </div>
 
-        <!-- Step 4: 첫 점수 따기 (quick-win) -->
-        <div id="ob-s4" style="display:none;padding:28px 24px 24px;">
-          <div style="text-align:center;margin-bottom:18px;">
-            <div style="font-size:44px;line-height:1;margin-bottom:10px;">🔥</div>
-            <div style="font-family:'Archivo Black',sans-serif;font-size:20px;letter-spacing:-.02em;margin-bottom:6px;">좋아. 첫 점수 가자.</div>
-            <div style="font-size:13px;color:var(--text2);line-height:1.55;">완벽하지 않아도 돼.<br>하루 하나만 체크하면 그게 시작이야.</div>
+        <!-- Step 4: Will Cube 시스템 안내 -->
+        <div id="ob-s4" style="display:none;padding:28px 22px 24px;">
+          <div style="text-align:center;margin-bottom:20px;">
+            <div style="display:flex;justify-content:center;gap:6px;margin-bottom:12px;">
+              <div style="width:22px;height:22px;border-radius:5px;background:linear-gradient(135deg,#fff1a8 0%,#ffd54a 45%,#c48c1a 100%);border:1px solid rgba(255,233,128,0.70);box-shadow:0 0 4px rgba(255,213,74,0.55),inset 0 1px 0 rgba(255,255,255,0.45),inset 0 -1px 0 rgba(0,0,0,0.25);"></div>
+              <div style="width:22px;height:22px;border-radius:5px;background:linear-gradient(135deg,#fff1a8 0%,#ffd54a 45%,#c48c1a 100%);border:1px solid rgba(255,233,128,0.70);box-shadow:0 0 4px rgba(255,213,74,0.55),inset 0 1px 0 rgba(255,255,255,0.45),inset 0 -1px 0 rgba(0,0,0,0.25);"></div>
+              <div style="width:22px;height:22px;border-radius:5px;background:linear-gradient(135deg,#fff1a8 0%,#ffd54a 45%,#c48c1a 100%);border:1px solid rgba(255,233,128,0.70);box-shadow:0 0 4px rgba(255,213,74,0.55),inset 0 1px 0 rgba(255,255,255,0.45),inset 0 -1px 0 rgba(0,0,0,0.25);"></div>
+              <div style="width:22px;height:22px;border-radius:5px;background:linear-gradient(135deg,#fff1a8 0%,#ffd54a 45%,#c48c1a 100%);border:1px solid rgba(255,233,128,0.70);box-shadow:0 0 4px rgba(255,213,74,0.55),inset 0 1px 0 rgba(255,255,255,0.45),inset 0 -1px 0 rgba(0,0,0,0.25);"></div>
+            </div>
+            <div style="font-family:'Archivo Black',sans-serif;font-size:20px;letter-spacing:-.02em;margin-bottom:6px;color:var(--text);">하루를 꽉 채우는 법</div>
+            <div style="font-size:13px;color:var(--text);line-height:1.55;">네 가지를 모두 완수하면<br>황금 큐브. 하루 최대 4개.</div>
           </div>
-          <div style="background:var(--surface2);border:1px solid var(--border2);border-radius:14px;padding:14px 16px;margin-bottom:14px;">
-            <div style="font-size:11px;color:var(--text3);margin-bottom:8px;letter-spacing:0.06em;font-weight:600;">환영 보너스</div>
-            <div style="display:flex;align-items:center;justify-content:space-between;">
-              <div>
-                <div style="font-size:14px;font-weight:700;color:var(--text);">첫 출발</div>
-                <div style="font-size:11px;color:var(--text3);margin-top:2px;">온보딩 완료했으니까</div>
+
+          <!-- 큐브 색 의미 -->
+          <div style="background:var(--surface2);border:1px solid var(--border2);border-radius:12px;padding:12px 14px;margin-bottom:12px;">
+            <div style="font-size:10px;color:var(--text3);margin-bottom:10px;letter-spacing:0.08em;font-weight:700;text-transform:uppercase;">큐브 점수</div>
+            <div style="display:flex;flex-direction:column;gap:8px;">
+              <div style="display:flex;align-items:center;gap:10px;">
+                <div style="width:16px;height:16px;border-radius:3px;background:linear-gradient(135deg,#fff1a8 0%,#ffd54a 45%,#c48c1a 100%);border:1px solid rgba(255,233,128,0.70);flex-shrink:0;"></div>
+                <div style="flex:1;font-size:12px;color:var(--text);font-weight:600;">Gold · 모두 완수</div>
+                <div style="font-family:'DM Mono',monospace;font-size:13px;font-weight:800;color:#ffd54a;">+3</div>
               </div>
-              <div style="font-family:'Archivo Black',sans-serif;font-size:22px;color:#ff6b35;text-shadow:0 2px 10px rgba(255,107,53,0.35);">+10pt</div>
+              <div style="display:flex;align-items:center;gap:10px;">
+                <div style="width:16px;height:16px;border-radius:3px;background:linear-gradient(135deg,#f2f4f7 0%,#b5c0cc 45%,#6d7682 100%);border:1px solid rgba(210,218,228,0.55);flex-shrink:0;"></div>
+                <div style="flex:1;font-size:12px;color:var(--text);font-weight:600;">Silver · 부분 완수</div>
+                <div style="font-family:'DM Mono',monospace;font-size:13px;font-weight:800;color:#d8dfe7;">+2</div>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px;">
+                <div style="width:16px;height:16px;border-radius:3px;background:rgba(255,77,77,0.32);border:1px solid rgba(255,77,77,0.45);flex-shrink:0;"></div>
+                <div style="flex:1;font-size:12px;color:var(--text);font-weight:600;">Crimson · 실패 / 금지</div>
+                <div style="font-family:'DM Mono',monospace;font-size:13px;font-weight:800;color:#ff6b6b;">−3</div>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px;">
+                <div style="width:16px;height:16px;border-radius:3px;background:transparent;border:1px solid rgba(255,255,255,0.14);flex-shrink:0;"></div>
+                <div style="flex:1;font-size:12px;color:var(--text2);font-weight:600;">Gray · 미기록</div>
+                <div style="font-family:'DM Mono',monospace;font-size:13px;font-weight:700;color:var(--text3);">0</div>
+              </div>
             </div>
           </div>
-          <div style="font-size:11px;color:var(--text3);line-height:1.55;padding:10px 12px;background:rgba(255,77,77,0.05);border:1px solid rgba(255,77,77,0.12);border-radius:10px;margin-bottom:20px;">
-            <div style="font-weight:700;color:var(--text2);margin-bottom:4px;">이제 시작하면:</div>
-            • 루틴 체크할 때마다 +1pt<br>
-            • 할일 완료할 때마다 +2pt<br>
-            • 운동 기록하면 +30pt<br>
-            • 클린 식단이면 +10pt / 끼
+
+          <!-- 보너스 큐브 -->
+          <div style="background:linear-gradient(135deg,rgba(255,213,74,0.06),rgba(255,107,53,0.04));border:1px solid rgba(255,213,74,0.20);border-radius:10px;padding:10px 12px;margin-bottom:16px;">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="#ffd54a" style="flex-shrink:0;filter:drop-shadow(0 0 2px rgba(255,213,74,0.6));"><polygon points="12,2 15,9 22,9 17,14 19,22 12,18 5,22 7,14 2,9 9,9"/></svg>
+              <div style="font-size:11px;color:var(--text2);line-height:1.5;flex:1;">
+                <span style="color:#ffd54a;font-weight:800;">보너스 큐브</span> — PR 갱신 · 스트릭 · 대회 완주
+              </div>
+            </div>
           </div>
-          <button onclick="obFinish()" style="width:100%;padding:15px;background:linear-gradient(135deg,#ff4d4d,#ff6b35);border:none;border-radius:14px;color:#fff;font-size:16px;font-weight:800;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;box-shadow:0 8px 22px rgba(255,77,77,0.35);letter-spacing:-.01em;">🔥 +10pt 받고 시작</button>
+
+          <div style="font-size:11px;color:var(--text3);line-height:1.55;margin-bottom:18px;text-align:center;">
+            등록만으론 0점. 큐브가 나와야 점수예요.
+          </div>
+
+          <button onclick="obFinish()" style="width:100%;padding:15px;background:linear-gradient(135deg,#ff4d4d,#ff6b35);border:none;border-radius:14px;color:#fff;font-size:16px;font-weight:800;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;box-shadow:0 8px 22px rgba(255,77,77,0.35);letter-spacing:-.01em;">오늘도 도전 →</button>
         </div>
 
       </div>
@@ -3036,6 +3073,32 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
   </div>
 </div>
 
+<!-- ══ APP TOUR MODAL — 앱 사용법 ══ -->
+<div id="tour-modal"
+  style="display:none;position:fixed;inset:0;z-index:870;background:rgba(0,0,0,0.88);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);align-items:center;justify-content:center;padding:20px;"
+  onclick="if(event.target===this)closeTourModal()">
+  <div style="width:100%;max-width:380px;background:var(--surface);border:1px solid rgba(255,255,255,0.08);border-radius:20px;overflow:hidden;box-shadow:0 14px 48px rgba(0,0,0,0.6);display:flex;flex-direction:column;max-height:90vh;">
+    <div style="padding:16px 20px 12px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);flex-shrink:0;">
+      <div>
+        <div style="font-size:10px;color:var(--text3);letter-spacing:0.08em;font-weight:700;text-transform:uppercase;" id="tour-step-num">1 / 4</div>
+        <div style="font-size:16px;font-weight:800;color:var(--text);letter-spacing:-0.01em;margin-top:2px;">앱 사용법</div>
+      </div>
+      <button onclick="closeTourModal()" aria-label="닫기"
+        style="width:30px;height:30px;border-radius:50%;background:var(--surface2);border:none;color:var(--text2);cursor:pointer;display:flex;align-items:center;justify-content:center;touch-action:manipulation;">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div id="tour-body" style="flex:1;overflow-y:auto;padding:22px 22px 8px;"></div>
+    <div style="padding:14px 20px 18px;display:flex;gap:8px;align-items:center;border-top:1px solid var(--border);flex-shrink:0;">
+      <div id="tour-dots" style="display:flex;gap:5px;flex:1;"></div>
+      <button id="tour-prev-btn" onclick="tourPrev()"
+        style="padding:9px 14px;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;color:var(--text2);font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;display:none;">← 이전</button>
+      <button id="tour-next-btn" onclick="tourNext()"
+        style="padding:9px 16px;background:var(--accent);border:none;border-radius:10px;color:#fff;font-size:13px;font-weight:800;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">다음 →</button>
+    </div>
+  </div>
+</div>
+
 <div id="summary-modal"
   style="display:none;position:fixed;top:0;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;z-index:850;background:rgba(0,0,0,0.65);align-items:flex-end;justify-content:center;"
   onclick="if(event.target===this)closeSummaryModal()">
@@ -3466,6 +3529,10 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
       </div>
     </div>
 
+    <button onclick="closeModal('profile-modal');openTourModal();" style="width:100%;padding:12px;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;color:var(--text);font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;letter-spacing:-.005em;margin-bottom:8px;display:flex;align-items:center;justify-content:center;gap:8px;">
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.3-1 1-1 1.7"/><line x1="12" y1="17" x2="12" y2="17.01"/></svg>
+      앱 사용법 다시 보기
+    </button>
     <button class="signout-btn" onclick="doSignOut()">로그아웃</button>
     <button class="mbtn-ghost" onclick="closeModal('profile-modal')" style="margin-bottom:8px;">닫기</button>
     <!-- 계정 삭제 — 파괴적 액션, 차가운 톤으로 -->
@@ -8001,6 +8068,169 @@ function closeNotificationsModal(){
   const m=document.getElementById('notifications-modal');
   if(m)m.style.display='none';
   document.body.style.overflow='';
+}
+
+// ══ APP TOUR — 앱 사용법 슬라이드 모달 ══
+// 큐브 시스템 + 탭별 핵심 기능을 5개 슬라이드로 안내.
+// 첫 유저는 온보딩 종료 후 자동, 기존 유저는 헤더 `?` 로 언제든 재진입.
+const _TOUR_SLIDES=[
+  {
+    title:'하루를 꽉 채우는 법',
+    subtitle:'네 가지 모두 완수하면 황금 큐브',
+    body:`
+      <div style="display:flex;justify-content:center;gap:6px;margin:6px 0 18px;">
+        <div style="width:22px;height:22px;border-radius:5px;background:linear-gradient(135deg,#fff1a8 0%,#ffd54a 45%,#c48c1a 100%);border:1px solid rgba(255,233,128,0.70);box-shadow:0 0 4px rgba(255,213,74,0.55),inset 0 1px 0 rgba(255,255,255,0.45),inset 0 -1px 0 rgba(0,0,0,0.25);"></div>
+        <div style="width:22px;height:22px;border-radius:5px;background:linear-gradient(135deg,#fff1a8 0%,#ffd54a 45%,#c48c1a 100%);border:1px solid rgba(255,233,128,0.70);box-shadow:0 0 4px rgba(255,213,74,0.55),inset 0 1px 0 rgba(255,255,255,0.45),inset 0 -1px 0 rgba(0,0,0,0.25);"></div>
+        <div style="width:22px;height:22px;border-radius:5px;background:linear-gradient(135deg,#fff1a8 0%,#ffd54a 45%,#c48c1a 100%);border:1px solid rgba(255,233,128,0.70);box-shadow:0 0 4px rgba(255,213,74,0.55),inset 0 1px 0 rgba(255,255,255,0.45),inset 0 -1px 0 rgba(0,0,0,0.25);"></div>
+        <div style="width:22px;height:22px;border-radius:5px;background:linear-gradient(135deg,#fff1a8 0%,#ffd54a 45%,#c48c1a 100%);border:1px solid rgba(255,233,128,0.70);box-shadow:0 0 4px rgba(255,213,74,0.55),inset 0 1px 0 rgba(255,255,255,0.45),inset 0 -1px 0 rgba(0,0,0,0.25);"></div>
+      </div>
+      <div style="font-size:13px;color:var(--text);line-height:1.65;text-align:center;margin-bottom:14px;">
+        식단 · 운동 · 루틴 · 할일<br>
+        네 가지 모두 완수하면<br>
+        <span style="color:#ffd54a;font-weight:800;">황금 큐브 4개</span>
+      </div>
+      <div style="background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:10px 14px;margin-bottom:12px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:4px 0;"><span style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text);font-weight:600;"><span style="width:14px;height:14px;border-radius:3px;background:linear-gradient(135deg,#fff1a8 0%,#ffd54a 45%,#c48c1a 100%);border:1px solid rgba(255,233,128,0.70);flex-shrink:0;"></span>Gold · 완수</span><span style="font-family:'DM Mono',monospace;font-size:12px;font-weight:800;color:#ffd54a;">+3</span></div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:4px 0;"><span style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text);font-weight:600;"><span style="width:14px;height:14px;border-radius:3px;background:linear-gradient(135deg,#f2f4f7 0%,#b5c0cc 45%,#6d7682 100%);border:1px solid rgba(210,218,228,0.55);flex-shrink:0;"></span>Silver · 부분</span><span style="font-family:'DM Mono',monospace;font-size:12px;font-weight:800;color:#d8dfe7;">+2</span></div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:4px 0;"><span style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text);font-weight:600;"><span style="width:14px;height:14px;border-radius:3px;background:rgba(255,77,77,0.32);border:1px solid rgba(255,77,77,0.45);flex-shrink:0;"></span>Crimson · 실패</span><span style="font-family:'DM Mono',monospace;font-size:12px;font-weight:800;color:#ff6b6b;">−3</span></div>
+      </div>
+      <div style="font-size:11px;color:var(--text3);text-align:center;line-height:1.5;">등록만으론 0점. 큐브가 나와야 점수예요.</div>
+    `,
+  },
+  {
+    title:'기록 탭',
+    subtitle:'매일 네 가지를 체크하는 곳',
+    body:`
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;">
+        <div style="padding:10px 12px;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;">
+          <div style="color:#ff4d4d;margin-bottom:6px;"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20C4 10 10 4 20 4c0 10-6 16-16 16z"/><path d="M4 20L13 11"/></svg></div>
+          <div style="font-size:12px;font-weight:800;color:var(--text);">식단</div>
+          <div style="font-size:10px;color:var(--text3);margin-top:2px;line-height:1.4;">아침·점심·저녁 기록.<br>clean 2끼 이상 → Gold</div>
+        </div>
+        <div style="padding:10px 12px;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;">
+          <div style="color:#ff4d4d;margin-bottom:6px;"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10v4M7 7v10M17 7v10M21 10v4"/><path d="M7 12h10"/></svg></div>
+          <div style="font-size:12px;font-weight:800;color:var(--text);">운동</div>
+          <div style="font-size:10px;color:var(--text3);margin-top:2px;line-height:1.4;">헬스 or 유산소 완료 → Gold<br>둘 다 → 보너스 큐브</div>
+        </div>
+        <div style="padding:10px 12px;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;">
+          <div style="color:#ff4d4d;margin-bottom:6px;"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/><path d="M3 21v-5h5"/></svg></div>
+          <div style="font-size:12px;font-weight:800;color:var(--text);">루틴</div>
+          <div style="font-size:10px;color:var(--text3);margin-top:2px;line-height:1.4;">매일 반복할 습관.<br>모두 체크 → Gold</div>
+        </div>
+        <div style="padding:10px 12px;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;">
+          <div style="color:#ff4d4d;margin-bottom:6px;"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 12l3 3 5-5"/></svg></div>
+          <div style="font-size:12px;font-weight:800;color:var(--text);">할일</div>
+          <div style="font-size:10px;color:var(--text3);margin-top:2px;line-height:1.4;">오늘 1회성 목표.<br>모두 완료 → Gold</div>
+        </div>
+      </div>
+      <div style="font-size:11px;color:var(--text3);text-align:center;line-height:1.55;">상단 날짜 타일로 과거·미래 이동 가능.<br>탭하면 해당 날 기록을 볼 수 있어요.</div>
+    `,
+  },
+  {
+    title:'보너스 큐브',
+    subtitle:'꾸준함·도전에 추가 점수',
+    body:`
+      <div style="display:flex;justify-content:center;margin:4px 0 16px;">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="#ffd54a" style="filter:drop-shadow(0 0 6px rgba(255,213,74,0.6));"><polygon points="12,2 15,9 22,9 17,14 19,22 12,18 5,22 7,14 2,9 9,9"/></svg>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px;">
+        <div style="padding:11px 14px;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;">
+          <div style="font-size:12px;font-weight:800;color:#ffd54a;margin-bottom:2px;">PR 갱신</div>
+          <div style="font-size:11px;color:var(--text3);line-height:1.5;">1RM · 세션 볼륨 · rep별 무게 역대 최고 경신 시.<br>하루 최대 3개.</div>
+        </div>
+        <div style="padding:11px 14px;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;">
+          <div style="font-size:12px;font-weight:800;color:#ffd54a;margin-bottom:2px;">스트릭 마일스톤</div>
+          <div style="font-size:11px;color:var(--text3);line-height:1.5;">7 · 30 · 100 · 365 일 연속 기록. 최초 도달 시만.</div>
+        </div>
+        <div style="padding:11px 14px;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;">
+          <div style="font-size:12px;font-weight:800;color:#ffd54a;margin-bottom:2px;">대회 완주</div>
+          <div style="font-size:11px;color:var(--text3);line-height:1.5;">마라톤·스파르탄·기타 도전을 수동 등록.</div>
+        </div>
+      </div>
+      <div style="font-size:11px;color:var(--text3);text-align:center;line-height:1.55;">기본 큐브 4개에 <span style="color:#ffd54a;font-weight:700;">별★</span>로 추가 쌓여요.</div>
+    `,
+  },
+  {
+    title:'분석 & 챌린지',
+    subtitle:'성장 추적 · 친구와 경쟁',
+    body:`
+      <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:14px;">
+        <div style="padding:14px 16px;background:var(--surface2);border:1px solid var(--border2);border-radius:12px;">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+            <div style="color:#ff4d4d;display:flex;"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg></div>
+            <div style="font-size:13px;font-weight:800;color:var(--text);">분석 탭</div>
+          </div>
+          <div style="font-size:11px;color:var(--text3);line-height:1.55;">체중 · 운동 볼륨 · 루틴 달성률 · 식단 질 — 기간별 차트로 확인.</div>
+        </div>
+        <div style="padding:14px 16px;background:var(--surface2);border:1px solid var(--border2);border-radius:12px;">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+            <div style="color:#ff4d4d;display:flex;"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2"/><circle cx="10" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+            <div style="font-size:13px;font-weight:800;color:var(--text);">챌린지 탭</div>
+          </div>
+          <div style="font-size:11px;color:var(--text3);line-height:1.55;">친구 초대 코드로 참여. 누적 점수로 매일 순위 다툼.</div>
+        </div>
+      </div>
+      <div style="font-size:11px;color:var(--text3);text-align:center;line-height:1.55;">하단 탭바로 언제든 전환.</div>
+    `,
+  },
+  {
+    title:'Stay Hard.',
+    subtitle:'오늘도 도전하자',
+    body:`
+      <div style="text-align:center;padding:12px 0 8px;">
+        <div style="font-family:'Archivo Black',sans-serif;font-size:28px;color:var(--accent);letter-spacing:-.02em;margin-bottom:8px;">STAY HARD</div>
+        <div style="font-size:13px;color:var(--text);line-height:1.7;margin-bottom:16px;">
+          고긴스의 광기가 아니라<br>
+          너의 <span style="color:var(--accent);font-weight:800;">매일</span>이 너를 만든다
+        </div>
+        <div style="background:linear-gradient(135deg,rgba(255,77,77,0.08),rgba(255,107,53,0.04));border:1px solid rgba(255,77,77,0.22);border-radius:12px;padding:12px 16px;margin-bottom:10px;">
+          <div style="font-size:11px;color:var(--text2);line-height:1.6;">
+            네 가지 모두 완벽하게 잡는 걸<br>목표로, 오늘도 도전해요.
+          </div>
+        </div>
+        <div style="font-size:11px;color:var(--text3);margin-top:16px;line-height:1.55;">우측 상단 <span style="color:var(--text);font-weight:700;">?</span> 아이콘으로 언제든 다시 볼 수 있어요.</div>
+      </div>
+    `,
+  },
+];
+let _tourIdx=0;
+function openTourModal(){
+  _tourIdx=0;
+  _renderTourSlide();
+  document.getElementById('tour-modal').style.display='flex';
+  document.body.style.overflow='hidden';
+  try{track('tour_open',{src:'header'});}catch(_){}
+}
+function closeTourModal(){
+  document.getElementById('tour-modal').style.display='none';
+  document.body.style.overflow='';
+  try{if(CU)localStorage.setItem('tour_seen_'+CU.id,'1');}catch(_){}
+}
+function tourNext(){
+  if(_tourIdx>=_TOUR_SLIDES.length-1){closeTourModal();return;}
+  _tourIdx++;_renderTourSlide();
+}
+function tourPrev(){
+  if(_tourIdx<=0)return;
+  _tourIdx--;_renderTourSlide();
+}
+function _renderTourSlide(){
+  const slide=_TOUR_SLIDES[_tourIdx];
+  const total=_TOUR_SLIDES.length;
+  const body=document.getElementById('tour-body');
+  body.innerHTML=`
+    <div style="font-size:18px;font-weight:800;color:var(--text);letter-spacing:-0.01em;margin-bottom:2px;">${slide.title}</div>
+    <div style="font-size:11px;color:var(--text3);margin-bottom:16px;letter-spacing:-0.005em;">${slide.subtitle}</div>
+    ${slide.body}
+  `;
+  document.getElementById('tour-step-num').textContent=(_tourIdx+1)+' / '+total;
+  const dots=document.getElementById('tour-dots');
+  dots.innerHTML=Array.from({length:total},(_,i)=>{
+    const active=i===_tourIdx;
+    return `<div style="width:${active?'18px':'6px'};height:6px;border-radius:3px;background:${active?'var(--accent)':'var(--border2)'};transition:all 240ms cubic-bezier(0.16,1,0.3,1);"></div>`;
+  }).join('');
+  document.getElementById('tour-prev-btn').style.display=_tourIdx===0?'none':'inline-flex';
+  document.getElementById('tour-next-btn').textContent=_tourIdx===total-1?'완료':'다음 →';
 }
 // cloneNode preserves inline onclick attributes but drops property-assigned
 // handlers (element.onclick = fn). weekly-feature-card wires its main CTA
