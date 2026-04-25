@@ -20,7 +20,7 @@
      so window globals (dkey, normKey, ...) are set before inline code runs.
      Query version bumps cache when bundle content changes. Bump manually or
      via build script when shipping a new bundle. See MIGRATION_PLAN.md. -->
-<script src="/dist/app.js?v=20260425z"></script>
+<script src="/dist/app.js?v=20260425aa"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Archivo+Black&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -99,8 +99,9 @@
 .exempt-reason:hover{border-color:var(--border2);color:var(--text);}
 .exempt-reason.selected{border-color:var(--accent);color:var(--accent);background:rgba(255,77,77,0.06);}
 .exempt-modal-footer{display:flex;gap:8px;}
-.exempt-btn-ghost{flex:1;padding:10px;background:transparent;border:1px solid var(--border2);border-radius:10px;color:var(--text2);font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;}
-.exempt-btn-confirm{flex:2;padding:10px;background:var(--accent);border:none;border-radius:10px;color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;}
+.exempt-btn-ghost{flex:1;padding:12px 10px;background:transparent;border:1px solid var(--text2);border-radius:10px;color:var(--text);font-size:12.5px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;letter-spacing:-.01em;line-height:1.3;}
+.exempt-btn-ghost:hover{border-color:var(--text);background:rgba(255,255,255,0.03);}
+.exempt-btn-confirm{flex:1.2;padding:12px 10px;background:var(--accent);border:none;border-radius:10px;color:#fff;font-size:12.5px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;letter-spacing:-.01em;line-height:1.3;}
 .exempt-btn-confirm:disabled{opacity:.4;cursor:not-allowed;}
 
 /* Layout v2 — Phase 2B. Status Band 축소 + 식단 카드 상단 (CSS order 기반).
@@ -1451,8 +1452,8 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
         </div>
         <div class="exempt-modal-reasons" id="exempt-modal-reasons"></div>
         <div class="exempt-modal-footer">
-          <button class="exempt-btn-ghost" onclick="closeExemptModal()" type="button">취소</button>
-          <button id="exempt-modal-confirm" class="exempt-btn-confirm" onclick="confirmExempt()" type="button" disabled>적용</button>
+          <button class="exempt-btn-ghost" onclick="closeExemptModal()" type="button">아니, 난 직면한다</button>
+          <button id="exempt-modal-confirm" class="exempt-btn-confirm" onclick="confirmExempt()" type="button" disabled>고마워요, 너무 필요했어요</button>
         </div>
       </div>
     </div>
@@ -8416,6 +8417,7 @@ function switchTab(name,idx){
   try{window.scrollTo({top:0,behavior:'instant'});}catch(e){window.scrollTo(0,0);}
   if(name==='routine'){try{if(typeof window.renderDateHeatmap==='function')window.renderDateHeatmap();}catch(e){console.warn('renderDateHeatmap on tab switch',e);}}
   if(name==='stats'){loadStatsTab();try{consumeNavBadge('stats');}catch(e){}}
+  if(name==='competition'){try{renderChallengeHome();}catch(e){console.warn('[switchTab]',e);}try{loadPushupChallenge();}catch(e){console.warn('[switchTab]',e);}}
   // Safety: release any stale scroll lock on tab change
   _forceUnlockScroll();
 }
