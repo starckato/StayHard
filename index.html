@@ -1689,10 +1689,10 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
             <span style="font-size:12px;font-weight:600;color:var(--text2);">자극 부위</span>
           </div>
         </div>
+        <!-- Volume Delta mini-chart — 운동 카드 펼친 영역 안 (사용자 결정 Q3) -->
+        <div id="vd-card" class="vd-card" hidden style="margin:0 12px 12px;"></div>
       </div>
     </div>
-    <!-- Volume Delta mini-chart — FF volume_delta_card 뒤, P3 전용 -->
-    <div id="vd-card" class="vd-card" hidden></div>
 
     <!-- 🔁 루틴 카드 (매일 반복되는 필수 루틴) -->
     <div class="s-card accordion" id="routine-card">
@@ -8200,33 +8200,23 @@ async function shareInvite(){
 // First Cube 체험 카드 렌더 — FF gate + onboarding_state 체크.
 // 어떤 task 든 (물·걷기·할일·루틴) 하나라도 완료하면 인정.
 // 호출처: onLogin 이후, recomputeCubesHook 이후, saveNow 이후.
+// 사용자 결정 (2026-04-25 Q2=B): first-cube-card 인라인 노출 폐지 → 완료 시 토스트 1회.
+// 카드 element 는 영구 hidden (DOM 만 유지). 미완료 시 안내 X (인라인 깜빡임 원인 제거).
 function renderFirstCubeCard(){
   try{
     const el=document.getElementById('first-cube-card');
-    if(!el)return;
+    if(el){el.hidden=true;el.innerHTML='';}
     const fc=window.sh&&window.sh.firstCube;if(!fc)return;
+    if(!CP||fc.hasEarned(CP))return;
     const FF=window.FF;
-    if(!CP||fc.hasEarned(CP)){el.hidden=true;el.innerHTML='';return;}
-    if(!FF||!FF.get('first_cube_card',false)){el.hidden=true;return;}
-    // 4 task 중 어떤 것이든 완료됐는지 검사
+    if(!FF||!FF.get('first_cube_card',false))return;
     const completion=fc.checkAnyCompletion(log);
-    el.hidden=false;
-    if(completion){
-      // Earn and mark.
-      el.classList.add('fc-complete');
-      el.innerHTML='<div class="fc-kicker">완료</div><div class="fc-title">첫 칸을 채웠다.</div><div class="fc-hint">'+completion.res.evidence+'</div>';
-      if(!window._firstCubeMarked){
-        window._firstCubeMarked=true;
-        fc.markEarned(sb,CU.id,completion.task.id).then(()=>{
-          if(CP){CP.onboarding_state={...(CP.onboarding_state||{}),first_cube_task:completion.task.id,first_cube_earned_at:new Date().toISOString()};}
-          setTimeout(()=>{el.hidden=true;el.classList.remove('fc-complete');},2400);
-        });
-      }
-    }else{
-      // 제안: 4개 중 1개 + 나머지도 OK 라는 안내
-      const suggested=fc.pickTask(CU&&CU.id);
-      el.classList.remove('fc-complete');
-      el.innerHTML='<div class="fc-kicker">첫 칸</div><div class="fc-title">'+suggested.title+'</div><div class="fc-hint">'+suggested.hint+' (물·걷기·할일·루틴 중 하나라도 OK)</div><div class="fc-progress"><span class="fc-dot"></span>기다리는 중…</div>';
+    if(completion&&!window._firstCubeMarked){
+      window._firstCubeMarked=true;
+      fc.markEarned(sb,CU.id,completion.task.id).then(()=>{
+        if(CP){CP.onboarding_state={...(CP.onboarding_state||{}),first_cube_task:completion.task.id,first_cube_earned_at:new Date().toISOString()};}
+        try{showToast('첫 칸을 채웠어요. 좋은 시작이에요.');}catch(_){}
+      });
     }
   }catch(e){console.warn('[first-cube] render',e);}
 }
@@ -8853,39 +8843,48 @@ const PROMO_ORDER=[
   {id:'invite-card',       title:'친구 초대',         kind:'invite'},
 ];
 
+// 정책 변경 (사용자 결정 2026-04-25):
+// - yesterday-ribbon (carryover/returner) 만 인라인 노출 — 매일 첫 진입의 강한 trigger 보존
+// - 그 외 promo 모두 종 모달에서만 (bell-only) — 깜빡임 100% 제거
+// - 종 badge count = bell-only 수 (yesterday-ribbon 제외)
+// - count 0 이면 종 자체 흐릿 (Q4)
 function arrangePromos(){
   const activeIds=[];
   PROMO_ORDER.forEach(p=>{
     const el=document.getElementById(p.id);
     if(!el)return;
-    const isActive=el.style.display!=='none'&&el.style.display!=='';
-    // Note: style.display may be '' when not set. Check computed.
     const computed=window.getComputedStyle(el).display;
     const visible=computed!=='none';
     if(visible)activeIds.push(p.id);
   });
-  const winner=activeIds[0]||null;
   PROMO_ORDER.forEach(p=>{
     const el=document.getElementById(p.id);
     if(!el)return;
     if(activeIds.includes(p.id)){
-      if(p.id===winner){
+      if(p.id==='yesterday-ribbon'){
+        // carryover/returner 는 인라인 유지 (모달에는 표시 X)
         el.style.display='';
-        el.setAttribute('data-promo-state','inline');
+        el.setAttribute('data-promo-state','inline-only');
       } else {
+        // 그 외 모든 알림은 종 모달에서만
         el.style.display='none';
-        el.setAttribute('data-promo-state','muted-bell');
+        el.setAttribute('data-promo-state','bell-only');
       }
     } else {
       el.removeAttribute('data-promo-state');
     }
   });
-  // Bell badge
+  // 종 badge — bell-only 수만 카운트
+  const bellCount=activeIds.filter(id=>id!=='yesterday-ribbon').length;
   const badge=document.getElementById('notif-bell-badge');
   if(badge){
-    const count=activeIds.length;
-    if(count>0){badge.style.display='inline-flex';badge.textContent=count;}
+    if(bellCount>0){badge.style.display='inline-flex';badge.textContent=bellCount;}
     else{badge.style.display='none';}
+  }
+  // 종 아이콘 자체 흐릿 처리 (count 0)
+  const bellBtn=document.getElementById('notif-bell-btn');
+  if(bellBtn){
+    bellBtn.style.opacity=bellCount>0?'1':'0.45';
   }
 }
 
@@ -8893,9 +8892,10 @@ function openNotificationsModal(){
   const list=document.getElementById('notifications-list');
   if(!list)return;
   list.innerHTML='';
+  // bell-only 만 모달에 표시 (yesterday-ribbon 은 인라인-전용, 모달엔 X)
   const activeIds=PROMO_ORDER.filter(p=>{
     const el=document.getElementById(p.id);
-    return el&&(el.getAttribute('data-promo-state')==='inline'||el.getAttribute('data-promo-state')==='muted-bell');
+    return el&&el.getAttribute('data-promo-state')==='bell-only';
   });
   if(activeIds.length===0){
     list.innerHTML='<div style="text-align:center;padding:32px 0 36px;color:var(--text3);font-size:12px;letter-spacing:-.005em;">새 알림이 없어요</div>';
