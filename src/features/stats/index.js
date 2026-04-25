@@ -572,24 +572,29 @@ export function stRenderBento(rows,ctx){
     wVal.style.color=Math.abs(diff)<0.1?'var(--text3)':(diff<0?'var(--green)':'var(--accent)');
   }
 
-  // ── 운동 — 기간 총 볼륨 (1t 이상이면 t, 아니면 회) ──
-  const totalVol=rows.reduce((a,r)=>a+(r.workouts||[]).filter(w=>w.type==='gym'&&w.status==='done').reduce((b,w)=>b+(w.totalVolume||0),0),0);
+  // ── 운동 — 기간별 운동 횟수 (사용자 결정 2026-04-26: 톤 표기 폐지, 회 only).
+  // 1주: 주 N회 / 1달: 월 N회 / 전체: 전체 N회.
   const totalGymSessions=rows.reduce((a,r)=>a+(r.workouts||[]).filter(w=>w.type==='gym'&&w.status==='done').length,0);
-  const useTons=totalVol>=1000;
-  document.getElementById('st-bento-workout').textContent=useTons?(totalVol/1000).toFixed(1):(ctx.woCnt||totalGymSessions||0);
-  document.getElementById('st-bento-workout-unit').textContent=useTons?'t':'회';
-  const periodDays=stPeriod||rows.length;
-  const woPerWeek=((ctx.woCnt||0)/(periodDays/7)).toFixed(1);
-  document.getElementById('st-bento-workout-sub').textContent=useTons
-    ? `${totalGymSessions}회 · 주 ${woPerWeek}`
-    : `주 평균 ${woPerWeek}회`;
+  const totalWorkoutCount=ctx.woCnt||totalGymSessions||0;
+  document.getElementById('st-bento-workout').textContent=totalWorkoutCount;
+  document.getElementById('st-bento-workout-unit').textContent='회';
+  const periodDays=stPeriod||rows.length||1;
+  let workoutSub='';
+  if(stPeriod===7){
+    workoutSub='주간';
+  } else if(stPeriod===30){
+    const woPerWeek=(totalWorkoutCount/(periodDays/7)).toFixed(1);
+    workoutSub=`주 평균 ${woPerWeek}회`;
+  } else {
+    // 전체 기간: 주 평균 + 월 평균 둘 다 표기
+    const woPerWeek=(totalWorkoutCount/(periodDays/7)).toFixed(1);
+    workoutSub=`주 평균 ${woPerWeek}회 · ${periodDays}일`;
+  }
+  document.getElementById('st-bento-workout-sub').textContent=workoutSub;
   if(prev){
-    const prevVol=prev.reduce((a,r)=>a+(r.workouts||[]).filter(w=>w.type==='gym'&&w.status==='done').reduce((b,w)=>b+(w.totalVolume||0),0),0);
-    const prevCnt=prev.reduce((a,r)=>a+(r.workouts||[]).filter(w=>w.status==='done').length,0);
-    if(useTons&&prevVol>0){
-      _setBentoDelta('st-bento-workout-delta',((totalVol-prevVol)/1000),'gain-good','t');
-    } else if(prevCnt>0){
-      _setBentoDelta('st-bento-workout-delta',(ctx.woCnt||0)-prevCnt,'gain-good','회');
+    const prevCnt=prev.reduce((a,r)=>a+(r.workouts||[]).filter(w=>w&&w.type==='gym'&&w.status==='done').length,0);
+    if(prevCnt>0){
+      _setBentoDelta('st-bento-workout-delta',totalWorkoutCount-prevCnt,'gain-good','회');
     } else { document.getElementById('st-bento-workout-delta').textContent=''; }
   } else { document.getElementById('st-bento-workout-delta').textContent=''; }
 
