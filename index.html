@@ -1339,15 +1339,38 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
   </div>
 </div>
 <script>
-  // QROK Splash auto-fadeout. 글로우 1 cycle 보장 (1.6s).
+  // QROK Splash — 앱 ready 까지 대기 후 fade out. 좌측 상단/중앙 loading 스피너 가림.
+  // ready 조건: _initDone (로그인 후 onLogin) OR auth-screen/app-screen 가시 OR 5s timeout.
+  // 최소 노출 1000ms (글로우 1 cycle 부분) 보장.
   (function(){
     var s=document.getElementById('qrok-splash');
     if(!s)return;
     requestAnimationFrame(function(){s.style.opacity='1';});
-    setTimeout(function(){
+    var hidden=false;
+    function hide(){
+      if(hidden)return;hidden=true;
       s.style.opacity='0';
       setTimeout(function(){if(s.parentNode)s.parentNode.removeChild(s);},400);
-    },1600);
+    }
+    function isReady(){
+      try{
+        if(window._initDone===true)return true;
+        var auth=document.getElementById('auth-screen');
+        var app=document.getElementById('app-screen');
+        if(auth&&getComputedStyle(auth).display!=='none')return true;
+        if(app&&getComputedStyle(app).display!=='none')return true;
+      }catch(_){}
+      return false;
+    }
+    // 최소 1000ms (글로우 1 cycle) 후 ready 검사 시작
+    setTimeout(function(){
+      if(isReady()){hide();return;}
+      var elapsed=0;
+      var poll=setInterval(function(){
+        elapsed+=200;
+        if(isReady()||elapsed>=4000){clearInterval(poll);hide();}
+      },200);
+    },1000);
   })();
 </script>
 
