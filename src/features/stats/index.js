@@ -708,8 +708,8 @@ export function stRenderInsights(rows){
 
   // 스트릭
   const streak=calcStreak();
-  if(streak>=30)insights.push({icon:'🔥',text:'스트릭 '+streak+'일 달성! 완벽한 습관이 만들어지고 있어요.',color:'var(--green)'});
-  else if(streak>=7)insights.push({icon:'🔥',text:'스트릭 '+streak+'일 진행 중. 30일까지 도전해보세요!',color:'var(--amber)'});
+  if(streak>=30)insights.push({icon:'🔥',text:'연속 '+streak+'일 달성. 습관이 됐어요.',color:'var(--green)'});
+  else if(streak>=7)insights.push({icon:'🔥',text:'연속 '+streak+'일 진행 중. 30일까지 가보자.',color:'var(--amber)'});
 
   // 볼륨 증감
   if(rows.length>=14){

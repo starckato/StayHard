@@ -386,7 +386,7 @@ function _friendRowHTML(f) {
       <div class="fr-dot ${moved ? 'on' : 'off'}" title="${moved ? '오늘 움직임' : '아직'}"></div>
       <div class="fr-friend-main">
         <div class="fr-row-name">${name}</div>
-        <div class="fr-row-sub">${tier} · 스트릭 ${streak}일</div>
+        <div class="fr-row-sub">${tier} · 연속 ${streak}일</div>
       </div>
       <button class="fr-btn-small" data-nudge="${f.friend_id}" data-name="${name}" type="button">nudge</button>
       <button class="fr-btn-icon" data-unfriend="${f.friend_id}" data-name="${name}" type="button" title="친구 해제">⋯</button>

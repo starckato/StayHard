@@ -9,7 +9,7 @@
 /** @type {NudgePreset[]} */
 export const NUDGE_PRESETS = [
   { id: 'move_today',   category: 'check',    body: '오늘 움직였나.',              subtitle: '움직임 확인' },
-  { id: 'streak_alive', category: 'streak',   body: '스트릭, 아직 살아있나.',       subtitle: '연속 일수' },
+  { id: 'streak_alive', category: 'streak',   body: '연속 기록, 아직 살아있나.',     subtitle: '연속 일수' },
   { id: 'routine_check',category: 'routine',  body: '루틴 체크했나.',              subtitle: '루틴 확인' },
   { id: 'sleep_check',  category: 'sleep',    body: '어제 몇 시에 잤지.',          subtitle: '수면 점검' },
   { id: 'back_up',      category: 'recovery', body: '쉬었으면 이제 일어나.',        subtitle: '복귀' },

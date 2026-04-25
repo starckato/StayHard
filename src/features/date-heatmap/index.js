@@ -548,7 +548,7 @@ function _bonusItemLabel(b) {
   }
   if (b.type && b.type.startsWith('streak_')) {
     const days = b.type.split('_')[1] || '';
-    return `${days}일 스트릭`;
+    return `${days}일 연속 기록`;
   }
   if (b.type === 'race' || b.name) {
     return (b.name ? (b.name + ' ') : '') + '완주';
