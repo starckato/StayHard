@@ -11,7 +11,14 @@
 <meta name="theme-color" content="#0a0a0c">
 <meta name="mobile-web-app-capable" content="yes">
 <link rel="manifest" href="/manifest.json">
-<link rel="apple-touch-icon" href="/icon-192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/icons/qrok-180.png">
+<link rel="apple-touch-icon" sizes="120x120" href="/icons/qrok-120.png">
+<link rel="apple-touch-icon" sizes="76x76" href="/icons/qrok-76.png">
+<link rel="apple-touch-icon" sizes="60x60" href="/icons/qrok-60.png">
+<link rel="icon" type="image/png" sizes="192x192" href="/icons/qrok-192.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/icons/qrok-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/icons/qrok-16.png">
+<link rel="shortcut icon" href="/icons/qrok-32.png">
 <title>큐록 QROK</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.js"></script>
@@ -13035,8 +13042,15 @@ async function shareMuscleMap(){
 }
 // PR 2: 푸쉬업 시작 (룸 안 + 룸 밖 워크아웃 탭 공통)
 async function onPushupStart(){
+  // 모바일 디버그 — 진입 자체가 안 되는지 확인용
+  try{showToast('카운터 여는 중...');}catch(_){}
+  console.log('[onPushupStart] enter, activeComp:',!!activeComp,'daily_goal:',activeComp?.daily_goal);
   const dailyGoal=+(activeComp?.daily_goal||0);
-  if(!window.openPushupCounter){showToast('카운터 모듈 로드 실패');return;}
+  if(!window.openPushupCounter){
+    console.error('[onPushupStart] window.openPushupCounter undefined');
+    showToast('카운터 모듈 로드 실패 — 새로고침');
+    return;
+  }
   window.openPushupCounter({
     dailyGoal,
     onComplete: async (reps,videoBlob)=>{
@@ -13488,7 +13502,7 @@ async function renderChallengeRoom(){
         <div style="height:8px;background:var(--surface3);border-radius:4px;overflow:hidden;margin-bottom:14px;">
           <div style="height:100%;width:${myPct}%;background:${myDone?'var(--green)':'var(--accent)'};border-radius:4px;transition:width 0.3s;"></div>
         </div>
-        <button onclick="onPushupStart()" style="width:100%;padding:14px;background:var(--accent);border:none;border-radius:12px;color:#fff;font-size:15px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">푸쉬업 시작</button>
+        <button type="button" onclick="onPushupStart()" style="width:100%;padding:14px;background:var(--accent);border:none;border-radius:12px;color:#fff;font-size:15px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;-webkit-appearance:none;appearance:none;-webkit-tap-highlight-color:transparent;">푸쉬업 시작</button>
       </div>
       <div style="padding:0 16px;">
         ${memberCards}

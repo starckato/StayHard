@@ -1,6 +1,6 @@
 {
-  "name": "큐록",
-  "short_name": "큐록",
+  "name": "QROK",
+  "short_name": "QROK",
   "description": "전부 기록하고, 전부 책임진다",
   "start_url": "/",
   "display": "standalone",
@@ -10,16 +10,22 @@
   "lang": "ko",
   "icons": [
     {
-      "src": "/icon-192.png",
+      "src": "/icons/qrok-192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
-      "src": "/icon-512.png",
+      "src": "/icons/qrok-512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/qrok-1024.png",
+      "sizes": "1024x1024",
+      "type": "image/png",
+      "purpose": "any"
     }
   ],
   "screenshots": [],
