@@ -2343,15 +2343,26 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
   <div id="ch-create-overlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;width:100%;background:var(--bg);z-index:700;flex-direction:column;overflow-y:auto;-webkit-overflow-scrolling:touch;">
     <div style="display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--border);flex-shrink:0;">
       <button onclick="hideChallengeCreate()" style="background:none;border:none;color:var(--text2);font-size:20px;cursor:pointer;touch-action:manipulation;">←</button>
-      <div style="font-size:15px;font-weight:700;">다이어트 챌린지 만들기</div>
+      <div style="font-size:15px;font-weight:700;">챌린지 만들기</div>
     </div>
     <div style="flex:1;overflow-y:auto;padding:16px 16px 40px;">
 
-      <!-- Header badge -->
-      <div style="background:linear-gradient(135deg,var(--accent),#4f46e5);border-radius:14px;padding:16px;margin-bottom:20px;text-align:center;">
-        <div style="font-size:32px;margin-bottom:6px;">⚖️</div>
+      <!-- 챌린지 타입 탭 (PR 2: 체중 / 푸쉬업) -->
+      <div style="display:flex;gap:6px;margin-bottom:16px;">
+        <button id="cc-type-weight" onclick="selectChallengeType('weight')" style="flex:1;padding:10px 12px;border-radius:12px;font-size:13px;font-weight:600;border:0.5px solid var(--accent-bd);background:var(--accent-bg);color:var(--accent);font-family:'DM Sans',sans-serif;cursor:pointer;touch-action:manipulation;">체중 챌린지</button>
+        <button id="cc-type-pushup" onclick="selectChallengeType('pushup')" style="flex:1;padding:10px 12px;border-radius:12px;font-size:13px;font-weight:600;border:0.5px solid var(--border2);background:transparent;color:var(--text3);font-family:'DM Sans',sans-serif;cursor:pointer;touch-action:manipulation;">푸쉬업 챌린지</button>
+      </div>
+
+      <!-- Header badge (체중 — 다이어트) -->
+      <div id="cc-badge-weight" style="background:linear-gradient(135deg,var(--accent),#4f46e5);border-radius:14px;padding:16px;margin-bottom:20px;text-align:center;">
         <div style="font-size:14px;font-weight:700;color:#fff;">다이어트 챌린지</div>
-        <div style="font-size:11px;color:rgba(255,255,255,.75);margin-top:2px;">식단 · 운동 · 루틴으로 목표 체중 달성</div>
+        <div style="font-size:11px;color:rgba(255,255,255,.75);margin-top:4px;">식단 · 운동 · 루틴으로 목표 체중 달성</div>
+      </div>
+
+      <!-- Header badge (푸쉬업) -->
+      <div id="cc-badge-pushup" style="display:none;background:linear-gradient(135deg,#ff4d4d,#ff6b35);border-radius:14px;padding:16px;margin-bottom:20px;text-align:center;">
+        <div style="font-size:14px;font-weight:700;color:#fff;">푸쉬업 챌린지</div>
+        <div style="font-size:11px;color:rgba(255,255,255,.85);margin-top:4px;">하루 정한 만큼 채워야 그날 성공</div>
       </div>
 
       <!-- 챌린지 이름 -->
@@ -2389,8 +2400,8 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
         </div>
       </div>
 
-      <!-- 목표 체중 설정 (v2: 우승 룰 단계 삭제, 체중만) -->
-      <div style="margin-bottom:16px;">
+      <!-- 체중: 목표 체중 설정 (v2: 우승 룰 단계 삭제) -->
+      <div id="cc-form-weight" style="margin-bottom:16px;">
         <div class="mfield" style="margin-bottom:0;">
           <label class="mlabel">내 목표 체중 (kg)</label>
           <div style="position:relative;">
@@ -2398,6 +2409,18 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
             <span style="position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:13px;color:var(--text3);">kg</span>
           </div>
           <div style="font-size:11px;color:var(--text3);margin-top:4px;">참여자마다 목표 체중을 개별로 설정해요</div>
+        </div>
+      </div>
+
+      <!-- 푸쉬업: 일일 목표 (PR 2) -->
+      <div id="cc-form-pushup" style="display:none;margin-bottom:16px;">
+        <div class="mfield" style="margin-bottom:8px;">
+          <label class="mlabel">하루 목표 (개)</label>
+          <div style="position:relative;">
+            <input class="minput" id="comp-pushup-goal" type="number" placeholder="예: 30" min="1" step="1" style="padding-right:40px;"/>
+            <span style="position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:13px;color:var(--text3);">개</span>
+          </div>
+          <div style="font-size:11px;color:var(--text3);margin-top:4px;line-height:1.5;">매일 이 횟수를 채우면 성공. 못 채우면 그날 방관자.<br>중도 합류 가능 · 목표 변경 가능 · 재도전 가능.</div>
         </div>
       </div>
 
@@ -11924,7 +11947,7 @@ async function renderChallengeHome(){
   if(!CU)return;
 
   // Fetch user's challenges
-  const{data:allComps_raw}=await sb.from('competitions').select('id,code,name,creator_id,members,sections,challenge_type,status,max_members,start_date,duration_days,weight_goal,member_wgoals,measure_type,member_inbody_goals').in('status',['waiting','active','failed','completed']);
+  const{data:allComps_raw}=await sb.from('competitions').select('id,code,name,creator_id,members,sections,challenge_type,status,max_members,start_date,duration_days,weight_goal,member_wgoals,measure_type,member_inbody_goals,daily_goal').in('status',['waiting','active','failed','completed']);
   const myComps=(allComps_raw||[]).filter(c=>{
     if(c.creator_id===CU.id)return true;
     try{const mbs=Array.isArray(c.members)?c.members:JSON.parse(c.members||'[]');return mbs.includes(CU.id);}
@@ -12052,6 +12075,34 @@ function buildHistoryCard(c){
 // v2: 우승 룰 단계 삭제 — selectMeasureType / syncWgoal no-op stub (legacy 호출 안전).
 function selectMeasureType(type){compMeasureType='weight';}
 function syncWgoal(){}
+
+// PR 2: 챌린지 타입 (체중 / 푸쉬업) 토글
+let compChallengeType='weight';
+function selectChallengeType(type){
+  if(type!=='weight'&&type!=='pushup')return;
+  compChallengeType=type;
+  const wBtn=document.getElementById('cc-type-weight');
+  const pBtn=document.getElementById('cc-type-pushup');
+  const wBadge=document.getElementById('cc-badge-weight');
+  const pBadge=document.getElementById('cc-badge-pushup');
+  const wForm=document.getElementById('cc-form-weight');
+  const pForm=document.getElementById('cc-form-pushup');
+  if(type==='weight'){
+    wBtn.style.background='var(--accent-bg)';wBtn.style.borderColor='var(--accent-bd)';wBtn.style.color='var(--accent)';
+    pBtn.style.background='transparent';pBtn.style.borderColor='var(--border2)';pBtn.style.color='var(--text3)';
+    if(wBadge)wBadge.style.display='block';
+    if(pBadge)pBadge.style.display='none';
+    if(wForm)wForm.style.display='block';
+    if(pForm)pForm.style.display='none';
+  } else {
+    wBtn.style.background='transparent';wBtn.style.borderColor='var(--border2)';wBtn.style.color='var(--text3)';
+    pBtn.style.background='var(--accent-bg)';pBtn.style.borderColor='var(--accent-bd)';pBtn.style.color='var(--accent)';
+    if(wBadge)wBadge.style.display='none';
+    if(pBadge)pBadge.style.display='block';
+    if(wForm)wForm.style.display='none';
+    if(pForm)pForm.style.display='block';
+  }
+}
 function prefillChallenge(name, days){
   showChallengeCreate();
   setTimeout(()=>{
@@ -12066,9 +12117,12 @@ function prefillChallenge(name, days){
 }
 
 function showChallengeCreate(){
-  compDurVal=14;compType='routine';compMeasureType='weight';
+  compDurVal=14;compType='routine';compMeasureType='weight';compChallengeType='weight';
   const goalInp=document.getElementById('comp-wgoal');
   if(goalInp)goalInp.value='';
+  const pushupGoalInp=document.getElementById('comp-pushup-goal');
+  if(pushupGoalInp)pushupGoalInp.value='';
+  selectChallengeType('weight');
   compSecs={diet:true,workout:true,mandatory:true,target:false};
   document.getElementById('comp-name-inp').value='';
   document.getElementById('ch-create-err').textContent='';
@@ -12117,7 +12171,7 @@ function hideChallengeJoin(){
 }
 
 async function enterChallenge(compId){
-  const{data:comp}=await sb.from('competitions').select('id,code,name,creator_id,members,sections,challenge_type,status,start_date,duration_days,weight_goal,member_wgoals,measure_type,member_inbody_goals').eq('id',compId).single();
+  const{data:comp}=await sb.from('competitions').select('id,code,name,creator_id,members,sections,challenge_type,status,start_date,duration_days,weight_goal,member_wgoals,measure_type,member_inbody_goals,daily_goal').eq('id',compId).single();
   if(!comp)return;
   activeComp=comp;
   openChallengeRoom();
@@ -12943,6 +12997,34 @@ async function shareMuscleMap(){
     showToast('캡쳐 실패. 스크린샷을 이용해주세요 📸');
   }
 }
+// PR 2: 푸쉬업 시작 (룸 안 + 룸 밖 워크아웃 탭 공통)
+async function onPushupStart(){
+  const dailyGoal=+(activeComp?.daily_goal||0);
+  if(!window.openPushupCounter){showToast('카운터 모듈 로드 실패');return;}
+  window.openPushupCounter({
+    dailyGoal,
+    onComplete: async (reps,videoBlob)=>{
+      if(reps<=0)return;
+      try{
+        const log=logCache[TODAY]||log; // global log
+        const cur=logCache[TODAY]||{};
+        if(!cur.cubes)cur.cubes={};
+        cur.cubes.pushup=window.PushupChallenge.appendSession(cur.cubes.pushup,reps,null);
+        logCache[TODAY]=cur;
+        // score event (per-rep curve via _pushupPtsFor)
+        try{
+          const pts=window._pushupPtsFor?window._pushupPtsFor(reps):reps;
+          if(pts>0&&typeof addScore==='function')addScore('pushup_challenge',{ptsOverride:pts,note:`${reps}회`});
+        }catch(e){console.warn('[pushup] addScore',e);}
+        await saveLog(TODAY,true);
+        showToast(`푸쉬업 ${reps}회 기록${dailyGoal&&reps>=dailyGoal?' · 오늘 목표 달성':''}`);
+        // re-render room
+        try{await renderChallengeRoom();}catch(e){}
+      }catch(e){console.warn('[pushup] save',e);showToast('저장 실패');}
+    }
+  });
+}
+
 async function startChallengeNow(compId){
   if(!confirm('지금 바로 시작할까요?\n나중에 친구가 코드로 합류할 수 있어요.'))return;
   const today=new Date().toISOString().split('T')[0];
@@ -13069,6 +13151,7 @@ async function renderChallengeRoom(){
   const chEnd=new Date(startDate.getTime()+c.duration_days*86400000).toISOString().slice(0,10);
   const memberWgoals=c.member_wgoals||{};
   const isDietChallenge=c.challenge_type==='diet';
+  const isPushupChallenge=c.challenge_type==='pushup'||c.measure_type==='pushup_count';
 
   // ── 대기 중 처리 ──
   if(c.status==='waiting'){
@@ -13209,6 +13292,86 @@ async function renderChallengeRoom(){
   }
 
   // ── 진행 중 ──
+
+  // PR 2: 푸쉬업 챌린지 진행 중 view
+  if(isPushupChallenge){
+    const dailyGoal=+(c.daily_goal||0);
+    const{data:pushupLogs}=await sb.from('daily_logs')
+      .select('user_id,log_date,cubes')
+      .in('user_id',mbs).gte('log_date',chStart).lte('log_date',chEnd);
+    const logsByMember={};
+    mbs.forEach(uid=>{logsByMember[uid]=(pushupLogs||[]).filter(l=>l.user_id===uid);});
+
+    // 오늘 본인 카운트
+    const todayLog=(logsByMember[CU.id]||[]).find(l=>(l.log_date||'').slice(0,10)===TODAY);
+    const myToday=window.PushupChallenge.todayCount(todayLog?.cubes?.pushup);
+    const myPct=dailyGoal>0?Math.min(100,Math.round((myToday/dailyGoal)*100)):0;
+    const myDone=myToday>=dailyGoal&&dailyGoal>0;
+
+    // 팀 합산
+    let teamTotal=0;
+    mbs.forEach(uid=>{
+      (logsByMember[uid]||[]).forEach(l=>{teamTotal+=window.PushupChallenge.todayCount(l.cubes?.pushup);});
+    });
+    const teamGoalTotal=dailyGoal*c.duration_days*mbs.length;
+
+    // 멤버 카드
+    const memberCards=(profiles||[]).map(p=>{
+      const isMe=p.id===CU.id;
+      const displayName=(p.display_name&&p.display_name.trim())?p.display_name:(p.username||'유저');
+      const initial=(displayName||'·').slice(0,1).toUpperCase();
+      const series=window.PushupChallenge.memberDaySeries(logsByMember[p.id]||[],chStart,c.duration_days,dailyGoal);
+      const status=window.PushupChallenge.memberStatusFromSeries(series);
+      const todayCnt=window.PushupChallenge.todayCount(((logsByMember[p.id]||[]).find(l=>(l.log_date||'').slice(0,10)===TODAY))?.cubes?.pushup);
+      const totalReps=(logsByMember[p.id]||[]).reduce((a,l)=>a+window.PushupChallenge.todayCount(l.cubes?.pushup),0);
+      const border=isMe?'var(--accent-bd)':'var(--border)';
+      const bg=isMe?'var(--accent-bg)':'var(--surface2)';
+      const ringCol=status==='partial'?'var(--text3)':(isMe?'var(--accent)':'var(--text2)');
+      // 일별 grid (≤14 일이면 한 줄, ≤30 두 줄, ≤100 10×10)
+      const cellSize=c.duration_days<=14?14:c.duration_days<=30?12:8;
+      const gridGap=c.duration_days<=30?3:2;
+      const gridCols=c.duration_days<=14?series.length:c.duration_days<=30?15:10;
+      const cellHTML=series.map((s,i)=>{
+        const col=s==='success'?'var(--green)':s==='fail'?'var(--red)':s==='pending'?'var(--amber)':'var(--surface3)';
+        const op=s==='future'?0.4:1;
+        return`<div title="Day ${i+1}: ${s}" style="width:${cellSize}px;height:${cellSize}px;border-radius:2px;background:${col};opacity:${op};"></div>`;
+      }).join('');
+      const statusBadge=status==='completed'?`<span style="font-size:11px;color:var(--green);font-weight:700;">${ICON_CHECK_SVG} 완주</span>`:status==='partial'?`<span style="font-size:11px;color:var(--text3);font-weight:600;">방관자</span>`:'';
+      return`<div style="background:${bg};border:1px solid ${border};border-radius:14px;padding:14px 16px;margin-bottom:8px;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+          <div style="width:34px;height:34px;border-radius:50%;background:var(--surface3);border:1px solid ${ringCol};display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:${ringCol};">${initial}</div>
+          <div style="flex:1;">
+            <div style="font-size:14px;font-weight:700;">${displayName}${isMe?' <span style="font-size:11px;color:var(--accent);">(나)</span>':''}</div>
+            <div style="font-size:11px;color:var(--text3);margin-top:1px;">오늘 <strong style="color:var(--text);font-family:'DM Mono',monospace;">${todayCnt}</strong> / ${dailyGoal} · 누적 ${totalReps}</div>
+          </div>
+          ${statusBadge}
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(${gridCols},1fr);gap:${gridGap}px;justify-content:start;">
+          ${cellHTML}
+        </div>
+      </div>`;
+    }).join('');
+
+    document.getElementById('room-members').innerHTML=`
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px;margin:0 16px 12px;">
+        <div style="font-size:11px;color:var(--text3);letter-spacing:0.06em;margin-bottom:6px;">오늘 내 진행</div>
+        <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:10px;">
+          <div style="font-size:32px;font-weight:800;font-family:'DM Mono',monospace;color:${myDone?'var(--green)':'var(--accent)'};">${myToday}</div>
+          <div style="font-size:14px;color:var(--text2);">/ ${dailyGoal}개 (${myPct}%)</div>
+        </div>
+        <div style="height:8px;background:var(--surface3);border-radius:4px;overflow:hidden;margin-bottom:14px;">
+          <div style="height:100%;width:${myPct}%;background:${myDone?'var(--green)':'var(--accent)'};border-radius:4px;transition:width 0.3s;"></div>
+        </div>
+        <button onclick="onPushupStart()" style="width:100%;padding:14px;background:var(--accent);border:none;border-radius:12px;color:#fff;font-size:15px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">푸쉬업 시작</button>
+      </div>
+      <div style="padding:0 16px;">
+        ${memberCards}
+      </div>
+      <div style="text-align:center;font-size:12px;color:var(--text3);margin:6px 16px 16px;font-family:'DM Mono',monospace;">
+        팀 합산 ${teamTotal} / ${teamGoalTotal}회
+      </div>`;
+    return;
+  }
 
   // 체중 감량 챌린지 전용 뷰
   if(isDietChallenge){
@@ -13415,10 +13578,10 @@ async function loadActiveCompetition(force=false){
   if(!force&&activeComp!==null&&(now_ms-_compLastFetch)<120000)return; // 2분 캐시
   _compLastFetch=now_ms;
   if(!CU)return;
-  const{data}=await sb.from('competitions').select('id,code,name,creator_id,members,sections,challenge_type,status,start_date,duration_days,weight_goal,member_wgoals,measure_type,member_inbody_goals').or('creator_id.eq.'+CU.id).eq('status','active').maybeSingle();
+  const{data}=await sb.from('competitions').select('id,code,name,creator_id,members,sections,challenge_type,status,start_date,duration_days,weight_goal,member_wgoals,measure_type,member_inbody_goals,daily_goal').or('creator_id.eq.'+CU.id).eq('status','active').maybeSingle();
   // also check member
   if(!data){
-    const{data:d2}=await sb.from('competitions').select('id,code,name,creator_id,members,sections,challenge_type,status,start_date,duration_days,weight_goal,member_wgoals,measure_type,member_inbody_goals').eq('status','active').maybeSingle();
+    const{data:d2}=await sb.from('competitions').select('id,code,name,creator_id,members,sections,challenge_type,status,start_date,duration_days,weight_goal,member_wgoals,measure_type,member_inbody_goals,daily_goal').eq('status','active').maybeSingle();
     if(d2&&d2.members){
       try{const mbs=typeof d2.members==='string'?JSON.parse(d2.members):d2.members;if(mbs.includes(CU.id))activeComp=d2;}catch(e){}
     }
@@ -13532,36 +13695,60 @@ async function createComp(){
     document.getElementById('ch-create-overlay').scrollTop=0;
     return;
   }
-  // v2: 우승 룰 단계 삭제. 항상 measure_type='weight' (인바디 create path 폐기, render path 는 백 호환).
-  const wgoal=parseFloat(document.getElementById('comp-wgoal')?.value)||null;
-  if(!wgoal){
-    errEl.textContent='⚠️ 내 목표 체중을 입력해주세요.';
-    document.getElementById('comp-wgoal')?.focus();
-    return;
-  }
 
   const code='RB-'+Math.floor(1000+Math.random()*9000);
   const members=[CU.id];
-  const memberWgoals={};
-  memberWgoals[CU.id]=wgoal;
-  const sections={diet:true,workout:true,mandatory:true,target:false};
   const startInput=document.getElementById('dur-start');
   const customStart=document.getElementById('dur-custom-panel').style.display!=='none'&&startInput.value?startInput.value:null;
-  const{data,error}=await sb.from('competitions').insert({
-    code,name,creator_id:CU.id,duration_days:compDurVal,
-    sections,challenge_type:'diet',weight_goal:wgoal,
-    measure_type:'weight',
-    member_wgoals:memberWgoals,
-    member_inbody_goals:null,
-    status:'waiting',max_members:6,members,
-    start_date:customStart||new Date().toISOString().slice(0,10)
-  }).select().single();
+
+  let payload;
+  if(compChallengeType==='pushup'){
+    // PR 2: 푸쉬업 챌린지
+    const dailyGoal=parseInt(document.getElementById('comp-pushup-goal')?.value,10)||0;
+    if(!dailyGoal||dailyGoal<1){
+      errEl.textContent='⚠️ 하루 목표 횟수를 입력해주세요.';
+      document.getElementById('comp-pushup-goal')?.focus();
+      return;
+    }
+    payload={
+      code,name,creator_id:CU.id,duration_days:compDurVal,
+      sections:{diet:false,workout:true,mandatory:false,target:false},
+      challenge_type:'pushup',weight_goal:null,
+      measure_type:'pushup_count',
+      daily_goal:dailyGoal,
+      member_wgoals:null,member_inbody_goals:null,
+      status:'waiting',max_members:6,members,
+      start_date:customStart||new Date().toISOString().slice(0,10)
+    };
+  } else {
+    // 체중 챌린지 (기존)
+    const wgoal=parseFloat(document.getElementById('comp-wgoal')?.value)||null;
+    if(!wgoal){
+      errEl.textContent='⚠️ 내 목표 체중을 입력해주세요.';
+      document.getElementById('comp-wgoal')?.focus();
+      return;
+    }
+    const memberWgoals={};
+    memberWgoals[CU.id]=wgoal;
+    payload={
+      code,name,creator_id:CU.id,duration_days:compDurVal,
+      sections:{diet:true,workout:true,mandatory:true,target:false},
+      challenge_type:'diet',weight_goal:wgoal,
+      measure_type:'weight',
+      member_wgoals:memberWgoals,member_inbody_goals:null,
+      status:'waiting',max_members:6,members,
+      start_date:customStart||new Date().toISOString().slice(0,10)
+    };
+  }
+
+  const{data,error}=await sb.from('competitions').insert(payload).select().single();
   if(error){errEl.textContent='오류: '+error.message;return;}
   activeComp=data;
   hideChallengeCreate();
   switchTab('competition',3);
-  showToast('✅ 챌린지가 만들어졌어요! 코드: '+code);
-  try{track('competition_create',{measure_type:'weight',duration:compDurationDays||null});}catch(e){}
+  const typeLabel=compChallengeType==='pushup'?'푸쉬업':'다이어트';
+  showToast(`✅ ${typeLabel} 챌린지 생성! 코드: `+code);
+  try{track('competition_create',{measure_type:payload.measure_type,duration:compDurVal});}catch(e){}
   setTimeout(()=>showInviteCode(code,name),400);
   await renderChallengeHome();
 }
