@@ -26,7 +26,7 @@
 :root{
   --bg:#0a0a0c;--surface:#141418;--surface2:#1c1c22;--surface3:#24242c;
   --border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.10);
-  --text:#eaeaea;--text2:#6b6b78;--text3:#3a3a46;
+  --text:#eaeaea;--text2:#a8a8b4;--text3:#7a7a86;
   --green:#34d399;--green-bg:rgba(52,211,153,0.12);--green-bd:rgba(52,211,153,0.28);
   --red:#ff4d4d;--red-bg:rgba(255,77,77,0.12);--red-bd:rgba(255,77,77,0.28);
   --amber:#f59e0b;--amber-bg:rgba(245,158,11,0.12);--amber-bd:rgba(245,158,11,0.30);
@@ -2293,10 +2293,10 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
         <div id="room-activity-list" style="display:flex;flex-direction:column;gap:4px;max-height:220px;overflow-y:auto;"></div>
       </div>
 
-      <!-- 그룹 통계 섹션 -->
-      <div id="group-stats-section" style="padding:0 16px 4px;">
-        <div onclick="toggleGroupStats()" id="group-stats-header" style="display:flex;justify-content:space-between;align-items:center;padding:12px 0 8px;cursor:pointer;touch-action:manipulation;">
-          <div style="font-size:13px;font-weight:600;color:var(--text);">그룹 통계</div>
+      <!-- 그룹 통계 섹션 — 카드 컨테이너로 시각 구분 -->
+      <div id="group-stats-section" style="margin:8px 16px 12px;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px 14px 10px;">
+        <div onclick="toggleGroupStats()" id="group-stats-header" style="display:flex;justify-content:space-between;align-items:center;padding:0 0 10px;cursor:pointer;touch-action:manipulation;border-bottom:1px solid var(--border);margin-bottom:12px;">
+          <div style="font-size:13px;font-weight:700;color:var(--text);letter-spacing:-0.005em;">그룹 통계</div>
           <span id="group-stats-chevron" style="font-size:12px;color:var(--text3);transition:transform 0.2s;">▾</span>
         </div>
         <div id="group-stats-body">
