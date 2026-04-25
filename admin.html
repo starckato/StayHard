@@ -196,7 +196,12 @@ WHERE id = '${session.user.id}';</pre>
 async function load(){
   const content=document.getElementById('content');
   content.innerHTML='<div style="color:var(--ink3);padding:20px 0;">loading...</div>';
-  const {data,error}=await sb.rpc('admin_dashboard');
+  // 병렬: 기본 dashboard + retention metrics
+  const [dashRes,retRes]=await Promise.all([
+    sb.rpc('admin_dashboard'),
+    sb.rpc('admin_retention_summary').catch(e=>({data:null,error:e})),
+  ]);
+  const {data,error}=dashRes;
   if(error){
     const missing=/does not exist/i.test(error.message||'');
     content.innerHTML=`<div class="err">admin_dashboard() failed: ${esc(error.message)}
@@ -209,7 +214,115 @@ hint: ${error.hint||'—'}${missing?'\n\nRun migrations/003 then 004 in Supabase
 <a href="https://raw.githubusercontent.com/starckato/StayHard/main/migrations/004_admin_dashboard_full_data.sql" target="_blank">migrations/004_admin_dashboard_full_data.sql</a></div>`;
     return;
   }
+  // retention 데이터 합침
+  data._retention=retRes&&retRes.data?retRes.data:null;
+  data._retention_error=retRes&&retRes.error?retRes.error.message:null;
   render(data);
+}
+
+function renderRetentionSection(r,errMsg){
+  if(errMsg){
+    return `<section><h2>retention metrics <span class="h2-sub">M1-M10 · admin RPC error</span></h2>
+      <div class="err" style="font-size:11px;">admin_retention_summary() failed: ${esc(errMsg)}</div></section>`;
+  }
+  if(!r){
+    return `<section><h2>retention metrics</h2><div class="muted" style="font-size:11px;">no data</div></section>`;
+  }
+  const fmt=v=>v==null?'—':typeof v==='number'?v.toLocaleString():v;
+  const fmtPct=(num,denom)=>!denom?'—':(num/denom*100).toFixed(1)+'%';
+  let h='';
+  // ── M1: Time-to-first-cube ──
+  const m1=r.m1||{};
+  h+=`<section><h2>M1 · time-to-first-cube <span class="h2-sub">activation 진입 속도</span></h2>
+    <div class="adopt-row"><div>전체 유저</div><div>${fmt(m1.total_users)}</div><div class="num"></div></div>
+    <div class="adopt-row"><div>첫 큐브 획득</div><div>${fmt(m1.with_first_cube)} (${fmtPct(m1.with_first_cube,m1.total_users)})</div><div class="num"></div></div>
+    <div class="adopt-row"><div>p50 시간</div><div>${m1.p50_minutes!=null?(+m1.p50_minutes).toFixed(1)+'분':'—'}</div><div class="num"></div></div>
+    <div class="adopt-row"><div>p95 시간</div><div>${m1.p95_minutes!=null?(+m1.p95_minutes).toFixed(1)+'분':'—'}</div><div class="num"></div></div>
+  </section>`;
+  // ── M2: D1 returning gold ──
+  const m2=r.m2||{};
+  h+=`<section><h2>M2 · D1 gold returning <span class="h2-sub">첫날 gold 받은 유저의 다음날 복귀</span></h2>
+    <div class="adopt-row"><div>가입 day0 gold</div><div>${fmt(m2.had_gold_d0)} / ${fmt(m2.total)} (${fmtPct(m2.had_gold_d0,m2.total)})</div><div class="num"></div></div>
+    <div class="adopt-row"><div>D1 복귀</div><div>${fmt(m2.returned_d1)} / ${fmt(m2.total)} (${fmtPct(m2.returned_d1,m2.total)})</div><div class="num"></div></div>
+    <div class="adopt-row"><div>gold + 복귀</div><div>${fmt(m2.gold_and_return)} (${fmtPct(m2.gold_and_return,m2.had_gold_d0)} of gold)</div><div class="num"></div></div>
+  </section>`;
+  // ── M3: Opt-in rate ──
+  const m3=r.m3||[];
+  if(m3.length){
+    h+=`<section><h2>M3 · notification opt-in</h2><div class="table-wrap"><table><thead><tr>
+      <th>event</th><th>trigger</th><th>result</th><th class="num">count</th></tr></thead><tbody>`;
+    h+=m3.map(x=>`<tr><td>${esc(x.event)}</td><td>${esc(x.trigger||'—')}</td><td>${esc(x.result||'—')}</td><td class="num">${fmt(x.n)}</td></tr>`).join('');
+    h+=`</tbody></table></div></section>`;
+  } else {
+    h+=`<section><h2>M3 · notification opt-in</h2><div class="muted" style="font-size:11px;">no opt-in events yet</div></section>`;
+  }
+  // ── M4: Friend funnel ──
+  const m4=r.m4||[];
+  if(m4.length){
+    h+=`<section><h2>M4 · friend funnel <span class="h2-sub">코드 조회 → 공유 → 입력 → 추가</span></h2>`;
+    const order=['friend_code_viewed','friend_code_shared','friend_code_entered','friend_added'];
+    const labels={friend_code_viewed:'코드 조회',friend_code_shared:'공유',friend_code_entered:'코드 입력',friend_added:'친구 추가'};
+    const top=Math.max(...m4.map(x=>x.unique_users||0),1);
+    order.forEach(k=>{
+      const row=m4.find(x=>x.event===k);
+      const u=row?row.unique_users:0;
+      const pct=(u/top)*100;
+      h+=`<div class="funnel-row"><div>${labels[k]}</div><div class="num">${u}</div><div style="background:#222;height:14px;border-radius:2px;overflow:hidden;"><div style="height:100%;background:var(--accent);width:${pct}%;"></div></div><div class="num">${row?row.events:0}</div><div class="num">${fmtPct(u,top)}</div></div>`;
+    });
+    h+=`</section>`;
+  }
+  // ── M5: Nudge ──
+  const m5=r.m5||[];
+  if(m5.length){
+    h+=`<section><h2>M5 · nudge ratio <span class="h2-sub">최근 4주</span></h2><div class="table-wrap"><table><thead><tr>
+      <th>week</th><th>event</th><th class="num">n</th></tr></thead><tbody>`;
+    h+=m5.map(x=>`<tr><td>${esc(x.week)}</td><td>${esc(x.event)}</td><td class="num">${fmt(x.n)}</td></tr>`).join('');
+    h+=`</tbody></table></div></section>`;
+  }
+  // ── M6: Returner reactivation ──
+  const m6=r.m6||{};
+  h+=`<section><h2>M6 · returner reactivation <span class="h2-sub">grace 활성 후 7일 내 복귀</span></h2>
+    <div class="adopt-row"><div>grace 활성</div><div>${fmt(m6.activated)}</div><div class="num"></div></div>
+    <div class="adopt-row"><div>7일 내 복귀</div><div>${fmt(m6.reactivated_7d)} (${fmtPct(m6.reactivated_7d,m6.activated)})</div><div class="num"></div></div>
+  </section>`;
+  // ── M7: Red cube W1 → W2 ──
+  const m7=r.m7||{};
+  h+=`<section><h2>M7 · red cube W1 → W2 <span class="h2-sub">첫주 crimson 받은 유저의 2주차 유지</span></h2>
+    <div class="adopt-row"><div>전체</div><div>${fmt(m7.total)}</div><div class="num"></div></div>
+    <div class="adopt-row"><div>W1 crimson 받음</div><div>${fmt(m7.had_crimson_w1)} (${fmtPct(m7.had_crimson_w1,m7.total)})</div><div class="num"></div></div>
+    <div class="adopt-row"><div>W2 활성</div><div>${fmt(m7.active_w2)} (${fmtPct(m7.active_w2,m7.total)})</div><div class="num"></div></div>
+    <div class="adopt-row"><div>crimson + W2 활성</div><div>${fmt(m7.crimson_and_active)} (${fmtPct(m7.crimson_and_active,m7.had_crimson_w1)} of crimson)</div><div class="num"></div></div>
+  </section>`;
+  // ── M8: Perfect day ──
+  const m8=r.m8||[];
+  if(m8.length){
+    h+=`<section><h2>M8 · perfect day <span class="h2-sub">최근 30 records</span></h2><div class="table-wrap"><table><thead><tr>
+      <th>week</th><th>user</th><th class="num">count</th></tr></thead><tbody>`;
+    h+=m8.slice(0,15).map(x=>`<tr><td>${esc(x.week)}</td><td class="muted">${esc(String(x.user_id||'').slice(0,8))}</td><td class="num">${fmt(x.count)}</td></tr>`).join('');
+    h+=`</tbody></table></div></section>`;
+  } else {
+    h+=`<section><h2>M8 · perfect day</h2><div class="muted" style="font-size:11px;">no perfect days yet</div></section>`;
+  }
+  // ── M9: SB dwell ──
+  const m9=r.m9||[];
+  if(m9.length){
+    h+=`<section><h2>M9 · status band dwell <span class="h2-sub">최근 14일 (sec)</span></h2><div class="table-wrap"><table><thead><tr>
+      <th>day</th><th class="num">p50</th><th class="num">p95</th><th class="num">samples</th></tr></thead><tbody>`;
+    h+=m9.map(x=>`<tr><td>${esc(x.day)}</td><td class="num">${(+x.p50||0).toFixed(1)}</td><td class="num">${(+x.p95||0).toFixed(1)}</td><td class="num">${fmt(x.samples)}</td></tr>`).join('');
+    h+=`</tbody></table></div></section>`;
+  }
+  // ── M10: Tab split ──
+  const m10=r.m10||[];
+  if(m10.length){
+    h+=`<section><h2>M10 · tab split</h2>`;
+    const top=Math.max(...m10.map(x=>x.visits||0),1);
+    m10.forEach(x=>{
+      const pct=(x.visits/top)*100;
+      h+=`<div class="funnel-row"><div>${esc(x.tab)}</div><div class="num">${fmt(x.visits)}</div><div style="background:#222;height:14px;border-radius:2px;overflow:hidden;"><div style="height:100%;background:var(--accent);width:${pct}%;"></div></div><div class="num">${fmt(x.unique_users)}</div><div class="num">${fmtPct(x.visits,top)}</div></div>`;
+    });
+    h+=`</section>`;
+  }
+  return h;
 }
 
 function render(d){
@@ -390,6 +503,9 @@ function render(d){
     <tr><td class="muted">completed</td><td class="num">${d.competitions?.completed||0}</td></tr>
     <tr><td class="muted">waiting</td><td class="num">${d.competitions?.waiting||0}</td></tr>
   </tbody></table></div></section>`;
+
+  // ── RETENTION METRICS (M1-M10) ──────────────────────────────
+  html+=renderRetentionSection(d._retention,d._retention_error);
   html+=`</div>`;
 
   // ── USERS TABLE ──
