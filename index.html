@@ -20,7 +20,7 @@
      so window globals (dkey, normKey, ...) are set before inline code runs.
      Query version bumps cache when bundle content changes. Bump manually or
      via build script when shipping a new bundle. See MIGRATION_PLAN.md. -->
-<script src="/dist/app.js?v=20260425ab"></script>
+<script src="/dist/app.js?v=20260425ac"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Archivo+Black&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -104,21 +104,42 @@
 .exempt-btn-confirm{flex:1.2;padding:12px 10px;background:var(--accent);border:none;border-radius:10px;color:#fff;font-size:12.5px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;letter-spacing:-.01em;line-height:1.3;}
 .exempt-btn-confirm:disabled{opacity:.4;cursor:not-allowed;}
 
-/* Layout v2 — Phase 2B. Status Band 축소 + 식단 카드 상단 (CSS order 기반).
-   body.layout-v2 클래스 토글로 활성. 기본 off. 렌더 시 FF 로 토글. */
-body.layout-v2 .sb{padding:12px 14px;}
-body.layout-v2 .sb .sb-score{font-size:38px;letter-spacing:-1.5px;}
-body.layout-v2 .sb-head{gap:10px;}
-body.layout-v2 .sb-canvas-wrap{width:36px;height:44px;}
-body.layout-v2 .sb-canvas-wrap canvas{width:36px;height:44px;}
-body.layout-v2 .sb-tier{font-size:14px;}
-body.layout-v2 .sb-score-row{margin-top:6px;}
+/* Layout v2 — Phase 2B. Status Band 컴팩트 모드.
+   body.layout-v2 클래스 토글로 활성. 변화 더 명확하게 — score 28px, padding 8px. */
+body.layout-v2 .sb{padding:10px 14px;margin-bottom:6px;}
+body.layout-v2 .sb .sb-score{font-size:28px !important;letter-spacing:-1px;line-height:1;}
+body.layout-v2 .sb-head{gap:8px;margin-bottom:4px;}
+body.layout-v2 .sb-canvas-wrap{width:32px !important;height:38px !important;}
+body.layout-v2 .sb-canvas-wrap canvas{width:32px !important;height:38px !important;}
+body.layout-v2 .sb-tier{font-size:13px;}
+body.layout-v2 .sb-streak{font-size:11px;}
+body.layout-v2 .sb-score-row{margin-top:2px;gap:4px;}
+body.layout-v2 .sb-score-unit{font-size:14px;}
+body.layout-v2 .sb-today-cell{font-size:11px;}
+body.layout-v2 .sb-today-val{font-size:18px !important;}
+body.layout-v2 .sb-quote{font-size:11px;margin-top:4px;}
+body.layout-v2 .sb-progress-wrap{margin-top:4px;}
+body.layout-v2 .sb-progress-track{height:3px;}
+/* 식단 카드를 운동·루틴·할일 위로 이동 (CSS order 기반).
+   각 s-card 는 형제. order 적용. */
+body.layout-v2 #weight-card{order:1;}
+body.layout-v2 #meal-card{order:0;}
+body.layout-v2 #workout-card{order:2;}
+body.layout-v2 #routine-card{order:3;}
+body.layout-v2 #targets-card{order:4;}
+body.layout-v2 #view-routine{display:flex;flex-direction:column;}
+body.layout-v2 .sb,body.layout-v2 .home-promo-block,body.layout-v2 #first-cube-card,body.layout-v2 #exempt-row,body.layout-v2 #yesterday-ribbon{order:-1;}
 
-/* Volume Delta mini-chart — Phase 3A */
-.vd-card{margin:0 16px 8px;padding:14px 16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);}
-.vd-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px;}
+/* Volume Delta mini-chart — Phase 3A (collapsible) */
+.vd-card{margin:0 16px 8px;padding:0;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;}
+.vd-head{display:flex;justify-content:space-between;align-items:baseline;cursor:pointer;padding:14px 16px;user-select:none;touch-action:manipulation;transition:background .15s;}
+.vd-head:hover{background:rgba(255,255,255,0.02);}
+.vd-head::after{content:"▾";color:var(--text3);font-size:11px;margin-left:auto;transition:transform .25s;}
+.vd-card.collapsed .vd-head::after{transform:rotate(-90deg);}
+.vd-card.collapsed .vd-body{display:none;}
+.vd-body{padding:0 16px 14px;}
 .vd-title{font-size:11px;color:var(--text3);letter-spacing:.16em;text-transform:uppercase;font-weight:700;}
-.vd-sub{font-size:10px;color:var(--text3);font-family:'DM Mono',monospace;}
+.vd-sub{font-size:10px;color:var(--text3);font-family:'DM Mono',monospace;margin-right:6px;}
 .vd-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;font-size:11px;}
 .vd-row:last-child{margin-bottom:0;}
 .vd-label{width:32px;color:var(--text2);}
@@ -5951,22 +5972,7 @@ async function onLogin(user){
     }
   }catch(e){console.warn('[deeplink] consume',e);}
 
-  // Returner Grace activation — 3일+ 갭 감지 → 72h 보호구간 세팅.
-  try{
-    if(window.sh&&window.sh.returnerGrace&&window.FF&&window.FF.get('returner_grace',false)){
-      const rg=window.sh.returnerGrace;
-      const prevState=(p&&p.return_state)||null;
-      const next=rg.computeActivation(prevState);
-      if(next&&JSON.stringify(next)!==JSON.stringify(prevState)){
-        if(CP)CP.return_state=next;
-        rg.persist(sb,user.id,next).then(()=>{
-          if(window.logEvent&&window.EVT&&rg.isWithinGrace(next)&&!rg.isWithinGrace(prevState)){
-            window.logEvent(window.EVT.RETURNER_GRACE_ACTIVATED,{hours:72});
-          }
-        }).catch(()=>{});
-      }
-    }
-  }catch(e){console.warn('[returner] activation',e);}
+  // Returner Grace activation 은 profile 로드 후 (CP 세팅 후) 실행. 변수 p TDZ 회피.
   // ── 스냅샷 즉시 복원 (init에서 이미 paint 했으면 skip, 다른 유저 전환 시에는 paint) ──
   const _snap=_loadSnapshot(user.id);
   let _snapPainted=window._paintedUserId===user.id; // init이 같은 유저로 이미 그렸음
@@ -6001,6 +6007,22 @@ async function onLogin(user){
   }
   if(p&&p.total_score===null)p.total_score=0;
   CP=p;
+  // Returner Grace activation — profile 로드 후 실행. CP 가 세팅된 시점.
+  try{
+    if(window.sh&&window.sh.returnerGrace&&window.FF&&window.FF.get('returner_grace',false)&&CP){
+      const rg=window.sh.returnerGrace;
+      const prevState=CP.return_state||null;
+      const next=rg.computeActivation(prevState);
+      if(next&&JSON.stringify(next)!==JSON.stringify(prevState)){
+        CP.return_state=next;
+        rg.persist(sb,user.id,next).then(()=>{
+          if(window.logEvent&&window.EVT&&rg.isWithinGrace(next)&&!rg.isWithinGrace(prevState)){
+            window.logEvent(window.EVT.RETURNER_GRACE_ACTIVATED,{hours:72});
+          }
+        }).catch(()=>{});
+      }
+    }
+  }catch(e){console.warn('[returner] activation',e);}
   // total_score: localStorage 백업이 DB값보다 높으면 복원 (저장 실패 대비)
   if(CP){
     try{
@@ -6598,8 +6620,8 @@ window.addEventListener('visibilitychange', ()=>{
 });
 
 // 하위 호환성 — saveNow 호출은 queueSave로 리다이렉트
-function saveNow(msg){ queueSave(); }
-function scheduleSave(){ queueSave(); }
+function saveNow(msg){ queueSave(); try{renderFirstCubeCard();}catch(_){} }
+function scheduleSave(){ queueSave(); try{renderFirstCubeCard();}catch(_){} }
 
 // ── Will Cube mode 토글 ─────────────────────────────────────
 // true: 기존 점수 UI (showWin / showScoreGain / confetti / checkPerfectDay) 전부
@@ -8163,6 +8185,7 @@ async function shareInvite(){
 
 // ── TABS ──
 // First Cube 체험 카드 렌더 — FF gate + onboarding_state 체크.
+// 어떤 task 든 (물·걷기·할일·루틴) 하나라도 완료하면 인정.
 // 호출처: onLogin 이후, recomputeCubesHook 이후, saveNow 이후.
 function renderFirstCubeCard(){
   try{
@@ -8172,24 +8195,25 @@ function renderFirstCubeCard(){
     const FF=window.FF;
     if(!CP||fc.hasEarned(CP)){el.hidden=true;el.innerHTML='';return;}
     if(!FF||!FF.get('first_cube_card',false)){el.hidden=true;return;}
-    const task=fc.pickTask(CU&&CU.id);
-    const res=fc.checkCompletion(log,task.id);
+    // 4 task 중 어떤 것이든 완료됐는지 검사
+    const completion=fc.checkAnyCompletion(log);
     el.hidden=false;
-    if(res.done){
+    if(completion){
       // Earn and mark.
       el.classList.add('fc-complete');
-      el.innerHTML='<div class="fc-kicker">완료</div><div class="fc-title">첫 칸을 채웠다.</div><div class="fc-hint">'+task.hint+' → '+res.evidence+'</div>';
-      // Fire-and-forget server write. 중복 호출 방지 in-memory flag.
+      el.innerHTML='<div class="fc-kicker">완료</div><div class="fc-title">첫 칸을 채웠다.</div><div class="fc-hint">'+completion.res.evidence+'</div>';
       if(!window._firstCubeMarked){
         window._firstCubeMarked=true;
-        fc.markEarned(sb,CU.id,task.id).then(()=>{
-          if(CP){CP.onboarding_state={...(CP.onboarding_state||{}),first_cube_task:task.id,first_cube_earned_at:new Date().toISOString()};}
+        fc.markEarned(sb,CU.id,completion.task.id).then(()=>{
+          if(CP){CP.onboarding_state={...(CP.onboarding_state||{}),first_cube_task:completion.task.id,first_cube_earned_at:new Date().toISOString()};}
           setTimeout(()=>{el.hidden=true;el.classList.remove('fc-complete');},2400);
         });
       }
     }else{
+      // 제안: 4개 중 1개 + 나머지도 OK 라는 안내
+      const suggested=fc.pickTask(CU&&CU.id);
       el.classList.remove('fc-complete');
-      el.innerHTML='<div class="fc-kicker">첫 칸</div><div class="fc-title">'+task.title+'</div><div class="fc-hint">'+task.hint+'</div><div class="fc-progress"><span class="fc-dot"></span>기다리는 중…</div>';
+      el.innerHTML='<div class="fc-kicker">첫 칸</div><div class="fc-title">'+suggested.title+'</div><div class="fc-hint">'+suggested.hint+' (물·걷기·할일·루틴 중 하나라도 OK)</div><div class="fc-progress"><span class="fc-dot"></span>기다리는 중…</div>';
     }
   }catch(e){console.warn('[first-cube] render',e);}
 }
@@ -8271,7 +8295,9 @@ function renderVolumeDelta(){
         <div class="vd-delta ${dirCls}">${sign}${d.deltaPct}%</div>
       </div>`;
     }).join('');
-    card.innerHTML=`<div class="vd-head"><div class="vd-title">이번 주 vs 지난 주</div><div class="vd-sub">총 ${delta.total.curr.toLocaleString()}kg</div></div>${rows}`;
+    card.innerHTML=`<div class="vd-head" onclick="this.parentElement.classList.toggle('collapsed');try{localStorage.setItem('vd_collapsed',this.parentElement.classList.contains('collapsed')?'1':'0');}catch(_){}"><div class="vd-title">이번 주 vs 지난 주 볼륨</div><div class="vd-sub">총 ${delta.total.curr.toLocaleString()}kg</div></div><div class="vd-body">${rows}</div>`;
+    // 접힘 상태 복원
+    try{if(localStorage.getItem('vd_collapsed')==='1')card.classList.add('collapsed');}catch(_){}
   }catch(e){console.warn('[vd] render',e);}
 }
 
@@ -8282,7 +8308,7 @@ async function checkD3OptInRequest(){
     const mod=window.sh&&window.sh.notifOptIn;if(!mod||!CP||!CU)return;
     const streak=(typeof calcStreak==='function')?calcStreak():0;
     if(!mod.shouldRequestD3(CP,streak))return;
-    // 10초 뒤 모달 (액션 직후 방해 없게)
+    // 2초 뒤 모달 (액션 직후 방해 없게, 너무 늦지도 않게)
     if(window._d3OptInPending)return;
     window._d3OptInPending=true;
     setTimeout(async()=>{
@@ -8305,7 +8331,7 @@ async function checkD3OptInRequest(){
         if(granted){showToast('알림 켜짐. 흐름을 지키자.');}
         window._d3OptInPending=false;
       }catch(e){window._d3OptInPending=false;console.warn('[d3-optin]',e);}
-    },10000);
+    },2000);
   }catch(_){}
 }
 

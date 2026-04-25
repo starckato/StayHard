@@ -107,3 +107,15 @@ export function shouldShow(profile, flagsGet) {
   } catch {}
   return !hasEarned(profile);
 }
+
+/**
+ * Check ALL preset tasks — return first one completed, or null.
+ * 유저가 제안된 task 가 아닌 다른 task 를 했어도 인정.
+ */
+export function checkAnyCompletion(log) {
+  for (const t of FIRST_CUBE_TASKS) {
+    const res = checkCompletion(log, t.id);
+    if (res.done) return { task: t, res };
+  }
+  return null;
+}
