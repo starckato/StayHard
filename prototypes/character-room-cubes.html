@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>Prototype · 캐릭터룸 ↔ 큐브 통합</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:#0a0a0c;color:#f5f1ea;font-family:'DM Sans','Apple SD Gothic Neo','Pretendard',sans-serif;padding:32px 16px 80px;line-height:1.5;}
+  .head{max-width:1200px;margin:0 auto 28px;}
+  h1{font-family:'Archivo Black',sans-serif;font-size:22px;letter-spacing:-0.01em;margin-bottom:6px;color:#ff4d4d;}
+  .lead{font-size:13px;color:#a8a8b4;margin-bottom:14px;}
+  .note{font-size:11.5px;color:#7a7a86;line-height:1.6;border-left:2px solid #ff4d4d;padding-left:10px;}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(360px,1fr));gap:20px;max-width:1600px;margin:0 auto;}
+  .card{background:#16161a;border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:18px;}
+  .card h2{font-family:'Archivo Black',sans-serif;font-size:15px;letter-spacing:0;margin-bottom:4px;}
+  .card .opt{font-size:10px;color:#ff4d4d;font-weight:800;letter-spacing:0.12em;margin-bottom:8px;}
+  .card .desc{font-size:12px;color:#a8a8b4;margin-bottom:14px;line-height:1.55;}
+  .phone{width:100%;max-width:360px;margin:0 auto;aspect-ratio:9/16;background:#000;border-radius:24px;border:6px solid #1a1a1f;position:relative;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,0.6);}
+  .phone-content{position:absolute;inset:0;display:flex;flex-direction:column;}
+  .phone-head{padding:14px 16px 6px;display:flex;align-items:center;gap:10px;}
+  .phone-tier{font-size:11px;color:#38bdf8;font-weight:800;letter-spacing:0.04em;}
+  .phone-close{margin-left:auto;font-size:16px;color:#7a7a86;}
+  .room{flex:1;position:relative;background:linear-gradient(180deg,#1a1a22 0%,#0e0e14 100%);overflow:hidden;}
+  .room-bg{position:absolute;inset:0;background:url('/assets/tier2/tier2_room.png') center/cover no-repeat;opacity:0.85;}
+  .character{position:absolute;width:64px;height:80px;background:url('/assets/tier2/Tier2_cha_nobg.png') center/contain no-repeat;image-rendering:pixelated;}
+  /* Tradeoff list */
+  .tradeoff{margin-top:12px;font-size:11px;}
+  .tradeoff li{padding:3px 0;color:#a8a8b4;}
+  .tradeoff .pro{color:#34d399;}
+  .tradeoff .con{color:#ff6b6b;}
+
+  /* ───────────── OPTION A: 바닥 더미 (Floor Pile) ───────────── */
+  .opt-a .character{bottom:60px;left:40%;transform:translateX(-50%);}
+  .opt-a .pile{position:absolute;bottom:42px;right:14%;display:flex;flex-direction:column;gap:2px;align-items:center;}
+  .opt-a .pile-row{display:flex;gap:2px;}
+  .opt-a .cube{width:14px;height:14px;border-radius:2px;border:1px solid rgba(0,0,0,0.4);box-shadow:inset 0 1px 0 rgba(255,255,255,0.4),inset 0 -2px 3px rgba(0,0,0,0.4);}
+  .cube.gold{background:linear-gradient(135deg,#fff1a8 0%,#ffd54a 45%,#c48c1a 100%);border-color:rgba(196,140,26,0.65);}
+  .cube.silver{background:linear-gradient(135deg,#f2f4f7 0%,#b5c0cc 45%,#6d7682 100%);border-color:rgba(109,118,130,0.55);}
+  .cube.red{background:linear-gradient(135deg,#ff8080 0%,#ff4d4d 45%,#8b1515 100%);border-color:rgba(139,21,21,0.65);}
+  .opt-a .pile-label{position:absolute;bottom:14px;right:18%;font-family:'DM Mono',monospace;font-size:10px;color:#ffd54a;font-weight:800;background:rgba(0,0,0,0.6);padding:3px 7px;border-radius:6px;border:1px solid rgba(255,213,74,0.4);}
+
+  /* ───────────── OPTION B: 진열장 (Display Case) ───────────── */
+  .opt-b .character{bottom:60px;left:25%;transform:translateX(-50%);}
+  .opt-b .case{position:absolute;top:24%;right:8%;width:42%;background:rgba(20,20,28,0.85);border:2px solid rgba(180,140,80,0.4);border-radius:6px;padding:6px;display:grid;grid-template-columns:repeat(5,1fr);gap:2px;box-shadow:inset 0 0 12px rgba(255,213,74,0.12),0 4px 12px rgba(0,0,0,0.5);}
+  .opt-b .case-cube{width:100%;aspect-ratio:1;border-radius:1.5px;}
+  .opt-b .case-cube.empty{background:rgba(255,255,255,0.04);border:1px dashed rgba(255,255,255,0.08);}
+  .opt-b .case-label{position:absolute;top:18%;right:8%;font-size:9px;color:#a8a8b4;letter-spacing:0.1em;font-weight:800;}
+
+  /* ───────────── OPTION C: 흩어짐 + 인터랙션 (Scattered) ───────────── */
+  .opt-c .character{bottom:50px;left:50%;transform:translateX(-50%);}
+  .opt-c .scatter{position:absolute;inset:50% 0 16% 0;}
+  .opt-c .scatter .cube{position:absolute;}
+
+  /* ───────────── OPTION D: 인벤토리 패널 (Stat Panel) ───────────── */
+  .opt-d .character{bottom:80px;left:50%;transform:translateX(-50%);}
+  .opt-d .panel{position:absolute;left:12px;right:12px;bottom:14px;background:rgba(20,20,28,0.92);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:12px 14px;}
+  .opt-d .panel-row{display:flex;align-items:center;gap:10px;margin:5px 0;}
+  .opt-d .panel-tower{display:flex;flex-direction:column-reverse;gap:1px;width:18px;}
+  .opt-d .panel-token{width:18px;height:6px;border-radius:1.5px;}
+  .opt-d .panel-num{font-family:'Archivo Black',sans-serif;font-size:18px;color:#f5f1ea;letter-spacing:-0.5px;}
+  .opt-d .panel-label{font-size:10px;color:#7a7a86;letter-spacing:0.08em;font-weight:700;text-transform:uppercase;}
+  .opt-d .panel-progress{height:3px;background:rgba(255,255,255,0.08);border-radius:999px;margin:8px 0 4px;overflow:hidden;}
+  .opt-d .panel-progress-fill{height:100%;width:54%;background:linear-gradient(90deg,#ff4d4d,#ff6b35);border-radius:999px;}
+  .opt-d .panel-next{font-size:10px;color:#a8a8b4;}
+
+  /* Section divider */
+  .vision{max-width:1600px;margin:48px auto 0;padding:24px;background:linear-gradient(135deg,rgba(255,77,77,0.06),rgba(255,107,53,0.02));border:1px solid rgba(255,77,77,0.18);border-radius:14px;}
+  .vision h2{font-family:'Archivo Black',sans-serif;font-size:14px;color:#ff4d4d;margin-bottom:8px;}
+  .vision p{font-size:12px;color:#a8a8b4;line-height:1.7;}
+
+  .cta{text-align:center;margin-top:40px;font-size:13px;color:#a8a8b4;}
+  .cta strong{color:#f5f1ea;}
+</style>
+</head>
+<body>
+
+<div class="head">
+  <h1>Prototype · 캐릭터룸 ↔ 큐브 통합 — 4 옵션 비교</h1>
+  <div class="lead">사용자 vision: "캐릭터가 큐브를 섭취 + 황금큐브 누적 → 티어 진화"</div>
+  <div class="note">실제 코드 미반영. 시각 가안만. <strong>어느 방향이 맞는지 골라줘</strong> — 결정 후 구현 들어감. 가정: tier2 (각성자) · gold 32개 · silver 24개 · 다음 티어까지 54%.</div>
+</div>
+
+<div class="grid">
+
+  <!-- ════════════════ OPTION A: 바닥 더미 ════════════════ -->
+  <div class="card">
+    <div class="opt">OPTION A</div>
+    <h2>바닥 더미 (Floor Pile)</h2>
+    <div class="desc">큐브가 룸 바닥 한쪽 코너에 더미로 쌓임. 늘어날수록 더미 높이 증가. 캐릭터는 그 옆에 서있음 — "내가 모은 자국".</div>
+    <div class="phone opt-a">
+      <div class="phone-content">
+        <div class="phone-head">
+          <span class="phone-tier">★ 각성자</span>
+          <span class="phone-close">✕</span>
+        </div>
+        <div class="room">
+          <div class="room-bg"></div>
+          <div class="character"></div>
+          <div class="pile">
+            <div class="pile-row"><div class="cube gold"></div></div>
+            <div class="pile-row"><div class="cube gold"></div><div class="cube gold"></div></div>
+            <div class="pile-row"><div class="cube gold"></div><div class="cube silver"></div><div class="cube gold"></div></div>
+            <div class="pile-row"><div class="cube silver"></div><div class="cube gold"></div><div class="cube silver"></div><div class="cube gold"></div></div>
+            <div class="pile-row"><div class="cube gold"></div><div class="cube silver"></div><div class="cube gold"></div><div class="cube gold"></div><div class="cube silver"></div></div>
+          </div>
+          <div class="pile-label">🟡32 · ⚪24</div>
+        </div>
+      </div>
+    </div>
+    <ul class="tradeoff">
+      <li class="pro">+ 시각적으로 가장 직관 — "내가 쌓은 것"</li>
+      <li class="pro">+ 큐브 섭취 애니 도착점이 더미 (현재 캐릭터 도착)</li>
+      <li class="con">− 100+ 큐브 시 stack 정리 알고리즘 필요</li>
+      <li class="con">− 룸 일러스트 절반 가림</li>
+    </ul>
+  </div>
+
+  <!-- ════════════════ OPTION B: 진열장 ════════════════ -->
+  <div class="card">
+    <div class="opt">OPTION B</div>
+    <h2>진열장 (Display Case / Trophy Wall)</h2>
+    <div class="desc">룸 벽에 격자 선반. 각 칸 = 1 큐브. 100 칸 격자 가득 차는 게 1년 목표 — 박물관·트로피룸 느낌.</div>
+    <div class="phone opt-b">
+      <div class="phone-content">
+        <div class="phone-head">
+          <span class="phone-tier">★ 각성자</span>
+          <span class="phone-close">✕</span>
+        </div>
+        <div class="room">
+          <div class="room-bg"></div>
+          <div class="case-label">SHELF · 56/100</div>
+          <div class="case">
+            <div class="case-cube cube gold"></div><div class="case-cube cube gold"></div><div class="case-cube cube gold"></div><div class="case-cube cube silver"></div><div class="case-cube cube gold"></div>
+            <div class="case-cube cube silver"></div><div class="case-cube cube gold"></div><div class="case-cube cube gold"></div><div class="case-cube cube gold"></div><div class="case-cube cube silver"></div>
+            <div class="case-cube cube gold"></div><div class="case-cube cube gold"></div><div class="case-cube cube silver"></div><div class="case-cube cube gold"></div><div class="case-cube cube silver"></div>
+            <div class="case-cube cube silver"></div><div class="case-cube cube gold"></div><div class="case-cube cube gold"></div><div class="case-cube cube gold"></div><div class="case-cube cube silver"></div>
+            <div class="case-cube cube gold"></div><div class="case-cube cube silver"></div><div class="case-cube cube gold"></div><div class="case-cube cube silver"></div><div class="case-cube cube gold"></div>
+            <div class="case-cube empty"></div><div class="case-cube empty"></div><div class="case-cube empty"></div><div class="case-cube empty"></div><div class="case-cube empty"></div>
+            <div class="case-cube empty"></div><div class="case-cube empty"></div><div class="case-cube empty"></div><div class="case-cube empty"></div><div class="case-cube empty"></div>
+            <div class="case-cube empty"></div><div class="case-cube empty"></div><div class="case-cube empty"></div><div class="case-cube empty"></div><div class="case-cube empty"></div>
+          </div>
+          <div class="character"></div>
+        </div>
+      </div>
+    </div>
+    <ul class="tradeoff">
+      <li class="pro">+ 빈 칸이 다음 목표 시각화 — "다음 칸 채워라"</li>
+      <li class="pro">+ 1년치까지 일정 격자로 깔끔</li>
+      <li class="con">− 비어있는 칸이 D0-D7 신규에겐 압박감</li>
+      <li class="con">− 1000+ 큐브 시 격자 부족</li>
+    </ul>
+  </div>
+
+  <!-- ════════════════ OPTION C: 흩어짐 + 인터랙션 ════════════════ -->
+  <div class="card">
+    <div class="opt">OPTION C</div>
+    <h2>흩어짐 + 인터랙션 (Scattered Floor)</h2>
+    <div class="desc">큐브가 룸 바닥에 자연스럽게 흩어짐. 캐릭터가 그 사이를 walking. 정렬 안 된 "사용자가 만든 흔적들" 톤.</div>
+    <div class="phone opt-c">
+      <div class="phone-content">
+        <div class="phone-head">
+          <span class="phone-tier">★ 각성자</span>
+          <span class="phone-close">✕</span>
+        </div>
+        <div class="room">
+          <div class="room-bg"></div>
+          <div class="scatter">
+            <div class="cube gold" style="left:8%;top:55%;"></div>
+            <div class="cube silver" style="left:18%;top:72%;"></div>
+            <div class="cube gold" style="left:24%;top:60%;"></div>
+            <div class="cube gold" style="left:6%;top:80%;"></div>
+            <div class="cube silver" style="left:14%;top:42%;"></div>
+            <div class="cube gold" style="left:78%;top:58%;"></div>
+            <div class="cube gold" style="left:88%;top:74%;"></div>
+            <div class="cube silver" style="left:72%;top:80%;"></div>
+            <div class="cube red" style="left:84%;top:48%;"></div>
+            <div class="cube gold" style="left:62%;top:88%;"></div>
+            <div class="cube silver" style="left:30%;top:90%;"></div>
+            <div class="cube gold" style="left:46%;top:78%;"></div>
+          </div>
+          <div class="character"></div>
+        </div>
+      </div>
+    </div>
+    <ul class="tradeoff">
+      <li class="pro">+ 가장 organic. "기록은 살아있다" 느낌</li>
+      <li class="pro">+ red 큐브도 자연스럽게 섞임 (직시)</li>
+      <li class="con">− 갯수 정확한 카운트 부재 (시각 추정만)</li>
+      <li class="con">− 50+ 큐브 시 visual chaos</li>
+    </ul>
+  </div>
+
+  <!-- ════════════════ OPTION D: 인벤토리 패널 ════════════════ -->
+  <div class="card">
+    <div class="opt">OPTION D</div>
+    <h2>인벤토리 패널 (Stat Panel)</h2>
+    <div class="desc">룸은 그대로 (캐릭터 + 룸 일러스트). 하단 패널에 큐브 카운트 + 다음 티어 progress 명시. 시각보다 데이터 중심.</div>
+    <div class="phone opt-d">
+      <div class="phone-content">
+        <div class="phone-head">
+          <span class="phone-tier">★ 각성자</span>
+          <span class="phone-close">✕</span>
+        </div>
+        <div class="room">
+          <div class="room-bg"></div>
+          <div class="character"></div>
+          <div class="panel">
+            <div class="panel-row">
+              <div class="panel-tower">
+                <div class="panel-token cube gold"></div>
+                <div class="panel-token cube gold"></div>
+                <div class="panel-token cube gold"></div>
+              </div>
+              <div class="panel-num">32</div>
+              <div class="panel-label">Gold</div>
+            </div>
+            <div class="panel-row">
+              <div class="panel-tower">
+                <div class="panel-token cube silver"></div>
+                <div class="panel-token cube silver"></div>
+              </div>
+              <div class="panel-num">24</div>
+              <div class="panel-label">Silver</div>
+            </div>
+            <div class="panel-progress"><div class="panel-progress-fill"></div></div>
+            <div class="panel-next">다음: 저항자 · 54%</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <ul class="tradeoff">
+      <li class="pro">+ 데이터 명확. "내 위치 정확히 안다"</li>
+      <li class="pro">+ 가장 빨리 구현 가능 (Status Band 와 일관)</li>
+      <li class="con">− 캐릭터·룸 visual 가치 살리지 못함</li>
+      <li class="con">− Status Band 와 중복 정보</li>
+    </ul>
+  </div>
+</div>
+
+<div class="vision">
+  <h2>VISION 정합성 체크</h2>
+  <p>"캐릭터가 큐브를 섭취" — 큐브 popover 가 룸 진입 시에도 캐릭터로 빨려들어가는 애니는 모든 옵션에서 동일하게 동작. 단, 도착점이 다름:<br>
+  • <strong>Option A</strong>: 큐브가 캐릭터 → 더미로 굴러 떨어짐<br>
+  • <strong>Option B</strong>: 큐브가 캐릭터 → 격자 빈 칸으로 fly-in<br>
+  • <strong>Option C</strong>: 큐브가 캐릭터 → 바닥에 떨궈짐 (랜덤 위치)<br>
+  • <strong>Option D</strong>: 큐브가 캐릭터 → 카운터 숫자 bump 만</p>
+</div>
+
+<div class="cta">
+  골랐어? <strong>A · B · C · D</strong> 중 한 글자만 알려주거나, 혼합/수정 의견 줘. <br>현재 상태: 코드 변경 0건, prototype 만 별도 페이지.
+</div>
+
+</body>
+</html>
