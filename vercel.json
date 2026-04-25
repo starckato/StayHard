@@ -1,6 +1,26 @@
 {
   "buildCommand": "npm run build",
   "outputDirectory": ".",
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [{ "type": "host", "value": "qrok.co.kr" }],
+      "destination": "https://qrok.app/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/:path*",
+      "has": [{ "type": "host", "value": "www.qrok.co.kr" }],
+      "destination": "https://qrok.app/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/:path*",
+      "has": [{ "type": "host", "value": "www.qrok.app" }],
+      "destination": "https://qrok.app/:path*",
+      "permanent": true
+    }
+  ],
   "rewrites": [
     { "source": "/:path*", "destination": "/index.html" }
   ],
