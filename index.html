@@ -13154,11 +13154,14 @@ async function shareMuscleMap(){
     showToast('캡쳐 실패. 스크린샷을 이용해주세요 📸');
   }
 }
-// PR 2: 푸쉬업 시작 (룸 안 + 룸 밖 워크아웃 탭 공통)
+// PR 2: 푸쉬업 시작 — 기존 cvOpenPushupChallenge (MediaPipe Pose + workout_uploads) 재사용.
+// 결과는 workout_uploads 에 저장 → 룸 view 가 합산 표시.
 async function onPushupStart(){
-  // 모바일 디버그 — 진입 자체가 안 되는지 확인용
-  try{showToast('카운터 여는 중...');}catch(_){}
-  console.log('[onPushupStart] enter, activeComp:',!!activeComp,'daily_goal:',activeComp?.daily_goal);
+  console.log('[onPushupStart] cvOpenPushupChallenge 호출');
+  if(typeof cvOpenPushupChallenge==='function'){
+    try{cvOpenPushupChallenge();return;}catch(e){console.error('[onPushupStart] cv',e);}
+  }
+  // fallback: 기존 manual counter-modal (구 코드 호환)
   const dailyGoal=+(activeComp?.daily_goal||0);
   if(!window.openPushupCounter){
     console.error('[onPushupStart] window.openPushupCounter undefined');
@@ -13555,6 +13558,31 @@ async function renderChallengeRoom(){
     if(pushupErr)console.warn('[pushup-room] daily_logs fetch',pushupErr);
     const logsByMember={};
     mbs.forEach(uid=>{logsByMember[uid]=(pushupLogs||[]).filter(l=>l.user_id===uid);});
+
+    // workout_uploads 합산 — cvOpenPushupChallenge 가 저장하는 곳 (룸 외부 푸쉬업도 룸에 반영)
+    try{
+      const{data:pushupUploads}=await sb.from('workout_uploads')
+        .select('user_id,rep_count,created_at')
+        .eq('exercise_name','푸쉬업')
+        .in('user_id',mbs)
+        .gte('created_at',chStart);
+      (pushupUploads||[]).forEach(u=>{
+        const dk=(u.created_at||'').slice(0,10);
+        if(!dk||dk<chStart||dk>chEnd)return;
+        const memberLogs=logsByMember[u.user_id]||[];
+        let log=memberLogs.find(l=>(l.log_date||'').slice(0,10)===dk);
+        if(!log){
+          log={user_id:u.user_id,log_date:dk,cubes:{}};
+          memberLogs.push(log);
+          logsByMember[u.user_id]=memberLogs;
+        }
+        if(!log.cubes)log.cubes={};
+        if(!log.cubes.pushup||typeof log.cubes.pushup!=='object'){
+          log.cubes.pushup={count:0,sessions:[]};
+        }
+        log.cubes.pushup.count=(log.cubes.pushup.count||0)+(+u.rep_count||0);
+      });
+    }catch(e){console.warn('[pushup-room] workout_uploads',e);}
 
     // 오늘 본인 카운트
     const todayLog=(logsByMember[CU.id]||[]).find(l=>(l.log_date||'').slice(0,10)===TODAY);
