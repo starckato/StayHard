@@ -20,7 +20,7 @@
 <link rel="icon" type="image/png" sizes="16x16" href="/icons/qrok-16.png">
 <link rel="shortcut icon" href="/icons/qrok-32.png">
 <title>큐록 QROK</title>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <!-- v3.0 · Modular bundle (esbuild IIFE). MUST load before inline body scripts
@@ -1328,7 +1328,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
 }
 </style>
 </head>
-<body>
+<body style="background:#0f0f11;margin:0;">
 
 <!-- QROK Splash — 페이드인 300ms → 정지 1300ms (글로우 1 cycle) → 페이드아웃 400ms. DOM 제거 2000ms. -->
 <div id="qrok-splash" role="img" aria-label="큐록 로딩 중" style="position:fixed;inset:0;background:#0f0f11;z-index:10000;display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:1;transition:opacity 400ms cubic-bezier(0.4,0,0.2,1);pointer-events:auto;">
@@ -1369,15 +1369,15 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
       }catch(_){}
       return false;
     }
-    // 최소 1000ms (글로우 1 cycle) 후 ready 검사 시작
+    // 최소 1500ms (글로우 1 cycle + 호흡) 후 ready 검사 시작
     setTimeout(function(){
       if(isReady()){hide();return;}
       var elapsed=0;
       var poll=setInterval(function(){
         elapsed+=200;
-        if(isReady()||elapsed>=4000){clearInterval(poll);hide();}
+        if(isReady()||elapsed>=4500){clearInterval(poll);hide();}
       },200);
-    },1000);
+    },1500);
   })();
 </script>
 
@@ -1386,8 +1386,13 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
 
 <!-- ══ AUTH ══ -->
 <div id="auth-screen">
-  <div class="auth-logo">📋</div>
-  <div class="auth-title" style="color:#ff4d4d;letter-spacing:.05em;font-family:'Archivo Black','DM Sans','Helvetica Neue',sans-serif;">QROK</div>
+  <!-- 4 큐브 — 날짜 슬라이더 indicatorStyle 와 동일 -->
+  <div style="display:flex;gap:6px;justify-content:center;margin-bottom:14px;">
+    <div style="width:18px;height:18px;border-radius:2px;box-sizing:border-box;background:linear-gradient(135deg,#fff1a8 0%,#ffd54a 45%,#c48c1a 100%);border:1px solid rgba(255,233,128,0.70);box-shadow:0 0 4px rgba(255,213,74,0.55),inset 0 1px 0 rgba(255,255,255,0.45),inset 0 -1px 0 rgba(0,0,0,0.25);"></div>
+    <div style="width:18px;height:18px;border-radius:2px;box-sizing:border-box;background:linear-gradient(135deg,#f2f4f7 0%,#b5c0cc 45%,#6d7682 100%);border:1px solid rgba(210,218,228,0.55);box-shadow:0 0 3px rgba(181,192,204,0.40),inset 0 1px 0 rgba(255,255,255,0.32),inset 0 -1px 0 rgba(0,0,0,0.22);"></div>
+    <div style="width:18px;height:18px;border-radius:2px;box-sizing:border-box;background:transparent;border:1px solid rgba(255,255,255,0.10);"></div>
+    <div style="width:18px;height:18px;border-radius:2px;box-sizing:border-box;background:rgba(255,77,77,0.32);border:1px solid rgba(255,77,77,0.45);"></div>
+  </div>
   <div class="auth-sub">루틴을 기록하고, 함께 성장하세요.</div>
   <div class="auth-tabs">
     <div class="auth-tab active" onclick="switchAuthTab('login')">로그인</div>
@@ -7740,18 +7745,18 @@ function _pkBindAll(root){
 }
 document.addEventListener('DOMContentLoaded',()=>{try{_pkBindAll(document);}catch(e){console.warn('[pk-chip]',e);}});
 
-// PR 2 푸쉬업 시작 — event delegation (DOM 재렌더 무관, iOS Safari touch 안정)
-// click + touchend 둘 다 — touchstart→click 변환 race 회피
+// PR 2 푸쉬업 시작 — event delegation (touchstart capture phase, 모바일 안정)
 (function(){
   let _pushupTriggering=false;
-  function _trigger(e){
+  function _hit(e){
     const target=e.target.closest&&e.target.closest('[data-action="pushup-start"]');
-    if(!target)return;
-    if(_pushupTriggering)return;
+    if(!target)return false;
+    if(_pushupTriggering)return true;
     _pushupTriggering=true;
-    setTimeout(()=>{_pushupTriggering=false;},600);
-    e.preventDefault();
+    setTimeout(()=>{_pushupTriggering=false;},800);
+    try{e.preventDefault();}catch(_){}
     try{showToast&&showToast('카운터 여는 중...');}catch(_){}
+    console.log('[pushup-delegation] '+e.type+' fired');
     try{
       if(typeof onPushupStart==='function')onPushupStart();
       else{showToast&&showToast('함수 로드 실패 — 새로고침');}
@@ -7759,9 +7764,11 @@ document.addEventListener('DOMContentLoaded',()=>{try{_pkBindAll(document);}catc
       console.error('[pushup-delegation]',err);
       try{showToast&&showToast('오류: '+(err?.message||'?'));}catch(_){}
     }
+    return true;
   }
-  document.addEventListener('click',_trigger,true);
-  document.addEventListener('touchend',_trigger,{capture:true,passive:false});
+  // touchstart 가 가장 빠름 + capture phase + passive false
+  document.addEventListener('touchstart',_hit,{capture:true,passive:false});
+  document.addEventListener('click',_hit,true);
 })();
 
 // ═══════════════════════════════════════════════
@@ -8383,12 +8390,16 @@ function renderCubeStack(){
       if(c&&counts.hasOwnProperty(c))counts[c]++;
     });
   });
-  // cube CSS (line 513-515) 와 일치 — 그라디언트 + border + inner shadow
+  // 날짜 슬라이더 indicatorStyle (date-heatmap/index.js) 와 정확히 일치
   const colorMap={
-    gold:   {label:'금',  bg:'linear-gradient(135deg,#fff1a8 0%,#ffd54a 45%,#c48c1a 100%)',bd:'rgba(255,233,128,0.85)',txt:'#ffd54a'},
-    silver: {label:'은',  bg:'linear-gradient(135deg,#f2f4f7 0%,#b5c0cc 45%,#6d7682 100%)',bd:'rgba(210,218,228,0.75)',txt:'#d8dfe7'},
-    gray:   {label:'회색',bg:'linear-gradient(135deg,#8a8a96 0%,#5a5a66 45%,#2a2a32 100%)',bd:'rgba(120,120,130,0.65)',txt:'#a8a8b4'},
-    crimson:{label:'붉은',bg:'linear-gradient(135deg,#ff8080 0%,#ff4d4d 45%,#8b1515 100%)',bd:'rgba(255,77,77,0.80)',txt:'#ff6b6b'},
+    gold:   {label:'금',  txt:'#ffd54a',
+      style:'background:linear-gradient(135deg,#fff1a8 0%,#ffd54a 45%,#c48c1a 100%);border:1px solid rgba(255,233,128,0.70);box-shadow:0 0 4px rgba(255,213,74,0.55),inset 0 1px 0 rgba(255,255,255,0.45),inset 0 -1px 0 rgba(0,0,0,0.25);'},
+    silver: {label:'은',  txt:'#d8dfe7',
+      style:'background:linear-gradient(135deg,#f2f4f7 0%,#b5c0cc 45%,#6d7682 100%);border:1px solid rgba(210,218,228,0.55);box-shadow:0 0 3px rgba(181,192,204,0.40),inset 0 1px 0 rgba(255,255,255,0.32),inset 0 -1px 0 rgba(0,0,0,0.22);'},
+    gray:   {label:'회색',txt:'#a8a8b4',
+      style:'background:transparent;border:1px solid rgba(255,255,255,0.10);'},
+    crimson:{label:'붉은',txt:'#ff6b6b',
+      style:'background:rgba(255,77,77,0.32);border:1px solid rgba(255,77,77,0.45);'},
   };
   const order=['gold','silver','gray','crimson'];
   const total=order.reduce((a,k)=>a+counts[k],0);
@@ -8396,7 +8407,7 @@ function renderCubeStack(){
     container.innerHTML='<div style="text-align:center;padding:20px 0;color:var(--text3);font-size:12px;">아직 큐브가 없어요. 오늘 칸을 채워보세요.</div>';
     return;
   }
-  const cubeStyle=(meta,size)=>`width:${size}px;height:${size}px;background:${meta.bg};border:0.5px solid ${meta.bd};box-shadow:0 0 0.5px rgba(255,255,255,0.6) inset,0 -2px 3px rgba(0,0,0,0.35) inset;border-radius:1.5px;flex-shrink:0;`;
+  const cubeStyle=(meta,size)=>`width:${size}px;height:${size}px;${meta.style}border-radius:2px;flex-shrink:0;box-sizing:border-box;`;
   container.innerHTML=order.map(color=>{
     const cnt=counts[color];
     const meta=colorMap[color];
