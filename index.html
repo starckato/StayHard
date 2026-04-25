@@ -1352,6 +1352,10 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
     </div>
     <button class="abtn" id="su-btn" onclick="doSignup()">계정 만들기</button>
     <div class="aerr" id="su-err" style="min-height:18px;"></div>
+    <div style="font-size:11px;color:var(--text3);text-align:center;margin-top:6px;line-height:1.6;">
+      계정 만들기 시 <a href="/terms" target="_blank" rel="noopener" style="color:var(--text2);text-decoration:underline;">이용약관</a> 및
+      <a href="/privacy" target="_blank" rel="noopener" style="color:var(--text2);text-decoration:underline;">개인정보처리방침</a> 에 동의한 것으로 간주됩니다.
+    </div>
   </div>
 </div>
 
@@ -3819,6 +3823,12 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
     </button>
     <button class="signout-btn" onclick="doSignOut()">로그아웃</button>
     <button class="mbtn-ghost" onclick="closeModal('profile-modal')" style="margin-bottom:8px;">닫기</button>
+    <!-- 법적 고지 -->
+    <div style="display:flex;justify-content:center;gap:12px;margin:6px 0 10px;font-size:11px;color:var(--text3);">
+      <a href="/terms" target="_blank" rel="noopener" style="color:var(--text2);text-decoration:underline;">이용약관</a>
+      <span>·</span>
+      <a href="/privacy" target="_blank" rel="noopener" style="color:var(--text2);text-decoration:underline;">개인정보처리방침</a>
+    </div>
     <!-- 계정 삭제 — 파괴적 액션, 차가운 톤으로 -->
     <button onclick="confirmDeleteAccount()" style="width:100%;padding:10px;background:transparent;border:1px solid rgba(255,77,77,0.3);border-radius:10px;color:var(--red);font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;letter-spacing:-.01em;">계정·데이터 완전 삭제</button>
   </div>
