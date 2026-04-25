@@ -18,6 +18,7 @@ import * as exercises from './data/exercises.js';
 import * as muscle from './data/muscle.js';
 import * as rewardMessages from './data/reward-messages.js';
 import * as pushupCV from './data/pushup-cv.js';
+import * as pushupChallenge from './data/pushup-challenge.js';
 
 import * as stats from './features/stats/index.js';
 import * as onboarding from './features/onboarding/index.js';
@@ -53,6 +54,7 @@ Object.assign(
   scoreEvents, mottos, exercises, muscle, rewardMessages, pushupCV,
   stats, onboarding, weight, rewards, dateHeatmap
 );
+window.PushupChallenge = pushupChallenge;
 window.sb = sb;
 // Will Cube 모듈 — 네임스페이스로 노출. 기존 전역과 이름 충돌 방지.
 window.Cubes = cubes;
