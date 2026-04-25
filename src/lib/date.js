@@ -1,4 +1,4 @@
-// Stay Hard · date utilities
+// QROK · date utilities
 // Pure functions for date formatting. No app state. No DOM.
 // Safely importable from anywhere; also exposed on window via src/main.js
 // for inline-onclick compatibility during migration.

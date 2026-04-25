@@ -1,7 +1,7 @@
 {
-  "name": "Stay Hard",
-  "short_name": "Stay Hard",
-  "description": "루틴을 기록하고, 함께 성장하세요.",
+  "name": "큐록",
+  "short_name": "큐록",
+  "description": "전부 기록하고, 전부 책임진다",
   "start_url": "/",
   "display": "standalone",
   "orientation": "portrait",

@@ -1,4 +1,4 @@
-// Stay Hard · date heatmap (기록 탭 상단)
+// QROK · date heatmap (기록 탭 상단)
 //
 // Horizontal-scrolling calendar grid. Replaces the old 주간 탭 and the old
 // .day-strip day picker in the record tab. Rows: 식단 · 운동 · 루틴 · 할일.

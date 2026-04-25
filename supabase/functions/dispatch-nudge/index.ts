@@ -1,4 +1,4 @@
-// Stay Hard · dispatch-nudge Edge Function
+// QROK · dispatch-nudge Edge Function
 //
 // Invoked when a new row is inserted into `public.nudges` (via SQL trigger
 // using pg_net, OR via Supabase Dashboard → Database Webhooks).
@@ -19,7 +19,7 @@
 //   APNS_TEAM_ID                — 10-char Apple team id
 //   APNS_KEY_ID                 — 10-char APNs auth key id
 //   APNS_AUTH_KEY               — .p8 contents (multi-line ok)
-//   APNS_BUNDLE_ID              — e.g. com.stayhard.app
+//   APNS_BUNDLE_ID              — e.g. com.qrok.app
 //   APNS_ENV                    — "production" | "sandbox" (default: production)
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';

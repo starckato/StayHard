@@ -1,4 +1,4 @@
-// Stay Hard · inline SVG icon generator
+// QROK · inline SVG icon generator
 // 24×24 viewBox, 1.8px stroke, currentColor — matches bottom-nav icon style.
 // Pure: name → SVG markup string. No DOM mutation, no state.
 

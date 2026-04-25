@@ -1,4 +1,4 @@
-// Stay Hard · meal photo utilities
+// QROK · meal photo utilities
 //
 // Helpers for the private `meal-photos` bucket. Keeps signed URLs in an
 // in-memory TTL cache to avoid re-signing between renders. Exposes three

@@ -1,4 +1,4 @@
-// Stay Hard · friends/presets
+// QROK · friends/presets
 //
 // Nudge preset catalog. Server whitelists `id` only (migrations/017_nudges.sql);
 // client owns the Korean Manifesto body + subtitle. Adding a preset requires a

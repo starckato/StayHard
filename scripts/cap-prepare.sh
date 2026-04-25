@@ -1,5 +1,5 @@
 #!/bin/bash
-# Stay Hard · Capacitor web-dir prepare
+# QROK · Capacitor web-dir prepare
 #
 # Builds the esbuild bundle and assembles a clean `www/` directory that
 # Capacitor will copy into the native iOS/Android app.

@@ -1,4 +1,4 @@
-// Stay Hard · score event registry
+// QROK · score event registry
 // Central table of every score-changing event in the app. `addScore(type)`
 // looks up `pts`, `label`, `icon` by key. Negative pts = penalty or undo.
 //

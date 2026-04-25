@@ -1,4 +1,4 @@
-// Stay Hard · toast
+// QROK · toast
 //
 // Tiny queued toast notification. Assumes `<div id="toast">` exists in
 // index.html (it does — static markup). Shows messages one at a time

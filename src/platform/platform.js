@@ -1,4 +1,4 @@
-// Stay Hard · platform detection
+// QROK · platform detection
 //
 // Thin wrapper around Capacitor's runtime detection. In web (Vercel) builds,
 // `window.Capacitor` is undefined so we return 'web'. In native (iOS/Android)

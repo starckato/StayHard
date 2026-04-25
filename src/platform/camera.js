@@ -1,4 +1,4 @@
-// Stay Hard · camera abstraction
+// QROK · camera abstraction
 //
 // Unified camera API:
 //   - Native (iOS/Android): uses @capacitor/camera with user's choice of

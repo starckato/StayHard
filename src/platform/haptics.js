@@ -1,4 +1,4 @@
-// Stay Hard · haptic feedback
+// QROK · haptic feedback
 //
 // Native (iOS/Android): @capacitor/haptics with Impact/Notification styles.
 // Web: noop (browser vibration API is unreliable on iOS Safari).

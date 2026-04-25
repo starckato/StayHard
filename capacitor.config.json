@@ -1,6 +1,6 @@
 {
-  "appId": "com.stayhard.app",
-  "appName": "Stay Hard",
+  "appId": "com.qrok.app",
+  "appName": "큐록",
   "webDir": "www",
   "bundledWebRuntime": false,
   "server": {

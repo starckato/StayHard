@@ -1,4 +1,4 @@
-// Stay Hard · Supabase client
+// QROK · Supabase client
 //
 // Single shared client. Created from SB_URL/SB_KEY at module load (bundle
 // execution time, which happens BEFORE inline body scripts — see IIFE load
@@ -11,7 +11,7 @@
 import { SB_URL, SB_KEY } from './env.js';
 
 if (typeof window === 'undefined' || !window.supabase || !window.supabase.createClient) {
-  throw new Error('[stayhard/supabase] Supabase UMD not loaded. Check CDN script order in index.html.');
+  throw new Error('[qrok/supabase] Supabase UMD not loaded. Check CDN script order in index.html.');
 }
 
 /** Shared Supabase client (auth + postgrest + storage). */

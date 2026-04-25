@@ -1,4 +1,4 @@
-// Stay Hard · weight feature (v2 — collapsed/expanded accordion)
+// QROK · weight feature (v2 — collapsed/expanded accordion)
 //
 // Renders the collapsed summary AND the expanded body: status meta, big
 // number, 30-day line graph with goal line, target strip, and action row.

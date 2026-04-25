@@ -1,4 +1,4 @@
-// Stay Hard · analytics
+// QROK · analytics
 //
 // Fire-and-forget event logging to the `events` table. RLS enforces
 // user_id = auth.uid(). Silent on failure — never blocks UI.

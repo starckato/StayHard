@@ -1,4 +1,4 @@
-// Stay Hard · exercise data + helpers
+// QROK · exercise data + helpers
 // CATS = categories for the "add workout" chooser.
 // EXERCISE_LIBRARY = 158-entry strength/cardio exercise catalogue.
 // EX_GIF = name → animated GIF URL map.

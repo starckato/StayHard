@@ -1,4 +1,4 @@
-// Stay Hard · friends/api
+// QROK · friends/api
 //
 // Thin wrappers over Supabase RPCs defined in migrations/016_friendships.sql
 // and 018_friend_code.sql. Each function returns { ok, ... } or throws on

@@ -6272,7 +6272,7 @@ async function showForgotPassword(){
   const email=document.getElementById('li-email').value.trim();
   const input=email||prompt('가입한 이메일 주소를 입력하세요');
   if(!input)return;
-  const{error}=await sb.auth.resetPasswordForEmail(input,{redirectTo:'https://stay-hard-rouge.vercel.app'});
+  const{error}=await sb.auth.resetPasswordForEmail(input,{redirectTo:'https://qrok.app'});
   if(error){alert('오류: '+error.message);return;}
   alert('✅ 비밀번호 재설정 이메일을 보냈어요!\n메일함을 확인해주세요.');
 }
@@ -7798,8 +7798,8 @@ async function shareBonusGrant(){
   const title=esc(g.title||'');
   const msg=escMultiline(g.message||'');
   const pts=+g.points||0;
-  const shareUrl='stay-hard-rouge.vercel.app/?celebrate='+encodeURIComponent(g.event_key||'');
-  const displayDomain='stay-hard-rouge.vercel.app';
+  const shareUrl='qrok.app/?celebrate='+encodeURIComponent(g.event_key||'');
+  const displayDomain='qrok.app';
   const card=document.createElement('div');
   card.style.cssText='position:fixed;left:-9999px;top:0;width:430px;background:#0a0a0c;padding:30px 28px 24px;border-radius:0;color:#fff;font-family:"DM Sans",sans-serif;box-sizing:border-box;';
   // NOTE: html2canvas cannot render `background-clip:text + color:transparent` gradients —
@@ -7830,7 +7830,7 @@ async function shareBonusGrant(){
     card.remove();
     const blob=await new Promise(res=>canvas.toBlob(res,'image/png'));
     if(!blob){showToast('이미지 생성 실패');return;}
-    const file=new File([blob],`stayhard_${g.event_key||'bonus'}.png`,{type:'image/png'});
+    const file=new File([blob],`qrok_${g.event_key||'bonus'}.png`,{type:'image/png'});
     // iOS Safari: body overflow must be released for share sheet to animate
     const prevOverflow=document.body.style.overflow;
     document.body.style.overflow='';
@@ -8115,8 +8115,8 @@ async function shareInvite(){
   if(typeof html2canvas==='undefined'){showToast('공유 준비 중... 잠시 후 다시 시도');return;}
   try{track('invite_share_start',{});}catch(e){}
   const refId=CU.id;
-  const shareUrl='https://stay-hard-rouge.vercel.app/?invite='+encodeURIComponent(refId);
-  const displayUrl='stay-hard-rouge.vercel.app';
+  const shareUrl='https://qrok.app/?invite='+encodeURIComponent(refId);
+  const displayUrl='qrok.app';
   const userName=(CP&&(CP.display_name||CP.username))||'친구';
   const tier=typeof getTier==='function'?getTier(+(CP?.total_score)||0):{icon:'',name:'큐록'};
   const score=+(CP?.total_score)||0;
@@ -8152,7 +8152,7 @@ async function shareInvite(){
     card.remove();
     const blob=await new Promise(res=>canvas.toBlob(res,'image/png'));
     if(!blob){showToast('이미지 생성 실패');return;}
-    const file=new File([blob],'stayhard_invite.png',{type:'image/png'});
+    const file=new File([blob],'qrok_invite.png',{type:'image/png'});
     const shareText=`${userName} 님이 큐록 초대장을 보냈어요 → ${shareUrl}`;
     const prevOverflow=document.body.style.overflow;
     document.body.style.overflow='';
@@ -8802,9 +8802,9 @@ async function shareSummary(){
     const canvas=await html2canvas(area,{backgroundColor:'#18181c',scale:2,useCORS:true,logging:false});
     canvas.toBlob(async blob=>{
       if(!blob){showToast('캡쳐 실패 😢');return;}
-      const file=new File([blob],'stayhard-'+selectedKey+'.png',{type:'image/png'});
+      const file=new File([blob],'qrok-'+selectedKey+'.png',{type:'image/png'});
       if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){
-        try{await navigator.share({files:[file],title:'StayHard — 오늘의 요약'});return;}catch(e){}
+        try{await navigator.share({files:[file],title:'QROK — 오늘의 요약'});return;}catch(e){}
       }
       const url=URL.createObjectURL(blob);
       const a=document.createElement('a');
@@ -10908,7 +10908,7 @@ function _createShareOverlay(){
       el.querySelector('#so-share').onclick=async()=>{
         if(navigator.share && lastBlob){
           try{
-            const f=new File([lastBlob],'stayhard_workout.png',{type:'image/png'});
+            const f=new File([lastBlob],'qrok_workout.png',{type:'image/png'});
             await navigator.share({files:[f],title:'큐록 운동 기록'});
             console.log('[share] overlay native share ok');
             close();
@@ -10927,7 +10927,7 @@ function _createShareOverlay(){
 }
 
 function downloadImage(canvas,blob){
-  const fileName='stayhard_workout_'+TODAY+'.png';
+  const fileName='qrok_workout_'+TODAY+'.png';
   try{
     const a=document.createElement('a');
     a.download=fileName;
@@ -12754,7 +12754,7 @@ async function shareChallengResult(){
     const canvas=await html2canvas(area,{backgroundColor:'#18181c',scale:2,useCORS:true,logging:false});
     canvas.toBlob(async blob=>{
       if(!blob){showToast('캡쳐 실패 😢');return;}
-      const file=new File([blob],'stayhard-challenge-result.png',{type:'image/png'});
+      const file=new File([blob],'qrok-challenge-result.png',{type:'image/png'});
       if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){
         try{await navigator.share({files:[file],title:'QROK — 챌린지 결과'});return;}catch(e){}
       }
@@ -12879,7 +12879,7 @@ async function shareMuscleMap(){
     <div style="margin-top:16px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:space-between;">
       <div>
         <div style="font-size:14px;font-weight:800;color:#ff4d4d;letter-spacing:0.2px;">${punchline}</div>
-        <div style="font-size:10px;color:#6b6b78;margin-top:2px;">stayhard.app · ${tease}</div>
+        <div style="font-size:10px;color:#6b6b78;margin-top:2px;">qrok.app · ${tease}</div>
       </div>
       <div style="padding:9px 13px;background:linear-gradient(135deg,#ff4d4d,#ff6b35);border-radius:10px;font-size:11px;font-weight:900;color:#fff;letter-spacing:0.5px;box-shadow:0 4px 12px rgba(255,77,77,0.3);">💪 QROK</div>
     </div>
@@ -12890,8 +12890,8 @@ async function shareMuscleMap(){
     canvas.toBlob(async blob=>{
       try{document.body.removeChild(comp);}catch(e){}
       if(!blob){showToast('캡쳐 실패 😢');return;}
-      const file=new File([blob],'stayhard-muscle-map.png',{type:'image/png'});
-      const shareText=`${punchline}\n${tease.replace(/\s*→\s*$/,'')} stayhard.app`;
+      const file=new File([blob],'qrok-muscle-map.png',{type:'image/png'});
+      const shareText=`${punchline}\n${tease.replace(/\s*→\s*$/,'')} qrok.app`;
       if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){
         const _savedOverflow=document.body.style.overflow;
         document.body.style.overflow='';

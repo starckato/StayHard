@@ -1,4 +1,4 @@
-// Stay Hard · stats feature
+// QROK · stats feature
 // Migration phase: 3.1 — extracted verbatim from index.html 2nd <script> block.
 //
 // Uses ESM imports for bundle-local things (sb, dkey, SCORE_EVENTS, etc.)
