@@ -1484,19 +1484,6 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
       </div>
     </div>
 
-    <!-- 누적 큐브 카드 — Status Band 대체 (사용자 결정 2026-04-25) -->
-    <div id="cube-stack-card" style="margin:8px 16px 12px;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px 16px;">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-        <div style="font-size:13px;font-weight:700;color:var(--text);letter-spacing:-0.005em;">누적 큐브</div>
-        <div style="display:flex;gap:4px;">
-          <button id="cs-week" type="button" onclick="setCubeStackPeriod('week')" style="padding:4px 10px;font-size:11px;font-weight:600;border-radius:12px;border:0.5px solid var(--border2);background:transparent;color:var(--text3);cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">1주</button>
-          <button id="cs-month" type="button" onclick="setCubeStackPeriod('month')" style="padding:4px 10px;font-size:11px;font-weight:600;border-radius:12px;border:0.5px solid var(--border2);background:transparent;color:var(--text3);cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">1개월</button>
-          <button id="cs-all" type="button" onclick="setCubeStackPeriod('all')" style="padding:4px 10px;font-size:11px;font-weight:600;border-radius:12px;border:0.5px solid var(--accent-bd);background:var(--accent-bg);color:var(--accent);cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">전체</button>
-        </div>
-      </div>
-      <div id="cube-stack-rows"></div>
-    </div>
-
     <!-- STATUS BAND — unified hero: score/tier/streak/today Δ/quote/progress/summary -->
     <div class="sb">
       <div class="sb-head">
@@ -8981,7 +8968,7 @@ function scrollToSection(s){
   const el=document.getElementById(map[s]);
   if(el)el.scrollIntoView({behavior:'smooth',block:'center'});
 }
-function renderRoutine(){try{recomputeCubesHook(null,{silent:true});}catch(e){}renderCharCard();renderSummaryCard();renderWeight();renderMeals();renderCheatBadge();renderWater();renderWorkouts();renderMandatory();renderTargets();updateHeaderStatus();revealStatusBand();try{renderFirstWeekCard();}catch(e){console.warn('[fw-card]',e);}try{renderInviteCard();}catch(e){console.warn('[invite-card]',e);}try{renderDay3ChallengeNudge();}catch(e){console.warn('[d3-nudge]',e);}try{renderWeeklyFeatureRibbon();}catch(e){console.warn('[wf-ribbon]',e);}try{if(typeof window.buildHeatmapGrid==='function')window.buildHeatmapGrid();}catch(e){}try{renderCardCubes();}catch(e){console.warn('[card-cubes]',e);}try{renderCubeStack();}catch(e){console.warn('[cube-stack]',e);}try{arrangePromos();}catch(e){console.warn('[promo-arrange]',e);}}
+function renderRoutine(){try{recomputeCubesHook(null,{silent:true});}catch(e){}renderCharCard();renderSummaryCard();renderWeight();renderMeals();renderCheatBadge();renderWater();renderWorkouts();renderMandatory();renderTargets();updateHeaderStatus();revealStatusBand();try{renderFirstWeekCard();}catch(e){console.warn('[fw-card]',e);}try{renderInviteCard();}catch(e){console.warn('[invite-card]',e);}try{renderDay3ChallengeNudge();}catch(e){console.warn('[d3-nudge]',e);}try{renderWeeklyFeatureRibbon();}catch(e){console.warn('[wf-ribbon]',e);}try{if(typeof window.buildHeatmapGrid==='function')window.buildHeatmapGrid();}catch(e){}try{renderCardCubes();}catch(e){console.warn('[card-cubes]',e);}try{arrangePromos();}catch(e){console.warn('[promo-arrange]',e);}}
 
 // ── Priority gate for promo/notification cards ─────────────────────
 // Each existing render function (renderFirstWeekCard, renderInviteCard,
