@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>A · 바닥 더미</title>
+<link rel="stylesheet" href="_shared.css">
+<style>
+.pile-area{position:absolute;bottom:30px;right:14%;display:flex;flex-direction:column-reverse;align-items:center;gap:1px;}
+.pile-row{display:flex;gap:1px;align-items:flex-end;}
+.pile-row .cube{width:14px;height:14px;}
+.pile-label{position:absolute;bottom:8px;right:14%;font-family:'DM Mono',monospace;font-size:10px;color:#ffd54a;font-weight:800;background:rgba(0,0,0,0.65);padding:3px 8px;border-radius:6px;border:1px solid rgba(255,213,74,0.4);}
+.character{bottom:60px;left:32%;}
+</style></head>
+<body>
+<div class="head">
+  <a class="back" href="index.html">← 목록</a>
+  <div class="title"><div class="opt">OPTION A</div><div class="t">바닥 더미 (Floor Pile)</div></div>
+</div>
+
+<div class="phone">
+  <div class="phone-content">
+    <div class="phone-head"><span class="phone-tier">★ 각성자</span><span class="phone-close">✕</span></div>
+    <div class="room">
+      <div class="room-bg"></div>
+      <div class="character"></div>
+      <div class="pile-area" id="pile"></div>
+      <div class="pile-label" id="label">🟡0 · ⚪0 · 🔴0</div>
+    </div>
+  </div>
+</div>
+
+<div class="controls">
+  <button class="gold" onclick="addCube('gold', this)">+ Gold</button>
+  <button class="silver" onclick="addCube('silver', this)">+ Silver</button>
+  <button class="red" onclick="addCube('red', this)">+ Red</button>
+  <button class="reset" onclick="resetAll()">초기화</button>
+</div>
+
+<div class="note">
+  큐브가 캐릭터로 빨려들어간 후 → 바닥 코너에 더미로 쌓임. 위쪽은 좁아지는 피라미드 모양. 100+ 누적 시 가장 오래된 것은 바닥에 깔리고 새 큐브는 위에 올라감.
+</div>
+
+<script src="_shared.js"></script>
+<script>
+let counts = {gold:0, silver:0, red:0};
+function addCube(color, btn){
+  flyCubeToCharacter(btn, color, (c)=>{
+    counts[c]++;
+    rebuildPile();
+    const lbl=document.getElementById('label');
+    lbl.textContent=`🟡${counts.gold} · ⚪${counts.silver} · 🔴${counts.red}`;
+    bumpCounter(lbl);
+  });
+}
+function rebuildPile(){
+  const pile=document.getElementById('pile');
+  pile.innerHTML='';
+  // Build pyramid stack: rows of 1, 2, 3... up to sqrt-ish
+  const total=counts.gold+counts.silver+counts.red;
+  const allCubes=[
+    ...Array(counts.gold).fill('gold'),
+    ...Array(counts.silver).fill('silver'),
+    ...Array(counts.red).fill('red'),
+  ];
+  // Distribute: bottom row widest, narrowing up
+  const rows=[];
+  let i=0; let rowSize=Math.min(7,Math.ceil(Math.sqrt(total*2)));
+  while(i<total){
+    const row=allCubes.slice(i,i+rowSize);
+    rows.push(row);
+    i+=rowSize;
+    rowSize=Math.max(1,rowSize-1);
+  }
+  // Render top → bottom (column-reverse means last row at bottom)
+  for(let r=rows.length-1;r>=0;r--){
+    const div=document.createElement('div');
+    div.className='pile-row';
+    rows[r].forEach((c,idx)=>{
+      const cube=document.createElement('div');
+      cube.className='cube '+c;
+      // Mark the most recent cube as settle (last added overall)
+      if(r===rows.length-1 && idx===rows[r].length-1 && total > 0){
+        cube.classList.add('settle');
+      }
+      div.appendChild(cube);
+    });
+    pile.appendChild(div);
+  }
+}
+function resetAll(){counts={gold:0,silver:0,red:0};rebuildPile();const lbl=document.getElementById('label');lbl.textContent='🟡0 · ⚪0 · 🔴0';}
+// Initial demo state
+counts={gold:5,silver:3,red:1};rebuildPile();document.getElementById('label').textContent='🟡5 · ⚪3 · 🔴1';
+</script>
+</body></html>

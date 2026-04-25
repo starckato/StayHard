@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>C · 흩어짐</title>
+<link rel="stylesheet" href="_shared.css">
+<style>
+.scatter{position:absolute;left:0;right:0;bottom:0;top:42%;pointer-events:none;}
+.scatter .cube{position:absolute;}
+.scatter-label{position:absolute;top:18%;left:50%;transform:translateX(-50%);font-family:'DM Mono',monospace;font-size:11px;color:#a8a8b4;background:rgba(0,0,0,0.55);padding:4px 10px;border-radius:8px;border:1px solid rgba(255,255,255,0.08);}
+.character{bottom:46px;left:50%;transform:translateX(-50%);z-index:3;}
+</style></head>
+<body>
+<div class="head">
+  <a class="back" href="index.html">← 목록</a>
+  <div class="title"><div class="opt">OPTION C</div><div class="t">흩어짐 (Scattered Floor)</div></div>
+</div>
+
+<div class="phone">
+  <div class="phone-content">
+    <div class="phone-head"><span class="phone-tier">★ 각성자</span><span class="phone-close">✕</span></div>
+    <div class="room">
+      <div class="room-bg"></div>
+      <div class="scatter-label" id="label">🟡0 · ⚪0 · 🔴0</div>
+      <div class="scatter" id="scatter"></div>
+      <div class="character"></div>
+    </div>
+  </div>
+</div>
+
+<div class="controls">
+  <button class="gold" onclick="addCube('gold', this)">+ Gold</button>
+  <button class="silver" onclick="addCube('silver', this)">+ Silver</button>
+  <button class="red" onclick="addCube('red', this)">+ Red</button>
+  <button class="reset" onclick="resetAll()">초기화</button>
+</div>
+
+<div class="note">
+  큐브가 캐릭터로 빨려들어간 후 → 바닥 랜덤 위치에 떨궈짐 (캐릭터 좌우로 spread). 약간의 회전 각도 + 50+ 시 클러스터링. 가장 organic — 정렬 없음.
+</div>
+
+<script src="_shared.js"></script>
+<script>
+let cubes=[]; // [{color, x, y, rot}]
+function rand(min,max){return min+Math.random()*(max-min);}
+function spawnRandomPosition(){
+  // Spread around character center (50%) avoiding center column
+  const sideBias=Math.random()>0.5?1:-1;
+  const x=50+sideBias*rand(8,42); // % from left
+  const y=rand(15,90); // % from scatter top
+  const rot=rand(-25,25);
+  return {x,y,rot};
+}
+function render(){
+  const s=document.getElementById('scatter');
+  s.innerHTML='';
+  cubes.forEach((c,i)=>{
+    const el=document.createElement('div');
+    el.className='cube '+c.color;
+    el.style.cssText=`left:${c.x}%;top:${c.y}%;transform:translate(-50%,-50%) rotate(${c.rot}deg);`;
+    if(i===cubes.length-1)el.classList.add('settle');
+    s.appendChild(el);
+  });
+  const counts={gold:0,silver:0,red:0};
+  cubes.forEach(c=>counts[c.color]++);
+  const lbl=document.getElementById('label');
+  lbl.textContent=`🟡${counts.gold} · ⚪${counts.silver} · 🔴${counts.red}`;
+  bumpCounter(lbl);
+}
+function addCube(color, btn){
+  flyCubeToCharacter(btn, color, (c)=>{
+    cubes.push({color:c, ...spawnRandomPosition()});
+    render();
+  });
+}
+function resetAll(){cubes=[];render();}
+// Initial demo
+['gold','gold','silver','gold','silver','gold','gold','silver','red','gold','silver','gold'].forEach(c=>cubes.push({color:c,...spawnRandomPosition()}));
+render();
+</script>
+</body></html>

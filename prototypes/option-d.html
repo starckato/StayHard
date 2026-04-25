@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>D · 인벤토리 패널</title>
+<link rel="stylesheet" href="_shared.css">
+<style>
+.character{bottom:130px;left:50%;transform:translateX(-50%);}
+.panel{position:absolute;left:14px;right:14px;bottom:18px;background:rgba(20,20,28,0.92);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:14px 16px;}
+.panel-row{display:flex;align-items:center;gap:10px;margin:6px 0;}
+.panel-tower{display:flex;flex-direction:column-reverse;gap:1px;width:18px;}
+.panel-token{width:18px;height:6px;border-radius:1.5px;}
+.panel-num{font-family:'Archivo Black',sans-serif;font-size:22px;color:#f5f1ea;letter-spacing:-0.5px;min-width:36px;}
+.panel-label{font-size:10px;color:#7a7a86;letter-spacing:0.08em;font-weight:700;text-transform:uppercase;}
+.panel-progress{height:3px;background:rgba(255,255,255,0.08);border-radius:999px;margin:10px 0 4px;overflow:hidden;}
+.panel-progress-fill{height:100%;background:linear-gradient(90deg,#ff4d4d,#ff6b35);border-radius:999px;transition:width .6s cubic-bezier(.4,0,.2,1);}
+.panel-next{font-size:10px;color:#a8a8b4;}
+</style></head>
+<body>
+<div class="head">
+  <a class="back" href="index.html">← 목록</a>
+  <div class="title"><div class="opt">OPTION D</div><div class="t">인벤토리 패널 (Stat Panel)</div></div>
+</div>
+
+<div class="phone">
+  <div class="phone-content">
+    <div class="phone-head"><span class="phone-tier">★ 각성자</span><span class="phone-close">✕</span></div>
+    <div class="room">
+      <div class="room-bg"></div>
+      <div class="character"></div>
+      <div class="panel">
+        <div class="panel-row">
+          <div class="panel-tower"><div class="panel-token cube gold"></div><div class="panel-token cube gold"></div><div class="panel-token cube gold"></div></div>
+          <div class="panel-num" id="numGold">0</div>
+          <div class="panel-label">Gold</div>
+        </div>
+        <div class="panel-row">
+          <div class="panel-tower"><div class="panel-token cube silver"></div><div class="panel-token cube silver"></div></div>
+          <div class="panel-num" id="numSilver">0</div>
+          <div class="panel-label">Silver</div>
+        </div>
+        <div class="panel-progress"><div class="panel-progress-fill" id="progFill" style="width:0%;"></div></div>
+        <div class="panel-next" id="nextLabel">다음: 저항자 · 0%</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="controls">
+  <button class="gold" onclick="addCube('gold', this)">+ Gold</button>
+  <button class="silver" onclick="addCube('silver', this)">+ Silver</button>
+  <button class="red" onclick="addCube('red', this)">+ Red</button>
+  <button class="reset" onclick="resetAll()">초기화</button>
+</div>
+
+<div class="note">
+  큐브가 캐릭터로 빨려들어간 후 → 카운터 숫자 bump + progress bar 채워짐. 캐릭터/룸 visual 그대로. Status Band 와 일관된 표시. red 는 기록은 되지만 진척에 영향 X (점수만).
+</div>
+
+<script src="_shared.js"></script>
+<script>
+let counts={gold:0,silver:0,red:0};
+const TIER_NEXT_TARGET=120; // gold+silver 합산 이만큼 모이면 다음 티어 (각성자→저항자)
+function update(){
+  const g=document.getElementById('numGold');g.textContent=counts.gold;bumpCounter(g);
+  const s=document.getElementById('numSilver');s.textContent=counts.silver;bumpCounter(s);
+  const total=counts.gold+counts.silver;
+  const pct=Math.min(100,Math.round(total/TIER_NEXT_TARGET*100));
+  document.getElementById('progFill').style.width=pct+'%';
+  document.getElementById('nextLabel').textContent=`다음: 저항자 · ${pct}%`;
+}
+function addCube(color, btn){
+  flyCubeToCharacter(btn, color, (c)=>{
+    counts[c]++;
+    update();
+  });
+}
+function resetAll(){counts={gold:0,silver:0,red:0};update();}
+// Initial demo
+counts={gold:32,silver:24,red:1};update();
+</script>
+</body></html>

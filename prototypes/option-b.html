@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>B · 진열장</title>
+<link rel="stylesheet" href="_shared.css">
+<style>
+.case{position:absolute;top:18%;right:6%;width:46%;background:rgba(20,20,28,0.85);border:2px solid rgba(180,140,80,0.4);border-radius:6px;padding:6px;display:grid;grid-template-columns:repeat(10,1fr);gap:1.5px;box-shadow:inset 0 0 12px rgba(255,213,74,0.12),0 4px 14px rgba(0,0,0,0.6);}
+.slot{aspect-ratio:1;border-radius:1.5px;width:100%;}
+.slot.empty{background:rgba(255,255,255,0.04);border:1px dashed rgba(255,255,255,0.08);}
+.case-label{position:absolute;top:14%;right:6%;font-family:'DM Mono',monospace;font-size:10px;color:#a8a8b4;letter-spacing:0.08em;font-weight:800;}
+.character{bottom:50px;left:22%;}
+</style></head>
+<body>
+<div class="head">
+  <a class="back" href="index.html">← 목록</a>
+  <div class="title"><div class="opt">OPTION B</div><div class="t">진열장 (Display Case)</div></div>
+</div>
+
+<div class="phone">
+  <div class="phone-content">
+    <div class="phone-head"><span class="phone-tier">★ 각성자</span><span class="phone-close">✕</span></div>
+    <div class="room">
+      <div class="room-bg"></div>
+      <div class="case-label" id="caseLabel">SHELF · 0/100</div>
+      <div class="case" id="case"></div>
+      <div class="character"></div>
+    </div>
+  </div>
+</div>
+
+<div class="controls">
+  <button class="gold" onclick="addCube('gold', this)">+ Gold</button>
+  <button class="silver" onclick="addCube('silver', this)">+ Silver</button>
+  <button class="red" onclick="addCube('red', this)">+ Red</button>
+  <button class="reset" onclick="resetAll()">초기화</button>
+</div>
+
+<div class="note">
+  100칸 격자. 큐브가 캐릭터로 빨려들어간 후 다음 빈 칸으로 fly. 100칸 가득 = 1년 목표 시각화. 첫 진입 시 빈 칸 압박감 ↔ 채울수록 만족감 trade-off.
+</div>
+
+<script src="_shared.js"></script>
+<script>
+const SLOT_COUNT=100;
+let slots=Array(SLOT_COUNT).fill(null);
+function build(){
+  const c=document.getElementById('case');
+  c.innerHTML='';
+  for(let i=0;i<SLOT_COUNT;i++){
+    const d=document.createElement('div');
+    if(slots[i]){
+      d.className='slot cube '+slots[i];
+    } else {
+      d.className='slot empty';
+    }
+    c.appendChild(d);
+  }
+  const used=slots.filter(x=>x).length;
+  document.getElementById('caseLabel').textContent=`SHELF · ${used}/100`;
+}
+function addCube(color, btn){
+  flyCubeToCharacter(btn, color, (c)=>{
+    const idx=slots.findIndex(x=>!x);
+    if(idx===-1){alert('100칸 가득. reset 해.');return;}
+    slots[idx]=c;
+    build();
+    // Animate the just-filled slot
+    const el=document.getElementById('case').children[idx];
+    if(el)el.classList.add('settle');
+    bumpCounter(document.getElementById('caseLabel'));
+  });
+}
+function resetAll(){slots=Array(SLOT_COUNT).fill(null);build();}
+// Initial demo state
+const demo=['gold','gold','gold','silver','gold','silver','gold','gold','gold','silver','gold','gold','silver','gold','silver','silver','gold','gold','gold','silver','gold','silver','gold','silver','gold','silver','gold','silver','red','gold','gold','silver'];
+for(let i=0;i<demo.length;i++)slots[i]=demo[i];
+build();
+</script>
+</body></html>

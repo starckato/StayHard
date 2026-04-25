@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Prototypes · 캐릭터룸 큐브</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:#0a0a0c;color:#f5f1ea;font-family:'DM Sans','Apple SD Gothic Neo',sans-serif;padding:40px 20px;min-height:100vh;}
+.wrap{max-width:720px;margin:0 auto;}
+h1{font-family:'Archivo Black',sans-serif;font-size:24px;color:#ff4d4d;margin-bottom:6px;}
+.lead{font-size:13px;color:#a8a8b4;margin-bottom:28px;}
+.row{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;}
+a.card{background:#16161a;border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:20px;text-decoration:none;color:#f5f1ea;transition:border .2s,transform .2s;display:block;}
+a.card:hover{border-color:#ff4d4d;transform:translateY(-2px);}
+.opt{font-size:10px;color:#ff4d4d;font-weight:800;letter-spacing:0.14em;margin-bottom:6px;}
+.t{font-family:'Archivo Black',sans-serif;font-size:18px;margin-bottom:6px;}
+.d{font-size:12px;color:#a8a8b4;line-height:1.55;}
+.compare{margin-top:24px;display:inline-block;font-size:12px;color:#7a7a86;text-decoration:underline;}
+</style></head>
+<body>
+<div class="wrap">
+  <h1>캐릭터룸 ↔ 큐브 4 옵션</h1>
+  <div class="lead">각 옵션을 직접 눌러보고 느낌 비교. [+Gold] [+Silver] [+Red] 버튼 인터랙션 포함.</div>
+  <div class="row">
+    <a class="card" href="option-a.html"><div class="opt">A</div><div class="t">바닥 더미</div><div class="d">한 코너에 stack 으로 쌓임. "내가 쌓은 것".</div></a>
+    <a class="card" href="option-b.html"><div class="opt">B</div><div class="t">진열장</div><div class="d">격자 선반 100칸. 빈 칸이 다음 목표.</div></a>
+    <a class="card" href="option-c.html"><div class="opt">C</div><div class="t">흩어짐</div><div class="d">바닥에 organic 배치. "기록은 살아있다".</div></a>
+    <a class="card" href="option-d.html"><div class="opt">D</div><div class="t">인벤토리 패널</div><div class="d">룸 그대로 + 하단 카운터 패널.</div></a>
+  </div>
+  <a class="compare" href="character-room-cubes.html">↗ 4 옵션 한 페이지에서 정적 비교 보기</a>
+</div>
+</body></html>
