@@ -7954,14 +7954,12 @@ function renderWeeklyFeatureRibbon(){
   const card=document.getElementById('weekly-feature-card');
   if(!card)return;
   if(!CU||!CU.id){card.style.display='none';return;}
-  // Dismiss 는 ISO 주차 단위 (주 바뀌면 다시 노출)
-  const now=new Date();
-  const start=new Date(now.getFullYear(),0,1);
-  const weekNum=Math.floor(Math.floor((now-start)/86400000)/7);
-  const dismissKey='wf_dismissed_'+CU.id+'_'+weekNum;
-  try{if(sessionStorage.getItem(dismissKey)==='1'){card.style.display='none';return;}}catch(e){}
   const feat=_currentWeekFeature();
   if(!feat){card.style.display='none';return;}
+  // 사용자 결정 (2026-04-25): feature 자체별 dismiss — 다른 주별 기능 나올 때까지 영구 hide
+  const featKey=feat.fn||feat.title||'unknown';
+  const dismissKey='wf_feature_dismissed_'+CU.id+'_'+featKey;
+  try{if(localStorage.getItem(dismissKey)==='1'){card.style.display='none';return;}}catch(e){}
   const icoEl=card.querySelector('.wf-icon');
   const titleEl=card.querySelector('.wf-title');
   const bodyEl=card.querySelector('.wf-body');
@@ -7978,12 +7976,12 @@ function renderWeeklyFeatureRibbon(){
 }
 function dismissWeeklyFeature(){
   if(!CU||!CU.id)return;
-  const now=new Date();
-  const start=new Date(now.getFullYear(),0,1);
-  const weekNum=Math.floor(Math.floor((now-start)/86400000)/7);
-  try{sessionStorage.setItem('wf_dismissed_'+CU.id+'_'+weekNum,'1');}catch(e){}
+  // feature 자체별 dismiss — 영구 (LocalStorage). 새 feature 나오면 다시 노출.
+  const feat=(typeof _currentWeekFeature==='function')?_currentWeekFeature():null;
+  const featKey=(feat&&(feat.fn||feat.title))||'unknown';
+  try{localStorage.setItem('wf_feature_dismissed_'+CU.id+'_'+featKey,'1');}catch(e){}
   const c=document.getElementById('weekly-feature-card');if(c)c.style.display='none';
-  try{track('wf_dismissed',{});}catch(e){}
+  try{track('wf_dismissed',{feat:featKey});}catch(e){}
 }
 function gotoStatsTab(){try{track('wf_goto',{to:'stats'});}catch(e){}try{switchTab('stats',1);}catch(e){}}
 
@@ -8055,11 +8053,22 @@ function _showDay1NudgeModal(msg){
 }
 
 // ── Day-3 challenge nudge (P3.2) — 3일 연속 기록 시 챌린지 유도 ──
+// 챌린지 활성 멤버이면 영구 hide (이미 챌린지 진행 중인 사용자에게 권유 무의미).
+// 비-챌린지: 활성 일수 ≥ 3 + 1주 1회만 (LocalStorage week-key).
 function renderDay3ChallengeNudge(){
   const card=document.getElementById('day3-nudge-card');
   if(!card)return;
   if(!CU||!CU.id){card.style.display='none';return;}
-  try{if(sessionStorage.getItem('d3_dismissed_'+CU.id)==='1'){card.style.display='none';return;}}catch(e){}
+  // 챌린지 활성 멤버 검사 (activeComp 가 있고 status='active'/'waiting')
+  if(window.activeComp&&['active','waiting'].includes(window.activeComp.status)){
+    card.style.display='none';return;
+  }
+  // 1주 1회만 — ISO 주차 키
+  const now=new Date();
+  const start=new Date(now.getFullYear(),0,1);
+  const weekNum=Math.floor(Math.floor((now-start)/86400000)/7);
+  const dismissKey='d3_dismissed_'+CU.id+'_w'+weekNum;
+  try{if(localStorage.getItem(dismissKey)==='1'){card.style.display='none';return;}}catch(e){}
   // 의미있는 활동이 있던 날 카운트 (logCache 기준)
   const activeDays=Object.keys(logCache||{}).filter(k=>{
     const l=logCache[k];
@@ -8074,7 +8083,11 @@ function renderDay3ChallengeNudge(){
   card.style.display='block';
 }
 function dismissDay3Nudge(){
-  try{if(CU&&CU.id)sessionStorage.setItem('d3_dismissed_'+CU.id,'1');}catch(e){}
+  if(!CU||!CU.id)return;
+  const now=new Date();
+  const start=new Date(now.getFullYear(),0,1);
+  const weekNum=Math.floor(Math.floor((now-start)/86400000)/7);
+  try{localStorage.setItem('d3_dismissed_'+CU.id+'_w'+weekNum,'1');}catch(e){}
   const c=document.getElementById('day3-nudge-card');if(c)c.style.display='none';
   try{track('day3_nudge_dismissed',{});}catch(e){}
 }
@@ -8270,12 +8283,12 @@ function _checkPerfectDayMetric(){
   }catch(_){}
 }
 
-// ── Volume Delta — Phase 3A ──────────────────────────────────
+// ── Volume Delta — Phase 3A (FF gate 제거: 운동 카드 안에 항상, 데이터 없으면 hide) ────
 function renderVolumeDelta(){
   try{
     const card=document.getElementById('vd-card');if(!card)return;
-    const FF=window.FF;const vd=window.sh&&window.sh.volumeDelta;
-    if(!FF||!FF.get('volume_delta_card',false)||!vd){card.hidden=true;return;}
+    const vd=window.sh&&window.sh.volumeDelta;
+    if(!vd){card.hidden=true;return;}
     const delta=vd.computeDelta(logCache||{});
     // total 이 0 이면 의미 없음 — 숨김
     if(!delta||delta.total.curr===0&&delta.total.prev===0){card.hidden=true;return;}
