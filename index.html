@@ -15095,6 +15095,8 @@ async function cvOpenPushupChallenge(){
   _cvNoRecord=true;
   _cvCounterMode='auto';
   _cvLabelOverride={exercise_name:'푸쉬업',body_part:'가슴',equip:'맨몸'};
+  // 5초 calibration — 자세 잡을 시간 + 자리 이동 시 오인식 차단
+  window._cvReadyAt = Date.now() + 5000;
   await cvOpen();
 }
 
@@ -15603,6 +15605,14 @@ function cvSetState(state){
 }
 function cvUpdateRepState(angle,cfg){
   const now=Date.now();
+  // PR 2: 푸쉬업 챌린지 — 시작 후 N초 calibration. 자세 잡을 시간 + 자리 이동 시 오인식 차단.
+  if(window._cvReadyAt && now < window._cvReadyAt){
+    if(_cvElStatus){
+      const left=Math.ceil((window._cvReadyAt-now)/1000);
+      _cvElStatus.textContent='준비… '+left+'s (자세 잡고 기다리세요)';
+    }
+    return;
+  }
   if(_cvState==='IDLE'){
     if(angle<=cfg.downAngle+CV_HYSTERESIS){
       cvSetState('DOWN');_cvLastTransition=now;
@@ -15731,6 +15741,12 @@ function _cvDoStop(){
     showToast('📷 '+(cfg&&cfg.label||'')+' '+_cvSets.length+'세트 '+totalReps+'회 기록 완료!');
     if(!_cvLockedExercise)renderSession(); // skip in challenge mode (no workout context)
   }
+  // PR 2: 챌린지 룸 활성 + 푸쉬업 챌린지면 자동 갱신 (workout_uploads 합산 반영)
+  try{
+    if(window.activeComp && document.getElementById('challenge-room')?.style.display==='flex'){
+      setTimeout(()=>{try{window.renderChallengeRoom?.();}catch(_){}},250);
+    }
+  }catch(_){}
   // Restore HUD elements that manual mode may have hidden
   ['cv-hud-center','cv-ex-select'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='';});
   const finishBtn=document.querySelector('.cv-controls .cv-btn-secondary');if(finishBtn)finishBtn.style.display='';
