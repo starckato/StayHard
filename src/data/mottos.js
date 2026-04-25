@@ -20,6 +20,3 @@ export const DAILY_MOTTOS = [
   { ko: '나는 내가 쌓은 기록이다.' },
   { ko: '편한 쪽은 함정이다.' },
 ];
-
-// Legacy export alias — stale bundle 보호. Phase 2 에서 제거 예정.
-export const GOGGINS_MOTTOS = DAILY_MOTTOS;
