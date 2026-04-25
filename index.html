@@ -20,7 +20,7 @@
      so window globals (dkey, normKey, ...) are set before inline code runs.
      Query version bumps cache when bundle content changes. Bump manually or
      via build script when shipping a new bundle. See MIGRATION_PLAN.md. -->
-<script src="/dist/app.js?v=20260425x"></script>
+<script src="/dist/app.js?v=20260425y"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Archivo+Black&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -46,6 +46,11 @@
   --share-accent:#B91C1C;
   --share-gold:#C9A34E;
 }
+
+/* CRITICAL FIX (2026-04-25): HTML [hidden] 속성이 display:flex/block 클래스에
+   덮이는 버그 수정. Phase 2-4 에서 추가된 FF-gated UI (exempt-row, fc-card, vd-card,
+   exempt-modal, accent-picker-card 등) 가 FF off 인데도 강제 표시되던 문제. */
+[hidden]{display:none !important;}
 
 /* First Cube Activation Card — Phase 1C */
 .fc-card{
@@ -1436,10 +1441,10 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
     <div id="first-cube-card" class="fc-card" hidden></div>
 
     <!-- Exempt 모달 -->
-    <div id="exempt-modal" class="exempt-modal-overlay" hidden>
+    <div id="exempt-modal" class="exempt-modal-overlay" hidden onclick="if(event.target===this)closeExemptModal()">
       <div class="exempt-modal">
-        <div class="exempt-modal-title">오늘 판정을 비운다.</div>
-        <div class="exempt-modal-body">streak 은 유지된다. 크림슨 없이 gray 로 남는다.</div>
+        <div class="exempt-modal-title">오늘 하루 면제</div>
+        <div class="exempt-modal-body">회식·여행·아픔 등으로 기록이 어려운 날, 하루 판정을 건너뛸 수 있어요. 스트릭은 유지돼요. 사유를 골라 주세요.</div>
         <div class="exempt-modal-reasons" id="exempt-modal-reasons"></div>
         <div class="exempt-modal-footer">
           <button class="exempt-btn-ghost" onclick="closeExemptModal()" type="button">취소</button>
