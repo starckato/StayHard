@@ -7740,6 +7740,30 @@ function _pkBindAll(root){
 }
 document.addEventListener('DOMContentLoaded',()=>{try{_pkBindAll(document);}catch(e){console.warn('[pk-chip]',e);}});
 
+// PR 2 푸쉬업 시작 — event delegation (DOM 재렌더 무관, iOS Safari touch 안정)
+// click + touchend 둘 다 — touchstart→click 변환 race 회피
+(function(){
+  let _pushupTriggering=false;
+  function _trigger(e){
+    const target=e.target.closest&&e.target.closest('[data-action="pushup-start"]');
+    if(!target)return;
+    if(_pushupTriggering)return;
+    _pushupTriggering=true;
+    setTimeout(()=>{_pushupTriggering=false;},600);
+    e.preventDefault();
+    try{showToast&&showToast('카운터 여는 중...');}catch(_){}
+    try{
+      if(typeof onPushupStart==='function')onPushupStart();
+      else{showToast&&showToast('함수 로드 실패 — 새로고침');}
+    }catch(err){
+      console.error('[pushup-delegation]',err);
+      try{showToast&&showToast('오류: '+(err?.message||'?'));}catch(_){}
+    }
+  }
+  document.addEventListener('click',_trigger,true);
+  document.addEventListener('touchend',_trigger,{capture:true,passive:false});
+})();
+
 // ═══════════════════════════════════════════════
 // SECURITY HELPERS
 // ═══════════════════════════════════════════════
@@ -13581,7 +13605,7 @@ async function renderChallengeRoom(){
         <div style="height:8px;background:var(--surface3);border-radius:4px;overflow:hidden;margin-bottom:14px;">
           <div style="height:100%;width:${myPct}%;background:${myDone?'var(--green)':'var(--accent)'};border-radius:4px;transition:width 0.3s;"></div>
         </div>
-        <button type="button" onclick="onPushupStart()" style="width:100%;padding:14px;background:var(--accent);border:none;border-radius:12px;color:#fff;font-size:15px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;-webkit-appearance:none;appearance:none;-webkit-tap-highlight-color:transparent;">푸쉬업 시작</button>
+        <button type="button" data-action="pushup-start" onclick="onPushupStart();return false;" style="width:100%;padding:14px;background:var(--accent);border:none;border-radius:12px;color:#fff;font-size:15px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;-webkit-appearance:none;appearance:none;-webkit-tap-highlight-color:transparent;pointer-events:auto;">푸쉬업 시작</button>
       </div>
       <div style="padding:0 16px;">
         ${memberCards}
