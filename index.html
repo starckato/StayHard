@@ -3379,6 +3379,11 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
           <span id="summ-tg" style="font-size:13px;font-weight:600;"></span>
         </div>
       </div>
+      <!-- 오늘의 행위 — 기록탭에서 발생한 행위 + 횟수 (점수 표기 X) -->
+      <div id="summ-pts-breakdown-wrap" style="margin-top:14px;display:none;">
+        <div style="font-size:10px;color:var(--text3);letter-spacing:0.08em;margin-bottom:8px;font-weight:600;">오늘의 행위</div>
+        <div id="summ-pts-breakdown" style="display:flex;flex-direction:column;gap:5px;"></div>
+      </div>
     </div>
   </div>
 </div>
@@ -8740,6 +8745,51 @@ function renderSummaryModal(){
   const tgEl=document.getElementById('summ-tg');
   if(tgts.length===0){tgEl.textContent='—';tgEl.style.color='var(--text3)';}
   else{tgEl.textContent=tgtDone+'/'+tgts.length;tgEl.style.color=tgtDone===tgts.length?'var(--green)':'var(--text3)';}
+
+  // 오늘의 행위 — 기록탭 prefix entry 만 표시 (다른 탭은 노출 X). 점수 숫자 표기 X.
+  // 라벨: SCORE_EVENTS[type].label single source. 미정의 시 SUMMARY_LABEL_FALLBACK.
+  const RECORD_TAB_PREFIXES=['diet_','workout_','routine_','target_'];
+  const SUMMARY_LABEL_FALLBACK={
+    diet_clean:'클린 식단', diet_clean_register:'클린 식단', diet_clean_cancel:'클린 식단 취소', diet_clean_delete:'클린 식단 삭제',
+    diet_log:'식단 등록', diet_log_only:'식단 등록', diet_log_cancel:'식단 등록 취소', diet_log_only_cancel:'식단 등록 취소',
+    diet_junk:'금지 식단', diet_junk_cancel:'금지 식단 만회',
+    diet_alcohol_register:'음주 기록', diet_alcohol_cancel:'음주 기록 취소',
+    workout_done:'근력 운동 완료', workout_cardio_done:'유산소 완료',
+    workout_done_cancel:'근력 운동 취소', workout_cardio_done_cancel:'유산소 취소',
+    workout_delete:'운동 취소', workout_deleted:'운동 삭제',
+    routine_done:'필수 루틴 완료', routine_done_cancel:'루틴 완료 취소',
+    routine_fail:'필수 루틴 실패', routine_fail_cancel:'루틴 실패 취소',
+    routine_skip:'필수 루틴 스킵', routine_skip_cancel:'루틴 스킵 취소',
+    target_done:'할일 완료', target_done_cancel:'할일 완료 취소',
+    target_fail:'할일 실패', target_fail_cancel:'할일 실패 취소',
+  };
+  const ptsLog=(l._ptsLog||[]).filter(e=>RECORD_TAB_PREFIXES.some(p=>(e.type||'').startsWith(p)));
+  const wrap=document.getElementById('summ-pts-breakdown-wrap');
+  const list=document.getElementById('summ-pts-breakdown');
+  if(wrap&&list){
+    if(!ptsLog.length){wrap.style.display='none';}
+    else{
+      wrap.style.display='block';
+      const byType={};
+      ptsLog.forEach(e=>{
+        const t=e.type||'기타';
+        if(!byType[t])byType[t]={count:0,sign:0};
+        byType[t].count++;
+        byType[t].sign=(byType[t].sign||0)+(e.pts||0);
+      });
+      list.innerHTML=Object.entries(byType)
+        .sort(([,a],[,b])=>b.count-a.count)
+        .map(([type,info])=>{
+          const lbl=(window.SCORE_EVENTS&&window.SCORE_EVENTS[type]?.label)||SUMMARY_LABEL_FALLBACK[type]||type;
+          const col=info.sign<0?'var(--red)':'var(--text2)';
+          const countStr=`<span style="color:var(--text3);font-size:11px;font-family:'DM Mono',monospace;">×${info.count}</span>`;
+          return `<div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;padding:4px 0;">
+            <span style="color:${col};">${lbl}</span>
+            ${countStr}
+          </div>`;
+        }).join('');
+    }
+  }
 }
 async function shareSummary(){
   const area=document.getElementById('summary-capture-area');
