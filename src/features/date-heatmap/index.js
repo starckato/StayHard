@@ -25,8 +25,10 @@ let dhMaxOffset = 0;
 let dhAllDates = [];
 let dhDidInitialScroll = false;
 
-const DH_MAX_PAST_WEEKS = 52;
-const DH_MAX_FUTURE_WEEKS = 4;
+// 사용자 결정 (2026-04-25): 한 달치까지만 — 무한 로딩 방지.
+// 좌측 (과거) 4주 = 약 28일. 우측 (미래) 2주 — 계획용.
+const DH_MAX_PAST_WEEKS = 4;
+const DH_MAX_FUTURE_WEEKS = 2;
 
 // Day-tile layout (v6 · no-grid) — each day is its own rounded tile, scrolled horizontally.
 const DH_TILE_W = 56;
