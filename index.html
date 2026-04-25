@@ -20,7 +20,7 @@
      so window globals (dkey, normKey, ...) are set before inline code runs.
      Query version bumps cache when bundle content changes. Bump manually or
      via build script when shipping a new bundle. See MIGRATION_PLAN.md. -->
-<script src="/dist/app.js?v=20260425ac"></script>
+<script src="/dist/app.js?v=20260425ad"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Archivo+Black&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -6356,14 +6356,10 @@ function openProfileModal(){
 }
 
 function renderAccentPicker(){
+  // 2026-04-25 유저 결정: 기존 crimson 유지. picker UI 비활성.
+  // 함수/CSS 토큰은 보존 — 향후 실험 재개 시 한 줄 enable.
   const card=document.getElementById('accent-picker-card');if(!card)return;
-  const FF=window.FF;
-  if(!FF||!FF.get('accent_picker',false)){card.hidden=true;return;}
-  card.hidden=false;
-  const current=(CP&&CP.accent_preference)||'crimson';
-  document.querySelectorAll('#accent-picker-list .accent-chip').forEach(btn=>{
-    btn.classList.toggle('selected',btn.getAttribute('data-accent')===current);
-  });
+  card.hidden=true;
 }
 async function selectAccent(name){
   if(!['crimson','charcoal','deep_green'].includes(name))return;
@@ -7076,7 +7072,8 @@ function renderCardCubes(){
 function recomputeCubesHook(key,opts){
   try{
     // First-cube 카드 + Exempt row + D3 opt-in + Volume Delta + Perfect day 메트릭.
-    try{renderFirstCubeCard();renderExemptRow();checkD3OptInRequest();renderVolumeDelta();_checkPerfectDayMetric();}catch(_){}
+    // D3 opt-in 자동 모달 트리거 제거 (2026-04-25). 알림 설정은 프로필 → 알림 메뉴에서만.
+    try{renderFirstCubeCard();renderExemptRow();renderVolumeDelta();_checkPerfectDayMetric();}catch(_){}
     if(!window.Cubes||typeof window.Cubes.recomputeCubesInLog!=='function')return;
     const k=key||selectedKey;
     if(!k)return;
