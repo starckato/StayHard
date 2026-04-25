@@ -470,6 +470,25 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 .sb-score-row{display:flex;align-items:flex-end;gap:6px;margin-bottom:8px;cursor:pointer;touch-action:manipulation;}
 .sb-score{font-family:'Archivo Black','DM Mono',monospace;font-size:52px;line-height:.9;color:var(--text);letter-spacing:-2.5px;font-weight:normal;}
 .sb-score-unit{font-size:15px;color:var(--text3);font-weight:600;padding-bottom:6px;}
+/* ── Cube Counter Stack — 점수 표시 대체 (2026-04-26) ─────────
+   유저는 점수 숫자를 보지 않음. gold/silver 큐브 누적 수 표시.
+   내부적으로는 score 시스템 (gold +3 / silver +2 / red −3) 그대로 동작. */
+.cc-stack{display:flex;flex-direction:column;gap:6px;margin-bottom:6px;}
+.cc-row{display:flex;align-items:center;gap:10px;}
+.cc-tower{display:flex;flex-direction:column-reverse;gap:1px;width:20px;flex-shrink:0;}
+.cc-token{width:20px;height:8px;border-radius:2px;box-sizing:border-box;}
+.cc-token.gold{background:linear-gradient(135deg,#fff1a8 0%,#ffd54a 45%,#c48c1a 100%);border:1px solid rgba(255,233,128,0.65);box-shadow:0 0 3px rgba(255,213,74,0.45),inset 0 1px 0 rgba(255,255,255,0.45);}
+.cc-token.silver{background:linear-gradient(135deg,#f2f4f7 0%,#b5c0cc 45%,#6d7682 100%);border:1px solid rgba(210,218,228,0.55);box-shadow:0 0 3px rgba(181,192,204,0.40),inset 0 1px 0 rgba(255,255,255,0.40);}
+.cc-num{font-family:'Archivo Black','DM Mono',monospace;font-size:30px;line-height:1;color:var(--text);letter-spacing:-1.5px;}
+.cc-num.bumped{animation:ccBump .55s cubic-bezier(.22,1.5,.32,1);}
+@keyframes ccBump{0%{transform:scale(1);}40%{transform:scale(1.18);color:#ffd54a;}100%{transform:scale(1);color:var(--text);}}
+.cc-label{font-size:11px;color:var(--text3);letter-spacing:.04em;font-weight:600;font-family:'DM Sans',sans-serif;text-transform:uppercase;}
+.cc-today{display:flex;gap:4px;align-items:center;}
+.cc-today-dot{width:8px;height:8px;border-radius:2px;}
+.cc-today-dot.gold{background:linear-gradient(135deg,#fff1a8 0%,#ffd54a 45%,#c48c1a 100%);}
+.cc-today-dot.silver{background:linear-gradient(135deg,#f2f4f7 0%,#b5c0cc 45%,#6d7682 100%);}
+.cc-today-dot.red{background:linear-gradient(135deg,#ff8080 0%,#ff4d4d 45%,#8b1515 100%);}
+@media (prefers-reduced-motion:reduce){.cc-num.bumped{animation:none !important;}}
 .sb-quote{font-size:12px;font-weight:600;font-style:italic;line-height:1.55;color:var(--text2);margin-bottom:14px;min-height:18px;word-break:keep-all;}
 .sb-progress-wrap{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
 .sb-progress-track{flex:1;height:5px;background:rgba(255,255,255,.07);border-radius:999px;overflow:hidden;}
@@ -1512,10 +1531,28 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
         </div>
       </div>
 
-      <div class="sb-score-row" onclick="openScoreGuide()">
-        <div class="sb-score" id="hdr-score">0</div>
-        <div class="sb-score-unit">점</div>
+      <!-- 큐브 누적 카운터 — 점수 숫자 대체. 내부 score 시스템 그대로. -->
+      <div class="cc-stack" id="hdr-cube-stack" onclick="openScoreGuide()" style="cursor:pointer;touch-action:manipulation;">
+        <div class="cc-row">
+          <div class="cc-tower" id="cc-tower-gold" aria-hidden="true">
+            <div class="cc-token gold"></div>
+            <div class="cc-token gold"></div>
+            <div class="cc-token gold"></div>
+          </div>
+          <div class="cc-num" id="cc-num-gold">0</div>
+          <div class="cc-label">Gold</div>
+        </div>
+        <div class="cc-row">
+          <div class="cc-tower" id="cc-tower-silver" aria-hidden="true">
+            <div class="cc-token silver"></div>
+            <div class="cc-token silver"></div>
+          </div>
+          <div class="cc-num" id="cc-num-silver">0</div>
+          <div class="cc-label">Silver</div>
+        </div>
       </div>
+      <!-- 호환용 hidden 노드 — 옛 코드 (score-pulse, countUpScore 등) 가 직접 참조 시 안전망 -->
+      <div id="hdr-score" style="display:none;">0</div>
 
       <div class="sb-quote" id="char-quote"></div>
 
@@ -2726,29 +2763,25 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
             <div style="font-size:13px;color:var(--text);line-height:1.55;">네 가지를 모두 완수하면<br>황금 큐브. 하루 최대 4개.</div>
           </div>
 
-          <!-- 큐브 색 의미 -->
+          <!-- 큐브 색 의미 — 점수 컬럼 제거 (cube-only UI). 색·의미만. -->
           <div style="background:var(--surface2);border:1px solid var(--border2);border-radius:12px;padding:12px 14px;margin-bottom:12px;">
-            <div style="font-size:10px;color:var(--text3);margin-bottom:10px;letter-spacing:0.08em;font-weight:700;text-transform:uppercase;">큐브 점수</div>
+            <div style="font-size:10px;color:var(--text3);margin-bottom:10px;letter-spacing:0.08em;font-weight:700;text-transform:uppercase;">큐브</div>
             <div style="display:flex;flex-direction:column;gap:8px;">
               <div style="display:flex;align-items:center;gap:10px;">
                 <div style="width:16px;height:16px;border-radius:3px;background:linear-gradient(135deg,#fff1a8 0%,#ffd54a 45%,#c48c1a 100%);border:1px solid rgba(255,233,128,0.70);flex-shrink:0;"></div>
                 <div style="flex:1;font-size:12px;color:var(--text);font-weight:600;">Gold · 모두 완수</div>
-                <div style="font-family:'DM Mono',monospace;font-size:13px;font-weight:800;color:#ffd54a;">+3</div>
               </div>
               <div style="display:flex;align-items:center;gap:10px;">
                 <div style="width:16px;height:16px;border-radius:3px;background:linear-gradient(135deg,#f2f4f7 0%,#b5c0cc 45%,#6d7682 100%);border:1px solid rgba(210,218,228,0.55);flex-shrink:0;"></div>
                 <div style="flex:1;font-size:12px;color:var(--text);font-weight:600;">Silver · 부분 완수</div>
-                <div style="font-family:'DM Mono',monospace;font-size:13px;font-weight:800;color:#d8dfe7;">+2</div>
               </div>
               <div style="display:flex;align-items:center;gap:10px;">
                 <div style="width:16px;height:16px;border-radius:3px;background:rgba(255,77,77,0.32);border:1px solid rgba(255,77,77,0.45);flex-shrink:0;"></div>
                 <div style="flex:1;font-size:12px;color:var(--text);font-weight:600;">Red · 금지식·실패</div>
-                <div style="font-family:'DM Mono',monospace;font-size:13px;font-weight:800;color:#ff6b6b;">−3</div>
               </div>
               <div style="display:flex;align-items:center;gap:10px;">
                 <div style="width:16px;height:16px;border-radius:3px;background:transparent;border:1px solid rgba(255,255,255,0.14);flex-shrink:0;"></div>
                 <div style="flex:1;font-size:12px;color:var(--text2);font-weight:600;">Gray · 미기록</div>
-                <div style="font-family:'DM Mono',monospace;font-size:13px;font-weight:700;color:var(--text3);">0</div>
               </div>
             </div>
           </div>
@@ -5216,7 +5249,7 @@ function renderCharCard(){
   const prog=document.getElementById('char-progress');
   if(prog)prog.style.width=pct+'%';
   const lbl=document.getElementById('char-progress-label');
-  if(lbl)lbl.textContent=tierIdx===TIERS.length-1?'🎉 최고 티어':'다음 '+(next.min-score)+'pt';
+  if(lbl)lbl.textContent=tierIdx===TIERS.length-1?'🎉 최고 티어':'다음: '+next.name;
 }
 
 function openRoomOverlay(){
@@ -5228,10 +5261,12 @@ function openRoomOverlay(){
   const pct=tierIdx===TIERS.length-1?100:Math.round((score-tier.min)/(next.min-tier.min)*100);
   const rtn=document.getElementById('room-tier-name');
   rtn.textContent=tier.icon+' '+tier.name;rtn.style.color=tier.color;
-  document.getElementById('room-tier-pts').textContent=score+' pts';
+  // Room overlay — 점수 표시 제거 (2026-04-26 cube-only UI). 큐브 누적으로 대체.
+  const lc=(typeof getCubeCounts==='function')?getCubeCounts('lifetime'):{gold:0,silver:0,red:0};
+  document.getElementById('room-tier-pts').innerHTML=`<span style="color:#ffd54a;">Gold ${lc.gold}</span> · <span style="color:#d8dfe7;">Silver ${lc.silver}</span>`;
   document.getElementById('room-progress').style.width=pct+'%';
   document.getElementById('room-progress-labels').innerHTML=
-    `<span>${tier.min}pt</span><span style="color:${tier.color}">${score} / ${next.min}</span><span>${next.min}pt</span>`;
+    `<span>${tier.name}</span><span style="color:${tier.color}">${pct}%</span><span>${next.name}</span>`;
   const roadmap=document.getElementById('room-roadmap');
   roadmap.innerHTML=TIERS.map((t,i)=>{
     const state=i<tierIdx?'done':i===tierIdx?'current':'future';
@@ -6146,6 +6181,8 @@ async function onLogin(user){
   // Will Cube recap — 다음날 첫 접속 시 어제 cubes/bonus 촤르륵 재생.
   // prefetch 끝나길 기다리지 않고 별도 fetch — 2초 정도 뒤에 시작해서 초기 로딩 훔친 느낌 방지.
   setTimeout(()=>{try{runDailyCubeRecap();}catch(e){}},2000);
+  // Lifetime cube counts — Status Band 큐브 카운터 표시용. 백그라운드 fetch.
+  setTimeout(()=>{try{fetchLifetimeCubeCounts();}catch(e){}},1500);
   // 이전 세션 저장 실패분 복구 (localStorage pendingSave_* 키)
   _recoverPendingSaves();
   // 치팅 월 초기화 체크
@@ -6829,7 +6866,9 @@ if(typeof window!=='undefined'){
     : setTimeout(_warmupCube3D,800));
 }
 
-// 이벤트 1건 렌더 — show → linger → depart (회전+비상+fade) 3단계.
+// 이벤트 1건 렌더 — show → linger → depart (캐릭터 입으로 빨려들어감) 3단계.
+// 2026-04-26: depart 트라젝토리를 viewport 위쪽 → Status Band 캐릭터 (sb-canvas-wrap) 로
+// 변경. "캐릭터가 큐브를 섭취" 시각 메타포. count number 는 도착 시 bump 애니.
 function _playCubeEvent(ev, onDone){
   const stage=document.createElement('div');
   stage.className='cube-event-stage dim';
@@ -6856,22 +6895,60 @@ function _playCubeEvent(ev, onDone){
   lbl.className='cube-event-label';
   if(ev.title){const t=document.createElement('div');t.className='cube-event-title';t.textContent=ev.title;lbl.appendChild(t);}
   if(ev.body) {const b=document.createElement('div');b.className='cube-event-body';b.textContent=ev.body;lbl.appendChild(b);}
-  if(ev.delta){const d=document.createElement('div');d.className='cube-event-delta';d.textContent=ev.delta;lbl.appendChild(d);}
+  // delta (점수) 표시 제거 — cube-only UI (2026-04-26).
   wrap.appendChild(lbl);
   stage.appendChild(outer);
   document.body.appendChild(stage);
 
   // 2프레임 기다린 뒤 .show → CSS transition 으로 fade + scale in.
-  // (1프레임은 Chromium 에서 가끔 transition 트리거 안 됨 — 2프레임이 안전)
   requestAnimationFrame(()=>requestAnimationFrame(()=>{
     stage.classList.add('on');
     wrap.classList.add('show');
     aura.classList.add('on');
   }));
 
-  // linger 후 depart (회전 + 비상 + fade). show 가 끝난 뒤 linger.
+  // linger 후 → 캐릭터 좌표 계산해서 inline transform 으로 비행.
   setTimeout(()=>{
-    wrap.classList.add('depart');
+    try{
+      const charEl=document.querySelector('.sb-canvas-wrap');
+      if(charEl){
+        const cRect=charEl.getBoundingClientRect();
+        const wRect=wrap.getBoundingClientRect();
+        const cx=cRect.left+cRect.width/2;
+        const cy=cRect.top+cRect.height/2;
+        const wx=wRect.left+wRect.width/2;
+        const wy=wRect.top+wRect.height/2;
+        const dx=cx-wx;
+        const dy=cy-wy;
+        // depart class 의 -50vh 이동을 override — 캐릭터 좌표로 직진 + 작아짐
+        wrap.style.transition='opacity 540ms ease-in,transform 720ms cubic-bezier(0.4,0,0.2,1)';
+        wrap.style.opacity='0';
+        wrap.style.transform=`translate(${dx}px,${dy}px) scale(0.06)`;
+        // 도착 직전 캐릭터 wrap 펄스 + 큐브 카운트 bump
+        setTimeout(()=>{
+          try{
+            charEl.animate&&charEl.animate(
+              [{transform:'scale(1)'},{transform:'scale(1.18)'},{transform:'scale(1)'}],
+              {duration:380,easing:'cubic-bezier(.22,1.5,.32,1)'}
+            );
+            // 카운트 bump — 색깔에 맞는 num 만
+            const numId=ev.color==='gold'?'cc-num-gold':ev.color==='silver'?'cc-num-silver':null;
+            if(numId){
+              const numEl=document.getElementById(numId);
+              if(numEl){numEl.classList.remove('bumped');void numEl.offsetWidth;numEl.classList.add('bumped');}
+            }
+            // Haptic on land
+            if(window.sh&&window.sh.haptics&&typeof window.sh.haptics.tap==='function'){
+              window.sh.haptics.tap(ev.color==='gold'?'medium':'light');
+            } else if(typeof navigator!=='undefined'&&typeof navigator.vibrate==='function'){
+              navigator.vibrate(ev.color==='gold'?22:12);
+            }
+          }catch(_){}
+        },680);
+      } else {
+        wrap.classList.add('depart'); // fallback — 캐릭터 못 찾으면 기존 비상
+      }
+    }catch(_){wrap.classList.add('depart');}
   },_CUBE_SHOW_MS+_CUBE_LINGER_MS);
 
   // cleanup
@@ -8743,13 +8820,7 @@ function revealStatusBand(){
   if(!sb)return;
   _statusBandRevealed=true;
   sb.classList.add('sb-reveal');
-  // score count-up — hdr-score already has target value from updateHeaderStatus
-  const scoreEl=document.getElementById('hdr-score');
-  if(scoreEl){
-    const target=+(CP?.total_score)||0;
-    scoreEl.textContent='0';
-    countUpScore(scoreEl,target);
-  }
+  // 큐브 카운트는 updateHeaderStatus 에서 즉시 표시. count-up 애니 제거.
   // remove reveal class after animation completes so re-renders don't replay
   setTimeout(()=>{sb&&sb.classList.remove('sb-reveal');},1100);
 }
@@ -8792,40 +8863,103 @@ function showScoreGain(pts, originEl){
   },920);
 }
 
+// ── Cube count helpers — Status Band 표시용 ─────────────────
+// 점수 시스템은 그대로 (gold +3 / silver +2 / red −3). UI 만 큐브 갯수.
+// scope: 'lifetime' (logCache 합산 + CP cache) / 'today' (오늘 log)
+function getCubeCounts(scope){
+  let g=0,s=0,r=0;
+  const sumLog=(l)=>{
+    if(!l||!l.cubes)return;
+    const c=l.cubes;
+    ['diet','exercise','exercise_bonus','routine','tasks'].forEach(k=>{
+      if(c[k]==='gold')g++;
+      else if(c[k]==='silver')s++;
+      else if(c[k]==='crimson')r++;
+    });
+    if(Array.isArray(c.bonus)){
+      c.bonus.forEach(b=>{
+        if(!b)return;
+        const cnt=typeof b.count==='number'?b.count:1;
+        if(b.color==='gold')g+=cnt;
+        else if(b.color==='silver')s+=cnt;
+        else if(b.color==='crimson')r+=cnt;
+      });
+    }
+  };
+  if(scope==='today'){
+    sumLog(logCache[TODAY]);
+    return{gold:g,silver:s,red:r};
+  }
+  // lifetime — CP 캐시 우선, 없으면 logCache 합산
+  if(CP&&CP.lifetime_cube_counts&&typeof CP.lifetime_cube_counts==='object'){
+    const lc=CP.lifetime_cube_counts;
+    return{gold:(lc.gold||0)+0,silver:(lc.silver||0)+0,red:(lc.red||0)+0};
+  }
+  Object.values(logCache||{}).forEach(sumLog);
+  return{gold:g,silver:s,red:r};
+}
+// 로그인 시 1회 호출 — 전체 daily_logs 큐브 합산해서 CP.lifetime_cube_counts 채움
+async function fetchLifetimeCubeCounts(){
+  if(!CU||!CU.id||!sb)return;
+  try{
+    const{data,error}=await sb.from('daily_logs').select('cubes').eq('user_id',CU.id).not('cubes','is',null);
+    if(error||!Array.isArray(data))return;
+    let g=0,s=0,r=0;
+    for(const row of data){
+      const c=row&&row.cubes;if(!c)continue;
+      ['diet','exercise','exercise_bonus','routine','tasks'].forEach(k=>{
+        if(c[k]==='gold')g++;else if(c[k]==='silver')s++;else if(c[k]==='crimson')r++;
+      });
+      if(Array.isArray(c.bonus)){
+        c.bonus.forEach(b=>{
+          if(!b)return;const cnt=typeof b.count==='number'?b.count:1;
+          if(b.color==='gold')g+=cnt;else if(b.color==='silver')s+=cnt;else if(b.color==='crimson')r+=cnt;
+        });
+      }
+    }
+    if(CP)CP.lifetime_cube_counts={gold:g,silver:s,red:r};
+    try{updateHeaderStatus();}catch(_){}
+  }catch(e){console.warn('[cube-count]',e);}
+}
+
 function updateHeaderStatus(){
   const total=getAccumulatedScore();
-  const todayPts=getTodayScore();
   const streak=calcStreak();
   const tier=getTier(total);
   const streakEl=document.getElementById('hdr-streak');
   if(streakEl)streakEl.textContent=streak+'일';
-  // D0 placeholder — total 0 + streak 0 + 오늘 보고 있을 때 한정.
-  // 52px "0" 가 identity-shock 으로 읽히는 문제 완화. "—" 로 대체하고 unit 을
-  // "오늘 시작" 으로 바꿔 첫 행동 유도.
-  const isD0=total===0&&streak===0&&selectedKey===TODAY;
-  const scoreEl=document.getElementById('hdr-score');
-  if(scoreEl&&!_scoreCountingUp){
-    scoreEl.textContent=isD0?'—':total.toLocaleString();
-    scoreEl.style.color=isD0?'var(--text3)':'';
-    scoreEl.style.fontSize=isD0?'38px':'';
+  // 큐브 누적 카운트 — lifetime 표시
+  const lc=getCubeCounts('lifetime');
+  const goldEl=document.getElementById('cc-num-gold');
+  const silverEl=document.getElementById('cc-num-silver');
+  if(goldEl){
+    const prev=parseInt(goldEl.textContent||'0',10)||0;
+    goldEl.textContent=lc.gold;
+    if(lc.gold>prev){goldEl.classList.remove('bumped');void goldEl.offsetWidth;goldEl.classList.add('bumped');}
   }
-  const unitEl=scoreEl?scoreEl.parentElement&&scoreEl.parentElement.querySelector('.sb-score-unit'):null;
-  if(unitEl)unitEl.textContent=isD0?'오늘 시작':'점';
+  if(silverEl){
+    const prev=parseInt(silverEl.textContent||'0',10)||0;
+    silverEl.textContent=lc.silver;
+    if(lc.silver>prev){silverEl.classList.remove('bumped');void silverEl.offsetWidth;silverEl.classList.add('bumped');}
+  }
   const tierEl=document.getElementById('hdr-tier');
   if(tierEl){
     tierEl.textContent=tier.icon+' '+tier.name;
     tierEl.style.color=tier.color;
   }
-  // Status Band: 오늘 Δ
+  // 오늘 만든 큐브 색별 카운터 — sb-today 자리.
   const todayEl=document.getElementById('sb-today');
   if(todayEl){
-    if(isD0){
-      todayEl.innerHTML='—<span class="sb-today-unit"> </span>';
-      todayEl.style.color='var(--text3)';
+    const tc=getCubeCounts('today');
+    const total2=tc.gold+tc.silver+tc.red;
+    if(total2===0){
+      todayEl.innerHTML='<span class="sb-today-unit" style="color:var(--text3);">—</span>';
     } else {
-      const sign=todayPts>0?'+':'';
-      todayEl.innerHTML=sign+todayPts+'<span class="sb-today-unit">pt</span>';
-      todayEl.style.color=todayPts>0?'var(--accent)':todayPts<0?'var(--red)':'var(--text3)';
+      const parts=[];
+      if(tc.gold>0)parts.push(`<span class="cc-today-dot gold"></span><span style="color:#ffd54a;font-weight:800;">${tc.gold}</span>`);
+      if(tc.silver>0)parts.push(`<span class="cc-today-dot silver"></span><span style="color:#d8dfe7;font-weight:800;">${tc.silver}</span>`);
+      if(tc.red>0)parts.push(`<span class="cc-today-dot red"></span><span style="color:#ff6b6b;font-weight:800;">${tc.red}</span>`);
+      todayEl.innerHTML='<span class="cc-today">'+parts.join('<span style="width:4px;"></span>')+'</span>';
     }
   }
 }
@@ -9198,9 +9332,9 @@ const _TOUR_SLIDES=[
         <span style="color:#ffd54a;font-weight:800;">황금 큐브 4개</span>
       </div>
       <div style="background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:10px 14px;margin-bottom:12px;">
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:4px 0;"><span style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text);font-weight:600;"><span style="width:14px;height:14px;border-radius:3px;background:linear-gradient(135deg,#fff1a8 0%,#ffd54a 45%,#c48c1a 100%);border:1px solid rgba(255,233,128,0.70);flex-shrink:0;"></span>Gold · 완수</span><span style="font-family:'DM Mono',monospace;font-size:12px;font-weight:800;color:#ffd54a;">+3</span></div>
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:4px 0;"><span style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text);font-weight:600;"><span style="width:14px;height:14px;border-radius:3px;background:linear-gradient(135deg,#f2f4f7 0%,#b5c0cc 45%,#6d7682 100%);border:1px solid rgba(210,218,228,0.55);flex-shrink:0;"></span>Silver · 부분</span><span style="font-family:'DM Mono',monospace;font-size:12px;font-weight:800;color:#d8dfe7;">+2</span></div>
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:4px 0;"><span style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text);font-weight:600;"><span style="width:14px;height:14px;border-radius:3px;background:rgba(255,77,77,0.32);border:1px solid rgba(255,77,77,0.45);flex-shrink:0;"></span>Red · 금지식·실패</span><span style="font-family:'DM Mono',monospace;font-size:12px;font-weight:800;color:#ff6b6b;">−3</span></div>
+        <div style="display:flex;align-items:center;padding:4px 0;"><span style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text);font-weight:600;"><span style="width:14px;height:14px;border-radius:3px;background:linear-gradient(135deg,#fff1a8 0%,#ffd54a 45%,#c48c1a 100%);border:1px solid rgba(255,233,128,0.70);flex-shrink:0;"></span>Gold · 완수</span></div>
+        <div style="display:flex;align-items:center;padding:4px 0;"><span style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text);font-weight:600;"><span style="width:14px;height:14px;border-radius:3px;background:linear-gradient(135deg,#f2f4f7 0%,#b5c0cc 45%,#6d7682 100%);border:1px solid rgba(210,218,228,0.55);flex-shrink:0;"></span>Silver · 부분</span></div>
+        <div style="display:flex;align-items:center;padding:4px 0;"><span style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text);font-weight:600;"><span style="width:14px;height:14px;border-radius:3px;background:rgba(255,77,77,0.32);border:1px solid rgba(255,77,77,0.45);flex-shrink:0;"></span>Red · 금지식·실패</span></div>
       </div>
       <div style="font-size:12px;color:var(--text2);text-align:center;line-height:1.55;font-weight:500;">등록만으론 0점. 큐브가 나와야 점수예요.</div>
     `,
