@@ -432,8 +432,9 @@ function openNudgeSheet(friendId, friendName) {
       btn.disabled = true;
       const res = await nudgeApi.sendNudge(friendId, presetId);
       btn.disabled = false;
+      // 성공·실패 모두 모달 닫고 토스트 — 사용자가 결과 메시지를 놓치지 않게
+      closeNudgeSheet();
       if (res.ok) {
-        closeNudgeSheet();
         toast('보냈음.');
       } else {
         const copy = nudgeApi.NUDGE_ERROR_COPY[res.error] || '전송 실패.';
