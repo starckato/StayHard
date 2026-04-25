@@ -219,12 +219,8 @@ export async function obFinish(){
   if(window.CUBE_UI_MODE!==true){
     try{addScore('onboarding_bonus','온보딩 완료');}catch(e){}
   }
-  // 온보딩 종료 → 앱 사용법 투어 자동 오픈 (큐브 시스템 안내 + 탭별 핵심 기능).
-  try{
-    setTimeout(()=>{
-      if(typeof window.openTourModal==='function')window.openTourModal();
-    },400);
-  }catch(e){}
+  // 2026-04-26: 투어 자동 open 제거 (UX P1) — 모달 stacking friction 해소.
+  // 사용자가 헤더 ? 버튼으로 능동 진입. 첫 1초의 권한이 시스템 → 사용자.
   track('onboard_complete',{path:'full',goal:_obGoal,routines:obSelectedRoutines?.length||0});
   queueSave();
 }

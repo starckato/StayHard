@@ -8534,39 +8534,46 @@ function renderVolumeDelta(){
   }catch(e){console.warn('[vd] render',e);}
 }
 
-// ── D3 Opt-in 2차 요청 — Phase 2D ────────────────────────────
-async function checkD3OptInRequest(){
+// ── Opt-in 요청 스케줄러 — Phase 2D + 2026-04-26 D7 recovery ──
+// FF opt_in_d3 gated. D3 streak 도달 시 1회 + D7+ soft denial recovery 1회.
+async function checkOptInRequest(){
   try{
     const FF=window.FF;if(!FF||!FF.get('opt_in_d3',false))return;
     const mod=window.sh&&window.sh.notifOptIn;if(!mod||!CP||!CU)return;
     const streak=(typeof calcStreak==='function')?calcStreak():0;
-    if(!mod.shouldRequestD3(CP,streak))return;
-    // 2초 뒤 모달 (액션 직후 방해 없게, 너무 늦지도 않게)
-    if(window._d3OptInPending)return;
-    window._d3OptInPending=true;
+    let trigger=null;
+    let copy='';
+    if(mod.shouldRequestD3(CP,streak)){
+      trigger='d3_streak';copy='3일 연속 기록 달성.\n흐름을 지킬 수 있게 알림 켤까?';
+    } else if(mod.shouldRequestD7Recovery&&mod.shouldRequestD7Recovery(CP)){
+      trigger='d7_recovery';copy='이번엔 알림 한 번 더 시도해볼래?\n저녁 8시에 한 번만 — 부담 없게.';
+    }
+    if(!trigger)return;
+    if(window._optInPending)return;
+    window._optInPending=true;
     setTimeout(async()=>{
       try{
-        const ln=window.sh&&window.sh.localNotifications;if(!ln){window._d3OptInPending=false;return;}
-        // 이미 granted 인지 재확인
+        const ln=window.sh&&window.sh.localNotifications;if(!ln){window._optInPending=false;return;}
         const perm=await ln.checkPermission();
         if(perm==='granted'){
-          await mod.recordOptIn(sb,CU.id,CP,'d3_streak','granted');
-          window._d3OptInPending=false;return;
+          await mod.recordOptIn(sb,CU.id,CP,trigger,'granted');
+          window._optInPending=false;return;
         }
-        // 소프트 컨펌
-        const ok=confirm('3일 연속 기록 달성.\n흐름을 지킬 수 있게 알림 켤까?');
+        const ok=confirm(copy);
         if(!ok){
-          await mod.recordOptIn(sb,CU.id,CP,'d3_streak','dismissed');
-          window._d3OptInPending=false;return;
+          await mod.recordOptIn(sb,CU.id,CP,trigger,'dismissed');
+          window._optInPending=false;return;
         }
         const granted=await ln.requestPermission();
-        await mod.recordOptIn(sb,CU.id,CP,'d3_streak',granted?'granted':'denied');
+        await mod.recordOptIn(sb,CU.id,CP,trigger,granted?'granted':'denied');
         if(granted){showToast('알림 켜짐. 흐름을 지키자.');}
-        window._d3OptInPending=false;
-      }catch(e){window._d3OptInPending=false;console.warn('[d3-optin]',e);}
+        window._optInPending=false;
+      }catch(e){window._optInPending=false;console.warn('[opt-in]',e);}
     },2000);
   }catch(_){}
 }
+// Backward-compat alias.
+const checkD3OptInRequest=checkOptInRequest;
 
 // ── Exempt 1-tap — Phase 2A ─────────────────────────────────
 let _exemptSelReason=null;
@@ -8792,8 +8799,18 @@ function updateHeaderStatus(){
   const tier=getTier(total);
   const streakEl=document.getElementById('hdr-streak');
   if(streakEl)streakEl.textContent=streak+'일';
+  // D0 placeholder — total 0 + streak 0 + 오늘 보고 있을 때 한정.
+  // 52px "0" 가 identity-shock 으로 읽히는 문제 완화. "—" 로 대체하고 unit 을
+  // "오늘 시작" 으로 바꿔 첫 행동 유도.
+  const isD0=total===0&&streak===0&&selectedKey===TODAY;
   const scoreEl=document.getElementById('hdr-score');
-  if(scoreEl&&!_scoreCountingUp)scoreEl.textContent=total.toLocaleString();
+  if(scoreEl&&!_scoreCountingUp){
+    scoreEl.textContent=isD0?'—':total.toLocaleString();
+    scoreEl.style.color=isD0?'var(--text3)':'';
+    scoreEl.style.fontSize=isD0?'38px':'';
+  }
+  const unitEl=scoreEl?scoreEl.parentElement&&scoreEl.parentElement.querySelector('.sb-score-unit'):null;
+  if(unitEl)unitEl.textContent=isD0?'오늘 시작':'점';
   const tierEl=document.getElementById('hdr-tier');
   if(tierEl){
     tierEl.textContent=tier.icon+' '+tier.name;
@@ -8802,9 +8819,14 @@ function updateHeaderStatus(){
   // Status Band: 오늘 Δ
   const todayEl=document.getElementById('sb-today');
   if(todayEl){
-    const sign=todayPts>0?'+':'';
-    todayEl.innerHTML=sign+todayPts+'<span class="sb-today-unit">pt</span>';
-    todayEl.style.color=todayPts>0?'var(--accent)':todayPts<0?'var(--red)':'var(--text3)';
+    if(isD0){
+      todayEl.innerHTML='—<span class="sb-today-unit"> </span>';
+      todayEl.style.color='var(--text3)';
+    } else {
+      const sign=todayPts>0?'+':'';
+      todayEl.innerHTML=sign+todayPts+'<span class="sb-today-unit">pt</span>';
+      todayEl.style.color=todayPts>0?'var(--accent)':todayPts<0?'var(--red)':'var(--text3)';
+    }
   }
 }
 function calcStreak(){
@@ -9057,7 +9079,7 @@ function scrollToSection(s){
   const el=document.getElementById(map[s]);
   if(el)el.scrollIntoView({behavior:'smooth',block:'center'});
 }
-function renderRoutine(){try{recomputeCubesHook(null,{silent:true});}catch(e){}renderCharCard();renderSummaryCard();renderWeight();renderMeals();renderCheatBadge();renderWater();renderWorkouts();renderMandatory();renderTargets();updateHeaderStatus();revealStatusBand();try{renderFirstWeekCard();}catch(e){console.warn('[fw-card]',e);}try{renderInviteCard();}catch(e){console.warn('[invite-card]',e);}try{renderDay3ChallengeNudge();}catch(e){console.warn('[d3-nudge]',e);}try{renderWeeklyFeatureRibbon();}catch(e){console.warn('[wf-ribbon]',e);}try{if(typeof window.buildHeatmapGrid==='function')window.buildHeatmapGrid();}catch(e){}try{renderCardCubes();}catch(e){console.warn('[card-cubes]',e);}try{arrangePromos();}catch(e){console.warn('[promo-arrange]',e);}}
+function renderRoutine(){try{recomputeCubesHook(null,{silent:true});}catch(e){}renderCharCard();renderSummaryCard();renderWeight();renderMeals();renderCheatBadge();renderWater();renderWorkouts();renderMandatory();renderTargets();updateHeaderStatus();revealStatusBand();try{renderFirstWeekCard();}catch(e){console.warn('[fw-card]',e);}try{renderInviteCard();}catch(e){console.warn('[invite-card]',e);}try{renderDay3ChallengeNudge();}catch(e){console.warn('[d3-nudge]',e);}try{renderWeeklyFeatureRibbon();}catch(e){console.warn('[wf-ribbon]',e);}try{if(typeof window.buildHeatmapGrid==='function')window.buildHeatmapGrid();}catch(e){}try{renderCardCubes();}catch(e){console.warn('[card-cubes]',e);}try{arrangePromos();}catch(e){console.warn('[promo-arrange]',e);}try{checkOptInRequest();}catch(e){console.warn('[opt-in]',e);}}
 
 // ── Priority gate for promo/notification cards ─────────────────────
 // Each existing render function (renderFirstWeekCard, renderInviteCard,
