@@ -8695,11 +8695,15 @@ function renderSummaryModal(){
   const dateStr=(d.getMonth()+1)+'월 '+d.getDate()+'일 ('+weekday+')';
   document.getElementById('summ-modal-date').textContent=dateStr+(isToday?' · 오늘':'');
   // 점수 — CUBE mode: scoreFromCubes(l.cubes) 가 single source of truth.
+  // legacy mode: 기록탭 (식단·운동·루틴·할일) prefix 의 _ptsLog entry 만 합산.
+  // 다른 탭 (체중·찬물·기상·보너스·챌린지 등) 점수는 오늘의 요약 노출 X.
+  const RECORD_TAB_PREFIXES=['diet_','workout_','routine_','target_'];
+  const _recordPts=(l._ptsLog||[]).filter(e=>RECORD_TAB_PREFIXES.some(p=>(e.type||'').startsWith(p)));
   let dayPts=0;
   if(window.CUBE_UI_MODE===true&&l&&l.cubes&&window.Cubes&&typeof window.Cubes.scoreFromCubes==='function'){
     dayPts=window.Cubes.scoreFromCubes(l.cubes);
   } else {
-    dayPts=(l._ptsLog||[]).reduce((a,e)=>a+e.pts,0);
+    dayPts=_recordPts.reduce((a,e)=>a+(e.pts||0),0);
   }
   const ptsEl=document.getElementById('summ-pts-modal');
   ptsEl.textContent=(dayPts>=0?'+':'')+dayPts+'pt';
@@ -8757,15 +8761,15 @@ function renderSummaryModal(){
   if(tgts.length===0){tgEl.textContent='—';tgEl.style.color='var(--text3)';}
   else{tgEl.textContent=tgtDone+'/'+tgts.length;tgEl.style.color=tgtDone===tgts.length?'var(--green)':'var(--text3)';}
 
-  // 점수 구성 (하루 전체 _ptsLog 집계) — stats 탭에서 이동
-  const ptsLog=l._ptsLog||[];
+  // 점수 구성 — 기록탭 prefix entry 만 표시 (다른 탭 점수는 노출 X).
+  // 라벨은 SCORE_EVENTS[type].label single source (event key 노출 방지).
+  const ptsLog=(l._ptsLog||[]).filter(e=>RECORD_TAB_PREFIXES.some(p=>(e.type||'').startsWith(p)));
   const wrap=document.getElementById('summ-pts-breakdown-wrap');
   const list=document.getElementById('summ-pts-breakdown');
   if(wrap&&list){
     if(!ptsLog.length){wrap.style.display='none';}
     else{
       wrap.style.display='block';
-      // Aggregate by event type (reuse SCORE_EVENTS labels when available)
       const byType={};
       ptsLog.forEach(e=>{
         const t=e.type||'기타';
@@ -8773,16 +8777,10 @@ function renderSummaryModal(){
         byType[t].pts+=(e.pts||0);
         byType[t].count++;
       });
-      const labelMap={
-        weight_record:'체중 기록', weight_loss:'감량 성공', weight_goal:'목표 달성',
-        diet_clean:'클린식', diet_normal:'일반식', diet_cheat:'치팅', diet_junk:'금지식', diet_alcohol:'음주',
-        workout_done:'운동 완료', routine_done:'루틴 완료', target_done:'할일 완료',
-        cold_shower:'찬물 샤워', early_rise:'일찍 기상', perfect_day:'퍼펙트 데이',
-      };
       list.innerHTML=Object.entries(byType)
         .sort(([,a],[,b])=>b.pts-a.pts)
         .map(([type,info])=>{
-          const lbl=labelMap[type]||type;
+          const lbl=(window.SCORE_EVENTS&&window.SCORE_EVENTS[type]?.label)||type;
           const sign=info.pts>0?'+':'';
           const col=info.pts>0?'var(--accent)':info.pts<0?'var(--red)':'var(--text3)';
           const countStr=info.count>1?` <span style="color:var(--text3);font-size:10px;">×${info.count}</span>`:'';
