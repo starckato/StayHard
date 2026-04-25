@@ -11924,7 +11924,7 @@ async function renderChallengeHome(){
   if(!CU)return;
 
   // Fetch user's challenges
-  const{data:allComps_raw}=await sb.from('competitions').select('id,code,name,creator_id,members,sections,challenge_type,status,max_members,start_date,duration_days,weight_goal,member_wgoals,start_weights,measure_type,member_inbody_goals').in('status',['waiting','active','failed','completed']);
+  const{data:allComps_raw}=await sb.from('competitions').select('id,code,name,creator_id,members,sections,challenge_type,status,max_members,start_date,duration_days,weight_goal,member_wgoals,measure_type,member_inbody_goals').in('status',['waiting','active','failed','completed']);
   const myComps=(allComps_raw||[]).filter(c=>{
     if(c.creator_id===CU.id)return true;
     try{const mbs=Array.isArray(c.members)?c.members:JSON.parse(c.members||'[]');return mbs.includes(CU.id);}
@@ -12117,7 +12117,7 @@ function hideChallengeJoin(){
 }
 
 async function enterChallenge(compId){
-  const{data:comp}=await sb.from('competitions').select('id,code,name,creator_id,members,sections,challenge_type,status,start_date,duration_days,weight_goal,member_wgoals,start_weights,measure_type,member_inbody_goals').eq('id',compId).single();
+  const{data:comp}=await sb.from('competitions').select('id,code,name,creator_id,members,sections,challenge_type,status,start_date,duration_days,weight_goal,member_wgoals,measure_type,member_inbody_goals').eq('id',compId).single();
   if(!comp)return;
   activeComp=comp;
   openChallengeRoom();
@@ -13415,10 +13415,10 @@ async function loadActiveCompetition(force=false){
   if(!force&&activeComp!==null&&(now_ms-_compLastFetch)<120000)return; // 2분 캐시
   _compLastFetch=now_ms;
   if(!CU)return;
-  const{data}=await sb.from('competitions').select('id,code,name,creator_id,members,sections,challenge_type,status,start_date,duration_days,weight_goal,member_wgoals,start_weights,measure_type,member_inbody_goals').or('creator_id.eq.'+CU.id).eq('status','active').maybeSingle();
+  const{data}=await sb.from('competitions').select('id,code,name,creator_id,members,sections,challenge_type,status,start_date,duration_days,weight_goal,member_wgoals,measure_type,member_inbody_goals').or('creator_id.eq.'+CU.id).eq('status','active').maybeSingle();
   // also check member
   if(!data){
-    const{data:d2}=await sb.from('competitions').select('id,code,name,creator_id,members,sections,challenge_type,status,start_date,duration_days,weight_goal,member_wgoals,start_weights,measure_type,member_inbody_goals').eq('status','active').maybeSingle();
+    const{data:d2}=await sb.from('competitions').select('id,code,name,creator_id,members,sections,challenge_type,status,start_date,duration_days,weight_goal,member_wgoals,measure_type,member_inbody_goals').eq('status','active').maybeSingle();
     if(d2&&d2.members){
       try{const mbs=typeof d2.members==='string'?JSON.parse(d2.members):d2.members;if(mbs.includes(CU.id))activeComp=d2;}catch(e){}
     }
