@@ -1424,6 +1424,21 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
       <a href="/privacy" target="_blank" rel="noopener" style="color:var(--text2);text-decoration:underline;">개인정보처리방침</a> 에 동의한 것으로 간주됩니다.
     </div>
   </div>
+  <!-- 이메일 인증 대기 화면 — Supabase confirm-email 활성 시 노출. doSignup 후 session 없을 때 표시. -->
+  <div class="aform" id="auth-verify" style="display:none;text-align:center;">
+    <div style="font-size:38px;margin-bottom:8px;">📨</div>
+    <div style="font-family:'Noto Serif KR',serif;font-size:18px;font-weight:700;color:var(--text);margin-bottom:8px;">메일을 확인해주세요</div>
+    <div style="font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:16px;">
+      <span id="verify-email-addr" style="color:var(--text);font-weight:600;"></span> 로<br>
+      인증 메일을 보냈습니다. 메일함의 링크를 누르면<br>
+      가입이 완료돼요. (스팸함도 확인)
+    </div>
+    <button class="abtn" onclick="resendVerifyEmail()" id="verify-resend-btn" style="margin-bottom:8px;">인증 메일 다시 보내기</button>
+    <div style="font-size:12px;color:var(--text3);">
+      이미 인증했나요? <span onclick="switchAuthTab('login')" style="color:var(--accent);cursor:pointer;text-decoration:underline;">로그인하기</span>
+    </div>
+    <div class="aerr" id="verify-err" style="min-height:18px;margin-top:8px;"></div>
+  </div>
 </div>
 
 <!-- ══ APP ══ -->
@@ -5565,7 +5580,23 @@ async function init(){
     }
   }
   sb.auth.onAuthStateChange(async(event,session)=>{
-    if(event==='SIGNED_IN'&&!_initDone){_initDone=true;await onLogin(session.user);}
+    if(event==='SIGNED_IN'&&!_initDone){
+      _initDone=true;
+      // 이메일 인증 완료 후 첫 SIGNED_IN — pending profile insert 처리.
+      try{
+        const pendName=localStorage.getItem('pendingDisplayName');
+        const pendUn=localStorage.getItem('pendingUsername');
+        if(pendName&&pendUn&&session&&session.user){
+          const{data:exist}=await sb.from('profiles').select('id').eq('id',session.user.id).maybeSingle();
+          if(!exist){
+            await sb.from('profiles').insert({id:session.user.id,username:pendUn,display_name:pendName});
+          }
+          localStorage.removeItem('pendingDisplayName');
+          localStorage.removeItem('pendingUsername');
+        }
+      }catch(e){console.warn('[verify] deferred profile insert failed',e);}
+      await onLogin(session.user);
+    }
     if(event==='SIGNED_OUT'){
       _initDone=false;CU=null;CP=null;
       try{localStorage.removeItem('lastUserId');localStorage.removeItem('lastUserEmail');}catch(e){}
@@ -6312,6 +6343,7 @@ function switchAuthTab(t){
   document.querySelectorAll('.auth-tab').forEach((el,i)=>el.classList.toggle('active',(t==='login'&&i===0)||(t==='signup'&&i===1)));
   document.getElementById('auth-login').style.display=t==='login'?'block':'none';
   document.getElementById('auth-signup').style.display=t==='signup'?'block':'none';
+  const v=document.getElementById('auth-verify');if(v)v.style.display='none';
 }
 async function showForgotPassword(){
   const email=document.getElementById('li-email').value.trim();
@@ -6384,11 +6416,52 @@ async function doSignup(){
     else if(msg.includes('weak')||msg.includes('password'))msg='비밀번호가 너무 단순합니다. 영문+숫자 조합을 사용해주세요.';
     suErr(msg);btn.disabled=false;btn.textContent='계정 만들기';return;
   }
+  // Supabase 가 confirm email 활성 상태면 session 이 null. user 는 있어도 미인증 → onLogin
+  // 호출 시 RLS 거절·stale auth 위험. 인증 대기 화면으로 분기.
+  if(!data.session){
+    track('signup',{email_domain:(email.split('@')[1]||'unknown'),verify_pending:true});
+    showVerifyPending(email);
+    btn.disabled=false;btn.textContent='계정 만들기';
+    // 닉네임은 onAuthStateChange(SIGNED_IN) 에서 처음 로그인할 때 profile insert.
+    try{localStorage.setItem('pendingDisplayName',name);localStorage.setItem('pendingUsername',un);}catch(_){}
+    return;
+  }
   await sb.from('profiles').insert({id:data.user.id,username:un,display_name:name});
   // Analytics: track signup (set CU so track() works immediately)
   CU=data.user;
   track('signup',{email_domain:(email.split('@')[1]||'unknown')});
   show('loading');await onLogin(data.user);
+}
+function showVerifyPending(email){
+  document.getElementById('auth-login').style.display='none';
+  document.getElementById('auth-signup').style.display='none';
+  document.getElementById('auth-verify').style.display='block';
+  const e=document.getElementById('verify-email-addr');if(e)e.textContent=email||'';
+  // 탭 visual 도 비활성화
+  document.querySelectorAll('.auth-tab').forEach(t=>t.classList.remove('active'));
+  // 이메일 저장 — 재전송 시 사용
+  try{sessionStorage.setItem('pendingVerifyEmail',email);}catch(_){}
+}
+async function resendVerifyEmail(){
+  const btn=document.getElementById('verify-resend-btn');
+  const errEl=document.getElementById('verify-err');
+  let email='';try{email=sessionStorage.getItem('pendingVerifyEmail')||'';}catch(_){}
+  if(!email){if(errEl)errEl.textContent='이메일을 찾을 수 없어요. 회원가입을 다시 시도해주세요.';return;}
+  btn.disabled=true;btn.textContent='전송 중…';
+  if(errEl)errEl.textContent='';
+  try{
+    const{error}=await sb.auth.resend({type:'signup',email});
+    if(error){
+      if(errEl)errEl.textContent='재전송 실패. 잠시 후 다시 시도해주세요.';
+    } else {
+      btn.textContent='✓ 메일 재전송됨';
+      setTimeout(()=>{btn.disabled=false;btn.textContent='인증 메일 다시 보내기';},5000);
+      return;
+    }
+  }catch(e){
+    if(errEl)errEl.textContent='재전송 실패. 잠시 후 다시 시도해주세요.';
+  }
+  btn.disabled=false;btn.textContent='인증 메일 다시 보내기';
 }
 function openProfileModal(){
   const inp=document.getElementById('p-nickname-inp');
@@ -8267,27 +8340,49 @@ async function shareInvite(){
 // showToast — moved to src/ui/toast.js (Phase 2.2). window.showToast via bundle.
 
 // ── TABS ──
-// First Cube 체험 카드 렌더 — FF gate + onboarding_state 체크.
+// First Cube 체험 카드 렌더 — onboarding_state.first_cube_earned_at 미완료 유저만.
 // 어떤 task 든 (물·걷기·할일·루틴) 하나라도 완료하면 인정.
 // 호출처: onLogin 이후, recomputeCubesHook 이후, saveNow 이후.
-// 사용자 결정 (2026-04-25 Q2=B): first-cube-card 인라인 노출 폐지 → 완료 시 토스트 1회.
-// 카드 element 는 영구 hidden (DOM 만 유지). 미완료 시 안내 X (인라인 깜빡임 원인 제거).
+//
+// 2026-04-26 정책 (UX 리서치 P0): 인라인 부활. 단, 깜빡임 방지 위해
+//   - render 진입 시 hidden 토글 X (한 번 visible 되면 그 paint 유지)
+//   - 카드 markup 은 한 번만 build, 완료 토글만 swap
 function renderFirstCubeCard(){
   try{
-    const el=document.getElementById('first-cube-card');
-    if(el){el.hidden=true;el.innerHTML='';}
-    const fc=window.sh&&window.sh.firstCube;if(!fc)return;
-    if(!CP||fc.hasEarned(CP))return;
-    const FF=window.FF;
-    if(!FF||!FF.get('first_cube_card',false))return;
+    const el=document.getElementById('first-cube-card');if(!el)return;
+    const fc=window.sh&&window.sh.firstCube;if(!fc){el.hidden=true;return;}
+    if(!CP||fc.hasEarned(CP)){el.hidden=true;el.innerHTML='';return;}
     const completion=fc.checkAnyCompletion(log);
-    if(completion&&!window._firstCubeMarked){
-      window._firstCubeMarked=true;
-      fc.markEarned(sb,CU.id,completion.task.id).then(()=>{
-        if(CP){CP.onboarding_state={...(CP.onboarding_state||{}),first_cube_task:completion.task.id,first_cube_earned_at:new Date().toISOString()};}
-        try{showToast('첫 칸을 채웠어요. 좋은 시작이에요.');}catch(_){}
-      });
+    if(completion){
+      // 완료 — 카드 한 번 success state 로 보였다가, markEarned 후 다음 render 에 hidden
+      if(!el.classList.contains('fc-complete')){
+        el.classList.add('fc-complete');
+        el.innerHTML=`<div class="fc-kicker">첫 칸 ✓</div>
+          <div class="fc-title">시작했어요. 다음 칸으로.</div>
+          <div class="fc-hint">기록 하나가 곧 큐브 하나. 더 채울수록 색이 짙어져요.</div>`;
+        el.hidden=false;
+      }
+      if(!window._firstCubeMarked){
+        window._firstCubeMarked=true;
+        fc.markEarned(sb,CU.id,completion.task.id).then(()=>{
+          if(CP){CP.onboarding_state={...(CP.onboarding_state||{}),first_cube_task:completion.task.id,first_cube_earned_at:new Date().toISOString()};}
+          try{showToast('첫 칸을 채웠어요. 좋은 시작이에요.');}catch(_){}
+          // 5초 후 카드 페이드 아웃 (다음 render 에서 hidden 처리)
+          setTimeout(()=>{try{const e2=document.getElementById('first-cube-card');if(e2){e2.hidden=true;e2.innerHTML='';e2.classList.remove('fc-complete');}}catch(_){}},5000);
+        });
+      }
+      return;
     }
+    // 미완료 — preset 카드 한 번만 render (재호출 시 동일 task 면 skip)
+    const task=fc.pickTask(CU&&CU.id);if(!task)return;
+    if(el.dataset.taskId===task.id&&!el.hidden)return; // 이미 그려진 상태
+    el.dataset.taskId=task.id;
+    el.classList.remove('fc-complete');
+    el.innerHTML=`<div class="fc-kicker">첫 큐브</div>
+      <div class="fc-title">${task.title}</div>
+      <div class="fc-hint">${task.hint}</div>
+      <div class="fc-progress"><span class="fc-dot"></span><span>완료하면 silver 큐브 1개</span></div>`;
+    el.hidden=false;
   }catch(e){console.warn('[first-cube] render',e);}
 }
 

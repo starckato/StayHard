@@ -23,12 +23,12 @@ function t(name, fn) { _cases.push({ name, fn }); }
 t('diet · 기록 0건 → gray', () => judgeDiet([]) === 'gray');
 t('diet · 주류 1건 → crimson', () => judgeDiet([{ type: 'normal', category: 'alcohol' }]) === 'crimson');
 t('diet · red 1건 → crimson', () => judgeDiet([{ type: 'red', category: 'snack' }, { type: 'green', category: 'lunch' }]) === 'crimson');
-t('diet · 1끼 클린만 → gray (큐브 얻기 전)', () => judgeDiet([
+t('diet · 1끼 클린(green) → gold (2026-04-26 룰)', () => judgeDiet([
   { type: 'green', category: 'breakfast' },
-]) === 'gray');
-t('diet · 1끼 일반만 → gray', () => judgeDiet([
+]) === 'gold');
+t('diet · 1끼 일반 → silver (2026-04-26 룰: 기록 즉시 silver 보장)', () => judgeDiet([
   { type: 'normal', category: 'breakfast' },
-]) === 'gray');
+]) === 'silver');
 t('diet · 1끼 red → crimson (즉시 패널티)', () => judgeDiet([
   { type: 'red', category: 'dinner' },
 ]) === 'crimson');
@@ -41,7 +41,7 @@ t('diet · green 2 + normal 1 → gold', () => judgeDiet([
   { type: 'green', category: 'lunch' },
   { type: 'normal', category: 'dinner' },
 ]) === 'gold');
-t('diet · green 1 + normal 1 → silver (2끼 임계치 충족)', () => judgeDiet([
+t('diet · green 1 + normal 1 → silver (green<2)', () => judgeDiet([
   { type: 'green', category: 'breakfast' },
   { type: 'normal', category: 'lunch' },
 ]) === 'silver');

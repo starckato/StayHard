@@ -3,24 +3,28 @@
 // Phase 1: 판정 로직만. 기존 점수 시스템(addScore, SCORE_EVENTS)은 건드리지 않음.
 
 // ── 식단 큐브 ──
-// 2026-04-24 규칙: 식단은 2끼 이상 등록돼야 cube 형성 (1끼만 등록은 무점수 gray).
-// 예외: 금지식(red) / 주류(alcohol) 는 1건이라도 crimson — 즉시 패널티.
+// 2026-04-26 규칙 (사용자 결정): 첫 끼만 등록해도 silver 보장 → activation 강화.
+// 1끼 silver 룰의 의도 — "기록한 순간 책임진 것" 신호. 0점 vs 시작점 구분.
 //
 // 규칙:
-// - red/alcohol 1건이라도 → crimson (끼니 수 무관)
+// - red/alcohol 1건이라도 → crimson (끼니 수 무관, 즉시 패널티)
 // - 식사 기록 0건 (혹은 drink 만) → gray
-// - 비-drink 끼니 1건만 (red 없음) → gray  ← "큐브 얻기 전" 상태
-// - 비-drink 끼니 ≥ 2 + green ≥ 2 → gold
-// - 비-drink 끼니 ≥ 2 + 그 외 (일반식 혼합 / green 1건) → silver
+// - 비-drink 끼니 1건 (red 없음):
+//     · type==='green'(클린) → gold
+//     · 일반식           → silver
+// - 비-drink 끼니 ≥ 2 (red 없음):
+//     · green ≥ 2 → gold
+//     · 그 외     → silver  (일반식만이든 green 1 + 일반 1 이든)
 export function judgeDiet(meals) {
   const list = Array.isArray(meals) ? meals : [];
   if (list.length === 0) return 'gray';
   const hasRed = list.some((m) => m && (m.type === 'red' || m.category === 'alcohol'));
   if (hasRed) return 'crimson';
   const nonDrink = list.filter((m) => m && m.category !== 'drink');
-  if (nonDrink.length < 2) return 'gray';
+  if (nonDrink.length === 0) return 'gray';
   const greenCount = nonDrink.filter((m) => m.type === 'green').length;
   if (greenCount >= 2) return 'gold';
+  if (nonDrink.length === 1) return greenCount === 1 ? 'gold' : 'silver';
   return 'silver';
 }
 

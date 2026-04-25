@@ -125,11 +125,28 @@ export function obBuildRoutineChips(){
       _obWorkoutFreq=null;
     }
   }
-  // 루틴 칩 생성 — index 를 토글러에 넘겨 OB_GOAL_ROUTINES 에서 원본(days 포함) 룩업
-  document.getElementById('ob-routine-chips').innerHTML=routines.map((r,i)=>
-    `<div onclick="obToggleRoutine(this,${i})" style="padding:8px 14px;border-radius:20px;border:1.5px solid var(--border2);background:var(--surface2);font-size:13px;cursor:pointer;color:var(--text2);touch-action:manipulation;">${r.name}</div>`
-  ).join('');
-  document.getElementById('ob-selected-routines').innerHTML='';
+  // 루틴 칩 생성 — 첫 3 개 default 선택 (opt-out 패턴, 2026-04-26 UX 개선).
+  // 사용자가 능동 선택 안 해도 첫날 routine cube ≥ silver 가능.
+  const DEFAULT_PRESELECT=3;
+  const wfreqDays=(WFREQ_DAYS[_obWorkoutFreq]||WFREQ_DAYS[3]).slice();
+  document.getElementById('ob-routine-chips').innerHTML=routines.map((r,i)=>{
+    const on=i<DEFAULT_PRESELECT;
+    const bg=on?'var(--accent)':'var(--surface2)';
+    const fg=on?'#fff':'var(--text2)';
+    const bd=on?'var(--accent)':'var(--border2)';
+    return `<div onclick="obToggleRoutine(this,${i})" style="padding:8px 14px;border-radius:20px;border:1.5px solid ${bd};background:${bg};font-size:13px;cursor:pointer;color:${fg};touch-action:manipulation;">${r.name}</div>`;
+  }).join('');
+  // obSelectedRoutines 에 미리 push — finish 시 saved.
+  routines.slice(0,DEFAULT_PRESELECT).forEach(r=>{
+    let days=Array.isArray(r.days)?r.days.slice():[0,1,2,3,4,5,6];
+    if(/운동|헬스/.test(r.name||'')&&_obWorkoutFreq&&WFREQ_DAYS[_obWorkoutFreq]){
+      days=wfreqDays.slice();
+    }
+    obSelectedRoutines.push({name:r.name,scoreType:r.scoreType||null,days});
+  });
+  document.getElementById('ob-selected-routines').innerHTML=obSelectedRoutines.length>0
+    ?`<div style="font-size:11px;color:var(--text3);margin-bottom:4px;">선택된 루틴 ${obSelectedRoutines.length}개 · 탭하면 해제</div>`
+    +obSelectedRoutines.map(r=>`<div style="font-size:13px;color:var(--text2);padding:3px 0;">✓ ${r.name}</div>`).join(''):'';
 }
 export function obSelectWfreq(n,silent){
   _obWorkoutFreq=n;
