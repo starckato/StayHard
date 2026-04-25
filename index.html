@@ -13063,15 +13063,28 @@ async function onPushupStart(){
 
 async function startChallengeNow(compId){
   if(!confirm('지금 바로 시작할까요?\n나중에 친구가 코드로 합류할 수 있어요.'))return;
-  const today=new Date().toISOString().split('T')[0];
-  const{error}=await sb.from('competitions')
-    .update({status:'active',start_date:today}).eq('id',compId);
-  if(error){showToast('오류: '+error.message);return;}
-  if(activeComp&&activeComp.id===compId){
-    activeComp.status='active';activeComp.start_date=today;
+  try{
+    const today=new Date().toISOString().split('T')[0];
+    const{data:updated,error}=await sb.from('competitions')
+      .update({status:'active',start_date:today})
+      .eq('id',compId)
+      .select()
+      .single();
+    if(error){console.error('[startChallenge] update',error);showToast('오류: '+error.message);return;}
+    // server 결과 그대로 사용 — 모든 컬럼 (daily_goal 등) 최신
+    if(updated)activeComp=updated;
+    else if(activeComp&&activeComp.id===compId){activeComp.status='active';activeComp.start_date=today;}
+    showToast('✅ 챌린지 시작!');
+    try{
+      await renderChallengeRoom();
+    }catch(e){
+      console.error('[startChallenge] render',e);
+      showToast('렌더 실패 — 새로고침해주세요');
+    }
+  }catch(e){
+    console.error('[startChallenge] fatal',e);
+    showToast('시작 실패 — '+(e?.message||'알 수 없는 오류'));
   }
-  showToast('✅ 챌린지 시작!');
-  renderChallengeRoom();
 }
 function leaveOrCancelRoom(){
   if(!activeComp)return;
@@ -13400,23 +13413,31 @@ async function renderChallengeRoom(){
 
   // PR 2: 푸쉬업 챌린지 진행 중 view
   if(isPushupChallenge){
+    try{
+    // PushupChallenge bundle fallback (구 service worker 캐시 등 대비)
+    const PC=window.PushupChallenge||{
+      todayCount:(cube)=>Math.max(0,+(cube?.count)||0),
+      memberDaySeries:()=>[],
+      memberStatusFromSeries:()=>'active',
+    };
     const dailyGoal=+(c.daily_goal||0);
-    const{data:pushupLogs}=await sb.from('daily_logs')
+    const{data:pushupLogs,error:pushupErr}=await sb.from('daily_logs')
       .select('user_id,log_date,cubes')
       .in('user_id',mbs).gte('log_date',chStart).lte('log_date',chEnd);
+    if(pushupErr)console.warn('[pushup-room] daily_logs fetch',pushupErr);
     const logsByMember={};
     mbs.forEach(uid=>{logsByMember[uid]=(pushupLogs||[]).filter(l=>l.user_id===uid);});
 
     // 오늘 본인 카운트
     const todayLog=(logsByMember[CU.id]||[]).find(l=>(l.log_date||'').slice(0,10)===TODAY);
-    const myToday=window.PushupChallenge.todayCount(todayLog?.cubes?.pushup);
+    const myToday=PC.todayCount(todayLog?.cubes?.pushup);
     const myPct=dailyGoal>0?Math.min(100,Math.round((myToday/dailyGoal)*100)):0;
     const myDone=myToday>=dailyGoal&&dailyGoal>0;
 
     // 팀 합산
     let teamTotal=0;
     mbs.forEach(uid=>{
-      (logsByMember[uid]||[]).forEach(l=>{teamTotal+=window.PushupChallenge.todayCount(l.cubes?.pushup);});
+      (logsByMember[uid]||[]).forEach(l=>{teamTotal+=PC.todayCount(l.cubes?.pushup);});
     });
     const teamGoalTotal=dailyGoal*c.duration_days*mbs.length;
 
@@ -13425,10 +13446,10 @@ async function renderChallengeRoom(){
       const isMe=p.id===CU.id;
       const displayName=(p.display_name&&p.display_name.trim())?p.display_name:(p.username||'유저');
       const initial=(displayName||'·').slice(0,1).toUpperCase();
-      const series=window.PushupChallenge.memberDaySeries(logsByMember[p.id]||[],chStart,c.duration_days,dailyGoal);
-      const status=window.PushupChallenge.memberStatusFromSeries(series);
-      const todayCnt=window.PushupChallenge.todayCount(((logsByMember[p.id]||[]).find(l=>(l.log_date||'').slice(0,10)===TODAY))?.cubes?.pushup);
-      const totalReps=(logsByMember[p.id]||[]).reduce((a,l)=>a+window.PushupChallenge.todayCount(l.cubes?.pushup),0);
+      const series=PC.memberDaySeries(logsByMember[p.id]||[],chStart,c.duration_days,dailyGoal);
+      const status=PC.memberStatusFromSeries(series);
+      const todayCnt=PC.todayCount(((logsByMember[p.id]||[]).find(l=>(l.log_date||'').slice(0,10)===TODAY))?.cubes?.pushup);
+      const totalReps=(logsByMember[p.id]||[]).reduce((a,l)=>a+PC.todayCount(l.cubes?.pushup),0);
       const border=isMe?'var(--accent-bd)':'var(--border)';
       const bg=isMe?'var(--accent-bg)':'var(--surface2)';
       const ringCol=status==='partial'?'var(--text3)':(isMe?'var(--accent)':'var(--text2)');
@@ -13475,6 +13496,14 @@ async function renderChallengeRoom(){
       <div style="text-align:center;font-size:12px;color:var(--text3);margin:6px 16px 16px;font-family:'DM Mono',monospace;">
         팀 합산 ${teamTotal} / ${teamGoalTotal}회
       </div>`;
+    }catch(e){
+      console.error('[pushup-room] render error',e);
+      document.getElementById('room-members').innerHTML=`
+        <div style="text-align:center;padding:40px 20px;color:var(--text3);font-size:13px;line-height:1.6;">
+          푸쉬업 챌린지 룸 렌더 실패<br>
+          <button onclick="location.reload()" style="margin-top:16px;padding:10px 20px;background:var(--accent);border:none;border-radius:10px;color:#fff;font-size:13px;font-weight:700;cursor:pointer;">새로고침</button>
+        </div>`;
+    }
     return;
   }
 
