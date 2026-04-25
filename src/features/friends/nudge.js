@@ -1,4 +1,4 @@
-// Stay Hard · friends/nudge
+// QROK · friends/nudge
 //
 // Nudge send + inbox RPCs (migrations/017_nudges.sql). Server-side rate limits
 // are authoritative; this module also mirrors limits locally for instant UX

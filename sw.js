@@ -1,5 +1,5 @@
-// Stay Hard Service Worker
-const CACHE_NAME = 'stayhard-v4';
+// QROK Service Worker
+const CACHE_NAME = 'qrok-v1';
 self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', e => {
   e.waitUntil(caches.keys().then(keys =>

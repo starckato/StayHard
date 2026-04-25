@@ -1,4 +1,4 @@
-// Stay Hard · local notifications (on-device scheduling)
+// QROK · local notifications (on-device scheduling)
 //
 // Capacitor @capacitor/local-notifications 래퍼. 서버/APNs/FCM 불필요.
 // OS 가 지정 시간에 직접 알림을 띄움. 앱 꺼져 있어도 동작.
@@ -51,7 +51,7 @@ const COPY = {
   ],
 };
 
-const TITLE = 'Stay Hard';
+const TITLE = '큐록';
 
 async function _load() {
   return import('@capacitor/local-notifications');

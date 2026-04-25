@@ -1,4 +1,4 @@
-// Stay Hard · muscle activation data + helpers
+// QROK · muscle activation data + helpers
 //
 // Pure data maps and helpers. No state. No DOM.
 //   - MUSCLE_MAP[exerciseName] = {muscleKey: percent, ...}

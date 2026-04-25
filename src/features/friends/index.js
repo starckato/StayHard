@@ -1,4 +1,4 @@
-// Stay Hard · friends
+// QROK · friends
 //
 // Public entry. Called once at app bootstrap to register the sub-tab renderer
 // and the inbox badge updater. Lazy: only mounts the UI when the user switches

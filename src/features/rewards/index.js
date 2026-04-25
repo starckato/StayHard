@@ -1,4 +1,4 @@
-// Stay Hard · rewards / penalty animations
+// QROK · rewards / penalty animations
 //
 // DOM-coupled animations triggered by scoring events:
 //   - showWin / _showNextWin / _renderWinBody : winning pill cascade

@@ -1308,9 +1308,48 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
 .cv-guide-text{font-size:14px;color:rgba(255,255,255,.85);line-height:1.5;}
 .cv-rep-flash{position:absolute;inset:0;background:rgba(52,211,153,.15);pointer-events:none;opacity:0;transition:opacity .25s;z-index:1;}
 .cv-rep-flash.flash{opacity:1;}
+
+/* QROK Splash — Will Cube 4축 dot glow 시퀀스 (gold → silver → crimson → gray) */
+.qrok-splash-dot{width:6px;height:6px;display:inline-block;will-change:transform,box-shadow,opacity;animation:qrok-splash-dot-glow 1.6s ease-in-out infinite;}
+.qrok-splash-dot.gold   {background:#ffd54a;color:#ffd54a;animation-delay:0s;}
+.qrok-splash-dot.silver {background:#b5c0cc;color:#b5c0cc;animation-delay:0.3s;}
+.qrok-splash-dot.crimson{background:#ff4d4d;color:#ff4d4d;animation-delay:0.6s;}
+.qrok-splash-dot.gray   {background:#6b6b78;color:#6b6b78;animation-delay:0.9s;}
+@keyframes qrok-splash-dot-glow{
+  0%,60%,100%{transform:scale(1);box-shadow:0 0 0 transparent;opacity:0.5;}
+  20%       {transform:scale(1.7);box-shadow:0 0 12px currentColor;opacity:1;}
+}
 </style>
 </head>
 <body>
+
+<!-- QROK Splash — 페이드인 300ms → 정지 1300ms (글로우 1 cycle) → 페이드아웃 400ms. DOM 제거 2000ms. -->
+<div id="qrok-splash" role="img" aria-label="큐록 로딩 중" style="position:fixed;inset:0;background:#0f0f11;z-index:10000;display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:0;transition:opacity 300ms cubic-bezier(0.4,0,0.2,1);pointer-events:auto;">
+  <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
+    <div style="font-family:'Pretendard','Noto Sans KR','Apple SD Gothic Neo',sans-serif;font-weight:800;font-size:36px;color:#ff4d4d;line-height:1;letter-spacing:-0.01em;">큐록</div>
+    <div style="font-family:'Archivo Black','DM Sans','Helvetica Neue',sans-serif;font-weight:900;font-size:13px;color:#f5f1ea;letter-spacing:0.22em;opacity:0.85;">QROK</div>
+  </div>
+  <div style="margin-top:22px;font-family:'DM Sans',sans-serif;font-size:12px;color:#6b6b78;letter-spacing:0;text-align:center;padding:0 24px;">전부 기록하고, 전부 책임진다.</div>
+  <!-- 4 dots: gold → silver → crimson → gray 순차 글로우 (Will Cube 정체성). 중앙 정렬, 슬로건 아래. -->
+  <div style="margin-top:20px;display:flex;justify-content:center;gap:10px;">
+    <div class="qrok-splash-dot gold"></div>
+    <div class="qrok-splash-dot silver"></div>
+    <div class="qrok-splash-dot crimson"></div>
+    <div class="qrok-splash-dot gray"></div>
+  </div>
+</div>
+<script>
+  // QROK Splash auto-fadeout. 글로우 1 cycle 보장 (1.6s).
+  (function(){
+    var s=document.getElementById('qrok-splash');
+    if(!s)return;
+    requestAnimationFrame(function(){s.style.opacity='1';});
+    setTimeout(function(){
+      s.style.opacity='0';
+      setTimeout(function(){if(s.parentNode)s.parentNode.removeChild(s);},400);
+    },1600);
+  })();
+</script>
 
 <div class="loading-overlay" id="loading"><div class="spinner"></div><div class="loading-txt">로딩 중…</div><button id="loading-retry" onclick="location.reload()" style="display:none;margin-top:16px;padding:10px 24px;background:var(--accent-grad);border:none;border-radius:var(--radius-sm);color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;">다시 시도</button></div>
 <div class="toast" id="toast">저장됨 ✓</div>
@@ -1352,6 +1391,10 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
     </div>
     <button class="abtn" id="su-btn" onclick="doSignup()">계정 만들기</button>
     <div class="aerr" id="su-err" style="min-height:18px;"></div>
+    <div style="font-size:11px;color:var(--text3);text-align:center;margin-top:6px;line-height:1.6;">
+      계정 만들기 시 <a href="/terms" target="_blank" rel="noopener" style="color:var(--text2);text-decoration:underline;">이용약관</a> 및
+      <a href="/privacy" target="_blank" rel="noopener" style="color:var(--text2);text-decoration:underline;">개인정보처리방침</a> 에 동의한 것으로 간주됩니다.
+    </div>
   </div>
 </div>
 
@@ -3346,12 +3389,10 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
     </div>
     <!-- 캡쳐 타겟 영역 -->
     <div id="summary-capture-area" style="padding:16px 18px 28px;display:flex;flex-direction:column;gap:0;">
-      <!-- 점수 + 스트릭 -->
+      <!-- 스트릭 + 누적 -->
       <div style="display:flex;justify-content:space-between;align-items:center;background:var(--surface2);border-radius:12px;padding:12px 14px;margin-bottom:16px;">
         <div>
-          <div style="font-size:10px;color:var(--text3);letter-spacing:0.06em;margin-bottom:3px;">오늘 획득 점수</div>
-          <div id="summ-pts-modal" style="font-size:22px;font-weight:700;font-family:'DM Mono',monospace;"></div>
-          <div id="summ-total-pts" style="font-size:11px;color:var(--text3);margin-top:2px;"></div>
+          <div id="summ-total-pts" style="font-size:11px;color:var(--text3);"></div>
         </div>
         <div style="text-align:right;">
           <div id="summ-streak-modal" style="font-size:16px;font-weight:700;color:var(--amber);"></div>
@@ -3381,9 +3422,9 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
           <span id="summ-tg" style="font-size:13px;font-weight:600;"></span>
         </div>
       </div>
-      <!-- 점수 구성 (stats 탭에서 이동) -->
+      <!-- 오늘의 행위 — 기록탭에서 발생한 행위 + 횟수 (점수 표기 X) -->
       <div id="summ-pts-breakdown-wrap" style="margin-top:14px;display:none;">
-        <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;font-weight:600;">점수 구성</div>
+        <div style="font-size:10px;color:var(--text3);letter-spacing:0.08em;margin-bottom:8px;font-weight:600;">오늘의 행위</div>
         <div id="summ-pts-breakdown" style="display:flex;flex-direction:column;gap:5px;"></div>
       </div>
     </div>
@@ -3821,6 +3862,12 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
     </button>
     <button class="signout-btn" onclick="doSignOut()">로그아웃</button>
     <button class="mbtn-ghost" onclick="closeModal('profile-modal')" style="margin-bottom:8px;">닫기</button>
+    <!-- 법적 고지 -->
+    <div style="display:flex;justify-content:center;gap:12px;margin:6px 0 10px;font-size:11px;color:var(--text3);">
+      <a href="/terms" target="_blank" rel="noopener" style="color:var(--text2);text-decoration:underline;">이용약관</a>
+      <span>·</span>
+      <a href="/privacy" target="_blank" rel="noopener" style="color:var(--text2);text-decoration:underline;">개인정보처리방침</a>
+    </div>
     <!-- 계정 삭제 — 파괴적 액션, 차가운 톤으로 -->
     <button onclick="confirmDeleteAccount()" style="width:100%;padding:10px;background:transparent;border:1px solid rgba(255,77,77,0.3);border-radius:10px;color:var(--red);font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;letter-spacing:-.01em;">계정·데이터 완전 삭제</button>
   </div>
@@ -6272,7 +6319,7 @@ async function showForgotPassword(){
   const email=document.getElementById('li-email').value.trim();
   const input=email||prompt('가입한 이메일 주소를 입력하세요');
   if(!input)return;
-  const{error}=await sb.auth.resetPasswordForEmail(input,{redirectTo:'https://stay-hard-rouge.vercel.app'});
+  const{error}=await sb.auth.resetPasswordForEmail(input,{redirectTo:'https://qrok.app'});
   if(error){alert('오류: '+error.message);return;}
   alert('✅ 비밀번호 재설정 이메일을 보냈어요!\n메일함을 확인해주세요.');
 }
@@ -7798,8 +7845,8 @@ async function shareBonusGrant(){
   const title=esc(g.title||'');
   const msg=escMultiline(g.message||'');
   const pts=+g.points||0;
-  const shareUrl='stay-hard-rouge.vercel.app/?celebrate='+encodeURIComponent(g.event_key||'');
-  const displayDomain='stay-hard-rouge.vercel.app';
+  const shareUrl='qrok.app/?celebrate='+encodeURIComponent(g.event_key||'');
+  const displayDomain='qrok.app';
   const card=document.createElement('div');
   card.style.cssText='position:fixed;left:-9999px;top:0;width:430px;background:#0a0a0c;padding:30px 28px 24px;border-radius:0;color:#fff;font-family:"DM Sans",sans-serif;box-sizing:border-box;';
   // NOTE: html2canvas cannot render `background-clip:text + color:transparent` gradients —
@@ -7830,7 +7877,7 @@ async function shareBonusGrant(){
     card.remove();
     const blob=await new Promise(res=>canvas.toBlob(res,'image/png'));
     if(!blob){showToast('이미지 생성 실패');return;}
-    const file=new File([blob],`stayhard_${g.event_key||'bonus'}.png`,{type:'image/png'});
+    const file=new File([blob],`qrok_${g.event_key||'bonus'}.png`,{type:'image/png'});
     // iOS Safari: body overflow must be released for share sheet to animate
     const prevOverflow=document.body.style.overflow;
     document.body.style.overflow='';
@@ -8115,8 +8162,8 @@ async function shareInvite(){
   if(typeof html2canvas==='undefined'){showToast('공유 준비 중... 잠시 후 다시 시도');return;}
   try{track('invite_share_start',{});}catch(e){}
   const refId=CU.id;
-  const shareUrl='https://stay-hard-rouge.vercel.app/?invite='+encodeURIComponent(refId);
-  const displayUrl='stay-hard-rouge.vercel.app';
+  const shareUrl='https://qrok.app/?invite='+encodeURIComponent(refId);
+  const displayUrl='qrok.app';
   const userName=(CP&&(CP.display_name||CP.username))||'친구';
   const tier=typeof getTier==='function'?getTier(+(CP?.total_score)||0):{icon:'',name:'큐록'};
   const score=+(CP?.total_score)||0;
@@ -8152,7 +8199,7 @@ async function shareInvite(){
     card.remove();
     const blob=await new Promise(res=>canvas.toBlob(res,'image/png'));
     if(!blob){showToast('이미지 생성 실패');return;}
-    const file=new File([blob],'stayhard_invite.png',{type:'image/png'});
+    const file=new File([blob],'qrok_invite.png',{type:'image/png'});
     const shareText=`${userName} 님이 큐록 초대장을 보냈어요 → ${shareUrl}`;
     const prevOverflow=document.body.style.overflow;
     document.body.style.overflow='';
@@ -8694,16 +8741,7 @@ function renderSummaryModal(){
   const weekday=['일','월','화','수','목','금','토'][d.getDay()];
   const dateStr=(d.getMonth()+1)+'월 '+d.getDate()+'일 ('+weekday+')';
   document.getElementById('summ-modal-date').textContent=dateStr+(isToday?' · 오늘':'');
-  // 점수 — CUBE mode: scoreFromCubes(l.cubes) 가 single source of truth.
-  let dayPts=0;
-  if(window.CUBE_UI_MODE===true&&l&&l.cubes&&window.Cubes&&typeof window.Cubes.scoreFromCubes==='function'){
-    dayPts=window.Cubes.scoreFromCubes(l.cubes);
-  } else {
-    dayPts=(l._ptsLog||[]).reduce((a,e)=>a+e.pts,0);
-  }
-  const ptsEl=document.getElementById('summ-pts-modal');
-  ptsEl.textContent=(dayPts>=0?'+':'')+dayPts+'pt';
-  ptsEl.style.color=dayPts>0?'var(--accent)':dayPts<0?'var(--red)':'var(--text3)';
+  // 오늘 획득 점수 표기 제거 (UI 패러다임: 행위·점수 노출 X). 누적·스트릭만 유지.
   const totalPtsEl=document.getElementById('summ-total-pts');
   if(isToday){
     totalPtsEl.textContent='누적 '+(+(CP?.total_score)||0).toLocaleString()+'pts';
@@ -8757,38 +8795,46 @@ function renderSummaryModal(){
   if(tgts.length===0){tgEl.textContent='—';tgEl.style.color='var(--text3)';}
   else{tgEl.textContent=tgtDone+'/'+tgts.length;tgEl.style.color=tgtDone===tgts.length?'var(--green)':'var(--text3)';}
 
-  // 점수 구성 (하루 전체 _ptsLog 집계) — stats 탭에서 이동
-  const ptsLog=l._ptsLog||[];
+  // 오늘의 행위 — 기록탭 prefix entry 만 표시 (다른 탭은 노출 X). 점수 숫자 표기 X.
+  // 라벨: SCORE_EVENTS[type].label single source. 미정의 시 SUMMARY_LABEL_FALLBACK.
+  const RECORD_TAB_PREFIXES=['diet_','workout_','routine_','target_'];
+  const SUMMARY_LABEL_FALLBACK={
+    diet_clean:'클린 식단', diet_clean_register:'클린 식단', diet_clean_cancel:'클린 식단 취소', diet_clean_delete:'클린 식단 삭제',
+    diet_log:'식단 등록', diet_log_only:'식단 등록', diet_log_cancel:'식단 등록 취소', diet_log_only_cancel:'식단 등록 취소',
+    diet_junk:'금지 식단', diet_junk_cancel:'금지 식단 만회',
+    diet_alcohol_register:'음주 기록', diet_alcohol_cancel:'음주 기록 취소',
+    workout_done:'근력 운동 완료', workout_cardio_done:'유산소 완료',
+    workout_done_cancel:'근력 운동 취소', workout_cardio_done_cancel:'유산소 취소',
+    workout_delete:'운동 취소', workout_deleted:'운동 삭제',
+    routine_done:'필수 루틴 완료', routine_done_cancel:'루틴 완료 취소',
+    routine_fail:'필수 루틴 실패', routine_fail_cancel:'루틴 실패 취소',
+    routine_skip:'필수 루틴 스킵', routine_skip_cancel:'루틴 스킵 취소',
+    target_done:'할일 완료', target_done_cancel:'할일 완료 취소',
+    target_fail:'할일 실패', target_fail_cancel:'할일 실패 취소',
+  };
+  const ptsLog=(l._ptsLog||[]).filter(e=>RECORD_TAB_PREFIXES.some(p=>(e.type||'').startsWith(p)));
   const wrap=document.getElementById('summ-pts-breakdown-wrap');
   const list=document.getElementById('summ-pts-breakdown');
   if(wrap&&list){
     if(!ptsLog.length){wrap.style.display='none';}
     else{
       wrap.style.display='block';
-      // Aggregate by event type (reuse SCORE_EVENTS labels when available)
       const byType={};
       ptsLog.forEach(e=>{
         const t=e.type||'기타';
-        if(!byType[t])byType[t]={pts:0,count:0};
-        byType[t].pts+=(e.pts||0);
+        if(!byType[t])byType[t]={count:0,sign:0};
         byType[t].count++;
+        byType[t].sign=(byType[t].sign||0)+(e.pts||0);
       });
-      const labelMap={
-        weight_record:'체중 기록', weight_loss:'감량 성공', weight_goal:'목표 달성',
-        diet_clean:'클린식', diet_normal:'일반식', diet_cheat:'치팅', diet_junk:'금지식', diet_alcohol:'음주',
-        workout_done:'운동 완료', routine_done:'루틴 완료', target_done:'할일 완료',
-        cold_shower:'찬물 샤워', early_rise:'일찍 기상', perfect_day:'퍼펙트 데이',
-      };
       list.innerHTML=Object.entries(byType)
-        .sort(([,a],[,b])=>b.pts-a.pts)
+        .sort(([,a],[,b])=>b.count-a.count)
         .map(([type,info])=>{
-          const lbl=labelMap[type]||type;
-          const sign=info.pts>0?'+':'';
-          const col=info.pts>0?'var(--accent)':info.pts<0?'var(--red)':'var(--text3)';
-          const countStr=info.count>1?` <span style="color:var(--text3);font-size:10px;">×${info.count}</span>`:'';
+          const lbl=(window.SCORE_EVENTS&&window.SCORE_EVENTS[type]?.label)||SUMMARY_LABEL_FALLBACK[type]||type;
+          const col=info.sign<0?'var(--red)':'var(--text2)';
+          const countStr=`<span style="color:var(--text3);font-size:11px;font-family:'DM Mono',monospace;">×${info.count}</span>`;
           return `<div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;padding:4px 0;">
-            <span style="color:var(--text2);">${lbl}${countStr}</span>
-            <span style="color:${col};font-weight:700;font-family:'DM Mono',monospace;">${sign}${info.pts}pt</span>
+            <span style="color:${col};">${lbl}</span>
+            ${countStr}
           </div>`;
         }).join('');
     }
@@ -8802,9 +8848,9 @@ async function shareSummary(){
     const canvas=await html2canvas(area,{backgroundColor:'#18181c',scale:2,useCORS:true,logging:false});
     canvas.toBlob(async blob=>{
       if(!blob){showToast('캡쳐 실패 😢');return;}
-      const file=new File([blob],'stayhard-'+selectedKey+'.png',{type:'image/png'});
+      const file=new File([blob],'qrok-'+selectedKey+'.png',{type:'image/png'});
       if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){
-        try{await navigator.share({files:[file],title:'StayHard — 오늘의 요약'});return;}catch(e){}
+        try{await navigator.share({files:[file],title:'QROK — 오늘의 요약'});return;}catch(e){}
       }
       const url=URL.createObjectURL(blob);
       const a=document.createElement('a');
@@ -10908,7 +10954,7 @@ function _createShareOverlay(){
       el.querySelector('#so-share').onclick=async()=>{
         if(navigator.share && lastBlob){
           try{
-            const f=new File([lastBlob],'stayhard_workout.png',{type:'image/png'});
+            const f=new File([lastBlob],'qrok_workout.png',{type:'image/png'});
             await navigator.share({files:[f],title:'큐록 운동 기록'});
             console.log('[share] overlay native share ok');
             close();
@@ -10927,7 +10973,7 @@ function _createShareOverlay(){
 }
 
 function downloadImage(canvas,blob){
-  const fileName='stayhard_workout_'+TODAY+'.png';
+  const fileName='qrok_workout_'+TODAY+'.png';
   try{
     const a=document.createElement('a');
     a.download=fileName;
@@ -12754,7 +12800,7 @@ async function shareChallengResult(){
     const canvas=await html2canvas(area,{backgroundColor:'#18181c',scale:2,useCORS:true,logging:false});
     canvas.toBlob(async blob=>{
       if(!blob){showToast('캡쳐 실패 😢');return;}
-      const file=new File([blob],'stayhard-challenge-result.png',{type:'image/png'});
+      const file=new File([blob],'qrok-challenge-result.png',{type:'image/png'});
       if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){
         try{await navigator.share({files:[file],title:'QROK — 챌린지 결과'});return;}catch(e){}
       }
@@ -12879,7 +12925,7 @@ async function shareMuscleMap(){
     <div style="margin-top:16px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:space-between;">
       <div>
         <div style="font-size:14px;font-weight:800;color:#ff4d4d;letter-spacing:0.2px;">${punchline}</div>
-        <div style="font-size:10px;color:#6b6b78;margin-top:2px;">stayhard.app · ${tease}</div>
+        <div style="font-size:10px;color:#6b6b78;margin-top:2px;">qrok.app · ${tease}</div>
       </div>
       <div style="padding:9px 13px;background:linear-gradient(135deg,#ff4d4d,#ff6b35);border-radius:10px;font-size:11px;font-weight:900;color:#fff;letter-spacing:0.5px;box-shadow:0 4px 12px rgba(255,77,77,0.3);">💪 QROK</div>
     </div>
@@ -12890,8 +12936,8 @@ async function shareMuscleMap(){
     canvas.toBlob(async blob=>{
       try{document.body.removeChild(comp);}catch(e){}
       if(!blob){showToast('캡쳐 실패 😢');return;}
-      const file=new File([blob],'stayhard-muscle-map.png',{type:'image/png'});
-      const shareText=`${punchline}\n${tease.replace(/\s*→\s*$/,'')} stayhard.app`;
+      const file=new File([blob],'qrok-muscle-map.png',{type:'image/png'});
+      const shareText=`${punchline}\n${tease.replace(/\s*→\s*$/,'')} qrok.app`;
       if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){
         const _savedOverflow=document.body.style.overflow;
         document.body.style.overflow='';

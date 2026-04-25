@@ -1,4 +1,4 @@
-// Stay Hard · modular bundle entry point
+// QROK · modular bundle entry point
 // Migration phase: 3 complete · Phase 5 (Capacitor) in progress
 
 import * as date from './lib/date.js';

@@ -1,4 +1,4 @@
-// Stay Hard · push notifications
+// QROK · push notifications
 //
 // Native only. Registers with APNs/FCM, gets a device token, and persists it
 // to Supabase `push_tokens` (table created by migrations/015_push_tokens.sql —

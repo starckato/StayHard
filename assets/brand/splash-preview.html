@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>QROK Splash · 시안</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #1a1a1c;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 24px;
+      padding: 24px;
+      font-family: -apple-system, 'Pretendard', 'Noto Sans KR', 'Apple SD Gothic Neo', sans-serif;
+      color: #f5f1ea;
+    }
+    .controls {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .btn {
+      padding: 10px 18px;
+      background: #2a2a2e;
+      border: 1px solid #3a3a3e;
+      border-radius: 8px;
+      color: #f5f1ea;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 200ms;
+    }
+    .btn:hover { background: #3a3a3e; }
+    .btn.primary { background: #ff4d4d; border-color: #ff4d4d; }
+    .btn.primary:hover { background: #ff6b35; }
+    .info {
+      font-size: 11px;
+      color: #6b6b78;
+      letter-spacing: 0.04em;
+    }
+    .device-row {
+      display: flex;
+      gap: 32px;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: flex-start;
+    }
+    .device {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+    .device-label {
+      font-size: 11px;
+      color: #6b6b78;
+      letter-spacing: 0.06em;
+    }
+    .frame {
+      position: relative;
+      background: #0f0f11;
+      overflow: hidden;
+      border-radius: 32px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 0 8px #2a2a2e;
+    }
+    .frame.iphone { width: 320px; height: 692px; }
+    .frame.android { width: 320px; height: 640px; border-radius: 16px; }
+
+    /* === SPLASH (정확히 index.html 과 동일) === */
+    .splash {
+      position: absolute;
+      inset: 0;
+      background: #0f0f11;
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 300ms cubic-bezier(0.4,0,0.2,1);
+    }
+    .splash.show { opacity: 1; }
+    .splash.hide { opacity: 0; }
+    .wordmark-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+    .wordmark-ko {
+      font-family: 'Pretendard', 'Noto Sans KR', 'Apple SD Gothic Neo', sans-serif;
+      font-weight: 800;
+      font-size: 36px;
+      color: #ff4d4d;
+      line-height: 1;
+      letter-spacing: -0.01em;
+    }
+    .wordmark-en {
+      font-family: 'Archivo Black', 'DM Sans', 'Helvetica Neue', sans-serif;
+      font-weight: 900;
+      font-size: 13px;
+      color: #f5f1ea;
+      letter-spacing: 0.22em;
+      opacity: 0.85;
+    }
+    .slogan {
+      margin-top: 22px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 12px;
+      color: #6b6b78;
+      letter-spacing: 0;
+      text-align: center;
+      padding: 0 24px;
+    }
+    .dots {
+      margin-top: 20px;
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+    }
+    .dot {
+      width: 6px;
+      height: 6px;
+      will-change: transform, box-shadow, opacity;
+      animation: dot-glow 1.6s ease-in-out infinite;
+    }
+    .dot.gold    { background: #ffd54a; color: #ffd54a; animation-delay: 0s; }
+    .dot.silver  { background: #b5c0cc; color: #b5c0cc; animation-delay: 0.3s; }
+    .dot.crimson { background: #ff4d4d; color: #ff4d4d; animation-delay: 0.6s; }
+    .dot.gray    { background: #6b6b78; color: #6b6b78; animation-delay: 0.9s; }
+    @keyframes dot-glow {
+      0%, 60%, 100% { transform: scale(1); box-shadow: 0 0 0 transparent; opacity: 0.5; }
+      20%           { transform: scale(1.7); box-shadow: 0 0 12px currentColor; opacity: 1; }
+    }
+
+    /* === 다음 화면 (mock) === */
+    .next-screen {
+      position: absolute;
+      inset: 0;
+      background: #0f0f11;
+      padding: 60px 18px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .ns-title {
+      color: #ff4d4d;
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: -0.01em;
+    }
+    .ns-mock-card {
+      background: rgba(255, 77, 77, 0.04);
+      border: 0.5px solid rgba(255, 77, 77, 0.2);
+      border-radius: 14px;
+      height: 110px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #6b6b78;
+      font-size: 12px;
+    }
+    .ns-mock-row {
+      background: #18181c;
+      border: 0.5px solid #2a2a2e;
+      border-radius: 10px;
+      height: 36px;
+    }
+  </style>
+</head>
+<body>
+  <div class="controls">
+    <button class="btn primary" id="play">▶ 시안 재생</button>
+    <button class="btn" id="loop">⟲ 반복 재생</button>
+    <span class="info">총 2000ms · 페이드인 300ms → 정지 1300ms (글로우 1 cycle) → 페이드아웃 400ms</span>
+  </div>
+
+  <div class="device-row">
+    <div class="device">
+      <div class="device-label">iPhone 14 (390×844 → 80%)</div>
+      <div class="frame iphone" id="frame-ios">
+        <div class="next-screen">
+          <div class="ns-title">큐록</div>
+          <div class="ns-mock-card">홈 화면 (mock)</div>
+          <div class="ns-mock-row"></div>
+          <div class="ns-mock-row"></div>
+          <div class="ns-mock-row"></div>
+        </div>
+        <div class="splash" id="splash-ios">
+          <div class="wordmark-wrap">
+            <div class="wordmark-ko">큐록</div>
+            <div class="wordmark-en">QROK</div>
+          </div>
+          <div class="slogan">전부 기록하고, 전부 책임진다.</div>
+          <div class="dots">
+            <div class="dot gold"></div>
+            <div class="dot silver"></div>
+            <div class="dot crimson"></div>
+            <div class="dot gray"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="device">
+      <div class="device-label">Android (360×800 → 80%)</div>
+      <div class="frame android" id="frame-android">
+        <div class="next-screen">
+          <div class="ns-title">큐록</div>
+          <div class="ns-mock-card">홈 화면 (mock)</div>
+          <div class="ns-mock-row"></div>
+          <div class="ns-mock-row"></div>
+          <div class="ns-mock-row"></div>
+        </div>
+        <div class="splash" id="splash-android">
+          <div class="wordmark-wrap">
+            <div class="wordmark-ko">큐록</div>
+            <div class="wordmark-en">QROK</div>
+          </div>
+          <div class="slogan">전부 기록하고, 전부 책임진다.</div>
+          <div class="dots">
+            <div class="dot gold"></div>
+            <div class="dot silver"></div>
+            <div class="dot crimson"></div>
+            <div class="dot gray"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const splashEls = [
+      document.getElementById('splash-ios'),
+      document.getElementById('splash-android'),
+    ];
+
+    function play() {
+      splashEls.forEach(s => {
+        s.classList.remove('hide');
+        s.classList.remove('show');
+        s.style.display = 'flex';
+        // force reflow
+        void s.offsetHeight;
+        requestAnimationFrame(() => s.classList.add('show'));
+        setTimeout(() => s.classList.add('hide'), 1600);
+        setTimeout(() => { s.style.display = 'none'; }, 2000);
+      });
+    }
+
+    let loopTimer = null;
+    function loop() {
+      if (loopTimer) {
+        clearInterval(loopTimer);
+        loopTimer = null;
+        document.getElementById('loop').textContent = '⟲ 반복 재생';
+        return;
+      }
+      play();
+      loopTimer = setInterval(play, 2700);
+      document.getElementById('loop').textContent = '⏸ 반복 중지';
+    }
+
+    document.getElementById('play').addEventListener('click', play);
+    document.getElementById('loop').addEventListener('click', loop);
+
+    // 자동 첫 재생
+    setTimeout(play, 200);
+  </script>
+</body>
+</html>

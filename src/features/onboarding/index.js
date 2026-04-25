@@ -1,4 +1,4 @@
-// Stay Hard · onboarding feature
+// QROK · onboarding feature
 // Migration phase: 3.2 — first-run 4-step modal that captures goal,
 // target weight, routines, and workout frequency. Extracted verbatim from
 // index.html inline block. Reaches out to window.* for state/functions

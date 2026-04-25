@@ -1,4 +1,4 @@
-// Stay Hard · cheat/alcohol quota helpers
+// QROK · cheat/alcohol quota helpers
 //
 // Reads window.CP for current profile state (cheat_used / alcohol_used).
 // Pure helpers — no DOM, no side effects except persistence on cheat-use flow.

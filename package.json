@@ -1,9 +1,9 @@
 {
-  "name": "stayhard",
+  "name": "qrok",
   "private": true,
   "version": "2.5.0",
   "type": "module",
-  "description": "Stay Hard — habit tracker SPA",
+  "description": "QROK — daily accountability tracker SPA",
   "scripts": {
     "dev": "node esbuild.config.mjs --watch --serve",
     "build": "node esbuild.config.mjs",

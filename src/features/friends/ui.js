@@ -1,4 +1,4 @@
-// Stay Hard · friends/ui
+// QROK · friends/ui
 //
 // DOM rendering for the friends sub-tab. Uses vanilla DOM (no framework) to
 // match the rest of index.html. All copy in Korean per VOICE_POLICY:

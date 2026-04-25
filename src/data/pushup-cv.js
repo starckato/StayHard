@@ -1,4 +1,4 @@
-// Stay Hard · pushup CV data
+// QROK · pushup CV data
 //
 // Constants for the MediaPipe Pose-based pushup rep counter.
 // Pure data. No runtime state, no DOM.

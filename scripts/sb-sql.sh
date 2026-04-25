@@ -1,6 +1,6 @@
 #!/bin/bash
 # sb-sql.sh — run SQL against Supabase via Management API
-# Requires: ~/.stayhard-sb-pat (Personal Access Token, chmod 600)
+# Requires: ~/.qrok-sb-pat (Personal Access Token, chmod 600)
 #
 # Usage:
 #   ./scripts/sb-sql.sh path/to/file.sql
@@ -11,7 +11,7 @@
 
 set -euo pipefail
 
-PAT_FILE="${HOME}/.stayhard-sb-pat"
+PAT_FILE="${HOME}/.qrok-sb-pat"
 PROJECT_REF="uvaosxhsjscigheyymus"
 
 if [ ! -f "$PAT_FILE" ]; then

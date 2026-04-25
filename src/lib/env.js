@@ -1,4 +1,4 @@
-// Stay Hard · environment configuration
+// QROK · environment configuration
 //
 // Phase 2 (temporary inline constants). Phase 4 will replace these with
 // esbuild `define` options sourced from Vercel environment variables.
