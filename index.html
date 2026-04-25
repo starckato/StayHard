@@ -207,7 +207,7 @@ html,body{margin:0;padding:0;}
 body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max-width:430px;margin:0 auto;padding-bottom:160px;-webkit-overflow-scrolling:touch;touch-action:manipulation;}
 
 /* LOADING */
-.loading-overlay{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:999;flex-direction:column;gap:12px;}
+.loading-overlay{position:fixed;top:0;left:0;width:100vw;height:100vh;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:999;flex-direction:column;gap:12px;}
 .spinner{width:28px;height:28px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;}
 @keyframes spin{to{transform:rotate(360deg);}}
 .loading-txt{font-size:13px;color:var(--text2);}
@@ -1360,23 +1360,18 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
       s.style.opacity='0';
       setTimeout(function(){if(s.parentNode)s.parentNode.removeChild(s);},400);
     }
+    // ready = _initDone (onLogin 완료) 만. auth/app screen 가시는 너무 빨라
+    // splash 가 0.2초만 표시되는 원인이라 제외.
     function isReady(){
-      try{
-        if(window._initDone===true)return true;
-        var auth=document.getElementById('auth-screen');
-        var app=document.getElementById('app-screen');
-        if(auth&&getComputedStyle(auth).display!=='none')return true;
-        if(app&&getComputedStyle(app).display!=='none')return true;
-      }catch(_){}
-      return false;
+      return window._initDone===true;
     }
-    // 최소 1500ms (글로우 1 cycle + 호흡) 후 ready 검사 시작
+    // 최소 1500ms 후 ready 검사 시작. 안전 timeout 30초 (그 사이 글로우 dots 계속 반복).
     setTimeout(function(){
       if(isReady()){hide();return;}
       var elapsed=0;
       var poll=setInterval(function(){
         elapsed+=200;
-        if(isReady()||elapsed>=4500){clearInterval(poll);hide();}
+        if(isReady()||elapsed>=30000){clearInterval(poll);hide();}
       },200);
     },1500);
   })();
