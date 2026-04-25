@@ -13182,6 +13182,75 @@ async function renderChallengeRoom(){
       activeComp={...c,status:'completed'};
     }
 
+    // PR 2: 푸쉬업 챌린지 결과 화면 (달성 / 방관자 split)
+    if(isPushupChallenge){
+      const dailyGoal=+(c.daily_goal||0);
+      const{data:pushupLogsEnd}=await sb.from('daily_logs')
+        .select('user_id,log_date,cubes')
+        .in('user_id',mbs).gte('log_date',chStart).lte('log_date',chEnd);
+      const logsByMember={};
+      mbs.forEach(uid=>{logsByMember[uid]=(pushupLogsEnd||[]).filter(l=>l.user_id===uid);});
+      const reachedList=[],partialList=[];
+      let teamTotal=0;
+      (profiles||[]).forEach(p2=>{
+        const series=window.PushupChallenge.memberDaySeries(logsByMember[p2.id]||[],chStart,c.duration_days,dailyGoal);
+        const status=window.PushupChallenge.memberStatusFromSeries(series);
+        const totalReps=(logsByMember[p2.id]||[]).reduce((a,l)=>a+window.PushupChallenge.todayCount(l.cubes?.pushup),0);
+        teamTotal+=totalReps;
+        const successDays=series.filter(s=>s==='success').length;
+        const entry={p:p2,totalReps,successDays,duration:c.duration_days};
+        if(status==='completed')reachedList.push(entry);else partialList.push(entry);
+      });
+      function _pushupRow(entry,isAchieved){
+        const{p,totalReps,successDays,duration}=entry;
+        const name=(p.display_name?.trim())||p.username||'유저';
+        const isMe=p.id===CU.id;
+        const initial=(name||'·').slice(0,1).toUpperCase();
+        const ringCol=isAchieved?'var(--green)':'var(--text3)';
+        const txtCol=isAchieved?'var(--text)':'var(--text3)';
+        return`<div style="display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid var(--border);">
+          <div style="width:28px;height:28px;border-radius:50%;border:1px solid ${ringCol};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:${ringCol};flex-shrink:0;">${initial}</div>
+          <div style="flex:1;font-size:13px;font-weight:600;color:${txtCol};">${name}${isMe?' (나)':''}</div>
+          <div style="font-size:12px;color:var(--text3);font-family:'DM Mono',monospace;">${successDays}/${duration}일 · ${totalReps}회</div>
+          ${isAchieved?`<div style="color:var(--green);">${ICON_CHECK_SVG}</div>`:''}
+        </div>`;
+      }
+      const allMissed=reachedList.length===0&&partialList.length>0;
+      const reachedCard=reachedList.length?`
+        <div style="background:var(--surface2);border:1px solid var(--green-bd);border-radius:14px;padding:14px 16px;margin:0 16px 12px;">
+          <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--green);font-weight:700;margin-bottom:8px;">
+            ${ICON_TROPHY_SVG}<span>완주  ${reachedList.length}명</span>
+          </div>
+          ${reachedList.map(e=>_pushupRow(e,true)).join('')}
+          <div style="font-size:12px;color:var(--text2);margin-top:10px;line-height:1.5;">축하해요. 매일 채웠어요.</div>
+        </div>`:'';
+      const partialFooter=allMissed?'다 같이 다음 라운드 잡아봐요.':'다음 라운드 다시 잡을 수 있어요.';
+      const partialCard=partialList.length?`
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:14px 16px;margin:0 16px 12px;">
+          <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text2);font-weight:700;margin-bottom:8px;">
+            ${ICON_FLAG_SVG}<span>방관자  ${partialList.length}명</span>
+          </div>
+          ${partialList.map(e=>_pushupRow(e,false)).join('')}
+          <div style="font-size:12px;color:var(--text3);margin-top:10px;line-height:1.5;">${partialFooter}</div>
+        </div>`:'';
+      const teamLine=`
+        <div style="text-align:center;font-size:12px;color:var(--text3);margin:4px 16px 14px;font-family:'DM Mono',monospace;">
+          팀 합산 ${teamTotal}회 / ${dailyGoal*c.duration_days*mbs.length}회
+        </div>`;
+      document.getElementById('room-members').innerHTML=`
+        <div style="text-align:center;padding:28px 16px 18px;">
+          <div style="font-size:20px;font-weight:800;color:var(--text);margin-bottom:6px;">챌린지 종료</div>
+          <div style="font-size:13px;color:var(--text2);">기간 동안의 기록이 끝났어요</div>
+        </div>
+        ${reachedCard}${partialCard}${teamLine}
+        <div style="padding:8px 16px 24px;display:flex;flex-direction:column;gap:8px;">
+          <button onclick="shareChallengResult()" style="width:100%;padding:13px;background:var(--surface2);border:1px solid var(--border2);border-radius:12px;color:var(--text2);font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">결과 카드 공유</button>
+          <button onclick="closeChallengeRoom();showChallengeCreate();" style="width:100%;padding:14px;background:var(--accent);border:none;border-radius:12px;color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">다음 라운드 만들기</button>
+          <button onclick="closeChallengeRoom()" style="width:100%;padding:11px;background:transparent;border:none;color:var(--text3);font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">닫기</button>
+        </div>`;
+      return;
+    }
+
     // 체중 감량 챌린지: 최신 체중 가져오기
     let memberWeights={};
     if(isDietChallenge){
