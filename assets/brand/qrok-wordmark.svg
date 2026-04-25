@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 80" role="img" aria-label="QROK 큐록">
+  <title>QROK 큐록</title>
+  <!-- 큐록 (한글, 큰 글씨) -->
+  <text x="160" y="38"
+        font-family="'Pretendard','Noto Sans KR','Apple SD Gothic Neo',sans-serif"
+        font-weight="800"
+        font-size="36"
+        text-anchor="middle"
+        fill="#f5f1ea"
+        letter-spacing="0">큐록</text>
+  <!-- QROK (영문, Archivo Black 류) -->
+  <text x="160" y="62"
+        font-family="'Archivo Black','DM Sans','Helvetica Neue',sans-serif"
+        font-weight="900"
+        font-size="14"
+        text-anchor="middle"
+        fill="#f5f1ea"
+        letter-spacing="2.2"
+        opacity="0.85">QROK</text>
+</svg>

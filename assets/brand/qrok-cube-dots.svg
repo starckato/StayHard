@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 56 8" role="img" aria-label="QROK 4축 큐브 (식단·운동·루틴·할일)">
+  <title>QROK 4축 큐브 dots</title>
+  <!-- 식단 (silver) -->
+  <rect x="0" y="1" width="6" height="6" fill="#a8a8a8" opacity="0.6" rx="0.5"/>
+  <!-- 운동 (red — 액센트) -->
+  <rect x="14" y="1" width="6" height="6" fill="#ff4d4d" opacity="0.9" rx="0.5"/>
+  <!-- 루틴 (silver) -->
+  <rect x="28" y="1" width="6" height="6" fill="#a8a8a8" opacity="0.6" rx="0.5"/>
+  <!-- 할일 (gray) -->
+  <rect x="42" y="1" width="6" height="6" fill="#6b6b78" opacity="0.6" rx="0.5"/>
+</svg>
