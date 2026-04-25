@@ -20,7 +20,7 @@
      so window globals (dkey, normKey, ...) are set before inline code runs.
      Query version bumps cache when bundle content changes. Bump manually or
      via build script when shipping a new bundle. See MIGRATION_PLAN.md. -->
-<script src="/dist/app.js?v=20260425aa"></script>
+<script src="/dist/app.js?v=20260425ab"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Archivo+Black&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -5828,10 +5828,16 @@ function showReminderBanner(missing){showYesterdayRibbon([],missing);}
 function dismissReminder(){dismissYesterdayRibbon();}
 function goToYesterdayFromBanner(){
   dismissYesterdayRibbon();
+  // 다른 탭(챌린지/분석)에서 눌러도 동작하도록 기록 탭으로 우선 이동.
+  try{
+    const onRoutine=document.getElementById('view-routine')?.classList.contains('active');
+    if(!onRoutine)switchTab('routine',0);
+  }catch(_){}
   const yesterday=new Date(now);
   yesterday.setDate(yesterday.getDate()-1);
   const yKey=dkey(yesterday);
-  selectDay(yesterday,yKey);
+  // 다음 프레임에 selectDay 호출 — switchTab 으로 인한 스크롤·리렌더 후 적용되도록.
+  setTimeout(()=>{try{selectDay(yesterday,yKey);}catch(e){console.warn('[yesterday-banner]',e);}},50);
 }
 let _loadingTimeout=null;
 function show(id){
