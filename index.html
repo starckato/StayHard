@@ -1353,27 +1353,24 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
   (function(){
     var s=document.getElementById('qrok-splash');
     if(!s)return;
-    // opacity 1 이 default (페이드인 제거 — 첫 paint 부터 즉시 보임).
     var hidden=false;
-    function hide(){
+    var minShowMet=false;
+    var hideRequested=false;
+    function _doHide(){
       if(hidden)return;hidden=true;
       s.style.opacity='0';
       setTimeout(function(){if(s.parentNode)s.parentNode.removeChild(s);},400);
     }
-    // ready = _initDone (onLogin 완료) 만. auth/app screen 가시는 너무 빨라
-    // splash 가 0.2초만 표시되는 원인이라 제외.
-    function isReady(){
-      return window._initDone===true;
-    }
-    // 최소 1500ms 후 ready 검사 시작. 안전 timeout 30초 (그 사이 글로우 dots 계속 반복).
-    setTimeout(function(){
-      if(isReady()){hide();return;}
-      var elapsed=0;
-      var poll=setInterval(function(){
-        elapsed+=200;
-        if(isReady()||elapsed>=30000){clearInterval(poll);hide();}
-      },200);
-    },1500);
+    // 최소 1500ms 보장. 그 전에 hide 요청 들어와도 시간 채우고 fade out.
+    setTimeout(function(){minShowMet=true;if(hideRequested)_doHide();},1500);
+    // 외부 호출 entry — showApp/showAuth/onLogin 완료 후 호출.
+    window._qrokSplashHide=function(){
+      hideRequested=true;
+      if(minShowMet)_doHide();
+    };
+    // 안전 timeout 30초. 그 사이 글로우 dots 계속 반복 — 사용자한테는
+    // "로딩 중" 시그널이 끊기지 않게 보임.
+    setTimeout(function(){if(!hidden)_doHide();},30000);
   })();
 </script>
 
@@ -5584,8 +5581,9 @@ function showAuth(){
   const lb=document.getElementById('li-btn');if(lb){lb.disabled=false;lb.textContent='로그인';}
   const sb2=document.getElementById('su-btn');if(sb2){sb2.disabled=false;sb2.textContent='계정 만들기';}
   document.getElementById('li-err').textContent='';
+  try{window._qrokSplashHide&&window._qrokSplashHide();}catch(e){}
 }
-function showApp(){hide('loading');hide('auth-screen');show('app-screen');}
+function showApp(){hide('loading');hide('auth-screen');show('app-screen');try{window._qrokSplashHide&&window._qrokSplashHide();}catch(e){}}
 
 let _yesterdayUndoneTasks=[];
 // Sprint E: Returner mode state — set on each checkYesterdayReminder run
