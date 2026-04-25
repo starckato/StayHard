@@ -1357,7 +1357,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
 <!-- ══ AUTH ══ -->
 <div id="auth-screen">
   <div class="auth-logo">📋</div>
-  <div class="auth-title" style="color:#ff4d4d;letter-spacing:.5px;">큐록</div>
+  <div class="auth-title" style="color:#ff4d4d;letter-spacing:.05em;font-family:'Archivo Black','DM Sans','Helvetica Neue',sans-serif;">QROK</div>
   <div class="auth-sub">루틴을 기록하고, 함께 성장하세요.</div>
   <div class="auth-tabs">
     <div class="auth-tab active" onclick="switchAuthTab('login')">로그인</div>
@@ -1403,7 +1403,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
   <div class="hdr">
     <!-- 1행: 타이틀 + 우측 액션 (알림 종 + 프로필) -->
     <div style="display:flex;align-items:center;justify-content:space-between;width:100%;">
-      <div class="hdr-title" style="color:var(--accent);">큐록</div>
+      <div class="hdr-title" style="color:var(--accent);font-family:'Archivo Black','DM Sans','Helvetica Neue',sans-serif;letter-spacing:0.05em;">QROK</div>
       <div style="display:flex;align-items:center;gap:8px;">
         <button id="hdr-help-btn" class="hdr-icon-btn" onclick="openTourModal()" aria-label="앱 사용법">
           <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.3-1 1-1 1.7"/><line x1="12" y1="17" x2="12" y2="17.01"/></svg>
@@ -9042,7 +9042,7 @@ const _TOUR_SLIDES=[
     `,
   },
   {
-    title:'큐록.',
+    title:'QROK.',
     subtitle:'오늘도 도전하자',
     body:`
       <div style="text-align:center;padding:12px 0 8px;">
@@ -10937,7 +10937,7 @@ function _createShareOverlay(){
         if(navigator.share && lastBlob){
           try{
             const f=new File([lastBlob],'qrok_workout.png',{type:'image/png'});
-            await navigator.share({files:[f],title:'큐록 운동 기록'});
+            await navigator.share({files:[f],title:'QROK 운동 기록'});
             console.log('[share] overlay native share ok');
             close();
             return;
@@ -12996,7 +12996,7 @@ async function shareMuscleMap(){
       if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){
         const _savedOverflow=document.body.style.overflow;
         document.body.style.overflow='';
-        try{await navigator.share({files:[file],title:'큐록 — 자극 부위',text:shareText});document.body.style.overflow=_savedOverflow;return;}
+        try{await navigator.share({files:[file],title:'QROK — 자극 부위',text:shareText});document.body.style.overflow=_savedOverflow;return;}
         catch(e){document.body.style.overflow=_savedOverflow;if(e.name==='AbortError')return;}
       }
       const url=URL.createObjectURL(blob);
