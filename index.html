@@ -8359,11 +8359,12 @@ function renderCubeStack(){
       if(c&&counts.hasOwnProperty(c))counts[c]++;
     });
   });
+  // cube CSS (line 513-515) 와 일치 — 그라디언트 + border + inner shadow
   const colorMap={
-    gold:   {hex:'#ffd54a',label:'금'},
-    silver: {hex:'#b5c0cc',label:'은'},
-    gray:   {hex:'#7a7a86',label:'회색'},
-    crimson:{hex:'#ff4d4d',label:'붉은'},
+    gold:   {label:'금',  bg:'linear-gradient(135deg,#fff1a8 0%,#ffd54a 45%,#c48c1a 100%)',bd:'rgba(255,233,128,0.85)',txt:'#ffd54a'},
+    silver: {label:'은',  bg:'linear-gradient(135deg,#f2f4f7 0%,#b5c0cc 45%,#6d7682 100%)',bd:'rgba(210,218,228,0.75)',txt:'#d8dfe7'},
+    gray:   {label:'회색',bg:'linear-gradient(135deg,#8a8a96 0%,#5a5a66 45%,#2a2a32 100%)',bd:'rgba(120,120,130,0.65)',txt:'#a8a8b4'},
+    crimson:{label:'붉은',bg:'linear-gradient(135deg,#ff8080 0%,#ff4d4d 45%,#8b1515 100%)',bd:'rgba(255,77,77,0.80)',txt:'#ff6b6b'},
   };
   const order=['gold','silver','gray','crimson'];
   const total=order.reduce((a,k)=>a+counts[k],0);
@@ -8371,15 +8372,16 @@ function renderCubeStack(){
     container.innerHTML='<div style="text-align:center;padding:20px 0;color:var(--text3);font-size:12px;">아직 큐브가 없어요. 오늘 칸을 채워보세요.</div>';
     return;
   }
+  const cubeStyle=(meta,size)=>`width:${size}px;height:${size}px;background:${meta.bg};border:0.5px solid ${meta.bd};box-shadow:0 0 0.5px rgba(255,255,255,0.6) inset,0 -2px 3px rgba(0,0,0,0.35) inset;border-radius:1.5px;flex-shrink:0;`;
   container.innerHTML=order.map(color=>{
     const cnt=counts[color];
     const meta=colorMap[color];
-    const dots=Array.from({length:Math.min(cnt,80)},()=>`<div style="width:8px;height:8px;background:${meta.hex};border-radius:1px;flex-shrink:0;"></div>`).join('');
+    const dots=Array.from({length:Math.min(cnt,80)},()=>`<div style="${cubeStyle(meta,10)}"></div>`).join('');
     const overflow=cnt>80?`<div style="font-size:10px;color:var(--text3);font-family:'DM Mono',monospace;align-self:center;margin-left:4px;">+${cnt-80}</div>`:'';
     return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
       <div style="display:flex;align-items:center;gap:6px;width:60px;flex-shrink:0;">
-        <div style="width:10px;height:10px;background:${meta.hex};border-radius:1px;"></div>
-        <span style="font-size:12px;font-weight:600;color:${meta.hex};">${meta.label}</span>
+        <div style="${cubeStyle(meta,12)}"></div>
+        <span style="font-size:12px;font-weight:600;color:${meta.txt};">${meta.label}</span>
       </div>
       <div style="font-size:13px;font-weight:700;font-family:'DM Mono',monospace;min-width:32px;color:var(--text);text-align:right;">${cnt}</div>
       <div style="flex:1;display:flex;flex-wrap:wrap;gap:3px;align-items:center;min-width:0;">${dots}${overflow}</div>
