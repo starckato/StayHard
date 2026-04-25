@@ -217,7 +217,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 
 /* FIRST-USE TOOLTIP */
-.ux-tip{position:fixed;left:50%;transform:translateX(-50%);bottom:100px;max-width:340px;width:calc(100% - 40px);background:rgba(20,20,24,.95);backdrop-filter:blur(16px);border:1px solid var(--accent-bd);border-radius:14px;padding:14px 16px;z-index:450;box-shadow:0 8px 32px rgba(0,0,0,.5);animation:tipIn .3s ease;}
+.ux-tip{position:fixed;left:0;right:0;margin-left:auto;margin-right:auto;bottom:100px;max-width:340px;width:calc(100% - 40px);background:rgba(20,20,24,.95);backdrop-filter:blur(16px);border:1px solid var(--accent-bd);border-radius:14px;padding:14px 16px;z-index:450;box-shadow:0 8px 32px rgba(0,0,0,.5);animation:tipIn .3s ease;}
 .ux-tip-title{font-size:13px;font-weight:700;color:var(--accent);margin-bottom:6px;}
 .ux-tip-body{font-size:12px;color:var(--text2);line-height:1.6;}
 .ux-tip-close{position:absolute;top:10px;right:12px;background:none;border:none;color:var(--text3);font-size:16px;cursor:pointer;padding:4px;}
@@ -6975,18 +6975,26 @@ function _showNextCubeEvent(){
 const MICRO_COPY={
   diet:{
     silver:['한 끼 기록.','다음 끼니까지.','시작했다. 세 번 더.','첫 끼 OK. 이제 구성.'],
+    gold:['이미 완수. 더 가도 OK.','보너스 한 끼.','오늘 식단 끝났다.','계속 가.'],
     crimson:['흔들렸다. 복구해라.','한 번 놓쳤다.','내일을 바꿔라.'],
   },
   exercise:{
     silver:['움직였다.','다음 한 세트.','계속 가.'],
+    gold:['오늘 운동 끝.','이미 완수. 보너스 세트.','계속 밀어.'],
   },
   routine:{
     silver:['하나 밀었다.','남은 것 끝내.','절반.','마무리까지.'],
+    gold:['루틴 다 끝.','이미 완수. 더 채워.'],
     crimson:['놓친 하나. 내일.','실패도 기록이다.'],
   },
   tasks:{
     silver:['하나 정리.','흐름 잡았다.','거의 다.','남은 건 간단하다.'],
+    gold:['할일 다 끝.','오늘 깨끗.','보너스 정리.'],
     crimson:['놓쳤다.','내일.'],
+  },
+  water:{
+    silver:['한 잔.','한 잔 더.','계속 마셔.','목 마를 때 한 모금.'],
+    gold:['오늘 목표 달성.','보너스 한 잔.','계속.'],
   },
 };
 function _pickMicroCopy(cat,color){
@@ -7031,30 +7039,38 @@ function playMicroReward(cat,color){
 //   gold (silver→gold) = 기존 cube 연출 (완결 모먼트)
 // _cubeEventJustFired: silver 큐브 이벤트가 방금 직접 배너를 쐈는지 플래그 — _tryMicroReward 가 중복으로 쏘지 않게.
 let _cubeSilverJustFired=0;
+let _cubeGoldJustFired=0;
 function showCubeEvent(ev){
   if(!ev)return;
-  // Silver 전환 = 배너 + cube 둘 다. bonus/crimson/gold 는 cube 만 (배너는 해당 타입에 맞지 않음).
+  // Silver 전환 = 배너 + cube 둘 다.
   if(ev.type==='color'&&ev.color==='silver'&&ev.cat){
     playMicroReward(ev.cat,'silver');
     _cubeSilverJustFired=Date.now();
+  }
+  // Gold 전환 = cube 연출이 담당 (배너는 cube 가 lands 시 화염 — duplicate 방지)
+  if(ev.type==='color'&&ev.color==='gold'&&ev.cat){
+    _cubeGoldJustFired=Date.now();
   }
   _cubeEventQueue.push(ev);
   if(!_cubeEventShowing)_showNextCubeEvent();
 }
 
-// 개별 행동 후 호출 — 현재 카테고리의 cube 상태에 따라 micro-reward 발사.
-// gold (완결) 이면 cube 연출이 담당하므로 skip.
-// silver 전환이 방금 일어나 이미 배너가 떴으면 skip (중복 방지).
-// 그 외 silver 유지 / crimson 이면 조용한 cheer.
+// 개별 행동 후 호출 — 큐브 transition 이 방금 일어나지 않은 모든 행동에 banner 발사.
+// 사용자 결정 (2026-04-26): 모든 액션에 큐브 또는 banner 둘 중 하나는 보여야 함.
+//   - 큐브 transition (silver/gold 전환) 방금 발화: banner skip (cube 연출이 담당)
+//   - 큐브 stay (이미 같은 색 유지): 그 색에 맞는 banner
+//   - water 처럼 cube 시스템 외 cat: silver 카피 fallback
 function _tryMicroReward(cat){
   try{
+    // 방금 cube 연출 (silver/gold) 떴으면 중복 banner 안 띄움 (500ms 내).
+    if(Date.now()-_cubeSilverJustFired<500)return;
+    if(Date.now()-_cubeGoldJustFired<500)return;
     const l=(typeof log!=='undefined')?log:null;
     const cubes=l&&l.cubes;
     const color=(cubes&&cubes[cat])||'silver';
-    if(color==='gold')return; // gold 는 cube 연출이 담당
-    // 방금 silver 전환으로 배너가 떴으면 중복 쏘지 않음 (500ms 내).
-    if(Date.now()-_cubeSilverJustFired<500)return;
-    playMicroReward(cat,color==='crimson'?'crimson':'silver');
+    // gold 유지 / silver 유지 / crimson — 색별 banner.
+    // water 등 cube 외 cat 은 cubes[cat] 이 undefined → silver fallback.
+    playMicroReward(cat, color);
   }catch(_){}
 }
 
@@ -10772,7 +10788,7 @@ function delPhoto(){
 
 function renderWater(){
   const c=document.getElementById('water-cups');c.innerHTML='';
-  for(let i=0;i<12;i++){const d=document.createElement('div');d.className='wc'+(i<log.water_cups?' on':'');d.onclick=()=>{tipWater();log.water_cups=(log.water_cups===i+1)?i:i+1;renderWater();scheduleSave();};c.appendChild(d);}
+  for(let i=0;i<12;i++){const d=document.createElement('div');d.className='wc'+(i<log.water_cups?' on':'');d.onclick=()=>{tipWater();const prev=log.water_cups;log.water_cups=(log.water_cups===i+1)?i:i+1;renderWater();scheduleSave();if(log.water_cups>prev){try{_tryMicroReward('water');}catch(_){}}};c.appendChild(d);}
   const val=document.getElementById('water-val');
   const goal=CP?.water_goal||6;
   const met=log.water_cups>=goal;
