@@ -162,6 +162,50 @@
   .set-row .rm:hover{color:var(--red);}
   .add-set-btn{background:none;border:1px dashed var(--border2);border-radius:6px;color:var(--text3);font-size:11px;padding:5px;width:100%;cursor:pointer;font-weight:600;margin-top:4px;}
   .add-set-btn:hover{border-color:var(--accent);color:var(--accent);}
+  /* ── v1 list view 재설계 (트레이너 client roster) ── */
+  .roster-toolbar{display:flex;gap:10px;align-items:center;margin-bottom:14px;flex-wrap:wrap;}
+  .roster-search{flex:1;min-width:240px;padding:9px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;}
+  .roster-filter{display:flex;gap:4px;padding:3px;background:var(--surface2);border-radius:8px;border:1px solid var(--border);}
+  .roster-filter button{padding:6px 12px;background:transparent;border:none;border-radius:5px;color:var(--text2);font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;}
+  .roster-filter button.on{background:var(--accent);color:#fff;}
+  .roster-list{display:flex;flex-direction:column;gap:6px;}
+  .roster-row{display:grid;grid-template-columns:44px 1fr 200px 180px 120px auto;align-items:center;gap:14px;padding:12px 14px;background:var(--surface);border:1px solid var(--border);border-radius:10px;cursor:pointer;transition:all .12s;}
+  .roster-row:hover{border-color:var(--border2);background:var(--surface2);}
+  .roster-row .avatar{width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,#ff4d4d,#ff6b35);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px;font-family:'Archivo Black',sans-serif;text-transform:uppercase;}
+  .roster-row .nameline{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+  .roster-row .nick{font-size:14px;font-weight:700;color:var(--text);letter-spacing:-.005em;}
+  .roster-row .real{font-size:11px;color:var(--text3);font-weight:500;}
+  .roster-row .meta{font-size:10px;color:var(--text3);margin-top:3px;letter-spacing:0;}
+  .roster-status{display:flex;align-items:center;gap:8px;}
+  .roster-status .dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+  .roster-status .dot.completed{background:#34d399;box-shadow:0 0 6px rgba(52,211,153,0.4);}
+  .roster-status .dot.in-progress{background:#38bdf8;box-shadow:0 0 6px rgba(56,189,248,0.4);}
+  .roster-status .dot.pending{background:#f59e0b;}
+  .roster-status .dot.skipped{background:#ef4444;}
+  .roster-status .dot.empty{background:transparent;border:1.5px solid var(--text3);}
+  .roster-status .label{font-size:12px;font-weight:700;color:var(--text2);white-space:nowrap;}
+  .roster-status .progress{width:60px;height:4px;background:rgba(255,255,255,0.06);border-radius:999px;overflow:hidden;flex-shrink:0;}
+  .roster-status .progress > div{height:100%;border-radius:999px;}
+  .roster-meal{font-size:11px;color:var(--text2);font-family:'DM Mono',monospace;font-weight:600;}
+  .roster-meal .cnt{color:var(--text);font-size:13px;font-weight:800;font-family:'Archivo Black',sans-serif;margin-right:6px;}
+  .roster-meal .red{color:#ef4444;font-weight:800;}
+  .roster-meal .green{color:#34d399;font-weight:800;}
+  .roster-last{font-size:11px;color:var(--text3);font-weight:600;white-space:nowrap;}
+  .roster-actions{display:flex;gap:4px;opacity:0;transition:opacity .12s;}
+  .roster-row:hover .roster-actions{opacity:1;}
+  .roster-actions button{width:30px;height:30px;background:var(--surface2);border:1px solid var(--border2);border-radius:7px;color:var(--text2);font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+  .roster-actions button:hover{border-color:var(--accent);color:var(--accent);}
+  .roster-empty{padding:60px 20px;text-align:center;color:var(--text3);}
+  .roster-empty .icon{font-size:36px;margin-bottom:8px;opacity:.5;}
+  @media (max-width:1100px){
+    .roster-row{grid-template-columns:44px 1fr 160px 100px auto;}
+    .roster-meal{display:none;}
+  }
+  @media (max-width:800px){
+    .roster-row{grid-template-columns:36px 1fr auto;}
+    .roster-row .roster-status,.roster-row .roster-last,.roster-row .roster-meal{display:none;}
+  }
+
   /* 세트 빠른 조정 버튼 — hug width */
   .hwq-step{padding:5px 10px;background:var(--surface2);border:1px solid var(--border2);border-radius:6px;font-size:11px;color:var(--text2);font-weight:700;cursor:pointer;font-family:'DM Mono',monospace;letter-spacing:-.005em;white-space:nowrap;touch-action:manipulation;transition:all .12s;}
   .hwq-step:hover{border-color:var(--accent);color:var(--accent);}
@@ -707,100 +751,159 @@ async function submitTrainerSignup(){
   await onAuth();
 }
 
-// ─── Clients list — 식단·운동 중심 (큐브/점수 폐지, 사용자 결정 2026-04-29) ───
+// ─── Clients list (v1 roster) — 트레이너 client management focus ───
+let _rosterFilter = 'all';   // 'all' | 'today' | 'attention'
+let _rosterSearch = '';
+let _rosterAll = [];
+
 async function loadClients(){
   const wrap = document.getElementById('client-table-wrap');
   wrap.innerHTML = '<div class="loader">불러오는 중…</div>';
   try {
-    const {data: rels, error: rErr} = await sb.from('trainer_clients')
-      .select('id, status, connected_at, client_id')
-      .eq('trainer_id', CU.id).eq('status', 'active');
-    if(rErr){ wrap.innerHTML='<div class="empty-state">trainer_clients 에러: '+esc(rErr.message)+'</div>'; return; }
-    CLIENTS = rels || [];
-    document.getElementById('client-count').textContent = `활성 ${CLIENTS.length}명`;
-    if(CLIENTS.length===0){
-      wrap.innerHTML = '<div class="empty-state"><div class="empty-icon">📋</div><div>아직 회원이 없어요.</div><div class="small" style="margin-top:6px;">우측 상단 [+ 회원 등록] 으로 시작.</div></div>';
-      return;
-    }
-    const {data: rows, error: oErr} = await sb.rpc('trainer_clients_overview');
-    if(oErr){ console.warn('[overview]', oErr); }
-    const byClient = {};
-    (rows||[]).forEach(r => { byClient[r.client_id] = r; });
-    // relationship_id 를 client_id 로 매핑
-    const enriched = CLIENTS.map(c => ({...c, ...(byClient[c.client_id]||{})}));
-
-    let html = `<table><thead><tr>
-      <th>회원</th>
-      <th>오늘 식단</th>
-      <th>오늘 운동</th>
-      <th>마지막 활동</th>
-    </tr></thead><tbody>`;
-    for(const c of enriched){
-      // 우선순위: nickname > display_name > username
-      const realName = c.display_name || c.username || '—';
-      const displayName = c.nickname || realName;
-      const showSubtle = !!c.nickname; // 닉네임 있으면 작은 글씨로 본명도 같이
-      // 식단 셀
-      const mealTotal = c.meal_total || 0;
-      const mealClean = c.meal_clean || 0;
-      const mealNormal = c.meal_normal || 0;
-      const mealRed = c.meal_red || 0;
-      let mealCell;
-      if(mealTotal === 0){
-        mealCell = '<div style="padding:8px 12px;color:var(--text3);font-size:12px;">기록 없음</div>';
-      } else {
-        mealCell = `<div style="padding:8px 14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-          <span style="font-size:14px;font-weight:800;color:var(--text);">${mealTotal}끼</span>
-          ${mealClean>0?`<span style="font-size:11px;color:var(--green);font-weight:700;">🟢${mealClean} 클린</span>`:''}
-          ${mealNormal>0?`<span style="font-size:11px;color:var(--text2);font-weight:700;">⚪${mealNormal} 일반</span>`:''}
-          ${mealRed>0?`<span style="font-size:11px;color:#ff6b6b;font-weight:800;">🔴${mealRed} 위반</span>`:''}
-        </div>`;
-      }
-      // 운동 셀 — 숙제 + 자유 운동
-      const hwStatus = c.homework_status;
-      const hwTotal = c.homework_total_sets || 0;
-      const hwDone = c.homework_done_sets || 0;
-      const freeCnt = c.free_workout_count || 0;
-      const freeDone = c.free_workout_done || 0;
-      let workoutCell;
-      if(!hwStatus && freeCnt === 0){
-        workoutCell = '<div style="padding:8px 12px;color:var(--text3);font-size:12px;">기록 없음</div>';
-      } else {
-        const parts = [];
-        if(hwStatus){
-          const color = hwStatus==='completed'?'var(--green)':hwStatus==='in_progress'?'#38bdf8':'#ff6b6b';
-          const lbl = hwStatus==='completed'?'완료':hwStatus==='in_progress'?'진행 중':'예정';
-          const pct = hwTotal > 0 ? Math.round(hwDone/hwTotal*100) : 0;
-          parts.push(`<div style="display:flex;align-items:center;gap:8px;">
-            <span style="font-size:11px;font-weight:800;color:${color};letter-spacing:.04em;">숙제 ${lbl}</span>
-            <div style="flex:1;height:4px;background:rgba(255,255,255,0.06);border-radius:999px;overflow:hidden;min-width:50px;">
-              <div style="height:100%;background:${color};width:${pct}%;border-radius:999px;"></div>
-            </div>
-            <span style="font-size:11px;font-family:'DM Mono',monospace;font-weight:700;color:${color};">${hwDone}/${hwTotal}</span>
-          </div>`);
-        }
-        if(freeCnt > 0){
-          parts.push(`<div style="font-size:11px;color:var(--text2);margin-top:4px;">자유 운동 ${freeCnt}개 · 완료 ${freeDone}</div>`);
-        }
-        workoutCell = `<div style="padding:8px 14px;">${parts.join('')}</div>`;
-      }
-      html += `<tr>
-        <td onclick="openDetail('${c.id}','${c.client_id}')" style="cursor:pointer;">
-          <div class="row-name" style="display:flex;align-items:center;gap:6px;">${esc(displayName)}
-            <button onclick="event.stopPropagation();openNicknameEdit('${c.id}','${esc(realName).replace(/'/g,"\\'")}','${esc(c.nickname||'').replace(/'/g,"\\'")}')" title="닉네임 편집" style="background:none;border:none;color:var(--text3);font-size:11px;cursor:pointer;padding:2px 4px;">✎</button>
-          </div>
-          <div class="row-meta">${showSubtle?esc(realName)+' · ':''}@${esc(c.username||'')}</div>
-        </td>
-        <td onclick="openDetail('${c.id}','${c.client_id}')" style="cursor:pointer;">${mealCell}</td>
-        <td onclick="openDetail('${c.id}','${c.client_id}')" style="cursor:pointer;">${workoutCell}</td>
-        <td onclick="openDetail('${c.id}','${c.client_id}')" style="cursor:pointer;"><span class="row-meta">${fmtRel(c.last_activity || c.connected_at)}</span></td>
-      </tr>`;
-    }
-    html += '</tbody></table>';
-    wrap.innerHTML = html;
+    const {data: rows, error} = await sb.rpc('trainer_clients_overview');
+    if(error){ wrap.innerHTML='<div class="empty-state">로딩 실패: '+esc(error.message)+'</div>'; return; }
+    _rosterAll = rows || [];
+    CLIENTS = _rosterAll.map(r => ({id:r.relationship_id, client_id:r.client_id, status:'active'}));
+    document.getElementById('client-count').textContent = `활성 ${_rosterAll.length}명`;
+    renderRosterToolbar();
+    renderRoster();
   } catch(e) {
     wrap.innerHTML = '<div class="empty-state">로딩 실패: '+esc(e.message||String(e))+'<br><br><button class="btn btn-ghost" onclick="loadClients()" style="margin-top:8px;">다시 시도</button></div>';
   }
+}
+
+function renderRosterToolbar(){
+  const head = document.querySelector('#view-overview .page-head');
+  if(!head) return;
+  // toolbar 가 이미 있으면 skip
+  if(document.getElementById('roster-toolbar')) return;
+  const toolbar = document.createElement('div');
+  toolbar.id = 'roster-toolbar';
+  toolbar.className = 'roster-toolbar';
+  toolbar.innerHTML = `
+    <input type="text" class="roster-search" id="roster-search" placeholder="🔍 회원 검색 (닉네임·이름)" oninput="setRosterSearch(this.value)" />
+    <div class="roster-filter">
+      <button class="on" data-filter="all" onclick="setRosterFilter('all')">전체</button>
+      <button data-filter="today" onclick="setRosterFilter('today')">오늘 활동</button>
+      <button data-filter="attention" onclick="setRosterFilter('attention')">주의</button>
+    </div>
+  `;
+  // page-head 다음에 삽입
+  head.parentNode.insertBefore(toolbar, head.nextSibling);
+}
+
+function setRosterFilter(f){
+  _rosterFilter = f;
+  document.querySelectorAll('.roster-filter button').forEach(b => b.classList.toggle('on', b.dataset.filter === f));
+  renderRoster();
+}
+function setRosterSearch(v){
+  _rosterSearch = (v||'').trim().toLowerCase();
+  renderRoster();
+}
+
+function _avatarInitial(name){
+  if(!name) return '?';
+  const c = name.trim()[0] || '?';
+  return c.toUpperCase();
+}
+
+function renderRoster(){
+  const wrap = document.getElementById('client-table-wrap');
+  if(!wrap) return;
+  if(_rosterAll.length === 0){
+    wrap.innerHTML = '<div class="roster-empty"><div class="icon">📋</div><div style="font-weight:600;color:var(--text2);margin-bottom:4px;">아직 회원이 없어요</div><div style="font-size:12px;">우측 상단 [+ 회원 등록] 으로 시작</div></div>';
+    return;
+  }
+  // filter
+  let list = _rosterAll;
+  if(_rosterSearch){
+    list = list.filter(c => {
+      const name = (c.nickname||'') + ' ' + (c.display_name||'') + ' ' + (c.username||'');
+      return name.toLowerCase().includes(_rosterSearch);
+    });
+  }
+  if(_rosterFilter === 'today'){
+    list = list.filter(c => (c.meal_total||0) > 0 || (c.homework_done_sets||0) > 0 || (c.free_workout_done||0) > 0);
+  } else if(_rosterFilter === 'attention'){
+    list = list.filter(c => {
+      // 오늘 숙제 미수행 OR 식단 위반 OR 활동 없음
+      if(c.homework_status === 'pending' || c.homework_status === 'skipped') return true;
+      if((c.meal_red||0) > 0) return true;
+      if(!c.last_activity) return true;
+      // 마지막 활동 24h+ 경과
+      try{
+        const diff = Date.now() - new Date(c.last_activity).getTime();
+        if(diff > 86400000) return true;
+      }catch(_){}
+      return false;
+    });
+  }
+  if(list.length === 0){
+    wrap.innerHTML = '<div class="roster-empty"><div style="font-size:12px;">조건에 맞는 회원 없음</div></div>';
+    return;
+  }
+  let html = '<div class="roster-list">';
+  for(const c of list){
+    const realName = c.display_name || c.username || '—';
+    const displayName = c.nickname || realName;
+    // status
+    const hwStatus = c.homework_status;
+    const hwTotal = c.homework_total_sets || 0;
+    const hwDone = c.homework_done_sets || 0;
+    const hwPct = hwTotal > 0 ? Math.round(hwDone/hwTotal*100) : 0;
+    const freeCnt = c.free_workout_count || 0;
+    let statusDot = 'empty', statusLbl = '오늘 활동 없음', statusColor = 'var(--text3)';
+    if(hwStatus === 'completed'){ statusDot='completed'; statusLbl='숙제 완료'; statusColor='#34d399'; }
+    else if(hwStatus === 'in_progress'){ statusDot='in-progress'; statusLbl=`진행 중 ${hwDone}/${hwTotal}`; statusColor='#38bdf8'; }
+    else if(hwStatus === 'pending'){ statusDot='pending'; statusLbl=`예정 ${hwDone}/${hwTotal}`; statusColor='#f59e0b'; }
+    else if(hwStatus === 'skipped'){ statusDot='skipped'; statusLbl='미수행'; statusColor='#ef4444'; }
+    else if(freeCnt > 0){ statusDot='in-progress'; statusLbl=`자유 운동 ${c.free_workout_done||0}/${freeCnt}`; statusColor='#38bdf8'; }
+    // meal
+    const mealTotal = c.meal_total || 0;
+    const mealClean = c.meal_clean || 0;
+    const mealRed = c.meal_red || 0;
+    const mealCell = mealTotal === 0
+      ? '<span style="color:var(--text3);">식단 없음</span>'
+      : `<span class="cnt">${mealTotal}끼</span>${mealClean>0?`<span class="green">🟢${mealClean}</span> `:''}${mealRed>0?`<span class="red">🔴${mealRed}</span>`:''}`;
+    html += `<div class="roster-row" onclick="openDetail('${c.relationship_id}','${c.client_id}')">
+      <div class="avatar">${_avatarInitial(displayName)}</div>
+      <div>
+        <div class="nameline">
+          <span class="nick">${esc(displayName)}</span>
+          ${c.nickname?`<span class="real">${esc(realName)}</span>`:''}
+        </div>
+        <div class="meta">@${esc(c.username||'')}${c.last_activity?' · '+fmtRel(c.last_activity):''}</div>
+      </div>
+      <div class="roster-status">
+        <span class="dot ${statusDot}"></span>
+        <span class="label" style="color:${statusColor};">${statusLbl}</span>
+        ${hwTotal>0?`<div class="progress"><div style="background:${statusColor};width:${hwPct}%;"></div></div>`:''}
+      </div>
+      <div class="roster-meal">${mealCell}</div>
+      <div class="roster-last">${c.last_activity?fmtRel(c.last_activity):'—'}</div>
+      <div class="roster-actions">
+        <button onclick="event.stopPropagation();_rosterAssign('${c.relationship_id}','${c.client_id}')" title="운동 배정">+</button>
+        <button onclick="event.stopPropagation();_rosterMessage('${c.relationship_id}','${c.client_id}')" title="메시지">💬</button>
+        <button onclick="event.stopPropagation();openNicknameEdit('${c.relationship_id}','${esc(realName).replace(/'/g,"\\'")}','${esc(c.nickname||'').replace(/'/g,"\\'")}')" title="닉네임 편집">✎</button>
+      </div>
+    </div>`;
+  }
+  html += '</div>';
+  wrap.innerHTML = html;
+}
+
+function _rosterAssign(relId, clientId){
+  CURRENT_CLIENT = clientId; CURRENT_RELATIONSHIP = relId;
+  const c = _rosterAll.find(x => x.client_id === clientId);
+  const dn = document.getElementById('d-name'); if(dn) dn.textContent = (c?.nickname || c?.display_name || c?.username || '—');
+  openAssignModal();
+}
+function _rosterMessage(relId, clientId){
+  CURRENT_CLIENT = clientId; CURRENT_RELATIONSHIP = relId;
+  const c = _rosterAll.find(x => x.client_id === clientId);
+  const dn = document.getElementById('d-name'); if(dn) dn.textContent = (c?.nickname || c?.display_name || c?.username || '—');
+  openMessageModal();
 }
 
 // ─── Register client ───

@@ -11466,9 +11466,11 @@ function renderWorkouts(){
 function toggleGymExpand(i){openSessionSummary(i);}
 let _currentSummaryIdx=null;
 function openSessionSummary(i){
+  try{ console.log('[ssm] open idx='+i); }catch(_){}
   _currentSummaryIdx=i;
   const w=log.workouts[i];
-  if(!w||w.type!=='gym')return;
+  if(!w){ try{ showToast('운동 entry 없음 idx='+i); }catch(_){} return; }
+  if(w.type!=='gym'){ try{ showToast('gym 타입 아님: '+w.type); }catch(_){} return; }
   const vol=w.totalVolume||0;
   const volStr=vol>=1000?(vol/1000).toFixed(1)+'t':vol>0?vol.toLocaleString()+'kg':'—';
   const totalSets=(w.exercises||[]).reduce((a,ex)=>a+(ex.sets||[]).filter(s=>s.done).length,0);
@@ -11497,19 +11499,23 @@ function openSessionSummary(i){
   }).join('');
   // Inject into modal
   const modal=document.getElementById('session-summary-modal');
-  if(!modal)return;
+  if(!modal){ try{ showToast('summary modal 없음 — 새로고침'); }catch(_){} return; }
+  // body 직접 자식으로 이동 (containing block 회피, homework-session-modal 패턴)
+  if(modal.parentNode !== document.body){ document.body.appendChild(modal); }
   document.getElementById('ssm-date').textContent=dateStr;
   document.getElementById('ssm-vol').textContent=volStr;
   document.getElementById('ssm-sets').textContent=totalSets;
   document.getElementById('ssm-excount').textContent=totalEx+'종목';
   document.getElementById('ssm-exercises').innerHTML=exHtml;
   document.getElementById('ssm-edit-btn').onclick=()=>{closeSessionSummary();editGymSession(i);};
+  // Force show — homework 완료 entry 도 동일 패턴
+  modal.setAttribute('style','display:flex;position:fixed;top:0;left:0;width:100vw;height:100vh;background:var(--bg);z-index:99998;flex-direction:column;overflow:hidden;');
+  void modal.offsetHeight;
   document.body.style.overflow='hidden';
-  modal.style.display='flex';
 }
 function closeSessionSummary(){
   const m=document.getElementById('session-summary-modal');
-  if(m)m.style.display='none';
+  if(m){ m.setAttribute('style','display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:var(--bg);z-index:550;flex-direction:column;'); }
   document.body.style.overflow='';
 }
 
