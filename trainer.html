@@ -245,9 +245,9 @@
     <div class="top-spacer"></div>
     <div class="top-user">
       <button class="btn btn-ghost" onclick="openReferralModal()" style="font-size:12px;">동료 추천 코드</button>
-      <div>
+      <div onclick="openTrainerSelfEdit()" style="cursor:pointer;text-align:right;" title="이름·소개 편집">
         <div class="name" id="me-name">—</div>
-        <div class="role">TRAINER · APPROVED</div>
+        <div class="role">TRAINER · 클릭해서 편집</div>
       </div>
       <button class="btn btn-ghost" onclick="doLogout()">로그아웃</button>
     </div>
@@ -434,6 +434,40 @@
   </div>
 </div>
 
+<!-- 트레이너 본인 정보 편집 -->
+<div id="modal-self-edit" class="modal-overlay">
+  <div class="modal">
+    <div class="modal-title">내 정보 편집</div>
+    <div class="modal-sub">표시 이름 + 한 줄 소개. 회원에게 보입니다.</div>
+    <div class="field"><label>이름 (PT 샘 표시명)</label><input type="text" id="se-name" maxlength="30" placeholder="예: 김PT" /></div>
+    <div class="field"><label>한 줄 소개 (선택)</label><textarea id="se-bio" rows="3" placeholder="전문 분야 / 경력 / 한 줄 소개"></textarea></div>
+    <div id="se-err" class="err"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modal-self-edit')">취소</button>
+      <button class="btn btn-primary" onclick="saveTrainerSelf()">저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- 회원 닉네임 편집 -->
+<div id="modal-nickname" class="modal-overlay">
+  <div class="modal">
+    <div class="modal-title">회원 닉네임</div>
+    <div class="modal-sub" id="nick-target">—</div>
+    <div class="field">
+      <label>나만 보는 닉네임 (선택)</label>
+      <input type="text" id="nick-input" maxlength="40" placeholder="예: 월수금 박씨, 윤지 다이어트" />
+      <div class="field-help">회원 본인은 못 봅니다. 트레이너 본인 관리용.</div>
+    </div>
+    <div id="nick-err" class="err"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="setNicknameClear()" style="margin-right:auto;">닉네임 지우기</button>
+      <button class="btn btn-ghost" onclick="closeModal('modal-nickname')">취소</button>
+      <button class="btn btn-primary" onclick="saveNickname()">저장</button>
+    </div>
+  </div>
+</div>
+
 <!-- 동료 추천 코드 -->
 <div id="modal-referral" class="modal-overlay">
   <div class="modal">
@@ -615,7 +649,10 @@ async function loadClients(){
       <th>마지막 활동</th>
     </tr></thead><tbody>`;
     for(const c of enriched){
-      const name = c.display_name || c.username || '—';
+      // 우선순위: nickname > display_name > username
+      const realName = c.display_name || c.username || '—';
+      const displayName = c.nickname || realName;
+      const showSubtle = !!c.nickname; // 닉네임 있으면 작은 글씨로 본명도 같이
       // 식단 셀
       const mealTotal = c.meal_total || 0;
       const mealClean = c.meal_clean || 0;
@@ -660,11 +697,16 @@ async function loadClients(){
         }
         workoutCell = `<div style="padding:8px 14px;">${parts.join('')}</div>`;
       }
-      html += `<tr onclick="openDetail('${c.id}','${c.client_id}')">
-        <td><div class="row-name">${esc(name)}</div><div class="row-meta">@${esc(c.username||'')}</div></td>
-        <td>${mealCell}</td>
-        <td>${workoutCell}</td>
-        <td><span class="row-meta">${fmtRel(c.last_activity || c.connected_at)}</span></td>
+      html += `<tr>
+        <td onclick="openDetail('${c.id}','${c.client_id}')" style="cursor:pointer;">
+          <div class="row-name" style="display:flex;align-items:center;gap:6px;">${esc(displayName)}
+            <button onclick="event.stopPropagation();openNicknameEdit('${c.id}','${esc(realName).replace(/'/g,"\\'")}','${esc(c.nickname||'').replace(/'/g,"\\'")}')" title="닉네임 편집" style="background:none;border:none;color:var(--text3);font-size:11px;cursor:pointer;padding:2px 4px;">✎</button>
+          </div>
+          <div class="row-meta">${showSubtle?esc(realName)+' · ':''}@${esc(c.username||'')}</div>
+        </td>
+        <td onclick="openDetail('${c.id}','${c.client_id}')" style="cursor:pointer;">${mealCell}</td>
+        <td onclick="openDetail('${c.id}','${c.client_id}')" style="cursor:pointer;">${workoutCell}</td>
+        <td onclick="openDetail('${c.id}','${c.client_id}')" style="cursor:pointer;"><span class="row-meta">${fmtRel(c.last_activity || c.connected_at)}</span></td>
       </tr>`;
     }
     html += '</tbody></table>';
@@ -710,8 +752,12 @@ async function loadDetail(){
   const cid = CURRENT_CLIENT;
   const {data:p} = await sb.from('profiles').select('id, display_name, username, created_at').eq('id',cid).maybeSingle();
   if(!p){ closeDetail(); return; }
-  document.getElementById('d-name').textContent = p.display_name || p.username || '—';
-  document.getElementById('d-meta').textContent = `@${p.username||''} · 가입 ${fmtDate(p.created_at)}`;
+  // 닉네임 우선 표시 (CLIENTS 에 있으면)
+  const rel = CLIENTS.find(c => c.client_id === cid);
+  const realName = p.display_name || p.username || '—';
+  const displayName = (rel && rel.nickname) || realName;
+  document.getElementById('d-name').textContent = displayName;
+  document.getElementById('d-meta').textContent = `${rel&&rel.nickname?realName+' · ':''}@${p.username||''} · 가입 ${fmtDate(p.created_at)}`;
   // 오늘 요약 (식단/운동) — overview RPC 결과에서 이 회원 행 추출
   try{
     const {data: rows} = await sb.rpc('trainer_clients_overview');
@@ -1356,6 +1402,60 @@ async function doAssignWorkout(){
   closeModal('modal-assign');
   await loadAssignments();
   if(document.querySelector('#view-detail .seg button.on')?.dataset.pane==='workouts') loadWorkouts();
+}
+
+// ─── 트레이너 본인 정보 편집 ───
+function openTrainerSelfEdit(){
+  if(!MY_TRAINER) return;
+  document.getElementById('se-name').value = MY_TRAINER.trainer_name || '';
+  document.getElementById('se-bio').value = MY_TRAINER.bio || '';
+  document.getElementById('se-err').textContent = '';
+  openModal('modal-self-edit');
+}
+async function saveTrainerSelf(){
+  const name = document.getElementById('se-name').value.trim();
+  const bio = document.getElementById('se-bio').value.trim();
+  const errEl = document.getElementById('se-err');
+  errEl.textContent = '';
+  if(!name){ errEl.textContent='이름은 비울 수 없어요.'; return; }
+  if(name.length > 30){ errEl.textContent='이름은 30자 이하.'; return; }
+  const {error} = await sb.rpc('trainer_update_self', {p_trainer_name: name, p_bio: bio||null});
+  if(error){ errEl.textContent = error.message; return; }
+  // 로컬 + UI 갱신
+  if(MY_TRAINER){ MY_TRAINER.trainer_name = name; MY_TRAINER.bio = bio; }
+  document.getElementById('me-name').textContent = name;
+  closeModal('modal-self-edit');
+  showToast('저장됨.');
+}
+
+// ─── 회원 닉네임 편집 ───
+let _nickRelId = null;
+function openNicknameEdit(relationshipId, currentName, currentNick){
+  _nickRelId = relationshipId;
+  document.getElementById('nick-target').textContent = '회원: ' + (currentName||'—');
+  document.getElementById('nick-input').value = currentNick || '';
+  document.getElementById('nick-err').textContent = '';
+  openModal('modal-nickname');
+}
+async function saveNickname(){
+  if(!_nickRelId){ closeModal('modal-nickname'); return; }
+  const nick = document.getElementById('nick-input').value.trim();
+  const errEl = document.getElementById('nick-err');
+  errEl.textContent = '';
+  const {error} = await sb.rpc('trainer_set_client_nickname', {p_relationship_id: _nickRelId, p_nickname: nick||null});
+  if(error){ errEl.textContent = error.message; return; }
+  closeModal('modal-nickname');
+  showToast(nick ? '닉네임 저장됨.' : '닉네임 지움.');
+  await loadClients();
+}
+async function setNicknameClear(){
+  if(!_nickRelId) return;
+  if(!confirm('닉네임을 지울까요?')) return;
+  const {error} = await sb.rpc('trainer_set_client_nickname', {p_relationship_id: _nickRelId, p_nickname: null});
+  if(error){ showToast('지우기 실패: '+error.message); return; }
+  closeModal('modal-nickname');
+  showToast('닉네임 지움.');
+  await loadClients();
 }
 
 // ─── Referral code ───
