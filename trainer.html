@@ -5,6 +5,13 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>QROK Trainer · PT 대시보드</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script type="module">
+  // 메인 앱과 동일 운동 라이브러리 (158 entries) 가져오기. ES module 직접 import.
+  import { EXERCISE_LIBRARY, CATS } from '/src/data/exercises.js';
+  window.EXERCISE_LIBRARY = EXERCISE_LIBRARY;
+  window.CATS = CATS;
+  window.dispatchEvent(new Event('exercises-loaded'));
+</script>
 <style>
   *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
   :root{
@@ -131,6 +138,28 @@
   .preset-btn{padding:8px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-size:11px;color:var(--text2);text-align:left;cursor:pointer;transition:all .12s;}
   .preset-btn:hover{border-color:var(--accent);color:var(--text);}
   .preset-btn.on{background:var(--accent);color:#fff;border-color:var(--accent);}
+
+  /* ── Workout Builder ── */
+  .lib-row{padding:7px 10px;border-bottom:1px solid var(--border);cursor:pointer;display:flex;align-items:center;gap:8px;font-size:13px;transition:background .1s;}
+  .lib-row:hover{background:rgba(255,77,77,0.08);color:var(--text);}
+  .lib-row .ico{flex-shrink:0;font-size:16px;}
+  .lib-row .nm{flex:1;}
+  .lib-row .ms{font-size:10px;color:var(--text3);}
+  .lib-row .add{flex-shrink:0;color:var(--accent);font-weight:800;}
+  .cat-chip{padding:3px 9px;border-radius:14px;font-size:10px;background:var(--surface2);border:1px solid var(--border);color:var(--text3);cursor:pointer;font-weight:600;}
+  .cat-chip.on{background:var(--accent);color:#fff;border-color:var(--accent);}
+  .ex-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px;margin-bottom:8px;}
+  .ex-card-head{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+  .ex-card-head .nm{flex:1;font-weight:700;font-size:13px;}
+  .ex-card-head .x{background:none;border:none;color:var(--text3);font-size:14px;cursor:pointer;padding:2px 6px;}
+  .ex-card-head .x:hover{color:var(--red);}
+  .set-row{display:grid;grid-template-columns:24px 1fr 1fr 28px;gap:6px;align-items:center;margin-bottom:4px;font-size:12px;}
+  .set-row .num{font-family:'DM Mono',monospace;color:var(--text3);font-weight:700;text-align:center;}
+  .set-row input{width:100%;padding:5px 7px;font-size:12px;border-radius:5px;}
+  .set-row .rm{background:none;border:none;color:var(--text3);cursor:pointer;font-size:13px;}
+  .set-row .rm:hover{color:var(--red);}
+  .add-set-btn{background:none;border:1px dashed var(--border2);border-radius:6px;color:var(--text3);font-size:11px;padding:5px;width:100%;cursor:pointer;font-weight:600;margin-top:4px;}
+  .add-set-btn:hover{border-color:var(--accent);color:var(--accent);}
 
   .hidden{display:none !important;}
   .loader{padding:40px;text-align:center;color:var(--text3);font-size:13px;}
@@ -348,16 +377,33 @@
   </div>
 </div>
 
-<!-- 운동 배정 -->
+<!-- 운동 배정 (운동 빌더) -->
 <div id="modal-assign" class="modal-overlay">
-  <div class="modal">
+  <div class="modal" style="max-width:680px;">
     <div class="modal-title">운동 배정</div>
     <div class="modal-sub" id="assign-target">—</div>
+
     <div class="field"><label>날짜</label><input type="date" id="assign-date" /></div>
-    <div class="field"><label>운동 (한 줄에 하나)</label><textarea id="assign-text" rows="6" placeholder="벤치프레스 4×10 60kg&#10;인클라인 덤벨 3×12 20kg&#10;푸쉬업 3×15"></textarea>
-      <div class="field-help">자유 형식. 클라 운동 카드에 "예정" 뱃지로 표시됩니다. (이름 / 세트×반복 / 무게)</div>
+
+    <!-- 빌더 영역: 좌측 라이브러리 검색 / 우측 선택된 운동 list -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px;">
+      <!-- 좌측 — 운동 검색 -->
+      <div>
+        <div style="font-size:11px;color:var(--text3);margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em;font-weight:700;">운동 검색</div>
+        <input type="text" id="assign-search" placeholder="예: 벤치, 푸쉬업…" style="width:100%;margin-bottom:6px;" oninput="filterAssignLib()" />
+        <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px;" id="assign-cat-chips"></div>
+        <div id="assign-lib-results" style="height:240px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;background:var(--surface2);"></div>
+      </div>
+      <!-- 우측 — 선택된 운동 list (세트 입력) -->
+      <div>
+        <div style="font-size:11px;color:var(--text3);margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em;font-weight:700;">오늘의 숙제 (<span id="assign-count">0</span>)</div>
+        <div id="assign-selected" style="height:240px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;background:var(--surface2);padding:8px;">
+          <div class="small" style="text-align:center;padding:30px 10px;color:var(--text3);">왼쪽에서 운동을 골라 추가하세요</div>
+        </div>
+      </div>
     </div>
-    <div class="field"><label>메모 (선택)</label><textarea id="assign-notes" rows="2" placeholder="컨디션 봐서 무게 조절"></textarea></div>
+
+    <div class="field" style="margin-top:12px;"><label>메모 (선택)</label><textarea id="assign-notes" rows="2" placeholder="컨디션 봐서 무게 조절"></textarea></div>
     <div id="assign-err" class="err"></div>
     <div class="modal-actions">
       <button class="btn btn-ghost" onclick="closeModal('modal-assign')">취소</button>
@@ -853,29 +899,152 @@ async function doSendMessage(){
   if(document.querySelector('#view-detail .seg button.on')?.dataset.pane==='messages') loadMessages();
 }
 
-// ─── Assign workout ───
+// ─── Assign workout (builder) ───
+let ASSIGN_SELECTED = []; // [{name, type, cat, m, sets:[{reps, weight}]}]
+let ASSIGN_CAT_FILTER = 'all'; // 'all' | '가슴'|'등'|'하체'|...
+
 function openAssignModal(){
+  ASSIGN_SELECTED = [];
+  ASSIGN_CAT_FILTER = 'all';
   document.getElementById('assign-target').textContent = '대상: ' + document.getElementById('d-name').textContent;
   document.getElementById('assign-date').value = new Date().toISOString().slice(0,10);
-  document.getElementById('assign-text').value='';
+  document.getElementById('assign-search').value='';
   document.getElementById('assign-notes').value='';
   document.getElementById('assign-err').textContent='';
+  renderAssignCatChips();
+  filterAssignLib();
+  renderAssignSelected();
   openModal('modal-assign');
 }
+
+// 운동 라이브러리 카테고리 (근육 부위) 필터
+function getMuscleGroups(){
+  if(!window.EXERCISE_LIBRARY) return [];
+  const set = new Set();
+  window.EXERCISE_LIBRARY.forEach(ex => set.add(ex.m));
+  return ['all', ...Array.from(set)];
+}
+function renderAssignCatChips(){
+  const wrap = document.getElementById('assign-cat-chips');
+  if(!wrap) return;
+  const groups = getMuscleGroups();
+  wrap.innerHTML = groups.map(g=>{
+    const lbl = g==='all'?'전체':g;
+    const on = g === ASSIGN_CAT_FILTER ? 'on' : '';
+    return `<span class="cat-chip ${on}" onclick="setAssignCat('${g}')">${lbl}</span>`;
+  }).join('');
+}
+function setAssignCat(g){
+  ASSIGN_CAT_FILTER = g;
+  renderAssignCatChips();
+  filterAssignLib();
+}
+function filterAssignLib(){
+  const wrap = document.getElementById('assign-lib-results');
+  if(!wrap) return;
+  if(!window.EXERCISE_LIBRARY){
+    wrap.innerHTML = '<div class="loader">라이브러리 로딩 중…</div>';
+    return;
+  }
+  const q = (document.getElementById('assign-search').value||'').trim().toLowerCase();
+  const list = window.EXERCISE_LIBRARY.filter(ex=>{
+    if(ASSIGN_CAT_FILTER!=='all' && ex.m !== ASSIGN_CAT_FILTER) return false;
+    if(q && !ex.n.toLowerCase().includes(q)) return false;
+    return true;
+  });
+  if(list.length===0){
+    wrap.innerHTML = '<div class="empty-state small" style="padding:20px;">검색 결과 없음</div>';
+    return;
+  }
+  wrap.innerHTML = list.slice(0, 60).map((ex,i) => `
+    <div class="lib-row" onclick="addAssignExercise('${esc(ex.n)}','${esc(ex.m)}','${esc(ex.e||'')}','${esc(ex.i||'')}')">
+      <span class="ico">${esc(ex.i||'')}</span>
+      <span class="nm">${esc(ex.n)}</span>
+      <span class="ms">${esc(ex.m)} · ${esc(ex.e||'')}</span>
+      <span class="add">+</span>
+    </div>
+  `).join('') + (list.length>60?'<div class="small" style="text-align:center;padding:8px;color:var(--text3);">'+list.length+'개 중 60 표시 — 검색으로 좁혀</div>':'');
+}
+
+function addAssignExercise(name, m, e, ico){
+  ASSIGN_SELECTED.push({
+    name, m, e, ico,
+    type: 'gym',
+    sets: [{reps:10, weight:0}, {reps:10, weight:0}, {reps:10, weight:0}], // default 3 sets
+  });
+  renderAssignSelected();
+}
+function removeAssignExercise(idx){
+  ASSIGN_SELECTED.splice(idx, 1);
+  renderAssignSelected();
+}
+function addSet(exIdx){
+  const ex = ASSIGN_SELECTED[exIdx];
+  if(!ex) return;
+  const last = ex.sets[ex.sets.length-1] || {reps:10, weight:0};
+  ex.sets.push({reps:last.reps, weight:last.weight});
+  renderAssignSelected();
+}
+function removeSet(exIdx, setIdx){
+  const ex = ASSIGN_SELECTED[exIdx];
+  if(!ex || ex.sets.length<=1) return;
+  ex.sets.splice(setIdx, 1);
+  renderAssignSelected();
+}
+function updateSetField(exIdx, setIdx, field, val){
+  const ex = ASSIGN_SELECTED[exIdx];
+  if(!ex || !ex.sets[setIdx]) return;
+  ex.sets[setIdx][field] = parseFloat(val) || 0;
+}
+function renderAssignSelected(){
+  const wrap = document.getElementById('assign-selected');
+  if(!wrap) return;
+  document.getElementById('assign-count').textContent = ASSIGN_SELECTED.length;
+  if(ASSIGN_SELECTED.length===0){
+    wrap.innerHTML = '<div class="small" style="text-align:center;padding:30px 10px;color:var(--text3);">왼쪽에서 운동을 골라 추가하세요</div>';
+    return;
+  }
+  wrap.innerHTML = ASSIGN_SELECTED.map((ex, i) => `
+    <div class="ex-card">
+      <div class="ex-card-head">
+        <span class="ico">${esc(ex.ico||'')}</span>
+        <span class="nm">${esc(ex.name)}</span>
+        <span class="ms" style="font-size:10px;color:var(--text3);">${esc(ex.m||'')}</span>
+        <button class="x" onclick="removeAssignExercise(${i})" title="삭제">✕</button>
+      </div>
+      <div class="set-row" style="font-size:10px;color:var(--text3);font-weight:700;">
+        <span class="num">SET</span><span>반복</span><span>무게(kg)</span><span></span>
+      </div>
+      ${ex.sets.map((s, si) => `
+        <div class="set-row">
+          <span class="num">${si+1}</span>
+          <input type="number" min="0" value="${s.reps||0}" oninput="updateSetField(${i},${si},'reps',this.value)" />
+          <input type="number" min="0" step="0.5" value="${s.weight||0}" oninput="updateSetField(${i},${si},'weight',this.value)" />
+          <button class="rm" onclick="removeSet(${i},${si})" title="세트 삭제">✕</button>
+        </div>
+      `).join('')}
+      <button class="add-set-btn" onclick="addSet(${i})">+ 세트</button>
+    </div>
+  `).join('');
+}
+
 async function doAssignWorkout(){
   const date = document.getElementById('assign-date').value;
-  const text = document.getElementById('assign-text').value.trim();
   const notes = document.getElementById('assign-notes').value.trim();
   const errEl = document.getElementById('assign-err');
   errEl.textContent='';
-  if(!date||!text){ errEl.textContent='날짜·운동 모두 입력.'; return; }
-  // Parse text lines → workouts array
-  const lines = text.split('\n').map(s=>s.trim()).filter(Boolean);
-  const workouts = lines.map(line => ({
-    name: line,
-    type: 'gym',
+  if(!date){ errEl.textContent='날짜를 선택하세요.'; return; }
+  if(ASSIGN_SELECTED.length===0){ errEl.textContent='운동을 1개 이상 추가하세요.'; return; }
+  // payload — 메인 앱 daily_logs.workouts 와 호환되는 schema
+  const workouts = ASSIGN_SELECTED.map(ex => ({
+    name: ex.name,
+    type: ex.type || 'gym',
+    cat: 'strength',
+    muscle: ex.m,
+    equipment: ex.e,
+    icon: ex.ico,
+    sets: ex.sets.map(s => ({reps: s.reps, weight: s.weight, done: false})),
     status: 'planned',
-    sets: [],
   }));
   const payload = { workouts, notes: notes||null };
   const {error} = await sb.rpc('trainer_assign_workout', {
@@ -883,7 +1052,7 @@ async function doAssignWorkout(){
   });
   if(error){ errEl.textContent=error.message; return; }
   closeModal('modal-assign');
-  showToast(`${date} 배정 완료 (${workouts.length}개).`);
+  showToast(`${date} 배정 완료 (${workouts.length}개 종목).`);
   await loadAssignments();
   if(document.querySelector('#view-detail .seg button.on')?.dataset.pane==='workouts') loadWorkouts();
 }
