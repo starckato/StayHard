@@ -6229,6 +6229,17 @@ async function onLogin(user){
   setTimeout(()=>{try{runDailyCubeRecap();}catch(e){}},2000);
   // Lifetime cube counts — Status Band 큐브 카운터 표시용. 백그라운드 fetch.
   setTimeout(()=>{try{fetchLifetimeCubeCounts();}catch(e){}},1500);
+  // 트레이너 숙제 carry-over — 어제 미완료 → 오늘로 자동 이동 + 트레이너 알림
+  setTimeout(async()=>{
+    try{
+      const {data, error} = await sb.rpc('process_homework_carryover');
+      if(!error && data && data.carried_over > 0){
+        showToast(`어제 숙제 ${data.carried_over}개 오늘로 이동.`);
+        // daily_logs 다시 fetch — 새 workouts 가 추가됨
+        try{ await loadLog(TODAY, true); renderRoutine(); }catch(_){}
+      }
+    }catch(e){console.warn('[homework-carryover]',e);}
+  }, 2500);
   // 이전 세션 저장 실패분 복구 (localStorage pendingSave_* 키)
   _recoverPendingSaves();
   // 치팅 월 초기화 체크

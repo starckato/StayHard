@@ -569,46 +569,74 @@ async function loadClients(){
   const wrap = document.getElementById('client-table-wrap');
   wrap.innerHTML = '<div class="loader">불러오는 중…</div>';
   try {
-    const {data, error} = await sb.from('trainer_clients')
-      .select('id, status, connected_at, client_id, profiles!trainer_clients_client_id_fkey(id,display_name,username,total_score,friend_code)')
+    // 1차: relationship 행 가져오기 (id 매핑용)
+    const {data: rels, error: rErr} = await sb.from('trainer_clients')
+      .select('id, status, connected_at, client_id')
       .eq('trainer_id', CU.id).eq('status', 'active');
-    if(error){ wrap.innerHTML='<div class="empty-state">trainer_clients 에러: '+esc(error.message)+'</div>'; return; }
-    CLIENTS = data || [];
+    if(rErr){ wrap.innerHTML='<div class="empty-state">trainer_clients 에러: '+esc(rErr.message)+'</div>'; return; }
+    CLIENTS = rels || [];
     document.getElementById('client-count').textContent = `활성 ${CLIENTS.length}명`;
     if(CLIENTS.length===0){
       wrap.innerHTML = '<div class="empty-state"><div class="empty-icon">📋</div><div>아직 회원이 없어요.</div><div class="small" style="margin-top:6px;">우측 상단 [+ 회원 등록] 으로 시작.</div></div>';
       return;
     }
-    // 회원별 오늘 큐브 + 마지막 활동 fetch (parallel) — 모든 fetch try/catch 보호
+    // 2차: trainer_clients_homework_status RPC — 회원별 오늘 숙제 진행 + 점수
+    const {data: rows, error: hErr} = await sb.rpc('trainer_clients_homework_status');
+    if(hErr){ console.warn('[homework-status]', hErr); }
+    const byClient = {};
+    (rows||[]).forEach(r => { byClient[r.client_id] = r; });
+    // 3차: 오늘 cubes summary (별도)
     const today = new Date().toISOString().slice(0,10);
     const enriched = await Promise.all(CLIENTS.map(async (c) => {
       const cid = c.client_id;
+      const hw = byClient[cid] || {};
       let log = null;
       try {
-        const r = await sb.from('daily_logs').select('cubes,meals,workouts,updated_at').eq('user_id',cid).eq('log_date',today).maybeSingle();
+        const r = await sb.from('daily_logs').select('cubes,updated_at').eq('user_id',cid).eq('log_date',today).maybeSingle();
         log = r.data;
       } catch(_){}
       const cubes = (log && log.cubes) || {};
       const todayGold = ['diet','exercise','routine','tasks'].filter(k=>cubes[k]==='gold').length;
       const todaySilver = ['diet','exercise','routine','tasks'].filter(k=>cubes[k]==='silver').length;
       const todayRed = ['diet','exercise','routine','tasks'].filter(k=>cubes[k]==='crimson').length;
-      return {...c, todayGold, todaySilver, todayRed, lastActivity: log?.updated_at};
+      return {
+        ...c,
+        display_name: hw.display_name,
+        username: hw.username,
+        total_score: hw.total_score || 0,
+        today_status: hw.today_status,
+        today_total_sets: hw.today_total_sets || 0,
+        today_done_sets: hw.today_done_sets || 0,
+        last_assignment_date: hw.last_assignment_date,
+        todayGold, todaySilver, todayRed,
+        lastActivity: log?.updated_at,
+      };
     }));
-    let html = '<table><thead><tr><th>회원</th><th>오늘 큐브</th><th>총 점수</th><th>마지막 활동</th><th>연결</th></tr></thead><tbody>';
+    let html = '<table><thead><tr><th>회원</th><th>오늘 숙제</th><th>오늘 큐브</th><th>총 점수</th><th>마지막 활동</th></tr></thead><tbody>';
     for(const c of enriched){
-      const p = c.profiles || {};
-      const name = p.display_name || p.username || '—';
+      const name = c.display_name || c.username || '—';
+      // 오늘 숙제 셀
+      let hwCell = '<span class="row-meta">없음</span>';
+      if(c.today_status){
+        const pct = c.today_total_sets > 0 ? Math.round(c.today_done_sets/c.today_total_sets*100) : 0;
+        const color = c.today_status==='completed'?'var(--green)':c.today_status==='in_progress'?'#38bdf8':'#ff6b6b';
+        const lbl = c.today_status==='completed'?'완료':c.today_status==='in_progress'?'진행 중':'예정';
+        hwCell = `<div style="display:flex;align-items:center;gap:8px;">
+          <span style="font-size:11px;font-weight:800;color:${color};letter-spacing:.04em;">${lbl}</span>
+          <span class="row-meta">${c.today_done_sets}/${c.today_total_sets} (${pct}%)</span>
+        </div>`;
+      }
       html += `<tr onclick="openDetail('${c.id}','${c.client_id}')">
-        <td><div class="row-name">${esc(name)}</div><div class="row-meta">@${esc(p.username||'')}</div></td>
+        <td><div class="row-name">${esc(name)}</div><div class="row-meta">@${esc(c.username||'')}</div></td>
+        <td>${hwCell}</td>
         <td><div class="row-cubes">
           ${c.todayGold>0?'<span class="cube-sm gold"></span><span class="row-meta">'+c.todayGold+'</span>':''}
           ${c.todaySilver>0?'<span class="cube-sm silver"></span><span class="row-meta">'+c.todaySilver+'</span>':''}
           ${c.todayRed>0?'<span class="cube-sm red"></span><span class="row-meta">'+c.todayRed+'</span>':''}
           ${c.todayGold+c.todaySilver+c.todayRed===0?'<span class="row-meta">—</span>':''}
         </div></td>
-        <td>${(p.total_score||0).toLocaleString()}</td>
+        <td>${(c.total_score||0).toLocaleString()}</td>
         <td><span class="row-meta">${fmtRel(c.lastActivity)}</span></td>
-        <td><span class="row-meta">${fmtRel(c.connected_at)}</span></td>
       </tr>`;
     }
     html += '</tbody></table>';
