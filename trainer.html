@@ -947,7 +947,7 @@ async function editAssignment(assignmentId){
     e: w.equipment || '',
     ico: w.icon || '',
     type: w.type || 'gym',
-    sets: (w.sets||[]).map(s => ({reps: s.reps||0, weight: s.weight||0})),
+    sets: (w.sets||[]).map(s => ({reps: s.reps||0, kg: s.kg||s.weight||0})),
   }));
   ASSIGN_MUSCLE_FILTER = 'all';
   ASSIGN_EQUIP_FILTER = 'all';
@@ -1176,7 +1176,7 @@ function addAssignExercise(name, m, e, ico){
   ASSIGN_SELECTED.push({
     name, m, e, ico,
     type: 'gym',
-    sets: [{reps:10, weight:0}, {reps:10, weight:0}, {reps:10, weight:0}],
+    sets: [{reps:10, kg:0}, {reps:10, kg:0}, {reps:10, kg:0}],
   });
   ASSIGN_ACTIVE_TAB = ASSIGN_SELECTED.length - 1;
   renderAssignBuilder();
@@ -1196,8 +1196,8 @@ function setAssignActiveTab(idx){
 function addSet(exIdx){
   const ex = ASSIGN_SELECTED[exIdx];
   if(!ex) return;
-  const last = ex.sets[ex.sets.length-1] || {reps:10, weight:0};
-  ex.sets.push({reps:last.reps, weight:last.weight});
+  const last = ex.sets[ex.sets.length-1] || {reps:10, kg:0};
+  ex.sets.push({reps:last.reps, kg:last.kg||last.weight||0});
   renderAssignBuilder();
 }
 function removeSet(exIdx, setIdx){
@@ -1224,7 +1224,7 @@ function unifyAssignSets(exIdx){
   const first = ex.sets[0];
   for(let i=1; i<ex.sets.length; i++){
     ex.sets[i].reps = first.reps;
-    ex.sets[i].weight = first.weight;
+    ex.sets[i].kg = first.kg || first.weight || 0;
   }
   renderAssignBuilder();
 }
@@ -1274,28 +1274,37 @@ function renderAssignBuilder(){
       <button onclick="removeAssignExercise(${ASSIGN_ACTIVE_TAB})" style="background:rgba(255,77,77,0.10);border:1px solid rgba(255,77,77,0.28);border-radius:8px;color:#ff6b6b;padding:7px 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;flex-shrink:0;">탭 삭제</button>
     </div>
 
-    <!-- 세트 입력 헤더 (flex 로 너비 제어) -->
+    <!-- 세트 입력 헤더 -->
     <div style="display:flex;align-items:center;gap:10px;font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin:0 0 6px;padding:0 8px;">
-      <span style="width:24px;text-align:center;">#</span>
-      <span style="width:84px;text-align:center;">반복 (회)</span>
-      <span style="width:84px;text-align:center;">무게 (kg)</span>
+      <span style="width:24px;text-align:center;flex-shrink:0;">#</span>
+      <span style="width:104px;text-align:center;flex-shrink:0;">무게 (kg)</span>
+      <span style="width:104px;text-align:center;flex-shrink:0;">반복 (회)</span>
       <span style="flex:1;"></span>
     </div>
 
-    <!-- 세트 list -->
+    <!-- 세트 list — kg/reps column 정렬, 버튼 아래에 -->
     ${ex.sets.map((s, si) => `
       <div style="margin-bottom:8px;background:var(--surface);border-radius:8px;padding:8px 10px;border:1px solid var(--border);">
-        <div style="display:flex;align-items:center;gap:10px;">
-          <span style="width:24px;text-align:center;font-family:'DM Mono',monospace;font-weight:800;color:var(--text2);font-size:13px;flex-shrink:0;">${si+1}</span>
-          <input type="number" min="0" value="${s.reps||0}" oninput="updateSetField(${ASSIGN_ACTIVE_TAB},${si},'reps',this.value)" style="width:84px;padding:7px 8px;font-size:14px;font-family:'DM Mono',monospace;font-weight:700;text-align:center;flex-shrink:0;" />
-          <input type="number" min="0" step="0.5" value="${s.weight||0}" oninput="updateSetField(${ASSIGN_ACTIVE_TAB},${si},'weight',this.value)" style="width:84px;padding:7px 8px;font-size:14px;font-family:'DM Mono',monospace;font-weight:700;text-align:center;flex-shrink:0;" />
-          <div style="flex:1;display:flex;gap:5px;flex-wrap:wrap;">
-            <button onclick="adjustAssignSet(${ASSIGN_ACTIVE_TAB},${si},'reps',-1)" class="hwq-step">−1회</button>
-            <button onclick="adjustAssignSet(${ASSIGN_ACTIVE_TAB},${si},'reps',1)" class="hwq-step">+1회</button>
-            <button onclick="adjustAssignSet(${ASSIGN_ACTIVE_TAB},${si},'weight',-5)" class="hwq-step">−5kg</button>
-            <button onclick="adjustAssignSet(${ASSIGN_ACTIVE_TAB},${si},'weight',5)" class="hwq-step">+5kg</button>
+        <div style="display:flex;align-items:flex-start;gap:10px;">
+          <span style="width:24px;text-align:center;font-family:'DM Mono',monospace;font-weight:800;color:var(--text2);font-size:13px;padding-top:8px;flex-shrink:0;">${si+1}</span>
+          <!-- kg column -->
+          <div style="width:104px;flex-shrink:0;display:flex;flex-direction:column;gap:4px;">
+            <input type="number" min="0" step="0.5" value="${s.kg||s.weight||0}" oninput="updateSetField(${ASSIGN_ACTIVE_TAB},${si},'kg',this.value)" style="width:100%;padding:7px 6px;font-size:14px;font-family:'DM Mono',monospace;font-weight:700;text-align:center;" />
+            <div style="display:flex;gap:3px;">
+              <button onclick="adjustAssignSet(${ASSIGN_ACTIVE_TAB},${si},'kg',-5)" class="hwq-step" style="flex:1;">−5</button>
+              <button onclick="adjustAssignSet(${ASSIGN_ACTIVE_TAB},${si},'kg',5)" class="hwq-step" style="flex:1;">+5</button>
+            </div>
           </div>
-          <button class="rm" onclick="removeSet(${ASSIGN_ACTIVE_TAB},${si})" title="세트 삭제" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:14px;padding:4px;flex-shrink:0;">✕</button>
+          <!-- reps column -->
+          <div style="width:104px;flex-shrink:0;display:flex;flex-direction:column;gap:4px;">
+            <input type="number" min="0" value="${s.reps||0}" oninput="updateSetField(${ASSIGN_ACTIVE_TAB},${si},'reps',this.value)" style="width:100%;padding:7px 6px;font-size:14px;font-family:'DM Mono',monospace;font-weight:700;text-align:center;" />
+            <div style="display:flex;gap:3px;">
+              <button onclick="adjustAssignSet(${ASSIGN_ACTIVE_TAB},${si},'reps',-1)" class="hwq-step" style="flex:1;">−1</button>
+              <button onclick="adjustAssignSet(${ASSIGN_ACTIVE_TAB},${si},'reps',1)" class="hwq-step" style="flex:1;">+1</button>
+            </div>
+          </div>
+          <div style="flex:1;"></div>
+          <button class="rm" onclick="removeSet(${ASSIGN_ACTIVE_TAB},${si})" title="세트 삭제" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:14px;padding:6px;flex-shrink:0;align-self:center;">✕</button>
         </div>
       </div>
     `).join('')}
@@ -1325,7 +1334,7 @@ async function doAssignWorkout(){
     muscle: ex.m,
     equipment: ex.e,
     icon: ex.ico,
-    sets: ex.sets.map(s => ({reps: s.reps, weight: s.weight, done: false})),
+    sets: ex.sets.map(s => ({reps: s.reps, kg: s.kg||s.weight||0, done: false})),
     status: 'planned',
   }));
   const payload = { workouts, notes: notes||null };

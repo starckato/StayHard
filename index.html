@@ -11157,30 +11157,38 @@ function renderHomeworkSession(){
           <div style="font-size:11px;color:var(--text3);">${esc(ex.muscle||'')}${ex.equipment?' · '+esc(ex.equipment):''}</div>
         </div>
       </div>
-      <!-- 세트 헤더 — flex 정렬 -->
-      <div style="display:flex;align-items:center;gap:8px;font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;font-weight:700;padding:0 6px 6px;">
+      <!-- 세트 헤더 — kg / reps 순서 -->
+      <div style="display:flex;align-items:center;gap:10px;font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;font-weight:700;padding:0 6px 6px;">
         <div style="width:24px;text-align:center;flex-shrink:0;">#</div>
-        <div style="width:72px;text-align:center;flex-shrink:0;">반복</div>
-        <div style="width:72px;text-align:center;flex-shrink:0;">kg</div>
+        <div style="width:88px;text-align:center;flex-shrink:0;">kg</div>
+        <div style="width:88px;text-align:center;flex-shrink:0;">반복</div>
         <div style="flex:1;"></div>
         <div style="width:36px;flex-shrink:0;"></div>
       </div>
       ${sets.map((s, si) => {
         const isDone = !!s.done;
         return `<div style="margin-bottom:6px;background:var(--surface);border-radius:8px;padding:8px 6px;${isDone?'opacity:.55;':''}">
-          <div style="display:flex;align-items:center;gap:8px;">
-            <div style="width:24px;text-align:center;font-family:'DM Mono',monospace;font-weight:800;color:${isDone?'var(--green)':'var(--text)'};font-size:14px;flex-shrink:0;">${si+1}</div>
-            <input type="number" min="0" value="${s.reps||0}" onchange="hwsUpdateSet(${si},'reps',this.value)" id="hws-reps-${si}" style="width:72px;padding:7px 6px;background:var(--surface2);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-size:14px;font-family:'DM Mono',monospace;font-weight:700;text-align:center;flex-shrink:0;" ${isDone?'disabled':''} />
-            <input type="number" min="0" step="0.5" value="${s.kg||0}" onchange="hwsUpdateSet(${si},'kg',this.value)" id="hws-kg-${si}" style="width:72px;padding:7px 6px;background:var(--surface2);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-size:14px;font-family:'DM Mono',monospace;font-weight:700;text-align:center;flex-shrink:0;" ${isDone?'disabled':''} />
+          <div style="display:flex;align-items:flex-start;gap:10px;">
+            <div style="width:24px;text-align:center;font-family:'DM Mono',monospace;font-weight:800;color:${isDone?'var(--green)':'var(--text)'};font-size:14px;flex-shrink:0;padding-top:8px;">${si+1}</div>
+            <!-- kg column -->
+            <div style="width:88px;flex-shrink:0;display:flex;flex-direction:column;gap:4px;">
+              <input type="number" min="0" step="0.5" value="${s.kg||0}" onchange="hwsUpdateSet(${si},'kg',this.value)" id="hws-kg-${si}" style="width:100%;padding:7px 6px;background:var(--surface2);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-size:14px;font-family:'DM Mono',monospace;font-weight:700;text-align:center;" ${isDone?'disabled':''} />
+              ${!isDone ? `<div style="display:flex;gap:3px;">
+                <button onclick="hwsAdjustSet(${si},'kg',-5)" class="hws-step" style="flex:1;">−5</button>
+                <button onclick="hwsAdjustSet(${si},'kg',5)" class="hws-step" style="flex:1;">+5</button>
+              </div>` : ''}
+            </div>
+            <!-- reps column -->
+            <div style="width:88px;flex-shrink:0;display:flex;flex-direction:column;gap:4px;">
+              <input type="number" min="0" value="${s.reps||0}" onchange="hwsUpdateSet(${si},'reps',this.value)" id="hws-reps-${si}" style="width:100%;padding:7px 6px;background:var(--surface2);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-size:14px;font-family:'DM Mono',monospace;font-weight:700;text-align:center;" ${isDone?'disabled':''} />
+              ${!isDone ? `<div style="display:flex;gap:3px;">
+                <button onclick="hwsAdjustSet(${si},'reps',-1)" class="hws-step" style="flex:1;">−1</button>
+                <button onclick="hwsAdjustSet(${si},'reps',1)" class="hws-step" style="flex:1;">+1</button>
+              </div>` : ''}
+            </div>
             <div style="flex:1;"></div>
-            <button onclick="hwsToggleDone(${si})" style="width:36px;height:36px;border-radius:9px;background:${isDone?'var(--green)':'var(--surface2)'};border:1.5px solid ${isDone?'var(--green)':'var(--border2)'};display:flex;align-items:center;justify-content:center;cursor:pointer;touch-action:manipulation;flex-shrink:0;">${isDone?'<svg width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#fff\" stroke-width=\"3\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><polyline points=\"20 6 9 17 4 12\"></polyline></svg>':''}</button>
+            <button onclick="hwsToggleDone(${si})" style="width:36px;height:36px;border-radius:9px;background:${isDone?'var(--green)':'var(--surface2)'};border:1.5px solid ${isDone?'var(--green)':'var(--border2)'};display:flex;align-items:center;justify-content:center;cursor:pointer;touch-action:manipulation;flex-shrink:0;align-self:center;">${isDone?'<svg width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#fff\" stroke-width=\"3\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><polyline points=\"20 6 9 17 4 12\"></polyline></svg>':''}</button>
           </div>
-          ${!isDone ? `<div style="display:flex;gap:4px;margin-top:6px;padding-left:32px;flex-wrap:wrap;">
-            <button onclick="hwsAdjustSet(${si},'reps',-1)" class="hws-step">−1회</button>
-            <button onclick="hwsAdjustSet(${si},'reps',1)" class="hws-step">+1회</button>
-            <button onclick="hwsAdjustSet(${si},'kg',-5)" class="hws-step">−5kg</button>
-            <button onclick="hwsAdjustSet(${si},'kg',5)" class="hws-step">+5kg</button>
-          </div>` : ''}
         </div>`;
       }).join('')}
       <button onclick="hwsApplyToRemaining()" style="width:100%;margin-top:8px;padding:9px;background:var(--surface);border:1px dashed var(--border2);border-radius:8px;color:var(--text3);font-size:11px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">↓ 첫 세트 값 → 남은 세트 통일</button>
@@ -11369,12 +11377,11 @@ function renderWorkouts(){
   renderWssCardioTiles();
   // 첫 주 미션 재평가 — 운동 추가/완료/삭제 시 미션 상태 바로 갱신
   try{if(typeof renderFirstWeekCard==='function')renderFirstWeekCard();}catch(e){}
-  const allWorkouts=log.workouts||[];
-  // 트레이너 숙제: _trainerAssignmentId 가 있고 status≠done. 별도 섹션 (workout-card 상단).
-  const homework = allWorkouts.filter(w => w && w._trainerAssignmentId && w.status !== 'done');
-  renderHomeworkRows(homework);
-  // 일반 워크아웃 (숙제 미완료 제외 — 숙제 완료한 건 정식 운동으로 표시)
-  const workouts = allWorkouts.filter(w => !(w && w._trainerAssignmentId && w.status !== 'done'));
+  const workouts=log.workouts||[];
+  // 숙제 carded section 폐지 — 숙제도 정식 헬스 세션 카드로 통합 표시
+  // (트레이너 배정 + status≠done 은 click → openHomeworkStart, 그 외 정상 session-summary)
+  const hwWrap = document.getElementById('homework-rows');
+  if(hwWrap){ hwWrap.innerHTML = ''; hwWrap.style.cssText = ''; }
   // CTA label changes after logging
   const ctaLbl=document.getElementById('wo-add-cta-lbl');
   if(ctaLbl)ctaLbl.textContent=workouts.length>0?'운동 더 추가하기':'운동 추가하기';
@@ -11395,24 +11402,35 @@ function renderWorkouts(){
     if(w.type==='gym'){
       const exNames=(w.exercises||[]).map(e=>e.name);
       const preview=exNames.slice(0,2).join(' · ')+(exNames.length>2?' 외 '+(exNames.length-2)+'개':'');
-      const vol=w.totalVolume||0;
-      const volStr=vol>=1000?(vol/1000).toFixed(1)+'t':vol>0?vol.toLocaleString()+'kg':'';
-      const totalSets=(w.exercises||[]).reduce((a,ex)=>a+(ex.sets||[]).filter(s=>s.done).length,0);
-      return`<div style="overflow:hidden;border-bottom:1px solid var(--border);">
-        <div style="display:flex;align-items:center;gap:10px;padding:12px 13px;cursor:pointer;" onclick="openSessionSummary(${i})">
+      // 트레이너 숙제 — sets 합산해서 vol 계산 (homework totalVolume 안 저장됨)
+      const isHomework = !!w._trainerAssignmentId;
+      const isPending = isHomework && w.status !== 'done';
+      const totalSets = (w.exercises||[]).reduce((a,ex)=>a+(ex.sets||[]).filter(s=>s.done).length,0);
+      const totalSetsAll = (w.exercises||[]).reduce((a,ex)=>a+(ex.sets||[]).length,0);
+      const vol = isHomework
+        ? (w.exercises||[]).reduce((a,ex)=>a+(ex.sets||[]).filter(s=>s.done).reduce((b,s)=>b+(parseFloat(s.kg)||0)*(parseInt(s.reps)||0),0),0)
+        : (w.totalVolume||0);
+      const volStr=vol>=1000?(vol/1000).toFixed(1)+'t':vol>0?Math.round(vol).toLocaleString()+'kg':'';
+      // 클릭 핸들러: 미완료 숙제는 openHomeworkStart, 그 외는 openSessionSummary
+      const clickFn = isPending ? `openHomeworkStart(${i})` : `openSessionSummary(${i})`;
+      const sessionTitle = isHomework ? (w.sessionName||'오늘의 운동 숙제') : (w.sessionName||'헬스 세션');
+      const badge = isPending ? `<span style="font-size:9px;font-weight:800;letter-spacing:.04em;padding:2px 7px;border-radius:5px;background:rgba(255,77,77,0.18);color:#ff6b6b;margin-left:6px;">예정 ${totalSets}/${totalSetsAll}</span>` : (isHomework ? `<span style="font-size:9px;font-weight:800;letter-spacing:.04em;padding:2px 7px;border-radius:5px;background:rgba(52,211,153,0.18);color:var(--green);margin-left:6px;">완료</span>` : '');
+      const cardBg = isPending ? 'rgba(255,77,77,.06)' : 'transparent';
+      return`<div style="overflow:hidden;border-bottom:1px solid var(--border);background:${cardBg};">
+        <div style="display:flex;align-items:center;gap:10px;padding:12px 13px;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:rgba(255,77,77,0.18);" onclick="${clickFn}">
           <div style="width:28px;height:28px;border-radius:7px;background:rgba(255,77,77,.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4v16M18 4v16M6 12h12"/><rect x="2" y="9" width="4" height="6" rx="1"/><rect x="18" y="9" width="4" height="6" rx="1"/></svg>
           </div>
           <div style="flex:1;min-width:0;">
-            <div style="font-size:15px;font-weight:600;">${w.sessionName||'헬스 세션'}</div>
+            <div style="font-size:15px;font-weight:600;display:flex;align-items:center;flex-wrap:wrap;">${esc(sessionTitle)}${badge}</div>
             <div style="font-size:12px;color:var(--text2);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${preview}${volStr?' · '+volStr:''}</div>
           </div>
-          <button onclick="event.stopPropagation();editGymSession(${i})" style="padding:3px 8px;background:var(--surface3);border:1px solid var(--border2);border-radius:6px;font-size:10px;color:var(--text2);cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;flex-shrink:0;">수정</button>
-          <button onclick="event.stopPropagation();delWO(${i})" style="width:22px;height:22px;background:var(--red-bg);border:1px solid var(--red-bd);border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;touch-action:manipulation;"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+          ${isHomework ? '' : `<button onclick="event.stopPropagation();editGymSession(${i})" style="padding:3px 8px;background:var(--surface3);border:1px solid var(--border2);border-radius:6px;font-size:10px;color:var(--text2);cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;flex-shrink:0;">수정</button>`}
+          ${isHomework ? '' : `<button onclick="event.stopPropagation();delWO(${i})" style="width:22px;height:22px;background:var(--red-bg);border:1px solid var(--red-bd);border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;touch-action:manipulation;"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>`}
         </div>
-        ${vol>0?`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;border-top:1px solid var(--border);">
-          <div style="text-align:center;padding:5px 0;border-right:1px solid var(--border);"><div style="font-size:14px;font-weight:700;color:var(--accent);font-family:'DM Mono',monospace;">${volStr}</div><div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.04em;">볼륨</div></div>
-          <div style="text-align:center;padding:5px 0;border-right:1px solid var(--border);"><div style="font-size:14px;font-weight:700;color:var(--green);">${totalSets}</div><div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.04em;">세트</div></div>
+        ${(vol>0||(isHomework&&totalSetsAll>0))?`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;border-top:1px solid var(--border);">
+          <div style="text-align:center;padding:5px 0;border-right:1px solid var(--border);"><div style="font-size:14px;font-weight:700;color:var(--accent);font-family:'DM Mono',monospace;">${volStr||'—'}</div><div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.04em;">볼륨</div></div>
+          <div style="text-align:center;padding:5px 0;border-right:1px solid var(--border);"><div style="font-size:14px;font-weight:700;color:var(--green);">${totalSets}${isHomework?'/'+totalSetsAll:''}</div><div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.04em;">세트</div></div>
           <div style="text-align:center;padding:5px 0;"><div style="font-size:14px;font-weight:700;color:var(--text);">${(w.exercises||[]).length}</div><div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.04em;">종목</div></div>
         </div>`:''}
       </div>`;
