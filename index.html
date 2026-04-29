@@ -11007,28 +11007,38 @@ let _hwsExercises = [];      // log.workouts 의 entries 중 같은 _trainerAssi
 let _hwsExIdx = 0;            // 현재 진행 종목 index in _hwsExercises
 
 function openHomeworkStart(idx){
-  const w = (log.workouts||[])[idx];
-  if(!w || !w._trainerAssignmentId){ showToast('운동을 찾을 수 없어요.'); return; }
-  const sets = Array.isArray(w.sets) ? w.sets : [];
-  if(sets.length === 0){ showToast('세트가 비어있어요.'); return; }
-  const summary = `${w.name} · ${sets.length} 세트`;
-  if(!confirm(`운동 시작할까요?\n\n${summary}`)) return;
-  // 같은 assignment 의 모든 종목 모음 (status≠done)
-  _hwsAssignmentId = w._trainerAssignmentId;
-  _hwsExercises = (log.workouts||[]).filter(x => x && x._trainerAssignmentId === _hwsAssignmentId && x.status !== 'done');
-  // 클릭한 종목부터 시작 (그 종목이 _hwsExercises 의 어느 index 인지)
-  _hwsExIdx = Math.max(0, _hwsExercises.indexOf(w));
-  // 이 종목의 status 를 in_progress 로 마크
-  if(w.status !== 'in_progress'){ w.status = 'in_progress'; }
-  renderHomeworkSession();
-  document.getElementById('homework-session-modal').style.display = 'flex';
-  document.body.style.overflow = 'hidden';
+  try{
+    const allWorkouts = log.workouts||[];
+    let w = allWorkouts[idx];
+    // idx 가 무효하거나 매핑 깨졌을 때 — assignmentId 재검색 fallback
+    if(!w){ showToast('운동을 찾을 수 없어요. 새로고침 해보세요.'); return; }
+    if(!w._trainerAssignmentId){ showToast('숙제 정보 없음.'); return; }
+    const sets = Array.isArray(w.sets) ? w.sets : [];
+    if(sets.length === 0){ showToast('세트가 비어있어요.'); return; }
+    // 같은 assignment 의 모든 종목 모음 (status≠done)
+    _hwsAssignmentId = w._trainerAssignmentId;
+    _hwsExercises = allWorkouts.filter(x => x && x._trainerAssignmentId === _hwsAssignmentId && x.status !== 'done');
+    if(_hwsExercises.length === 0){ _hwsExercises = [w]; }
+    _hwsExIdx = Math.max(0, _hwsExercises.indexOf(w));
+    if(w.status !== 'in_progress'){ w.status = 'in_progress'; }
+    renderHomeworkSession();
+    const modal = document.getElementById('homework-session-modal');
+    if(!modal){ showToast('모달 element 없음. 새로고침 필요.'); return; }
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+  }catch(e){
+    console.warn('[homework-start]', e);
+    document.body.style.overflow = ''; // 안전 — 스크롤 잠김 해제
+    showToast('숙제 시작 실패: '+(e.message||e));
+  }
 }
 
 function closeHomeworkSession(){
-  document.getElementById('homework-session-modal').style.display = 'none';
-  document.body.style.overflow = '';
-  // 진행 상태 저장 (도중에 닫아도 sets[].done 보존)
+  try{
+    const modal = document.getElementById('homework-session-modal');
+    if(modal) modal.style.display = 'none';
+  }catch(_){}
+  document.body.style.overflow = ''; // 항상 release
   try{ saveNow(); }catch(e){}
   try{ renderWorkouts(); }catch(e){}
 }
@@ -11062,13 +11072,22 @@ function renderHomeworkSession(){
       </div>
       ${sets.map((s, si) => {
         const isDone = !!s.done;
-        return `<div style="display:grid;grid-template-columns:36px 1fr 1fr 36px;gap:8px;align-items:center;padding:6px 0;${isDone?'opacity:.55;':''}">
-          <div style="text-align:center;font-family:'DM Mono',monospace;font-weight:800;color:${isDone?'var(--green)':'var(--text)'};font-size:14px;">${si+1}</div>
-          <input type="number" min="0" value="${s.reps||0}" onchange="hwsUpdateSet(${si},'reps',this.value)" style="padding:9px 10px;background:var(--surface);border:1px solid var(--border2);border-radius:7px;color:var(--text);font-size:14px;font-family:'DM Mono',monospace;font-weight:700;text-align:center;" ${isDone?'disabled':''} />
-          <input type="number" min="0" step="0.5" value="${s.weight||0}" onchange="hwsUpdateSet(${si},'weight',this.value)" style="padding:9px 10px;background:var(--surface);border:1px solid var(--border2);border-radius:7px;color:var(--text);font-size:14px;font-family:'DM Mono',monospace;font-weight:700;text-align:center;" ${isDone?'disabled':''} />
-          <button onclick="hwsToggleDone(${si})" style="width:36px;height:36px;border-radius:9px;background:${isDone?'var(--green)':'var(--surface)'};border:1.5px solid ${isDone?'var(--green)':'var(--border2)'};display:flex;align-items:center;justify-content:center;cursor:pointer;touch-action:manipulation;">${isDone?'<svg width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#fff\" stroke-width=\"3\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><polyline points=\"20 6 9 17 4 12\"></polyline></svg>':''}</button>
+        return `<div style="padding:6px 0;${isDone?'opacity:.55;':''}">
+          <div style="display:grid;grid-template-columns:36px 1fr 1fr 36px;gap:8px;align-items:center;">
+            <div style="text-align:center;font-family:'DM Mono',monospace;font-weight:800;color:${isDone?'var(--green)':'var(--text)'};font-size:14px;">${si+1}</div>
+            <input type="number" min="0" value="${s.reps||0}" onchange="hwsUpdateSet(${si},'reps',this.value)" id="hws-reps-${si}" style="padding:9px 10px;background:var(--surface);border:1px solid var(--border2);border-radius:7px;color:var(--text);font-size:14px;font-family:'DM Mono',monospace;font-weight:700;text-align:center;" ${isDone?'disabled':''} />
+            <input type="number" min="0" step="0.5" value="${s.weight||0}" onchange="hwsUpdateSet(${si},'weight',this.value)" id="hws-wt-${si}" style="padding:9px 10px;background:var(--surface);border:1px solid var(--border2);border-radius:7px;color:var(--text);font-size:14px;font-family:'DM Mono',monospace;font-weight:700;text-align:center;" ${isDone?'disabled':''} />
+            <button onclick="hwsToggleDone(${si})" style="width:36px;height:36px;border-radius:9px;background:${isDone?'var(--green)':'var(--surface)'};border:1.5px solid ${isDone?'var(--green)':'var(--border2)'};display:flex;align-items:center;justify-content:center;cursor:pointer;touch-action:manipulation;">${isDone?'<svg width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#fff\" stroke-width=\"3\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><polyline points=\"20 6 9 17 4 12\"></polyline></svg>':''}</button>
+          </div>
+          ${!isDone ? `<div style="display:flex;gap:5px;margin-top:6px;padding-left:44px;">
+            <button onclick="hwsAdjustSet(${si},'weight',-5)" style="flex:1;padding:6px 0;background:var(--surface);border:1px solid var(--border2);border-radius:6px;font-size:11px;color:var(--text2);font-weight:700;cursor:pointer;font-family:'DM Mono',monospace;touch-action:manipulation;">−5kg</button>
+            <button onclick="hwsAdjustSet(${si},'weight',5)" style="flex:1;padding:6px 0;background:var(--surface);border:1px solid var(--border2);border-radius:6px;font-size:11px;color:var(--text2);font-weight:700;cursor:pointer;font-family:'DM Mono',monospace;touch-action:manipulation;">+5kg</button>
+            <button onclick="hwsAdjustSet(${si},'reps',-1)" style="flex:1;padding:6px 0;background:var(--surface);border:1px solid var(--border2);border-radius:6px;font-size:11px;color:var(--text2);font-weight:700;cursor:pointer;font-family:'DM Mono',monospace;touch-action:manipulation;">−1회</button>
+            <button onclick="hwsAdjustSet(${si},'reps',1)" style="flex:1;padding:6px 0;background:var(--surface);border:1px solid var(--border2);border-radius:6px;font-size:11px;color:var(--text2);font-weight:700;cursor:pointer;font-family:'DM Mono',monospace;touch-action:manipulation;">+1회</button>
+          </div>` : ''}
         </div>`;
       }).join('')}
+      <button onclick="hwsApplyToRemaining(${_hwsExIdx})" style="width:100%;margin-top:8px;padding:9px;background:var(--surface);border:1px dashed var(--border2);border-radius:8px;color:var(--text3);font-size:11px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">↓ 첫 세트 값 → 남은 세트 통일</button>
     </div>
     ${totalEx > 1 ? `<div style="display:flex;gap:6px;margin-top:14px;">
       ${_hwsExercises.map((e,i)=>{
@@ -11099,6 +11118,35 @@ function hwsUpdateSet(setIdx, field, val){
   if(!ex || !ex.sets[setIdx]) return;
   ex.sets[setIdx][field] = parseFloat(val) || 0;
   try{ saveNow(); }catch(_){}
+}
+
+// 5kg / 1회 증감 — done=true 인 세트 무시.
+function hwsAdjustSet(setIdx, field, delta){
+  const ex = _hwsExercises[_hwsExIdx];
+  if(!ex || !ex.sets[setIdx] || ex.sets[setIdx].done) return;
+  const cur = ex.sets[setIdx][field] || 0;
+  const next = Math.max(0, cur + delta);
+  ex.sets[setIdx][field] = next;
+  // 입력 box 도 즉시 갱신
+  const el = document.getElementById('hws-' + (field==='weight'?'wt':'reps') + '-' + setIdx);
+  if(el) el.value = next;
+  try{ saveNow(); }catch(_){}
+}
+
+// 첫 세트 값 → 미완료 남은 세트 통일.
+function hwsApplyToRemaining(){
+  const ex = _hwsExercises[_hwsExIdx];
+  if(!ex || !ex.sets || ex.sets.length < 2) return;
+  const first = ex.sets[0];
+  if(!first){ return; }
+  for(let i=1; i<ex.sets.length; i++){
+    if(ex.sets[i].done) continue;
+    ex.sets[i].reps = first.reps;
+    ex.sets[i].weight = first.weight;
+  }
+  renderHomeworkSession();
+  try{ saveNow(); }catch(_){}
+  showToast('남은 세트 통일됨.');
 }
 
 function hwsToggleDone(setIdx){
