@@ -522,46 +522,54 @@ async function submitTrainerSignup(){
 async function loadClients(){
   const wrap = document.getElementById('client-table-wrap');
   wrap.innerHTML = '<div class="loader">불러오는 중…</div>';
-  const {data, error} = await sb.from('trainer_clients')
-    .select('id, status, connected_at, client_id, profiles!trainer_clients_client_id_fkey(id,display_name,username,total_score,friend_code)')
-    .eq('trainer_id', CU.id).eq('status', 'active');
-  if(error){ wrap.innerHTML='<div class="empty-state">에러: '+esc(error.message)+'</div>'; return; }
-  CLIENTS = data || [];
-  document.getElementById('client-count').textContent = `활성 ${CLIENTS.length}명`;
-  if(CLIENTS.length===0){
-    wrap.innerHTML = '<div class="empty-state"><div class="empty-icon">📋</div><div>아직 회원이 없어요.</div><div class="small" style="margin-top:6px;">우측 상단 [+ 회원 등록] 으로 시작.</div></div>';
-    return;
+  try {
+    const {data, error} = await sb.from('trainer_clients')
+      .select('id, status, connected_at, client_id, profiles!trainer_clients_client_id_fkey(id,display_name,username,total_score,friend_code)')
+      .eq('trainer_id', CU.id).eq('status', 'active');
+    if(error){ wrap.innerHTML='<div class="empty-state">trainer_clients 에러: '+esc(error.message)+'</div>'; return; }
+    CLIENTS = data || [];
+    document.getElementById('client-count').textContent = `활성 ${CLIENTS.length}명`;
+    if(CLIENTS.length===0){
+      wrap.innerHTML = '<div class="empty-state"><div class="empty-icon">📋</div><div>아직 회원이 없어요.</div><div class="small" style="margin-top:6px;">우측 상단 [+ 회원 등록] 으로 시작.</div></div>';
+      return;
+    }
+    // 회원별 오늘 큐브 + 마지막 활동 fetch (parallel) — 모든 fetch try/catch 보호
+    const today = new Date().toISOString().slice(0,10);
+    const enriched = await Promise.all(CLIENTS.map(async (c) => {
+      const cid = c.client_id;
+      let log = null;
+      try {
+        const r = await sb.from('daily_logs').select('cubes,meals,workouts,updated_at').eq('user_id',cid).eq('log_date',today).maybeSingle();
+        log = r.data;
+      } catch(_){}
+      const cubes = (log && log.cubes) || {};
+      const todayGold = ['diet','exercise','routine','tasks'].filter(k=>cubes[k]==='gold').length;
+      const todaySilver = ['diet','exercise','routine','tasks'].filter(k=>cubes[k]==='silver').length;
+      const todayRed = ['diet','exercise','routine','tasks'].filter(k=>cubes[k]==='crimson').length;
+      return {...c, todayGold, todaySilver, todayRed, lastActivity: log?.updated_at};
+    }));
+    let html = '<table><thead><tr><th>회원</th><th>오늘 큐브</th><th>총 점수</th><th>마지막 활동</th><th>연결</th></tr></thead><tbody>';
+    for(const c of enriched){
+      const p = c.profiles || {};
+      const name = p.display_name || p.username || '—';
+      html += `<tr onclick="openDetail('${c.id}','${c.client_id}')">
+        <td><div class="row-name">${esc(name)}</div><div class="row-meta">@${esc(p.username||'')}</div></td>
+        <td><div class="row-cubes">
+          ${c.todayGold>0?'<span class="cube-sm gold"></span><span class="row-meta">'+c.todayGold+'</span>':''}
+          ${c.todaySilver>0?'<span class="cube-sm silver"></span><span class="row-meta">'+c.todaySilver+'</span>':''}
+          ${c.todayRed>0?'<span class="cube-sm red"></span><span class="row-meta">'+c.todayRed+'</span>':''}
+          ${c.todayGold+c.todaySilver+c.todayRed===0?'<span class="row-meta">—</span>':''}
+        </div></td>
+        <td>${(p.total_score||0).toLocaleString()}</td>
+        <td><span class="row-meta">${fmtRel(c.lastActivity)}</span></td>
+        <td><span class="row-meta">${fmtRel(c.connected_at)}</span></td>
+      </tr>`;
+    }
+    html += '</tbody></table>';
+    wrap.innerHTML = html;
+  } catch(e) {
+    wrap.innerHTML = '<div class="empty-state">로딩 실패: '+esc(e.message||String(e))+'<br><br><button class="btn btn-ghost" onclick="loadClients()" style="margin-top:8px;">다시 시도</button></div>';
   }
-  // 회원별 오늘 큐브 + 마지막 활동 fetch (parallel)
-  const today = new Date().toISOString().slice(0,10);
-  const enriched = await Promise.all(CLIENTS.map(async (c) => {
-    const cid = c.client_id;
-    // 오늘 daily_log
-    const {data:log} = await sb.from('daily_logs').select('cubes,meals,workouts,updated_at').eq('user_id',cid).eq('log_date',today).maybeSingle();
-    const cubes = log?.cubes || {};
-    const todayGold = ['diet','exercise','routine','tasks'].filter(k=>cubes[k]==='gold').length;
-    const todaySilver = ['diet','exercise','routine','tasks'].filter(k=>cubes[k]==='silver').length;
-    const todayRed = ['diet','exercise','routine','tasks'].filter(k=>cubes[k]==='crimson').length;
-    return {...c, todayGold, todaySilver, todayRed, lastActivity: log?.updated_at};
-  }));
-  let html = '<table><thead><tr><th>회원</th><th>오늘 큐브</th><th>총 점수</th><th>마지막 활동</th><th>연결</th></tr></thead><tbody>';
-  for(const c of enriched){
-    const p = c.profiles;
-    html += `<tr onclick="openDetail('${c.id}','${c.client_id}')">
-      <td><div class="row-name">${esc(p.display_name||p.username||'—')}</div><div class="row-meta">@${esc(p.username||'')}</div></td>
-      <td><div class="row-cubes">
-        ${c.todayGold>0?'<span class="cube-sm gold"></span><span class="row-meta">'+c.todayGold+'</span>':''}
-        ${c.todaySilver>0?'<span class="cube-sm silver"></span><span class="row-meta">'+c.todaySilver+'</span>':''}
-        ${c.todayRed>0?'<span class="cube-sm red"></span><span class="row-meta">'+c.todayRed+'</span>':''}
-        ${c.todayGold+c.todaySilver+c.todayRed===0?'<span class="row-meta">—</span>':''}
-      </div></td>
-      <td>${(p.total_score||0).toLocaleString()}</td>
-      <td><span class="row-meta">${fmtRel(c.lastActivity)}</span></td>
-      <td><span class="row-meta">${fmtRel(c.connected_at)}</span></td>
-    </tr>`;
-  }
-  html += '</tbody></table>';
-  wrap.innerHTML = html;
 }
 
 // ─── Register client ───
