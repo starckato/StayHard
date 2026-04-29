@@ -279,14 +279,12 @@
 
       <div class="detail-grid">
         <div>
-          <!-- 회원 stats -->
+          <!-- 회원 오늘 요약 — 식단·운동 중심 -->
           <div class="panel">
-            <div class="panel-title">현황</div>
+            <div class="panel-title">오늘 요약</div>
             <div class="stat-row">
-              <div class="stat"><div class="stat-label">총 점수</div><div class="stat-val" id="d-score">0</div></div>
-              <div class="stat"><div class="stat-label">Gold</div><div class="stat-val gold" id="d-gold">0</div></div>
-              <div class="stat"><div class="stat-label">Silver</div><div class="stat-val silver" id="d-silver">0</div></div>
-              <div class="stat"><div class="stat-label">Red</div><div class="stat-val red" id="d-red">0</div></div>
+              <div class="stat"><div class="stat-label">식단</div><div class="stat-val" id="d-meal-total" style="font-size:22px;">—</div><div class="stat-sub" id="d-meal-sub">—</div></div>
+              <div class="stat"><div class="stat-label">운동</div><div class="stat-val" id="d-workout-total" style="font-size:22px;">—</div><div class="stat-sub" id="d-workout-sub">—</div></div>
             </div>
           </div>
 
@@ -576,12 +574,11 @@ async function submitTrainerSignup(){
   await onAuth();
 }
 
-// ─── Clients list ───
+// ─── Clients list — 식단·운동 중심 (큐브/점수 폐지, 사용자 결정 2026-04-29) ───
 async function loadClients(){
   const wrap = document.getElementById('client-table-wrap');
   wrap.innerHTML = '<div class="loader">불러오는 중…</div>';
   try {
-    // 1차: relationship 행 가져오기 (id 매핑용)
     const {data: rels, error: rErr} = await sb.from('trainer_clients')
       .select('id, status, connected_at, client_id')
       .eq('trainer_id', CU.id).eq('status', 'active');
@@ -592,68 +589,70 @@ async function loadClients(){
       wrap.innerHTML = '<div class="empty-state"><div class="empty-icon">📋</div><div>아직 회원이 없어요.</div><div class="small" style="margin-top:6px;">우측 상단 [+ 회원 등록] 으로 시작.</div></div>';
       return;
     }
-    // 2차: trainer_clients_homework_status RPC — 회원별 오늘 숙제 진행 + 점수
-    const {data: rows, error: hErr} = await sb.rpc('trainer_clients_homework_status');
-    if(hErr){ console.warn('[homework-status]', hErr); }
+    const {data: rows, error: oErr} = await sb.rpc('trainer_clients_overview');
+    if(oErr){ console.warn('[overview]', oErr); }
     const byClient = {};
     (rows||[]).forEach(r => { byClient[r.client_id] = r; });
-    // 3차: 오늘 cubes summary (별도)
-    const today = new Date().toISOString().slice(0,10);
-    const enriched = await Promise.all(CLIENTS.map(async (c) => {
-      const cid = c.client_id;
-      const hw = byClient[cid] || {};
-      let log = null;
-      try {
-        const r = await sb.from('daily_logs').select('cubes,updated_at').eq('user_id',cid).eq('log_date',today).maybeSingle();
-        log = r.data;
-      } catch(_){}
-      const cubes = (log && log.cubes) || {};
-      const todayGold = ['diet','exercise','routine','tasks'].filter(k=>cubes[k]==='gold').length;
-      const todaySilver = ['diet','exercise','routine','tasks'].filter(k=>cubes[k]==='silver').length;
-      const todayRed = ['diet','exercise','routine','tasks'].filter(k=>cubes[k]==='crimson').length;
-      return {
-        ...c,
-        display_name: hw.display_name,
-        username: hw.username,
-        total_score: hw.total_score || 0,
-        today_status: hw.today_status,
-        today_total_sets: hw.today_total_sets || 0,
-        today_done_sets: hw.today_done_sets || 0,
-        last_assignment_date: hw.last_assignment_date,
-        todayGold, todaySilver, todayRed,
-        lastActivity: log?.updated_at,
-      };
-    }));
-    let html = '<table><thead><tr><th>회원</th><th>오늘 숙제</th><th>오늘 큐브</th><th>총 점수</th><th>마지막 활동</th></tr></thead><tbody>';
+    // relationship_id 를 client_id 로 매핑
+    const enriched = CLIENTS.map(c => ({...c, ...(byClient[c.client_id]||{})}));
+
+    let html = `<table><thead><tr>
+      <th>회원</th>
+      <th>오늘 식단</th>
+      <th>오늘 운동</th>
+      <th>마지막 활동</th>
+    </tr></thead><tbody>`;
     for(const c of enriched){
       const name = c.display_name || c.username || '—';
-      // 오늘 숙제 셀 — 더 큼직한 시각
-      let hwCell = '<div style="padding:8px 12px;color:var(--text3);font-size:12px;">없음</div>';
-      if(c.today_status){
-        const pct = c.today_total_sets > 0 ? Math.round(c.today_done_sets/c.today_total_sets*100) : 0;
-        const color = c.today_status==='completed'?'var(--green)':c.today_status==='in_progress'?'#38bdf8':'#ff6b6b';
-        const bg = c.today_status==='completed'?'rgba(52,211,153,0.10)':c.today_status==='in_progress'?'rgba(56,189,248,0.10)':'rgba(255,77,77,0.08)';
-        const border = c.today_status==='completed'?'rgba(52,211,153,0.32)':c.today_status==='in_progress'?'rgba(56,189,248,0.32)':'rgba(255,77,77,0.32)';
-        const lbl = c.today_status==='completed'?'완료':c.today_status==='in_progress'?'진행 중':'예정';
-        hwCell = `<div style="padding:10px 14px;background:${bg};border:1px solid ${border};border-radius:10px;display:flex;align-items:center;gap:12px;">
-          <span style="font-size:13px;font-weight:800;color:${color};letter-spacing:-.005em;">${lbl}</span>
-          <div style="flex:1;height:5px;background:rgba(255,255,255,0.06);border-radius:999px;overflow:hidden;min-width:60px;">
-            <div style="height:100%;background:${color};width:${pct}%;border-radius:999px;"></div>
-          </div>
-          <span style="font-size:12px;font-family:'DM Mono',monospace;font-weight:700;color:${color};white-space:nowrap;">${c.today_done_sets}/${c.today_total_sets}</span>
+      // 식단 셀
+      const mealTotal = c.meal_total || 0;
+      const mealClean = c.meal_clean || 0;
+      const mealNormal = c.meal_normal || 0;
+      const mealRed = c.meal_red || 0;
+      let mealCell;
+      if(mealTotal === 0){
+        mealCell = '<div style="padding:8px 12px;color:var(--text3);font-size:12px;">기록 없음</div>';
+      } else {
+        mealCell = `<div style="padding:8px 14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+          <span style="font-size:14px;font-weight:800;color:var(--text);">${mealTotal}끼</span>
+          ${mealClean>0?`<span style="font-size:11px;color:var(--green);font-weight:700;">🟢${mealClean} 클린</span>`:''}
+          ${mealNormal>0?`<span style="font-size:11px;color:var(--text2);font-weight:700;">⚪${mealNormal} 일반</span>`:''}
+          ${mealRed>0?`<span style="font-size:11px;color:#ff6b6b;font-weight:800;">🔴${mealRed} 위반</span>`:''}
         </div>`;
+      }
+      // 운동 셀 — 숙제 + 자유 운동
+      const hwStatus = c.homework_status;
+      const hwTotal = c.homework_total_sets || 0;
+      const hwDone = c.homework_done_sets || 0;
+      const freeCnt = c.free_workout_count || 0;
+      const freeDone = c.free_workout_done || 0;
+      let workoutCell;
+      if(!hwStatus && freeCnt === 0){
+        workoutCell = '<div style="padding:8px 12px;color:var(--text3);font-size:12px;">기록 없음</div>';
+      } else {
+        const parts = [];
+        if(hwStatus){
+          const color = hwStatus==='completed'?'var(--green)':hwStatus==='in_progress'?'#38bdf8':'#ff6b6b';
+          const lbl = hwStatus==='completed'?'완료':hwStatus==='in_progress'?'진행 중':'예정';
+          const pct = hwTotal > 0 ? Math.round(hwDone/hwTotal*100) : 0;
+          parts.push(`<div style="display:flex;align-items:center;gap:8px;">
+            <span style="font-size:11px;font-weight:800;color:${color};letter-spacing:.04em;">숙제 ${lbl}</span>
+            <div style="flex:1;height:4px;background:rgba(255,255,255,0.06);border-radius:999px;overflow:hidden;min-width:50px;">
+              <div style="height:100%;background:${color};width:${pct}%;border-radius:999px;"></div>
+            </div>
+            <span style="font-size:11px;font-family:'DM Mono',monospace;font-weight:700;color:${color};">${hwDone}/${hwTotal}</span>
+          </div>`);
+        }
+        if(freeCnt > 0){
+          parts.push(`<div style="font-size:11px;color:var(--text2);margin-top:4px;">자유 운동 ${freeCnt}개 · 완료 ${freeDone}</div>`);
+        }
+        workoutCell = `<div style="padding:8px 14px;">${parts.join('')}</div>`;
       }
       html += `<tr onclick="openDetail('${c.id}','${c.client_id}')">
         <td><div class="row-name">${esc(name)}</div><div class="row-meta">@${esc(c.username||'')}</div></td>
-        <td>${hwCell}</td>
-        <td><div class="row-cubes">
-          ${c.todayGold>0?'<span class="cube-sm gold"></span><span class="row-meta">'+c.todayGold+'</span>':''}
-          ${c.todaySilver>0?'<span class="cube-sm silver"></span><span class="row-meta">'+c.todaySilver+'</span>':''}
-          ${c.todayRed>0?'<span class="cube-sm red"></span><span class="row-meta">'+c.todayRed+'</span>':''}
-          ${c.todayGold+c.todaySilver+c.todayRed===0?'<span class="row-meta">—</span>':''}
-        </div></td>
-        <td>${(c.total_score||0).toLocaleString()}</td>
-        <td><span class="row-meta">${fmtRel(c.lastActivity)}</span></td>
+        <td>${mealCell}</td>
+        <td>${workoutCell}</td>
+        <td><span class="row-meta">${fmtRel(c.last_activity || c.connected_at)}</span></td>
       </tr>`;
     }
     html += '</tbody></table>';
@@ -697,16 +696,40 @@ function closeDetail(){
 }
 async function loadDetail(){
   const cid = CURRENT_CLIENT;
-  const {data:p} = await sb.from('profiles').select('*').eq('id',cid).maybeSingle();
+  const {data:p} = await sb.from('profiles').select('id, display_name, username, created_at').eq('id',cid).maybeSingle();
   if(!p){ closeDetail(); return; }
   document.getElementById('d-name').textContent = p.display_name || p.username || '—';
   document.getElementById('d-meta').textContent = `@${p.username||''} · 가입 ${fmtDate(p.created_at)}`;
-  document.getElementById('d-score').textContent = (p.total_score||0).toLocaleString();
-  const lc = p.lifetime_cube_counts || {};
-  document.getElementById('d-gold').textContent = lc.gold || 0;
-  document.getElementById('d-silver').textContent = lc.silver || 0;
-  document.getElementById('d-red').textContent = lc.red || 0;
-  // load default pane (meals)
+  // 오늘 요약 (식단/운동) — overview RPC 결과에서 이 회원 행 추출
+  try{
+    const {data: rows} = await sb.rpc('trainer_clients_overview');
+    const me = (rows||[]).find(r => r.client_id === cid);
+    if(me){
+      const mealTotal = me.meal_total || 0;
+      const mealClean = me.meal_clean || 0;
+      const mealRed = me.meal_red || 0;
+      document.getElementById('d-meal-total').textContent = mealTotal === 0 ? '—' : mealTotal+'끼';
+      document.getElementById('d-meal-sub').textContent = mealTotal > 0
+        ? `클린 ${mealClean} · 위반 ${mealRed}`
+        : '오늘 기록 없음';
+      const hwTotal = me.homework_total_sets || 0;
+      const hwDone = me.homework_done_sets || 0;
+      const freeCnt = me.free_workout_count || 0;
+      const wel = document.getElementById('d-workout-total');
+      const ws = document.getElementById('d-workout-sub');
+      if(me.homework_status){
+        wel.textContent = `${hwDone}/${hwTotal}`;
+        const lbl = me.homework_status==='completed'?'숙제 완료':me.homework_status==='in_progress'?'숙제 진행 중':'숙제 예정';
+        ws.textContent = `${lbl}${freeCnt>0?` · 자유 ${freeCnt}`:''}`;
+      } else if(freeCnt > 0){
+        wel.textContent = `${freeCnt}개`;
+        ws.textContent = `자유 운동 · 완료 ${me.free_workout_done||0}`;
+      } else {
+        wel.textContent = '—';
+        ws.textContent = '오늘 기록 없음';
+      }
+    }
+  }catch(e){console.warn('[detail-overview]',e);}
   await loadMeals();
   await loadAssignments();
   await loadRecent();
@@ -939,22 +962,28 @@ async function loadRecent(){
   const el = document.getElementById('d-recent');
   el.innerHTML = '<div class="loader">로딩…</div>';
   const since = new Date(); since.setDate(since.getDate()-7);
-  const {data} = await sb.from('daily_logs').select('log_date,cubes,meals,workouts').eq('user_id',CURRENT_CLIENT).gte('log_date',since.toISOString().slice(0,10)).order('log_date',{ascending:false});
+  const {data} = await sb.from('daily_logs').select('log_date,meals,workouts').eq('user_id',CURRENT_CLIENT).gte('log_date',since.toISOString().slice(0,10)).order('log_date',{ascending:false});
   if(!data||data.length===0){ el.innerHTML='<div class="empty-state small">7일 활동 없음.</div>'; return; }
   let html='';
   for(const row of data){
-    const c = row.cubes||{};
-    const cubes = ['diet','exercise','routine','tasks'].map(k=>{
-      if(c[k]==='gold') return '<span class="cube-sm gold"></span>';
-      if(c[k]==='silver') return '<span class="cube-sm silver"></span>';
-      if(c[k]==='crimson') return '<span class="cube-sm red"></span>';
-      return '<span class="cube-sm" style="background:transparent;border-color:rgba(255,255,255,0.1);"></span>';
-    }).join('');
-    html += `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);">
-      <div style="flex:1;font-size:12px;">${row.log_date}</div>
-      <div style="display:flex;gap:3px;">${cubes}</div>
+    const meals = row.meals||[];
+    const mealTotal = meals.length;
+    const mealClean = meals.filter(m=>m && m.type==='green').length;
+    const mealRed = meals.filter(m=>m && (m.type==='red'||m.category==='alcohol')).length;
+    const wks = row.workouts||[];
+    const woTotal = wks.length;
+    const woDone = wks.filter(w=>w && w.status==='done').length;
+    const hasAny = mealTotal>0 || woTotal>0;
+    if(!hasAny) continue;
+    html += `<div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);">
+      <div style="flex:0 0 72px;font-size:12px;font-weight:600;color:var(--text2);">${row.log_date.slice(5)}</div>
+      <div style="flex:1;display:flex;flex-direction:column;gap:2px;">
+        ${mealTotal>0?`<div style="font-size:11px;color:var(--text3);">🍽️ ${mealTotal}끼${mealClean>0?` · 🟢${mealClean}`:''}${mealRed>0?` · <span style="color:#ff6b6b;">🔴${mealRed}</span>`:''}</div>`:''}
+        ${woTotal>0?`<div style="font-size:11px;color:var(--text3);">💪 ${woDone}/${woTotal}</div>`:''}
+      </div>
     </div>`;
   }
+  if(!html) html = '<div class="empty-state small">7일 활동 없음.</div>';
   el.innerHTML = html;
 }
 
