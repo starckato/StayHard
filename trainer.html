@@ -160,6 +160,10 @@
   .set-row .rm:hover{color:var(--red);}
   .add-set-btn{background:none;border:1px dashed var(--border2);border-radius:6px;color:var(--text3);font-size:11px;padding:5px;width:100%;cursor:pointer;font-weight:600;margin-top:4px;}
   .add-set-btn:hover{border-color:var(--accent);color:var(--accent);}
+  /* 세트 빠른 조정 버튼 — hug width */
+  .hwq-step{padding:5px 10px;background:var(--surface2);border:1px solid var(--border2);border-radius:6px;font-size:11px;color:var(--text2);font-weight:700;cursor:pointer;font-family:'DM Mono',monospace;letter-spacing:-.005em;white-space:nowrap;touch-action:manipulation;transition:all .12s;}
+  .hwq-step:hover{border-color:var(--accent);color:var(--accent);}
+  .hwq-step:active{transform:scale(.96);}
 
   .hidden{display:none !important;}
   .loader{padding:40px;text-align:center;color:var(--text3);font-size:13px;}
@@ -387,27 +391,33 @@
       💡 <strong style="color:var(--text);">왼쪽 라이브러리</strong>에서 운동을 누르면 <strong style="color:var(--text);">오른쪽 숙제</strong>에 추가됩니다. 종목별로 세트·반복·무게를 입력하세요.
     </div>
 
-    <!-- 빌더 영역: 좌측 라이브러리 검색 / 우측 선택된 운동 list (3x 확대) -->
+    <!-- 빌더 영역: 좌측 라이브러리 / 우측 탭 기반 숙제 빌더 -->
     <div style="display:grid;grid-template-columns:1fr 1.6fr;gap:16px;margin-top:10px;">
-      <!-- 좌측 — 운동 검색 -->
+      <!-- 좌측 — 운동 검색 (메인 앱과 동일 chips: 부위 + 도구) -->
       <div>
         <div style="font-size:11px;color:var(--text3);margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em;font-weight:700;display:flex;align-items:center;gap:6px;">
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          1단계 — 운동 라이브러리
+          운동 라이브러리
         </div>
         <input type="text" id="assign-search" placeholder="예: 벤치, 푸쉬업…" style="width:100%;margin-bottom:6px;" oninput="filterAssignLib()" />
-        <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px;" id="assign-cat-chips"></div>
-        <div id="assign-lib-results" style="height:520px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;background:var(--surface2);"></div>
+        <div style="font-size:9px;color:var(--text3);font-weight:700;letter-spacing:.06em;margin:6px 0 4px;">부위</div>
+        <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px;" id="assign-muscle-chips"></div>
+        <div style="font-size:9px;color:var(--text3);font-weight:700;letter-spacing:.06em;margin:6px 0 4px;">도구</div>
+        <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px;" id="assign-equip-chips"></div>
+        <div id="assign-lib-results" style="height:480px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;background:var(--surface2);"></div>
       </div>
-      <!-- 우측 — 선택된 운동 list (세트 입력) -->
+      <!-- 우측 — 탭 기반 숙제 빌더 -->
       <div>
         <div style="font-size:11px;color:var(--text3);margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em;font-weight:700;display:flex;align-items:center;gap:6px;">
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          2단계 — 오늘의 숙제 <span style="background:var(--accent);color:#fff;padding:1px 7px;border-radius:8px;margin-left:4px;font-family:'DM Mono',monospace;letter-spacing:0;" id="assign-count">0</span>
+          오늘의 숙제 <span style="background:var(--accent);color:#fff;padding:1px 7px;border-radius:8px;margin-left:4px;font-family:'DM Mono',monospace;letter-spacing:0;" id="assign-count">0</span>
         </div>
-        <div id="assign-selected" style="height:520px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;background:var(--surface2);padding:10px;">
-          <div class="small" style="text-align:center;padding:80px 10px;color:var(--text3);line-height:1.8;font-size:13px;">
-            ← 왼쪽에서 운동을 누르면<br>여기에 추가됩니다
+        <!-- 탭 nav — 종목별 -->
+        <div id="assign-tab-nav" style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px;min-height:34px;align-items:center;"></div>
+        <!-- 활성 탭 콘텐츠 -->
+        <div id="assign-tab-content" style="height:520px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;background:var(--surface2);padding:14px;">
+          <div class="small" style="text-align:center;padding:120px 10px;color:var(--text3);line-height:1.8;font-size:13px;">
+            ← 왼쪽 라이브러리에서 운동을 눌러<br>첫 종목 (숙제 1) 부터 시작하세요
           </div>
         </div>
       </div>
@@ -937,15 +947,17 @@ async function editAssignment(assignmentId){
     type: w.type || 'gym',
     sets: (w.sets||[]).map(s => ({reps: s.reps||0, weight: s.weight||0})),
   }));
-  ASSIGN_CAT_FILTER = 'all';
+  ASSIGN_MUSCLE_FILTER = 'all';
+  ASSIGN_EQUIP_FILTER = 'all';
+  ASSIGN_ACTIVE_TAB = 0;
   document.getElementById('assign-target').textContent = '수정 모드 — ' + (document.getElementById('d-name').textContent||'');
   document.getElementById('assign-date').value = data.assigned_for_date;
   document.getElementById('assign-search').value = '';
   document.getElementById('assign-notes').value = data.payload?.notes || '';
   document.getElementById('assign-err').textContent = '';
-  renderAssignCatChips();
+  renderAssignChips();
   filterAssignLib();
-  renderAssignSelected();
+  renderAssignBuilder();
   openModal('modal-assign');
 }
 
@@ -1078,47 +1090,53 @@ async function doSendMessage(){
   if(document.querySelector('#view-detail .seg button.on')?.dataset.pane==='messages') loadMessages();
 }
 
-// ─── Assign workout (builder) ───
-let ASSIGN_SELECTED = []; // [{name, type, cat, m, sets:[{reps, weight}]}]
-let ASSIGN_CAT_FILTER = 'all'; // 'all' | '가슴'|'등'|'하체'|...
+// ─── Assign workout (builder) — 탭 기반 ───
+let ASSIGN_SELECTED = []; // [{name, type, m, e, ico, sets:[{reps, weight}]}]
+let ASSIGN_MUSCLE_FILTER = 'all'; // 부위: all | 가슴 | 등 | 하체 | 어깨 | 팔 | 복근 | 전신 | 유산소
+let ASSIGN_EQUIP_FILTER = 'all';  // 도구: all | 바벨 | 덤벨 | 머신 | 케이블 | 맨몸
+let ASSIGN_ACTIVE_TAB = 0;         // 현재 활성 탭 idx in ASSIGN_SELECTED
+
+const ASSIGN_MUSCLE_GROUPS = ['all', '가슴', '등', '하체', '어깨', '팔', '복근', '전신', '유산소'];
+const ASSIGN_EQUIP_GROUPS  = ['all', '바벨', '덤벨', '머신', '케이블', '맨몸'];
 
 function openAssignModal(){
   _editingAssignmentId = null;
   ASSIGN_SELECTED = [];
-  ASSIGN_CAT_FILTER = 'all';
+  ASSIGN_MUSCLE_FILTER = 'all';
+  ASSIGN_EQUIP_FILTER = 'all';
+  ASSIGN_ACTIVE_TAB = 0;
   document.getElementById('assign-target').textContent = '대상: ' + document.getElementById('d-name').textContent;
   document.getElementById('assign-date').value = new Date().toISOString().slice(0,10);
   document.getElementById('assign-search').value='';
   document.getElementById('assign-notes').value='';
   document.getElementById('assign-err').textContent='';
-  renderAssignCatChips();
+  renderAssignChips();
   filterAssignLib();
-  renderAssignSelected();
+  renderAssignBuilder();
   openModal('modal-assign');
 }
 
-// 운동 라이브러리 카테고리 (근육 부위) 필터
-function getMuscleGroups(){
-  if(!window.EXERCISE_LIBRARY) return [];
-  const set = new Set();
-  window.EXERCISE_LIBRARY.forEach(ex => set.add(ex.m));
-  return ['all', ...Array.from(set)];
+function renderAssignChips(){
+  const mWrap = document.getElementById('assign-muscle-chips');
+  const eWrap = document.getElementById('assign-equip-chips');
+  if(mWrap){
+    mWrap.innerHTML = ASSIGN_MUSCLE_GROUPS.map(g=>{
+      const lbl = g==='all'?'전체':g;
+      const on = g === ASSIGN_MUSCLE_FILTER ? 'on' : '';
+      return `<span class="cat-chip ${on}" onclick="setAssignMuscle('${g}')">${lbl}</span>`;
+    }).join('');
+  }
+  if(eWrap){
+    eWrap.innerHTML = ASSIGN_EQUIP_GROUPS.map(g=>{
+      const lbl = g==='all'?'전체':g;
+      const on = g === ASSIGN_EQUIP_FILTER ? 'on' : '';
+      return `<span class="cat-chip ${on}" onclick="setAssignEquip('${g}')">${lbl}</span>`;
+    }).join('');
+  }
 }
-function renderAssignCatChips(){
-  const wrap = document.getElementById('assign-cat-chips');
-  if(!wrap) return;
-  const groups = getMuscleGroups();
-  wrap.innerHTML = groups.map(g=>{
-    const lbl = g==='all'?'전체':g;
-    const on = g === ASSIGN_CAT_FILTER ? 'on' : '';
-    return `<span class="cat-chip ${on}" onclick="setAssignCat('${g}')">${lbl}</span>`;
-  }).join('');
-}
-function setAssignCat(g){
-  ASSIGN_CAT_FILTER = g;
-  renderAssignCatChips();
-  filterAssignLib();
-}
+function setAssignMuscle(g){ ASSIGN_MUSCLE_FILTER = g; renderAssignChips(); filterAssignLib(); }
+function setAssignEquip(g){ ASSIGN_EQUIP_FILTER = g; renderAssignChips(); filterAssignLib(); }
+
 function filterAssignLib(){
   const wrap = document.getElementById('assign-lib-results');
   if(!wrap) return;
@@ -1128,7 +1146,8 @@ function filterAssignLib(){
   }
   const q = (document.getElementById('assign-search').value||'').trim().toLowerCase();
   const list = window.EXERCISE_LIBRARY.filter(ex=>{
-    if(ASSIGN_CAT_FILTER!=='all' && ex.m !== ASSIGN_CAT_FILTER) return false;
+    if(ASSIGN_MUSCLE_FILTER!=='all' && ex.m !== ASSIGN_MUSCLE_FILTER) return false;
+    if(ASSIGN_EQUIP_FILTER!=='all' && ex.e !== ASSIGN_EQUIP_FILTER) return false;
     if(q && !ex.n.toLowerCase().includes(q)) return false;
     return true;
   });
@@ -1136,40 +1155,50 @@ function filterAssignLib(){
     wrap.innerHTML = '<div class="empty-state small" style="padding:20px;">검색 결과 없음</div>';
     return;
   }
-  wrap.innerHTML = list.slice(0, 60).map((ex,i) => `
+  wrap.innerHTML = list.slice(0, 80).map((ex,i) => `
     <div class="lib-row" onclick="addAssignExercise('${esc(ex.n)}','${esc(ex.m)}','${esc(ex.e||'')}','${esc(ex.i||'')}')">
       <span class="ico">${esc(ex.i||'')}</span>
       <span class="nm">${esc(ex.n)}</span>
       <span class="ms">${esc(ex.m)} · ${esc(ex.e||'')}</span>
       <span class="add">+</span>
     </div>
-  `).join('') + (list.length>60?'<div class="small" style="text-align:center;padding:8px;color:var(--text3);">'+list.length+'개 중 60 표시 — 검색으로 좁혀</div>':'');
+  `).join('') + (list.length>80?'<div class="small" style="text-align:center;padding:8px;color:var(--text3);">'+list.length+'개 중 80 표시 — 검색으로 좁혀</div>':'');
 }
 
+// 라이브러리 클릭 → 새 탭 (숙제 N) 추가 + active
 function addAssignExercise(name, m, e, ico){
   ASSIGN_SELECTED.push({
     name, m, e, ico,
     type: 'gym',
-    sets: [{reps:10, weight:0}, {reps:10, weight:0}, {reps:10, weight:0}], // default 3 sets
+    sets: [{reps:10, weight:0}, {reps:10, weight:0}, {reps:10, weight:0}],
   });
-  renderAssignSelected();
+  ASSIGN_ACTIVE_TAB = ASSIGN_SELECTED.length - 1;
+  renderAssignBuilder();
 }
 function removeAssignExercise(idx){
   ASSIGN_SELECTED.splice(idx, 1);
-  renderAssignSelected();
+  if(ASSIGN_ACTIVE_TAB >= ASSIGN_SELECTED.length){
+    ASSIGN_ACTIVE_TAB = Math.max(0, ASSIGN_SELECTED.length - 1);
+  }
+  renderAssignBuilder();
+}
+function setAssignActiveTab(idx){
+  if(idx < 0 || idx >= ASSIGN_SELECTED.length) return;
+  ASSIGN_ACTIVE_TAB = idx;
+  renderAssignBuilder();
 }
 function addSet(exIdx){
   const ex = ASSIGN_SELECTED[exIdx];
   if(!ex) return;
   const last = ex.sets[ex.sets.length-1] || {reps:10, weight:0};
   ex.sets.push({reps:last.reps, weight:last.weight});
-  renderAssignSelected();
+  renderAssignBuilder();
 }
 function removeSet(exIdx, setIdx){
   const ex = ASSIGN_SELECTED[exIdx];
   if(!ex || ex.sets.length<=1) return;
   ex.sets.splice(setIdx, 1);
-  renderAssignSelected();
+  renderAssignBuilder();
 }
 function updateSetField(exIdx, setIdx, field, val){
   const ex = ASSIGN_SELECTED[exIdx];
@@ -1181,7 +1210,7 @@ function adjustAssignSet(exIdx, setIdx, field, delta){
   if(!ex || !ex.sets[setIdx]) return;
   const cur = ex.sets[setIdx][field] || 0;
   ex.sets[setIdx][field] = Math.max(0, cur + delta);
-  renderAssignSelected();
+  renderAssignBuilder();
 }
 function unifyAssignSets(exIdx){
   const ex = ASSIGN_SELECTED[exIdx];
@@ -1191,50 +1220,83 @@ function unifyAssignSets(exIdx){
     ex.sets[i].reps = first.reps;
     ex.sets[i].weight = first.weight;
   }
-  renderAssignSelected();
+  renderAssignBuilder();
 }
-function renderAssignSelected(){
-  const wrap = document.getElementById('assign-selected');
-  if(!wrap) return;
-  document.getElementById('assign-count').textContent = ASSIGN_SELECTED.length;
-  if(ASSIGN_SELECTED.length===0){
-    wrap.innerHTML = '<div class="small" style="text-align:center;padding:80px 10px;color:var(--text3);line-height:1.8;font-size:13px;">← 왼쪽에서 운동을 누르면<br>여기에 추가됩니다</div>';
+
+// 탭 기반 빌더 — 탭 nav + 활성 탭 콘텐츠
+function renderAssignBuilder(){
+  const cnt = document.getElementById('assign-count');
+  if(cnt) cnt.textContent = ASSIGN_SELECTED.length;
+  const tabNav = document.getElementById('assign-tab-nav');
+  const content = document.getElementById('assign-tab-content');
+  if(!tabNav || !content) return;
+
+  if(ASSIGN_SELECTED.length === 0){
+    tabNav.innerHTML = '<span style="font-size:11px;color:var(--text3);font-weight:600;">아직 운동 없음 — 왼쪽에서 추가</span>';
+    content.innerHTML = '<div class="small" style="text-align:center;padding:120px 10px;color:var(--text3);line-height:1.8;font-size:13px;">← 왼쪽 라이브러리에서 운동을 눌러<br>첫 종목 (숙제 1) 부터 시작하세요</div>';
     return;
   }
-  wrap.innerHTML = ASSIGN_SELECTED.map((ex, i) => `
-    <div class="ex-card" style="padding:12px;">
-      <div class="ex-card-head">
-        <span class="ico" style="font-size:18px;">${esc(ex.ico||'')}</span>
-        <span class="nm" style="font-size:14px;">${esc(ex.name)}</span>
-        <span class="ms" style="font-size:10px;color:var(--text3);">${esc(ex.m||'')}</span>
-        <button class="x" onclick="removeAssignExercise(${i})" title="삭제">✕</button>
+
+  // 탭 nav
+  tabNav.innerHTML = ASSIGN_SELECTED.map((ex, i) => {
+    const on = i === ASSIGN_ACTIVE_TAB;
+    const bg = on ? 'var(--accent)' : 'var(--surface2)';
+    const fg = on ? '#fff' : 'var(--text2)';
+    const border = on ? 'var(--accent)' : 'var(--border2)';
+    return `<button onclick="setAssignActiveTab(${i})" style="padding:7px 11px;background:${bg};border:1px solid ${border};border-radius:8px;color:${fg};font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;">
+      <span style="opacity:.75;">숙제 ${i+1}</span>
+      <span>${esc((ex.name||'').slice(0,12))}</span>
+    </button>`;
+  }).join('') + '<span style="font-size:11px;color:var(--text3);margin-left:6px;">← 왼쪽 라이브러리 누르면 숙제 ${ASSIGN_SELECTED.length+1} 자동 추가</span>'.replace('${ASSIGN_SELECTED.length+1}', ASSIGN_SELECTED.length+1);
+
+  // 활성 탭 콘텐츠
+  const ex = ASSIGN_SELECTED[ASSIGN_ACTIVE_TAB];
+  if(!ex){ content.innerHTML = '<div class="small" style="padding:30px;text-align:center;color:var(--text3);">탭이 비어있어요</div>'; return; }
+
+  content.innerHTML = `
+    <!-- 종목 헤더 -->
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--border);">
+      <div style="width:44px;height:44px;border-radius:10px;background:rgba(255,77,77,0.18);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">${esc(ex.ico||'🏋️')}</div>
+      <div style="flex:1;">
+        <div style="font-size:11px;color:var(--accent);font-weight:800;letter-spacing:.04em;">숙제 ${ASSIGN_ACTIVE_TAB+1}</div>
+        <div style="font-size:18px;font-weight:700;margin-top:2px;letter-spacing:-.005em;">${esc(ex.name)}</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:2px;">${esc(ex.m||'')}${ex.e?' · '+esc(ex.e):''}</div>
       </div>
-      <div style="display:grid;grid-template-columns:28px 1fr 1fr 28px;gap:6px;font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin:6px 0 4px;">
-        <span style="text-align:center;">#</span><span>반복</span><span>무게(kg)</span><span></span>
-      </div>
-      ${ex.sets.map((s, si) => `
-        <div style="margin-bottom:6px;background:var(--surface2);border-radius:7px;padding:6px;">
-          <div style="display:grid;grid-template-columns:28px 1fr 1fr 28px;gap:6px;align-items:center;">
-            <span style="text-align:center;font-family:'DM Mono',monospace;font-weight:700;color:var(--text3);">${si+1}</span>
-            <input type="number" min="0" value="${s.reps||0}" oninput="updateSetField(${i},${si},'reps',this.value)" style="padding:6px 8px;font-size:13px;font-family:'DM Mono',monospace;font-weight:700;text-align:center;" />
-            <input type="number" min="0" step="0.5" value="${s.weight||0}" oninput="updateSetField(${i},${si},'weight',this.value)" style="padding:6px 8px;font-size:13px;font-family:'DM Mono',monospace;font-weight:700;text-align:center;" />
-            <button class="rm" onclick="removeSet(${i},${si})" title="세트 삭제" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:14px;padding:4px;">✕</button>
-          </div>
-          <div style="display:flex;gap:4px;margin-top:5px;padding-left:34px;">
-            <button onclick="adjustAssignSet(${i},${si},'reps',-1)" style="flex:1;padding:4px 0;background:var(--surface);border:1px solid var(--border);border-radius:5px;font-size:10px;color:var(--text2);font-weight:700;cursor:pointer;font-family:'DM Mono',monospace;">−1회</button>
-            <button onclick="adjustAssignSet(${i},${si},'reps',1)" style="flex:1;padding:4px 0;background:var(--surface);border:1px solid var(--border);border-radius:5px;font-size:10px;color:var(--text2);font-weight:700;cursor:pointer;font-family:'DM Mono',monospace;">+1회</button>
-            <button onclick="adjustAssignSet(${i},${si},'weight',-5)" style="flex:1;padding:4px 0;background:var(--surface);border:1px solid var(--border);border-radius:5px;font-size:10px;color:var(--text2);font-weight:700;cursor:pointer;font-family:'DM Mono',monospace;">−5kg</button>
-            <button onclick="adjustAssignSet(${i},${si},'weight',5)" style="flex:1;padding:4px 0;background:var(--surface);border:1px solid var(--border);border-radius:5px;font-size:10px;color:var(--text2);font-weight:700;cursor:pointer;font-family:'DM Mono',monospace;">+5kg</button>
-          </div>
-        </div>
-      `).join('')}
-      <div style="display:flex;gap:5px;margin-top:6px;">
-        <button class="add-set-btn" onclick="addSet(${i})" style="flex:1;">+ 세트</button>
-        ${ex.sets.length >= 2 ? `<button onclick="unifyAssignSets(${i})" style="flex:1;background:none;border:1px dashed var(--border2);border-radius:6px;color:var(--text3);font-size:11px;padding:5px;cursor:pointer;font-weight:700;font-family:'DM Sans',sans-serif;" title="첫 세트 → 모든 세트 통일">↓ 통일</button>` : ''}
-      </div>
+      <button onclick="removeAssignExercise(${ASSIGN_ACTIVE_TAB})" style="background:rgba(255,77,77,0.10);border:1px solid rgba(255,77,77,0.28);border-radius:8px;color:#ff6b6b;padding:7px 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;">탭 삭제</button>
     </div>
-  `).join('');
+
+    <!-- 세트 입력 헤더 -->
+    <div style="display:grid;grid-template-columns:28px 1fr 1fr 28px;gap:6px;font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin:0 0 6px;">
+      <span style="text-align:center;">#</span><span>반복 (회)</span><span>무게 (kg)</span><span></span>
+    </div>
+
+    <!-- 세트 list -->
+    ${ex.sets.map((s, si) => `
+      <div style="margin-bottom:8px;background:var(--surface);border-radius:8px;padding:8px 10px;border:1px solid var(--border);">
+        <div style="display:grid;grid-template-columns:28px 1fr 1fr 28px;gap:8px;align-items:center;">
+          <span style="text-align:center;font-family:'DM Mono',monospace;font-weight:800;color:var(--text2);font-size:13px;">${si+1}</span>
+          <input type="number" min="0" value="${s.reps||0}" oninput="updateSetField(${ASSIGN_ACTIVE_TAB},${si},'reps',this.value)" style="padding:7px 10px;font-size:14px;font-family:'DM Mono',monospace;font-weight:700;text-align:center;" />
+          <input type="number" min="0" step="0.5" value="${s.weight||0}" oninput="updateSetField(${ASSIGN_ACTIVE_TAB},${si},'weight',this.value)" style="padding:7px 10px;font-size:14px;font-family:'DM Mono',monospace;font-weight:700;text-align:center;" />
+          <button class="rm" onclick="removeSet(${ASSIGN_ACTIVE_TAB},${si})" title="세트 삭제" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:14px;padding:4px;">✕</button>
+        </div>
+        <div style="display:flex;gap:5px;margin-top:6px;justify-content:center;flex-wrap:wrap;">
+          <button onclick="adjustAssignSet(${ASSIGN_ACTIVE_TAB},${si},'reps',-1)" class="hwq-step">−1회</button>
+          <button onclick="adjustAssignSet(${ASSIGN_ACTIVE_TAB},${si},'reps',1)" class="hwq-step">+1회</button>
+          <button onclick="adjustAssignSet(${ASSIGN_ACTIVE_TAB},${si},'weight',-5)" class="hwq-step">−5kg</button>
+          <button onclick="adjustAssignSet(${ASSIGN_ACTIVE_TAB},${si},'weight',5)" class="hwq-step">+5kg</button>
+        </div>
+      </div>
+    `).join('')}
+
+    <!-- 세트 추가 + 통일 -->
+    <div style="display:flex;gap:6px;margin-top:10px;">
+      <button onclick="addSet(${ASSIGN_ACTIVE_TAB})" style="flex:1;padding:10px;background:none;border:1px dashed var(--border2);border-radius:8px;color:var(--text2);font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;">+ 세트 추가</button>
+      ${ex.sets.length >= 2 ? `<button onclick="unifyAssignSets(${ASSIGN_ACTIVE_TAB})" style="flex:1;padding:10px;background:none;border:1px dashed var(--border2);border-radius:8px;color:var(--text2);font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;" title="첫 세트 → 모든 세트 통일">↓ 첫 세트 → 통일</button>` : ''}
+    </div>
+  `;
 }
+// 호환 alias — 옛 호출 (있으면) 이 새 함수로
+function renderAssignSelected(){ renderAssignBuilder(); }
 
 async function doAssignWorkout(){
   const date = document.getElementById('assign-date').value;
