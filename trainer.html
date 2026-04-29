@@ -1516,14 +1516,23 @@ function setDashView(v){
 }
 
 async function loadDash3(){
-  // 좌측 회원 list — overview RPC 재사용
-  const {data: rows, error} = await sb.rpc('trainer_clients_overview');
-  if(error){
-    document.getElementById('dash3-client-list').innerHTML = '<div style="color:var(--red);font-size:12px;">로딩 실패: '+esc(error.message)+'</div>';
-    return;
-  }
-  _dash3Clients = rows || [];
-  renderDash3Clients();
+  const wrap = document.getElementById('dash3-client-list');
+  if(!wrap){ console.warn('[dash3] client list element missing'); return; }
+  wrap.innerHTML = '<div style="color:var(--text3);font-size:12px;padding:14px 8px;text-align:center;">불러오는 중…</div>';
+  try{
+    const {data: rows, error} = await sb.rpc('trainer_clients_overview');
+    if(error){
+      console.warn('[dash3] RPC error', error);
+      wrap.innerHTML = `<div style="font-size:12px;padding:14px 8px;color:#ff6b6b;line-height:1.5;">
+        <div style="font-weight:700;margin-bottom:6px;">로딩 실패</div>
+        <div>${esc(error.message||'unknown')}</div>
+        <div style="font-size:10px;margin-top:8px;color:var(--text3);">code: ${esc(error.code||'—')}</div>
+        <button onclick="loadDash3()" class="btn btn-ghost" style="margin-top:10px;font-size:11px;width:100%;justify-content:center;">다시 시도</button>
+      </div>`;
+      return;
+    }
+    _dash3Clients = rows || [];
+    renderDash3Clients();
   // 회원 0명이면 캘린더 비움
   if(_dash3Clients.length === 0){
     document.getElementById('dash3-cal-wrap').innerHTML = '<div class="dash3-cal-empty">아직 회원이 없어요.<br>좌측 [+ 회원 등록] 으로 시작하세요.</div>';
@@ -1537,6 +1546,14 @@ async function loadDash3(){
   if(target) selectDash3Client(target.relationship_id, target.client_id);
   const urlDate = params.get('date');
   if(urlDate) _dash3SelectedDate = urlDate;
+  }catch(outerErr){
+    console.warn('[dash3] outer error', outerErr);
+    wrap.innerHTML = `<div style="font-size:12px;padding:14px 8px;color:#ff6b6b;line-height:1.5;">
+      <div style="font-weight:700;margin-bottom:6px;">에러</div>
+      <div>${esc(outerErr.message||String(outerErr))}</div>
+      <button onclick="loadDash3()" class="btn btn-ghost" style="margin-top:10px;font-size:11px;width:100%;justify-content:center;">다시 시도</button>
+    </div>`;
+  }
 }
 
 function renderDash3Clients(){
