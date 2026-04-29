@@ -865,22 +865,75 @@ async function loadMessages(){
 async function loadAssignments(){
   const el = document.getElementById('d-assignments');
   el.innerHTML = '<div class="loader">로딩…</div>';
-  const {data} = await sb.from('workout_assignments').select('*').eq('client_id',CURRENT_CLIENT).eq('trainer_id',CU.id).order('assigned_for_date',{ascending:false}).limit(10);
+  const {data} = await sb.from('workout_assignments')
+    .select('*').eq('client_id',CURRENT_CLIENT).eq('trainer_id',CU.id)
+    .neq('status','cancelled')
+    .order('assigned_for_date',{ascending:false}).limit(10);
   if(!data||data.length===0){ el.innerHTML='<div class="empty-state small">아직 배정 없음.</div>'; return; }
   let html='';
   for(const a of data){
     const pillCls = a.status==='completed'?'pill-green':a.status==='pending'?'pill-pending':a.status==='in_progress'?'pill-normal':'pill-red';
-    const pillTxt = a.status==='completed'?'완료':a.status==='pending'?'예정':a.status==='in_progress'?'진행 중':a.status;
+    const pillTxt = a.status==='completed'?'완료':a.status==='pending'?'예정':a.status==='in_progress'?'진행 중':a.status==='skipped'?'미수행':a.status;
     const wks = a.payload?.workouts || [];
+    const canEdit = a.status !== 'completed' && a.status !== 'cancelled';
     html += `<div style="background:var(--surface2);border-radius:10px;padding:10px 12px;margin-bottom:6px;">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
         <div style="font-size:12px;font-weight:700;flex:1;">${a.assigned_for_date}</div>
         <span class="pill ${pillCls}">${pillTxt}</span>
       </div>
-      <div class="small" style="line-height:1.5;">${wks.slice(0,3).map(w=>esc(w.name||'—')).join(' · ')}${wks.length>3?' +'+(wks.length-3):''}</div>
+      <div class="small" style="line-height:1.5;margin-bottom:6px;">${wks.slice(0,3).map(w=>esc(w.name||'—')).join(' · ')}${wks.length>3?' +'+(wks.length-3):''}</div>
+      <div style="display:flex;gap:4px;">
+        ${canEdit?`<button onclick="editAssignment('${a.id}')" style="flex:1;padding:5px 8px;background:var(--surface);border:1px solid var(--border2);border-radius:6px;font-size:10px;color:var(--text2);font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;">수정</button>`:''}
+        <button onclick="deleteAssignment('${a.id}','${a.assigned_for_date}')" style="flex:1;padding:5px 8px;background:rgba(255,77,77,0.08);border:1px solid rgba(255,77,77,0.32);border-radius:6px;font-size:10px;color:#ff6b6b;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;">삭제</button>
+      </div>
     </div>`;
   }
   el.innerHTML = html;
+}
+
+// ─── 배정 수정 — modal 재사용, prefill ───
+let _editingAssignmentId = null;
+async function editAssignment(assignmentId){
+  const {data, error} = await sb.from('workout_assignments').select('*').eq('id', assignmentId).maybeSingle();
+  if(error || !data){ showToast('배정을 찾을 수 없어요.'); return; }
+  if(data.status === 'completed' || data.status === 'cancelled'){
+    showToast('완료/취소된 배정은 수정 불가.');
+    return;
+  }
+  if(data.status === 'in_progress'){
+    if(!confirm('회원이 이미 진행 중입니다. 수정 시 진행 상태가 초기화됩니다. 계속?')) return;
+  }
+  // ASSIGN_SELECTED prefill
+  _editingAssignmentId = assignmentId;
+  const wks = data.payload?.workouts || [];
+  ASSIGN_SELECTED = wks.map(w => ({
+    name: w.name,
+    m: w.muscle || '',
+    e: w.equipment || '',
+    ico: w.icon || '',
+    type: w.type || 'gym',
+    sets: (w.sets||[]).map(s => ({reps: s.reps||0, weight: s.weight||0})),
+  }));
+  ASSIGN_CAT_FILTER = 'all';
+  document.getElementById('assign-target').textContent = '수정 모드 — ' + (document.getElementById('d-name').textContent||'');
+  document.getElementById('assign-date').value = data.assigned_for_date;
+  document.getElementById('assign-search').value = '';
+  document.getElementById('assign-notes').value = data.payload?.notes || '';
+  document.getElementById('assign-err').textContent = '';
+  renderAssignCatChips();
+  filterAssignLib();
+  renderAssignSelected();
+  openModal('modal-assign');
+}
+
+async function deleteAssignment(assignmentId, dateStr){
+  if(!confirm(`${dateStr} 배정을 삭제할까요? 회원의 운동 카드에서도 사라집니다.`)) return;
+  if(!confirm('한 번 더 확인. 정말 삭제?')) return;
+  const {error} = await sb.rpc('trainer_delete_assignment', {p_assignment_id: assignmentId});
+  if(error){ showToast('삭제 실패: '+error.message); return; }
+  showToast('배정 삭제됨.');
+  await loadAssignments();
+  if(document.querySelector('#view-detail .seg button.on')?.dataset.pane==='workouts') loadWorkouts();
 }
 async function loadRecent(){
   const el = document.getElementById('d-recent');
@@ -1001,6 +1054,7 @@ let ASSIGN_SELECTED = []; // [{name, type, cat, m, sets:[{reps, weight}]}]
 let ASSIGN_CAT_FILTER = 'all'; // 'all' | '가슴'|'등'|'하체'|...
 
 function openAssignModal(){
+  _editingAssignmentId = null;
   ASSIGN_SELECTED = [];
   ASSIGN_CAT_FILTER = 'all';
   document.getElementById('assign-target').textContent = '대상: ' + document.getElementById('d-name').textContent;
@@ -1172,12 +1226,22 @@ async function doAssignWorkout(){
     status: 'planned',
   }));
   const payload = { workouts, notes: notes||null };
-  const {error} = await sb.rpc('trainer_assign_workout', {
-    p_client_id: CURRENT_CLIENT, p_assigned_for: date, p_payload: payload
-  });
-  if(error){ errEl.textContent=error.message; return; }
+  // 수정 모드 — _editingAssignmentId 가 있으면 update RPC
+  if(_editingAssignmentId){
+    const {error} = await sb.rpc('trainer_update_assignment', {
+      p_assignment_id: _editingAssignmentId, p_new_payload: payload
+    });
+    if(error){ errEl.textContent=error.message; return; }
+    showToast(`배정 수정 완료 (${workouts.length}개 종목).`);
+    _editingAssignmentId = null;
+  } else {
+    const {error} = await sb.rpc('trainer_assign_workout', {
+      p_client_id: CURRENT_CLIENT, p_assigned_for: date, p_payload: payload
+    });
+    if(error){ errEl.textContent=error.message; return; }
+    showToast(`${date} 배정 완료 (${workouts.length}개 종목).`);
+  }
   closeModal('modal-assign');
-  showToast(`${date} 배정 완료 (${workouts.length}개 종목).`);
   await loadAssignments();
   if(document.querySelector('#view-detail .seg button.on')?.dataset.pane==='workouts') loadWorkouts();
 }
