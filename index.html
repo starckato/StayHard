@@ -11062,7 +11062,6 @@ let _hwsExercises = [];      // log.workouts 의 entries 중 같은 _trainerAssi
 let _hwsExIdx = 0;            // 현재 진행 종목 index in _hwsExercises
 
 function openHomeworkStart(idx){
-  // breadcrumb toasts — iOS PWA 디버그 (실패 단계 식별)
   const dbg = (s) => { try{ console.log('[hw]',s); }catch(_){} };
   try{
     dbg('1:enter idx='+idx);
@@ -11070,8 +11069,6 @@ function openHomeworkStart(idx){
     if(!allWorkouts.length){ showToast('운동 데이터 없음. 새로고침'); return; }
     let w = allWorkouts[idx];
     if(!w){
-      dbg('2:no w at idx, search fallback');
-      // idx 매핑 깨졌으면 fallback — 첫 미완료 trainer 운동 사용
       w = allWorkouts.find(x => x && x._trainerAssignmentId && x.status !== 'done');
       if(!w){ showToast('숙제를 찾을 수 없어요. 새로고침'); return; }
     }
@@ -11084,26 +11081,32 @@ function openHomeworkStart(idx){
     if(_hwsExercises.length === 0){ _hwsExercises = [w]; }
     _hwsExIdx = Math.max(0, _hwsExercises.indexOf(w));
     if(w.status !== 'in_progress'){ w.status = 'in_progress'; }
+
+    // Modal — body 직접 자식으로 이동 (containing block 회피)
+    const modal = document.getElementById('homework-session-modal');
+    if(!modal){ showToast('모달 element 없음.'); return; }
+    if(modal.parentNode !== document.body){
+      dbg('4a:relocating modal to body');
+      document.body.appendChild(modal);
+    }
     dbg('4:render session');
     try{ renderHomeworkSession(); }catch(rerr){
-      dbg('4-fail:'+rerr.message);
       showToast('렌더 실패: '+rerr.message);
       return;
     }
-    const modal = document.getElementById('homework-session-modal');
-    if(!modal){
-      dbg('5:no modal');
-      showToast('모달 element 없음. 새로고침 필요.');
-      return;
-    }
     dbg('5:show modal');
-    // Force show — class + inline style 둘 다, !important 효과
-    modal.style.cssText = 'display:flex !important;position:fixed;top:0;left:0;right:0;bottom:0;background:var(--bg);z-index:9999;flex-direction:column;';
-    modal.classList.add('hw-modal-open');
-    // Force reflow + body lock
-    void modal.offsetHeight;
+    // 강제 표시 — viewport 단위 + 매우 높은 z-index. inline 으로 통째 override.
+    modal.setAttribute('style','display:flex;position:fixed;top:0;left:0;width:100vw;height:100vh;background:var(--bg);z-index:99999;flex-direction:column;overflow:hidden;');
+    void modal.offsetHeight; // force reflow
     document.body.style.overflow = 'hidden';
-    dbg('6:done');
+    // 시각 확인용 — rect 토스트 (3초)
+    try{
+      const r = modal.getBoundingClientRect();
+      dbg('6:rect '+Math.round(r.width)+'x'+Math.round(r.height)+' top='+Math.round(r.top));
+      if(r.width < 100 || r.height < 100){
+        showToast('모달 비정상 크기: '+Math.round(r.width)+'x'+Math.round(r.height));
+      }
+    }catch(_){}
   }catch(e){
     console.warn('[homework-start]', e);
     document.body.style.overflow = '';
