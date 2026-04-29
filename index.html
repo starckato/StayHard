@@ -8252,7 +8252,13 @@ function renderWeeklyFeatureRibbon(){
   // 인라인 노출 X — arrangePromos 가 bell-only 처리. depth-active 만 marking.
   card.style.display='none';
   card.dataset.active='1';
-  card.dataset.week=String(weekNum);
+  // 주차 marker — _currentWeekFeature 와 동일 계산
+  try{
+    const _now=new Date();
+    const _start=new Date(_now.getFullYear(),0,1);
+    const _days=Math.floor((_now-_start)/86400000);
+    card.dataset.week=String(Math.floor(_days/7));
+  }catch(_){}
 }
 function dismissWeeklyFeature(){
   if(!CU||!CU.id)return;
