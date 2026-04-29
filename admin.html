@@ -196,11 +196,22 @@ WHERE id = '${session.user.id}';</pre>
 async function load(){
   const content=document.getElementById('content');
   content.innerHTML='<div style="color:var(--ink3);padding:20px 0;">loading...</div>';
-  // 병렬: 기본 dashboard + retention metrics
-  const [dashRes,retRes]=await Promise.all([
-    sb.rpc('admin_dashboard'),
-    sb.rpc('admin_retention_summary').catch(e=>({data:null,error:e})),
+  // 30초 timeout — RPC 무한 대기 방지
+  const timeout = (p, ms, label) => Promise.race([
+    p,
+    new Promise((_,rej)=>setTimeout(()=>rej(new Error(`${label} timeout after ${ms}ms`)), ms))
   ]);
+  // 병렬: 기본 dashboard + retention metrics
+  let dashRes, retRes;
+  try {
+    [dashRes, retRes] = await Promise.all([
+      timeout(sb.rpc('admin_dashboard'), 30000, 'admin_dashboard'),
+      timeout(sb.rpc('admin_retention_summary'), 30000, 'admin_retention_summary').catch(e=>({data:null,error:e})),
+    ]);
+  } catch(e) {
+    content.innerHTML = `<div class="err">RPC failed/timed out: ${esc(e.message||String(e))}<br><br>가능한 원인:<br>- DB 연결 지연<br>- admin RPC 권한 문제<br>- 마이그레이션 미적용<br><br><button onclick="location.reload()" style="margin-top:10px;">다시 시도</button> <button onclick="(async()=>{await sb.auth.signOut();location.reload();})()" style="margin-top:10px;">로그아웃</button></div>`;
+    return;
+  }
   const {data,error}=dashRes;
   if(error){
     const missing=/does not exist/i.test(error.message||'');
