@@ -2575,6 +2575,51 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
   </div>
 
   <!-- SESSION SUMMARY MODAL -->
+  <!-- 트레이너 숙제 세션 모달 — 종목별 세트 진행 + 완료 처리 -->
+  <div id="homework-session-modal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:var(--bg);z-index:560;flex-direction:column;">
+    <!-- Header -->
+    <div style="display:flex;align-items:center;gap:10px;padding:52px 18px 14px;border-bottom:1px solid var(--border);flex-shrink:0;">
+      <button onclick="closeHomeworkSession()" style="background:none;border:none;color:var(--text2);font-size:22px;cursor:pointer;padding:0;touch-action:manipulation;">←</button>
+      <div style="flex:1;">
+        <div style="font-size:13px;color:var(--accent);font-weight:800;letter-spacing:.05em;">오늘의 운동 숙제</div>
+        <div style="font-size:17px;font-weight:700;margin-top:2px;" id="hws-name">—</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:2px;" id="hws-progress">—</div>
+      </div>
+    </div>
+    <!-- 진척 바 -->
+    <div style="height:3px;background:var(--surface2);flex-shrink:0;">
+      <div id="hws-progress-fill" style="height:100%;background:linear-gradient(90deg,#ff4d4d,#ff6b35);transition:width .3s;"></div>
+    </div>
+    <!-- Body — 현재 종목 + 세트 list -->
+    <div style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:16px;">
+      <div id="hws-body"></div>
+    </div>
+    <!-- Footer — 다음/완료 -->
+    <div style="display:flex;gap:8px;padding:14px 16px;border-top:1px solid var(--border);flex-shrink:0;background:var(--surface);">
+      <button onclick="skipHomeworkExercise()" id="hws-skip-btn" style="flex:0 0 auto;padding:14px 18px;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;color:var(--text2);font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">건너뛰기</button>
+      <button onclick="completeHomeworkExercise()" id="hws-next-btn" style="flex:1;padding:14px;background:linear-gradient(135deg,#ff4d4d,#ff6b35);border:none;border-radius:10px;color:#fff;font-size:14px;font-weight:800;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;letter-spacing:-.005em;">다음 종목</button>
+    </div>
+  </div>
+
+  <!-- 정식 루틴 promote 모달 -->
+  <div id="homework-promote-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:600;align-items:center;justify-content:center;padding:20px;">
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px;max-width:420px;width:100%;">
+      <div style="text-align:center;margin-bottom:14px;">
+        <div style="font-size:32px;margin-bottom:6px;">✅</div>
+        <div style="font-family:'Noto Serif KR',serif;font-size:18px;font-weight:700;">숙제 완료</div>
+        <div style="font-size:12px;color:var(--text3);margin-top:4px;">이 운동을 정식 루틴으로 등록할까요?</div>
+      </div>
+      <div style="margin-bottom:16px;">
+        <label style="display:block;font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;font-weight:700;margin-bottom:6px;">루틴 이름 (수정 가능)</label>
+        <input type="text" id="hwp-name" style="width:100%;padding:10px 12px;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-size:14px;" />
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button onclick="closeHomeworkPromote(false)" style="flex:1;padding:12px;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;color:var(--text2);font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">아니요</button>
+        <button onclick="closeHomeworkPromote(true)" style="flex:1;padding:12px;background:linear-gradient(135deg,#ff4d4d,#ff6b35);border:none;border-radius:10px;color:#fff;font-size:13px;font-weight:800;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">루틴 등록</button>
+      </div>
+    </div>
+  </div>
+
   <div id="session-summary-modal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:var(--bg);z-index:550;flex-direction:column;">
     <!-- Header -->
     <div style="display:flex;align-items:center;gap:10px;padding:52px 18px 14px;border-bottom:1px solid var(--border);flex-shrink:0;">
@@ -10942,23 +10987,223 @@ function renderHomeworkRows(homework){
   wrap.innerHTML = html;
 }
 
-// 숙제 시작 confirmation — Phase 2 에선 단순 confirm. Phase 3 에서 세트 진행 모달.
+// ─────────────────────────────────────────────────
+// 숙제 세션 진행 — Phase 3
+// ─────────────────────────────────────────────────
+// state: 현재 진행 중인 assignment 의 모든 종목 + 현재 종목 idx
+let _hwsAssignmentId = null;
+let _hwsExercises = [];      // log.workouts 의 entries 중 같은 _trainerAssignmentId
+let _hwsExIdx = 0;            // 현재 진행 종목 index in _hwsExercises
+
 function openHomeworkStart(idx){
   const w = (log.workouts||[])[idx];
-  if(!w){ showToast('운동을 찾을 수 없어요.'); return; }
+  if(!w || !w._trainerAssignmentId){ showToast('운동을 찾을 수 없어요.'); return; }
   const sets = Array.isArray(w.sets) ? w.sets : [];
+  if(sets.length === 0){ showToast('세트가 비어있어요.'); return; }
   const summary = `${w.name} · ${sets.length} 세트`;
-  if(confirm(`운동 시작할까요?\n\n${summary}`)){
-    // Phase 3 에서 세트 진행 모달 구현 예정. 일단 임시 — gym 세션 modal 진입.
-    if(typeof editGymSession === 'function'){
-      // 트레이너 숙제는 단일 운동 entry. editGymSession 은 exercises[] 기대 →
-      // 임시로 _convertHomeworkToGymSession 으로 wrap 후 진입.
-      try{
-        // legacy gym session 형식과 다름 — 일단 토스트만
-        showToast('세트 진행 화면은 준비 중. 곧 추가됩니다.');
-      }catch(e){console.warn('[homework-start]',e);}
+  if(!confirm(`운동 시작할까요?\n\n${summary}`)) return;
+  // 같은 assignment 의 모든 종목 모음 (status≠done)
+  _hwsAssignmentId = w._trainerAssignmentId;
+  _hwsExercises = (log.workouts||[]).filter(x => x && x._trainerAssignmentId === _hwsAssignmentId && x.status !== 'done');
+  // 클릭한 종목부터 시작 (그 종목이 _hwsExercises 의 어느 index 인지)
+  _hwsExIdx = Math.max(0, _hwsExercises.indexOf(w));
+  // 이 종목의 status 를 in_progress 로 마크
+  if(w.status !== 'in_progress'){ w.status = 'in_progress'; }
+  renderHomeworkSession();
+  document.getElementById('homework-session-modal').style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+
+function closeHomeworkSession(){
+  document.getElementById('homework-session-modal').style.display = 'none';
+  document.body.style.overflow = '';
+  // 진행 상태 저장 (도중에 닫아도 sets[].done 보존)
+  try{ saveNow(); }catch(e){}
+  try{ renderWorkouts(); }catch(e){}
+}
+
+function renderHomeworkSession(){
+  const ex = _hwsExercises[_hwsExIdx];
+  if(!ex){ closeHomeworkSession(); return; }
+  const sets = Array.isArray(ex.sets) ? ex.sets : [];
+  const totalEx = _hwsExercises.length;
+  const currentNum = _hwsExIdx + 1;
+  document.getElementById('hws-name').textContent = ex.name || '운동';
+  document.getElementById('hws-progress').textContent = `종목 ${currentNum}/${totalEx} · 세트 ${sets.length}개`;
+  // progress fill = 전체 종목 중 완료된 비율
+  const allSets = _hwsExercises.reduce((s, e) => s + (Array.isArray(e.sets)?e.sets.length:0), 0);
+  const doneSets = _hwsExercises.reduce((s, e) => s + (Array.isArray(e.sets)?e.sets.filter(x=>x.done).length:0), 0);
+  const pct = allSets > 0 ? Math.round(doneSets/allSets*100) : 0;
+  document.getElementById('hws-progress-fill').style.width = pct + '%';
+  // body
+  const body = document.getElementById('hws-body');
+  body.innerHTML = `
+    <div style="background:var(--surface2);border-radius:14px;padding:16px;margin-bottom:14px;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+        <div style="width:36px;height:36px;border-radius:10px;background:rgba(255,77,77,.15);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">${esc(ex.icon||'🏋️')}</div>
+        <div style="flex:1;">
+          <div style="font-size:16px;font-weight:700;">${esc(ex.name)}</div>
+          <div style="font-size:11px;color:var(--text3);">${esc(ex.muscle||'')}</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:36px 1fr 1fr 36px;gap:8px;align-items:center;font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;font-weight:700;margin-bottom:8px;">
+        <div style="text-align:center;">세트</div><div>반복</div><div>무게(kg)</div><div></div>
+      </div>
+      ${sets.map((s, si) => {
+        const isDone = !!s.done;
+        return `<div style="display:grid;grid-template-columns:36px 1fr 1fr 36px;gap:8px;align-items:center;padding:6px 0;${isDone?'opacity:.55;':''}">
+          <div style="text-align:center;font-family:'DM Mono',monospace;font-weight:800;color:${isDone?'var(--green)':'var(--text)'};font-size:14px;">${si+1}</div>
+          <input type="number" min="0" value="${s.reps||0}" onchange="hwsUpdateSet(${si},'reps',this.value)" style="padding:9px 10px;background:var(--surface);border:1px solid var(--border2);border-radius:7px;color:var(--text);font-size:14px;font-family:'DM Mono',monospace;font-weight:700;text-align:center;" ${isDone?'disabled':''} />
+          <input type="number" min="0" step="0.5" value="${s.weight||0}" onchange="hwsUpdateSet(${si},'weight',this.value)" style="padding:9px 10px;background:var(--surface);border:1px solid var(--border2);border-radius:7px;color:var(--text);font-size:14px;font-family:'DM Mono',monospace;font-weight:700;text-align:center;" ${isDone?'disabled':''} />
+          <button onclick="hwsToggleDone(${si})" style="width:36px;height:36px;border-radius:9px;background:${isDone?'var(--green)':'var(--surface)'};border:1.5px solid ${isDone?'var(--green)':'var(--border2)'};display:flex;align-items:center;justify-content:center;cursor:pointer;touch-action:manipulation;">${isDone?'<svg width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#fff\" stroke-width=\"3\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><polyline points=\"20 6 9 17 4 12\"></polyline></svg>':''}</button>
+        </div>`;
+      }).join('')}
+    </div>
+    ${totalEx > 1 ? `<div style="display:flex;gap:6px;margin-top:14px;">
+      ${_hwsExercises.map((e,i)=>{
+        const allDone = (e.sets||[]).every(s=>s.done) && (e.sets||[]).length>0;
+        const cls = i===_hwsExIdx ? 'background:var(--accent);color:#fff;' : (allDone ? 'background:rgba(52,211,153,0.18);color:var(--green);' : 'background:var(--surface2);color:var(--text3);');
+        return `<button onclick="hwsJumpToExercise(${i})" style="flex:1;padding:8px;border:none;border-radius:8px;${cls}font-size:11px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;">${i+1}. ${esc((e.name||'').slice(0,8))}</button>`;
+      }).join('')}
+    </div>`:''}
+  `;
+  // Update next/finish button label
+  const nextBtn = document.getElementById('hws-next-btn');
+  const allDoneInThisEx = sets.length > 0 && sets.every(s=>s.done);
+  const isLastEx = _hwsExIdx >= _hwsExercises.length - 1;
+  if(allDoneInThisEx && isLastEx){
+    nextBtn.textContent = '✓ 운동 종료';
+    nextBtn.style.background = 'linear-gradient(135deg,#34d399,#10b981)';
+  } else if(allDoneInThisEx){
+    nextBtn.textContent = '다음 종목 →';
+    nextBtn.style.background = 'linear-gradient(135deg,#ff4d4d,#ff6b35)';
+  } else {
+    nextBtn.textContent = '다음 종목';
+    nextBtn.style.background = 'linear-gradient(135deg,#ff4d4d,#ff6b35)';
+  }
+}
+
+function hwsUpdateSet(setIdx, field, val){
+  const ex = _hwsExercises[_hwsExIdx];
+  if(!ex || !ex.sets[setIdx]) return;
+  ex.sets[setIdx][field] = parseFloat(val) || 0;
+  try{ saveNow(); }catch(_){}
+}
+
+function hwsToggleDone(setIdx){
+  const ex = _hwsExercises[_hwsExIdx];
+  if(!ex || !ex.sets[setIdx]) return;
+  ex.sets[setIdx].done = !ex.sets[setIdx].done;
+  // ex 의 모든 세트 완료 → status='done', 아니면 'in_progress'
+  const allDone = ex.sets.every(s=>s.done);
+  const anyDone = ex.sets.some(s=>s.done);
+  ex.status = allDone ? 'done' : (anyDone ? 'in_progress' : 'planned');
+  if(allDone){ ex.completed_at = new Date().toISOString(); }
+  renderHomeworkSession();
+  try{ saveNow(); }catch(_){}
+}
+
+function hwsJumpToExercise(idx){
+  if(idx < 0 || idx >= _hwsExercises.length) return;
+  _hwsExIdx = idx;
+  renderHomeworkSession();
+}
+
+function skipHomeworkExercise(){
+  // 다음 종목으로 (현재 종목 status 유지)
+  if(_hwsExIdx < _hwsExercises.length - 1){
+    _hwsExIdx++;
+    renderHomeworkSession();
+  } else {
+    closeHomeworkSession();
+  }
+}
+
+async function completeHomeworkExercise(){
+  const ex = _hwsExercises[_hwsExIdx];
+  if(!ex){ closeHomeworkSession(); return; }
+  const allDone = (ex.sets||[]).every(s=>s.done);
+  // 다음 종목 있으면 이동, 없으면 운동 종료 (모두 완료 체크)
+  const isLastEx = _hwsExIdx >= _hwsExercises.length - 1;
+  if(!isLastEx){
+    _hwsExIdx++;
+    renderHomeworkSession();
+    return;
+  }
+  // 마지막 종목 — 모든 종목 모든 세트 완료 여부 검사
+  const everyExDone = _hwsExercises.every(e => (e.sets||[]).every(s=>s.done) && (e.sets||[]).length>0);
+  if(!everyExDone){
+    if(!confirm('아직 완료 안 된 세트가 있어요. 그래도 운동 종료?')) return;
+  }
+  // 운동 종료 처리
+  for(const e of _hwsExercises){
+    if((e.sets||[]).every(s=>s.done) && (e.sets||[]).length>0){
+      e.status = 'done';
+      e.completed_at = e.completed_at || new Date().toISOString();
     }
   }
+  try{ saveNow(); }catch(_){}
+  // assignment status update — 모두 완료면 'completed', 부분이면 'in_progress'
+  try{
+    const allComplete = _hwsExercises.every(e => e.status === 'done');
+    await sb.from('workout_assignments').update({
+      status: allComplete ? 'completed' : 'in_progress',
+      completed_at: allComplete ? new Date().toISOString() : null,
+    }).eq('id', _hwsAssignmentId);
+  }catch(e){console.warn('[hw-assignment-update]',e);}
+  // close + promote modal
+  document.getElementById('homework-session-modal').style.display = 'none';
+  document.body.style.overflow = '';
+  try{ renderWorkouts(); }catch(_){}
+  // promote modal — 정식 루틴 등록 권유
+  openHomeworkPromote();
+}
+
+// ─── Promote 모달 — 운동 완료 후 정식 루틴 권유 ───
+function openHomeworkPromote(){
+  // default name: 첫 종목 이름 or "트레이너 추천 루틴"
+  const first = _hwsExercises[0];
+  const second = _hwsExercises[1];
+  const dflt = _hwsExercises.length > 1
+    ? `${first?.name || '운동'} 외 ${_hwsExercises.length-1}개 (트레이너 추천)`
+    : `${first?.name || '운동'} (트레이너 추천)`;
+  const inp = document.getElementById('hwp-name');
+  if(inp) inp.value = dflt;
+  document.getElementById('homework-promote-modal').style.display = 'flex';
+}
+
+async function closeHomeworkPromote(register){
+  document.getElementById('homework-promote-modal').style.display = 'none';
+  if(!register){
+    showToast('숙제 완료. 좋아.');
+    _hwsAssignmentId = null; _hwsExercises = []; _hwsExIdx = 0;
+    return;
+  }
+  const name = (document.getElementById('hwp-name').value || '').trim();
+  if(!name){ showToast('이름이 비었어요.'); return; }
+  // user_routines 또는 mandatory 에 추가? 현재 메인 앱은 mandatory(필수루틴) 와는 별개로
+  // 운동 라이브러리에 사용자 정의 루틴 저장 기능 — wssRoutines 비슷한 것이 있지만 schema 미정.
+  // 일단 profiles 의 별도 column 으로 저장 또는 localStorage 저장.
+  // MVP: localStorage 에 사용자 운동 루틴 저장 + workout start screen tile 에서 노출.
+  try{
+    const key = 'qrok_user_routines_' + (CU?.id || 'anon');
+    const list = JSON.parse(localStorage.getItem(key) || '[]');
+    list.push({
+      name,
+      exercises: _hwsExercises.map(ex => ({
+        name: ex.name,
+        muscle: ex.muscle,
+        equipment: ex.equipment,
+        icon: ex.icon,
+        sets: ex.sets.map(s => ({reps:s.reps, weight:s.weight}))
+      })),
+      created_at: new Date().toISOString(),
+      source: 'trainer-homework',
+    });
+    localStorage.setItem(key, JSON.stringify(list));
+    showToast(`정식 루틴 등록: ${name}`);
+  }catch(e){console.warn('[hwp-save]',e); showToast('등록 실패. 다시 시도.');}
+  _hwsAssignmentId = null; _hwsExercises = []; _hwsExIdx = 0;
 }
 
 function renderWorkouts(){
