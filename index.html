@@ -1758,6 +1758,8 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
         <span class="cc-chevron">▾</span>
       </div>
       <div class="card-body">
+        <!-- 오늘의 운동 숙제 — 트레이너 배정. _trainerAssignmentId 마커가 있는 workouts. -->
+        <div id="homework-rows"></div>
         <div class="workout-rows" id="workout-rows"></div>
         <div style="display:flex;gap:8px;margin:8px 12px 12px;">
           <div id="wo-add-cta" onclick="event.stopPropagation(); openWorkoutStartScreen();" style="flex:1;display:flex;align-items:center;justify-content:center;gap:8px;padding:12px;background:linear-gradient(135deg,rgba(255,77,77,.10),rgba(255,77,77,.08));border:1px solid rgba(255,77,77,.25);border-radius:10px;cursor:pointer;touch-action:manipulation;">
@@ -10890,13 +10892,87 @@ function renderWoRoutineTiles(){
   renderWssRoutineTiles();
 }
 
+// ── 오늘의 운동 숙제 (트레이너 배정) ────────────────────────────
+// _trainerAssignmentId 가 있는 workouts 를 그룹핑해서 workout-card 상단에 표시.
+// 1 assignment = 묶음 (여러 종목). assignmentId 별로 group 후 헤더 + 종목 list.
+function renderHomeworkRows(homework){
+  const wrap = document.getElementById('homework-rows');
+  if(!wrap) return;
+  if(!homework || homework.length === 0){ wrap.innerHTML = ''; wrap.style.cssText = ''; return; }
+  // assignment id 별로 그룹핑
+  const groups = {};
+  for(const w of homework){
+    const aid = w._trainerAssignmentId;
+    if(!groups[aid]) groups[aid] = [];
+    groups[aid].push(w);
+  }
+  let html = '';
+  for(const aid in groups){
+    const items = groups[aid];
+    const totalEx = items.length;
+    const totalSets = items.reduce((sum, w) => sum + (Array.isArray(w.sets) ? w.sets.length : 0), 0);
+    const doneSets = items.reduce((sum, w) => sum + (Array.isArray(w.sets) ? w.sets.filter(s=>s.done).length : 0), 0);
+    const pct = totalSets > 0 ? Math.round(doneSets/totalSets*100) : 0;
+    html += `<div style="margin:8px 12px;background:linear-gradient(135deg,rgba(255,77,77,.06),rgba(255,107,53,.04));border:1.5px solid rgba(255,77,77,.32);border-radius:12px;overflow:hidden;">
+      <div style="padding:11px 14px 9px;background:linear-gradient(135deg,rgba(255,77,77,.12),rgba(255,107,53,.08));border-bottom:1px solid rgba(255,77,77,.18);">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ff4d4d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="15" y2="17"/></svg>
+          <div style="flex:1;font-size:13px;font-weight:800;color:var(--accent);letter-spacing:-.005em;">오늘의 운동 숙제</div>
+          <div style="font-size:10px;color:var(--text3);font-family:'DM Mono',monospace;font-weight:600;">${doneSets}/${totalSets} 세트 · ${pct}%</div>
+        </div>
+        <div style="font-size:10px;color:var(--text3);margin-top:2px;letter-spacing:.04em;">트레이너 배정 · 종목 ${totalEx}개</div>
+      </div>
+      ${items.map((w, i) => {
+        // homework workout 의 원본 index 를 log.workouts 에서 찾음
+        const origIdx = (log.workouts||[]).indexOf(w);
+        const sets = Array.isArray(w.sets) ? w.sets : [];
+        const setsDone = sets.filter(s=>s.done).length;
+        const isStarted = setsDone > 0 || w.status === 'in_progress';
+        return `<div style="padding:10px 14px;border-bottom:1px solid var(--border);cursor:pointer;display:flex;align-items:center;gap:10px;" onclick="openHomeworkStart(${origIdx})">
+          <div style="width:28px;height:28px;border-radius:7px;background:rgba(255,77,77,.18);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;">${esc(w.icon||'🏋️')}</div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:14px;font-weight:600;">${esc(w.name||'운동')}</div>
+            <div style="font-size:11px;color:var(--text3);margin-top:2px;font-family:'DM Mono',monospace;">${sets.length} 세트 ${sets.length>0?'· '+sets.map(s=>(s.weight?s.weight+'kg×':'')+(s.reps||0)).join(' · '):''}</div>
+          </div>
+          <div style="font-size:10px;font-weight:800;letter-spacing:.04em;padding:4px 8px;border-radius:6px;background:${isStarted?'rgba(56,189,248,0.18)':'rgba(255,77,77,0.18)'};color:${isStarted?'#38bdf8':'#ff6b6b'};">${isStarted?'진행 중':'예정'}</div>
+        </div>`;
+      }).join('')}
+    </div>`;
+  }
+  wrap.innerHTML = html;
+}
+
+// 숙제 시작 confirmation — Phase 2 에선 단순 confirm. Phase 3 에서 세트 진행 모달.
+function openHomeworkStart(idx){
+  const w = (log.workouts||[])[idx];
+  if(!w){ showToast('운동을 찾을 수 없어요.'); return; }
+  const sets = Array.isArray(w.sets) ? w.sets : [];
+  const summary = `${w.name} · ${sets.length} 세트`;
+  if(confirm(`운동 시작할까요?\n\n${summary}`)){
+    // Phase 3 에서 세트 진행 모달 구현 예정. 일단 임시 — gym 세션 modal 진입.
+    if(typeof editGymSession === 'function'){
+      // 트레이너 숙제는 단일 운동 entry. editGymSession 은 exercises[] 기대 →
+      // 임시로 _convertHomeworkToGymSession 으로 wrap 후 진입.
+      try{
+        // legacy gym session 형식과 다름 — 일단 토스트만
+        showToast('세트 진행 화면은 준비 중. 곧 추가됩니다.');
+      }catch(e){console.warn('[homework-start]',e);}
+    }
+  }
+}
+
 function renderWorkouts(){
   // also refresh start screen tiles if visible
   renderWssRoutineTiles();
   renderWssCardioTiles();
   // 첫 주 미션 재평가 — 운동 추가/완료/삭제 시 미션 상태 바로 갱신
   try{if(typeof renderFirstWeekCard==='function')renderFirstWeekCard();}catch(e){}
-  const workouts=log.workouts||[];
+  const allWorkouts=log.workouts||[];
+  // 트레이너 숙제: _trainerAssignmentId 가 있고 status≠done. 별도 섹션 (workout-card 상단).
+  const homework = allWorkouts.filter(w => w && w._trainerAssignmentId && w.status !== 'done');
+  renderHomeworkRows(homework);
+  // 일반 워크아웃 (숙제 미완료 제외 — 숙제 완료한 건 정식 운동으로 표시)
+  const workouts = allWorkouts.filter(w => !(w && w._trainerAssignmentId && w.status !== 'done'));
   // CTA label changes after logging
   const ctaLbl=document.getElementById('wo-add-cta-lbl');
   if(ctaLbl)ctaLbl.textContent=workouts.length>0?'운동 더 추가하기':'운동 추가하기';
