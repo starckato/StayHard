@@ -506,6 +506,12 @@ function render(d){
 
   // ── RETENTION METRICS (M1-M10) ──────────────────────────────
   html+=renderRetentionSection(d._retention,d._retention_error);
+
+  // ── TRAINER ADMIN SECTION ──────────────────────────────────
+  html+=`<section><h2>trainers <span class="h2-sub">신청·승인·invite codes</span></h2>
+    <div id="trainer-section"><div class="muted" style="font-size:11px;padding:14px 0;">loading…</div></div>
+  </section>`;
+
   html+=`</div>`;
 
   // ── USERS TABLE ──
@@ -567,6 +573,106 @@ function render(d){
   setTimeout(()=>renderTrend(d.trend_14d||[]),50);
   // Bonus panel hooks
   try{populateTemplateDropdown();loadRecentGrants();}catch(e){console.warn('[bonus-admin]',e);}
+  // Trainer admin section
+  try{loadTrainerSection();}catch(e){console.warn('[trainer-admin]',e);}
+}
+
+// ═══════════════════════════════════════════════
+// TRAINER ADMIN
+// ═══════════════════════════════════════════════
+async function loadTrainerSection(){
+  const root = document.getElementById('trainer-section');
+  if(!root) return;
+  // 병렬: 트레이너 전체 + invite codes
+  const [trRes, codeRes] = await Promise.all([
+    sb.from('trainers').select('id, trainer_name, bio, certification_status, certification_note, certification_reviewed_at, created_at, profiles!trainers_id_fkey(username, display_name)').order('created_at', {ascending:false}),
+    sb.from('trainer_invite_codes').select('*').order('code_type').order('created_at', {ascending:false}),
+  ]);
+  const trainers = trRes.data || [];
+  const codes = codeRes.data || [];
+  const pending = trainers.filter(t=>t.certification_status==='pending');
+  const approved = trainers.filter(t=>t.certification_status==='approved');
+  let h = '';
+  // ── pending list ──
+  h += `<div style="margin:14px 0 6px;font-size:11px;color:var(--ink3);text-transform:uppercase;letter-spacing:.06em;">pending (${pending.length})</div>`;
+  if(pending.length===0){
+    h += `<div class="muted" style="font-size:11px;padding:8px 0;">대기 중인 신청 없음.</div>`;
+  } else {
+    h += `<div class="table-wrap"><table><thead><tr><th>이름</th><th>유저</th><th>소개</th><th>신청</th><th>action</th></tr></thead><tbody>`;
+    for(const t of pending){
+      const p = t.profiles||{};
+      h += `<tr>
+        <td><b>${esc(t.trainer_name)}</b></td>
+        <td class="muted">@${esc(p.username||'—')}</td>
+        <td class="muted" style="font-size:11px;">${esc(t.bio||'—')}</td>
+        <td class="muted">${fmtTime(t.created_at)}</td>
+        <td><button onclick="approveTrainer('${t.id}')" style="background:var(--ok);color:#0a0a0c;border:none;padding:6px 12px;border-radius:6px;font-weight:700;cursor:pointer;font-size:11px;">승인</button>
+            <button onclick="rejectTrainer('${t.id}')" style="background:var(--err);color:#fff;border:none;padding:6px 12px;border-radius:6px;font-weight:700;cursor:pointer;font-size:11px;margin-left:4px;">반려</button></td>
+      </tr>`;
+    }
+    h += `</tbody></table></div>`;
+  }
+  // ── approved list (간단) ──
+  h += `<div style="margin:18px 0 6px;font-size:11px;color:var(--ink3);text-transform:uppercase;letter-spacing:.06em;">approved (${approved.length})</div>`;
+  if(approved.length){
+    h += `<div class="table-wrap"><table><thead><tr><th>이름</th><th>유저</th><th>승인일</th><th>note</th></tr></thead><tbody>`;
+    for(const t of approved){
+      const p = t.profiles||{};
+      h += `<tr><td>${esc(t.trainer_name)}</td><td class="muted">@${esc(p.username||'—')}</td><td class="muted">${fmtTime(t.certification_reviewed_at)}</td><td class="muted" style="font-size:11px;">${esc(t.certification_note||'—')}</td></tr>`;
+    }
+    h += `</tbody></table></div>`;
+  }
+  // ── invite codes ──
+  h += `<div style="margin:18px 0 6px;font-size:11px;color:var(--ink3);text-transform:uppercase;letter-spacing:.06em;">invite codes</div>`;
+  h += `<div style="margin-bottom:10px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+    <input id="ic-code" placeholder="코드 (예: GYM2026)" style="text-transform:uppercase;font-family:'DM Mono',monospace;flex:1;min-width:140px;" />
+    <select id="ic-type"><option value="founder">founder</option><option value="ad" selected>ad</option><option value="referral">referral</option></select>
+    <input id="ic-max" type="number" placeholder="max 사용 (비우면 무제한)" style="width:160px;" />
+    <input id="ic-desc" placeholder="설명 (선택)" style="flex:1;min-width:120px;" />
+    <button onclick="adminCreateInviteCode()" style="background:var(--ok);color:#0a0a0c;border:none;padding:7px 14px;border-radius:6px;font-weight:700;cursor:pointer;">+ 코드 발급</button>
+  </div>`;
+  if(codes.length===0){
+    h += `<div class="muted" style="font-size:11px;">코드 없음.</div>`;
+  } else {
+    h += `<div class="table-wrap"><table><thead><tr><th>code</th><th>type</th><th class="num">사용</th><th>설명</th><th>만료</th></tr></thead><tbody>`;
+    for(const c of codes){
+      const left = c.max_uses==null?'∞':(c.max_uses - c.used_count);
+      h += `<tr>
+        <td><code style="font-family:'DM Mono',monospace;font-weight:700;color:var(--accent);">${esc(c.code)}</code></td>
+        <td class="muted">${esc(c.code_type)}</td>
+        <td class="num">${c.used_count} / ${c.max_uses==null?'∞':c.max_uses}</td>
+        <td class="muted" style="font-size:11px;">${esc(c.description||'—')}</td>
+        <td class="muted">${c.expires_at?fmtTime(c.expires_at):'—'}</td>
+      </tr>`;
+    }
+    h += `</tbody></table></div>`;
+  }
+  root.innerHTML = h;
+}
+
+async function approveTrainer(id){
+  if(!confirm('이 트레이너를 승인합니까?')) return;
+  const {error} = await sb.rpc('admin_approve_trainer', {p_trainer_id:id, p_note:'admin manual approval'});
+  if(error){ alert('승인 실패: '+error.message); return; }
+  await loadTrainerSection();
+}
+async function rejectTrainer(id){
+  const note = prompt('반려 사유 (선택):');
+  const {error} = await sb.from('trainers').update({certification_status:'rejected', certification_note:note||'rejected by admin', certification_reviewed_at: new Date().toISOString()}).eq('id', id);
+  if(error){ alert('반려 실패: '+error.message); return; }
+  await loadTrainerSection();
+}
+async function adminCreateInviteCode(){
+  const code = (document.getElementById('ic-code').value||'').trim().toUpperCase();
+  const type = document.getElementById('ic-type').value;
+  const maxUses = document.getElementById('ic-max').value ? parseInt(document.getElementById('ic-max').value, 10) : null;
+  const desc = (document.getElementById('ic-desc').value||'').trim();
+  if(!code){ alert('코드 입력 필요.'); return; }
+  const {error} = await sb.from('trainer_invite_codes').insert({
+    code, code_type:type, max_uses:maxUses, description:desc||null
+  });
+  if(error){ alert('발급 실패: '+error.message); return; }
+  await loadTrainerSection();
 }
 
 // ═══════════════════════════════════════════════

@@ -173,25 +173,28 @@
 <div id="screen-trainer-signup" class="auth-wrap hidden">
   <div class="auth-card">
     <div class="auth-logo"><span>Q</span>ROK Trainer</div>
-    <div class="auth-sub">트레이너 신청</div>
+    <div class="auth-sub">트레이너 가입</div>
+    <div class="field">
+      <label>가입 코드</label>
+      <input type="text" id="ts-invite" placeholder="예: ABCD12" style="text-transform:uppercase;letter-spacing:.1em;font-family:'DM Mono',monospace;" />
+      <div class="field-help">QROK 측 또는 추천한 트레이너에게 받은 코드를 입력하세요. 코드 없이 가입 불가.</div>
+    </div>
     <div class="field"><label>표시 이름 (PT 샘)</label><input type="text" id="ts-name" placeholder="예: 김PT" /></div>
     <div class="field"><label>한 줄 소개 (선택)</label><textarea id="ts-bio" placeholder="전문 분야 / 경력 / 한 줄 소개"></textarea></div>
-    <div class="field"><label>자격증 사진 URL (선택)</label><input type="url" id="ts-cert" placeholder="https://..." /><div class="field-help">생활체육지도자, 트레이너 자격증 등. URL 업로드 추후 추가.</div></div>
-    <button class="btn btn-primary" style="width:100%;justify-content:center;" onclick="submitTrainerSignup()">신청하기</button>
+    <button class="btn btn-primary" style="width:100%;justify-content:center;" onclick="submitTrainerSignup()">가입하기</button>
     <div id="ts-err" class="err"></div>
-    <div class="small" style="margin-top:14px;color:var(--text3);text-align:center;">신청 후 어드민 검토 거쳐 승인됩니다 (보통 1-2일).</div>
     <button class="btn btn-ghost" style="width:100%;justify-content:center;margin-top:10px;" onclick="doLogout()">로그아웃</button>
   </div>
 </div>
 
-<!-- ============= PENDING SCREEN ============= -->
+<!-- ============= PENDING SCREEN (정보 확인 중) ============= -->
 <div id="screen-pending" class="pending-wrap hidden">
   <div class="pending-card">
     <div class="pending-icon">📋</div>
-    <div class="pending-title">자격증 검토 중</div>
+    <div class="pending-title">정보 확인 중</div>
     <div class="pending-body">
-      신청서를 받았습니다. 어드민이 자격증을 검토하는 동안 잠시 기다려주세요.<br>
-      승인되면 이 페이지에서 바로 클라이언트 관리가 시작됩니다.
+      신청을 받았습니다. 어드민이 신청자 정보를 확인하고 있어요.<br>
+      확인이 끝나면 이 페이지에서 바로 회원 관리가 시작됩니다.
     </div>
     <button class="btn btn-ghost" onclick="doLogout()">로그아웃</button>
   </div>
@@ -206,6 +209,7 @@
     </div>
     <div class="top-spacer"></div>
     <div class="top-user">
+      <button class="btn btn-ghost" onclick="openReferralModal()" style="font-size:12px;">동료 추천 코드</button>
       <div>
         <div class="name" id="me-name">—</div>
         <div class="role">TRAINER · APPROVED</div>
@@ -362,6 +366,24 @@
   </div>
 </div>
 
+<!-- 동료 추천 코드 -->
+<div id="modal-referral" class="modal-overlay">
+  <div class="modal">
+    <div class="modal-title">동료 트레이너 추천 코드</div>
+    <div class="modal-sub">발급한 코드를 동료 트레이너에게 전달하면, 해당 트레이너가 이 코드로 즉시 가입할 수 있습니다. 1 코드당 최대 5 명까지 사용 가능.</div>
+    <div id="referral-code-display" style="background:var(--surface2);padding:24px;border-radius:10px;text-align:center;margin-bottom:14px;">
+      <div class="small" style="margin-bottom:8px;">발급된 코드</div>
+      <div id="referral-code" style="font-family:'DM Mono',monospace;font-size:32px;font-weight:800;letter-spacing:.15em;color:var(--accent);">—</div>
+      <button class="btn btn-ghost" id="referral-copy-btn" onclick="copyReferralCode()" style="margin-top:14px;font-size:11px;">📋 복사</button>
+    </div>
+    <button class="btn btn-primary" style="width:100%;justify-content:center;" onclick="generateReferralCode()" id="referral-gen-btn">새 코드 발급</button>
+    <div id="referral-err" class="err"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modal-referral')">닫기</button>
+    </div>
+  </div>
+</div>
+
 <!-- ============= TOAST ============= -->
 <div id="toast" class="toast"></div>
 
@@ -472,17 +494,27 @@ async function onAuth(){
   await loadClients();
 }
 
-// ─── Trainer signup ───
+// ─── Trainer signup (코드 기반 즉시 승인) ───
 async function submitTrainerSignup(){
   const name = document.getElementById('ts-name').value.trim();
   const bio = document.getElementById('ts-bio').value.trim();
-  const cert = document.getElementById('ts-cert').value.trim();
+  const code = document.getElementById('ts-invite').value.trim().toUpperCase();
   const errEl = document.getElementById('ts-err');
   errEl.textContent='';
+  if(!code){ errEl.textContent='가입 코드 입력.'; return; }
   if(!name){ errEl.textContent='표시 이름 입력.'; return; }
-  const {error} = await sb.rpc('trainer_signup', {p_trainer_name:name, p_bio:bio||null, p_certification_url:cert||null});
-  if(error){ errEl.textContent=error.message; return; }
-  showToast('신청 완료. 검토 대기 중.');
+  const {data, error} = await sb.rpc('trainer_signup_with_code', {
+    p_trainer_name: name, p_bio: bio||null, p_invite_code: code
+  });
+  if(error){
+    const msg = error.message;
+    if(msg.includes('invalid invite code')) errEl.textContent='유효하지 않은 코드.';
+    else if(msg.includes('expired')) errEl.textContent='만료된 코드.';
+    else if(msg.includes('exhausted')) errEl.textContent='소진된 코드.';
+    else errEl.textContent = msg;
+    return;
+  }
+  showToast('가입 완료. 환영합니다.');
   await onAuth();
 }
 
@@ -846,6 +878,31 @@ async function doAssignWorkout(){
   showToast(`${date} 배정 완료 (${workouts.length}개).`);
   await loadAssignments();
   if(document.querySelector('#view-detail .seg button.on')?.dataset.pane==='workouts') loadWorkouts();
+}
+
+// ─── Referral code ───
+function openReferralModal(){
+  document.getElementById('referral-code').textContent='—';
+  document.getElementById('referral-err').textContent='';
+  openModal('modal-referral');
+}
+async function generateReferralCode(){
+  const errEl = document.getElementById('referral-err');
+  const btn = document.getElementById('referral-gen-btn');
+  errEl.textContent='';
+  btn.disabled = true; btn.textContent='발급 중…';
+  const {data, error} = await sb.rpc('trainer_create_referral_code');
+  btn.disabled = false; btn.textContent='새 코드 발급';
+  if(error){ errEl.textContent = error.message; return; }
+  document.getElementById('referral-code').textContent = data;
+}
+async function copyReferralCode(){
+  const code = document.getElementById('referral-code').textContent;
+  if(!code || code==='—') return;
+  try{
+    await navigator.clipboard.writeText(code);
+    showToast('코드 복사됨.');
+  }catch(_){ showToast('복사 실패. 수동으로 선택해주세요.'); }
 }
 
 // ─── Boot ───
