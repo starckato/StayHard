@@ -167,6 +167,59 @@
   .hwq-step:hover{border-color:var(--accent);color:var(--accent);}
   .hwq-step:active{transform:scale(.96);}
 
+  /* ── Phase 7b: 3-column 캘린더 dashboard ── */
+  .dash3{display:grid;grid-template-columns:260px 1fr 400px;min-height:calc(100vh - 56px);}
+  @media (max-width:1280px){.dash3{grid-template-columns:240px 1fr 360px;}}
+  @media (max-width:1024px){.dash3{grid-template-columns:220px 1fr;} .dash3-detail-col{display:none;}}
+  .dash3-col{border-left:1px solid var(--border);overflow-y:auto;height:calc(100vh - 56px);}
+  .dash3-col:first-child{border-left:none;}
+  .dash3-clients{padding:12px 10px;}
+  .dash3-clients-search{width:100%;padding:9px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;margin-bottom:8px;}
+  .dash3-client-row{display:flex;align-items:center;gap:8px;padding:9px 10px;border-radius:8px;cursor:pointer;margin-bottom:2px;transition:background .12s;border:1px solid transparent;}
+  .dash3-client-row:hover{background:var(--surface2);}
+  .dash3-client-row.on{background:rgba(255,77,77,0.10);border-color:rgba(255,77,77,0.32);}
+  .dash3-client-row .ed{opacity:0;font-size:11px;color:var(--text3);padding:2px 4px;background:none;border:none;cursor:pointer;}
+  .dash3-client-row:hover .ed{opacity:1;}
+  .dash3-client-name{flex:1;min-width:0;font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .dash3-client-sub{font-size:10px;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px;}
+  .dash3-cal{padding:14px 16px;}
+  .dash3-cal-empty{display:flex;align-items:center;justify-content:center;height:60vh;color:var(--text3);font-size:13px;text-align:center;padding:24px;}
+  .dash3-cal-head{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
+  .dash3-cal-title{font-family:'Archivo Black',sans-serif;font-size:18px;flex:1;letter-spacing:-.005em;}
+  .dash3-cal-nav{display:flex;gap:4px;}
+  .dash3-cal-nav button{padding:6px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text2);font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;}
+  .dash3-cal-nav button:hover{border-color:var(--accent);color:var(--accent);}
+  .dash3-cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;}
+  .dash3-cal-dow{padding:6px 4px;text-align:center;font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.06em;}
+  .dash3-cal-cell{aspect-ratio:1;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:6px;cursor:pointer;display:flex;flex-direction:column;justify-content:space-between;transition:all .12s;min-height:74px;}
+  .dash3-cal-cell:hover{border-color:var(--border2);background:var(--surface2);}
+  .dash3-cal-cell.outside{opacity:.3;}
+  .dash3-cal-cell.today{border-color:var(--accent);}
+  .dash3-cal-cell.selected{background:var(--surface2);box-shadow:inset 3px 0 0 var(--accent);}
+  .dash3-cal-cell.has-data{background:linear-gradient(135deg,rgba(255,77,77,0.04),rgba(255,107,53,0.02));}
+  .dash3-cal-num{font-size:13px;font-weight:700;color:var(--text);font-family:'DM Mono',monospace;}
+  .dash3-cal-num.today{color:var(--accent);}
+  .dash3-cal-mini{font-size:9px;color:var(--text3);font-family:'DM Mono',monospace;text-align:right;}
+  .dash3-cal-dots{display:flex;gap:3px;flex-wrap:wrap;align-items:center;margin-top:auto;}
+  .dash3-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+  .dash3-dot.pending{background:#f59e0b;}
+  .dash3-dot.in-progress{background:#38bdf8;}
+  .dash3-dot.completed{background:#34d399;}
+  .dash3-dot.skipped{background:#ef4444;}
+  .dash3-dot.meal-clean{background:#34d399;}
+  .dash3-dot.meal-red{background:#ef4444;}
+  .dash3-dot.meal-normal{background:#b5c0cc;}
+  .dash3-dot.msg{background:#a855f7;}
+  .dash3-detail{padding:14px 16px;}
+  .dash3-detail-empty{color:var(--text3);font-size:13px;text-align:center;padding:60px 20px;line-height:1.7;}
+  .dash3-detail-head{display:flex;align-items:center;gap:10px;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--border);}
+  .dash3-detail-date{font-family:'Archivo Black',sans-serif;font-size:16px;flex:1;}
+  .dash3-section-title{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;font-weight:700;margin:14px 0 8px;}
+
+  /* 헤더 토글 — v1/v2 dashboard */
+  .dash-toggle{padding:5px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;font-size:11px;color:var(--text2);cursor:pointer;font-weight:600;}
+  .dash-toggle.on{background:var(--accent);color:#fff;border-color:var(--accent);}
+
   .hidden{display:none !important;}
   .loader{padding:40px;text-align:center;color:var(--text3);font-size:13px;}
   .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--surface);border:1px solid var(--accent);padding:12px 20px;border-radius:10px;font-size:13px;font-weight:700;z-index:2000;display:none;}
@@ -244,6 +297,10 @@
     </div>
     <div class="top-spacer"></div>
     <div class="top-user">
+      <div style="display:flex;gap:4px;margin-right:8px;">
+        <button class="dash-toggle" id="dash-toggle-v1" onclick="setDashView('v1')">List</button>
+        <button class="dash-toggle on" id="dash-toggle-v2" onclick="setDashView('v2')">📅 Calendar</button>
+      </div>
       <button class="btn btn-ghost" onclick="openReferralModal()" style="font-size:12px;">동료 추천 코드</button>
       <div onclick="openTrainerSelfEdit()" style="cursor:pointer;text-align:right;" title="이름·소개 편집">
         <div class="name" id="me-name">—</div>
@@ -253,7 +310,31 @@
     </div>
   </div>
 
-  <div class="container">
+  <!-- V2: 3-column 캘린더 dashboard -->
+  <div id="view-overview-v2" class="dash3">
+    <!-- 좌: 회원 list -->
+    <div class="dash3-col dash3-clients-col">
+      <div class="dash3-clients">
+        <input type="text" id="dash3-search" class="dash3-clients-search" placeholder="회원 검색…" oninput="filterDash3Clients()" />
+        <button class="btn btn-primary" onclick="openRegisterModal()" style="width:100%;justify-content:center;margin-bottom:10px;">+ 회원 등록</button>
+        <div id="dash3-client-list"></div>
+      </div>
+    </div>
+    <!-- 중앙: 캘린더 -->
+    <div class="dash3-col dash3-cal-col">
+      <div class="dash3-cal" id="dash3-cal-wrap">
+        <div class="dash3-cal-empty">← 회원을 선택하면<br>해당 회원의 운동 캘린더가 표시됩니다</div>
+      </div>
+    </div>
+    <!-- 우: 날짜 detail -->
+    <div class="dash3-col dash3-detail-col">
+      <div class="dash3-detail" id="dash3-detail-wrap">
+        <div class="dash3-detail-empty">날짜를 선택하면<br>그 날의 운동·식단·메시지가<br>여기에 표시됩니다</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container" id="view-overview-v1" style="display:none;">
     <!-- Overview (회원 목록) -->
     <div id="view-overview">
       <div class="page-head">
@@ -593,7 +674,13 @@ async function onAuth(){
   // approved → dashboard
   document.getElementById('me-name').textContent = tr.trainer_name;
   showScreen('screen-dashboard');
-  await loadClients();
+  // 저장된 view 복원 (default v2)
+  let savedView = 'v2';
+  try{ const v = localStorage.getItem('trainerDashView'); if(v==='v1' || v==='v2') savedView = v; }catch(_){}
+  setDashView(savedView);
+  // v1 list 도 미리 로드 (toggle 즉시 반응)
+  if(savedView === 'v1') await loadClients();
+  else loadClients(); // 백그라운드 prep
 }
 
 // ─── Trainer signup (코드 기반 즉시 승인) ───
@@ -1015,8 +1102,9 @@ async function deleteAssignment(assignmentId, dateStr){
   const {error} = await sb.rpc('trainer_delete_assignment', {p_assignment_id: assignmentId});
   if(error){ showToast('삭제 실패: '+error.message); return; }
   showToast('배정 삭제됨.');
-  await loadAssignments();
+  try{ await loadAssignments(); }catch(_){}
   if(document.querySelector('#view-detail .seg button.on')?.dataset.pane==='workouts') loadWorkouts();
+  try{ _dash3InvalidateCache(); }catch(_){}
 }
 async function loadRecent(){
   const el = document.getElementById('d-recent');
@@ -1400,8 +1488,346 @@ async function doAssignWorkout(){
     showToast(`${date} 배정 완료 (${workouts.length}개 종목).`);
   }
   closeModal('modal-assign');
-  await loadAssignments();
+  try{ await loadAssignments(); }catch(_){}
   if(document.querySelector('#view-detail .seg button.on')?.dataset.pane==='workouts') loadWorkouts();
+  try{ _dash3InvalidateCache(); }catch(_){}
+}
+
+// ═══════════════════════════════════════════════
+// Phase 7b: 3-column 캘린더 dashboard (v2)
+// ═══════════════════════════════════════════════
+let _dashView = 'v2';                    // 'v1' | 'v2'
+let _dash3Clients = [];                   // overview rows + relationship_id
+let _dash3SelectedClient = null;          // {client_id, relationship_id, name, ...}
+let _dash3ViewYear = (new Date()).getFullYear();
+let _dash3ViewMonth = (new Date()).getMonth();    // 0-11
+let _dash3CalData = {};                   // date YYYY-MM-DD → row
+let _dash3SelectedDate = null;             // YYYY-MM-DD
+let _dash3CalCache = new Map();            // `${cid}|${yyyymm}` → rows
+
+function setDashView(v){
+  _dashView = v;
+  try{ localStorage.setItem('trainerDashView', v); }catch(_){}
+  document.getElementById('dash-toggle-v1').classList.toggle('on', v==='v1');
+  document.getElementById('dash-toggle-v2').classList.toggle('on', v==='v2');
+  document.getElementById('view-overview-v1').style.display = (v==='v1' ? 'block' : 'none');
+  document.getElementById('view-overview-v2').style.display = (v==='v2' ? 'grid' : 'none');
+  if(v==='v2') loadDash3();
+}
+
+async function loadDash3(){
+  // 좌측 회원 list — overview RPC 재사용
+  const {data: rows, error} = await sb.rpc('trainer_clients_overview');
+  if(error){
+    document.getElementById('dash3-client-list').innerHTML = '<div style="color:var(--red);font-size:12px;">로딩 실패: '+esc(error.message)+'</div>';
+    return;
+  }
+  _dash3Clients = rows || [];
+  renderDash3Clients();
+  // 회원 0명이면 캘린더 비움
+  if(_dash3Clients.length === 0){
+    document.getElementById('dash3-cal-wrap').innerHTML = '<div class="dash3-cal-empty">아직 회원이 없어요.<br>좌측 [+ 회원 등록] 으로 시작하세요.</div>';
+    return;
+  }
+  // 첫 회원 자동 선택 (또는 URL state)
+  const params = new URLSearchParams(location.search);
+  const urlClient = params.get('client');
+  let target = urlClient ? _dash3Clients.find(c => c.client_id === urlClient) : null;
+  if(!target) target = _dash3Clients[0];
+  if(target) selectDash3Client(target.relationship_id, target.client_id);
+  const urlDate = params.get('date');
+  if(urlDate) _dash3SelectedDate = urlDate;
+}
+
+function renderDash3Clients(){
+  const wrap = document.getElementById('dash3-client-list');
+  if(!wrap) return;
+  const q = (document.getElementById('dash3-search').value||'').trim().toLowerCase();
+  const filtered = _dash3Clients.filter(c => {
+    if(!q) return true;
+    const name = (c.nickname||'') + ' ' + (c.display_name||'') + ' ' + (c.username||'');
+    return name.toLowerCase().includes(q);
+  });
+  wrap.innerHTML = filtered.map(c => {
+    const realName = c.display_name || c.username || '—';
+    const displayName = c.nickname || realName;
+    const sub = c.nickname ? realName : '@'+(c.username||'');
+    const isSel = _dash3SelectedClient && _dash3SelectedClient.client_id === c.client_id;
+    // mini status: 오늘 숙제 진행
+    const hwTotal = c.homework_total_sets||0;
+    const hwDone = c.homework_done_sets||0;
+    const hwLabel = hwTotal>0 ? `${hwDone}/${hwTotal}` : '—';
+    const hwColor = c.homework_status==='completed'?'var(--green)':c.homework_status==='in_progress'?'#38bdf8':'#ff6b6b';
+    return `<div class="dash3-client-row ${isSel?'on':''}" onclick="selectDash3Client('${c.relationship_id}','${c.client_id}')">
+      <div style="flex:1;min-width:0;">
+        <div class="dash3-client-name">${esc(displayName)}</div>
+        <div class="dash3-client-sub">${esc(sub)}</div>
+      </div>
+      ${hwTotal>0?`<div style="font-size:10px;font-family:'DM Mono',monospace;font-weight:700;color:${hwColor};white-space:nowrap;">${hwLabel}</div>`:''}
+      <button class="ed" onclick="event.stopPropagation();openNicknameEdit('${c.relationship_id}','${esc(realName).replace(/'/g,"\\'")}','${esc(c.nickname||'').replace(/'/g,"\\'")}')" title="닉네임 편집">✎</button>
+    </div>`;
+  }).join('') || '<div style="color:var(--text3);font-size:12px;padding:14px 8px;text-align:center;">검색 결과 없음</div>';
+}
+function filterDash3Clients(){ renderDash3Clients(); }
+
+async function selectDash3Client(relId, clientId){
+  const c = _dash3Clients.find(x => x.client_id === clientId);
+  if(!c) return;
+  _dash3SelectedClient = {...c, relationship_id: relId};
+  const today = new Date();
+  _dash3ViewYear = today.getFullYear();
+  _dash3ViewMonth = today.getMonth();
+  // URL state
+  try{
+    const u = new URL(location.href);
+    u.searchParams.set('client', clientId);
+    if(_dash3SelectedDate) u.searchParams.set('date', _dash3SelectedDate);
+    history.replaceState(null, '', u.toString());
+  }catch(_){}
+  renderDash3Clients();
+  await renderDash3Calendar();
+  // 우 detail 초기화 — 오늘 자동 선택
+  const todayStr = today.toISOString().slice(0,10);
+  selectDash3Date(todayStr);
+}
+
+async function renderDash3Calendar(){
+  if(!_dash3SelectedClient) return;
+  const wrap = document.getElementById('dash3-cal-wrap');
+  const y = _dash3ViewYear, m = _dash3ViewMonth;
+  const monthLabel = `${y}.${String(m+1).padStart(2,'0')}`;
+  // calendar grid 계산: 월 1일의 요일 + 마지막 날
+  const first = new Date(y, m, 1);
+  const last = new Date(y, m+1, 0);
+  const firstDow = first.getDay(); // 0=일
+  const totalDays = last.getDate();
+  // 캐시 또는 fetch
+  const cacheKey = `${_dash3SelectedClient.client_id}|${y}-${String(m+1).padStart(2,'0')}`;
+  let calData;
+  if(_dash3CalCache.has(cacheKey)){
+    calData = _dash3CalCache.get(cacheKey);
+  } else {
+    const startStr = `${y}-${String(m+1).padStart(2,'0')}-01`;
+    const endStr = `${y}-${String(m+1).padStart(2,'0')}-${String(totalDays).padStart(2,'0')}`;
+    const {data, error} = await sb.rpc('trainer_client_calendar', {
+      p_client_id: _dash3SelectedClient.client_id,
+      p_start: startStr,
+      p_end: endStr,
+    });
+    if(error){
+      wrap.innerHTML = '<div class="dash3-cal-empty">캘린더 로딩 실패: '+esc(error.message)+'</div>';
+      return;
+    }
+    calData = data || [];
+    _dash3CalCache.set(cacheKey, calData);
+  }
+  _dash3CalData = {};
+  calData.forEach(row => { _dash3CalData[row.log_date] = row; });
+
+  // grid render
+  const todayStr = (new Date()).toISOString().slice(0,10);
+  const cells = [];
+  // 앞 padding (이전 달)
+  for(let i=0; i<firstDow; i++){
+    cells.push({outside:true, label:''});
+  }
+  for(let d=1; d<=totalDays; d++){
+    const dateStr = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    cells.push({date:dateStr, num:d, isToday:dateStr===todayStr, row:_dash3CalData[dateStr]});
+  }
+  // 뒤 padding — 7×6 = 42 칸 채움
+  while(cells.length < 42) cells.push({outside:true, label:''});
+
+  const dows = ['일','월','화','수','목','금','토'];
+  const cName = (_dash3SelectedClient.nickname || _dash3SelectedClient.display_name || _dash3SelectedClient.username || '—');
+
+  wrap.innerHTML = `
+    <div class="dash3-cal-head">
+      <div class="dash3-cal-title">${esc(cName)} · ${monthLabel}</div>
+      <div class="dash3-cal-nav">
+        <button onclick="dash3PrevMonth()">←</button>
+        <button onclick="dash3GotoToday()">오늘</button>
+        <button onclick="dash3NextMonth()">→</button>
+        <button onclick="openAssignFromDash3()" class="btn btn-primary" style="font-size:11px;padding:6px 10px;margin-left:6px;">+ 운동 배정</button>
+      </div>
+    </div>
+    <div class="dash3-cal-grid">
+      ${dows.map(d=>`<div class="dash3-cal-dow">${d}</div>`).join('')}
+      ${cells.map(c => {
+        if(c.outside) return '<div class="dash3-cal-cell outside"></div>';
+        const r = c.row || {};
+        const dots = [];
+        if(r.assignment_status){
+          dots.push(`<span class="dash3-dot ${esc(r.assignment_status)}" title="숙제: ${r.assignment_status}"></span>`);
+        }
+        if(r.meal_red>0) dots.push('<span class="dash3-dot meal-red" title="위반 식단"></span>');
+        else if(r.meal_clean>0) dots.push('<span class="dash3-dot meal-clean" title="클린 식단"></span>');
+        else if(r.meal_total>0) dots.push('<span class="dash3-dot meal-normal" title="식단 기록"></span>');
+        if(r.trainer_msg_count>0) dots.push('<span class="dash3-dot msg" title="메시지"></span>');
+        const hasData = !!r.assignment_status || (r.meal_total||0)>0 || (r.free_workout_count||0)>0;
+        const isSel = c.date === _dash3SelectedDate;
+        const cls = ['dash3-cal-cell'];
+        if(c.isToday) cls.push('today');
+        if(hasData) cls.push('has-data');
+        if(isSel) cls.push('selected');
+        const hwLabel = r.homework_total>0 ? `${r.homework_done||0}/${r.homework_total}` : '';
+        return `<div class="${cls.join(' ')}" onclick="selectDash3Date('${c.date}')">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+            <span class="dash3-cal-num ${c.isToday?'today':''}">${c.num}</span>
+            ${hwLabel?`<span class="dash3-cal-mini">${hwLabel}</span>`:''}
+          </div>
+          <div class="dash3-cal-dots">${dots.join('')}</div>
+        </div>`;
+      }).join('')}
+    </div>
+  `;
+}
+
+function dash3PrevMonth(){
+  _dash3ViewMonth--;
+  if(_dash3ViewMonth < 0){ _dash3ViewMonth = 11; _dash3ViewYear--; }
+  renderDash3Calendar();
+}
+function dash3NextMonth(){
+  _dash3ViewMonth++;
+  if(_dash3ViewMonth > 11){ _dash3ViewMonth = 0; _dash3ViewYear++; }
+  renderDash3Calendar();
+}
+function dash3GotoToday(){
+  const t = new Date();
+  _dash3ViewYear = t.getFullYear();
+  _dash3ViewMonth = t.getMonth();
+  renderDash3Calendar();
+  selectDash3Date(t.toISOString().slice(0,10));
+}
+
+async function selectDash3Date(date){
+  _dash3SelectedDate = date;
+  try{
+    const u = new URL(location.href);
+    u.searchParams.set('date', date);
+    history.replaceState(null, '', u.toString());
+  }catch(_){}
+  // grid selected highlight 갱신
+  document.querySelectorAll('.dash3-cal-cell').forEach(el=>el.classList.remove('selected'));
+  // 직접 querySelector 로 찾기 어려움 — 다시 render 가 가장 안전
+  renderDash3Calendar();
+  await renderDash3DateDetail(date);
+}
+
+async function renderDash3DateDetail(date){
+  const wrap = document.getElementById('dash3-detail-wrap');
+  if(!_dash3SelectedClient) return;
+  const cid = _dash3SelectedClient.client_id;
+  wrap.innerHTML = '<div class="loader">로딩…</div>';
+  // 그 날 daily_log + 트레이너 배정 fetch
+  const [logRes, assignsRes, msgsRes] = await Promise.all([
+    sb.from('daily_logs').select('meals,workouts,weight,water_cups').eq('user_id',cid).eq('log_date',date).maybeSingle(),
+    sb.from('workout_assignments').select('*').eq('client_id',cid).eq('trainer_id',CU.id).eq('assigned_for_date',date).neq('status','cancelled').order('created_at',{ascending:false}),
+    sb.from('trainer_messages').select('*').eq('client_id',cid).eq('trainer_id',CU.id).gte('sent_at',date+'T00:00:00').lte('sent_at',date+'T23:59:59').order('sent_at',{ascending:false}),
+  ]);
+  const log = logRes.data;
+  const assigns = assignsRes.data || [];
+  const msgs = msgsRes.data || [];
+  const meals = (log && log.meals) || [];
+  const woEntries = (log && log.workouts) || [];
+
+  let html = `<div class="dash3-detail-head">
+    <div class="dash3-detail-date">${date}</div>
+    <button class="btn btn-primary" onclick="openAssignFromDash3()" style="font-size:12px;padding:7px 12px;">+ 배정</button>
+  </div>`;
+
+  // 배정한 운동
+  html += `<div class="dash3-section-title">배정한 운동 (${assigns.length})</div>`;
+  if(assigns.length === 0){
+    html += '<div style="font-size:12px;color:var(--text3);padding:6px 0;">아직 배정 없음.</div>';
+  } else {
+    for(const a of assigns){
+      const wks = a.payload?.workouts || [];
+      const totalSets = wks.reduce((s,w)=>s+(w.sets||[]).length,0);
+      const dlEntry = woEntries.find(w => w._trainerAssignmentId === a.id);
+      const doneSets = dlEntry ? (dlEntry.exercises||[]).reduce((s,e)=>s+(e.sets||[]).filter(x=>x.done).length,0) : 0;
+      const pct = totalSets > 0 ? Math.round(doneSets/totalSets*100) : 0;
+      const color = a.status==='completed'?'#34d399':a.status==='in_progress'?'#38bdf8':a.status==='skipped'?'#ef4444':'#f59e0b';
+      const lbl = a.status==='completed'?'완료':a.status==='in_progress'?'진행 중':a.status==='skipped'?'미수행':'예정';
+      html += `<div style="background:var(--surface2);border-radius:10px;padding:10px 12px;margin-bottom:8px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+          <span style="font-size:11px;font-weight:800;color:${color};letter-spacing:.04em;">${lbl}</span>
+          <span style="flex:1;font-size:11px;font-family:'DM Mono',monospace;color:var(--text2);">${doneSets}/${totalSets} 세트</span>
+          <button onclick="editAssignment('${a.id}')" style="font-size:10px;padding:3px 8px;background:var(--surface);border:1px solid var(--border2);border-radius:5px;color:var(--text2);cursor:pointer;font-weight:700;">수정</button>
+          <button onclick="deleteAssignment('${a.id}','${date}')" style="font-size:10px;padding:3px 8px;background:rgba(255,77,77,0.10);border:1px solid rgba(255,77,77,0.32);border-radius:5px;color:#ff6b6b;cursor:pointer;font-weight:700;">삭제</button>
+        </div>
+        <div style="height:4px;background:rgba(255,255,255,0.06);border-radius:999px;overflow:hidden;margin-bottom:6px;">
+          <div style="height:100%;width:${pct}%;background:${color};"></div>
+        </div>
+        <div style="font-size:11px;color:var(--text3);line-height:1.5;">${wks.slice(0,4).map(w=>esc(w.name)).join(' · ')}${wks.length>4?' +'+(wks.length-4):''}</div>
+      </div>`;
+    }
+  }
+
+  // 식단
+  html += `<div class="dash3-section-title">식단 (${meals.length}끼)</div>`;
+  if(meals.length === 0){
+    html += '<div style="font-size:12px;color:var(--text3);padding:6px 0;">기록 없음.</div>';
+  } else {
+    html += '<div style="display:flex;flex-wrap:wrap;gap:6px;">';
+    for(const m of meals){
+      const pillCls = m.type==='green'?'pill-green':m.type==='red'?'pill-red':m.category==='alcohol'?'pill-red':'pill-normal';
+      const pillTxt = m.type==='green'?'클린':m.type==='red'?'금지':m.category==='alcohol'?'술':'일반';
+      let photoEl = '<div style="width:48px;height:48px;background:var(--surface);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:18px;">🍽️</div>';
+      if(m.photo){
+        if(m.photo.startsWith('data:')) photoEl = `<img src="${esc(m.photo)}" style="width:48px;height:48px;border-radius:6px;object-fit:cover;" />`;
+        else { const p = _mealPhotoPath(m.photo); if(p) photoEl = `<img data-meal-photo="${esc(p)}" style="width:48px;height:48px;border-radius:6px;object-fit:cover;background:var(--surface);opacity:0.4;transition:opacity .25s;" />`; }
+      }
+      html += `<div style="display:flex;flex-direction:column;align-items:center;gap:3px;">${photoEl}<span class="pill ${pillCls}" style="font-size:9px;">${pillTxt}</span><span style="font-size:9px;color:var(--text3);max-width:48px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(m.time||m.category||'')}</span></div>`;
+    }
+    html += '</div>';
+  }
+
+  // 메시지
+  html += `<div class="dash3-section-title">메시지 (${msgs.length})</div>`;
+  if(msgs.length === 0){
+    html += `<div style="font-size:12px;color:var(--text3);padding:6px 0;">발송 없음. <a href="#" onclick="event.preventDefault();openMessageModal();" style="color:var(--accent);">메시지 보내기</a></div>`;
+  } else {
+    for(const msg of msgs){
+      const presetLbl = msg.preset_id ? (PRESETS[msg.preset_id]?.label||msg.preset_id) : '커스텀';
+      html += `<div style="background:var(--surface2);border-radius:8px;padding:8px 12px;margin-bottom:6px;">
+        <div style="font-size:10px;color:var(--text3);margin-bottom:3px;">[${presetLbl}] ${msg.read_at?'읽음':'안읽음'}</div>
+        <div style="font-size:12px;line-height:1.5;">${esc(msg.body)}</div>
+      </div>`;
+    }
+    html += `<button onclick="openMessageModal()" class="btn btn-ghost" style="width:100%;margin-top:6px;font-size:11px;justify-content:center;">+ 메시지 보내기</button>`;
+  }
+
+  wrap.innerHTML = html;
+  try{ await _hydrateMealPhotos(); }catch(_){}
+
+  // 우 패널이 열려있으니 CURRENT_CLIENT 도 set (메시지 modal 등에서 사용)
+  CURRENT_CLIENT = cid;
+  CURRENT_RELATIONSHIP = _dash3SelectedClient.relationship_id;
+}
+
+function openAssignFromDash3(){
+  if(!_dash3SelectedClient){ showToast('먼저 회원 선택.'); return; }
+  CURRENT_CLIENT = _dash3SelectedClient.client_id;
+  CURRENT_RELATIONSHIP = _dash3SelectedClient.relationship_id;
+  // d-name 도 갱신 — 운동 빌더 modal title 에 사용됨
+  const cName = (_dash3SelectedClient.nickname || _dash3SelectedClient.display_name || _dash3SelectedClient.username || '—');
+  const dn = document.getElementById('d-name'); if(dn) dn.textContent = cName;
+  openAssignModal();
+  // selected date 가 있으면 그 날짜로 default
+  if(_dash3SelectedDate){
+    document.getElementById('assign-date').value = _dash3SelectedDate;
+  }
+}
+
+// 운동 배정 / 삭제 후 캘린더 invalidate — 외부에서 호출
+function _dash3InvalidateCache(){
+  _dash3CalCache.clear();
+  if(_dashView==='v2' && _dash3SelectedClient){
+    renderDash3Calendar();
+    if(_dash3SelectedDate) renderDash3DateDetail(_dash3SelectedDate);
+  }
 }
 
 // ─── 트레이너 본인 정보 편집 ───
