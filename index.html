@@ -11056,28 +11056,51 @@ let _hwsExercises = [];      // log.workouts 의 entries 중 같은 _trainerAssi
 let _hwsExIdx = 0;            // 현재 진행 종목 index in _hwsExercises
 
 function openHomeworkStart(idx){
+  // breadcrumb toasts — iOS PWA 디버그 (실패 단계 식별)
+  const dbg = (s) => { try{ console.log('[hw]',s); }catch(_){} };
   try{
-    const allWorkouts = log.workouts||[];
+    dbg('1:enter idx='+idx);
+    const allWorkouts = log && log.workouts ? log.workouts : [];
+    if(!allWorkouts.length){ showToast('운동 데이터 없음. 새로고침'); return; }
     let w = allWorkouts[idx];
-    // idx 가 무효하거나 매핑 깨졌을 때 — assignmentId 재검색 fallback
-    if(!w){ showToast('운동을 찾을 수 없어요. 새로고침 해보세요.'); return; }
+    if(!w){
+      dbg('2:no w at idx, search fallback');
+      // idx 매핑 깨졌으면 fallback — 첫 미완료 trainer 운동 사용
+      w = allWorkouts.find(x => x && x._trainerAssignmentId && x.status !== 'done');
+      if(!w){ showToast('숙제를 찾을 수 없어요. 새로고침'); return; }
+    }
     if(!w._trainerAssignmentId){ showToast('숙제 정보 없음.'); return; }
     const sets = Array.isArray(w.sets) ? w.sets : [];
     if(sets.length === 0){ showToast('세트가 비어있어요.'); return; }
-    // 같은 assignment 의 모든 종목 모음 (status≠done)
+    dbg('3:found w='+w.name);
     _hwsAssignmentId = w._trainerAssignmentId;
     _hwsExercises = allWorkouts.filter(x => x && x._trainerAssignmentId === _hwsAssignmentId && x.status !== 'done');
     if(_hwsExercises.length === 0){ _hwsExercises = [w]; }
     _hwsExIdx = Math.max(0, _hwsExercises.indexOf(w));
     if(w.status !== 'in_progress'){ w.status = 'in_progress'; }
-    renderHomeworkSession();
+    dbg('4:render session');
+    try{ renderHomeworkSession(); }catch(rerr){
+      dbg('4-fail:'+rerr.message);
+      showToast('렌더 실패: '+rerr.message);
+      return;
+    }
     const modal = document.getElementById('homework-session-modal');
-    if(!modal){ showToast('모달 element 없음. 새로고침 필요.'); return; }
-    modal.style.display = 'flex';
+    if(!modal){
+      dbg('5:no modal');
+      showToast('모달 element 없음. 새로고침 필요.');
+      return;
+    }
+    dbg('5:show modal');
+    // Force show — class + inline style 둘 다, !important 효과
+    modal.style.cssText = 'display:flex !important;position:fixed;top:0;left:0;right:0;bottom:0;background:var(--bg);z-index:9999;flex-direction:column;';
+    modal.classList.add('hw-modal-open');
+    // Force reflow + body lock
+    void modal.offsetHeight;
     document.body.style.overflow = 'hidden';
+    dbg('6:done');
   }catch(e){
     console.warn('[homework-start]', e);
-    document.body.style.overflow = ''; // 안전 — 스크롤 잠김 해제
+    document.body.style.overflow = '';
     showToast('숙제 시작 실패: '+(e.message||e));
   }
 }
@@ -11085,7 +11108,10 @@ function openHomeworkStart(idx){
 function closeHomeworkSession(){
   try{
     const modal = document.getElementById('homework-session-modal');
-    if(modal) modal.style.display = 'none';
+    if(modal){
+      modal.style.cssText = 'display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:var(--bg);z-index:560;flex-direction:column;';
+      modal.classList.remove('hw-modal-open');
+    }
   }catch(_){}
   document.body.style.overflow = ''; // 항상 release
   try{ saveNow(); }catch(e){}
