@@ -97,7 +97,7 @@
 </head>
 <body>
 <h1>티어별 캐릭터 애니메이션 프리뷰</h1>
-<div class="sub">전 6 티어 · 액션 5개씩 (idle / walk / exercise / food / special). Sheet 규격 2172×724 (3 frames × 724×724).</div>
+<div class="sub">전 6 티어 · 액션 5개씩 (idle / walk / exercise / food / special). Sheet 규격 2172×724 (6 frames × 362×724).</div>
 <div class="nav">
   <a href="/">앱으로</a>
   <a href="/trainer">트레이너</a>
@@ -105,9 +105,10 @@
 <div id="root" class="loading">스프라이트 로드 중…</div>
 
 <script>
-const SHEET_FW = 724;
+// Sheet 규격: 2172×724, 6 frames × 362×724 (가로 6 프레임, 인물 portrait).
+const SHEET_FW = 362;
 const SHEET_FH = 724;
-const SHEET_FRAMES = 3;
+const SHEET_FRAMES = 6;
 
 // tier idx → name + sheets (sprites.js / tier.js 와 동일 매핑)
 const TIERS_PREVIEW = [
