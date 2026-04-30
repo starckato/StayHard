@@ -29,40 +29,105 @@ export function getTier(score) {
 /** Supabase public storage base for tier character/room art. */
 export const ASSET_BASE = 'https://uvaosxhsjscigheyymus.supabase.co/storage/v1/object/public/game-assets';
 
-/** Per-tier-index asset URLs.
- * 유저 folder 명명:
- *   tier1/ = 방관자 (index 0)
- *   tier2/ = 각성자 (index 1) — hamburger throwing
- *   tier3/ = 저항자 (index 2) — walking (gym-ready, tank top)
- * 각성자 (index 1) 은 더 이상 tier 1 art 와 공유하지 않음 — 자체 로컬 art.
+/**
+ * Per-tier sprite sheet asset URLs.
+ *
+ * Sheet layout (모든 sheet 동일):
+ *   2172×724 px, 3 frames × 724×724 (가로 3프레임).
+ *
+ * 각 tier 5 actions:
+ *   idle      : 기본 호흡/대기
+ *   walk      : 이동
+ *   exercise  : 메인 운동 (티어별 상징)
+ *   food      : 식단 (먹기/던지기)
+ *   special   : 티어별 특수 동작 (잠/플란치/회복 등)
+ *
+ * 폴더 매핑:
+ *   tier1/ = 방관자 (idx 0)
+ *   tier2/ = 각성자 (idx 1)
+ *   tier3/ = 저항자 (idx 2)
+ *   tier4/ = 수련자 (idx 3)
+ *   tier5/ = 지배자 (idx 4)
+ *   tier6/ = 기록자 (idx 5)
  */
+export const SHEET_FRAMES = 3;
+export const SHEET_FW = 724;
+export const SHEET_FH = 724;
+
 export const TIER_ASSETS = {
-  0: { char: `${ASSET_BASE}/GymRat_Tier1_character.png`, room: `${ASSET_BASE}/GymRat_Tier1_room.png` },
+  0: {
+    name: '방관자',
+    sheets: {
+      idle:     '/assets/tier1/Tier1_cha_idle_breathing_sheet.png',
+      walk:     '/assets/tier1/Tier1_cha_walk_sheet.png',
+      exercise: '/assets/tier1/Tier1_cha_dumbbell_sheet.png',
+      food:     '/assets/tier1/Tier1_cha_eat_hamburger_sheet.png',
+      special:  '/assets/tier1/Tier1_cha_sleep_sheet.png',
+    },
+    room: `${ASSET_BASE}/GymRat_Tier1_room.png`,
+    // 옛 정적 char (fallback / Supabase legacy)
+    char: `${ASSET_BASE}/GymRat_Tier1_character.png`,
+  },
   1: {
-    // 각성자 (200-599) — 햄버거 던지기 4프레임. 2026-04-24 assets/tier2 → index 1 로 재매핑.
-    char: '/assets/tier2/Tier2_cha_nobg.png',
+    name: '각성자',
+    sheets: {
+      idle:     '/assets/tier2/Tier2_cha_idle_breathing_sheet.png',
+      walk:     '/assets/tier2/Tier2_cha_walk_sheet.png',
+      exercise: '/assets/tier2/Tier2_cha_bench_press_sheet.png',
+      food:     '/assets/tier2/Tier2_cha_throw_hamburger_sheet.png',
+      special:  '/assets/tier2/Tier2_cha_pushup_sheet.png',
+    },
     room: '/assets/tier2/tier2_room.png',
-    throwFramesSrc: [
-      '/assets/tier2/Tier2_cha_throwingBurgur1.png',
-      '/assets/tier2/Tier2_cha_throwingBurgur2.png',
-      '/assets/tier2/Tier2_cha_throwingBurgur3.png',
-      '/assets/tier2/Tier2_cha_throwingBurgur4.png',
-    ],
+    char: '/assets/tier2/Tier2_cha_nobg.png',
   },
   2: {
-    // 저항자 (600-1499) — walking 4프레임. 2026-04-24 assets/tier3 → index 2 로 재매핑.
+    name: '저항자',
+    sheets: {
+      idle:     '/assets/tier3/Tier3_cha_idle_breathing_sheet.png',
+      walk:     '/assets/tier3/Tier3_cha_walk_sheet.png',
+      exercise: '/assets/tier3/Tier3_cha_squat_sheet.png',
+      food:     '/assets/tier3/Tier3_cha_burpee_sheet.png',
+      special:  '/assets/tier3/Tier3_cha_planche_sheet.png',
+    },
+    room: `${ASSET_BASE}/GymRat_Tier3_room.png`,
     char: '/assets/tier3/Tier3_cha_nobg.png',
-    room: `${ASSET_BASE}/GymRat_Tier3_room.png`, // 룸은 유저가 아직 안 줌 — supabase 유지
-    walkFramesSrc: [
-      '/assets/tier3/Tier3_cha_walking1.png',
-      '/assets/tier3/Tier3_cha_walking2.png',
-      '/assets/tier3/Tier3_cha_walking3.png',
-      '/assets/tier3/Tier3_cha_walking4.png',
-    ],
   },
-  3: { char: `${ASSET_BASE}/GymRat_Tier3_character.png`, room: `${ASSET_BASE}/GymRat_Tier3_room.png` },
-  4: { char: `${ASSET_BASE}/GymRat_Tier4_character.png`, room: `${ASSET_BASE}/GymRat_Tier4_room.png` },
-  5: { char: `${ASSET_BASE}/GymRat_Tier4_character.png`, room: `${ASSET_BASE}/GymRat_Tier4_room.png` }
+  3: {
+    name: '수련자',
+    sheets: {
+      idle:     '/assets/tier4/Tier4_cha_idle_breath_sheet.png',
+      walk:     '/assets/tier4/Tier4_cha_walk_sheet.png',
+      exercise: '/assets/tier4/Tier4_cha_power_punch_sheet.png',
+      food:     '/assets/tier4/Tier4_cha_guard_block_sheet.png',
+      special:  '/assets/tier4/Tier4_cha_victory_flex_sheet.png',
+    },
+    room: `${ASSET_BASE}/GymRat_Tier4_room.png`,
+    char: `${ASSET_BASE}/GymRat_Tier4_character.png`,
+  },
+  4: {
+    name: '지배자',
+    sheets: {
+      idle:     '/assets/tier5/Tier5_cha_idle_focus_sheet.png',
+      walk:     '/assets/tier5/Tier5_cha_walk_champion_sheet.png',
+      exercise: '/assets/tier5/Tier5_cha_combo_punch_sheet.png',
+      food:     '/assets/tier5/Tier5_cha_iron_will_charge_sheet.png',
+      special:  '/assets/tier5/Tier5_cha_roar_flex_sheet.png',
+    },
+    room: `${ASSET_BASE}/GymRat_Tier4_room.png`,
+    char: `${ASSET_BASE}/GymRat_Tier4_character.png`,
+  },
+  5: {
+    name: '기록자',
+    sheets: {
+      idle:     '/assets/tier6/Tier6_cha_idle_legend_sheet.png',
+      walk:     '/assets/tier6/Tier6_cha_heavy_walk_sheet.png',
+      exercise: '/assets/tier6/Tier6_cha_ground_slam_sheet.png',
+      food:     '/assets/tier6/Tier6_cha_golden_power_up_sheet.png',
+      special:  '/assets/tier6/Tier6_cha_champion_pose_sheet.png',
+    },
+    room: `${ASSET_BASE}/GymRat_Tier4_room.png`,
+    char: `${ASSET_BASE}/GymRat_Tier4_character.png`,
+  },
 };
 
 /**
