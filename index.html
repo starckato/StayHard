@@ -28,7 +28,7 @@
      so window globals (dkey, normKey, ...) are set before inline code runs.
      Query version bumps cache when bundle content changes. Bump manually or
      via build script when shipping a new bundle. See MIGRATION_PLAN.md. -->
-<script src="/dist/app.js?v=20260425ad"></script>
+<script src="/dist/app.js?v=20260430cardio-penalty"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Archivo+Black&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -1828,6 +1828,9 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
     <!-- ═══ 홈 하단 알림/미션 블록 — 입력이 더 중요하므로 아래로 배치 ═══ -->
     <div class="home-promo-block" style="margin-top:14px;">
 
+      <!-- 트레이너 등록 요청 인박스 — pending 요청 있을 때만 노출 -->
+      <div id="trainer-req-inbox" class="s-card" style="display:none;margin:0 14px 10px;padding:14px 14px 12px;background:linear-gradient(135deg,rgba(255,77,77,0.10) 0%,rgba(255,107,53,0.05) 100%);border:1.5px solid rgba(255,77,77,0.32);"></div>
+
       <!-- 첫 주 미션 — 가입 후 7일간 노출. renderFirstWeekCard() 가 상태 판별 + 숨김 처리 -->
       <div id="first-week-card" class="s-card" style="display:none;margin:0 14px 10px;padding:14px 14px 12px;background:linear-gradient(135deg,rgba(255,77,77,0.08) 0%,rgba(255,107,53,0.04) 100%);border:1px solid rgba(255,77,77,0.22);">
         <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px;">
@@ -2580,29 +2583,45 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
   </div>
 
   <!-- SESSION SUMMARY MODAL -->
-  <!-- 트레이너 숙제 세션 모달 — 종목별 세트 진행 + 완료 처리 -->
-  <div id="homework-session-modal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:var(--bg);z-index:560;flex-direction:column;">
-    <!-- Header -->
-    <div style="display:flex;align-items:center;gap:10px;padding:52px 18px 14px;border-bottom:1px solid var(--border);flex-shrink:0;">
-      <button onclick="closeHomeworkSession()" style="background:none;border:none;color:var(--text2);font-size:22px;cursor:pointer;padding:0;touch-action:manipulation;">←</button>
-      <div style="flex:1;">
-        <div style="font-size:13px;color:var(--accent);font-weight:800;letter-spacing:.05em;">오늘의 운동 숙제</div>
-        <div style="font-size:17px;font-weight:700;margin-top:2px;" id="hws-name">—</div>
-        <div style="font-size:11px;color:var(--text3);margin-top:2px;" id="hws-progress">—</div>
+  <!-- 유산소 징역 복역 처리 모달 -->
+  <div id="cardio-penalty-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:600;align-items:flex-end;justify-content:center;padding:0;">
+    <div style="background:var(--surface);border-top-left-radius:18px;border-top-right-radius:18px;border-top:1.5px solid rgba(255,77,77,.4);padding:20px 18px 32px;max-width:480px;width:100%;max-height:88vh;overflow-y:auto;">
+      <div style="width:36px;height:4px;background:var(--border2);border-radius:4px;margin:-10px auto 14px;"></div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+        <div style="width:36px;height:36px;border-radius:9px;background:rgba(255,77,77,0.32);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">⏱</div>
+        <div style="flex:1;">
+          <div style="font-family:'Noto Serif KR',serif;font-size:17px;font-weight:700;letter-spacing:-.005em;">유산소 징역</div>
+          <div id="cpm-sub" style="font-size:11px;color:var(--text3);margin-top:2px;">—</div>
+        </div>
       </div>
-    </div>
-    <!-- 진척 바 -->
-    <div style="height:3px;background:var(--surface2);flex-shrink:0;">
-      <div id="hws-progress-fill" style="height:100%;background:linear-gradient(90deg,#ff4d4d,#ff6b35);transition:width .3s;"></div>
-    </div>
-    <!-- Body — 현재 종목 + 세트 list -->
-    <div style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:16px;">
-      <div id="hws-body"></div>
-    </div>
-    <!-- Footer — 다음/완료 -->
-    <div style="display:flex;gap:8px;padding:14px 16px;border-top:1px solid var(--border);flex-shrink:0;background:var(--surface);">
-      <button onclick="skipHomeworkExercise()" id="hws-skip-btn" style="flex:0 0 auto;padding:14px 18px;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;color:var(--text2);font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">건너뛰기</button>
-      <button onclick="completeHomeworkExercise()" id="hws-next-btn" style="flex:1;padding:14px;background:linear-gradient(135deg,#ff4d4d,#ff6b35);border:none;border-radius:10px;color:#fff;font-size:14px;font-weight:800;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;letter-spacing:-.005em;">다음 종목</button>
+
+      <div id="cpm-info" style="background:var(--surface2);border-radius:10px;padding:10px 12px;margin-bottom:14px;">
+        <div id="cpm-info-line1" style="font-size:13px;color:var(--text2);"></div>
+        <div id="cpm-info-line2" style="font-size:12px;color:var(--text);margin-top:6px;line-height:1.5;display:none;"></div>
+      </div>
+
+      <!-- 운동 종류 (트레이너가 '자유' 부여 시 회원이 선택) -->
+      <div id="cpm-type-section" style="display:none;margin-bottom:14px;">
+        <div style="font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;">실제 한 운동</div>
+        <div id="cpm-type-chips" style="display:flex;gap:5px;flex-wrap:wrap;"></div>
+      </div>
+
+      <!-- 실제 한 시간 -->
+      <div style="margin-bottom:16px;">
+        <div style="font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;">실제 한 시간</div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <input id="cpm-actual-min" type="number" min="0" max="240" style="flex:1;padding:11px;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;color:var(--text);font-size:18px;font-family:'DM Mono',monospace;font-weight:700;text-align:center;" />
+          <span style="font-size:13px;color:var(--text3);">분</span>
+        </div>
+        <div style="font-size:10px;color:var(--text3);margin-top:5px;">부여받은 시간이 default. 적게 했어도 입력 가능.</div>
+      </div>
+
+      <!-- 결과 버튼 — 복역 완료 / 탈주 -->
+      <div style="display:flex;gap:8px;">
+        <button onclick="cpmRespond('escaped')" style="flex:1;padding:14px;background:var(--surface2);border:1px solid var(--border2);border-radius:11px;color:var(--text2);font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">🏃 탈주</button>
+        <button onclick="cpmRespond('completed')" style="flex:2;padding:14px;background:linear-gradient(135deg,#ff4d4d,#ff6b35);border:none;border-radius:11px;color:#fff;font-size:14px;font-weight:800;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:-.005em;touch-action:manipulation;">⏱ 복역 완료</button>
+      </div>
+      <button onclick="closeCardioPenaltyModal()" style="width:100%;margin-top:10px;padding:10px;background:none;border:none;color:var(--text3);font-size:12px;cursor:pointer;">취소</button>
     </div>
   </div>
 
@@ -4478,7 +4497,81 @@ async function wsSaveRoutineFromSheet(exForRoutine){
   }
 }
 
+// ═══════════════════════════════════════════════
+// 트레이너 등록 요청 인박스 (회원이 받은 pending 요청)
+// ═══════════════════════════════════════════════
+let _trainerReqInboxLastFetch = 0;
+async function renderTrainerRequestInbox(force){
+  const wrap = document.getElementById('trainer-req-inbox');
+  if(!wrap || !CU) return;
+  // 5분에 한 번만 fetch (force 시 무시)
+  const now = Date.now();
+  if(!force && now - _trainerReqInboxLastFetch < 300000 && wrap.dataset.loaded === '1') return;
+  try{
+    const {data, error} = await sb.rpc('client_list_pending_requests');
+    if(error){ console.warn('[req-inbox]', error); wrap.style.display='none'; return; }
+    _trainerReqInboxLastFetch = now;
+    wrap.dataset.loaded = '1';
+    if(!data || data.length === 0){ wrap.style.display='none'; wrap.innerHTML=''; return; }
+    wrap.style.display = 'block';
+    wrap.innerHTML = data.map(r => {
+      const tName = esc(r.trainer_name || '트레이너');
+      const tBio = r.trainer_bio ? `<div style="font-size:11px;color:var(--text2);margin-top:3px;line-height:1.5;">${esc(r.trainer_bio)}</div>` : '';
+      const tMsg = r.trainer_message ? `<div style="font-size:12px;color:var(--text);margin-top:8px;padding:8px 10px;background:rgba(255,255,255,0.04);border-left:2px solid var(--accent);border-radius:4px;line-height:1.5;">"${esc(r.trainer_message)}"</div>` : '';
+      return `<div style="margin-bottom:10px;">
+        <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:8px;">
+          <div style="width:32px;height:32px;border-radius:8px;background:rgba(255,77,77,0.18);display:flex;align-items:center;justify-content:center;flex-shrink:0;">🏋️</div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:11px;color:var(--accent);font-weight:800;letter-spacing:.04em;text-transform:uppercase;">트레이너 등록 요청</div>
+            <div style="font-size:14px;font-weight:700;margin-top:2px;letter-spacing:-.005em;">${tName} 님이 회원 등록 요청</div>
+            ${tBio}
+          </div>
+        </div>
+        ${tMsg}
+        <div style="display:flex;gap:8px;margin-top:10px;">
+          <button onclick="respondTrainerRequest('${r.request_id}',true,'${tName.replace(/'/g,"\\'")}')" style="flex:1;padding:11px;background:linear-gradient(135deg,#ff4d4d,#ff6b35);border:none;border-radius:10px;color:#fff;font-size:13px;font-weight:800;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">수락 → 트레이너 연결</button>
+          <button onclick="respondTrainerRequest('${r.request_id}',false,'${tName.replace(/'/g,"\\'")}')" style="padding:11px 14px;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;color:var(--text2);font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">거절</button>
+        </div>
+      </div>`;
+    }).join('');
+  }catch(e){ console.warn('[req-inbox]', e); wrap.style.display='none'; }
+}
+
+async function respondTrainerRequest(requestId, accept, trainerName){
+  if(accept){
+    if(!confirm(`${trainerName} 님과 트레이너 연결을 수락할까?\n수락하면 운동·식단·체중 기록이 자동으로 트레이너에게 공유돼.`)) return;
+  } else {
+    if(!confirm(`${trainerName} 님의 등록 요청을 거절할까?`)) return;
+  }
+  try{
+    const {error} = await sb.rpc('client_respond_relationship_request', {
+      p_request_id: requestId,
+      p_accept: !!accept
+    });
+    if(error){ showToast('실패: '+error.message); return; }
+    showToast(accept ? `✓ ${trainerName} 연결됨` : '거절됨');
+    renderTrainerRequestInbox(true);
+    if(accept){
+      // 활성 트레이너 인박스 비울 때 — 카드 한 번 더 갱신
+      try{ await loadLog(TODAY, true); renderRoutine(); }catch(_){}
+    }
+  }catch(e){ showToast('실패: '+(e.message||e)); }
+}
+
+// 트레이너 운동별 메모 캐시 (세션 단위)
+let _wsTrainerNotes = {};   // { exerciseName: bodyText }
+async function _loadTrainerExerciseNotes(){
+  _wsTrainerNotes = {};
+  if(!CU) return;
+  try{
+    const {data, error} = await sb.rpc('client_get_exercise_notes', {p_exercise_name: null});
+    if(error){ console.warn('[trainer-notes]', error); return; }
+    (data||[]).forEach(n => { _wsTrainerNotes[n.exercise_name] = n.body; });
+  }catch(e){ console.warn('[trainer-notes]', e); }
+}
+
 function openWorkoutSession(prefillExercises){
+  _loadTrainerExerciseNotes(); // 백그라운드 fetch (renderSession 가 캐시 채우기 전 fallback OK)
   tipWorkout();
   setTimeout(showWorkoutGuide,500);
   currentSession=prefillExercises||[];
@@ -4507,6 +4600,7 @@ function closeSession(){
     document.getElementById('workout-session-overlay').classList.remove('open');
     document.body.style.overflow='';
     _wsStopTimer();
+    _editingHomeworkAssignmentId=null;_editingHomeworkSessionName=null;
     return;
   }
   const doneSets=currentSession.reduce((t,ex)=>t+ex.sets.filter(s=>s.done).length,0);
@@ -4516,6 +4610,8 @@ function closeSession(){
       document.body.style.overflow='';
       _wsStopTimer();
       clearInterval(_wsRestTimer);
+      _editingHomeworkAssignmentId=null;_editingHomeworkSessionName=null;
+      editingSessionIdx=null;
     }
     return;
   }
@@ -4761,11 +4857,22 @@ function renderSession(){
   const allDone=ex.sets.every(s=>s.done);
   const isLastEx=ei>=currentSession.length-1;
 
+  // 트레이너 자세 메모 (이 운동에 대해 부여된 게 있으면 노란 박스로 표시)
+  const trainerNote = _wsTrainerNotes[ex.name];
+  const trainerNoteHtml = trainerNote ? `<div style="background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.32);border-radius:8px;padding:8px 10px;margin-bottom:8px;display:flex;gap:8px;align-items:flex-start;">
+    <div style="font-size:13px;flex-shrink:0;">📌</div>
+    <div style="flex:1;min-width:0;">
+      <div style="font-size:9px;color:#f59e0b;font-weight:800;text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px;">트레이너 메모</div>
+      <div style="font-size:12px;color:var(--text);line-height:1.5;">${esc(trainerNote)}</div>
+    </div>
+  </div>` : '';
+
   body.innerHTML=`
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
       <div style="display:flex;align-items:center;gap:10px;font-size:15px;font-weight:700;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${exIcon(ex.name,48)} ${ex.name}</div>
       <div onclick="removeExercise(${ei})" style="width:28px;height:28px;background:var(--red-bg);border:1px solid var(--red-bd);border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;margin-left:8px;"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div>
     </div>
+    ${trainerNoteHtml}
     ${isStr?volHtml:''}
     <div style="display:flex;gap:6px;margin-bottom:4px;padding-bottom:2px;border-bottom:1px solid var(--border);">
       <div style="width:18px;"></div>
@@ -6088,6 +6195,8 @@ async function onLogin(user){
       window.sh.friends.startRealtimeNudges(user.id, document.getElementById('fr-unread-badge'));
     }
   }catch(e){console.warn('[friends] realtime start failed',e);}
+  // Trainer realtime: 트레이너가 daily_logs 의 본인 row 변경 (운동 배정/유산소 징역 등) 시 즉시 갱신
+  try{ startTrainerRealtimeSync(user.id); }catch(e){console.warn('[trainer-realtime]', e);}
   // 네이티브 푸시 등록 — iOS/Android 만 실행. 웹은 no-op. push_tokens upsert 포함.
   try{
     if(window.sh&&window.sh.notifications&&typeof window.sh.notifications.registerForPush==='function'){
@@ -9297,7 +9406,7 @@ function scrollToSection(s){
   const el=document.getElementById(map[s]);
   if(el)el.scrollIntoView({behavior:'smooth',block:'center'});
 }
-function renderRoutine(){try{recomputeCubesHook(null,{silent:true});}catch(e){}renderCharCard();renderSummaryCard();renderWeight();renderMeals();renderCheatBadge();renderWater();renderWorkouts();renderMandatory();renderTargets();updateHeaderStatus();revealStatusBand();try{renderFirstWeekCard();}catch(e){console.warn('[fw-card]',e);}try{renderInviteCard();}catch(e){console.warn('[invite-card]',e);}try{renderDay3ChallengeNudge();}catch(e){console.warn('[d3-nudge]',e);}try{renderWeeklyFeatureRibbon();}catch(e){console.warn('[wf-ribbon]',e);}try{if(typeof window.buildHeatmapGrid==='function')window.buildHeatmapGrid();}catch(e){}try{renderCardCubes();}catch(e){console.warn('[card-cubes]',e);}try{arrangePromos();}catch(e){console.warn('[promo-arrange]',e);}try{checkOptInRequest();}catch(e){console.warn('[opt-in]',e);}}
+function renderRoutine(){try{recomputeCubesHook(null,{silent:true});}catch(e){}renderCharCard();renderSummaryCard();renderWeight();renderMeals();renderCheatBadge();renderWater();renderWorkouts();renderMandatory();renderTargets();updateHeaderStatus();revealStatusBand();try{renderFirstWeekCard();}catch(e){console.warn('[fw-card]',e);}try{renderInviteCard();}catch(e){console.warn('[invite-card]',e);}try{renderDay3ChallengeNudge();}catch(e){console.warn('[d3-nudge]',e);}try{renderWeeklyFeatureRibbon();}catch(e){console.warn('[wf-ribbon]',e);}try{if(typeof window.buildHeatmapGrid==='function')window.buildHeatmapGrid();}catch(e){}try{renderCardCubes();}catch(e){console.warn('[card-cubes]',e);}try{arrangePromos();}catch(e){console.warn('[promo-arrange]',e);}try{checkOptInRequest();}catch(e){console.warn('[opt-in]',e);}try{renderTrainerRequestInbox();}catch(e){console.warn('[trainer-req-inbox]',e);}}
 
 // ── Priority gate for promo/notification cards ─────────────────────
 // Each existing render function (renderFirstWeekCard, renderInviteCard,
@@ -11061,267 +11170,80 @@ function renderHomeworkRows(homework){
 })();
 
 // ─────────────────────────────────────────────────
-// 숙제 세션 진행 — Phase 3
+// 숙제 세션 진행 — 기존 운동 모달(workout-session-overlay) 재사용
 // ─────────────────────────────────────────────────
-// state: 현재 진행 중인 assignment 의 모든 종목 + 현재 종목 idx
-let _hwsAssignmentId = null;
-let _hwsExIdx = 0;            // 현재 진행 종목 index in _hwsExerciseList
+// 숙제 세션은 정식 헬스 세션과 동일한 UI 사용. 차이점:
+//   1) currentSession 이 log.workouts[idx] 의 trainer-assigned entry 로부터 prefill
+//   2) finishSession 에서 _editingHomeworkAssignmentId 분기로 assignment 업데이트 + promote 모달
+let _hwsAssignmentId = null;          // 현재 promote 대상 assignment id (closeHomeworkPromote 에서 사용)
+let _hwsExerciseList = [];            // promote 모달이 default name / 저장 routine 빌드에 사용
+let _editingHomeworkAssignmentId = null;  // 편집 중인 숙제 assignment id (finishSession 분기 키)
+let _editingHomeworkSessionName = null;   // 원본 sessionName 보존 ("오늘의 운동 숙제")
 
-// Homework session state — nested gym session 구조 우선
-let _hwsWorkout = null;        // log.workouts 의 1 entry (gym session)
-let _hwsExerciseList = [];     // workout.exercises[] (nested) 또는 [workout] (flat backward compat)
 function openHomeworkStart(idx){
-  const dbg = (s) => { try{ console.log('[hw]',s); }catch(_){} };
   try{
-    dbg('1:enter idx='+idx);
     const allWorkouts = log && log.workouts ? log.workouts : [];
     if(!allWorkouts.length){ showToast('운동 데이터 없음. 새로고침'); return; }
     let w = allWorkouts[idx];
     if(!w){
       w = allWorkouts.find(x => x && x._trainerAssignmentId && x.status !== 'done');
       if(!w){ showToast('숙제를 찾을 수 없어요. 새로고침'); return; }
+      idx = allWorkouts.indexOf(w);
     }
     if(!w._trainerAssignmentId){ showToast('숙제 정보 없음.'); return; }
+    // ⏱ 유산소 징역이면 일반 운동 모달 대신 복역 처리 모달로 라우팅 (안전망)
+    if(w._isPenalty || w.sessionName === '유산소 징역'){
+      try{ openCardioPenaltyModal(idx); }catch(e){ console.warn('[hw->penalty]', e); }
+      return;
+    }
     // nested 구조 우선 — exercises[] 있으면 그것 사용. 없으면 flat fallback.
     const exList = Array.isArray(w.exercises) && w.exercises.length > 0
       ? w.exercises
-      : [{name:w.name, sets:w.sets||[], muscle:w.muscle, icon:w.icon, equipment:w.equipment}];
+      : [{name:w.name, sets:w.sets||[], muscle:w.muscle, icon:w.icon, equip:w.equipment||w.equip}];
     if(exList.length === 0 || !exList.some(ex => Array.isArray(ex.sets) && ex.sets.length > 0)){
       showToast('세트가 비어있어요.'); return;
     }
-    dbg('3:found session, exCount='+exList.length);
-    _hwsAssignmentId = w._trainerAssignmentId;
-    _hwsWorkout = w;
-    _hwsExerciseList = exList;
-    // 첫 미완료 종목으로 시작
-    let startIdx = exList.findIndex(ex => (ex.sets||[]).some(s=>!s.done));
-    if(startIdx < 0) startIdx = 0;
-    _hwsExIdx = startIdx;
     if(w.status !== 'in_progress' && w.status !== 'done'){ w.status = 'in_progress'; }
 
-    const modal = document.getElementById('homework-session-modal');
-    if(!modal){ showToast('모달 element 없음.'); return; }
-    if(modal.parentNode !== document.body){ document.body.appendChild(modal); }
-    dbg('4:render session');
-    try{ renderHomeworkSession(); }catch(rerr){
-      showToast('렌더 실패: '+rerr.message);
-      return;
-    }
-    dbg('5:show modal');
-    modal.setAttribute('style','display:flex;position:fixed;top:0;left:0;width:100vw;height:100vh;background:var(--bg);z-index:99999;flex-direction:column;overflow:hidden;');
-    void modal.offsetHeight;
+    // 기존 운동 모달용 state 세팅 (editGymSession 패턴)
+    currentSession = exList.map(ex => ({
+      name: ex.name,
+      icon: ex.icon,
+      muscle: ex.muscle || '근력',
+      equip: ex.equip || ex.equipment || '바벨',
+      isStrength: ex.isStrength !== false,
+      sets: (ex.sets || []).map(s => ({kg: s.kg, reps: s.reps, done: !!s.done})),
+      status: 'done'
+    }));
+    editingSessionIdx = idx;
+    _wsActiveExIdx = 0;
+    _wsUnit = 'kg';
+    _sessionStatus = 'done';
+    sessionStartedFromRoutine = false;
+    sessionSourceRoutineId = null;
+    sessionOriginalExCount = 0;
+
+    // 숙제 마커 — finishSession 에서 assignment 업데이트 분기
+    _editingHomeworkAssignmentId = w._trainerAssignmentId;
+    _editingHomeworkSessionName = w.sessionName || '오늘의 운동 숙제';
+    _hwsAssignmentId = w._trainerAssignmentId;
+    _hwsExerciseList = exList;
+
+    const kgBtn = document.getElementById('ws-unit-kg');
+    const lbBtn = document.getElementById('ws-unit-lb');
+    if(kgBtn){ kgBtn.style.background = 'var(--accent)'; kgBtn.style.color = '#fff'; }
+    if(lbBtn){ lbBtn.style.background = 'transparent'; lbBtn.style.color = 'var(--text3)'; }
+    const titleEl = document.getElementById('ws-title');
+    if(titleEl) titleEl.textContent = _editingHomeworkSessionName;
+    document.getElementById('workout-session-overlay').classList.add('open');
     document.body.style.overflow = 'hidden';
+    _wsStartTimer();
+    renderSession();
   }catch(e){
     console.warn('[homework-start]', e);
     document.body.style.overflow = '';
     showToast('숙제 시작 실패: '+(e.message||e));
   }
-}
-
-function closeHomeworkSession(){
-  try{
-    const modal = document.getElementById('homework-session-modal');
-    if(modal){
-      modal.style.cssText = 'display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:var(--bg);z-index:560;flex-direction:column;';
-      modal.classList.remove('hw-modal-open');
-    }
-  }catch(_){}
-  document.body.style.overflow = ''; // 항상 release
-  try{ saveNow(); }catch(e){}
-  try{ renderWorkouts(); }catch(e){}
-}
-
-function renderHomeworkSession(){
-  const ex = _hwsExerciseList[_hwsExIdx];
-  if(!ex){ closeHomeworkSession(); return; }
-  const sets = Array.isArray(ex.sets) ? ex.sets : [];
-  const totalEx = _hwsExerciseList.length;
-  const currentNum = _hwsExIdx + 1;
-  document.getElementById('hws-name').textContent = ex.name || '운동';
-  document.getElementById('hws-progress').textContent = `종목 ${currentNum}/${totalEx} · 세트 ${sets.length}개`;
-  const allSets = _hwsExerciseList.reduce((s, e) => s + (Array.isArray(e.sets)?e.sets.length:0), 0);
-  const doneSets = _hwsExerciseList.reduce((s, e) => s + (Array.isArray(e.sets)?e.sets.filter(x=>x.done).length:0), 0);
-  const pct = allSets > 0 ? Math.round(doneSets/allSets*100) : 0;
-  document.getElementById('hws-progress-fill').style.width = pct + '%';
-
-  // GIF 섬네일 (메인 앱 exIcon 함수)
-  const exIco = (typeof window.exIcon === 'function') ? window.exIcon(ex.name, 36) : `<span style="font-size:18px;">${esc(ex.icon||'🏋️')}</span>`;
-
-  const body = document.getElementById('hws-body');
-  body.innerHTML = `
-    <div style="background:var(--surface2);border-radius:14px;padding:16px;margin-bottom:14px;">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
-        <div style="width:40px;height:40px;border-radius:10px;background:rgba(255,77,77,.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;">${exIco}</div>
-        <div style="flex:1;min-width:0;">
-          <div style="font-size:16px;font-weight:700;letter-spacing:-.005em;">${esc(ex.name)}</div>
-          <div style="font-size:11px;color:var(--text3);">${esc(ex.muscle||'')}${ex.equipment?' · '+esc(ex.equipment):''}</div>
-        </div>
-      </div>
-      <!-- 세트 헤더 — kg / reps 순서 -->
-      <div style="display:flex;align-items:center;gap:10px;font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;font-weight:700;padding:0 6px 6px;">
-        <div style="width:24px;text-align:center;flex-shrink:0;">#</div>
-        <div style="width:88px;text-align:center;flex-shrink:0;">kg</div>
-        <div style="width:88px;text-align:center;flex-shrink:0;">반복</div>
-        <div style="flex:1;"></div>
-        <div style="width:36px;flex-shrink:0;"></div>
-      </div>
-      ${sets.map((s, si) => {
-        const isDone = !!s.done;
-        return `<div style="margin-bottom:6px;background:var(--surface);border-radius:8px;padding:8px 6px;${isDone?'opacity:.55;':''}">
-          <div style="display:flex;align-items:flex-start;gap:10px;">
-            <div style="width:24px;text-align:center;font-family:'DM Mono',monospace;font-weight:800;color:${isDone?'var(--green)':'var(--text)'};font-size:14px;flex-shrink:0;padding-top:8px;">${si+1}</div>
-            <!-- kg column -->
-            <div style="width:88px;flex-shrink:0;display:flex;flex-direction:column;gap:4px;">
-              <input type="number" min="0" step="0.5" value="${s.kg||0}" onchange="hwsUpdateSet(${si},'kg',this.value)" id="hws-kg-${si}" style="width:100%;padding:7px 6px;background:var(--surface2);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-size:14px;font-family:'DM Mono',monospace;font-weight:700;text-align:center;" ${isDone?'disabled':''} />
-              ${!isDone ? `<div style="display:flex;gap:3px;">
-                <button onclick="hwsAdjustSet(${si},'kg',-5)" class="hws-step" style="flex:1;">−5</button>
-                <button onclick="hwsAdjustSet(${si},'kg',5)" class="hws-step" style="flex:1;">+5</button>
-              </div>` : ''}
-            </div>
-            <!-- reps column -->
-            <div style="width:88px;flex-shrink:0;display:flex;flex-direction:column;gap:4px;">
-              <input type="number" min="0" value="${s.reps||0}" onchange="hwsUpdateSet(${si},'reps',this.value)" id="hws-reps-${si}" style="width:100%;padding:7px 6px;background:var(--surface2);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-size:14px;font-family:'DM Mono',monospace;font-weight:700;text-align:center;" ${isDone?'disabled':''} />
-              ${!isDone ? `<div style="display:flex;gap:3px;">
-                <button onclick="hwsAdjustSet(${si},'reps',-1)" class="hws-step" style="flex:1;">−1</button>
-                <button onclick="hwsAdjustSet(${si},'reps',1)" class="hws-step" style="flex:1;">+1</button>
-              </div>` : ''}
-            </div>
-            <div style="flex:1;"></div>
-            <button onclick="hwsToggleDone(${si})" style="width:36px;height:36px;border-radius:9px;background:${isDone?'var(--green)':'var(--surface2)'};border:1.5px solid ${isDone?'var(--green)':'var(--border2)'};display:flex;align-items:center;justify-content:center;cursor:pointer;touch-action:manipulation;flex-shrink:0;align-self:center;">${isDone?'<svg width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#fff\" stroke-width=\"3\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><polyline points=\"20 6 9 17 4 12\"></polyline></svg>':''}</button>
-          </div>
-        </div>`;
-      }).join('')}
-      <button onclick="hwsApplyToRemaining()" style="width:100%;margin-top:8px;padding:9px;background:var(--surface);border:1px dashed var(--border2);border-radius:8px;color:var(--text3);font-size:11px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">↓ 첫 세트 값 → 남은 세트 통일</button>
-    </div>
-    ${totalEx > 1 ? `<div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:14px;">
-      ${_hwsExerciseList.map((e,i)=>{
-        const allDone = (e.sets||[]).every(s=>s.done) && (e.sets||[]).length>0;
-        const cls = i===_hwsExIdx ? 'background:var(--accent);color:#fff;border-color:var(--accent);' : (allDone ? 'background:rgba(52,211,153,0.18);color:var(--green);border-color:rgba(52,211,153,0.32);' : 'background:var(--surface2);color:var(--text3);border-color:var(--border2);');
-        return `<button onclick="hwsJumpToExercise(${i})" style="padding:7px 10px;border:1px solid;border-radius:7px;${cls}font-size:11px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;">${i+1}. ${esc((e.name||'').slice(0,10))}</button>`;
-      }).join('')}
-    </div>`:''}
-  `;
-  const nextBtn = document.getElementById('hws-next-btn');
-  const allDoneInThisEx = sets.length > 0 && sets.every(s=>s.done);
-  const isLastEx = _hwsExIdx >= _hwsExerciseList.length - 1;
-  if(allDoneInThisEx && isLastEx){
-    nextBtn.textContent = '✓ 운동 종료';
-    nextBtn.style.background = 'linear-gradient(135deg,#34d399,#10b981)';
-  } else if(allDoneInThisEx){
-    nextBtn.textContent = '다음 종목 →';
-    nextBtn.style.background = 'linear-gradient(135deg,#ff4d4d,#ff6b35)';
-  } else {
-    nextBtn.textContent = '다음 종목';
-    nextBtn.style.background = 'linear-gradient(135deg,#ff4d4d,#ff6b35)';
-  }
-}
-
-function hwsUpdateSet(setIdx, field, val){
-  const ex = _hwsExerciseList[_hwsExIdx];
-  if(!ex || !ex.sets[setIdx]) return;
-  ex.sets[setIdx][field] = parseFloat(val) || 0;
-  try{ saveNow(); }catch(_){}
-}
-
-function hwsAdjustSet(setIdx, field, delta){
-  const ex = _hwsExerciseList[_hwsExIdx];
-  if(!ex || !ex.sets[setIdx] || ex.sets[setIdx].done) return;
-  const cur = ex.sets[setIdx][field] || 0;
-  const next = Math.max(0, cur + delta);
-  ex.sets[setIdx][field] = next;
-  const el = document.getElementById('hws-' + (field==='kg'?'kg':'reps') + '-' + setIdx);
-  if(el) el.value = next;
-  try{ saveNow(); }catch(_){}
-}
-
-function hwsApplyToRemaining(){
-  const ex = _hwsExerciseList[_hwsExIdx];
-  if(!ex || !ex.sets || ex.sets.length < 2) return;
-  const first = ex.sets[0];
-  if(!first) return;
-  for(let i=1; i<ex.sets.length; i++){
-    if(ex.sets[i].done) continue;
-    ex.sets[i].reps = first.reps;
-    ex.sets[i].kg = first.kg;
-  }
-  renderHomeworkSession();
-  try{ saveNow(); }catch(_){}
-  showToast('남은 세트 통일됨.');
-}
-
-function hwsToggleDone(setIdx){
-  const ex = _hwsExerciseList[_hwsExIdx];
-  if(!ex || !ex.sets[setIdx]) return;
-  ex.sets[setIdx].done = !ex.sets[setIdx].done;
-  // workout (1 session) status 업데이트 — 전체 종목 모두 완료 시 'done'
-  if(_hwsWorkout){
-    const everyExDone = _hwsExerciseList.every(e => (e.sets||[]).every(s=>s.done) && (e.sets||[]).length>0);
-    const anyDone = _hwsExerciseList.some(e => (e.sets||[]).some(s=>s.done));
-    _hwsWorkout.status = everyExDone ? 'done' : (anyDone ? 'in_progress' : 'planned');
-    if(everyExDone) _hwsWorkout.completed_at = new Date().toISOString();
-  }
-  renderHomeworkSession();
-  try{ saveNow(); }catch(_){}
-  // 근육맵 즉시 갱신 — 완료한 세트가 muscle activation 에 반영되도록
-  try{ if(typeof renderMuscleMap === 'function') renderMuscleMap(); }catch(_){}
-}
-
-function hwsJumpToExercise(idx){
-  if(idx < 0 || idx >= _hwsExerciseList.length) return;
-  _hwsExIdx = idx;
-  renderHomeworkSession();
-}
-
-function skipHomeworkExercise(){
-  if(_hwsExIdx < _hwsExerciseList.length - 1){
-    _hwsExIdx++;
-    renderHomeworkSession();
-  } else {
-    closeHomeworkSession();
-  }
-}
-
-async function completeHomeworkExercise(){
-  const ex = _hwsExerciseList[_hwsExIdx];
-  if(!ex){ closeHomeworkSession(); return; }
-  const isLastEx = _hwsExIdx >= _hwsExerciseList.length - 1;
-  if(!isLastEx){
-    // 다음 종목으로 (시간차 완료 OK — 닫고 나중에 다시 와도 됨)
-    _hwsExIdx++;
-    renderHomeworkSession();
-    return;
-  }
-  // 마지막 종목 — 모든 종목 모든 세트 완료 여부 검사
-  const everyExDone = _hwsExerciseList.every(e => (e.sets||[]).every(s=>s.done) && (e.sets||[]).length>0);
-  if(!everyExDone){
-    if(!confirm('아직 완료 안 된 세트가 있어요. 그래도 운동 종료할까요? (나중에 다시 들어와서 마저 할 수 있어요)')){
-      // 종료 취소 — 그냥 모달 닫기 (시간차 완료 path)
-      closeHomeworkSession();
-      showToast('진행 상태 저장됨. 나중에 마저 진행 가능.');
-      return;
-    }
-  }
-  // 모두 완료 시 workout.status='done' + completed_at
-  if(_hwsWorkout){
-    if(everyExDone){
-      _hwsWorkout.status = 'done';
-      _hwsWorkout.completed_at = _hwsWorkout.completed_at || new Date().toISOString();
-    }
-  }
-  try{ saveNow(); }catch(_){}
-  // assignment status update
-  try{
-    await sb.from('workout_assignments').update({
-      status: everyExDone ? 'completed' : 'in_progress',
-      completed_at: everyExDone ? new Date().toISOString() : null,
-    }).eq('id', _hwsAssignmentId);
-  }catch(e){console.warn('[hw-assignment-update]',e);}
-  closeHomeworkSession();
-  // 근육맵 갱신
-  try{ if(typeof renderMuscleMap === 'function') renderMuscleMap(); }catch(_){}
-  // promote modal — 모두 완료 시에만
-  if(everyExDone) openHomeworkPromote();
-  else showToast('진행 상태 저장됨. 다음에 마저 진행해.');
 }
 
 // ─── Promote 모달 — 운동 완료 후 정식 루틴 권유 ───
@@ -11341,7 +11263,7 @@ async function closeHomeworkPromote(register){
   document.getElementById('homework-promote-modal').style.display = 'none';
   if(!register){
     showToast('숙제 완료. 좋아.');
-    _hwsAssignmentId = null; _hwsExerciseList = []; _hwsExIdx = 0;
+    _hwsAssignmentId = null; _hwsExerciseList = [];
     return;
   }
   const name = (document.getElementById('hwp-name').value || '').trim();
@@ -11368,7 +11290,7 @@ async function closeHomeworkPromote(register){
     localStorage.setItem(key, JSON.stringify(list));
     showToast(`정식 루틴 등록: ${name}`);
   }catch(e){console.warn('[hwp-save]',e); showToast('등록 실패. 다시 시도.');}
-  _hwsAssignmentId = null; _hwsExerciseList = []; _hwsExIdx = 0;
+  _hwsAssignmentId = null; _hwsExerciseList = [];
 }
 
 function renderWorkouts(){
@@ -11400,6 +11322,42 @@ function renderWorkouts(){
 
   document.getElementById('workout-rows').style.cssText='background:var(--surface2);border-radius:10px;margin:8px 12px 0;overflow:hidden;'; document.getElementById('workout-rows').innerHTML=workouts.map((w,i)=>{
     if(w.type==='gym'){
+      // ─── 유산소 징역 entry — 별도 빨강 카드. 카드 클릭 → 복역 처리 모달 ───
+      // _isPenalty 마커 또는 sessionName === '유산소 징역' fallback (옛 데이터 호환)
+      if(w._isPenalty || w.sessionName === '유산소 징역'){
+        const minutes = w._penaltyMinutes || (w.exercises && w.exercises[0] && w.exercises[0].sets && w.exercises[0].sets[0] && w.exercises[0].sets[0].time) || 0;
+        const ptype = w._penaltyType || '자유';
+        const reason = w._penaltyReason || '';
+        const notes = w._penaltyNotes || '';
+        const status = w.status;
+        const isDone = status === 'done' || status === 'completed';
+        const isEscaped = status === 'skipped' || status === 'escaped';
+        const reasonHtml = reason ? `<div style="font-size:11px;color:var(--text2);margin-top:4px;">사유: <span style="color:var(--text);">${esc(reason)}</span></div>` : '';
+        const notesHtml = notes ? `<div style="font-size:11px;color:var(--text);margin-top:6px;padding:6px 10px;background:rgba(0,0,0,0.2);border-left:2px solid #ff7a7a;border-radius:4px;line-height:1.5;">${esc(notes)}</div>` : '';
+        let stateBadge;
+        if(isDone) stateBadge = '<span style="font-size:9px;font-weight:800;letter-spacing:.04em;padding:2px 7px;border-radius:5px;background:rgba(52,211,153,0.18);color:#34d399;margin-left:6px;">복역 완료</span>';
+        else if(isEscaped) stateBadge = '<span style="font-size:9px;font-weight:800;letter-spacing:.04em;padding:2px 7px;border-radius:5px;background:rgba(122,122,134,0.3);color:var(--text3);margin-left:6px;">탈주</span>';
+        else stateBadge = '<span style="font-size:9px;font-weight:800;letter-spacing:.04em;padding:2px 7px;border-radius:5px;background:rgba(255,77,77,0.32);color:#fff;margin-left:6px;">⏱ 미복역</span>';
+        const canTap = !isDone && !isEscaped;
+        const cursorStyle = canTap ? 'cursor:pointer;-webkit-tap-highlight-color:rgba(255,77,77,.2);' : '';
+        const tapHandler = canTap ? `onclick="openCardioPenaltyModal(${i})"` : '';
+        const revertBtn = (isDone || isEscaped) ? `<button onclick="event.stopPropagation();revertAssignment(${i})" style="margin-top:10px;padding:8px 12px;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;color:var(--text2);font-size:11px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">↺ 미복역으로 되돌리기</button>` : '';
+        return `<div style="overflow:hidden;border-bottom:1px solid var(--border);background:linear-gradient(135deg,rgba(255,77,77,0.14),rgba(255,107,53,0.06));border-left:3px solid #ff4d4d;${cursorStyle}touch-action:manipulation;" ${tapHandler}>
+          <div style="padding:13px 14px;">
+            <div style="display:flex;align-items:flex-start;gap:10px;">
+              <div style="width:32px;height:32px;border-radius:8px;background:rgba(255,77,77,0.32);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:16px;">⏱</div>
+              <div style="flex:1;min-width:0;">
+                <div style="font-size:15px;font-weight:800;display:flex;align-items:center;flex-wrap:wrap;letter-spacing:-.005em;">유산소 징역 ${esc(ptype)} ${minutes}분형${stateBadge}</div>
+                ${reasonHtml}
+                ${notesHtml}
+                ${canTap?'<div style="font-size:11px;color:var(--accent);margin-top:8px;font-weight:700;">탭 → 복역 처리</div>':''}
+                ${revertBtn}
+              </div>
+              <button onclick="event.stopPropagation();cancelHomeworkAssignment(${i})" style="width:22px;height:22px;background:var(--red-bg);border:1px solid var(--red-bd);border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;touch-action:manipulation;" title="취소"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+            </div>
+          </div>
+        </div>`;
+      }
       const exNames=(w.exercises||[]).map(e=>e.name);
       const preview=exNames.slice(0,2).join(' · ')+(exNames.length>2?' 외 '+(exNames.length-2)+'개':'');
       // 트레이너 숙제 — sets 합산해서 vol 계산 (homework totalVolume 안 저장됨)
@@ -11416,6 +11374,11 @@ function renderWorkouts(){
       const sessionTitle = isHomework ? (w.sessionName||'오늘의 운동 숙제') : (w.sessionName||'헬스 세션');
       const badge = isPending ? `<span style="font-size:9px;font-weight:800;letter-spacing:.04em;padding:2px 7px;border-radius:5px;background:rgba(255,77,77,0.18);color:#ff6b6b;margin-left:6px;">예정 ${totalSets}/${totalSetsAll}</span>` : (isHomework ? `<span style="font-size:9px;font-weight:800;letter-spacing:.04em;padding:2px 7px;border-radius:5px;background:rgba(52,211,153,0.18);color:var(--green);margin-left:6px;">완료</span>` : '');
       const cardBg = isPending ? 'rgba(255,77,77,.06)' : 'transparent';
+      // 트레이너 숙제 완료 (status='done') 시 되돌리기 버튼 노출
+      const isHomeworkDone = isHomework && w.status === 'done';
+      const revertBtn = isHomeworkDone
+        ? `<button onclick="event.stopPropagation();revertAssignment(${i})" style="padding:3px 8px;background:var(--surface3);border:1px solid var(--border2);border-radius:6px;font-size:10px;color:var(--text2);cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;flex-shrink:0;" title="미완료로 되돌리기">↺ 되돌리기</button>`
+        : '';
       return`<div style="overflow:hidden;border-bottom:1px solid var(--border);background:${cardBg};">
         <div style="display:flex;align-items:center;gap:10px;padding:12px 13px;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:rgba(255,77,77,0.18);" onclick="${clickFn}">
           <div style="width:28px;height:28px;border-radius:7px;background:rgba(255,77,77,.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
@@ -11425,8 +11388,9 @@ function renderWorkouts(){
             <div style="font-size:15px;font-weight:600;display:flex;align-items:center;flex-wrap:wrap;">${esc(sessionTitle)}${badge}</div>
             <div style="font-size:12px;color:var(--text2);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${preview}${volStr?' · '+volStr:''}</div>
           </div>
+          ${revertBtn}
           ${isHomework ? '' : `<button onclick="event.stopPropagation();editGymSession(${i})" style="padding:3px 8px;background:var(--surface3);border:1px solid var(--border2);border-radius:6px;font-size:10px;color:var(--text2);cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;flex-shrink:0;">수정</button>`}
-          ${isHomework ? '' : `<button onclick="event.stopPropagation();delWO(${i})" style="width:22px;height:22px;background:var(--red-bg);border:1px solid var(--red-bd);border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;touch-action:manipulation;"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>`}
+          <button onclick="event.stopPropagation();${isHomework?`cancelHomeworkAssignment(${i})`:`delWO(${i})`}" style="width:22px;height:22px;background:var(--red-bg);border:1px solid var(--red-bd);border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;touch-action:manipulation;" title="${isHomework?'트레이너 배정 취소':'삭제'}"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
         </div>
         ${(vol>0||(isHomework&&totalSetsAll>0))?`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;border-top:1px solid var(--border);">
           <div style="text-align:center;padding:5px 0;border-right:1px solid var(--border);"><div style="font-size:14px;font-weight:700;color:var(--accent);font-family:'DM Mono',monospace;">${volStr||'—'}</div><div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.04em;">볼륨</div></div>
@@ -11500,7 +11464,7 @@ function openSessionSummary(i){
   // Inject into modal
   const modal=document.getElementById('session-summary-modal');
   if(!modal){ try{ showToast('summary modal 없음 — 새로고침'); }catch(_){} return; }
-  // body 직접 자식으로 이동 (containing block 회피, homework-session-modal 패턴)
+  // body 직접 자식으로 이동 (containing block 회피)
   if(modal.parentNode !== document.body){ document.body.appendChild(modal); }
   document.getElementById('ssm-date').textContent=dateStr;
   document.getElementById('ssm-vol').textContent=volStr;
@@ -11915,6 +11879,232 @@ function markActivityDone(i){
 }
 
 let _delWOTs=0;
+// ═══════════════════════════════════════════════
+// 트레이너 Realtime sync — daily_logs / trainer_relationship_requests 본인 변경 구독
+// ═══════════════════════════════════════════════
+let _trainerRealtimeChannel = null;
+let _trainerRealtimeDebounce = null;
+
+function startTrainerRealtimeSync(userId){
+  if(!userId || _trainerRealtimeChannel) return;
+  _trainerRealtimeChannel = sb.channel('trainer-sync-'+userId)
+    .on('postgres_changes',
+      {event:'*', schema:'public', table:'daily_logs', filter:`user_id=eq.${userId}`},
+      (payload) => {
+        // 트레이너가 daily_logs 변경 (UPDATE workouts) 시 reload + render
+        if(_trainerRealtimeDebounce) clearTimeout(_trainerRealtimeDebounce);
+        _trainerRealtimeDebounce = setTimeout(async () => {
+          try{
+            const newDate = payload.new && payload.new.log_date;
+            if(newDate === TODAY){
+              // 본인이 직접 수정한 직후일 수 있으니 진행 중 모달 있으면 skip
+              const wsOpen = document.getElementById('workout-session-overlay')?.classList.contains('open');
+              const cpmOpen = document.getElementById('cardio-penalty-modal')?.style.display === 'flex';
+              if(wsOpen || cpmOpen){ console.log('[trainer-rt] skip reload — modal open'); return; }
+              await loadLog(TODAY, true);
+              renderRoutine();
+              showToast('🔔 트레이너 업데이트 적용됨');
+            }
+          }catch(e){ console.warn('[trainer-rt] reload', e); }
+        }, 800);
+      }
+    )
+    .on('postgres_changes',
+      {event:'INSERT', schema:'public', table:'trainer_relationship_requests', filter:`client_id=eq.${userId}`},
+      () => {
+        // 새 등록 요청 — 인박스 강제 새로고침
+        try{ renderTrainerRequestInbox(true); showToast('🔔 새 트레이너 요청'); }catch(_){}
+      }
+    )
+    .subscribe((status) => {
+      if(status === 'SUBSCRIBED') console.log('[trainer-rt] subscribed for', userId);
+      else if(status === 'CHANNEL_ERROR') console.warn('[trainer-rt] channel error');
+    });
+}
+
+// 트레이너 배정 (숙제 OR 징역) 완료 → 미완료로 되돌리기
+async function revertAssignment(i){
+  const w = (log.workouts||[])[i];
+  if(!w || !w._trainerAssignmentId){ showToast('assignment 정보 없음.'); return; }
+  if(!confirm('완료 표시를 취소하고 미완료로 되돌릴까?\n트레이너 화면에도 미완료로 표시돼.')) return;
+  const assignmentId = w._trainerAssignmentId;
+  const isPenalty = !!w._isPenalty || w.sessionName === '유산소 징역';
+
+  // log entry 즉시 갱신
+  w.status = 'in_progress';
+  w.completed_at = null;
+  if(isPenalty){
+    // 징역 — sets 도 done=false 로 되돌리기
+    if(w.exercises && w.exercises[0] && w.exercises[0].sets){
+      w.exercises[0].sets.forEach(s => { s.done = false; });
+    }
+    delete w._actualMinutes;
+    delete w._actualType;
+    delete w._escapedAt;
+  } else {
+    // 일반 숙제 — 마지막 세트만 done=false (전체 클리어 X — 진행도 보존)
+    if(w.exercises){
+      let cleared = false;
+      for(let ei = w.exercises.length-1; ei >= 0 && !cleared; ei--){
+        const ex = w.exercises[ei];
+        for(let si = (ex.sets||[]).length-1; si >= 0 && !cleared; si--){
+          if(ex.sets[si].done){ ex.sets[si].done = false; cleared = true; }
+        }
+      }
+    }
+  }
+  try{ saveNow(); }catch(_){}
+  try{ renderWorkouts(); }catch(_){}
+  // 점수 회수 — 카디오 점수 또는 근력 점수 (오늘 카운트 0 되면)
+  try{
+    const l = logCache[TODAY] || log;
+    if(isPenalty){
+      const remainCardio = (log.workouts||[]).filter(x => (x._isPenalty || x.sessionName==='유산소 징역') && (x.status==='done'||x.status==='completed')).length;
+      const cardioScored = (l._ptsLog||[]).filter(e=>e.type==='workout_cardio_done').length;
+      if(remainCardio === 0 && cardioScored > 0){
+        // cancel 점수 — 메인 앱이 이런 패턴 가지고 있는지 보자. 일단 단순 호출 시도
+        try{ if(typeof addScore === 'function') addScore('workout_cardio_done_cancel'); }catch(_){}
+      }
+    }
+  }catch(_){}
+  // RPC 백그라운드
+  try{
+    const {error} = await sb.rpc('client_revert_assignment_completion', {p_assignment_id: assignmentId});
+    if(error){ console.warn('[revertAssignment]', error); showToast('서버 동기화 실패: '+error.message); }
+    else { showToast('↺ 미완료로 되돌림.'); }
+  }catch(e){ console.warn('[revertAssignment]', e); showToast('실패: '+(e.message||e)); }
+}
+
+// 유산소 징역 — 카드 클릭 시 복역 처리 모달
+const CP_TYPES = ['달리기','걷기','자전거','수영','로잉','줄넘기'];
+let _cpmIdx = -1;
+let _cpmActualType = null;
+
+function openCardioPenaltyModal(i){
+  const w = (log.workouts||[])[i];
+  if(!w || !w._isPenalty){ showToast('징역 정보 없음.'); return; }
+  _cpmIdx = i;
+  const minutes = w._penaltyMinutes || 0;
+  const ptype = w._penaltyType || '자유';
+  const reason = w._penaltyReason || '';
+  const notes = w._penaltyNotes || '';
+  document.getElementById('cpm-sub').textContent = `${ptype} · ${minutes}분형`;
+  document.getElementById('cpm-info-line1').textContent = reason ? `사유: ${reason}` : '';
+  const line2 = document.getElementById('cpm-info-line2');
+  if(notes){ line2.textContent = notes; line2.style.display = ''; } else { line2.style.display = 'none'; line2.textContent = ''; }
+  // type chips — '자유' 일 때만 회원이 선택
+  const typeSection = document.getElementById('cpm-type-section');
+  if(ptype === '자유'){
+    typeSection.style.display = '';
+    _cpmActualType = null;
+    cpmRenderTypeChips();
+  } else {
+    typeSection.style.display = 'none';
+    _cpmActualType = ptype;
+  }
+  // default 시간 = 부여 시간
+  document.getElementById('cpm-actual-min').value = minutes;
+  document.getElementById('cardio-penalty-modal').style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+
+function cpmRenderTypeChips(){
+  const wrap = document.getElementById('cpm-type-chips');
+  if(!wrap) return;
+  wrap.innerHTML = CP_TYPES.map(t =>
+    `<button onclick="cpmSelectType('${esc(t).replace(/'/g,"\\'")}')" style="padding:8px 14px;border-radius:8px;border:1px solid ${_cpmActualType===t?'transparent':'var(--border2)'};background:${_cpmActualType===t?'linear-gradient(135deg,#ff4d4d,#ff6b35)':'var(--surface2)'};color:${_cpmActualType===t?'#fff':'var(--text2)'};font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">${esc(t)}</button>`
+  ).join('');
+}
+
+function cpmSelectType(t){ _cpmActualType = t; cpmRenderTypeChips(); }
+
+function closeCardioPenaltyModal(){
+  document.getElementById('cardio-penalty-modal').style.display = 'none';
+  document.body.style.overflow = '';
+  _cpmIdx = -1;
+  _cpmActualType = null;
+}
+
+async function cpmRespond(outcome){
+  if(_cpmIdx < 0) return;
+  const w = (log.workouts||[])[_cpmIdx];
+  if(!w || !w._isPenalty){ showToast('징역 정보 없음.'); return; }
+  const assignmentId = w._trainerAssignmentId;
+  if(!assignmentId){ showToast('assignment id 없음.'); return; }
+  const ptype = w._penaltyType || '자유';
+  const actualMin = parseInt(document.getElementById('cpm-actual-min').value) || 0;
+  if(outcome === 'completed'){
+    // 종류 검증 — '자유' 였으면 사용자 선택 필요
+    if(ptype === '자유' && !_cpmActualType){
+      showToast('운동 종류 선택');
+      return;
+    }
+    if(actualMin < 1){
+      if(!confirm('실제 한 시간이 0분이야. 그래도 복역 완료 처리할까?')) return;
+    }
+  } else {
+    if(!confirm('탈주 처리할까? 트레이너에게 "탈주" 로 표시돼.')) return;
+  }
+  // log entry 즉시 갱신
+  w.status = outcome === 'completed' ? 'done' : 'skipped';
+  w.completed_at = new Date().toISOString();
+  if(w.exercises && w.exercises[0] && w.exercises[0].sets && w.exercises[0].sets[0]){
+    w.exercises[0].sets[0].done = outcome === 'completed';
+    w.exercises[0].sets[0].time = actualMin;
+  }
+  if(outcome === 'completed'){
+    w._actualMinutes = actualMin;
+    w._actualType = _cpmActualType || ptype;
+  } else {
+    w._escapedAt = new Date().toISOString();
+  }
+  try{ saveNow(); }catch(_){}
+  closeCardioPenaltyModal();
+  try{ renderWorkouts(); }catch(_){}
+  // 점수 — 복역 완료시 카디오 1회 (중복 차감 방지)
+  if(outcome === 'completed'){
+    try{
+      const l = logCache[TODAY] || log;
+      const alreadyScored = (l._ptsLog||[]).filter(e=>e.type==='workout_cardio_done').length >= 1;
+      if(!alreadyScored){ addScore('workout_cardio_done'); }
+    }catch(_){}
+  }
+  // assignment 마킹 (백그라운드)
+  try{
+    const {error} = await sb.rpc('client_complete_cardio_penalty', {
+      p_assignment_id: assignmentId,
+      p_outcome: outcome,
+      p_actual_minutes: actualMin,
+      p_actual_cardio_type: _cpmActualType,
+    });
+    if(error){ console.warn('[cpmRespond]', error); showToast('서버 동기화 실패: '+error.message); }
+    else if(outcome === 'completed'){ showToast('⏱ 복역 완료. 잘했다.'); launchConfetti(); }
+    else { showToast('탈주 처리됨.'); }
+  }catch(e){ console.warn('[cpmRespond]', e); }
+}
+
+// 트레이너 배정 운동 취소 — confirm 후 assignment status='cancelled_by_user' + log entry 제거
+async function cancelHomeworkAssignment(i){
+  const w = (log.workouts||[])[i];
+  if(!w || !w._trainerAssignmentId){ showToast('숙제 정보 없음.'); return; }
+  const isDone = w.status === 'done';
+  const msg = isDone
+    ? '완료한 트레이너 배정 운동을 삭제할까?\n트레이너 화면에 "회원이 취소함" 으로 표시돼.'
+    : '트레이너가 배정한 운동을 취소할까?\n트레이너 화면에 "회원이 취소함" 으로 표시돼.';
+  if(!confirm(msg)) return;
+  const assignmentId = w._trainerAssignmentId;
+  // log entry 즉시 제거 + 저장
+  log.workouts.splice(i, 1);
+  try{ saveNow(); }catch(_){}
+  try{ renderWorkouts(); }catch(_){}
+  // assignment 마킹 (백그라운드)
+  try{
+    const {error} = await sb.rpc('client_cancel_assignment', {p_assignment_id: assignmentId});
+    if(error){ console.warn('[cancelHw]', error); showToast('서버 동기화 실패: '+error.message); }
+    else { showToast('취소됨. 트레이너에게 표시됨.'); }
+  }catch(e){ console.warn('[cancelHw]', e); showToast('취소 실패: '+(e.message||e)); }
+}
+
 function delWO(i){
   // iOS confirm click-through 및 중복 호출 방지
   const now=Date.now();
@@ -12199,6 +12389,12 @@ async function finishSession(){
   // Safety: guarantee flag reset after 5s even if something throws mid-flow
   setTimeout(()=>{_finishingSession=false;},5000);
   console.log('[finishSession] start',{len:currentSession.length});
+  // ── Homework session branch — _editingHomeworkAssignmentId 가 set 되면 숙제 완료 처리
+  const homeworkAssignmentId = _editingHomeworkAssignmentId;
+  const homeworkSessionName = _editingHomeworkSessionName;
+  const isHomeworkSession = !!homeworkAssignmentId;
+  // 모든 세트 완료 여부 — 숙제 partial 완료는 'in_progress' 유지
+  const everyExDone = isHomeworkSession && currentSession.every(ex => (ex.sets||[]).every(s=>s.done) && (ex.sets||[]).length>0);
   // Calculate total volume
   const totalVolume=currentSession.reduce((total,ex)=>{
     if(!ex.isStrength)return total;
@@ -12207,16 +12403,20 @@ async function finishSession(){
 
   const sessionEntry={
     type:'gym',
-    sessionName:'헬스 세션',
+    sessionName: isHomeworkSession ? (homeworkSessionName || '오늘의 운동 숙제') : '헬스 세션',
     exercises:currentSession.map(ex=>({
       name:ex.name,icon:ex.icon,muscle:ex.muscle,equip:ex.equip,
       sets:ex.sets,
       isStrength:ex.isStrength
     })),
     totalVolume,
-    status:_sessionStatus==='planned'?'planned':'done',
+    status: isHomeworkSession ? (everyExDone ? 'done' : 'in_progress') : (_sessionStatus==='planned'?'planned':'done'),
     _expanded:false
   };
+  if(isHomeworkSession){
+    sessionEntry._trainerAssignmentId = homeworkAssignmentId;
+    if(everyExDone) sessionEntry.completed_at = new Date().toISOString();
+  }
 
   if(!logCache[selectedKey])logCache[selectedKey]=log;
   log=logCache[selectedKey];
@@ -12245,7 +12445,13 @@ async function finishSession(){
     const cta=document.getElementById('wo-add-cta');
     if(cta)cta.scrollIntoView({behavior:'smooth',block:'center'});
   },150);
-  if(!wasEditing){
+  if(isHomeworkSession){
+    if(everyExDone){
+      setTimeout(()=>{showWin('workout',SCORE_EVENTS.workout_done.pts,'숙제 완료!');launchConfetti();},300);
+    } else {
+      showToast('진행 상태 저장됨. 다음에 마저 진행해.');
+    }
+  } else if(!wasEditing){
     if(_sessionStatus==='planned'){
       // 예정 등록 — 점수 없음, 조용히 저장
       showToast('📅 운동 일정이 등록됐어요');
@@ -12261,6 +12467,16 @@ async function finishSession(){
   // 저장은 완전 백그라운드 (UI에 영향 없음)
   queueSave();
 
+  // 근육맵 즉시 갱신 — 숙제 완료한 세트가 muscle activation 에 반영되도록
+  if(isHomeworkSession){
+    try{ if(typeof renderMuscleMap === 'function') renderMuscleMap(); }catch(_){}
+    // assignment 상태 업데이트 (백그라운드)
+    sb.from('workout_assignments').update({
+      status: everyExDone ? 'completed' : 'in_progress',
+      completed_at: everyExDone ? new Date().toISOString() : null,
+    }).eq('id', homeworkAssignmentId).then(()=>{}, e=>console.warn('[hw-assignment-update]',e));
+  }
+
   // ── Routine prompt policies ──
   const sessionExercises=currentSession.slice();
   const wasFromRoutine=sessionStartedFromRoutine;
@@ -12271,7 +12487,19 @@ async function finishSession(){
   sessionOriginalExCount=0;
   currentSession=[];
   currentGymIdx=-1;
+  // homework state 클리어
+  _editingHomeworkAssignmentId=null;
+  _editingHomeworkSessionName=null;
   _finishingSession=false; // 완료 후 플래그 해제
+
+  if(isHomeworkSession){
+    // 숙제 완료 시 promote 모달 (정식 루틴 등록 권유) — 모두 완료된 경우에만
+    if(everyExDone){
+      // _hwsExerciseList 는 openHomeworkStart 에서 이미 set 됨 — promote 모달이 default name / routine 빌드에 사용
+      setTimeout(()=>{ try{ openHomeworkPromote(); }catch(e){console.warn('[hw-promote]',e);} }, 500);
+    }
+    return; // 일반 routine prompt 스킵
+  }
 
   setTimeout(async()=>{
     const exForRoutine=sessionExercises.map(ex=>({
