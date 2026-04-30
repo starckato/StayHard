@@ -28,7 +28,7 @@
      so window globals (dkey, normKey, ...) are set before inline code runs.
      Query version bumps cache when bundle content changes. Bump manually or
      via build script when shipping a new bundle. See MIGRATION_PLAN.md. -->
-<script src="/dist/app.js?v=20260430cardio-penalty-3"></script>
+<script src="/dist/app.js?v=20260430cardio-penalty-4"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Archivo+Black&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -12034,31 +12034,50 @@ let _cpmIdx = -1;
 let _cpmActualType = null;
 
 function openCardioPenaltyModal(i){
+  console.log('[cpm] enter i=', i);
   const w = (log.workouts||[])[i];
-  if(!w || !w._isPenalty){ showToast('징역 정보 없음.'); return; }
+  if(!w){ console.warn('[cpm] no entry'); showToast('entry 없음 idx='+i); return; }
+  console.log('[cpm] w status=', w.status, '_isPenalty=', w._isPenalty, 'sessionName=', w.sessionName);
+  // _isPenalty 마커 또는 sessionName === '유산소 징역' fallback (옛 데이터)
+  if(!w._isPenalty && w.sessionName !== '유산소 징역'){
+    showToast('징역 정보 없음.');
+    return;
+  }
   _cpmIdx = i;
-  const minutes = w._penaltyMinutes || 0;
+  const minutes = w._penaltyMinutes || (w.exercises && w.exercises[0] && w.exercises[0].sets && w.exercises[0].sets[0] && w.exercises[0].sets[0].time) || 0;
   const ptype = w._penaltyType || '자유';
   const reason = w._penaltyReason || '';
   const notes = w._penaltyNotes || '';
-  document.getElementById('cpm-sub').textContent = `${ptype} · ${minutes}분형`;
-  document.getElementById('cpm-info-line1').textContent = reason ? `사유: ${reason}` : '';
+  // 안전 가드 — element 부재 시 문제 보고
+  const modal = document.getElementById('cardio-penalty-modal');
+  if(!modal){ console.warn('[cpm] modal element missing'); showToast('모달 마크업 없음 — 새로고침'); return; }
+  const subEl = document.getElementById('cpm-sub'); if(subEl) subEl.textContent = `${ptype} · ${minutes}분형`;
+  const l1 = document.getElementById('cpm-info-line1'); if(l1) l1.textContent = reason ? `사유: ${reason}` : '';
   const line2 = document.getElementById('cpm-info-line2');
-  if(notes){ line2.textContent = notes; line2.style.display = ''; } else { line2.style.display = 'none'; line2.textContent = ''; }
-  // type chips — '자유' 일 때만 회원이 선택
-  const typeSection = document.getElementById('cpm-type-section');
-  if(ptype === '자유'){
-    typeSection.style.display = '';
-    _cpmActualType = null;
-    cpmRenderTypeChips();
-  } else {
-    typeSection.style.display = 'none';
-    _cpmActualType = ptype;
+  if(line2){
+    if(notes){ line2.textContent = notes; line2.style.display = ''; }
+    else { line2.style.display = 'none'; line2.textContent = ''; }
   }
-  // default 시간 = 부여 시간
-  document.getElementById('cpm-actual-min').value = minutes;
-  document.getElementById('cardio-penalty-modal').style.display = 'flex';
+  const typeSection = document.getElementById('cpm-type-section');
+  if(typeSection){
+    if(ptype === '자유'){
+      typeSection.style.display = '';
+      _cpmActualType = null;
+      cpmRenderTypeChips();
+    } else {
+      typeSection.style.display = 'none';
+      _cpmActualType = ptype;
+    }
+  }
+  const minInp = document.getElementById('cpm-actual-min'); if(minInp) minInp.value = minutes;
+  // 강제 표시 — body 직접 자식으로 이동 (containing block 문제 회피)
+  if(modal.parentNode !== document.body){
+    document.body.appendChild(modal);
+    console.log('[cpm] modal moved to body');
+  }
+  modal.style.cssText = 'display:flex;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.85);z-index:9999;align-items:flex-end;justify-content:center;padding:0;';
   document.body.style.overflow = 'hidden';
+  console.log('[cpm] display set, computed=', getComputedStyle(modal).display, 'z-index=', getComputedStyle(modal).zIndex);
 }
 
 function cpmRenderTypeChips(){
@@ -12072,7 +12091,10 @@ function cpmRenderTypeChips(){
 function cpmSelectType(t){ _cpmActualType = t; cpmRenderTypeChips(); }
 
 function closeCardioPenaltyModal(){
-  document.getElementById('cardio-penalty-modal').style.display = 'none';
+  const modal = document.getElementById('cardio-penalty-modal');
+  if(modal){
+    modal.style.cssText = 'display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:600;align-items:flex-end;justify-content:center;padding:0;';
+  }
   document.body.style.overflow = '';
   _cpmIdx = -1;
   _cpmActualType = null;
