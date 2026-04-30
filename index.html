@@ -28,7 +28,7 @@
      so window globals (dkey, normKey, ...) are set before inline code runs.
      Query version bumps cache when bundle content changes. Bump manually or
      via build script when shipping a new bundle. See MIGRATION_PLAN.md. -->
-<script src="/dist/app.js?v=20260430cardio-penalty"></script>
+<script src="/dist/app.js?v=20260430cardio-penalty-2"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Archivo+Black&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -2584,8 +2584,8 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
 
   <!-- SESSION SUMMARY MODAL -->
   <!-- 유산소 징역 복역 처리 모달 -->
-  <div id="cardio-penalty-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:600;align-items:flex-end;justify-content:center;padding:0;">
-    <div style="background:var(--surface);border-top-left-radius:18px;border-top-right-radius:18px;border-top:1.5px solid rgba(255,77,77,.4);padding:20px 18px 32px;max-width:480px;width:100%;max-height:88vh;overflow-y:auto;">
+  <div id="cardio-penalty-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:600;align-items:flex-end;justify-content:center;padding:0;" onclick="if(event.target===this)closeCardioPenaltyModal()">
+    <div style="background:var(--surface);border-top-left-radius:18px;border-top-right-radius:18px;border-top:1.5px solid rgba(255,77,77,.4);padding:20px 18px 32px;max-width:480px;width:100%;max-height:88vh;overflow-y:auto;" onclick="event.stopPropagation()">
       <div style="width:36px;height:4px;background:var(--border2);border-radius:4px;margin:-10px auto 14px;"></div>
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
         <div style="width:36px;height:36px;border-radius:9px;background:rgba(255,77,77,0.32);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">⏱</div>
@@ -12024,6 +12024,37 @@ function closeCardioPenaltyModal(){
   _cpmIdx = -1;
   _cpmActualType = null;
 }
+
+// 안전장치 — 페이지 visible 될 때 stuck 한 body.overflow:hidden 자동 풀기
+// (모달 닫기 실패 등으로 hidden 상태가 남았을 때 사용자가 화면 다시 보면 자동 복구)
+(function(){
+  function unstuckIfNoModalVisible(){
+    try{
+      // 열려있는 modal-overlay 류 element 찾기 — 있으면 hidden 유지가 정당, 없으면 풀기
+      const cpm = document.getElementById('cardio-penalty-modal');
+      const wsOverlay = document.getElementById('workout-session-overlay');
+      const promote = document.getElementById('homework-promote-modal');
+      const ssm = document.getElementById('session-summary-modal');
+      const edm = document.getElementById('exercise-detail-modal');
+      const cpmOpen = cpm && getComputedStyle(cpm).display === 'flex';
+      const wsOpen = wsOverlay && wsOverlay.classList.contains('open');
+      const promoteOpen = promote && promote.style.display === 'flex';
+      const ssmOpen = ssm && ssm.style.display === 'flex';
+      const edmOpen = edm && edm.style.display === 'flex';
+      if(!cpmOpen && !wsOpen && !promoteOpen && !ssmOpen && !edmOpen){
+        if(document.body.style.overflow === 'hidden'){
+          document.body.style.overflow = '';
+          console.log('[unstuck] body.overflow released');
+        }
+      }
+    }catch(e){console.warn('[unstuck]', e);}
+  }
+  if(document.readyState !== 'loading') setTimeout(unstuckIfNoModalVisible, 200);
+  else document.addEventListener('DOMContentLoaded', () => setTimeout(unstuckIfNoModalVisible, 200));
+  document.addEventListener('visibilitychange', () => {
+    if(!document.hidden) setTimeout(unstuckIfNoModalVisible, 100);
+  });
+})();
 
 async function cpmRespond(outcome){
   if(_cpmIdx < 0) return;
