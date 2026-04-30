@@ -1,6 +1,6 @@
 // QROK Service Worker
-// Build: 20260426-tab-cache-bust
-const CACHE_NAME = 'qrok-v2';
+// Build: 20260430-cardio-penalty-delegation
+const CACHE_NAME = 'qrok-v3-cp-delegation';
 self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', e => {
   e.waitUntil(
