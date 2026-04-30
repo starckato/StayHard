@@ -213,6 +213,7 @@ function buildUI(){
 
 function animateCell(canvas, url, fpsMs){
   const cx = canvas.getContext('2d');
+  cx.imageSmoothingEnabled = false; // 픽셀 아트 — frame 경계 bleed 방지
   const W = canvas.width, H = canvas.height;
   const img = new Image();
   let loaded = false;
@@ -230,13 +231,15 @@ function animateCell(canvas, url, fpsMs){
     if(now - lastT < fpsMs) return;
     lastT = now;
     cx.clearRect(0, 0, W, H);
-    const sx = (fi % SHEET_FRAMES) * SHEET_FW;
+    // 1px inset 으로 sub-pixel boundary bleed 추가 방지
+    const sx = (fi % SHEET_FRAMES) * SHEET_FW + 1;
+    const sw = SHEET_FW - 2;
     const scale = Math.min(W / SHEET_FW, H / SHEET_FH);
     const dw = SHEET_FW * scale;
     const dh = SHEET_FH * scale;
-    const dx = (W - dw) / 2;
-    const dy = (H - dh) / 2;
-    cx.drawImage(img, sx, 0, SHEET_FW, SHEET_FH, dx, dy, dw, dh);
+    const dx = Math.round((W - dw) / 2);
+    const dy = Math.round((H - dh) / 2);
+    cx.drawImage(img, sx, 0, sw, SHEET_FH, dx, dy, dw, dh);
     fi = (fi + 1) % SHEET_FRAMES;
   }
   requestAnimationFrame(loop);

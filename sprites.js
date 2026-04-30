@@ -56,8 +56,10 @@
 
   function _drawFrame(ctx, img, frameIdx, dx, dy, dw, dh){
     if(!img || !img.complete || !img.naturalWidth) return;
-    const sx = (frameIdx % SHEET_FRAMES) * SHEET_FW;
-    ctx.drawImage(img, sx, 0, SHEET_FW, SHEET_FH, dx, dy, dw, dh);
+    // 1px inset — sub-pixel sampling 으로 인한 인접 frame bleed 방지
+    const sx = (frameIdx % SHEET_FRAMES) * SHEET_FW + 1;
+    const sw = SHEET_FW - 2;
+    ctx.drawImage(img, sx, 0, sw, SHEET_FH, dx, dy, dw, dh);
   }
 
   // ─────────────────────────────────────────────
@@ -89,6 +91,7 @@
     const cv = document.getElementById('char-mini-canvas');
     if(!cv) return;
     const cx = cv.getContext('2d');
+    cx.imageSmoothingEnabled = false; // 픽셀 아트 — frame bleed 방지
     const W = cv.width || 44;
     const H = cv.height || 52;
     function loop(now){
@@ -212,6 +215,7 @@
     const cv = document.getElementById('room-canvas');
     if(!cv) return;
     const cx = cv.getContext('2d');
+    cx.imageSmoothingEnabled = false;
     cx.clearRect(0, 0, ROOM_W, ROOM_H);
     if(_roomBgImg && _roomBgImg.complete && _roomBgImg.naturalWidth){
       cx.drawImage(_roomBgImg, 0, 0, ROOM_W, ROOM_H);
