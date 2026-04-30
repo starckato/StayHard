@@ -117,13 +117,14 @@
   // ROOM SCENE — room-canvas (520×520)
   // ─────────────────────────────────────────────
   const ROOM_W = 520, ROOM_H = 520;
-  const ROOM_CHAR_H = 280;
-  const ROOM_CHAR_FLOOR_Y = 470;
-  const ROOM_DB = { x: ROOM_W - 150, y: ROOM_H - 230, w: 130, h: 120 };
+  const ROOM_CHAR_H = 240;
+  const ROOM_CHAR_FLOOR_Y = 455; // 룸 floor 근처
+  const ROOM_DB = { x: ROOM_W - 150, y: ROOM_H - 215, w: 130, h: 120 };
 
-  const ROOM_FPS = { idle: 380, walk: 180, exercise: 160, food: 220, special: 600 };
-  const ROOM_DUR_MIN = { idle: 12, walk: 16, exercise: 20, food: 12, special: 14 };
-  const ROOM_DUR_MAX = { idle: 24, walk: 24, exercise: 30, food: 18, special: 22 };
+  const ROOM_FPS = { idle: 380, walk: 160, exercise: 150, food: 200, special: 500 };
+  // walk 시간 늘림 — 캐릭터가 방에서 더 오래 돌아다니게
+  const ROOM_DUR_MIN = { idle: 8, walk: 28, exercise: 20, food: 12, special: 14 };
+  const ROOM_DUR_MAX = { idle: 16, walk: 50, exercise: 30, food: 18, special: 22 };
 
   let _roomRaf = null;
   let _roomBgImg = null;
@@ -140,7 +141,8 @@
   let _exForced = false;
 
   function _pickNextAct(prev){
-    const pool = ['idle','idle','walk','walk','food','special'];
+    // walk 빈도 ↑ — 캐릭터가 방을 적극적으로 돌아다니게
+    const pool = ['walk','walk','walk','walk','idle','food','special'];
     const choices = pool.filter(a => a !== prev);
     return choices[Math.floor(Math.random() * choices.length)];
   }
@@ -231,9 +233,9 @@
     const img = cache[_roomAct] || cache.idle;
     if(!img) return;
     if(_roomAct === 'walk'){
-      _roomWalkX += _roomWalkDir * 1.2;
-      if(_roomWalkX < ROOM_W * 0.18){ _roomWalkX = ROOM_W * 0.18; _roomWalkDir = 1; _roomFlipH = false; }
-      if(_roomWalkX > ROOM_W * 0.82){ _roomWalkX = ROOM_W * 0.82; _roomWalkDir = -1; _roomFlipH = true; }
+      _roomWalkX += _roomWalkDir * 1.6;
+      if(_roomWalkX < ROOM_W * 0.20){ _roomWalkX = ROOM_W * 0.20; _roomWalkDir = 1; _roomFlipH = false; }
+      if(_roomWalkX > ROOM_W * 0.80){ _roomWalkX = ROOM_W * 0.80; _roomWalkDir = -1; _roomFlipH = true; }
     }
     const dh = ROOM_CHAR_H;
     const dw = dh * (SHEET_FW / SHEET_FH); // portrait — width=height/2
@@ -248,18 +250,7 @@
     } else {
       _drawFrame(cx, img, _roomFi, dx, dy, dw, dh);
     }
-    cx.save();
-    cx.strokeStyle = 'rgba(255,77,77,0.28)';
-    cx.lineWidth = 2;
-    cx.setLineDash([6, 4]);
-    cx.strokeRect(ROOM_DB.x, ROOM_DB.y, ROOM_DB.w, ROOM_DB.h);
-    cx.fillStyle = 'rgba(255,77,77,0.06)';
-    cx.fillRect(ROOM_DB.x, ROOM_DB.y, ROOM_DB.w, ROOM_DB.h);
-    cx.restore();
-    cx.fillStyle = 'rgba(255,77,77,0.7)';
-    cx.font = '700 13px "DM Sans", sans-serif';
-    cx.textAlign = 'center';
-    cx.fillText('탭 → 운동', ROOM_DB.x + ROOM_DB.w / 2, ROOM_DB.y + ROOM_DB.h / 2 + 5);
+    // 덤벨 트리거 영역 — 시각적 hint 없이 hover 시 cursor 만 변화 (룸 그래픽 보호)
   }
 
   function _roomLoop(now){
