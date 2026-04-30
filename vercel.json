@@ -24,6 +24,7 @@
   "rewrites": [
     { "source": "/admin", "destination": "/admin.html" },
     { "source": "/trainer", "destination": "/trainer.html" },
+    { "source": "/preview", "destination": "/preview.html" },
     { "source": "/:path*", "destination": "/index.html" }
   ],
   "headers": [

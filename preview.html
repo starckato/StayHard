@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>QROK · 티어별 캐릭터 애니메이션 프리뷰</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{
+    background:#0a0a0c;
+    color:#f5f1ea;
+    font-family:'DM Sans','Apple SD Gothic Neo','Pretendard',-apple-system,sans-serif;
+    line-height:1.5;
+    padding:20px 16px 60px;
+  }
+  h1{
+    font-family:'Archivo Black',sans-serif;
+    font-size:22px;
+    margin-bottom:6px;
+    letter-spacing:-.01em;
+  }
+  .sub{font-size:12px;color:#7a7a86;margin-bottom:24px;}
+  .tier-row{
+    background:#16161a;
+    border:1px solid rgba(255,255,255,0.06);
+    border-radius:14px;
+    padding:14px 16px;
+    margin-bottom:14px;
+  }
+  .tier-hd{
+    display:flex;align-items:baseline;gap:10px;margin-bottom:12px;
+  }
+  .tier-name{
+    font-family:'Archivo Black',sans-serif;
+    font-size:18px;
+    letter-spacing:-.005em;
+  }
+  .tier-meta{
+    font-size:11px;
+    color:#7a7a86;
+    font-family:'DM Mono',monospace;
+  }
+  .actions-grid{
+    display:grid;
+    grid-template-columns:repeat(5,1fr);
+    gap:10px;
+  }
+  @media (max-width:720px){
+    .actions-grid{grid-template-columns:repeat(2,1fr);}
+  }
+  .action-cell{
+    background:#1c1c22;
+    border:1px solid rgba(255,255,255,0.08);
+    border-radius:10px;
+    padding:8px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:6px;
+  }
+  .action-cell canvas{
+    width:100%;
+    aspect-ratio:1;
+    background:linear-gradient(135deg,#0d0d12,#1a1a22);
+    border-radius:6px;
+    image-rendering:auto;
+  }
+  .action-lbl{
+    font-size:10px;
+    color:#a8a8b4;
+    font-weight:600;
+    text-transform:uppercase;
+    letter-spacing:.05em;
+  }
+  .action-name{
+    font-size:11px;
+    color:#f5f1ea;
+    font-weight:600;
+    text-align:center;
+  }
+  .nav{
+    display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px;
+  }
+  .nav a{
+    padding:6px 12px;
+    background:#1c1c22;
+    border:1px solid rgba(255,255,255,0.1);
+    border-radius:6px;
+    color:#a8a8b4;
+    font-size:12px;
+    text-decoration:none;
+  }
+  .nav a:hover{color:#f5f1ea;border-color:rgba(255,255,255,0.2);}
+  .err{color:#ff7a7a;font-size:11px;margin-top:4px;}
+  .loading{font-size:11px;color:#7a7a86;text-align:center;padding:30px 0;}
+</style>
+</head>
+<body>
+<h1>티어별 캐릭터 애니메이션 프리뷰</h1>
+<div class="sub">전 6 티어 · 액션 5개씩 (idle / walk / exercise / food / special). Sheet 규격 2172×724 (3 frames × 724×724).</div>
+<div class="nav">
+  <a href="/">앱으로</a>
+  <a href="/trainer">트레이너</a>
+</div>
+<div id="root" class="loading">스프라이트 로드 중…</div>
+
+<script>
+const SHEET_FW = 724;
+const SHEET_FH = 724;
+const SHEET_FRAMES = 3;
+
+// tier idx → name + sheets (sprites.js / tier.js 와 동일 매핑)
+const TIERS_PREVIEW = [
+  {
+    idx: 0, name: '방관자', score: '0–199', color: '#888',
+    sheets: {
+      idle:     ['브리딩 idle',          '/assets/tier1/Tier1_cha_idle_breathing_sheet.png'],
+      walk:     ['걷기',                  '/assets/tier1/Tier1_cha_walk_sheet.png'],
+      exercise: ['덤벨 (운동)',           '/assets/tier1/Tier1_cha_dumbbell_sheet.png'],
+      food:     ['햄버거 먹기 (식단)',     '/assets/tier1/Tier1_cha_eat_hamburger_sheet.png'],
+      special:  ['수면',                  '/assets/tier1/Tier1_cha_sleep_sheet.png'],
+    },
+  },
+  {
+    idx: 1, name: '각성자', score: '200–599', color: '#38bdf8',
+    sheets: {
+      idle:     ['브리딩 idle',          '/assets/tier2/Tier2_cha_idle_breathing_sheet.png'],
+      walk:     ['걷기',                  '/assets/tier2/Tier2_cha_walk_sheet.png'],
+      exercise: ['벤치프레스',             '/assets/tier2/Tier2_cha_bench_press_sheet.png'],
+      food:     ['햄버거 던지기',           '/assets/tier2/Tier2_cha_throw_hamburger_sheet.png'],
+      special:  ['푸쉬업',                '/assets/tier2/Tier2_cha_pushup_sheet.png'],
+    },
+  },
+  {
+    idx: 2, name: '저항자', score: '600–1499', color: '#f59e0b',
+    sheets: {
+      idle:     ['브리딩 idle',          '/assets/tier3/Tier3_cha_idle_breathing_sheet.png'],
+      walk:     ['걷기',                  '/assets/tier3/Tier3_cha_walk_sheet.png'],
+      exercise: ['스쿼트',                '/assets/tier3/Tier3_cha_squat_sheet.png'],
+      food:     ['버피',                  '/assets/tier3/Tier3_cha_burpee_sheet.png'],
+      special:  ['플란치',                '/assets/tier3/Tier3_cha_planche_sheet.png'],
+    },
+  },
+  {
+    idx: 3, name: '수련자', score: '1500–3499', color: '#34d399',
+    sheets: {
+      idle:     ['브레스 idle',           '/assets/tier4/Tier4_cha_idle_breath_sheet.png'],
+      walk:     ['걷기',                  '/assets/tier4/Tier4_cha_walk_sheet.png'],
+      exercise: ['파워 펀치',              '/assets/tier4/Tier4_cha_power_punch_sheet.png'],
+      food:     ['가드 블락',              '/assets/tier4/Tier4_cha_guard_block_sheet.png'],
+      special:  ['승리 플렉스',            '/assets/tier4/Tier4_cha_victory_flex_sheet.png'],
+    },
+  },
+  {
+    idx: 4, name: '지배자', score: '3500–6999', color: '#ff4d4d',
+    sheets: {
+      idle:     ['포커스 idle',           '/assets/tier5/Tier5_cha_idle_focus_sheet.png'],
+      walk:     ['챔피언 워크',             '/assets/tier5/Tier5_cha_walk_champion_sheet.png'],
+      exercise: ['콤보 펀치',              '/assets/tier5/Tier5_cha_combo_punch_sheet.png'],
+      food:     ['아이언 윌 차지',          '/assets/tier5/Tier5_cha_iron_will_charge_sheet.png'],
+      special:  ['포효 플렉스',            '/assets/tier5/Tier5_cha_roar_flex_sheet.png'],
+    },
+  },
+  {
+    idx: 5, name: '기록자', score: '7000+', color: '#a855f7',
+    sheets: {
+      idle:     ['레전드 idle',            '/assets/tier6/Tier6_cha_idle_legend_sheet.png'],
+      walk:     ['헤비 워크',              '/assets/tier6/Tier6_cha_heavy_walk_sheet.png'],
+      exercise: ['그라운드 슬램',           '/assets/tier6/Tier6_cha_ground_slam_sheet.png'],
+      food:     ['골든 파워업',             '/assets/tier6/Tier6_cha_golden_power_up_sheet.png'],
+      special:  ['챔피언 포즈',             '/assets/tier6/Tier6_cha_champion_pose_sheet.png'],
+    },
+  },
+];
+
+// 액션별 FPS (ms/frame)
+const FPS = { idle: 380, walk: 180, exercise: 160, food: 220, special: 600 };
+const ACTION_KEYS = ['idle','walk','exercise','food','special'];
+
+function buildUI(){
+  const root = document.getElementById('root');
+  root.classList.remove('loading');
+  root.innerHTML = '';
+  TIERS_PREVIEW.forEach(tier => {
+    const row = document.createElement('div');
+    row.className = 'tier-row';
+    row.innerHTML = `
+      <div class="tier-hd">
+        <div class="tier-name" style="color:${tier.color};">Tier ${tier.idx + 1}. ${tier.name}</div>
+        <div class="tier-meta">점수 ${tier.score}</div>
+      </div>
+      <div class="actions-grid"></div>
+    `;
+    const grid = row.querySelector('.actions-grid');
+    ACTION_KEYS.forEach(act => {
+      const [label, url] = tier.sheets[act] || ['—', null];
+      const cell = document.createElement('div');
+      cell.className = 'action-cell';
+      cell.innerHTML = `
+        <canvas width="220" height="220"></canvas>
+        <div class="action-lbl">${act}</div>
+        <div class="action-name">${label}</div>
+      `;
+      grid.appendChild(cell);
+      const canvas = cell.querySelector('canvas');
+      if(url) animateCell(canvas, url, FPS[act] || 250);
+      else { const ctx = canvas.getContext('2d'); ctx.fillStyle='#7a7a86'; ctx.font='12px sans-serif'; ctx.fillText('no asset', 10, 30); }
+    });
+    root.appendChild(row);
+  });
+}
+
+function animateCell(canvas, url, fpsMs){
+  const cx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const img = new Image();
+  let loaded = false;
+  let errored = false;
+  img.onload = () => { loaded = true; };
+  img.onerror = () => { errored = true; cx.fillStyle='#ff7a7a'; cx.font='10px sans-serif'; cx.fillText('load fail', 10, 30); };
+  img.src = url;
+
+  let fi = 0;
+  let lastT = 0;
+  function loop(now){
+    requestAnimationFrame(loop);
+    if(errored) return;
+    if(!loaded) return;
+    if(now - lastT < fpsMs) return;
+    lastT = now;
+    cx.clearRect(0, 0, W, H);
+    const sx = (fi % SHEET_FRAMES) * SHEET_FW;
+    const scale = Math.min(W / SHEET_FW, H / SHEET_FH);
+    const dw = SHEET_FW * scale;
+    const dh = SHEET_FH * scale;
+    const dx = (W - dw) / 2;
+    const dy = (H - dh) / 2;
+    cx.drawImage(img, sx, 0, SHEET_FW, SHEET_FH, dx, dy, dw, dh);
+    fi = (fi + 1) % SHEET_FRAMES;
+  }
+  requestAnimationFrame(loop);
+}
+
+buildUI();
+</script>
+</body>
+</html>
