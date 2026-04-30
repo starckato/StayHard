@@ -64,8 +64,7 @@ export const TIER_ASSETS = {
       food:     '/assets/tier1/Tier1_cha_eat_hamburger_sheet.png',
       special:  '/assets/tier1/Tier1_cha_sleep_sheet.png',
     },
-    room: `${ASSET_BASE}/GymRat_Tier1_room.png`,
-    // 옛 정적 char (fallback / Supabase legacy)
+    room: '/assets/rooms/Tier1_room.png',
     char: `${ASSET_BASE}/GymRat_Tier1_character.png`,
   },
   1: {
@@ -77,7 +76,7 @@ export const TIER_ASSETS = {
       food:     '/assets/tier2/Tier2_cha_throw_hamburger_sheet.png',
       special:  '/assets/tier2/Tier2_cha_pushup_sheet.png',
     },
-    room: '/assets/tier2/tier2_room.png',
+    room: '/assets/rooms/Tier2_room.png',
     char: '/assets/tier2/Tier2_cha_nobg.png',
   },
   2: {
@@ -89,7 +88,7 @@ export const TIER_ASSETS = {
       food:     '/assets/tier3/Tier3_cha_burpee_sheet.png',
       special:  '/assets/tier3/Tier3_cha_planche_sheet.png',
     },
-    room: `${ASSET_BASE}/GymRat_Tier3_room.png`,
+    room: '/assets/rooms/Tier3_room.png',
     char: '/assets/tier3/Tier3_cha_nobg.png',
   },
   3: {
@@ -101,7 +100,7 @@ export const TIER_ASSETS = {
       food:     '/assets/tier4/Tier4_cha_guard_block_sheet.png',
       special:  '/assets/tier4/Tier4_cha_victory_flex_sheet.png',
     },
-    room: `${ASSET_BASE}/GymRat_Tier4_room.png`,
+    room: '/assets/rooms/Tier4_room.png',
     char: `${ASSET_BASE}/GymRat_Tier4_character.png`,
   },
   4: {
@@ -113,7 +112,7 @@ export const TIER_ASSETS = {
       food:     '/assets/tier5/Tier5_cha_iron_will_charge_sheet.png',
       special:  '/assets/tier5/Tier5_cha_roar_flex_sheet.png',
     },
-    room: `${ASSET_BASE}/GymRat_Tier4_room.png`,
+    room: '/assets/rooms/Tier5_room.png',
     char: `${ASSET_BASE}/GymRat_Tier4_character.png`,
   },
   5: {
@@ -125,7 +124,7 @@ export const TIER_ASSETS = {
       food:     '/assets/tier6/Tier6_cha_golden_power_up_sheet.png',
       special:  '/assets/tier6/Tier6_cha_champion_pose_sheet.png',
     },
-    room: `${ASSET_BASE}/GymRat_Tier4_room.png`,
+    room: '/assets/rooms/Tier6_room.png',
     char: `${ASSET_BASE}/GymRat_Tier4_character.png`,
   },
 };
