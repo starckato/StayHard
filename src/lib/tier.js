@@ -33,7 +33,7 @@ export const ASSET_BASE = 'https://uvaosxhsjscigheyymus.supabase.co/storage/v1/o
  * Per-tier sprite sheet asset URLs.
  *
  * Sheet layout (모든 sheet 동일):
- *   2172×724 px, 6 frames × 362×724 (가로 6프레임 portrait).
+ *   4344×724 px, 6 frames × 724×724 (가로 6프레임 portrait).
  *
  * 각 tier 5 actions:
  *   idle      : 기본 호흡/대기
@@ -51,7 +51,7 @@ export const ASSET_BASE = 'https://uvaosxhsjscigheyymus.supabase.co/storage/v1/o
  *   tier6/ = 기록자 (idx 5)
  */
 export const SHEET_FRAMES = 6;
-export const SHEET_FW = 362;
+export const SHEET_FW = 724;
 export const SHEET_FH = 724;
 
 export const TIER_ASSETS = {

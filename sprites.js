@@ -1,7 +1,7 @@
 // QROK · sprite sheet 기반 캐릭터 애니메이션
-// Build: 20260501-tier-sheets-6f
+// Build: 20260501-sprite-spacing-724
 //
-// 모든 sheet : 2172×724 (6 frames × 362×724, 가로 6프레임 portrait).
+// 모든 sheet : 4344×724 (6 frames × 724×724, 가로 6프레임 square).
 // per-tier 5 actions: idle / walk / exercise / food / special.
 // tier.js TIER_ASSETS 에 sheet URL 정의됨.
 //
@@ -13,7 +13,7 @@
 (function(){
   'use strict';
 
-  const SHEET_FW = 362;
+  const SHEET_FW = 724;
   const SHEET_FH = 724;
   const SHEET_FRAMES = 6;
 
@@ -238,7 +238,7 @@
       if(_roomWalkX > ROOM_W * 0.80){ _roomWalkX = ROOM_W * 0.80; _roomWalkDir = -1; _roomFlipH = true; }
     }
     const dh = ROOM_CHAR_H;
-    const dw = dh * (SHEET_FW / SHEET_FH); // portrait — width=height/2
+    const dw = dh * (SHEET_FW / SHEET_FH); // 비율 유지 (square frame 일 때 dw=dh)
     const dx = _roomWalkX - dw / 2;
     const dy = ROOM_CHAR_FLOOR_Y - dh;
     if(_roomFlipH){
