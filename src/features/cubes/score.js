@@ -5,6 +5,14 @@
 //   red:    -5
 //   gray:    0 (등록 전 상태)
 //   bonus 항목: count × 3 (각 count 는 "황금 큐브 가치 단위")
+//
+// ── lifetime 점수 환산 정책 (2026-05-01 결정 = 옵션 a) ─────────
+// 옛 categorical 데이터 (cubes.diet='gold' 등) 와 신 카운트 모델
+// (cubes.gold:N) 을 동일 BASE_SCORE 로 합산.
+// → 옛 데이터 1색 = 1카운트로 처리 (옛 'gold' 1 → +3, 'silver' 1 → +1).
+// → silver 위주로 쌓아온 사용자는 lifetime 점수가 ~½ 로 낮아져 보임.
+// → 마이그레이션/multiplier 적용 X. 사용자 신뢰 우선 (점수 인플레 회피).
+// → 새 데이터부터는 액션당 즉시 누적되므로 자연스럽게 회복.
 
 const BASE_SCORE = {
   gold: 3,

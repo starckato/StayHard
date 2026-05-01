@@ -11,6 +11,7 @@ import {
   judgeRoutine,
   judgeTasks,
   judgeCubes,
+  judgeAccumulator,
   scoreFromCubes,
   detectPRs,
   detectStreakMilestones,
@@ -41,10 +42,10 @@ t('diet · green 2 + normal 1 → gold', () => judgeDiet([
   { type: 'green', category: 'lunch' },
   { type: 'normal', category: 'dinner' },
 ]) === 'gold');
-t('diet · green 1 + normal 1 → silver (green<2)', () => judgeDiet([
+t('diet · green 1 + normal 1 → gold (2026-05-01: 클린 1개라도 gold)', () => judgeDiet([
   { type: 'green', category: 'breakfast' },
   { type: 'normal', category: 'lunch' },
-]) === 'silver');
+]) === 'gold');
 t('diet · 전부 normal 2끼 → silver', () => judgeDiet([
   { type: 'normal', category: 'breakfast' },
   { type: 'normal', category: 'lunch' },
@@ -122,9 +123,9 @@ t('score · gold 4 + exercise_bonus gold + PR bonus 1 = 15+6 = 21', () => scoreF
   diet: 'gold', exercise: 'gold', exercise_bonus: 'gold', routine: 'gold', tasks: 'gold',
   bonus: [{ type: 'pr', color: 'gold', count: 2 }],
 }) === 3 + 3 + 3 + 3 + 3 + 6);
-t('score · crimson 1 + gray 2 = −3', () => scoreFromCubes({
+t('score · crimson 1 + gray 2 = −5 (2026-05-01 점수 변경)', () => scoreFromCubes({
   diet: 'crimson', exercise: 'gray', exercise_bonus: null, routine: 'gray', tasks: null, bonus: [],
-}) === -3);
+}) === -5);
 t('score · 전부 gray (큐브 없음) = 0 (2026-04-24 규칙)', () => scoreFromCubes({
   diet: 'gray', exercise: 'gray', exercise_bonus: null, routine: 'gray', tasks: null, bonus: [],
 }) === 0);
@@ -178,11 +179,67 @@ t('streak · 초기 상태에서 30일 달성 시 7+30 동시 지급', () => {
   return milestones.length === 2;
 });
 
-// ── 통합 judgeCubes ──────────────────────────────────
-t('judgeCubes · 빈 로그 → 전부 gray/null', () => {
+// ── judgeAccumulator (신 모델, 2026-05-01) ───────────
+// 모든 액션 = 즉시 큐브 카운트. gold +3, silver +1, red -5.
+const eq = (a, b) => a === b;
+const accEq = (out, exp) => eq(out.gold, exp.gold) && eq(out.silver, exp.silver) && eq(out.red, exp.red);
+
+t('acc · 빈 로그 → 0/0/0', () => accEq(judgeAccumulator({}, { weekday: 3 }), { gold: 0, silver: 0, red: 0 }));
+
+// 식단
+t('acc · 일반식 1 → silver 1', () => accEq(judgeAccumulator({ meals: [{ type: 'normal', category: 'breakfast' }] }), { gold: 0, silver: 1, red: 0 }));
+t('acc · 클린식(green) 2 → gold 2', () => accEq(judgeAccumulator({ meals: [{ type: 'green' }, { type: 'green' }] }), { gold: 2, silver: 0, red: 0 }));
+t('acc · 금지식(red) 1 → red 1', () => accEq(judgeAccumulator({ meals: [{ type: 'red' }] }), { gold: 0, silver: 0, red: 1 }));
+t('acc · alcohol → red 1', () => accEq(judgeAccumulator({ meals: [{ category: 'alcohol' }] }), { gold: 0, silver: 0, red: 1 }));
+t('acc · drink 무시 → 0', () => accEq(judgeAccumulator({ meals: [{ category: 'drink' }] }), { gold: 0, silver: 0, red: 0 }));
+t('acc · 일반2 + 클린1 + 금지1 → s2 g1 r1', () => accEq(judgeAccumulator({ meals: [{ type: 'normal' }, { type: 'normal' }, { type: 'green' }, { type: 'red' }] }), { gold: 1, silver: 2, red: 1 }));
+
+// 물
+t('acc · 물 1잔 → silver 1', () => accEq(judgeAccumulator({ water_cups: 1 }, { waterGoal: 6 }), { gold: 0, silver: 1, red: 0 }));
+t('acc · 물 6잔 (목표 도달) → silver 1 + gold 1', () => accEq(judgeAccumulator({ water_cups: 6 }, { waterGoal: 6 }), { gold: 1, silver: 1, red: 0 }));
+t('acc · 물 0잔 → 0', () => accEq(judgeAccumulator({ water_cups: 0 }, { waterGoal: 6 }), { gold: 0, silver: 0, red: 0 }));
+
+// 운동
+t('acc · gym done 1 → gold 1', () => accEq(judgeAccumulator({ workouts: [{ type: 'gym', status: 'done' }] }), { gold: 1, silver: 0, red: 0 }));
+t('acc · gym + activity done 둘 다 → gold 2', () => accEq(judgeAccumulator({ workouts: [{ type: 'gym', status: 'done' }, { type: 'activity', status: 'done' }] }), { gold: 2, silver: 0, red: 0 }));
+t('acc · 미완료 운동 → 0', () => accEq(judgeAccumulator({ workouts: [{ type: 'gym', status: 'planned' }] }), { gold: 0, silver: 0, red: 0 }));
+
+// 루틴
+t('acc · 루틴 1개 done (1개만 등록) → silver 1, gold 0 (≥2 아님)', () => accEq(judgeAccumulator({ mandatory: [{ done: true, days: [3] }] }, { weekday: 3 }), { gold: 0, silver: 1, red: 0 }));
+t('acc · 루틴 2개 다 done → silver 2 + gold 1', () => accEq(judgeAccumulator({ mandatory: [{ done: true, days: [3] }, { done: true, days: [3] }] }, { weekday: 3 }), { gold: 1, silver: 2, red: 0 }));
+t('acc · 루틴 2 중 1 done → silver 1 (gold 보너스 X)', () => accEq(judgeAccumulator({ mandatory: [{ done: true, days: [3] }, { done: false, days: [3] }] }, { weekday: 3 }), { gold: 0, silver: 1, red: 0 }));
+
+// 할일
+t('acc · 할일 1개만 등록 → 0 (≥2 미만)', () => accEq(judgeAccumulator({ targets: [{ text: 'A', st: 'done' }] }), { gold: 0, silver: 0, red: 0 }));
+t('acc · 할일 2개 다 done → silver 2 + gold 1', () => accEq(judgeAccumulator({ targets: [{ text: 'A', st: 'done' }, { text: 'B', st: 'done' }] }), { gold: 1, silver: 2, red: 0 }));
+
+// 루틴 + 할일 모두 완료 보너스
+t('acc · 루틴 2 + 할일 2 모두 done → silver 보너스 1 추가', () => {
+  const out = judgeAccumulator({
+    mandatory: [{ done: true, days: [3] }, { done: true, days: [3] }],
+    targets: [{ text: 'A', st: 'done' }, { text: 'B', st: 'done' }],
+  }, { weekday: 3 });
+  // 루틴 silver 2 + gold 1 + 할일 silver 2 + gold 1 + 보너스 silver 1 = silver 5, gold 2
+  return accEq(out, { gold: 2, silver: 5, red: 0 });
+});
+
+// 체중
+t('acc · 체중 입력만 → silver 1', () => accEq(judgeAccumulator({ weight: 70.5 }), { gold: 0, silver: 1, red: 0 }));
+t('acc · 체중 감량 (목표 향해) → silver + gold', () => accEq(judgeAccumulator({ weight: 70.0 }, { prevWeight: 70.5, weightGoal: 65 }), { gold: 1, silver: 1, red: 0 }));
+t('acc · 체중 증량 (목표 반대) → silver only', () => accEq(judgeAccumulator({ weight: 71.0 }, { prevWeight: 70.5, weightGoal: 65 }), { gold: 0, silver: 1, red: 0 }));
+t('acc · 증량 모드 (목표보다 가벼움) 증가 → silver + gold', () => accEq(judgeAccumulator({ weight: 65.5 }, { prevWeight: 65.0, weightGoal: 70 }), { gold: 1, silver: 1, red: 0 }));
+
+// 점수 환산
+t('score · {gold:2,silver:3,red:1} → 2*3+3-5 = 4', () => scoreFromCubes({ gold: 2, silver: 3, red: 1 }) === 4);
+t('score · {silver:1} → 1', () => scoreFromCubes({ silver: 1 }) === 1);
+t('score · {red:2} → -10', () => scoreFromCubes({ red: 2 }) === -10);
+t('score · 빈 cubes → 0', () => scoreFromCubes({}) === 0);
+t('score · legacy categorical {diet:gold,exercise:silver} → gold(3)+silver(1)=4', () => scoreFromCubes({ diet: 'gold', exercise: 'silver' }) === 4);
+
+// ── 통합 judgeCubes (신 모델은 카운트 반환) ──────────
+t('judgeCubes · 빈 로그 → 카운트 0', () => {
   const c = judgeCubes({}, { weekday: 3 });
-  return c.diet === 'gray' && c.exercise === 'gray' && c.exercise_bonus == null
-    && c.routine === 'gray' && c.tasks == null && Array.isArray(c.bonus);
+  return c.gold === 0 && c.silver === 0 && c.red === 0 && Array.isArray(c.bonus);
 });
 
 export function runCubeTests() {

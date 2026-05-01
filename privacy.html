@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>큐록 (QROK) 개인정보처리방침</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:#0a0a0c;color:#e8e3d8;font-family:'DM Sans','Apple SD Gothic Neo','Pretendard',-apple-system,sans-serif;line-height:1.7;padding:24px 16px 80px;max-width:760px;margin:0 auto;}
+  h1{font-family:'Archivo Black',sans-serif;font-size:24px;letter-spacing:-.01em;margin-bottom:12px;}
+  h2{font-size:16px;font-weight:800;letter-spacing:-.005em;margin-top:24px;margin-bottom:8px;color:#fff;border-top:1px solid rgba(255,255,255,0.08);padding-top:16px;}
+  h2:first-of-type{border-top:none;padding-top:0;}
+  p{margin-bottom:10px;font-size:14px;color:#bbb;}
+  ul,ol{margin-left:20px;margin-bottom:10px;color:#bbb;font-size:14px;}
+  li{margin-bottom:4px;}
+  table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13px;}
+  th,td{text-align:left;padding:8px 10px;border:1px solid rgba(255,255,255,0.08);}
+  th{background:rgba(255,255,255,0.04);font-weight:700;}
+  .meta{font-size:11px;color:#7a7a86;margin-bottom:18px;font-family:'DM Mono',monospace;}
+  a{color:#ff7a7a;text-decoration:none;}
+  a:hover{text-decoration:underline;}
+  .nav{margin-bottom:20px;display:flex;gap:12px;font-size:12px;color:#7a7a86;}
+</style>
+</head>
+<body>
+<div class="nav"><a href="/">앱으로</a><a href="/terms">이용약관</a></div>
+<h1>큐록 (QROK) 개인정보처리방침</h1>
+<div class="meta">시행일: 2026-05-15 · 작성 근거: 개인정보 보호법 · 개인정보보호위원회 표준 양식</div>
+
+<h2>제1조 (목적)</h2>
+<p>본 방침은 큐록 (이하 "서비스") 이 사용자의 개인정보를 어떻게 수집·이용·보관·파기하는지, 그리고 사용자의 권리를 어떻게 보장하는지 명시합니다.</p>
+
+<h2>제2조 (개인정보의 처리 목적)</h2>
+<p>서비스는 다음 목적으로 개인정보를 처리합니다.</p>
+<ol>
+<li><strong>회원 가입 및 관리</strong> — 본인 식별, 가입 의사 확인, 회원자격 유지·관리</li>
+<li><strong>서비스 제공</strong> — 식단·운동·루틴·할일 등 일별 기록, 진행 상황 추적, 티어·점수 산정</li>
+<li><strong>친구 / 트레이너 기능</strong> — 친구 코드 기반 친구 연결, nudge 메시지, 트레이너 ↔ 회원 연동</li>
+<li><strong>푸시 알림</strong> — 친구 nudge, 트레이너 액션, 시스템 공지, 사용자 설정 알림</li>
+<li><strong>서비스 개선</strong> — 익명 통계 기반 리텐션 분석</li>
+</ol>
+
+<h2>제3조 (수집하는 개인정보 항목)</h2>
+<p><strong>회원가입 시 필수:</strong> 이메일, 비밀번호 (해시 처리)</p>
+<p><strong>서비스 이용 중 자동 수집:</strong> 사용자 ID (UUID), 친구 코드, 디바이스 푸시 토큰 (FCM/APNs), 사용 로그</p>
+<p><strong>사용자 입력:</strong> 닉네임, 식단·운동·루틴·할일 기록, 체중·물 섭취량·목표, 식단 사진, 운동 영상, 알림 시간 설정</p>
+<p><strong>수집하지 않음:</strong> 위치 정보, 연락처, 마이크 입력, 블루투스, HealthKit, 광고 식별자 (IDFA, AAID), 결제 정보 (서비스 무료)</p>
+
+<h2>제4조 (개인정보의 보유 및 이용 기간)</h2>
+<ul>
+<li>회원 탈퇴 시 즉시 파기를 원칙으로 합니다.</li>
+<li>앱 내 「설정 → 계정 삭제」 메뉴를 통해 직접 탈퇴 가능하며, 탈퇴 시 인증 정보·프로필·일별 기록·식단 사진·운동 영상·친구 관계·nudge·푸시 토큰·분석 이벤트가 cascade 삭제됩니다.</li>
+<li>법령에 따라 보존이 필요한 정보는 별도 명시 (현재 해당 사항 없음).</li>
+<li>자동 만료: 인증 세션 토큰 30일, 무효화된 푸시 토큰 자동 prune.</li>
+</ul>
+
+<h2>제5조 (개인정보의 제3자 제공)</h2>
+<p>서비스는 사용자 동의 없이 개인정보를 제3자에게 제공하지 않습니다. 단, 다음 경우 제외:</p>
+<ul>
+<li>법령 또는 수사기관의 적법한 요청</li>
+<li>사용자가 사전에 동의한 경우</li>
+<li>통계·연구 목적의 비식별화 정보</li>
+</ul>
+
+<h2>제6조 (개인정보 처리 위탁)</h2>
+<table>
+<thead><tr><th>위탁자</th><th>위탁 업무</th><th>데이터 위치</th></tr></thead>
+<tbody>
+<tr><td>Supabase Inc.</td><td>데이터베이스, 인증, 파일 저장</td><td>AWS Seoul (ap-northeast-2)</td></tr>
+<tr><td>Vercel Inc.</td><td>웹 호스팅 및 콘텐츠 전송</td><td>Global Edge</td></tr>
+<tr><td>Google LLC (FCM)</td><td>Android 푸시 메시지</td><td>Global</td></tr>
+<tr><td>Apple Inc. (APNs)</td><td>iOS 푸시 메시지</td><td>Global</td></tr>
+</tbody>
+</table>
+<p>위탁자와는 데이터 처리 계약 (DPA) 을 체결하며, 위탁 업무 수행 목적 외 개인정보 처리를 금지합니다.</p>
+
+<h2>제7조 (정보주체의 권리·의무 및 행사방법)</h2>
+<ol>
+<li><strong>열람</strong> — 앱 내 「오늘의 요약」, 「분석 탭」, 「프로필」 에서 모든 자기 데이터 열람</li>
+<li><strong>정정·삭제</strong> — 식단·운동·루틴·할일 기록은 앱 내에서 직접 정정·삭제. 프로필 정보는 「설정」 에서 변경</li>
+<li><strong>처리정지</strong> — 알림 수신 거부는 「설정 → 알림」 에서 비활성화</li>
+<li><strong>계정 삭제</strong> — 「설정 → 계정 삭제」 또는 본 방침 제8조 연락처로 요청. 즉시 cascade 처리</li>
+</ol>
+
+<h2>제8조 (개인정보보호 책임자)</h2>
+<ul>
+<li><strong>책임자:</strong> 큐록 운영팀</li>
+<li><strong>연락처:</strong> starckato@gmail.com</li>
+<li><strong>분쟁 조정:</strong> 개인정보분쟁조정위원회 (1833-6972, www.kopico.go.kr) / 개인정보침해신고센터 (118, privacy.kisa.or.kr)</li>
+</ul>
+
+<h2>제9조 (개인정보의 안전성 확보 조치)</h2>
+<ul>
+<li><strong>암호화</strong> — 비밀번호 해시 (bcrypt), 통신 TLS, 데이터베이스 저장 시 암호화</li>
+<li><strong>접근 통제</strong> — Row-Level Security (RLS) 로 사용자별 데이터 격리</li>
+<li><strong>위탁자 보안</strong> — Supabase, Vercel 의 SOC 2 Type II 준수 인프라 활용</li>
+<li><strong>최소 권한</strong> — anon key 만 클라이언트 노출, service role 은 서버 전용</li>
+</ul>
+
+<h2>제10조 (쿠키 및 자동 수집 도구)</h2>
+<p>서비스는 광고·트래킹 쿠키를 사용하지 않습니다. 인증 세션 유지를 위한 1st-party 쿠키만 사용합니다.</p>
+
+<h2>제11조 (만 14세 미만 아동의 개인정보)</h2>
+<p>서비스는 만 14세 미만 아동의 회원 가입을 받지 않습니다. 가입 시 만 14세 이상임을 확인합니다.</p>
+
+<h2>제12조 (방침의 변경)</h2>
+<p>본 방침이 변경될 경우 시행일 7일 전 앱 내 공지 또는 등록된 이메일로 통지합니다. 중대한 변경 (수집 항목 추가, 처리 목적 확장 등) 은 30일 전 통지하며, 사용자 동의를 다시 받습니다.</p>
+
+<h2>변경 이력</h2>
+<table>
+<thead><tr><th>시행일</th><th>변경 내용</th></tr></thead>
+<tbody><tr><td>2026-05-15</td><td>최초 시행</td></tr></tbody>
+</table>
+</body>
+</html>

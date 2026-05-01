@@ -27,6 +27,7 @@ cp manifest.json www/
 cp sw.js www/
 cp sprites.js www/
 cp icon-192.png icon-512.png www/
+cp privacy.html terms.html www/ 2>/dev/null || true
 
 # Asset directory.
 # 2026-04-24: tier[1-3]/ 서브폴더 캐릭터 art 는 Will Cube 시스템 + 캐릭터 룸에서

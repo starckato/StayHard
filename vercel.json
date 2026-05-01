@@ -25,6 +25,8 @@
     { "source": "/admin", "destination": "/admin.html" },
     { "source": "/trainer", "destination": "/trainer.html" },
     { "source": "/preview", "destination": "/preview.html" },
+    { "source": "/privacy", "destination": "/privacy.html" },
+    { "source": "/terms", "destination": "/terms.html" },
     { "source": "/:path*", "destination": "/index.html" }
   ],
   "headers": [

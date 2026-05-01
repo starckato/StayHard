@@ -602,99 +602,25 @@
     </div>
   </div>
 
-  <!-- V2: (DEPRECATED — 캘린더 폐기. 마크업만 유지하여 기존 함수 참조 안전) -->
-  <div id="view-overview-v2" class="dash3">
-    <!-- 좌: 회원 list -->
-    <div class="dash3-col dash3-clients-col">
-      <div class="dash3-clients">
-        <input type="text" id="dash3-search" class="dash3-clients-search" placeholder="회원 검색…" oninput="filterDash3Clients()" />
-        <button class="btn btn-primary" onclick="openRegisterModal()" style="width:100%;justify-content:center;margin-bottom:10px;">+ 회원 등록</button>
-        <div id="dash3-client-list"></div>
-      </div>
-    </div>
-    <!-- 중앙: 캘린더 -->
-    <div class="dash3-col dash3-cal-col">
-      <div class="dash3-cal" id="dash3-cal-wrap">
-        <div class="dash3-cal-empty">← 회원을 선택하면<br>해당 회원의 운동 캘린더가 표시됩니다</div>
-      </div>
-    </div>
-    <!-- 우: 날짜 detail -->
-    <div class="dash3-col dash3-detail-col">
-      <div class="dash3-detail" id="dash3-detail-wrap">
-        <div class="dash3-detail-empty">날짜를 선택하면<br>그 날의 운동·식단·메시지가<br>여기에 표시됩니다</div>
-      </div>
-    </div>
-  </div>
-
-  <div class="container" id="view-overview-v1" style="display:none;">
-    <!-- Overview (회원 목록) -->
-    <div id="view-overview">
-      <div class="page-head">
-        <div>
-          <div class="page-title">내 회원</div>
-          <div class="page-sub" id="client-count">불러오는 중…</div>
-        </div>
-        <button class="btn btn-primary" onclick="openRegisterModal()">+ 회원 등록</button>
-      </div>
-      <div class="table-wrap" id="client-table-wrap">
-        <div class="loader">불러오는 중…</div>
-      </div>
-    </div>
-
-    <!-- Detail (회원 1명) -->
-    <div id="view-detail" class="hidden">
-      <div class="page-head">
-        <div>
-          <button class="btn btn-ghost" onclick="closeDetail()">← 회원 목록</button>
-          <div class="page-title" id="d-name" style="margin-top:8px;">—</div>
-          <div class="page-sub" id="d-meta">—</div>
-        </div>
-        <div>
-          <button class="btn btn-primary" onclick="openAssignModal()">+ 운동 배정</button>
-          <button class="btn btn-ghost" onclick="openMessageModal()">💬 메시지</button>
-          <button class="btn btn-danger" onclick="openGraduateModal()">졸업</button>
-        </div>
-      </div>
-
-      <div class="detail-grid">
-        <div>
-          <!-- 회원 오늘 요약 — 식단·운동 중심 -->
-          <div class="panel">
-            <div class="panel-title">오늘 요약</div>
-            <div class="stat-row">
-              <div class="stat"><div class="stat-label">식단</div><div class="stat-val" id="d-meal-total" style="font-size:22px;">—</div><div class="stat-sub" id="d-meal-sub">—</div></div>
-              <div class="stat"><div class="stat-label">운동</div><div class="stat-val" id="d-workout-total" style="font-size:22px;">—</div><div class="stat-sub" id="d-workout-sub">—</div></div>
-            </div>
-          </div>
-
-          <!-- 식단/운동/체중 탭 -->
-          <div class="panel">
-            <div class="seg">
-              <button class="on" data-pane="meals" onclick="switchPane('meals',this)">식단</button>
-              <button data-pane="workouts" onclick="switchPane('workouts',this)">운동</button>
-              <button data-pane="weights" onclick="switchPane('weights',this)">체중</button>
-              <button data-pane="messages" onclick="switchPane('messages',this)">메시지</button>
-            </div>
-            <div id="pane-meals" class="loader">로딩…</div>
-            <div id="pane-workouts" class="hidden loader">로딩…</div>
-            <div id="pane-weights" class="hidden loader">로딩…</div>
-            <div id="pane-messages" class="hidden loader">로딩…</div>
-          </div>
-        </div>
-
-        <div>
-          <!-- 우측 — 배정 운동 list, 최근 활동 -->
-          <div class="panel">
-            <div class="panel-title">배정한 운동</div>
-            <div id="d-assignments" class="loader">로딩…</div>
-          </div>
-          <div class="panel">
-            <div class="panel-title">최근 7일</div>
-            <div id="d-recent" class="loader">로딩…</div>
-          </div>
-        </div>
-      </div>
-    </div>
+  <!-- 보조 hidden anchor — 일부 옛 함수가 d-name 같은 ID 를 직접 set 함. 시각 X. -->
+  <div id="legacy-anchors" style="display:none;" aria-hidden="true">
+    <span id="d-name"></span>
+    <span id="client-count"></span>
+    <span id="client-table-wrap"></span>
+    <span id="dash3-client-list"></span>
+    <span id="dash3-cal-wrap"></span>
+    <span id="dash3-detail-wrap"></span>
+    <span id="dash3-search"></span>
+    <span id="d-meal-total"></span>
+    <span id="d-meal-sub"></span>
+    <span id="d-workout-total"></span>
+    <span id="d-workout-sub"></span>
+    <span id="pane-meals"></span>
+    <span id="pane-workouts"></span>
+    <span id="pane-weights"></span>
+    <span id="pane-messages"></span>
+    <span id="d-assignments"></span>
+    <span id="d-recent"></span>
   </div>
 </div>
 
@@ -2093,8 +2019,7 @@ function setDashView(v, opts){
   set('view-feed', v==='feed');
   set('view-roster', v==='roster');
   set('view-detail-tl', v==='detail');
-  set('view-overview-v1', false);
-  set('view-overview-v2', false);
+  // v1/v2 은 폐기됨 (마크업 제거). set() noop.
   if(v==='feed') loadFeed();
   else if(v==='roster') loadRoster();
   else if(v==='detail' && opts) loadDetail(opts.relationship_id, opts.client_id);
@@ -2586,13 +2511,18 @@ function _renderDtDay(d){
   // 운동 정보
   const tl = d.tl || {};
   const hwT = tl.homework_total||0, hwD = tl.homework_done||0;
+  const hwStat = tl.assignment_status;
   const freeC = tl.free_workout_count||0, freeDone = tl.free_workout_done||0;
   let workoutHtml = '<span style="color:var(--text3);">—</span>';
   if(hwT > 0 || freeC > 0){
     const parts = [];
     if(hwT > 0){
-      const cls = (hwD===hwT)?'ok' : (hwD===0?'alert':'warn');
-      parts.push(`숙제 <span class="roster-mono ${cls}">${hwD}/${hwT}</span>`);
+      if(hwStat === 'cancelled_by_user'){
+        parts.push(`<span class="roster-mono muted">숙제 취소 (회원)</span>`);
+      } else {
+        const cls = (hwD===hwT)?'ok' : (hwD===0?'alert':'warn');
+        parts.push(`숙제 <span class="roster-mono ${cls}">${hwD}/${hwT}</span>`);
+      }
     }
     if(freeC > 0) parts.push(`자유 ${freeDone}/${freeC}`);
     workoutHtml = parts.join(' · ');
@@ -2782,9 +2712,9 @@ function _feedAttention(row){
   const yT = row.yesterday_homework_total_sets || 0;
   const yD = row.yesterday_homework_done_sets || 0;
   const yStat = row.yesterday_homework_status;
-  if(yT > 0 && yD === 0 && yStat !== 'completed'){ return {level:'alert', label:'어제 0/'+yT+' 미수행'}; }
+  if(yT > 0 && yD === 0 && yStat !== 'completed' && yStat !== 'cancelled_by_user'){ return {level:'alert', label:'어제 0/'+yT+' 미수행'}; }
   if((row.meal_red||0) > 0){ return {level:'alert', label:'금지식단 '+row.meal_red+'회'}; }
-  if(yT > 0 && yD > 0 && yD < yT && yStat !== 'completed'){ return {level:'warn', label:'어제 '+yD+'/'+yT+' 부분'}; }
+  if(yT > 0 && yD > 0 && yD < yT && yStat !== 'completed' && yStat !== 'cancelled_by_user'){ return {level:'warn', label:'어제 '+yD+'/'+yT+' 부분'}; }
   if(!row.homework_status && (row.last_activity)){ return {level:'warn', label:'오늘 미배정'}; }
   return null;
 }
@@ -2829,8 +2759,9 @@ function _renderFcard(r){
   // 어제 숙제
   const yT = r.yesterday_homework_total_sets||0, yD = r.yesterday_homework_done_sets||0;
   const yStat = r.yesterday_homework_status;
-  let yVal, yCls;
+  let yVal, yCls, ySub='';
   if(yT === 0){ yVal = '없음'; yCls = 'muted'; }
+  else if(yStat === 'cancelled_by_user'){ yVal = '취소'; yCls = 'muted'; ySub = '회원이 취소'; }
   else if(yStat === 'completed' || yD === yT){ yVal = `${yD}/${yT}`; yCls = 'ok'; }
   else if(yD === 0){ yVal = `0/${yT}`; yCls = 'alert'; }
   else { yVal = `${yD}/${yT}`; yCls = 'warn'; }
@@ -2840,6 +2771,7 @@ function _renderFcard(r){
   const tStat = r.homework_status;
   let tVal, tCls, tSub='';
   if(tT === 0){ tVal = '미배정'; tCls = 'muted'; tSub = '오늘 숙제 안 짬'; }
+  else if(tStat === 'cancelled_by_user'){ tVal = '취소'; tCls = 'muted'; tSub = '회원이 취소'; }
   else if(tStat === 'completed' || tD === tT){ tVal = `${tD}/${tT}`; tCls = 'ok'; tSub = '완료'; }
   else if(tD === 0){ tVal = `0/${tT}`; tCls = 'alert'; tSub = '아직 시작 X'; }
   else { tVal = `${tD}/${tT}`; tCls = 'warn'; tSub = '진행 중'; }
@@ -3506,7 +3438,8 @@ async function saveNickname(){
   if(error){ errEl.textContent = error.message; return; }
   closeModal('modal-nickname');
   showToast(nick ? '닉네임 저장됨.' : '닉네임 지움.');
-  await loadClients();
+  // Feed/Roster 활성 뷰 갱신
+  if(_dashView==='feed') await loadFeed(); else if(_dashView==='roster') await loadRoster();
 }
 async function setNicknameClear(){
   if(!_nickRelId) return;
@@ -3515,7 +3448,8 @@ async function setNicknameClear(){
   if(error){ showToast('지우기 실패: '+error.message); return; }
   closeModal('modal-nickname');
   showToast('닉네임 지움.');
-  await loadClients();
+  // Feed/Roster 활성 뷰 갱신
+  if(_dashView==='feed') await loadFeed(); else if(_dashView==='roster') await loadRoster();
 }
 
 // ─── Referral code ───
