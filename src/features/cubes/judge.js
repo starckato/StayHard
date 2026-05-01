@@ -45,8 +45,10 @@ export function judgeAccumulator(log, ctx = {}) {
   }
 
   // ── 물 ──
+  // 최초 1회 등록 → silver +1.
+  // 목표 컵 수 도달 → gold +1.
   if (water > 0) {
-    silver += water;
+    silver++;
     if (waterGoal > 0 && water >= waterGoal) gold++;
   }
 

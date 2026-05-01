@@ -28,7 +28,7 @@
      so window globals (dkey, normKey, ...) are set before inline code runs.
      Query version bumps cache when bundle content changes. Bump manually or
      via build script when shipping a new bundle. See MIGRATION_PLAN.md. -->
-<script src="/dist/app.js?v=20260501-cube-counts"></script>
+<script src="/dist/app.js?v=20260501-water-cube"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Archivo+Black&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -10988,7 +10988,7 @@ function delPhoto(){
 
 function renderWater(){
   const c=document.getElementById('water-cups');c.innerHTML='';
-  for(let i=0;i<12;i++){const d=document.createElement('div');d.className='wc'+(i<log.water_cups?' on':'');d.onclick=()=>{tipWater();const prev=log.water_cups;log.water_cups=(log.water_cups===i+1)?i:i+1;renderWater();scheduleSave();if(log.water_cups>prev){try{_tryMicroReward('water');}catch(_){}}};c.appendChild(d);}
+  for(let i=0;i<12;i++){const d=document.createElement('div');d.className='wc'+(i<log.water_cups?' on':'');d.onclick=()=>{tipWater();const prev=log.water_cups;log.water_cups=(log.water_cups===i+1)?i:i+1;renderWater();scheduleSave();if(log.water_cups>prev){try{_tryMicroReward('water');}catch(_){}}try{recomputeCubesHook();}catch(_){}};c.appendChild(d);}
   const val=document.getElementById('water-val');
   const goal=CP?.water_goal||6;
   const met=log.water_cups>=goal;
