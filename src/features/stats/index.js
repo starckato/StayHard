@@ -884,12 +884,14 @@ export const stTargetLinePlugin={
 if(window.Chart&&window.Chart.register)window.Chart.register(stTargetLinePlugin);
 
 export function stRenderWeightChart(rows){
-  const pts=rows.filter(r=>r.weight!=null).map(r=>({x:r._key,y:parseFloat(r.weight)}));
+  const allPts=rows.filter(r=>r.weight!=null).map(r=>({x:r._key,y:parseFloat(r.weight)}));
   const empty=document.getElementById('st-weight-empty');
   const canvas=document.getElementById('st-chart-weight');
   const metaEl=document.getElementById('st-weight-meta');
-  if(!pts.length){empty.style.display='block';canvas.style.display='none';if(metaEl)metaEl.innerHTML='';return;}
+  if(!allPts.length){empty.style.display='block';canvas.style.display='none';if(metaEl)metaEl.innerHTML='';return;}
   empty.style.display='none';canvas.style.display='block';
+  // 최근 7개 측정만 — 0.5kg 변동도 눈에 띄게 (사용자 결정 2026-05-01)
+  const pts=allPts.slice(-7);
   const vals=pts.map(p=>p.y);
   const start=vals[0], current=vals[vals.length-1];
   const diff=current-start;
@@ -898,7 +900,7 @@ export function stRenderWeightChart(rows){
   const goal=(typeof window.CP!=='undefined'&&window.CP&&window.CP.weight_goal)?parseFloat(window.CP.weight_goal):null;
   stHeadline('st-weight-meta',[
     {label:'현재',value:current.toFixed(1),unit:'kg'},
-    {label:'시작 대비',value:(diff>0?'+':'')+diff.toFixed(1),unit:'kg'},
+    {label:'1주 변화',value:(diff>0?'+':'')+diff.toFixed(1),unit:'kg'},
     {label:'목표까지',value:goal?(Math.abs(current-goal).toFixed(1)):'—',unit:goal?'kg':'',delta:goal?stDelta(current,prevCurrent,{inverse:goal<start}):''}
   ]);
   // Inline subtitle — tells the user what the red bars mean since they
@@ -907,7 +909,7 @@ export function stRenderWeightChart(rows){
   if(metaElHint){
     const subtitle=document.createElement('div');
     subtitle.style.cssText='font-size:10px;color:var(--text3);margin-top:8px;letter-spacing:-.005em;line-height:1.4;';
-    subtitle.textContent='파란 라인은 체중(kg). 빨간 bar 는 같은 날 운동 볼륨.';
+    subtitle.textContent='최근 7회 측정 · 파란 라인은 체중(kg). 빨간 bar 는 같은 날 운동 볼륨.';
     metaElHint.appendChild(subtitle);
   }
 
@@ -971,8 +973,11 @@ export function stRenderWeightChart(rows){
       },
       scales:{
         x:{grid:{display:false},ticks:{color:'rgba(255,255,255,0.35)',font:{size:10},maxRotation:0}},
-        y:{position:'left',grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'rgba(255,255,255,0.55)',font:{size:10},callback:v=>v+'kg'},
-          min:Math.floor(Math.min(...vals,goal||Infinity)-1),max:Math.ceil(Math.max(...vals,goal||-Infinity)+1)},
+        y:{position:'left',grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'rgba(255,255,255,0.55)',font:{size:10},callback:v=>v.toFixed(1)+'kg'},
+          // 타이트한 y range — 0.5kg 변동도 화면에 크게 보이게.
+          // 데이터 변동폭의 1.5x 또는 최소 1kg 범위. goal 은 표시되더라도 zoom 우선.
+          min:(()=>{const lo=Math.min(...vals);const hi=Math.max(...vals);const span=Math.max(hi-lo,1);const pad=span*0.25;return +(lo-pad).toFixed(1);})(),
+          max:(()=>{const lo=Math.min(...vals);const hi=Math.max(...vals);const span=Math.max(hi-lo,1);const pad=span*0.25;return +(hi+pad).toFixed(1);})()},
         yVol:{position:'right',display:true,min:0,beginAtZero:true,grid:{display:false},
           ticks:{color:'rgba(255,77,77,0.55)',font:{size:9},callback:v=>volTickFmt(v)}},
       },
