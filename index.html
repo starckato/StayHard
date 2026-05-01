@@ -28,7 +28,7 @@
      so window globals (dkey, normKey, ...) are set before inline code runs.
      Query version bumps cache when bundle content changes. Bump manually or
      via build script when shipping a new bundle. See MIGRATION_PLAN.md. -->
-<script src="/dist/app.js?v=20260501-sprite-spacing-724"></script>
+<script src="/dist/app.js?v=20260501-cube-counts"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Archivo+Black&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -7342,38 +7342,24 @@ async function runDailyCubeRecap(){
 // "1끼 등록해도 gray" 규칙이 judge 레벨에서 처리되므로 _diffCubes 특수 gate 불필요.
 function _diffCubes(before,after){
   const events=[];
-  const cats=['diet','exercise','routine','tasks'];
-  const RANK={gold:3,silver:2,crimson:1,gray:0};
-  for(const cat of cats){
-    const b=(before&&before[cat])||null;
-    const a=(after&&after[cat])||null;
-    if(a===b)continue;
-    if(a==null)continue; // 큐브가 사라지는 케이스 (할일 전부 삭제 등) — 조용히
-    if(a==='gray')continue; // gray 로 내려가는 전환은 조용히.
-    // 팝오버 delta = **새 큐브의 절대값**. (유저 모델: "이전 +2 은 자동 취소되고
-    // gold 받으면 +3 으로 표시". 실제 hdr 변동은 recomputeCubesHook 에서
-    // (new - old) delta 로 처리 — 누적은 항상 큐브 값과 일치.)
-    const absPts=_cubeColorPoints(a);
-    if(a==='crimson'&&b!=='crimson'){
-      const copy=CUBE_CHANGE_COPY[cat]&&CUBE_CHANGE_COPY[cat].crimson;
-      if(copy)events.push({type:'color',cat,color:'crimson',...copy,delta:_formatCubeDelta(absPts)});
-      continue;
-    }
-    const bRank=b?RANK[b]:0;
-    const aRank=RANK[a]||0;
-    if(aRank>bRank){
-      const copy=CUBE_CHANGE_COPY[cat]&&CUBE_CHANGE_COPY[cat][a];
-      if(copy)events.push({type:'color',cat,color:a,...copy,delta:_formatCubeDelta(absPts)});
-    }
+  // 새 모델 — count diff. 색별 증가량 만큼 토스트 발송.
+  const bGold=(before&&before.gold)||0;
+  const bSilver=(before&&before.silver)||0;
+  const bRed=(before&&before.red)||0;
+  const aGold=(after&&after.gold)||0;
+  const aSilver=(after&&after.silver)||0;
+  const aRed=(after&&after.red)||0;
+  const dGold=aGold-bGold;
+  const dSilver=aSilver-bSilver;
+  const dRed=aRed-bRed;
+  if(dGold>0){
+    events.push({type:'count',color:'gold',count:dGold,title:`+${dGold} 골드 큐브`,body:'',delta:_formatCubeDelta(dGold*3)});
   }
-  // exercise_bonus: null → 'gold' 전환만 이벤트. 팝오버는 gold 절대값 (+3).
-  const bBonusEx=(before&&before.exercise_bonus)||null;
-  const aBonusEx=(after&&after.exercise_bonus)||null;
-  if(!bBonusEx&&aBonusEx==='gold'){
-    const copy=CUBE_CHANGE_COPY.exercise_bonus&&CUBE_CHANGE_COPY.exercise_bonus.gold;
-    if(copy){
-      events.push({type:'color',cat:'exercise_bonus',color:'gold',...copy,delta:_formatCubeDelta(_cubeColorPoints('gold'))});
-    }
+  if(dSilver>0){
+    events.push({type:'count',color:'silver',count:dSilver,title:`+${dSilver} 실버 큐브`,body:'',delta:_formatCubeDelta(dSilver*1)});
+  }
+  if(dRed>0){
+    events.push({type:'count',color:'red',count:dRed,title:`+${dRed} 레드 큐브`,body:'금지식/위반',delta:_formatCubeDelta(dRed*-5)});
   }
   // Bonus diff — 새로 추가된 항목만.
   const bBonus=(before&&Array.isArray(before.bonus))?before.bonus:[];
@@ -7428,11 +7414,23 @@ function renderCardCubes(){
         }
       }
     }catch(_){}
+    // 새 모델은 카운트 기반 — 카드별 categorical 색은 legacy judgers 로 시각 단서만 표시.
+    // 실제 점수/누적은 cubes.gold/silver/red 에서 계산됨.
+    const J = window.Cubes || {};
+    const meals = (l && l.meals) || [];
+    const workouts = (l && l.workouts) || [];
+    const mandatory = (l && l.mandatory) || [];
+    const targets = (l && l.targets) || [];
+    const wd = (new Date(key+'T00:00:00').getDay()+6)%7;
+    const dietColor = (typeof J.judgeDiet==='function') ? J.judgeDiet(meals) : null;
+    const exObj = (typeof J.judgeExercise==='function') ? J.judgeExercise(workouts) : {exercise:null, exercise_bonus:null};
+    const routineColor = (typeof J.judgeRoutine==='function') ? J.judgeRoutine(mandatory, wd) : null;
+    const tasksColor = (typeof J.judgeTasks==='function') ? J.judgeTasks(targets) : null;
     const map={
-      'cc-cube-diet':cubes?cubes.diet:null,
-      'cc-cube-exercise':cubes?cubes.exercise:null,
-      'cc-cube-routine':cubes?cubes.routine:null,
-      'cc-cube-tasks':cubes?cubes.tasks:null,
+      'cc-cube-diet': dietColor,
+      'cc-cube-exercise': exObj.exercise,
+      'cc-cube-routine': routineColor,
+      'cc-cube-tasks': tasksColor,
     };
     Object.keys(map).forEach(id=>{
       const el=document.getElementById(id);
@@ -7441,8 +7439,7 @@ function renderCardCubes(){
       if(!color){el.style.display='none';el.removeAttribute('data-color');el.removeAttribute('data-bonus');return;}
       el.style.display='inline-block';
       el.setAttribute('data-color',color);
-      // 운동 카드에만 exercise_bonus glow
-      if(id==='cc-cube-exercise'&&cubes&&cubes.exercise_bonus==='gold')el.setAttribute('data-bonus','gold');
+      if(id==='cc-cube-exercise' && exObj.exercise_bonus==='gold') el.setAttribute('data-bonus','gold');
       else el.removeAttribute('data-bonus');
     });
   }catch(e){/* silent */}
@@ -7473,11 +7470,26 @@ function recomputeCubesHook(key,opts){
     const isToday=(k===TODAY);
     const claimedMilestones=(CP&&Array.isArray(CP.streak_milestones))?CP.streak_milestones:[];
     const prHistory=(CP&&CP.pr_records)?CP.pr_records:null;
+    // 어제 체중 (목표 향한 이동 감지)
+    let prevWeight=null;
+    try{
+      const d=new Date(k+'T00:00:00');
+      d.setDate(d.getDate()-1);
+      const yKey=d.toISOString().slice(0,10);
+      const yLog=logCache[yKey];
+      if(yLog&&yLog.weight!=null){
+        const w=parseFloat(yLog.weight);
+        if(!isNaN(w))prevWeight=w;
+      }
+    }catch(_){}
     const ctx={
       weekday,
       dateKey:k,
       claimedMilestones,
       prHistory,
+      prevWeight,
+      weightGoal: (CP&&CP.weight_goal!=null) ? parseFloat(CP.weight_goal) : null,
+      waterGoal: (CP&&CP.water_goal!=null) ? parseInt(CP.water_goal) : 8,
     };
     if(isToday){
       // streak 은 현재 calcStreak() 가 있으면 사용
@@ -9064,18 +9076,24 @@ function getCubeCounts(scope){
   const sumLog=(l)=>{
     if(!l||!l.cubes)return;
     const c=l.cubes;
-    ['diet','exercise','exercise_bonus','routine','tasks'].forEach(k=>{
-      if(c[k]==='gold')g++;
-      else if(c[k]==='silver')s++;
-      else if(c[k]==='crimson')r++;
-    });
+    // NEW shape — direct counts (2026-05-01 사용자 결정)
+    if(typeof c.gold==='number'||typeof c.silver==='number'||typeof c.red==='number'){
+      g+=(c.gold||0); s+=(c.silver||0); r+=(c.red||0);
+    } else {
+      // LEGACY categorical
+      ['diet','exercise','exercise_bonus','routine','tasks'].forEach(k=>{
+        if(c[k]==='gold')g++;
+        else if(c[k]==='silver')s++;
+        else if(c[k]==='crimson'||c[k]==='red')r++;
+      });
+    }
     if(Array.isArray(c.bonus)){
       c.bonus.forEach(b=>{
         if(!b)return;
         const cnt=typeof b.count==='number'?b.count:1;
         if(b.color==='gold')g+=cnt;
         else if(b.color==='silver')s+=cnt;
-        else if(b.color==='crimson')r+=cnt;
+        else if(b.color==='crimson'||b.color==='red')r+=cnt;
       });
     }
   };
@@ -9100,13 +9118,18 @@ async function fetchLifetimeCubeCounts(){
     let g=0,s=0,r=0;
     for(const row of data){
       const c=row&&row.cubes;if(!c)continue;
-      ['diet','exercise','exercise_bonus','routine','tasks'].forEach(k=>{
-        if(c[k]==='gold')g++;else if(c[k]==='silver')s++;else if(c[k]==='crimson')r++;
-      });
+      // NEW shape 우선
+      if(typeof c.gold==='number'||typeof c.silver==='number'||typeof c.red==='number'){
+        g+=(c.gold||0); s+=(c.silver||0); r+=(c.red||0);
+      } else {
+        ['diet','exercise','exercise_bonus','routine','tasks'].forEach(k=>{
+          if(c[k]==='gold')g++;else if(c[k]==='silver')s++;else if(c[k]==='crimson'||c[k]==='red')r++;
+        });
+      }
       if(Array.isArray(c.bonus)){
         c.bonus.forEach(b=>{
           if(!b)return;const cnt=typeof b.count==='number'?b.count:1;
-          if(b.color==='gold')g+=cnt;else if(b.color==='silver')s+=cnt;else if(b.color==='crimson')r+=cnt;
+          if(b.color==='gold')g+=cnt;else if(b.color==='silver')s+=cnt;else if(b.color==='crimson'||b.color==='red')r+=cnt;
         });
       }
     }

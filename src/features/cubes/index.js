@@ -27,14 +27,21 @@ function mergeBonus(existing, incoming) {
   return out;
 }
 
-// 호출측에서 logCache[key] 를 전달. 순수 함수 계층은 건드리지 않음.
+// 호출측에서 logCache[key] 를 전달.
 // 반환: 새 cubes 객체 (저장은 호출측 책임).
-// ctx: { weekday, workoutPRs?, newStreak?, claimedMilestones?, prHistory? }
+// ctx: { weekday, workoutPRs?, newStreak?, claimedMilestones?, prHistory?,
+//        prevWeight?, weightGoal?, waterGoal? }
 export function computeCubesForLog(log, ctx = {}) {
   const weekday = typeof ctx.weekday === 'number'
     ? ctx.weekday
-    : new Date().getDay();
-  const base = judgeCubes(log || {}, { weekday });
+    : ((new Date().getDay() + 6) % 7); // Monday-based
+  // 액션 누적 모델
+  const acc = judgeCubes(log || {}, {
+    weekday,
+    prevWeight: ctx.prevWeight,
+    weightGoal: ctx.weightGoal,
+    waterGoal: ctx.waterGoal,
+  });
 
   // Workout PR bonus
   let prBonus = [];
@@ -64,14 +71,12 @@ export function computeCubesForLog(log, ctx = {}) {
 
   return {
     cubes: {
-      diet: base.diet,
-      exercise: base.exercise,
-      exercise_bonus: base.exercise_bonus,
-      routine: base.routine,
-      tasks: base.tasks,
+      gold: acc.gold,
+      silver: acc.silver,
+      red: acc.red,
       bonus: nextBonus,
     },
-    dayScore: 0, // 호출측에서 cube 저장 후 scoreFromCubes 로 계산
+    dayScore: 0,
     nextPrHistory,
     nextClaimed,
     newPRs: prBonus,
