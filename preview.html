@@ -71,7 +71,30 @@
     aspect-ratio:1;
     background:linear-gradient(135deg,#0d0d12,#1a1a22);
     border-radius:6px;
-    image-rendering:auto;
+    image-rendering:pixelated;
+  }
+  .room-scene-wrap{
+    margin-bottom:12px;
+    background:#0a0a0c;
+    border:1px solid rgba(255,255,255,0.08);
+    border-radius:10px;
+    overflow:hidden;
+  }
+  .room-scene-canvas{
+    display:block;
+    width:100%;
+    aspect-ratio:1;
+    image-rendering:pixelated;
+  }
+  .room-scene-lbl{
+    padding:6px 12px;
+    font-size:10px;
+    color:#7a7a86;
+    text-transform:uppercase;
+    letter-spacing:.06em;
+    font-family:'DM Mono',monospace;
+    border-top:1px solid rgba(255,255,255,0.06);
+    background:#16161a;
   }
   .action-lbl{
     font-size:10px;
@@ -207,8 +230,14 @@ function buildUI(){
           <div class="tier-meta">점수 ${tier.score}</div>
         </div>
       </div>
+      <div class="room-scene-wrap">
+        <canvas class="room-scene-canvas" data-room-canvas width="520" height="520"></canvas>
+        <div class="room-scene-lbl">방 안 캐릭터 — idle / walk / food / special 사이클 자동</div>
+      </div>
       <div class="actions-grid"></div>
     `;
+    const roomCv = row.querySelector('[data-room-canvas]');
+    if(roomCv) startRoomSceneIn(roomCv, tier);
     const grid = row.querySelector('.actions-grid');
     ACTION_KEYS.forEach(act => {
       const [label, url] = tier.sheets[act] || ['—', null];
@@ -226,6 +255,102 @@ function buildUI(){
     });
     root.appendChild(row);
   });
+}
+
+// ───────────────────────────────────────────────
+// 각 tier 룸 안 캐릭터 사이클 애니메이션 (idle/walk/food/special)
+// ───────────────────────────────────────────────
+const ROOM_FPS = { idle: 380, walk: 160, exercise: 150, food: 200, special: 500 };
+const ROOM_DUR_MIN = { idle: 8, walk: 28, exercise: 20, food: 12, special: 14 };
+const ROOM_DUR_MAX = { idle: 16, walk: 50, exercise: 30, food: 18, special: 22 };
+
+function startRoomSceneIn(canvas, tier){
+  const cx = canvas.getContext('2d');
+  cx.imageSmoothingEnabled = false;
+  const W = canvas.width, H = canvas.height;
+  // floor / char 위치 (520 canvas 기준 — 룸 floor 가 canvas 의 ~88% 지점)
+  const CHAR_H = Math.round(H * 0.46);
+  const FLOOR_Y = Math.round(H * 0.88);
+  const sheets = tier.sheets || {};
+  const ACT_KEYS = ['idle','walk','exercise','food','special'];
+  // 이미지 lazy load
+  const imgs = {};
+  ACT_KEYS.forEach(k => {
+    const url = sheets[k] && sheets[k][1];
+    if(!url) return;
+    const i = new Image(); i.src = url; imgs[k] = i;
+  });
+  const bgImg = new Image();
+  if(tier.room) bgImg.src = tier.room;
+
+  let act = 'idle';
+  let fi = 0, lastFt = 0, actLeft = 0;
+  let walkX = W * 0.5, walkDir = 1, flipH = false;
+
+  function pickNext(prev){
+    const pool = ['walk','walk','walk','walk','idle','food','special'];
+    const choices = pool.filter(a => a !== prev);
+    return choices[Math.floor(Math.random() * choices.length)];
+  }
+  function enterAct(name){
+    act = name; fi = 0; lastFt = 0;
+    const lo = ROOM_DUR_MIN[name] || 12;
+    const hi = ROOM_DUR_MAX[name] || 24;
+    actLeft = lo + Math.floor(Math.random() * (hi - lo));
+    if(name === 'walk'){
+      walkDir = Math.random() < 0.5 ? -1 : 1;
+      flipH = walkDir < 0;
+    }
+  }
+  enterAct('idle');
+
+  function draw(){
+    cx.clearRect(0, 0, W, H);
+    // 배경
+    if(bgImg.complete && bgImg.naturalWidth){
+      cx.drawImage(bgImg, 0, 0, W, H);
+    } else {
+      const g = cx.createLinearGradient(0,0,0,H);
+      g.addColorStop(0, '#1a1a22'); g.addColorStop(1, '#0d0d12');
+      cx.fillStyle = g; cx.fillRect(0,0,W,H);
+    }
+    // 캐릭터
+    const img = imgs[act] || imgs.idle;
+    if(!img || !img.complete || !img.naturalWidth) return;
+    if(act === 'walk'){
+      walkX += walkDir * 1.6;
+      if(walkX < W * 0.20){ walkX = W * 0.20; walkDir = 1; flipH = false; }
+      if(walkX > W * 0.80){ walkX = W * 0.80; walkDir = -1; flipH = true; }
+    }
+    const dh = CHAR_H;
+    const dw = dh * (SHEET_FW / SHEET_FH);
+    const dx = Math.round(walkX - dw / 2);
+    const dy = Math.round(FLOOR_Y - dh);
+    const sx = (fi % SHEET_FRAMES) * SHEET_FW + 1;
+    const sw = SHEET_FW - 2;
+    if(flipH){
+      cx.save();
+      cx.translate(dx + dw, dy);
+      cx.scale(-1, 1);
+      cx.drawImage(img, sx, 0, sw, SHEET_FH, 0, 0, dw, dh);
+      cx.restore();
+    } else {
+      cx.drawImage(img, sx, 0, sw, SHEET_FH, dx, dy, dw, dh);
+    }
+  }
+
+  function loop(now){
+    requestAnimationFrame(loop);
+    const fps = ROOM_FPS[act] || 250;
+    if(now - lastFt >= fps){
+      lastFt = now;
+      fi = (fi + 1) % SHEET_FRAMES;
+      actLeft--;
+      if(actLeft <= 0) enterAct(pickNext(act));
+    }
+    draw();
+  }
+  requestAnimationFrame(loop);
 }
 
 function animateCell(canvas, url, fpsMs){
