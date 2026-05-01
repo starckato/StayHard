@@ -68,44 +68,51 @@ function statusFromCube(color) {
   return CUBE_TO_STATUS[color] || 'empty';
 }
 
+// 2026-05-01 사용자 결정 — 각 섹션 셀 색은 그 섹션에서 가장 높은 큐브 색으로.
+// 우선순위: red 1개라도 있으면 red. 없으면 gold 있으면 gold. 둘 다 없으면 silver. 아무것도 없으면 empty.
+// (옛 dl.cubes.diet 같은 categorical 필드 폐기 — raw 데이터에서 직접 판정.)
 function cellStatus(dl, cat, isFuture) {
   if (isFuture) return 'future';
   if (!dl) return 'empty';
-  // Phase 1 이후 — log.cubes 가 있으면 그걸로 판정. 실시간 판정 결과와 정확히 일치.
-  if (dl.cubes) {
-    const key = cat === 'meal' ? 'diet' : cat === 'workout' ? 'exercise' : cat;
-    return statusFromCube(dl.cubes[key]);
-  }
-  // Legacy fallback — cubes 없던 과거 로그. 기존 판정 규칙 그대로.
+
   if (cat === 'meal') {
-    const meals = dl.meals || [];
+    const meals = (dl.meals || []).filter(m => m && m.category !== 'drink');
     if (!meals.length) return 'empty';
-    const bad = meals.filter(m => m.type === 'red' || m.type === 'alcohol').length;
-    const good = meals.filter(m => m.type === 'green' || m.type === 'normal').length;
-    if (bad > 0 && good > 0) return 'partial';
-    if (bad > 0) return 'fail';
-    return 'pass';
+    const hasRed = meals.some(m => m.type === 'red' || m.category === 'alcohol');
+    if (hasRed) return 'fail'; // 빨강 우선
+    const hasGreen = meals.some(m => m.type === 'green');
+    if (hasGreen) return 'pass'; // 골드
+    return 'partial'; // 실버 (일반식만)
   }
+
   if (cat === 'workout') {
-    const wos = (dl.workouts || []).filter(w => w.status === 'done');
-    return wos.length ? 'pass' : 'empty';
+    const list = (dl.workouts || []);
+    const doneAny = list.some(w => w && w.status === 'done' && (w.type === 'gym' || w.type === 'activity'));
+    return doneAny ? 'pass' : 'empty';
   }
+
   if (cat === 'routine') {
-    const mand = dl.mandatory || [];
+    const mand = (dl.mandatory || []).filter(m => m);
     if (!mand.length) return 'empty';
-    const done = mand.filter(m => m.done).length;
-    if (done === mand.length) return 'pass';
+    const done = mand.filter(m => m.done === true).length;
+    const hasFail = mand.some(m => m.fail === true);
+    if (hasFail) return 'fail';
     if (done === 0) return 'empty';
+    if (mand.length >= 2 && done === mand.length) return 'pass';
     return 'partial';
   }
+
   if (cat === 'tasks') {
-    const tgts = dl.targets || [];
+    const tgts = (dl.targets || []).filter(t => t && !t._meta && t.text);
     if (!tgts.length) return 'empty';
     const done = tgts.filter(t => t.st === 'done').length;
-    if (done === tgts.length) return 'pass';
+    const hasFail = tgts.some(t => t.st === 'fail');
+    if (hasFail) return 'fail';
     if (done === 0) return 'empty';
+    if (tgts.length >= 2 && done === tgts.length) return 'pass';
     return 'partial';
   }
+
   return 'empty';
 }
 
@@ -113,7 +120,16 @@ function cellStatus(dl, cat, isFuture) {
 // 없으면 단일 사각형. dateKey 받아서 tooltip 트리거 바인딩.
 function workoutIndicator(dl, isFuture, size, dateKey) {
   const status = cellStatus(dl, 'workout', isFuture);
-  const hasBonus = !isFuture && dl && dl.cubes && dl.cubes.exercise === 'gold' && dl.cubes.exercise_bonus === 'gold';
+  // 헬스 + 카디오 둘 다 완료 시 double-cube (운동 카운트 ≥ 2)
+  let gymDone = false, cardioDone = false;
+  if (!isFuture && dl && Array.isArray(dl.workouts)) {
+    for (const w of dl.workouts) {
+      if (!w || w.status !== 'done') continue;
+      if (w.type === 'gym') gymDone = true;
+      else if (w.type === 'activity') cardioDone = true;
+    }
+  }
+  const hasBonus = gymDone && cardioDone;
   const tapHandler = isFuture
     ? ''
     : `onclick="event.stopPropagation();window.dhShowCubeTooltip&&window.dhShowCubeTooltip(event,'${dateKey}','workout')"`;
