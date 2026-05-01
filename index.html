@@ -28,7 +28,7 @@
      so window globals (dkey, normKey, ...) are set before inline code runs.
      Query version bumps cache when bundle content changes. Bump manually or
      via build script when shipping a new bundle. See MIGRATION_PLAN.md. -->
-<script src="/dist/app.js?v=20260501-weight-7day"></script>
+<script src="/dist/app.js?v=20260502-trainer-push"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Archivo+Black&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -11938,25 +11938,70 @@ let _delWOTs=0;
 let _trainerRealtimeChannel = null;
 let _trainerRealtimeDebounce = null;
 
+function _diffDetectNewTrainerEntries(prevLog, newLog){
+  // 트레이너가 새로 추가한 entry 만 감지 (penalty / homework / message)
+  const out = { newPenalty:null, newHomework:null };
+  const prevWorkouts = (prevLog && Array.isArray(prevLog.workouts)) ? prevLog.workouts : [];
+  const newWorkouts = (newLog && Array.isArray(newLog.workouts)) ? newLog.workouts : [];
+  const prevIds = new Set(prevWorkouts.map(w => w && w._trainerAssignmentId).filter(Boolean));
+  for(const w of newWorkouts){
+    if(!w || !w._trainerAssignmentId) continue;
+    if(prevIds.has(w._trainerAssignmentId)) continue;
+    if(w._isPenalty || w.sessionName === '유산소 징역'){
+      out.newPenalty = w;
+    } else {
+      out.newHomework = w;
+    }
+  }
+  return out;
+}
+
+async function _notifyTrainerEvent(detected){
+  if(!detected) return;
+  const ln = window.sh && window.sh.localNotifications;
+  if(!ln || typeof ln.notifyClient !== 'function') return;
+  // 권한 — 첫 호출 시 silent prompt (브라우저 정책상 user gesture 필요할 수 있음)
+  try{ await ln.ensureNotifPermission(); }catch(_){}
+  if(detected.newPenalty){
+    const w = detected.newPenalty;
+    const minutes = w._penaltyMinutes || 0;
+    const ptype = w._penaltyType || '자유';
+    const reason = w._penaltyReason || '';
+    const body = `⏱ ${ptype} ${minutes}분형${reason?' — '+reason:''}`;
+    try{ await ln.notifyClient('🚨 유산소 징역 부여', body, {tag:'qrok-penalty', vibrate:[180,90,180,90,300]}); }catch(_){}
+  }
+  if(detected.newHomework){
+    const w = detected.newHomework;
+    const exNames = (w.exercises||[]).map(e => e.name).slice(0,2).join(', ');
+    const more = (w.exercises||[]).length > 2 ? ` 외 ${w.exercises.length-2}개` : '';
+    try{ await ln.notifyClient('📋 새 운동 숙제', exNames + more, {tag:'qrok-homework'}); }catch(_){}
+  }
+}
+
 function startTrainerRealtimeSync(userId){
   if(!userId || _trainerRealtimeChannel) return;
   _trainerRealtimeChannel = sb.channel('trainer-sync-'+userId)
     .on('postgres_changes',
       {event:'*', schema:'public', table:'daily_logs', filter:`user_id=eq.${userId}`},
       (payload) => {
-        // 트레이너가 daily_logs 변경 (UPDATE workouts) 시 reload + render
         if(_trainerRealtimeDebounce) clearTimeout(_trainerRealtimeDebounce);
         _trainerRealtimeDebounce = setTimeout(async () => {
           try{
             const newDate = payload.new && payload.new.log_date;
             if(newDate === TODAY){
-              // 본인이 직접 수정한 직후일 수 있으니 진행 중 모달 있으면 skip
               const wsOpen = document.getElementById('workout-session-overlay')?.classList.contains('open');
               const cpmOpen = document.getElementById('cardio-penalty-modal')?.style.display === 'flex';
               if(wsOpen || cpmOpen){ console.log('[trainer-rt] skip reload — modal open'); return; }
+              // 신규 엔트리 감지 (이전 캐시 vs 새 payload)
+              const prevLog = logCache[TODAY];
+              const detected = _diffDetectNewTrainerEntries(prevLog, payload.new || {});
               await loadLog(TODAY, true);
               renderRoutine();
-              showToast('🔔 트레이너 업데이트 적용됨');
+              if(detected.newPenalty || detected.newHomework){
+                _notifyTrainerEvent(detected);
+              } else {
+                showToast('🔔 트레이너 업데이트 적용됨');
+              }
             }
           }catch(e){ console.warn('[trainer-rt] reload', e); }
         }, 800);
@@ -11964,9 +12009,15 @@ function startTrainerRealtimeSync(userId){
     )
     .on('postgres_changes',
       {event:'INSERT', schema:'public', table:'trainer_relationship_requests', filter:`client_id=eq.${userId}`},
-      () => {
-        // 새 등록 요청 — 인박스 강제 새로고침
-        try{ renderTrainerRequestInbox(true); showToast('🔔 새 트레이너 요청'); }catch(_){}
+      async (payload) => {
+        try{ renderTrainerRequestInbox(true); }catch(_){}
+        const ln = window.sh && window.sh.localNotifications;
+        if(ln && typeof ln.notifyClient === 'function'){
+          try{ await ln.ensureNotifPermission(); }catch(_){}
+          try{ await ln.notifyClient('💪 새 트레이너 요청', '트레이너가 회원으로 등록 요청을 보냈습니다. 앱에서 수락 또는 거절하세요.', {tag:'qrok-trainer-req'}); }catch(_){}
+        } else {
+          showToast('🔔 새 트레이너 요청');
+        }
       }
     )
     .subscribe((status) => {

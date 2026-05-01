@@ -151,6 +151,89 @@ export async function onActionPerformed(cb) {
   }
 }
 
+// ════════════════════════════════════════════════════
+// Trainer push (즉시 알림) — Web Notification API + Capacitor LocalNotifications
+// ════════════════════════════════════════════════════
+// 트레이너가 cardio penalty 부여 / 숙제 배정 / 메시지 보낼 때
+// Realtime subscribe 가 fire 한 시점에 호출.
+//
+// PWA (iOS 16.4+ / Android Chrome): SW.showNotification 사용 — 백그라운드 OK.
+// Capacitor 빌드: LocalNotifications.schedule(at: now+0.5s) — 즉시 native 알림.
+// 권한 default 시 1회 prompt.
+
+let _webPermAsked = false;
+
+export async function ensureNotifPermission() {
+  if (isNative()) {
+    return await requestPermission();
+  }
+  if (typeof Notification === 'undefined') return false;
+  if (Notification.permission === 'granted') return true;
+  if (Notification.permission === 'denied') return false;
+  if (_webPermAsked) return false;
+  _webPermAsked = true;
+  try {
+    const res = await Notification.requestPermission();
+    return res === 'granted';
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Show an immediate notification on the client (PWA or Native).
+ * @param {string} title
+ * @param {string} body
+ * @param {{tag?:string, icon?:string, vibrate?:number[], data?:any}} [opts]
+ * @returns {Promise<boolean>}
+ */
+export async function notifyClient(title, body, opts = {}) {
+  const tag = opts.tag || 'qrok-trainer';
+  const icon = opts.icon || '/icon-192.png';
+  // 1. Native (Capacitor) — at = now+0.5s
+  if (isNative()) {
+    try {
+      const { LocalNotifications } = await _load();
+      await LocalNotifications.schedule({
+        notifications: [{
+          id: (Date.now() & 0x7FFFFFFF),
+          title,
+          body,
+          schedule: { at: new Date(Date.now() + 500), allowWhileIdle: true },
+          extra: opts.data || {},
+        }],
+      });
+      return true;
+    } catch (e) {
+      console.warn('[notify-native]', e);
+    }
+  }
+  // 2. Web — SW.showNotification 우선 (iOS PWA 지원), 없으면 Notification fallback
+  if (typeof Notification === 'undefined') return false;
+  if (Notification.permission !== 'granted') return false;
+  try {
+    if (typeof navigator !== 'undefined' && 'serviceWorker' in navigator) {
+      const reg = await navigator.serviceWorker.ready;
+      if (reg && typeof reg.showNotification === 'function') {
+        await reg.showNotification(title, {
+          body,
+          icon,
+          tag,
+          renotify: true,
+          vibrate: opts.vibrate || [160, 80, 160],
+          data: opts.data || {},
+        });
+        return true;
+      }
+    }
+    new Notification(title, { body, icon, tag });
+    return true;
+  } catch (e) {
+    console.warn('[notify-web]', e);
+    return false;
+  }
+}
+
 /** Default prefs used on first-time opt-in. Will Cube 4 카테고리 매칭. */
 export const DEFAULT_PREFS = {
   enabled: false, // master off by default (opt-in via onboarding card)
