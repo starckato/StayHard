@@ -28,7 +28,7 @@
      so window globals (dkey, normKey, ...) are set before inline code runs.
      Query version bumps cache when bundle content changes. Bump manually or
      via build script when shipping a new bundle. See MIGRATION_PLAN.md. -->
-<script src="/dist/app.js?v=20260502-phase2-cleanup"></script>
+<script src="/dist/app.js?v=20260502-phase-c"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Archivo+Black&display=swap" rel="stylesheet">
 <!-- Phase 0: 디자인 토큰 (shared 먼저, palette 가 override). -->
 <link href="/src/styles/tokens.shared.css" rel="stylesheet">
@@ -165,7 +165,7 @@ body[data-accent="deep_green"]{
 .accent-picker{display:flex;gap:8px;margin-top:6px;}
 .accent-chip{flex:1;padding:10px 8px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-lg);color:var(--text2);font-size:var(--text-xs);cursor:pointer;text-align:center;font-family:'DM Sans',sans-serif;touch-action:manipulation;transition:border-color .15s;}
 .accent-chip.selected{border-color:currentColor;background:var(--surface3);}
-.accent-chip[data-accent="crimson"]{color:#ff4d4d;}
+.accent-chip[data-accent="crimson"]{color:var(--accent);}
 .accent-chip[data-accent="charcoal"]{color:#6b7280;}
 .accent-chip[data-accent="deep_green"]{color:#10b981;}
 .accent-swatch{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:middle;background:currentColor;}
@@ -271,7 +271,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 .bento::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;opacity:.55;background:var(--text3);transition:opacity .15s,height .15s;}
 .bento.active::before{opacity:1;height:3px;}
 .bento.b-weight::before{background:var(--accent);}
-.bento.b-workout::before{background:#ff6b35;}
+.bento.b-workout::before{background:var(--accent-strong);}
 .bento.b-meal::before{background:var(--green);}
 .bento.b-routine::before{background:var(--amber);}
 .bento-label{font-size:var(--text-2xs);font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;display:flex;align-items:center;gap:3px;}
@@ -315,7 +315,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 .stats-headline-unit{font-size:var(--text-xs);font-weight:600;color:var(--text3);margin-left:2px;}
 .stats-delta{display:inline-flex;align-items:center;gap:2px;font-size:var(--text-2xs);font-weight:700;padding:2px 7px;border-radius:var(--radius-lg);font-family:'DM Sans',sans-serif;margin-top:2px;}
 .stats-delta.up{background:rgba(52,211,153,.15);color:#34d399;}
-.stats-delta.down{background:var(--accent-tint-2);color:#ff4d4d;}
+.stats-delta.down{background:var(--accent-tint-2);color:var(--accent);}
 .stats-delta.flat{background:rgba(136,136,136,.15);color:#888;}
 
 /* ── MICRO INTERACTIONS ── */
@@ -324,7 +324,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 #rage-overlay{position:fixed;inset:0;z-index:1000;display:none;flex-direction:column;align-items:center;justify-content:center;padding:32px;text-align:center;background:var(--accent);}
 #rage-overlay .rage-face{font-size:var(--text-4xl);margin-bottom:16px;animation:rageBounce .4s ease infinite alternate;}
 #rage-overlay .rage-msg{font-size:var(--text-xl);font-weight:800;color:#fff;line-height:1.6;margin-bottom:24px;letter-spacing:-.3px;max-width:280px;word-break:keep-all;white-space:pre-line;}
-#rage-overlay .rage-close{padding:14px 40px;background:#fff;border:none;border-radius:var(--radius-xl);font-size:var(--text-base);font-weight:700;color:#ff4d4d;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;}
+#rage-overlay .rage-close{padding:14px 40px;background:#fff;border:none;border-radius:var(--radius-xl);font-size:var(--text-base);font-weight:700;color:var(--accent);cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;}
 @keyframes rageBounce{0%{transform:scale(1) rotate(-5deg);}100%{transform:scale(1.15) rotate(5deg);}}
 @keyframes rageFlash{0%,100%{opacity:1;}50%{opacity:.6;}}
 
@@ -346,7 +346,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 @keyframes mmFabPulse{0%,100%{box-shadow:0 8px 22px var(--accent-tint-5), 0 0 0 0 var(--accent-tint-1);}50%{box-shadow:0 8px 22px var(--accent-tint-5), 0 0 0 10px transparent;}}
 @keyframes tierShareSlide{from{opacity:0;transform:translate(-50%,20px);}to{opacity:1;transform:translate(-50%,0);}}
 /* Nav badge — milestone reveal pulse (M2) */
-.nav-badge-dot{position:absolute;top:6px;right:50%;margin-right:-18px;width:8px;height:8px;border-radius:50%;background:#ff6b35;box-shadow:0 0 0 0 rgba(255,107,53,0.6);animation:navBadgePulse 1.6s ease-out infinite;}
+.nav-badge-dot{position:absolute;top:6px;right:50%;margin-right:-18px;width:8px;height:8px;border-radius:50%;background:var(--accent-strong);box-shadow:0 0 0 0 rgba(255,107,53,0.6);animation:navBadgePulse 1.6s ease-out infinite;}
 @keyframes navBadgePulse{0%,100%{box-shadow:0 0 0 0 rgba(255,107,53,0.6);}50%{box-shadow:0 0 0 6px rgba(255,107,53,0);}}
 @media (prefers-reduced-motion: reduce){.nav-badge-dot{animation:none;}}
 .mm-fab-pulse{animation:mmFabPulse 2.4s ease-out infinite;}
@@ -572,7 +572,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 .micro-banner::before{
   content:"";
   width:4px;height:4px;border-radius:50%;
-  background:#ff4d4d;
+  background:var(--accent);
   box-shadow:0 0 6px var(--accent-tint-5);
   flex-shrink:0;
 }
@@ -588,7 +588,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 }
 
 /* ═════ SCORE GAIN CHIP — 액션 위치 → Status Band 점수 비행 (legacy, CUBE_UI_MODE off 시 유지) ═════ */
-.score-chip{position:fixed;padding:6px 13px;border-radius:var(--radius-xl);background:linear-gradient(135deg,#ff4d4d 0%,#ff6b35 100%);color:#fff;font-weight:900;font-family:'DM Mono',monospace;font-size:var(--text-base);z-index:1050;pointer-events:none;box-shadow:0 6px 24px var(--accent-tint-5),0 0 0 2px var(--accent-tint-4),0 0 20px var(--accent-tint-4);letter-spacing:-.02em;white-space:nowrap;will-change:transform,opacity;}
+.score-chip{position:fixed;padding:6px 13px;border-radius:var(--radius-xl);background:var(--accent-grad);color:#fff;font-weight:900;font-family:'DM Mono',monospace;font-size:var(--text-base);z-index:1050;pointer-events:none;box-shadow:0 6px 24px var(--accent-tint-5),0 0 0 2px var(--accent-tint-4),0 0 20px var(--accent-tint-4);letter-spacing:-.02em;white-space:nowrap;will-change:transform,opacity;}
 .score-chip.neg{background:linear-gradient(135deg,#ff4d4d 0%,#b71c1c 100%);}
 .score-chip.init{transition:none;opacity:1;transform:translate(-50%,-50%) scale(1);}
 .score-chip.fly{transition:transform .9s cubic-bezier(.38,.02,.28,1),opacity .28s ease-out .58s;opacity:0;}
@@ -612,7 +612,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 .yr-task-list{margin-top:12px;flex-direction:column;gap:5px;max-height:180px;overflow-y:auto;}
 .yr-task-item{display:flex;align-items:center;gap:10px;padding:9px 11px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.24);border-radius:var(--radius-md);cursor:pointer;touch-action:manipulation;transition:all .15s;}
 .yr-task-item[data-selected="false"]{background:rgba(0,0,0,.18);border-color:rgba(255,255,255,.12);opacity:.72;}
-.yr-task-chk{width:17px;height:17px;border-radius:var(--radius-sm);background:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:var(--text-xs);color:#ff4d4d;font-weight:900;line-height:1;}
+.yr-task-chk{width:17px;height:17px;border-radius:var(--radius-sm);background:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:var(--text-xs);color:var(--accent);font-weight:900;line-height:1;}
 .yr-task-item[data-selected="false"] .yr-task-chk{background:transparent;color:transparent;border:2px solid rgba(255,255,255,.45);width:17px;height:17px;}
 .yr-task-text{flex:1;font-size:var(--text-md);color:#fff;font-weight:500;line-height:1.35;overflow:hidden;text-overflow:ellipsis;}
 .yr-task-tag{font-size:var(--text-2xs);color:#fff;font-weight:800;letter-spacing:.02em;}
@@ -620,7 +620,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 .yr-hint{font-size:var(--text-xs);color:rgba(255,255,255,.82);text-align:center;margin-top:10px;font-weight:500;}
 .yr-actions{display:flex;flex-direction:column;gap:7px;margin-top:12px;}
 .yr-btn{padding:12px;border:none;border-radius:var(--radius-lg);font-size:var(--text-base);font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;letter-spacing:-.01em;width:100%;}
-.yr-btn-primary{background:#fff;color:#ff4d4d;}
+.yr-btn-primary{background:#fff;color:var(--accent);}
 .yr-btn-primary:active{opacity:.85;transform:scale(.98);}
 .yr-btn-ghost{background:rgba(255,255,255,.14);color:#fff;border:1px solid rgba(255,255,255,.28);}
 .yr-btn-ghost:active{background:rgba(255,255,255,.24);}
@@ -640,7 +640,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 .fr-segbar{display:flex;gap:0;margin:14px 0 16px;border:1px solid var(--border);border-radius:var(--radius-lg);background:var(--surface2);padding:3px;position:relative;}
 .fr-segbtn{flex:1;padding:9px 12px;background:transparent;border:none;color:var(--text3);font-family:'DM Sans',sans-serif;font-size:var(--text-md);font-weight:600;cursor:pointer;border-radius:var(--radius-md);transition:background .18s,color .18s;position:relative;letter-spacing:-.01em;}
 .fr-segbtn.on{background:var(--accent);color:#fff;box-shadow:0 2px 8px var(--accent-tint-4);}
-.fr-segbadge{position:absolute;top:2px;right:4px;min-width:16px;height:16px;background:#ff4d4d;color:#fff;border-radius:var(--radius-md);font-size:var(--text-2xs);font-weight:800;line-height:16px;padding:0 4px;font-family:'DM Mono',monospace;}
+.fr-segbadge{position:absolute;top:2px;right:4px;min-width:16px;height:16px;background:var(--accent);color:#fff;border-radius:var(--radius-md);font-size:var(--text-2xs);font-weight:800;line-height:16px;padding:0 4px;font-family:'DM Mono',monospace;}
 
 .fr-wrap{display:flex;flex-direction:column;gap:16px;padding-top:4px;}
 .fr-mycode{background:linear-gradient(135deg,var(--accent-tint-2) 0%,var(--accent-tint-1) 100%);border:1px solid var(--accent-tint-3);border-radius:var(--radius-lg);padding:14px 16px;}
@@ -1329,7 +1329,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
 .qrok-splash-dot{width:6px;height:6px;display:inline-block;will-change:transform,box-shadow,opacity;animation:qrok-splash-dot-glow 1.6s ease-in-out infinite;}
 .qrok-splash-dot.gold   {background:#ffd54a;color:#ffd54a;animation-delay:0s;}
 .qrok-splash-dot.silver {background:#b5c0cc;color:#b5c0cc;animation-delay:0.3s;}
-.qrok-splash-dot.crimson{background:#ff4d4d;color:#ff4d4d;animation-delay:0.6s;}
+.qrok-splash-dot.crimson{background:var(--accent);color:var(--accent);animation-delay:0.6s;}
 .qrok-splash-dot.gray   {background:#6b6b78;color:#6b6b78;animation-delay:0.9s;}
 @keyframes qrok-splash-dot-glow{
   0%,60%,100%{transform:scale(1);box-shadow:0 0 0 transparent;opacity:0.5;}
@@ -1342,7 +1342,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
 <!-- QROK Splash — 페이드인 300ms → 정지 1300ms (글로우 1 cycle) → 페이드아웃 400ms. DOM 제거 2000ms. -->
 <div id="qrok-splash" role="img" aria-label="큐록 로딩 중" style="position:fixed;inset:0;background:#0f0f11;z-index:10000;display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:1;transition:opacity 400ms cubic-bezier(0.4,0,0.2,1);pointer-events:auto;">
   <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
-    <div style="font-family:'Pretendard','Noto Sans KR','Apple SD Gothic Neo',sans-serif;font-weight:800;font-size:var(--text-3xl);color:#ff4d4d;line-height:1;letter-spacing:-0.01em;">큐록</div>
+    <div style="font-family:'Pretendard','Noto Sans KR','Apple SD Gothic Neo',sans-serif;font-weight:800;font-size:var(--text-3xl);color:var(--accent);line-height:1;letter-spacing:-0.01em;">큐록</div>
     <div style="font-family:'Archivo Black','DM Sans','Helvetica Neue',sans-serif;font-weight:900;font-size:var(--text-md);color:#f5f1ea;letter-spacing:0.22em;opacity:0.85;">QROK</div>
   </div>
   <div style="margin-top:22px;font-family:'DM Sans',sans-serif;font-size:var(--text-sm);color:#6b6b78;letter-spacing:0;text-align:center;padding:0 24px;">전부 기록하고, 전부 책임진다.</div>
@@ -1471,7 +1471,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
     <!-- 2행: 유저명 -->
     <div class="hdr-sub" id="hdr-sub" style="margin-top:2px;">로딩 중…</div>
     <!-- 3행: 모토 (전체 너비, 줄바꿈 허용) -->
-    <div id="daily-motto" style="font-size:var(--text-2xs);color:#ff4d4d;margin-top:3px;font-weight:500;letter-spacing:.02em;font-family:'DM Sans',sans-serif;line-height:1.5;"></div>
+    <div id="daily-motto" style="font-size:var(--text-2xs);color:var(--accent);margin-top:3px;font-weight:500;letter-spacing:.02em;font-family:'DM Sans',sans-serif;line-height:1.5;"></div>
   </div>
 
   <div id="offline-banner" style="display:none;margin:0 14px 6px;padding:8px 14px;background:var(--amber-bg);border:1px solid var(--amber-bd);border-radius:var(--radius-sm);display:none;align-items:center;gap:8px;">
@@ -1862,7 +1862,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
             <div style="font-size:var(--text-md);font-weight:800;color:var(--text);letter-spacing:-0.01em;line-height:1.2;">친구랑 같이 큐록</div>
             <div style="font-size:var(--text-xs);color:var(--text3);margin-top:2px;line-height:1.3;">초대장 보내서 같이 기록하자</div>
           </div>
-          <button onclick="shareInvite()" style="flex-shrink:0;padding:8px 12px;border:none;border-radius:var(--radius-md);background:linear-gradient(135deg,#ff4d4d,#ff6b35);color:#fff;font-size:var(--text-xs);font-weight:800;cursor:pointer;touch-action:manipulation;letter-spacing:-.01em;">초대 →</button>
+          <button onclick="shareInvite()" style="flex-shrink:0;padding:8px 12px;border:none;border-radius:var(--radius-md);background:var(--accent-grad);color:#fff;font-size:var(--text-xs);font-weight:800;cursor:pointer;touch-action:manipulation;letter-spacing:-.01em;">초대 →</button>
           <button onclick="dismissInviteCard()" aria-label="닫기" style="flex-shrink:0;background:none;border:none;color:var(--text3);font-size:var(--text-md);cursor:pointer;padding:4px 2px;margin-left:-4px;">✕</button>
         </div>
       </div>
@@ -2216,7 +2216,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
       <div style="margin-top:14px;padding:12px 14px;background:var(--accent-tint-1);border:1px solid var(--accent-tint-3);border-radius:var(--radius-lg);font-size:var(--text-sm);color:var(--text2);line-height:1.6;">
         점수는 일회성 이벤트 아냐.<br>
         매일 체크, 매일 쌓아.<br>
-        <span style="color:#ff6b35;font-weight:800;">꾸준함</span>이 너를 만든다.
+        <span style="color:var(--accent-strong);font-weight:800;">꾸준함</span>이 너를 만든다.
       </div>
 
       <!-- 티어 목록 -->
@@ -2329,7 +2329,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
         <div style="font-size:var(--text-xs);color:var(--text3);" id="room-subtitle"></div>
       </div>
       <button onclick="shareRoomCode()" style="background:var(--surface2);border:1px solid var(--border2);color:var(--text2);border-radius:var(--radius-md);padding:7px 10px;font-size:var(--text-md);font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">🔑 코드</button>
-      <button id="room-leave-btn" onclick="leaveOrCancelRoom()" style="background:var(--accent-tint-2);border:1px solid var(--accent-tint-3);color:#ff4d4d;border-radius:var(--radius-md);padding:7px 10px;font-size:var(--text-md);font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">나가기</button>
+      <button id="room-leave-btn" onclick="leaveOrCancelRoom()" style="background:var(--accent-tint-2);border:1px solid var(--accent-tint-3);color:var(--accent);border-radius:var(--radius-md);padding:7px 10px;font-size:var(--text-md);font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">나가기</button>
     </div>
 
     <!-- Room Body -->
@@ -2433,7 +2433,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
       </div>
 
       <!-- Header badge (푸쉬업) -->
-      <div id="cc-badge-pushup" style="display:none;background:linear-gradient(135deg,#ff4d4d,#ff6b35);border-radius:var(--radius-lg);padding:16px;margin-bottom:20px;text-align:center;">
+      <div id="cc-badge-pushup" style="display:none;background:var(--accent-grad);border-radius:var(--radius-lg);padding:16px;margin-bottom:20px;text-align:center;">
         <div style="font-size:var(--text-base);font-weight:700;color:#fff;">푸쉬업 챌린지</div>
         <div style="font-size:var(--text-xs);color:rgba(255,255,255,.85);margin-top:4px;">하루 정한 만큼 채워야 그날 성공</div>
       </div>
@@ -2523,7 +2523,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
         <div id="join-comp-meta" style="color:var(--text3);"></div>
       </div>
       <div class="mfield">
-        <label class="mlabel" id="join-wgoal-label" style="display:flex;align-items:center;gap:6px;">내 목표 체중 (kg) <span style="font-size:var(--text-2xs);font-weight:600;padding:1px 6px;border-radius:var(--radius-md);background:var(--accent-tint-2);color:#ff4d4d;border:1px solid var(--accent-tint-3);">필수</span></label>
+        <label class="mlabel" id="join-wgoal-label" style="display:flex;align-items:center;gap:6px;">내 목표 체중 (kg) <span style="font-size:var(--text-2xs);font-weight:600;padding:1px 6px;border-radius:var(--radius-md);background:var(--accent-tint-2);color:var(--accent);border:1px solid var(--accent-tint-3);">필수</span></label>
         <div style="position:relative;">
           <input class="minput" id="join-wgoal" type="number" placeholder="예: 68.0" step="0.1" style="padding-right:40px;"/>
           <span style="position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:var(--text-md);color:var(--text3);">kg</span>
@@ -2603,7 +2603,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
       <!-- 결과 버튼 — 수행 완료 / 탈주 -->
       <div style="display:flex;gap:8px;">
         <button onclick="cpmRespond('escaped')" style="flex:1;padding:14px;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius-lg);color:var(--text2);font-size:var(--text-md);font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">⏭️ 건너뛰기</button>
-        <button onclick="cpmRespond('completed')" style="flex:2;padding:14px;background:linear-gradient(135deg,#ff4d4d,#ff6b35);border:none;border-radius:var(--radius-lg);color:#fff;font-size:var(--text-base);font-weight:800;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:-.005em;touch-action:manipulation;">⏱ 수행 완료</button>
+        <button onclick="cpmRespond('completed')" style="flex:2;padding:14px;background:var(--accent-grad);border:none;border-radius:var(--radius-lg);color:#fff;font-size:var(--text-base);font-weight:800;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:-.005em;touch-action:manipulation;">⏱ 수행 완료</button>
       </div>
       <button onclick="closeCardioPenaltyModal()" style="width:100%;margin-top:10px;padding:10px;background:none;border:none;color:var(--text3);font-size:var(--text-sm);cursor:pointer;">취소</button>
     </div>
@@ -2623,7 +2623,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
       </div>
       <div style="display:flex;gap:8px;">
         <button onclick="closeHomeworkPromote(false)" style="flex:1;padding:12px;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius-lg);color:var(--text2);font-size:var(--text-md);font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">아니요</button>
-        <button onclick="closeHomeworkPromote(true)" style="flex:1;padding:12px;background:linear-gradient(135deg,#ff4d4d,#ff6b35);border:none;border-radius:var(--radius-lg);color:#fff;font-size:var(--text-md);font-weight:800;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">루틴 등록</button>
+        <button onclick="closeHomeworkPromote(true)" style="flex:1;padding:12px;background:var(--accent-grad);border:none;border-radius:var(--radius-lg);color:#fff;font-size:var(--text-md);font-weight:800;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">루틴 등록</button>
       </div>
     </div>
   </div>
@@ -2696,27 +2696,27 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
 
           <div style="font-size:var(--text-md);color:var(--text2);line-height:1.65;margin-bottom:20px;padding:0 6px;">
             빠진 칸은 변명하지 않는다<br>
-            너의 <span style="color:#ff4d4d;font-weight:800;">매일</span>이 너를 만든다
+            너의 <span style="color:var(--accent);font-weight:800;">매일</span>이 너를 만든다
           </div>
 
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:18px;">
             <div style="padding:12px 10px;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius-lg);text-align:left;">
-              <div style="line-height:1;margin-bottom:6px;color:#ff4d4d;"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 6.5h11l1 11a2 2 0 0 1-2 2H7.5a2 2 0 0 1-2-2l1-11z"/><path d="M9 6.5a3 3 0 0 1 6 0"/><path d="M12 12v4"/></svg></div>
+              <div style="line-height:1;margin-bottom:6px;color:var(--accent);"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 6.5h11l1 11a2 2 0 0 1-2 2H7.5a2 2 0 0 1-2-2l1-11z"/><path d="M9 6.5a3 3 0 0 1 6 0"/><path d="M12 12v4"/></svg></div>
               <div style="font-size:var(--text-sm);font-weight:800;color:var(--text);margin-bottom:1px;">공복 체중</div>
               <div style="font-size:var(--text-2xs);color:var(--text3);line-height:1.3;">매일 아침 한 번</div>
             </div>
             <div style="padding:12px 10px;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius-lg);text-align:left;">
-              <div style="line-height:1;margin-bottom:6px;color:#ff4d4d;"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20C4 10 10 4 20 4c0 10-6 16-16 16z"/><path d="M4 20L13 11"/></svg></div>
+              <div style="line-height:1;margin-bottom:6px;color:var(--accent);"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20C4 10 10 4 20 4c0 10-6 16-16 16z"/><path d="M4 20L13 11"/></svg></div>
               <div style="font-size:var(--text-sm);font-weight:800;color:var(--text);margin-bottom:1px;">클린 식단</div>
               <div style="font-size:var(--text-2xs);color:var(--text3);line-height:1.3;">뭘 먹었는지 체크</div>
             </div>
             <div style="padding:12px 10px;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius-lg);text-align:left;">
-              <div style="line-height:1;margin-bottom:6px;color:#ff4d4d;"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10v4M7 7v10M17 7v10M21 10v4"/><path d="M7 12h10"/></svg></div>
+              <div style="line-height:1;margin-bottom:6px;color:var(--accent);"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10v4M7 7v10M17 7v10M21 10v4"/><path d="M7 12h10"/></svg></div>
               <div style="font-size:var(--text-sm);font-weight:800;color:var(--text);margin-bottom:1px;">운동 기록</div>
               <div style="font-size:var(--text-2xs);color:var(--text3);line-height:1.3;">근력 · 유산소 · 활동</div>
             </div>
             <div style="padding:12px 10px;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius-lg);text-align:left;">
-              <div style="line-height:1;margin-bottom:6px;color:#ff4d4d;"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 12l3 3 5-5"/></svg></div>
+              <div style="line-height:1;margin-bottom:6px;color:var(--accent);"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 12l3 3 5-5"/></svg></div>
               <div style="font-size:var(--text-sm);font-weight:800;color:var(--text);margin-bottom:1px;">루틴 · 할일</div>
               <div style="font-size:var(--text-2xs);color:var(--text3);line-height:1.3;">오늘 해낸 것들</div>
             </div>
@@ -2724,17 +2724,17 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
 
           <div style="font-size:var(--text-sm);color:var(--text2);line-height:1.6;margin-bottom:20px;padding:10px 12px;background:var(--accent-tint-1);border:1px solid var(--accent-tint-3);border-radius:var(--radius-lg);">
             하루 하나씩만 체크해.<br>
-            그게 쌓여서 <span style="color:#ff4d4d;font-weight:800;">네가 된다</span>.
+            그게 쌓여서 <span style="color:var(--accent);font-weight:800;">네가 된다</span>.
           </div>
 
-          <button onclick="obNext(2)" style="width:100%;padding:15px;background:linear-gradient(135deg,#ff4d4d,#ff6b35);border:none;border-radius:var(--radius-lg);color:#fff;font-size:var(--text-lg);font-weight:800;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;box-shadow:0 8px 22px var(--accent-tint-4);letter-spacing:-0.01em;">시작하기 →</button>
+          <button onclick="obNext(2)" style="width:100%;padding:15px;background:var(--accent-grad);border:none;border-radius:var(--radius-lg);color:#fff;font-size:var(--text-lg);font-weight:800;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;box-shadow:0 8px 22px var(--accent-tint-4);letter-spacing:-0.01em;">시작하기 →</button>
           <button onclick="obDismissWeek()" style="width:100%;padding:10px;background:none;border:none;color:var(--text3);font-size:var(--text-sm);cursor:pointer;font-family:'DM Sans',sans-serif;margin-top:6px;touch-action:manipulation;">1주일간 보이지 않기</button>
         </div>
 
         <!-- Step 2: 목표 선택 -->
         <div id="ob-s2" style="display:none;padding:28px 24px 24px;">
           <div style="text-align:center;margin-bottom:20px;">
-            <div style="margin-bottom:10px;display:flex;justify-content:center;color:#ff4d4d;">
+            <div style="margin-bottom:10px;display:flex;justify-content:center;color:var(--accent);">
               <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2" fill="currentColor"/></svg>
             </div>
             <div style="font-size:var(--text-xl);font-weight:700;margin-bottom:6px;">목표가 뭔가요?</div>
@@ -2742,21 +2742,21 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
           </div>
           <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:24px;">
             <div id="ob-goal-diet" onclick="obSelectGoal('diet')" style="display:flex;align-items:center;gap:14px;padding:16px;border-radius:var(--radius-lg);border:2px solid var(--border);background:var(--surface2);cursor:pointer;touch-action:manipulation;">
-              <div style="color:#ff4d4d;display:flex;"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 6.5h11l1 11a2 2 0 0 1-2 2H7.5a2 2 0 0 1-2-2l1-11z"/><path d="M9 6.5a3 3 0 0 1 6 0"/></svg></div>
+              <div style="color:var(--accent);display:flex;"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 6.5h11l1 11a2 2 0 0 1-2 2H7.5a2 2 0 0 1-2-2l1-11z"/><path d="M9 6.5a3 3 0 0 1 6 0"/></svg></div>
               <div style="flex:1;">
                 <div style="font-size:var(--text-base);font-weight:700;">다이어트</div>
                 <div style="font-size:var(--text-sm);color:var(--text3);margin-top:2px;">체중 감량 · 식단 관리 · 유산소</div>
               </div>
             </div>
             <div id="ob-goal-muscle" onclick="obSelectGoal('muscle')" style="display:flex;align-items:center;gap:14px;padding:16px;border-radius:var(--radius-lg);border:2px solid var(--border);background:var(--surface2);cursor:pointer;touch-action:manipulation;">
-              <div style="color:#ff4d4d;display:flex;"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10v4M7 7v10M17 7v10M21 10v4"/><path d="M7 12h10"/></svg></div>
+              <div style="color:var(--accent);display:flex;"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10v4M7 7v10M17 7v10M21 10v4"/><path d="M7 12h10"/></svg></div>
               <div style="flex:1;">
                 <div style="font-size:var(--text-base);font-weight:700;">근성장</div>
                 <div style="font-size:var(--text-sm);color:var(--text3);margin-top:2px;">근력 향상 · 헬스 · 단백질 식단</div>
               </div>
             </div>
             <div id="ob-goal-habit" onclick="obSelectGoal('habit')" style="display:flex;align-items:center;gap:14px;padding:16px;border-radius:var(--radius-lg);border:2px solid var(--border);background:var(--surface2);cursor:pointer;touch-action:manipulation;">
-              <div style="color:#ff4d4d;display:flex;"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/><path d="M3 21v-5h5"/></svg></div>
+              <div style="color:var(--accent);display:flex;"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/><path d="M3 21v-5h5"/></svg></div>
               <div style="flex:1;">
                 <div style="font-size:var(--text-base);font-weight:700;">습관 형성</div>
                 <div style="font-size:var(--text-sm);color:var(--text3);margin-top:2px;">자기관리 · 루틴 구축 · 성장</div>
@@ -2770,7 +2770,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
         <!-- Step 3: 목표 체중 + 루틴 추천 -->
         <div id="ob-s3" style="display:none;padding:28px 24px 24px;">
           <div style="text-align:center;margin-bottom:20px;">
-            <div style="margin-bottom:10px;display:flex;justify-content:center;color:#ff4d4d;" id="ob-s3-icon">
+            <div style="margin-bottom:10px;display:flex;justify-content:center;color:var(--accent);" id="ob-s3-icon">
               <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 12l3 3 5-5"/></svg>
             </div>
             <div style="font-size:var(--text-xl);font-weight:700;margin-bottom:6px;" id="ob-s3-title">추천 루틴</div>
@@ -2854,7 +2854,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
             등록만으론 0점. 큐브가 나와야 점수예요.
           </div>
 
-          <button onclick="obFinish()" style="width:100%;padding:15px;background:linear-gradient(135deg,#ff4d4d,#ff6b35);border:none;border-radius:var(--radius-lg);color:#fff;font-size:var(--text-lg);font-weight:800;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;box-shadow:0 8px 22px var(--accent-tint-4);letter-spacing:-.01em;">오늘도 도전 →</button>
+          <button onclick="obFinish()" style="width:100%;padding:15px;background:var(--accent-grad);border:none;border-radius:var(--radius-lg);color:#fff;font-size:var(--text-lg);font-weight:800;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;box-shadow:0 8px 22px var(--accent-tint-4);letter-spacing:-.01em;">오늘도 도전 →</button>
         </div>
 
       </div>
@@ -2893,18 +2893,18 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
       <div id="share-card" style="background:linear-gradient(135deg,#0a0a0c 0%,#141418 100%);border:1px solid var(--accent-tint-3);border-radius:var(--radius-xl);padding:28px 24px;font-family:'DM Sans',sans-serif;">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
           <div>
-            <div style="font-size:var(--text-xl);font-weight:700;color:#ff4d4d;letter-spacing:.5px;">큐록</div>
+            <div style="font-size:var(--text-xl);font-weight:700;color:var(--accent);letter-spacing:.5px;">큐록</div>
             <div style="font-size:var(--text-xs);color:#888;margin-top:2px;" id="sc-date"></div>
           </div>
           <div style="text-align:right;">
             <div style="font-size:var(--text-xs);color:#888;" id="sc-user"></div>
-            <div style="font-size:var(--text-2xs);color:#ff4d4d;margin-top:2px;" id="sc-streak"></div>
+            <div style="font-size:var(--text-2xs);color:var(--accent);margin-top:2px;" id="sc-streak"></div>
           </div>
         </div>
         <div id="sc-exercises" style="margin-bottom:20px;"></div>
         <div style="display:flex;gap:12px;padding-top:16px;border-top:1px solid rgba(255,255,255,.07);">
           <div style="flex:1;text-align:center;">
-            <div style="font-size:var(--text-xl);font-weight:700;color:#ff4d4d;" id="sc-vol"></div>
+            <div style="font-size:var(--text-xl);font-weight:700;color:var(--accent);" id="sc-vol"></div>
             <div style="font-size:var(--text-2xs);color:#888;text-transform:uppercase;letter-spacing:.06em;margin-top:2px;">총 볼륨</div>
           </div>
           <div style="flex:1;text-align:center;">
@@ -3133,7 +3133,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
 
     <!-- 체중 (tap-to-open) -->
     <div class="mfield" data-wt-field="weight">
-      <label class="mlabel">체중 (kg) <span style="font-size:var(--text-2xs);font-weight:600;padding:1px 6px;border-radius:var(--radius-sm);background:var(--accent-tint-2);color:#ff4d4d;border:1px solid var(--accent-tint-3);">필수</span></label>
+      <label class="mlabel">체중 (kg) <span style="font-size:var(--text-2xs);font-weight:600;padding:1px 6px;border-radius:var(--radius-sm);background:var(--accent-tint-2);color:var(--accent);border:1px solid var(--accent-tint-3);">필수</span></label>
       <input type="hidden" id="wt-inp">
       <div class="pk-chip pk-chip--empty" data-pk-for="wt-inp" data-pk-title="체중" data-pk-min="30" data-pk-max="150" data-pk-step="0.1" data-pk-unit="kg" data-pk-default="70" onclick="_pkOpenFromChip(this)">
         <div class="pk-chip-left"><span class="pk-chip-val">—</span><span class="pk-chip-unit">kg</span></div>
@@ -3547,7 +3547,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
   <div id="mm-body" style="flex:1;overflow:hidden;display:flex;align-items:center;justify-content:center;padding:4px 8px 0;min-height:0;"></div>
   <!-- Floating share FAB — body 와 legend 사이. margin-top 음수로 body 방향으로 끌어올려 간격 축소 -->
   <div style="flex-shrink:0;display:flex;justify-content:center;padding:0 0 10px;margin-top:-60px;">
-    <button id="mm-share-fab" onclick="shareMuscleMap()" aria-label="공유하기" title="공유하기" class="mm-fab-pulse" style="width:54px;height:54px;border-radius:50%;background:linear-gradient(135deg,#ff4d4d 0%,#ff6b35 100%);border:none;color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 8px 22px var(--accent-tint-5);touch-action:manipulation;padding:0;">
+    <button id="mm-share-fab" onclick="shareMuscleMap()" aria-label="공유하기" title="공유하기" class="mm-fab-pulse" style="width:54px;height:54px;border-radius:50%;background:var(--accent-grad);border:none;color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 8px 22px var(--accent-tint-5);touch-action:manipulation;padding:0;">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events:none;display:block;"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
     </button>
   </div>
@@ -3575,8 +3575,8 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
   <button onclick="closeRoomOverlay()" style="position:absolute;top:env(safe-area-inset-top,12px);right:12px;z-index:10;width:34px;height:34px;border-radius:50%;background:rgba(0,0,0,.5);backdrop-filter:blur(8px);border:0.5px solid rgba(255,255,255,.15);color:var(--text2);font-size:var(--text-xl);cursor:pointer;display:flex;align-items:center;justify-content:center;touch-action:manipulation;margin-top:8px;">✕</button>
   <!-- 진화형 캐릭터 coming soon 뱃지 -->
   <div style="position:absolute;top:env(safe-area-inset-top,12px);left:14px;z-index:10;margin-top:14px;padding:6px 12px;background:rgba(10,10,16,0.6);backdrop-filter:blur(8px);border:0.5px solid var(--accent-tint-4);border-radius:var(--radius-xl);display:inline-flex;align-items:center;gap:8px;pointer-events:none;">
-    <span style="width:6px;height:6px;background:#ff4d4d;border-radius:50%;box-shadow:0 0 8px #ff4d4d;"></span>
-    <span style="font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;font-weight:600;color:#ff4d4d;font-family:'DM Mono',monospace;">진화형 캐릭터 · Coming Soon</span>
+    <span style="width:6px;height:6px;background:var(--accent);border-radius:50%;box-shadow:0 0 8px #ff4d4d;"></span>
+    <span style="font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;font-weight:600;color:var(--accent);font-family:'DM Mono',monospace;">진화형 캐릭터 · Coming Soon</span>
   </div>
   <!-- 캔버스 씬 (전체 채움) -->
   <div style="position:relative;width:100%;flex:1;overflow:hidden;">
@@ -4458,7 +4458,7 @@ function wsShowSaveRoutineSheet(exForRoutine){
     <input id="ws-routine-name-inp" style="width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius-lg);padding:12px 14px;font-size:var(--text-base);color:var(--text);font-family:'DM Sans',sans-serif;margin-bottom:12px;" placeholder="루틴 이름 (예: 가슴데이)" value="오늘의 루틴"/>
     <div style="display:flex;gap:8px;">
       <button onclick="document.getElementById('ws-save-routine-sheet').remove()" style="flex:1;padding:13px;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius-lg);font-size:var(--text-md);font-weight:600;color:var(--text2);cursor:pointer;font-family:'DM Sans',sans-serif;">건너뛰기</button>
-      <button onclick="wsSaveRoutineFromSheet(${JSON.stringify(exForRoutine).replace(/"/g,'&quot;')})" style="flex:2;padding:13px;background:linear-gradient(135deg,#ff4d4d,#ff4d4d);border:none;border-radius:var(--radius-lg);font-size:var(--text-base);font-weight:700;color:#fff;cursor:pointer;font-family:'DM Sans',sans-serif;">저장하기</button>
+      <button onclick="wsSaveRoutineFromSheet(${JSON.stringify(exForRoutine).replace(/"/g,'&quot;')})" style="flex:2;padding:13px;background:var(--accent);border:none;border-radius:var(--radius-lg);font-size:var(--text-base);font-weight:700;color:#fff;cursor:pointer;font-family:'DM Sans',sans-serif;">저장하기</button>
     </div>
   `;
   sheet.appendChild(inner);
@@ -4514,7 +4514,7 @@ async function renderTrainerRequestInbox(force){
         </div>
         ${tMsg}
         <div style="display:flex;gap:8px;margin-top:10px;">
-          <button onclick="respondTrainerRequest('${r.request_id}',true,'${tName.replace(/'/g,"\\'")}')" style="flex:1;padding:11px;background:linear-gradient(135deg,#ff4d4d,#ff6b35);border:none;border-radius:var(--radius-lg);color:#fff;font-size:var(--text-md);font-weight:800;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">수락 → 트레이너 연결</button>
+          <button onclick="respondTrainerRequest('${r.request_id}',true,'${tName.replace(/'/g,"\\'")}')" style="flex:1;padding:11px;background:var(--accent-grad);border:none;border-radius:var(--radius-lg);color:#fff;font-size:var(--text-md);font-weight:800;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">수락 → 트레이너 연결</button>
           <button onclick="respondTrainerRequest('${r.request_id}',false,'${tName.replace(/'/g,"\\'")}')" style="padding:11px 14px;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius-lg);color:var(--text2);font-size:var(--text-sm);font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">거절</button>
         </div>
       </div>`;
@@ -8200,7 +8200,7 @@ function showBonusGrantModal(g){
       <div style="font-size:var(--text-base);color:#d8d8de;line-height:1.65;margin:16px 6px 22px;white-space:normal;">${msg}</div>
       <div style="display:flex;flex-direction:column;gap:9px;">
         <button onclick="shareBonusGrant()" style="padding:13px;border-radius:var(--radius-lg);border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.04);color:#fff;font-weight:700;font-size:var(--text-base);font-family:'DM Sans',sans-serif;cursor:pointer;touch-action:manipulation;letter-spacing:-.01em;">↗ 친구에게 자랑하기</button>
-        <button onclick="claimBonusGrant()" style="padding:15px;border-radius:var(--radius-lg);border:none;background:linear-gradient(135deg,#ff4d4d 0%,#ff6b35 100%);color:#fff;font-weight:900;font-size:var(--text-base);font-family:'DM Sans',sans-serif;cursor:pointer;letter-spacing:-.01em;box-shadow:0 10px 28px var(--accent-tint-4);touch-action:manipulation;">🔥 +${pts}점 받기</button>
+        <button onclick="claimBonusGrant()" style="padding:15px;border-radius:var(--radius-lg);border:none;background:var(--accent-grad);color:#fff;font-weight:900;font-size:var(--text-base);font-family:'DM Sans',sans-serif;cursor:pointer;letter-spacing:-.01em;box-shadow:0 10px 28px var(--accent-tint-4);touch-action:manipulation;">🔥 +${pts}점 받기</button>
         <button onclick="dismissBonusGrant()" style="margin-top:2px;padding:9px;border:none;background:transparent;color:#6b6b78;font-size:var(--text-sm);font-family:'DM Sans',sans-serif;cursor:pointer;touch-action:manipulation;">나중에 보기</button>
       </div>
     </div>
@@ -8264,7 +8264,7 @@ async function shareBonusGrant(){
     <div style="text-align:center;padding:30px 0 18px;">
       <div style="font-size:var(--text-5xl);line-height:1;">${icon}</div>
       <div style="font-family:'Archivo Black',sans-serif;font-size:var(--text-2xl);letter-spacing:-.02em;margin-top:14px;line-height:1.2;color:#fff;">${title}</div>
-      <div style="font-family:'Archivo Black',sans-serif;font-size:var(--text-4xl);color:#ff6b35;margin:14px 0 0;letter-spacing:-.04em;line-height:1;text-shadow:0 4px 24px rgba(255,107,53,.45);">+${pts}<span style="font-size:var(--text-2xl);letter-spacing:0;color:#ff9f43;">pt</span></div>
+      <div style="font-family:'Archivo Black',sans-serif;font-size:var(--text-4xl);color:var(--accent-strong);margin:14px 0 0;letter-spacing:-.04em;line-height:1;text-shadow:0 4px 24px rgba(255,107,53,.45);">+${pts}<span style="font-size:var(--text-2xl);letter-spacing:0;color:#ff9f43;">pt</span></div>
     </div>
     <div style="font-size:var(--text-base);color:#dadae0;line-height:1.6;text-align:center;white-space:normal;padding:4px 6px 22px;">${msg}</div>
     <div style="background:rgba(255,107,53,.06);border:1px solid rgba(255,107,53,.28);border-radius:var(--radius-lg);padding:14px 16px;margin-bottom:18px;text-align:center;">
@@ -8343,7 +8343,7 @@ function maybeShowFriendWelcome(){
         <div style="font-family:'Archivo Black',sans-serif;font-size:var(--text-xl);color:#fff;margin-bottom:8px;letter-spacing:-.02em;">${title}</div>
         <div style="font-size:var(--text-md);color:#d8d8de;line-height:1.6;margin-bottom:18px;">${body}</div>
         <div style="display:flex;flex-direction:column;gap:8px;">
-          <button onclick="_friendWelcomeCta('join')" style="padding:14px;border-radius:var(--radius-lg);border:none;background:linear-gradient(135deg,#ff4d4d,#ff6b35);color:#fff;font-weight:900;font-size:var(--text-base);font-family:'DM Sans',sans-serif;cursor:pointer;letter-spacing:-.01em;box-shadow:0 10px 24px var(--accent-tint-4);touch-action:manipulation;">🔥 나도 시작하기</button>
+          <button onclick="_friendWelcomeCta('join')" style="padding:14px;border-radius:var(--radius-lg);border:none;background:var(--accent-grad);color:#fff;font-weight:900;font-size:var(--text-base);font-family:'DM Sans',sans-serif;cursor:pointer;letter-spacing:-.01em;box-shadow:0 10px 24px var(--accent-tint-4);touch-action:manipulation;">🔥 나도 시작하기</button>
           <button onclick="_friendWelcomeCta('login')" style="padding:12px;border-radius:var(--radius-lg);border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.04);color:#fff;font-weight:700;font-size:var(--text-base);font-family:'DM Sans',sans-serif;cursor:pointer;touch-action:manipulation;">이미 계정 있어요 (로그인)</button>
           <button onclick="_friendWelcomeCta('close')" style="padding:8px;border:none;background:transparent;color:#6b6b78;font-size:var(--text-sm);cursor:pointer;font-family:'DM Sans',sans-serif;">나중에</button>
         </div>
@@ -8490,7 +8490,7 @@ function _showDay1NudgeModal(msg){
       <div style="font-size:var(--text-3xl);line-height:1;margin-bottom:12px;">🌱</div>
       <div style="font-family:'Archivo Black',sans-serif;font-size:var(--text-lg);color:#fff;margin-bottom:10px;letter-spacing:-.02em;">첫날 저녁이야</div>
       <div style="font-size:var(--text-md);color:#d8d8de;line-height:1.7;margin-bottom:20px;white-space:pre-line;">${msg}</div>
-      <button onclick="document.getElementById('day1-nudge-modal').remove();try{track('day1_nudge_cta',{action:'close'});}catch(e){}" style="width:100%;padding:13px;border-radius:var(--radius-lg);border:none;background:linear-gradient(135deg,#ff4d4d,#ff6b35);color:#fff;font-weight:800;font-size:var(--text-base);font-family:'DM Sans',sans-serif;cursor:pointer;letter-spacing:-.01em;touch-action:manipulation;">알았어, 간다</button>
+      <button onclick="document.getElementById('day1-nudge-modal').remove();try{track('day1_nudge_cta',{action:'close'});}catch(e){}" style="width:100%;padding:13px;border-radius:var(--radius-lg);border:none;background:var(--accent-grad);color:#fff;font-weight:800;font-size:var(--text-base);font-family:'DM Sans',sans-serif;cursor:pointer;letter-spacing:-.01em;touch-action:manipulation;">알았어, 간다</button>
     </div>
   `;
   document.body.appendChild(el);
@@ -8574,7 +8574,7 @@ function showTierUpShareCTA(tier){
       <div style="font-size:var(--text-md);font-weight:800;color:#fff;letter-spacing:-.01em;">${tier.name} 달성!</div>
       <div style="font-size:var(--text-xs);color:#b8b8c0;margin-top:1px;">친구한테 보여주자</div>
     </div>
-    <button onclick="shareInvite();(document.getElementById('tierup-share-ribbon')||{}).remove&&document.getElementById('tierup-share-ribbon').remove();" style="flex-shrink:0;padding:8px 14px;border:none;border-radius:var(--radius-md);background:linear-gradient(135deg,#ff4d4d,#ff6b35);color:#fff;font-size:var(--text-sm);font-weight:800;cursor:pointer;touch-action:manipulation;letter-spacing:-.01em;box-shadow:0 4px 12px var(--accent-tint-4);">↗ 자랑하기</button>
+    <button onclick="shareInvite();(document.getElementById('tierup-share-ribbon')||{}).remove&&document.getElementById('tierup-share-ribbon').remove();" style="flex-shrink:0;padding:8px 14px;border:none;border-radius:var(--radius-md);background:var(--accent-grad);color:#fff;font-size:var(--text-sm);font-weight:800;cursor:pointer;touch-action:manipulation;letter-spacing:-.01em;box-shadow:0 4px 12px var(--accent-tint-4);">↗ 자랑하기</button>
     <button onclick="(document.getElementById('tierup-share-ribbon')||{}).remove&&document.getElementById('tierup-share-ribbon').remove();" aria-label="닫기" style="flex-shrink:0;background:none;border:none;color:#6b6b78;font-size:var(--text-base);cursor:pointer;padding:4px;">✕</button>
   `;
   document.body.appendChild(ribbon);
@@ -8608,7 +8608,7 @@ async function shareInvite(){
     </div>
     <div style="font-size:var(--text-base);color:#dadae0;line-height:1.65;text-align:center;padding:4px 8px 22px;">
       매일 체중 · 식단 · 운동 체크하고<br>
-      <span style="color:#ff6b35;font-weight:800;">꾸준함</span>으로 진짜 나를 만드는 앱
+      <span style="color:var(--accent-strong);font-weight:800;">꾸준함</span>으로 진짜 나를 만드는 앱
     </div>
     <div style="background:rgba(255,107,53,0.06);border:1px solid rgba(255,107,53,0.28);border-radius:var(--radius-lg);padding:14px 16px;margin-bottom:16px;text-align:center;">
       <div style="font-size:var(--text-md);color:#ff9f43;font-weight:800;margin-bottom:3px;letter-spacing:-.01em;">같이 큐록</div>
@@ -9593,22 +9593,22 @@ const _TOUR_SLIDES=[
     body:`
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;">
         <div style="padding:12px 14px;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius-lg);">
-          <div style="color:#ff4d4d;margin-bottom:8px;"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20C4 10 10 4 20 4c0 10-6 16-16 16z"/><path d="M4 20L13 11"/></svg></div>
+          <div style="color:var(--accent);margin-bottom:8px;"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20C4 10 10 4 20 4c0 10-6 16-16 16z"/><path d="M4 20L13 11"/></svg></div>
           <div style="font-size:var(--text-md);font-weight:800;color:var(--text);">식단</div>
           <div style="font-size:var(--text-xs);color:var(--text2);margin-top:4px;line-height:1.5;font-weight:500;">아침·점심·저녁 기록.<br>clean 2끼 이상 → Gold</div>
         </div>
         <div style="padding:12px 14px;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius-lg);">
-          <div style="color:#ff4d4d;margin-bottom:8px;"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10v4M7 7v10M17 7v10M21 10v4"/><path d="M7 12h10"/></svg></div>
+          <div style="color:var(--accent);margin-bottom:8px;"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10v4M7 7v10M17 7v10M21 10v4"/><path d="M7 12h10"/></svg></div>
           <div style="font-size:var(--text-md);font-weight:800;color:var(--text);">운동</div>
           <div style="font-size:var(--text-xs);color:var(--text2);margin-top:4px;line-height:1.5;font-weight:500;">헬스 or 유산소 완료 → Gold<br>둘 다 → 보너스 큐브</div>
         </div>
         <div style="padding:12px 14px;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius-lg);">
-          <div style="color:#ff4d4d;margin-bottom:8px;"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/><path d="M3 21v-5h5"/></svg></div>
+          <div style="color:var(--accent);margin-bottom:8px;"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/><path d="M3 21v-5h5"/></svg></div>
           <div style="font-size:var(--text-md);font-weight:800;color:var(--text);">루틴</div>
           <div style="font-size:var(--text-xs);color:var(--text2);margin-top:4px;line-height:1.5;font-weight:500;">매일 반복할 습관.<br>모두 체크 → Gold</div>
         </div>
         <div style="padding:12px 14px;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius-lg);">
-          <div style="color:#ff4d4d;margin-bottom:8px;"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 12l3 3 5-5"/></svg></div>
+          <div style="color:var(--accent);margin-bottom:8px;"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 12l3 3 5-5"/></svg></div>
           <div style="font-size:var(--text-md);font-weight:800;color:var(--text);">할일</div>
           <div style="font-size:var(--text-xs);color:var(--text2);margin-top:4px;line-height:1.5;font-weight:500;">오늘 1회성 목표.<br>모두 완료 → Gold</div>
         </div>
@@ -9647,14 +9647,14 @@ const _TOUR_SLIDES=[
       <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:14px;">
         <div style="padding:14px 16px;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius-lg);">
           <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
-            <div style="color:#ff4d4d;display:flex;"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg></div>
+            <div style="color:var(--accent);display:flex;"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg></div>
             <div style="font-size:var(--text-md);font-weight:800;color:var(--text);">분석 탭</div>
           </div>
           <div style="font-size:var(--text-sm);color:var(--text2);line-height:1.55;font-weight:500;">체중 · 운동 볼륨 · 루틴 달성률 · 식단 질 — 기간별 차트로 확인.</div>
         </div>
         <div style="padding:14px 16px;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius-lg);">
           <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
-            <div style="color:#ff4d4d;display:flex;"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2"/><circle cx="10" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+            <div style="color:var(--accent);display:flex;"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2"/><circle cx="10" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
             <div style="font-size:var(--text-md);font-weight:800;color:var(--text);">챌린지 탭</div>
           </div>
           <div style="font-size:var(--text-sm);color:var(--text2);line-height:1.55;font-weight:500;">친구 초대 코드로 참여. 누적 점수로 매일 순위 다툼.</div>
@@ -9866,7 +9866,7 @@ function renderFirstWeekCard(){
     const checkMark=mi.done?'✓':'';
     const textCol=mi.done?'var(--text3)':'var(--text)';
     const textDeco=mi.done?'text-decoration:line-through;':'';
-    const ctaHtml=mi.done?'':`<button onclick="${mi.fn}()" style="font-size:var(--text-xs);font-weight:800;padding:7px 12px;background:linear-gradient(135deg,#ff4d4d,#ff6b35);border:none;border-radius:var(--radius-md);color:#fff;cursor:pointer;touch-action:manipulation;letter-spacing:-.01em;white-space:nowrap;flex-shrink:0;">${mi.cta} →</button>`;
+    const ctaHtml=mi.done?'':`<button onclick="${mi.fn}()" style="font-size:var(--text-xs);font-weight:800;padding:7px 12px;background:var(--accent-grad);border:none;border-radius:var(--radius-md);color:#fff;cursor:pointer;touch-action:manipulation;letter-spacing:-.01em;white-space:nowrap;flex-shrink:0;">${mi.cta} →</button>`;
     return `<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:${bg};border:1px solid var(--border2);border-radius:var(--radius-lg);opacity:${opacity};">
       <div style="width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:${checkBg};border:1.5px solid ${checkBd};color:${checkCol};font-size:var(--text-xs);font-weight:900;">${checkMark}</div>
       <div style="flex:1;font-size:12.5px;color:${textCol};${textDeco}line-height:1.3;">${mi.label}</div>
@@ -9877,7 +9877,7 @@ function renderFirstWeekCard(){
   if(m.dailyComplete){
     html+=`<div style="margin-top:4px;padding:12px;background:linear-gradient(135deg,var(--accent-tint-2),rgba(255,107,53,0.08));border:1px solid var(--accent-tint-4);border-radius:var(--radius-lg);">
       <div style="font-size:var(--text-sm);font-weight:800;color:#fff;margin-bottom:8px;letter-spacing:-.01em;">💪 오늘 할 일 다 끝냈네. 보너스 미션.</div>
-      <button onclick="fwGotoPushup()" style="width:100%;padding:10px;background:linear-gradient(135deg,#ff4d4d,#ff6b35);border:none;border-radius:var(--radius-md);color:#fff;font-size:var(--text-md);font-weight:800;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;letter-spacing:-.01em;box-shadow:0 4px 14px var(--accent-tint-4);">🔥 팔굽혀펴기 챌린지 →</button>
+      <button onclick="fwGotoPushup()" style="width:100%;padding:10px;background:var(--accent-grad);border:none;border-radius:var(--radius-md);color:#fff;font-size:var(--text-md);font-weight:800;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;letter-spacing:-.01em;box-shadow:0 4px 14px var(--accent-tint-4);">🔥 팔굽혀펴기 챌린지 →</button>
     </div>`;
   }
   list.innerHTML=html;
@@ -10809,7 +10809,7 @@ function openCheatSettings(){
     skullDisp.innerHTML=Array.from({length:2},(_,i)=>{
       const isUsed=i<used;
       return`<div style="text-align:center;">
-        <div style="font-size:var(--text-3xl);line-height:1;position:relative;display:inline-block;${isUsed?'opacity:0.22;':''}">💀${isUsed?`<span style="position:absolute;left:-10%;top:50%;width:120%;height:2.5px;background:#ff4d4d;transform:translateY(-50%) rotate(-18deg);border-radius:var(--radius-sm);display:block;"></span>`:''}</div>
+        <div style="font-size:var(--text-3xl);line-height:1;position:relative;display:inline-block;${isUsed?'opacity:0.22;':''}">💀${isUsed?`<span style="position:absolute;left:-10%;top:50%;width:120%;height:2.5px;background:var(--accent);transform:translateY(-50%) rotate(-18deg);border-radius:var(--radius-sm);display:block;"></span>`:''}</div>
         <div style="font-size:var(--text-2xs);color:${isUsed?'var(--red)':'var(--text3)'};margin-top:3px;">${isUsed?'사용됨':'남음'}</div>
       </div>`;
     }).join('');
@@ -11095,7 +11095,7 @@ function renderWssRoutineTiles(){
   if(!el)return;
   const freeTile=`<div onclick="startGymSession()" style="flex:0 0 58px;min-width:58px;background:var(--accent-tint-2);border:1px dashed var(--accent-tint-4);border-radius:var(--radius-md);padding:7px 6px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;touch-action:manipulation;">
     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#ff4d4d" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-    <span style="font-size:var(--text-2xs);color:#ff4d4d;text-align:center;font-weight:600;line-height:1.2;">자유<br>운동</span>
+    <span style="font-size:var(--text-2xs);color:var(--accent);text-align:center;font-weight:600;line-height:1.2;">자유<br>운동</span>
   </div>`;
   const routineTiles=(userRoutines||[]).map(r=>{
     const exPreview=(r.exercises||[]).slice(0,3).map(e=>e.name).join(' · ');
@@ -11856,7 +11856,7 @@ function _createShareOverlay(){
     +'<div id="so-loader" style="width:40px;height:40px;border:3px solid rgba(255,255,255,.2);border-top-color:#ff9f43;border-radius:50%;animation:spin 0.8s linear infinite;margin:40px 0;"></div>'
     +'<img id="so-img" style="display:none;max-width:100%;height:auto;border-radius:var(--radius-lg);box-shadow:0 8px 32px rgba(0,0,0,.6);margin-bottom:20px;" alt="운동 기록"/>'
     +'<div id="so-actions" style="display:none;gap:10px;width:100%;max-width:320px;">'
-    +  '<button id="so-share" style="flex:1;padding:14px;background:#ff4d4d;color:#fff;border:none;border-radius:var(--radius-lg);font-size:var(--text-base);font-weight:700;cursor:pointer;font-family:\'DM Sans\',sans-serif;touch-action:manipulation;">📤 공유</button>'
+    +  '<button id="so-share" style="flex:1;padding:14px;background:var(--accent);color:#fff;border:none;border-radius:var(--radius-lg);font-size:var(--text-base);font-weight:700;cursor:pointer;font-family:\'DM Sans\',sans-serif;touch-action:manipulation;">📤 공유</button>'
     +  '<button id="so-close" style="flex:1;padding:14px;background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.2);border-radius:var(--radius-lg);font-size:var(--text-base);font-weight:600;cursor:pointer;font-family:\'DM Sans\',sans-serif;touch-action:manipulation;">닫기</button>'
     +'</div>'
     +'<button id="so-cancel" style="margin-top:auto;padding:10px 22px;background:transparent;color:#aaa;border:1px solid rgba(255,255,255,.15);border-radius:var(--radius-xl);font-size:var(--text-sm);cursor:pointer;font-family:\'DM Sans\',sans-serif;touch-action:manipulation;">취소</button>';
@@ -12237,7 +12237,7 @@ function cpmRenderTypeChips(){
   const wrap = document.getElementById('cpm-type-chips');
   if(!wrap) return;
   wrap.innerHTML = CP_TYPES.map(t =>
-    `<button onclick="cpmSelectType('${esc(t).replace(/'/g,"\\'")}')" style="padding:8px 14px;border-radius:var(--radius-md);border:1px solid ${_cpmActualType===t?'transparent':'var(--border2)'};background:${_cpmActualType===t?'linear-gradient(135deg,#ff4d4d,#ff6b35)':'var(--surface2)'};color:${_cpmActualType===t?'#fff':'var(--text2)'};font-size:var(--text-sm);font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">${esc(t)}</button>`
+    `<button onclick="cpmSelectType('${esc(t).replace(/'/g,"\\'")}')" style="padding:8px 14px;border-radius:var(--radius-md);border:1px solid ${_cpmActualType===t?'transparent':'var(--border2)'};background:${_cpmActualType===t?'var(--accent-grad)':'var(--surface2)'};color:${_cpmActualType===t?'#fff':'var(--text2)'};font-size:var(--text-sm);font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">${esc(t)}</button>`
   ).join('');
 }
 
@@ -14287,7 +14287,7 @@ async function shareMuscleMap(){
       const pct=Math.round(d.vol/total*100);
       return `<div style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:rgba(255,255,255,0.04);border-left:3px solid ${heatColor(pct/100)};border-radius:var(--radius-md);margin-bottom:6px;">
         <div style="flex:1;font-size:var(--text-base);font-weight:700;color:#eaeaea;">${g}</div>
-        <div style="font-size:var(--text-base);font-weight:800;color:#ff4d4d;font-family:'DM Mono',monospace;">${pct}%</div>
+        <div style="font-size:var(--text-base);font-weight:800;color:var(--accent);font-family:'DM Mono',monospace;">${pct}%</div>
       </div>`;
     }).join('');
   } else {
@@ -14333,7 +14333,7 @@ async function shareMuscleMap(){
   comp.innerHTML=`
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
       <div style="display:flex;align-items:center;gap:10px;">
-        <div style="width:38px;height:38px;border-radius:var(--radius-lg);background:linear-gradient(135deg,#ff4d4d,#ff6b35);display:flex;align-items:center;justify-content:center;font-size:var(--text-xl);box-shadow:0 4px 14px var(--accent-tint-4);">💥</div>
+        <div style="width:38px;height:38px;border-radius:var(--radius-lg);background:var(--accent-grad);display:flex;align-items:center;justify-content:center;font-size:var(--text-xl);box-shadow:0 4px 14px var(--accent-tint-4);">💥</div>
         <div>
           <div style="font-size:var(--text-base);font-weight:900;color:#eaeaea;letter-spacing:0.8px;">QROK</div>
           <div style="font-size:var(--text-2xs);color:#6b6b78;margin-top:1px;">자극 부위 · ${modeLabel} · ${viewLabel}</div>
@@ -14359,10 +14359,10 @@ async function shareMuscleMap(){
     </div>
     <div style="margin-top:16px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:space-between;">
       <div>
-        <div style="font-size:var(--text-base);font-weight:800;color:#ff4d4d;letter-spacing:0.2px;">${punchline}</div>
+        <div style="font-size:var(--text-base);font-weight:800;color:var(--accent);letter-spacing:0.2px;">${punchline}</div>
         <div style="font-size:var(--text-2xs);color:#6b6b78;margin-top:2px;">qrok.app · ${tease}</div>
       </div>
-      <div style="padding:9px 13px;background:linear-gradient(135deg,#ff4d4d,#ff6b35);border-radius:var(--radius-lg);font-size:var(--text-xs);font-weight:900;color:#fff;letter-spacing:0.5px;box-shadow:0 4px 12px var(--accent-tint-4);">💪 QROK</div>
+      <div style="padding:9px 13px;background:var(--accent-grad);border-radius:var(--radius-lg);font-size:var(--text-xs);font-weight:900;color:#fff;letter-spacing:0.5px;box-shadow:0 4px 12px var(--accent-tint-4);">💪 QROK</div>
     </div>
   `;
   document.body.appendChild(comp);
@@ -15889,7 +15889,7 @@ function renderMuscleMap(){
       <div style="font-size:var(--text-2xl);margin-bottom:4px;">💪</div>
       <div style="font-size:var(--text-md);font-weight:700;color:var(--text);margin-bottom:4px;">${c.title}</div>
       <div style="font-size:var(--text-xs);color:var(--text3);line-height:1.5;margin-bottom:10px;">${c.body}</div>
-      <div role="button" tabindex="0" onclick="closeMuscleMap();setTimeout(openWorkoutModal,50);" ontouchend="event.preventDefault();closeMuscleMap();setTimeout(openWorkoutModal,50);" style="display:inline-flex;align-items:center;gap:6px;padding:10px 18px;background:linear-gradient(135deg,#ff4d4d,#ff6b35);border-radius:var(--radius-md);font-size:var(--text-md);font-weight:700;color:#fff;cursor:pointer;box-shadow:0 3px 10px var(--accent-tint-4);user-select:none;-webkit-user-select:none;">🔥 ${c.cta}</div>
+      <div role="button" tabindex="0" onclick="closeMuscleMap();setTimeout(openWorkoutModal,50);" ontouchend="event.preventDefault();closeMuscleMap();setTimeout(openWorkoutModal,50);" style="display:inline-flex;align-items:center;gap:6px;padding:10px 18px;background:var(--accent-grad);border-radius:var(--radius-md);font-size:var(--text-md);font-weight:700;color:#fff;cursor:pointer;box-shadow:0 3px 10px var(--accent-tint-4);user-select:none;-webkit-user-select:none;">🔥 ${c.cta}</div>
     </div>`;
   }
 }
