@@ -333,8 +333,6 @@
   .mcard-attn.warn{background:rgba(245,158,11,0.2);color:#fbbf24;}
   .mcard-attn.ok{background:rgba(52,211,153,0.18);color:#34d399;}
   .mcard-last{font-size:11px;color:var(--text3);margin-left:auto;font-family:'DM Mono',monospace;}
-  .mcard-chev{color:var(--text3);font-size:11px;transition:transform .15s;}
-  .mcard.expanded .mcard-chev{transform:rotate(180deg);}
   .mcard-row2{display:flex;align-items:center;gap:14px;font-size:13px;}
   .mcard-workout-status{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;}
   .mcard-workout-status .ico{width:18px;height:18px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;}
@@ -343,9 +341,10 @@
   .mcard-workout-status .ico.miss{background:rgba(255,77,77,0.25);color:#ff7a7a;}
   .mcard-workout-status .ico.none{background:var(--surface2);color:var(--text3);}
   .mcard-workout-link{margin-left:6px;font-size:11px;color:var(--accent);font-weight:700;cursor:pointer;}
-  .mcard-meals{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;}
+  .mcard-meals{display:grid;grid-template-columns:repeat(4,minmax(0,68px));gap:6px;}
   .mcard-meal{position:relative;aspect-ratio:1;background:var(--surface2);border:1px solid var(--border);border-radius:8px;overflow:hidden;display:flex;align-items:center;justify-content:center;cursor:pointer;}
   .mcard-meal.red-bd{border:2px solid #ff4d4d;}
+  .mcard-meal.green-bd{border:2px solid #34d399;}
   .mcard-meal img{width:100%;height:100%;object-fit:cover;display:block;}
   .mcard-meal-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;width:100%;height:100%;color:var(--text3);background:repeating-linear-gradient(45deg,transparent 0,transparent 6px,rgba(255,255,255,0.025) 6px,rgba(255,255,255,0.025) 12px);}
   .mcard-meal-empty svg{opacity:.45;}
@@ -356,11 +355,6 @@
   .mcard-btn:hover{border-color:var(--border2);color:var(--text);}
   .mcard-btn.primary{background:linear-gradient(135deg,#ff4d4d,#ff6b35);color:#fff;border-color:transparent;}
   .mcard-btn.primary:hover{box-shadow:0 2px 8px rgba(255,77,77,.4);}
-  .mcard-expanded{padding:0 16px 14px;border-top:1px dashed var(--border2);}
-  .mcard-week-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px;font-size:12px;}
-  .mcard-week-cell{display:flex;flex-direction:column;gap:3px;}
-  .mcard-week-cell .lbl{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;font-weight:700;}
-  .mcard-week-cell .val{font-size:13px;font-weight:700;color:var(--text);}
 
   /* ── Excel grid (자세히 보기) ── */
   .excel-wrap{max-width:1280px;margin:0 auto;padding:18px 16px 60px;}
@@ -643,7 +637,7 @@
       </div>
       <div class="dt-head-actions">
         <button class="btn btn-primary" onclick="dtAssign()">+ 운동 배정</button>
-        <button class="btn btn-ghost" onclick="dtCardioPenalty()">⏱ 유산소 추가</button>
+        <button class="btn btn-ghost" onclick="dtCardioPenalty()">🚨 페널티 부여</button>
         <button class="btn btn-ghost" onclick="dtMessage()">💬 메시지</button>
         <button class="btn btn-ghost" onclick="dtNickname()">✎ 별명</button>
         <button class="btn btn-danger" onclick="dtGraduate()">졸업</button>
@@ -890,10 +884,10 @@
   </div>
 </div>
 
-<!-- ============= 유산소 추가 부여 모달 ============= -->
+<!-- ============= 페널티 (유산소 추가) 부여 모달 ============= -->
 <div class="modal-overlay" id="modal-cardio-penalty">
   <div class="modal" style="max-width:480px;">
-    <div class="modal-title">⏱ 유산소 추가 부여</div>
+    <div class="modal-title">🚨 페널티 부여</div>
     <div class="modal-sub" id="cp-target">—</div>
 
     <div class="field">
@@ -2887,27 +2881,7 @@ function _feedAttention(row){
   return null;
 }
 
-// ── 회원 카드 expand state (sessionStorage 로 새로고침 후에도 유지) ──
-const _mcardExpanded = new Set();
-try{
-  const saved = sessionStorage.getItem('mcardExpanded');
-  if(saved){ JSON.parse(saved).forEach(id => _mcardExpanded.add(id)); }
-}catch(_){}
-
-function toggleMcardExpand(clientId){
-  if(_mcardExpanded.has(clientId)) _mcardExpanded.delete(clientId);
-  else _mcardExpanded.add(clientId);
-  try{ sessionStorage.setItem('mcardExpanded', JSON.stringify([..._mcardExpanded])); }catch(_){}
-  // 해당 카드만 re-render
-  const cardEl = document.querySelector(`[data-mcard="${clientId}"]`);
-  if(cardEl){
-    const row = _feedRows.find(r => r.client_id === clientId);
-    if(row){
-      cardEl.outerHTML = _renderMcard(row);
-      try{ hydrateFeedMealPhotos(); }catch(_){}
-    }
-  }
-}
+// expand state 폐기 — 항상 펼친 view 로 표시 (사용자 결정 2026-05-02).
 
 function renderFeed(){
   const wrap = document.getElementById('feed-list');
@@ -2991,15 +2965,15 @@ function _renderMcard(r){
   const attnHtml = attn ? `<span class="mcard-attn ${attn.level}">${esc(attn.label)}</span>` : '';
   const last = r.last_activity ? `<span class="mcard-last">${_relTime(r.last_activity)}</span>` : '<span class="mcard-last">기록 없음</span>';
 
-  // 운동 status (오늘 헬스 세션) — 완료 / 부분 / 미수행 / 미배정
+  // 운동 status (오늘 시점) — 완료 / 진행중 / 예정 있음 / 예정 없음 / 취소
   const tT = r.homework_total_sets||0, tD = r.homework_done_sets||0;
   const tStat = r.homework_status;
   let woIcon, woCls, woLabel;
   if(tStat === 'cancelled_by_user'){ woIcon = '×'; woCls = 'none'; woLabel = '취소 (회원)'; }
-  else if(tT === 0){ woIcon = '—'; woCls = 'none'; woLabel = '운동 미배정'; }
+  else if(tT === 0){ woIcon = '—'; woCls = 'none'; woLabel = '예정된 운동 없음'; }
   else if(tStat === 'completed' || tD === tT){ woIcon = '✓'; woCls = 'ok'; woLabel = '운동 완료'; }
-  else if(tD === 0){ woIcon = '✗'; woCls = 'miss'; woLabel = '운동 미수행'; }
-  else { woIcon = '◐'; woCls = 'partial'; woLabel = '운동 부분 수행'; }
+  else if(tD === 0){ woIcon = '!'; woCls = 'miss'; woLabel = '예정 운동 있음'; }
+  else { woIcon = '◐'; woCls = 'partial'; woLabel = '운동 진행 중'; }
   const woClickable = tT > 0;
   const woLink = woClickable ? `<span class="mcard-workout-link" onclick="event.stopPropagation();feedShowSummary('${r.client_id}', true)">→ 보기</span>` : '';
 
@@ -3021,43 +2995,22 @@ function _renderMcard(r){
       return `<div class="mcard-meal" style="background:rgba(122,122,134,0.18);border-color:rgba(122,122,134,0.5);" onclick="event.stopPropagation();"><span class="mcard-meal-lbl">${slot[0]}</span><span class="mcard-meal-empty" style="background:transparent;color:var(--text3);opacity:0.85;">${_skipMealSvg}<span class="ph-msg" style="color:var(--text3);">스킵</span></span></div>`;
     }
     const isRed = m.type === 'red' || m.category === 'alcohol';
+    const isGreen = m.type === 'green';
     const photo = _feedMealPhotoPath(m.photo);
     const img = photo
       ? `<img data-feed-meal-photo="${esc(photo)}" alt="" />`
-      : `<span class="mcard-meal-empty">${_emptyMealSvg}<span class="ph-msg">${isRed?'금지식 (사진 X)':'사진 없음'}</span></span>`;
-    return `<div class="mcard-meal ${isRed?'red-bd':''}" onclick="event.stopPropagation();openMealPhotoLightbox('${esc(photo||'')}')"><span class="mcard-meal-lbl">${slot[0]}</span>${img}</div>`;
+      : `<span class="mcard-meal-empty">${_emptyMealSvg}<span class="ph-msg">${isRed?'금지식 (사진 X)':(isGreen?'클린식 (사진 X)':'사진 없음')}</span></span>`;
+    const bdCls = isRed ? 'red-bd' : (isGreen ? 'green-bd' : '');
+    return `<div class="mcard-meal ${bdCls}" onclick="event.stopPropagation();openMealPhotoLightbox('${esc(photo||'')}')"><span class="mcard-meal-lbl">${slot[0]}</span>${img}</div>`;
   }).join('');
 
-  // 펼친 영역 (주간)
-  const expanded = _mcardExpanded.has(r.client_id);
-  const yMealTotal = r.yesterday_meal_total||0;
-  const yMealClean = r.yesterday_meal_clean||0;
-  const yMealRed = r.yesterday_meal_red||0;
-  // 오늘 + 어제 식단 합산 (간단한 1주 대용 — overview 는 today/yesterday 만)
-  const wkClean = (r.meal_clean||0) + yMealClean;
-  const wkNormal = (r.meal_normal||0) + ((yMealTotal - yMealClean - yMealRed)||0);
-  const wkRed = (r.meal_red||0) + yMealRed;
-  const expandedHtml = expanded ? `<div class="mcard-expanded">
-    <div class="mcard-week-grid">
-      <div class="mcard-week-cell">
-        <div class="lbl">최근 2일 식단</div>
-        <div class="val">클린 ${wkClean} · 일반 ${wkNormal} · <span style="color:${wkRed>0?'#ff7a7a':'inherit'};">금지 ${wkRed}</span></div>
-      </div>
-      <div class="mcard-week-cell">
-        <div class="lbl">어제 운동</div>
-        <div class="val">${(r.yesterday_homework_status==='completed')?'✓ 완료':(r.yesterday_homework_total_sets>0?(r.yesterday_homework_done_sets+'/'+r.yesterday_homework_total_sets):'배정 없음')}</div>
-      </div>
-    </div>
-  </div>` : '';
-
-  return `<div class="mcard ${expanded?'expanded':''}" data-mcard="${r.client_id}">
-    <div class="mcard-summary" onclick="toggleMcardExpand('${r.client_id}')">
+  return `<div class="mcard" data-mcard="${r.client_id}">
+    <div class="mcard-summary">
       <div class="mcard-row1">
         <span class="mcard-name">${display}</span>
         ${realName}
         ${attnHtml}
         ${last}
-        <span class="mcard-chev">▾</span>
       </div>
       <div class="mcard-row2">
         <span class="mcard-workout-status">
@@ -3068,10 +3021,9 @@ function _renderMcard(r){
       </div>
       <div class="mcard-meals">${mealHtml}</div>
     </div>
-    ${expandedHtml}
     <div class="mcard-actions">
       <button class="mcard-btn primary" onclick="mcardAssign('${r.relationship_id}','${r.client_id}')">+ 운동 배정</button>
-      <button class="mcard-btn" onclick="mcardOpenCardio('${r.relationship_id}','${r.client_id}')">⏱ 유산소 추가</button>
+      <button class="mcard-btn" onclick="mcardOpenCardio('${r.relationship_id}','${r.client_id}')">🚨 페널티 부여</button>
       <button class="mcard-btn" onclick="mcardOpenMessage('${r.relationship_id}','${r.client_id}')">💬 메시지</button>
       <button class="mcard-btn" onclick="mcardOpenDetail('${r.relationship_id}','${r.client_id}')">📊 자세히 보기</button>
     </div>
