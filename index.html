@@ -28,7 +28,7 @@
      so window globals (dkey, normKey, ...) are set before inline code runs.
      Query version bumps cache when bundle content changes. Bump manually or
      via build script when shipping a new bundle. See MIGRATION_PLAN.md. -->
-<script src="/dist/app.js?v=20260502-jail-bars-meal-ph"></script>
+<script src="/dist/app.js?v=20260502-meal-skip-detail-fix"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Archivo+Black&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -879,6 +879,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
 .slot-filled.normal{border-left:3px solid var(--text3);}
 .slot-filled.bad,.slot-filled.alcohol{border-left:3px solid var(--red);}
 .slot-filled.cheat{border-left:3px solid var(--amber);}
+.slot-filled.skip{border-left:3px solid var(--text3);opacity:.6;background:repeating-linear-gradient(45deg,transparent 0,transparent 6px,rgba(255,255,255,0.025) 6px,rgba(255,255,255,0.025) 12px);}
 .slot-thumb{width:40px;height:40px;border-radius:6px;background:var(--surface3);display:inline-flex;align-items:center;justify-content:center;color:var(--text3);flex-shrink:0;overflow:hidden;font-size:16px;}
 .slot-thumb img{width:100%;height:100%;object-fit:cover;display:block;}
 .slot-body{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;}
@@ -892,6 +893,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
 .slot-quality.cheat{background:var(--amber-bg);color:var(--amber);}
 .slot-quality.red,.slot-quality.bad{background:var(--red-bg);color:var(--red);}
 .slot-quality.alcohol{background:var(--red-bg);color:var(--red);}
+.slot-quality.skip{background:rgba(122,122,134,.18);color:var(--text3);}
 .slot-score{font-size:12px;font-weight:600;font-family:'DM Mono',monospace;letter-spacing:-.01em;flex-shrink:0;min-width:32px;text-align:right;}
 .slot-score.pos{color:var(--green);}
 .slot-score.neg{color:var(--red);}
@@ -3031,6 +3033,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
     </div>
 
     <button class="mbtn" id="ms-save-btn" onclick="saveSlotMeal()" style="touch-action:manipulation;">저장</button>
+    <button class="mbtn-ghost" onclick="skipSlotMeal()" style="touch-action:manipulation;background:var(--surface2);border:1px solid var(--border2);color:var(--text3);">⏭ 이번 끼 스킵</button>
     <button class="mbtn-ghost" onclick="closeModal('meal-modal-slot')" style="touch-action:manipulation;">취소</button>
   </div>
 </div>
@@ -9967,12 +9970,12 @@ function renderMeals(){
     {key:'점심',icon:svgSun,tag:'NOON'},
     {key:'저녁',icon:svgMoon,tag:'PM'}
   ];
-  const qualityLabel={green:'클린',normal:'일반',cheat:'치팅',red:'금지',alcohol:'음주'};
+  const qualityLabel={green:'클린',normal:'일반',cheat:'치팅',red:'금지',alcohol:'음주',skip:'스킵'};
   // CUBE mode: 끼니별 +15/-30 표시 제거. 점수는 cube 큐브로만 전달.
   const showLegacyScore=window.CUBE_UI_MODE!==true;
-  const qualityScore={green:'+15',normal:'+5',cheat:'±0',red:'−30',alcohol:'−30'};
-  const qualityScoreCls={green:'pos',normal:'zero',cheat:'zero',red:'neg',alcohol:'neg'};
-  const qualityClass={green:'clean',normal:'normal',cheat:'cheat',red:'bad',alcohol:'alcohol'};
+  const qualityScore={green:'+15',normal:'+5',cheat:'±0',red:'−30',alcohol:'−30',skip:'±0'};
+  const qualityScoreCls={green:'pos',normal:'zero',cheat:'zero',red:'neg',alcohol:'neg',skip:'zero'};
+  const qualityClass={green:'clean',normal:'normal',cheat:'cheat',red:'bad',alcohol:'alcohol',skip:'skip'};
 
   function thumbHtml(photo,fallback){
     if(!photo)return`<span class="slot-thumb">${fallback||svgPlate}</span>`;
@@ -10416,6 +10419,22 @@ function _handleSilentCamBlob(scope,blob){
     else _msnShowPhoto(photoData);
   };
   r.readAsDataURL(blob);
+}
+
+// 식단 스킵 — 끼니를 명시적으로 안 먹음 표시 (entry type='skip', 큐브 보상 없음)
+async function skipSlotMeal(){
+  if(_slotSaving) return;
+  if(!confirm('이번 끼니를 스킵으로 기록할까?\n("안 먹음" 으로 표시되며, 큐브 보상 X)')) return;
+  if(!logCache[selectedKey]) logCache[selectedKey] = log;
+  log = logCache[selectedKey];
+  const entry = {name:'', type:'skip', photo:null, time:mealTime, category:'meal'};
+  if(mealIdx === null) log.meals.push(entry);
+  else log.meals[mealIdx] = entry;
+  closeModal('meal-modal-slot');
+  try{ renderMeals(); }catch(_){}
+  try{ recomputeCubesHook(); }catch(_){}
+  try{ saveNow(); }catch(_){}
+  showToast('⏭ ' + (mealTime||'끼니') + ' 스킵 표시됨');
 }
 
 let _slotSaving=false;

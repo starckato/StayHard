@@ -34,6 +34,7 @@ export function judgeAccumulator(log, ctx = {}) {
   for (const m of meals) {
     if (!m) continue;
     if (m.category === 'drink') continue; // 음료 는 별도 처리 안 함
+    if (m.type === 'skip') continue;       // 명시적 스킵 — 큐브 보상 없음
     if (m.type === 'red' || m.category === 'alcohol') {
       red++;
     } else if (m.type === 'green') {

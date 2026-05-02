@@ -674,7 +674,7 @@
         <span class="excel-legend-item"><span class="excel-legend-dot" style="background:#34d399;"></span>클린식 / 운동 완료</span>
         <span class="excel-legend-item"><span class="excel-legend-dot" style="background:#fbbf24;"></span>일반식</span>
         <span class="excel-legend-item"><span class="excel-legend-dot" style="background:#ff4d4d;"></span>금지식</span>
-        <span class="excel-legend-item"><span class="excel-legend-dot" style="background:rgba(122,122,134,0.3);"></span>운동 스킵</span>
+        <span class="excel-legend-item"><span class="excel-legend-dot" style="background:rgba(122,122,134,0.3);"></span>스킵 (안 먹음 / 운동 스킵)</span>
         <span class="excel-legend-item"><span class="excel-legend-dot" style="background:transparent;border:1px dashed var(--border2);"></span>기록 없음</span>
       </div>
     </div>
@@ -2280,7 +2280,9 @@ async function loadDetail(relId, clientId){
   document.getElementById('dt-name').textContent = '불러오는 중…';
   document.getElementById('dt-meta').textContent = '—';
   document.getElementById('dt-notes-list').innerHTML = '<div style="font-size:12px;color:var(--text3);">불러오는 중…</div>';
-  document.getElementById('dt-timeline').innerHTML = '<div style="font-size:12px;color:var(--text3);">불러오는 중…</div>';
+  // dt-timeline → dt-excel-grid 로 교체됨 (방어적으로 둘 다 try)
+  const _excelEl = document.getElementById('dt-excel-grid') || document.getElementById('dt-timeline');
+  if(_excelEl) _excelEl.innerHTML = '<div style="padding:24px;font-size:12px;color:var(--text3);">불러오는 중…</div>';
   document.getElementById('dt-messages').innerHTML = '<div style="font-size:12px;color:var(--text3);">불러오는 중…</div>';
   document.getElementById('dt-trainer-memo').value = '';
   document.getElementById('dt-trainer-memo-status').textContent = '';
@@ -2621,6 +2623,9 @@ function renderDtExcelGrid(){
       const isToday = d === today;
       let cellHtml;
       if(!m){ cellHtml = `<span class="excel-cell empty"></span>`; }
+      else if(m.type === 'skip'){
+        cellHtml = `<span class="excel-cell workout-skip" title="스킵 (안 먹음)"></span>`;
+      }
       else {
         const isRed = m.type === 'red' || m.category === 'alcohol';
         const isGreen = m.type === 'green';
@@ -3002,10 +3007,14 @@ function _renderMcard(r){
     if(slotMap[t] === null) slotMap[t] = m;
   }
   const _emptyMealSvg = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="15" rx="9" ry="3"/><ellipse cx="12" cy="15" rx="6" ry="2"/><line x1="9" y1="3" x2="9" y2="12"/><path d="M9 3 L9 7 Q9 8 8 8 L8 3"/><line x1="15" y1="3" x2="15" y2="12"/></svg>`;
+  const _skipMealSvg = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 4 15 12 5 20"/><line x1="19" y1="5" x2="19" y2="19"/></svg>`;
   const mealHtml = ['아침','점심','저녁','간식'].map(slot => {
     const m = slotMap[slot];
     if(!m){
       return `<div class="mcard-meal" onclick="event.stopPropagation();"><span class="mcard-meal-lbl">${slot[0]}</span><span class="mcard-meal-empty">${_emptyMealSvg}<span class="ph-msg">기록 없음</span></span></div>`;
+    }
+    if(m.type === 'skip'){
+      return `<div class="mcard-meal" style="background:rgba(122,122,134,0.18);border-color:rgba(122,122,134,0.5);" onclick="event.stopPropagation();"><span class="mcard-meal-lbl">${slot[0]}</span><span class="mcard-meal-empty" style="background:transparent;color:var(--text3);opacity:0.85;">${_skipMealSvg}<span class="ph-msg" style="color:var(--text3);">스킵</span></span></div>`;
     }
     const isRed = m.type === 'red' || m.category === 'alcohol';
     const photo = _feedMealPhotoPath(m.photo);

@@ -78,11 +78,14 @@ function cellStatus(dl, cat, isFuture) {
   if (cat === 'meal') {
     const meals = (dl.meals || []).filter(m => m && m.category !== 'drink');
     if (!meals.length) return 'empty';
-    const hasRed = meals.some(m => m.type === 'red' || m.category === 'alcohol');
+    // skip 만 있는 경우는 empty (아무것도 안 한 거나 마찬가지)
+    const nonSkip = meals.filter(m => m.type !== 'skip');
+    if (!nonSkip.length) return 'empty';
+    const hasRed = nonSkip.some(m => m.type === 'red' || m.category === 'alcohol');
     if (hasRed) return 'fail'; // 빨강 우선
-    const hasGreen = meals.some(m => m.type === 'green');
-    if (hasGreen) return 'pass'; // 골드
-    return 'partial'; // 실버 (일반식만)
+    const hasGreen = nonSkip.some(m => m.type === 'green');
+    if (hasGreen) return 'pass';
+    return 'partial';
   }
 
   if (cat === 'workout') {
