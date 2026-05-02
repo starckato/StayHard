@@ -306,15 +306,86 @@
   .fcard-btn:hover{border-color:var(--border2);color:var(--text);}
   .fcard-btn.primary{background:linear-gradient(135deg,#ff4d4d,#ff6b35);color:#fff;border-color:transparent;}
   .fcard-btn.primary:hover{box-shadow:0 2px 8px rgba(255,77,77,.4);}
-  /* PC : 2-col layout — 좌:정보(stats+meals)  우:액션 */
-  @media (min-width: 720px){
-    .fcard{grid-template-columns:1fr 200px;grid-template-rows:auto auto auto;align-items:start;}
-    .fcard-row1{grid-column:1 / span 2;}
-    .fcard-stats{grid-column:1; grid-row:2;}
-    .fcard-meals{grid-column:1; grid-row:3;}
-    .fcard-actions{grid-column:2; grid-row:2 / span 2; flex-direction:column; align-items:stretch;}
-    .fcard-btn{text-align:center;}
-  }
+  /* 동일 카드 layout PC + Mobile (사용자 결정). */
+
+  /* ── 알림 카드 (액션 필요) ── */
+  .alert-card{background:linear-gradient(135deg,rgba(255,77,77,0.10),rgba(255,107,53,0.04));border:1.5px solid rgba(255,77,77,0.32);border-radius:12px;padding:11px 14px;margin-bottom:10px;}
+  .alert-card.warn{background:linear-gradient(135deg,rgba(245,158,11,0.10),rgba(245,158,11,0.04));border-color:rgba(245,158,11,0.32);}
+  .alert-card-hd{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+  .alert-card-hd .icon{font-size:14px;flex-shrink:0;}
+  .alert-card-hd .ttl{font-size:12px;font-weight:800;letter-spacing:-.005em;color:var(--text);}
+  .alert-card-hd .ttl.alert{color:#ff7a7a;}
+  .alert-card-hd .ttl.warn{color:#fbbf24;}
+  .alert-card-chips{display:flex;flex-wrap:wrap;gap:5px;}
+  .alert-chip{padding:5px 10px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:6px;font-size:11px;font-weight:600;color:var(--text2);cursor:pointer;}
+  .alert-chip:hover{color:var(--text);border-color:rgba(255,255,255,0.2);}
+
+  /* ── 회원 카드 (접힘 default) — 운동 status + 식단 photo + actions ── */
+  .mcard{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;transition:border-color .12s;}
+  .mcard:hover{border-color:var(--border2);}
+  .mcard.expanded{border-color:rgba(255,77,77,0.32);}
+  .mcard-summary{padding:13px 16px;cursor:pointer;display:flex;flex-direction:column;gap:8px;}
+  .mcard-row1{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+  .mcard-name{font-size:15px;font-weight:700;letter-spacing:-.005em;}
+  .mcard-name-real{font-size:11px;color:var(--text3);font-weight:500;}
+  .mcard-attn{display:inline-block;font-size:9px;font-weight:800;padding:2px 7px;border-radius:5px;letter-spacing:.04em;}
+  .mcard-attn.alert{background:rgba(255,77,77,0.2);color:#ff7a7a;}
+  .mcard-attn.warn{background:rgba(245,158,11,0.2);color:#fbbf24;}
+  .mcard-attn.ok{background:rgba(52,211,153,0.18);color:#34d399;}
+  .mcard-last{font-size:11px;color:var(--text3);margin-left:auto;font-family:'DM Mono',monospace;}
+  .mcard-chev{color:var(--text3);font-size:11px;transition:transform .15s;}
+  .mcard.expanded .mcard-chev{transform:rotate(180deg);}
+  .mcard-row2{display:flex;align-items:center;gap:14px;font-size:13px;}
+  .mcard-workout-status{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;}
+  .mcard-workout-status .ico{width:18px;height:18px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;}
+  .mcard-workout-status .ico.ok{background:rgba(52,211,153,0.25);color:#34d399;}
+  .mcard-workout-status .ico.partial{background:rgba(245,158,11,0.25);color:#fbbf24;}
+  .mcard-workout-status .ico.miss{background:rgba(255,77,77,0.25);color:#ff7a7a;}
+  .mcard-workout-status .ico.none{background:var(--surface2);color:var(--text3);}
+  .mcard-workout-link{margin-left:6px;font-size:11px;color:var(--accent);font-weight:700;cursor:pointer;}
+  .mcard-meals{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;}
+  .mcard-meal{position:relative;aspect-ratio:1;background:var(--surface2);border:1px solid var(--border);border-radius:8px;overflow:hidden;display:flex;align-items:center;justify-content:center;cursor:pointer;}
+  .mcard-meal.red-bd{border:2px solid #ff4d4d;}
+  .mcard-meal img{width:100%;height:100%;object-fit:cover;display:block;}
+  .mcard-meal-empty{font-size:18px;color:var(--text3);opacity:.4;}
+  .mcard-meal-lbl{position:absolute;top:3px;left:4px;font-size:9px;font-weight:700;color:#fff;background:rgba(0,0,0,0.6);padding:1px 5px;border-radius:3px;letter-spacing:.02em;}
+  .mcard-actions{display:flex;gap:5px;flex-wrap:wrap;padding:0 16px 13px;}
+  .mcard-btn{flex:1;min-width:80px;padding:8px 6px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-size:11px;font-weight:700;color:var(--text2);cursor:pointer;transition:all .12s;text-align:center;}
+  .mcard-btn:hover{border-color:var(--border2);color:var(--text);}
+  .mcard-btn.primary{background:linear-gradient(135deg,#ff4d4d,#ff6b35);color:#fff;border-color:transparent;}
+  .mcard-btn.primary:hover{box-shadow:0 2px 8px rgba(255,77,77,.4);}
+  .mcard-expanded{padding:0 16px 14px;border-top:1px dashed var(--border2);}
+  .mcard-week-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px;font-size:12px;}
+  .mcard-week-cell{display:flex;flex-direction:column;gap:3px;}
+  .mcard-week-cell .lbl{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;font-weight:700;}
+  .mcard-week-cell .val{font-size:13px;font-weight:700;color:var(--text);}
+
+  /* ── Excel grid (자세히 보기) ── */
+  .excel-wrap{max-width:1280px;margin:0 auto;padding:18px 16px 60px;}
+  .excel-head{display:flex;align-items:center;gap:14px;margin-bottom:18px;flex-wrap:wrap;}
+  .excel-back{background:none;border:none;color:var(--text2);font-size:12px;cursor:pointer;padding:0;}
+  .excel-back:hover{color:var(--text);}
+  .excel-title{font-family:'Archivo Black',sans-serif;font-size:18px;letter-spacing:-.005em;}
+  .excel-actions{display:flex;gap:6px;flex-wrap:wrap;margin-left:auto;}
+  .excel-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;background:var(--surface);border:1px solid var(--border);border-radius:12px;}
+  .excel-table{border-collapse:separate;border-spacing:0;width:100%;font-size:11px;}
+  .excel-table th, .excel-table td{padding:8px 10px;text-align:center;border-bottom:1px solid var(--border);border-right:1px solid var(--border);white-space:nowrap;}
+  .excel-table th:last-child, .excel-table td:last-child{border-right:none;}
+  .excel-table tr:last-child td{border-bottom:none;}
+  .excel-table th{background:var(--surface2);font-weight:700;color:var(--text3);font-size:10px;letter-spacing:.04em;}
+  .excel-table th.row-lbl, .excel-table td.row-lbl{position:sticky;left:0;background:var(--surface);z-index:1;text-align:left;font-weight:700;color:var(--text2);min-width:80px;}
+  .excel-table th.row-lbl{background:var(--surface2);}
+  .excel-table td.today-col{background:rgba(255,77,77,0.04);}
+  .excel-cell{display:inline-block;width:24px;height:24px;border-radius:5px;cursor:pointer;}
+  .excel-cell.green{background:#34d399;}
+  .excel-cell.normal{background:#fbbf24;}
+  .excel-cell.red{background:#ff4d4d;}
+  .excel-cell.workout-done{background:#34d399;}
+  .excel-cell.workout-skip{background:rgba(122,122,134,0.3);}
+  .excel-cell.empty{background:transparent;border:1px dashed var(--border2);}
+  .excel-legend{display:flex;gap:14px;font-size:10px;color:var(--text3);margin-top:10px;flex-wrap:wrap;}
+  .excel-legend-item{display:inline-flex;align-items:center;gap:4px;}
+  .excel-legend-dot{width:10px;height:10px;border-radius:3px;}
 
   /* ── Roster view (전체 회원 상태 파악, 주간 trend) ── */
   .roster-wrap{max-width:1280px;margin:0 auto;padding:18px 16px 60px;}
@@ -498,10 +569,9 @@
     </div>
     <div class="top-spacer"></div>
     <div class="top-user">
-      <div style="display:flex;gap:4px;margin-right:8px;">
-        <button class="dash-toggle on" id="dash-toggle-feed" onclick="setDashView('feed')">📋 오늘</button>
-        <button class="dash-toggle" id="dash-toggle-roster" onclick="setDashView('roster')">📊 전체 회원</button>
-      </div>
+      <!-- 토글 폐기 (2026-05-02) — 단일 화면 통합 -->
+      <button class="dash-toggle on" id="dash-toggle-feed" onclick="setDashView('feed')" style="display:none;"></button>
+      <button class="dash-toggle" id="dash-toggle-roster" style="display:none;"></button>
       <button class="btn btn-ghost" onclick="openReferralModal()" style="font-size:12px;">동료 추천 코드</button>
       <div onclick="openTrainerSelfEdit()" style="cursor:pointer;text-align:right;" title="이름·소개 편집">
         <div class="name" id="me-name">—</div>
@@ -511,11 +581,11 @@
     </div>
   </div>
 
-  <!-- V-Feed: 단일 피드 (회원당 카드 1개, 모든 정보 인라인) -->
+  <!-- V-Feed: 단일 화면 — 알림 섹션 + 회원 카드 list (접힘 default) -->
   <div id="view-feed" class="feed-wrap">
     <div class="feed-head">
       <div>
-        <div class="feed-head-title">오늘 — 회원 관리</div>
+        <div class="feed-head-title">회원 관리</div>
         <div class="feed-head-sub" id="feed-head-sub">불러오는 중…</div>
       </div>
       <div class="feed-head-actions">
@@ -523,6 +593,9 @@
         <button class="btn btn-primary" onclick="openRegisterModal()">+ 회원 등록</button>
       </div>
     </div>
+    <!-- 액션 알림 카드 (어제 식단 미기록 / 오늘 금지식단) -->
+    <div id="feed-alerts"></div>
+    <!-- 회원 카드 list -->
     <div class="feed-list" id="feed-list">
       <div class="feed-empty">불러오는 중…</div>
     </div>
@@ -558,17 +631,17 @@
     <div class="roster-cards" id="roster-cards"><div class="loader">불러오는 중…</div></div>
   </div>
 
-  <!-- V-Detail-TL: Timeline 단일 column. Roster 행 클릭 시 진입. -->
+  <!-- V-Detail-TL: Excel grid + 트레이너 메모 + 운동 메모 + 메시지 -->
   <div id="view-detail-tl" class="dt-wrap" style="display:none;">
-    <button class="dt-back" onclick="setDashView('roster')">← 전체 회원</button>
+    <button class="dt-back" onclick="setDashView('feed')">← 회원 관리</button>
     <div class="dt-head">
       <div class="dt-head-info">
         <div class="dt-head-name" id="dt-name">—</div>
         <div class="dt-head-meta" id="dt-meta">—</div>
       </div>
       <div class="dt-head-actions">
-        <button class="btn btn-primary" onclick="dtAssign()">+ 숙제 배정</button>
-        <button class="btn btn-ghost" onclick="dtCardioPenalty()">⏱ 징역</button>
+        <button class="btn btn-primary" onclick="dtAssign()">+ 운동 배정</button>
+        <button class="btn btn-ghost" onclick="dtCardioPenalty()">⏱ 유산소 추가</button>
         <button class="btn btn-ghost" onclick="dtMessage()">💬 메시지</button>
         <button class="btn btn-ghost" onclick="dtNickname()">✎ 별명</button>
         <button class="btn btn-danger" onclick="dtGraduate()">졸업</button>
@@ -589,10 +662,19 @@
       <div id="dt-notes-list"><div style="font-size:12px;color:var(--text3);">불러오는 중…</div></div>
     </div>
 
-    <!-- 최근 14일 timeline -->
+    <!-- 식단·운동 grid (최근 7일) — 엑셀표 형태 -->
     <div class="dt-section">
-      <div class="dt-section-hd">📅 최근 14일</div>
-      <div id="dt-timeline"><div style="font-size:12px;color:var(--text3);">불러오는 중…</div></div>
+      <div class="dt-section-hd">📅 최근 7일 식단·운동</div>
+      <div class="excel-table-wrap">
+        <div id="dt-excel-grid"><div style="padding:24px;font-size:12px;color:var(--text3);">불러오는 중…</div></div>
+      </div>
+      <div class="excel-legend">
+        <span class="excel-legend-item"><span class="excel-legend-dot" style="background:#34d399;"></span>클린식 / 운동 완료</span>
+        <span class="excel-legend-item"><span class="excel-legend-dot" style="background:#fbbf24;"></span>일반식</span>
+        <span class="excel-legend-item"><span class="excel-legend-dot" style="background:#ff4d4d;"></span>금지식</span>
+        <span class="excel-legend-item"><span class="excel-legend-dot" style="background:rgba(122,122,134,0.3);"></span>운동 스킵</span>
+        <span class="excel-legend-item"><span class="excel-legend-dot" style="background:transparent;border:1px dashed var(--border2);"></span>기록 없음</span>
+      </div>
     </div>
 
     <!-- 메시지 history (최근 5건) -->
@@ -806,16 +888,16 @@
   </div>
 </div>
 
-<!-- ============= 유산소 징역 부여 모달 ============= -->
+<!-- ============= 유산소 추가 부여 모달 ============= -->
 <div class="modal-overlay" id="modal-cardio-penalty">
   <div class="modal" style="max-width:480px;">
-    <div class="modal-title">⏱ 유산소 징역 부여</div>
+    <div class="modal-title">⏱ 유산소 추가 부여</div>
     <div class="modal-sub" id="cp-target">—</div>
 
     <div class="field">
       <label>운동 종류</label>
       <div id="cp-type-chips" style="display:flex;gap:5px;flex-wrap:wrap;"></div>
-      <div class="field-help">"자유" 선택 시 회원이 직접 종류를 선택해서 복역.</div>
+      <div class="field-help">"자유" 선택 시 회원이 직접 종류를 선택해서 수행.</div>
     </div>
 
     <div class="field">
@@ -843,7 +925,7 @@
     <div id="cp-err" class="err"></div>
     <div class="modal-actions">
       <button class="btn btn-ghost" onclick="closeModal('modal-cardio-penalty')">취소</button>
-      <button class="btn btn-primary" onclick="cpSave()">⏱ 징역 부여</button>
+      <button class="btn btn-primary" onclick="cpSave()">⏱ 추가 운동 부여</button>
     </div>
   </div>
 </div>
@@ -1123,7 +1205,7 @@ function renderRoster(){
     list = list.filter(c => (c.meal_total||0) > 0 || (c.homework_done_sets||0) > 0 || (c.free_workout_done||0) > 0);
   } else if(_rosterFilter === 'attention'){
     list = list.filter(c => {
-      // 오늘 숙제 미수행 OR 식단 위반 OR 활동 없음
+      // 오늘 운동 미수행 OR 식단 위반 OR 활동 없음
       if(c.homework_status === 'pending' || c.homework_status === 'skipped') return true;
       if((c.meal_red||0) > 0) return true;
       if(!c.last_activity) return true;
@@ -1150,7 +1232,7 @@ function renderRoster(){
     const hwPct = hwTotal > 0 ? Math.round(hwDone/hwTotal*100) : 0;
     const freeCnt = c.free_workout_count || 0;
     let statusDot = 'empty', statusLbl = '오늘 활동 없음', statusColor = 'var(--text3)';
-    if(hwStatus === 'completed'){ statusDot='completed'; statusLbl='숙제 완료'; statusColor='#34d399'; }
+    if(hwStatus === 'completed'){ statusDot='completed'; statusLbl='운동 완료'; statusColor='#34d399'; }
     else if(hwStatus === 'in_progress'){ statusDot='in-progress'; statusLbl=`진행 중 ${hwDone}/${hwTotal}`; statusColor='#38bdf8'; }
     else if(hwStatus === 'pending'){ statusDot='pending'; statusLbl=`예정 ${hwDone}/${hwTotal}`; statusColor='#f59e0b'; }
     else if(hwStatus === 'skipped'){ statusDot='skipped'; statusLbl='미수행'; statusColor='#ef4444'; }
@@ -1367,7 +1449,7 @@ async function loadDetail(){
       const ws = document.getElementById('d-workout-sub');
       if(me.homework_status){
         wel.textContent = `${hwDone}/${hwTotal}`;
-        const lbl = me.homework_status==='completed'?'숙제 완료':me.homework_status==='in_progress'?'숙제 진행 중':'숙제 예정';
+        const lbl = me.homework_status==='completed'?'운동 완료':me.homework_status==='in_progress'?'숙제 진행 중':'숙제 예정';
         ws.textContent = `${lbl}${freeCnt>0?` · 자유 ${freeCnt}`:''}`;
       } else if(freeCnt > 0){
         wel.textContent = `${freeCnt}개`;
@@ -2011,17 +2093,15 @@ let _feedRows = [];                        // overview RPC rows (확장된 035 s
 let _feedMealPhotoCache = new Map();       // path → signed url
 
 function setDashView(v, opts){
+  // 'roster' 옛값 정규화 — 폐기됨 → feed 로
+  if(v === 'roster' || v === 'v1' || v === 'v2'){ v = 'feed'; }
   _dashView = v;
-  try{ if(v==='feed' || v==='roster') localStorage.setItem('trainerDashView', v); }catch(_){}
+  try{ if(v==='feed') localStorage.setItem('trainerDashView', 'feed'); }catch(_){}
   const set = (id,on,disp)=>{ const el=document.getElementById(id); if(el) el.style.display=on?(disp||'block'):'none'; };
-  document.getElementById('dash-toggle-feed').classList.toggle('on', v==='feed');
-  document.getElementById('dash-toggle-roster').classList.toggle('on', v==='roster');
   set('view-feed', v==='feed');
-  set('view-roster', v==='roster');
+  set('view-roster', false);
   set('view-detail-tl', v==='detail');
-  // v1/v2 은 폐기됨 (마크업 제거). set() noop.
   if(v==='feed') loadFeed();
-  else if(v==='roster') loadRoster();
   else if(v==='detail' && opts) loadDetail(opts.relationship_id, opts.client_id);
 }
 
@@ -2486,20 +2566,97 @@ function dtSaveTrainerMemo(){
   });
 }
 
-function renderDtTimeline(){
-  const wrap = document.getElementById('dt-timeline');
-  // 14 일을 newest first 로
+// 엑셀표 grid — 좌측: 아침/점심/저녁/간식1~3/운동1~2 / 상단: 최근 7일
+// 셀: 클린(녹) / 일반(노) / 금지(빨) / 운동 완료(녹) / 운동 스킵(회) / 빈칸 (점선)
+function renderDtTimeline(){ renderDtExcelGrid(); } // 호환
+
+function renderDtExcelGrid(){
+  const wrap = document.getElementById('dt-excel-grid');
+  if(!wrap) return;
   const today = _isoDateOffset(0);
   const days = [];
-  for(let i=0;i<14;i++){
-    const d = _isoDateOffset(-i);
-    const tlRow = (_dt.timeline||[]).find(r => r.log_date === d);
-    const dayLog = _dtDailyLogs[d];
-    days.push({date:d, isToday: d === today, tl:tlRow, log:dayLog});
+  for(let i=6;i>=0;i--){ days.push(_isoDateOffset(-i)); } // 7일 (오래된 → 오늘)
+
+  // 행 데이터 collect
+  // 식단: 시간 슬롯별 (아침/점심/저녁/간식) — 각 날짜에 max 3 간식. 합쳐서 6 row.
+  // 운동: gym/cardio 분리 또는 시간순 1~2 entries.
+  const mealRows = [
+    {key:'아침', label:'아침'},
+    {key:'점심', label:'점심'},
+    {key:'저녁', label:'저녁'},
+    {key:'간식1', label:'간식 1', isSnack:true, snackIdx:0},
+    {key:'간식2', label:'간식 2', isSnack:true, snackIdx:1},
+    {key:'간식3', label:'간식 3', isSnack:true, snackIdx:2},
+  ];
+  const workoutRows = [
+    {key:'운동1', label:'운동 1', wIdx:0},
+    {key:'운동2', label:'운동 2', wIdx:1},
+  ];
+
+  // header
+  let html = '<table class="excel-table"><thead><tr><th class="row-lbl">항목</th>';
+  for(const d of days){
+    const dt = new Date(d+'T00:00:00');
+    const wd = ['일','월','화','수','목','금','토'][dt.getDay()];
+    const isToday = d === today;
+    html += `<th class="${isToday?'today-col':''}">${dt.getMonth()+1}/${dt.getDate()}<br><span style="color:var(--text3);font-size:9px;">(${wd})</span></th>`;
   }
-  wrap.innerHTML = days.map(d => _renderDtDay(d)).join('');
-  // 식단 photo signed URL hydrate (백그라운드)
-  _hydrateDtMealPhotos();
+  html += '</tr></thead><tbody>';
+
+  // 식단 row
+  for(const row of mealRows){
+    html += `<tr><td class="row-lbl">${esc(row.label)}</td>`;
+    for(const d of days){
+      const log = _dtDailyLogs[d];
+      const meals = (log && Array.isArray(log.meals)) ? log.meals : [];
+      let m = null;
+      if(row.isSnack){
+        const snacks = meals.filter(x => x && (x.time === '간식' || x.category === 'snack'));
+        m = snacks[row.snackIdx] || null;
+      } else {
+        m = meals.find(x => x && x.time === row.key) || null;
+      }
+      const isToday = d === today;
+      let cellHtml;
+      if(!m){ cellHtml = `<span class="excel-cell empty"></span>`; }
+      else {
+        const isRed = m.type === 'red' || m.category === 'alcohol';
+        const isGreen = m.type === 'green';
+        const cls = isRed ? 'red' : (isGreen ? 'green' : 'normal');
+        const photoPath = _feedMealPhotoPath(m.photo);
+        const onclick = photoPath ? `onclick="openMealPhotoLightbox('${esc(photoPath)}')"` : '';
+        const title = (m.name||m.type||'') + (isRed?' (금지)':isGreen?' (클린)':'');
+        cellHtml = `<span class="excel-cell ${cls}" title="${esc(title)}" ${onclick}></span>`;
+      }
+      html += `<td class="${isToday?'today-col':''}">${cellHtml}</td>`;
+    }
+    html += '</tr>';
+  }
+
+  // 운동 row
+  for(const row of workoutRows){
+    html += `<tr><td class="row-lbl">${esc(row.label)}</td>`;
+    for(const d of days){
+      const log = _dtDailyLogs[d];
+      const wks = (log && Array.isArray(log.workouts)) ? log.workouts : [];
+      const w = wks[row.wIdx];
+      const isToday = d === today;
+      let cellHtml;
+      if(!w){ cellHtml = `<span class="excel-cell empty"></span>`; }
+      else {
+        const done = w.status === 'done' || w.status === 'completed';
+        const skipped = w.status === 'skipped' || w.status === 'cancelled_by_user';
+        const cls = done ? 'workout-done' : (skipped ? 'workout-skip' : 'normal');
+        const title = (w.sessionName || w.name || '운동') + ' · ' + (done?'완료':skipped?'스킵':'예정');
+        cellHtml = `<span class="excel-cell ${cls}" title="${esc(title)}"></span>`;
+      }
+      html += `<td class="${isToday?'today-col':''}">${cellHtml}</td>`;
+    }
+    html += '</tr>';
+  }
+
+  html += '</tbody></table>';
+  wrap.innerHTML = html;
 }
 
 function _renderDtDay(d){
@@ -2621,7 +2778,7 @@ async function feedShowSummaryDate(clientId, date){
     `;
     bodyEl.innerHTML = workouts.map(w => {
       const isHw = !!w._trainerAssignmentId;
-      const wTitle = w.sessionName || (isHw ? '오늘의 운동 숙제' : '헬스 세션');
+      const wTitle = w.sessionName || (isHw ? '오늘의 운동 (트레이너)' : '헬스 세션');
       const wBadge = isHw ? '<span class="fcard-attn alert" style="margin-left:6px;">숙제</span>' : '';
       const exHtml = (w.exercises||[]).map(ex => {
         const sets = ex.sets||[];
@@ -2719,6 +2876,28 @@ function _feedAttention(row){
   return null;
 }
 
+// ── 회원 카드 expand state (sessionStorage 로 새로고침 후에도 유지) ──
+const _mcardExpanded = new Set();
+try{
+  const saved = sessionStorage.getItem('mcardExpanded');
+  if(saved){ JSON.parse(saved).forEach(id => _mcardExpanded.add(id)); }
+}catch(_){}
+
+function toggleMcardExpand(clientId){
+  if(_mcardExpanded.has(clientId)) _mcardExpanded.delete(clientId);
+  else _mcardExpanded.add(clientId);
+  try{ sessionStorage.setItem('mcardExpanded', JSON.stringify([..._mcardExpanded])); }catch(_){}
+  // 해당 카드만 re-render
+  const cardEl = document.querySelector(`[data-mcard="${clientId}"]`);
+  if(cardEl){
+    const row = _feedRows.find(r => r.client_id === clientId);
+    if(row){
+      cardEl.outerHTML = _renderMcard(row);
+      try{ hydrateFeedMealPhotos(); }catch(_){}
+    }
+  }
+}
+
 function renderFeed(){
   const wrap = document.getElementById('feed-list');
   const sub = document.getElementById('feed-head-sub');
@@ -2732,7 +2911,7 @@ function renderFeed(){
       return n.includes(search) || d.includes(search) || u.includes(search);
     });
   }
-  // 액션 우선순위 정렬: alert → warn → ok
+  // 정렬: alert → warn → ok → 이름
   rows.sort((a,b)=>{
     const wa = (_feedAttention(a)?.level==='alert')?0 : (_feedAttention(a)?.level==='warn')?1 : 2;
     const wb = (_feedAttention(b)?.level==='alert')?0 : (_feedAttention(b)?.level==='warn')?1 : 2;
@@ -2740,97 +2919,152 @@ function renderFeed(){
     return (a.nickname||a.display_name||'').localeCompare(b.nickname||b.display_name||'');
   });
 
+  // 알림 섹션 렌더 (검색 시는 숨김)
+  const alertsWrap = document.getElementById('feed-alerts');
+  if(alertsWrap){
+    if(search){ alertsWrap.innerHTML = ''; }
+    else{ alertsWrap.innerHTML = _renderFeedAlerts(_feedRows); }
+  }
+
   if(rows.length === 0){
     wrap.innerHTML = '<div class="feed-empty">'+(search?'검색 결과 없음':'아직 회원이 없어요. 우측 위 [+ 회원 등록]')+'</div>';
     sub.textContent = '활성 0명';
     return;
   }
   sub.textContent = `활성 ${_feedRows.length}명${search?' · 표시 '+rows.length+'명':''}`;
-  wrap.innerHTML = rows.map(r => _renderFcard(r)).join('');
+  wrap.innerHTML = rows.map(r => _renderMcard(r)).join('');
+  try{ hydrateFeedMealPhotos(); }catch(_){}
 }
 
-function _renderFcard(r){
+// ── 알림 카드 (어제 식단 미기록 + 오늘 금지식단) ──
+function _renderFeedAlerts(rows){
+  // 어제 식단 미기록 (yesterday_meal_total === 0)
+  const noMealYesterday = rows.filter(r => (r.yesterday_meal_total||0) === 0);
+  // 오늘 금지식단 (meal_red > 0)
+  const redToday = rows.filter(r => (r.meal_red||0) > 0);
+  let html = '';
+  if(noMealYesterday.length > 0){
+    const chips = noMealYesterday.map(r => {
+      const nm = esc(r.nickname || r.display_name || r.username || '회원');
+      return `<button class="alert-chip" onclick="mcardOpenMessage('${r.relationship_id}','${r.client_id}')">${nm}</button>`;
+    }).join('');
+    html += `<div class="alert-card">
+      <div class="alert-card-hd">
+        <span class="icon">🚨</span>
+        <span class="ttl alert">어제 식단 기록 없음 (${noMealYesterday.length}명)</span>
+      </div>
+      <div class="alert-card-chips">${chips}</div>
+    </div>`;
+  }
+  if(redToday.length > 0){
+    const chips = redToday.map(r => {
+      const nm = esc(r.nickname || r.display_name || r.username || '회원');
+      return `<button class="alert-chip" onclick="mcardOpenCardio('${r.relationship_id}','${r.client_id}')">${nm} (${r.meal_red}회)</button>`;
+    }).join('');
+    html += `<div class="alert-card warn">
+      <div class="alert-card-hd">
+        <span class="icon">⚠️</span>
+        <span class="ttl warn">오늘 금지식단 (${redToday.length}명)</span>
+      </div>
+      <div class="alert-card-chips">${chips}</div>
+    </div>`;
+  }
+  return html;
+}
+
+// ── 회원 카드 (접힘 default) ──
+function _renderMcard(r){
   const display = esc(r.nickname || r.display_name || r.username || '회원');
-  const realName = r.nickname && (r.display_name || r.username) ? `<span class="fcard-name-real">(${esc(r.display_name || r.username)})</span>` : '';
+  const realName = r.nickname && (r.display_name || r.username) ? `<span class="mcard-name-real">(${esc(r.display_name || r.username)})</span>` : '';
   const attn = _feedAttention(r);
-  const attnHtml = attn ? `<span class="fcard-attn ${attn.level}">${esc(attn.label)}</span>` : '';
-  const last = r.last_activity ? `<span class="fcard-last">${_relTime(r.last_activity)}</span>` : '<span class="fcard-last">기록 없음</span>';
+  const attnHtml = attn ? `<span class="mcard-attn ${attn.level}">${esc(attn.label)}</span>` : '';
+  const last = r.last_activity ? `<span class="mcard-last">${_relTime(r.last_activity)}</span>` : '<span class="mcard-last">기록 없음</span>';
 
-  // 어제 숙제
-  const yT = r.yesterday_homework_total_sets||0, yD = r.yesterday_homework_done_sets||0;
-  const yStat = r.yesterday_homework_status;
-  let yVal, yCls, ySub='';
-  if(yT === 0){ yVal = '없음'; yCls = 'muted'; }
-  else if(yStat === 'cancelled_by_user'){ yVal = '취소'; yCls = 'muted'; ySub = '회원이 취소'; }
-  else if(yStat === 'completed' || yD === yT){ yVal = `${yD}/${yT}`; yCls = 'ok'; }
-  else if(yD === 0){ yVal = `0/${yT}`; yCls = 'alert'; }
-  else { yVal = `${yD}/${yT}`; yCls = 'warn'; }
-
-  // 오늘 숙제
+  // 운동 status (오늘 헬스 세션) — 완료 / 부분 / 미수행 / 미배정
   const tT = r.homework_total_sets||0, tD = r.homework_done_sets||0;
   const tStat = r.homework_status;
-  let tVal, tCls, tSub='';
-  if(tT === 0){ tVal = '미배정'; tCls = 'muted'; tSub = '오늘 숙제 안 짬'; }
-  else if(tStat === 'cancelled_by_user'){ tVal = '취소'; tCls = 'muted'; tSub = '회원이 취소'; }
-  else if(tStat === 'completed' || tD === tT){ tVal = `${tD}/${tT}`; tCls = 'ok'; tSub = '완료'; }
-  else if(tD === 0){ tVal = `0/${tT}`; tCls = 'alert'; tSub = '아직 시작 X'; }
-  else { tVal = `${tD}/${tT}`; tCls = 'warn'; tSub = '진행 중'; }
+  let woIcon, woCls, woLabel;
+  if(tStat === 'cancelled_by_user'){ woIcon = '×'; woCls = 'none'; woLabel = '취소 (회원)'; }
+  else if(tT === 0){ woIcon = '—'; woCls = 'none'; woLabel = '운동 미배정'; }
+  else if(tStat === 'completed' || tD === tT){ woIcon = '✓'; woCls = 'ok'; woLabel = '운동 완료'; }
+  else if(tD === 0){ woIcon = '✗'; woCls = 'miss'; woLabel = '운동 미수행'; }
+  else { woIcon = '◐'; woCls = 'partial'; woLabel = '운동 부분 수행'; }
+  const woClickable = tT > 0;
+  const woLink = woClickable ? `<span class="mcard-workout-link" onclick="event.stopPropagation();feedShowSummary('${r.client_id}', true)">→ 보기</span>` : '';
 
-  // 식단 카운트
-  const mC = r.meal_clean||0, mN = r.meal_normal||0, mR = r.meal_red||0;
-  const mealCls = mR>0 ? 'alert' : (mC>0 ? 'ok' : 'muted');
-
-  // 식단 4 슬롯 — 아침/점심/저녁/간식
+  // 식단 4 슬롯
   const meals = Array.isArray(r.meals_today) ? r.meals_today : [];
   const slotMap = {'아침':null,'점심':null,'저녁':null,'간식':null};
   for(const m of meals){
     const t = m.time || '간식';
     if(slotMap[t] === null) slotMap[t] = m;
-    // 간식은 여러 개일 수 있어 첫 번째만 thumbnail (count 표시 별도 X — 사용자가 디테일에서 볼 것)
   }
   const mealHtml = ['아침','점심','저녁','간식'].map(slot => {
     const m = slotMap[slot];
     if(!m){
-      return `<div class="fcard-meal"><span class="fcard-meal-lbl">${slot[0]}</span><span class="fcard-meal-empty">·</span></div>`;
+      return `<div class="mcard-meal" onclick="event.stopPropagation();"><span class="mcard-meal-lbl">${slot[0]}</span><span class="mcard-meal-empty">·</span></div>`;
     }
+    const isRed = m.type === 'red' || m.category === 'alcohol';
     const photo = _feedMealPhotoPath(m.photo);
-    const typeCls = m.type === 'green' ? 'green' : (m.type === 'red' || m.category === 'alcohol' ? 'red' : 'normal');
-    const img = photo ? `<img data-feed-meal-photo="${esc(photo)}" alt="" />` : `<span class="fcard-meal-empty">${m.type==='red'?'⚠':'🍽'}</span>`;
-    return `<div class="fcard-meal" onclick="openMealPhotoLightbox('${esc(photo||'')}')"><span class="fcard-meal-lbl">${slot[0]}</span>${img}<span class="fcard-meal-type ${typeCls}"></span></div>`;
+    const img = photo ? `<img data-feed-meal-photo="${esc(photo)}" alt="" />` : `<span class="mcard-meal-empty">${isRed?'⚠':'🍽'}</span>`;
+    return `<div class="mcard-meal ${isRed?'red-bd':''}" onclick="event.stopPropagation();openMealPhotoLightbox('${esc(photo||'')}')"><span class="mcard-meal-lbl">${slot[0]}</span>${img}</div>`;
   }).join('');
 
-  return `<div class="fcard">
-    <div class="fcard-row1">
-      <div class="fcard-name">${display}${realName}</div>
-      ${attnHtml}
-      ${last}
-    </div>
-    <div class="fcard-stats">
-      <div class="fcard-stat">
-        <div class="fcard-stat-lbl">어제 숙제</div>
-        <div class="fcard-stat-val ${yCls}">${yVal}</div>
-        <div class="fcard-stat-sub">${yT>0&&yStat==='completed'?'완료':(yT>0?'배정':'배정 없음')}</div>
+  // 펼친 영역 (주간)
+  const expanded = _mcardExpanded.has(r.client_id);
+  const yMealTotal = r.yesterday_meal_total||0;
+  const yMealClean = r.yesterday_meal_clean||0;
+  const yMealRed = r.yesterday_meal_red||0;
+  // 오늘 + 어제 식단 합산 (간단한 1주 대용 — overview 는 today/yesterday 만)
+  const wkClean = (r.meal_clean||0) + yMealClean;
+  const wkNormal = (r.meal_normal||0) + ((yMealTotal - yMealClean - yMealRed)||0);
+  const wkRed = (r.meal_red||0) + yMealRed;
+  const expandedHtml = expanded ? `<div class="mcard-expanded">
+    <div class="mcard-week-grid">
+      <div class="mcard-week-cell">
+        <div class="lbl">최근 2일 식단</div>
+        <div class="val">클린 ${wkClean} · 일반 ${wkNormal} · <span style="color:${wkRed>0?'#ff7a7a':'inherit'};">금지 ${wkRed}</span></div>
       </div>
-      <div class="fcard-stat">
-        <div class="fcard-stat-lbl">오늘 숙제</div>
-        <div class="fcard-stat-val ${tCls}">${tVal}</div>
-        <div class="fcard-stat-sub">${tSub}</div>
-      </div>
-      <div class="fcard-stat">
-        <div class="fcard-stat-lbl">오늘 식단</div>
-        <div class="fcard-stat-val ${mealCls}">${mC+mN+mR}</div>
-        <div class="fcard-stat-sub">${mC} 클린 · ${mR} 금지</div>
+      <div class="mcard-week-cell">
+        <div class="lbl">어제 운동</div>
+        <div class="val">${(r.yesterday_homework_status==='completed')?'✓ 완료':(r.yesterday_homework_total_sets>0?(r.yesterday_homework_done_sets+'/'+r.yesterday_homework_total_sets):'배정 없음')}</div>
       </div>
     </div>
-    <div class="fcard-meals">${mealHtml}</div>
-    <div class="fcard-actions">
-      <button class="fcard-btn primary" onclick="feedAssign('${r.relationship_id}','${r.client_id}')">+ 숙제 배정</button>
-      <button class="fcard-btn" onclick="feedMessage('${r.relationship_id}','${r.client_id}')">💬 메시지</button>
-      <button class="fcard-btn" style="${mR>0?'background:rgba(255,77,77,0.18);color:#ff7a7a;border-color:rgba(255,77,77,0.4);':''}" onclick="feedCardioPenalty('${r.relationship_id}','${r.client_id}')">⏱ 징역</button>
-      <button class="fcard-btn" onclick="feedShowSummary('${r.client_id}', ${tT>0?'true':'false'})">📊 디테일 보기</button>
+  </div>` : '';
+
+  return `<div class="mcard ${expanded?'expanded':''}" data-mcard="${r.client_id}">
+    <div class="mcard-summary" onclick="toggleMcardExpand('${r.client_id}')">
+      <div class="mcard-row1">
+        <span class="mcard-name">${display}</span>
+        ${realName}
+        ${attnHtml}
+        ${last}
+        <span class="mcard-chev">▾</span>
+      </div>
+      <div class="mcard-row2">
+        <span class="mcard-workout-status">
+          <span class="ico ${woCls}">${woIcon}</span>
+          <span>${woLabel}</span>
+          ${woLink}
+        </span>
+      </div>
+      <div class="mcard-meals">${mealHtml}</div>
+    </div>
+    ${expandedHtml}
+    <div class="mcard-actions">
+      <button class="mcard-btn primary" onclick="mcardAssign('${r.relationship_id}','${r.client_id}')">+ 운동 배정</button>
+      <button class="mcard-btn" onclick="mcardOpenCardio('${r.relationship_id}','${r.client_id}')">⏱ 유산소 추가</button>
+      <button class="mcard-btn" onclick="mcardOpenMessage('${r.relationship_id}','${r.client_id}')">💬 메시지</button>
+      <button class="mcard-btn" onclick="mcardOpenDetail('${r.relationship_id}','${r.client_id}')">📊 자세히 보기</button>
     </div>
   </div>`;
 }
+
+// 카드 액션 wrapper (이름 변경)
+function mcardAssign(relId, clientId){ feedAssign(relId, clientId); }
+function mcardOpenCardio(relId, clientId){ feedCardioPenalty(relId, clientId); }
+function mcardOpenMessage(relId, clientId){ feedMessage(relId, clientId); }
+function mcardOpenDetail(relId, clientId){ rosterOpenClient(relId, clientId); }
 
 function _feedMealPhotoPath(stored){
   if(!stored) return null;
@@ -2884,7 +3118,7 @@ function _relTime(ts){
 function _feedFindRow(clientId){ return _feedRows.find(r => r.client_id === clientId); }
 
 // ═══════════════════════════════════════════════
-// 유산소 징역 부여 모달
+// 유산소 추가 부여 모달
 // ═══════════════════════════════════════════════
 const CP_TYPES = ['달리기','걷기','자전거','수영','로잉','줄넘기','자유'];
 let _cpState = {clientId:null, relId:null, minutes:30, cardioType:'자유', name:''};
@@ -3030,7 +3264,7 @@ async function feedShowSummary(clientId, hasHomeworkToday){
     `;
     bodyEl.innerHTML = workouts.map(w => {
       const isHw = !!w._trainerAssignmentId;
-      const wTitle = w.sessionName || (isHw ? '오늘의 운동 숙제' : '헬스 세션');
+      const wTitle = w.sessionName || (isHw ? '오늘의 운동 (트레이너)' : '헬스 세션');
       const wBadge = isHw ? '<span class="fcard-attn alert" style="margin-left:6px;">숙제</span>' : '';
       const exHtml = (w.exercises||[]).map(ex => {
         const sets = ex.sets||[];
