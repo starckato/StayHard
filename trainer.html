@@ -2588,13 +2588,10 @@ function renderDtExcelGrid(){
     {key:'아침', label:'아침'},
     {key:'점심', label:'점심'},
     {key:'저녁', label:'저녁'},
-    {key:'간식1', label:'간식 1', isSnack:true, snackIdx:0},
-    {key:'간식2', label:'간식 2', isSnack:true, snackIdx:1},
-    {key:'간식3', label:'간식 3', isSnack:true, snackIdx:2},
+    {key:'간식', label:'간식', isSnack:true, snackIdx:0},
   ];
   const workoutRows = [
-    {key:'운동1', label:'운동 1', wIdx:0},
-    {key:'운동2', label:'운동 2', wIdx:1},
+    {key:'운동', label:'운동', wIdx:0},
   ];
 
   // header
@@ -2646,16 +2643,23 @@ function renderDtExcelGrid(){
     for(const d of days){
       const log = _dtDailyLogs[d];
       const wks = (log && Array.isArray(log.workouts)) ? log.workouts : [];
-      const w = wks[row.wIdx];
+      // 첫 번째 일반 (gym/activity, NOT penalty) workout entry 만
+      const w = wks.find(x => x && (x.type === 'gym' || x.type === 'activity'));
       const isToday = d === today;
       let cellHtml;
       if(!w){ cellHtml = `<span class="excel-cell empty"></span>`; }
       else {
         const done = w.status === 'done' || w.status === 'completed';
         const skipped = w.status === 'skipped' || w.status === 'cancelled_by_user';
-        const cls = done ? 'workout-done' : (skipped ? 'workout-skip' : 'normal');
-        const title = (w.sessionName || w.name || '운동') + ' · ' + (done?'완료':skipped?'스킵':'예정');
-        cellHtml = `<span class="excel-cell ${cls}" title="${esc(title)}"></span>`;
+        // 운동은 완료/스킵/미수행 (3 상태만, 노란색 X)
+        if(done){
+          const title = (w.sessionName || w.name || '운동') + ' · 완료';
+          cellHtml = `<span class="excel-cell workout-done" title="${esc(title)}"></span>`;
+        } else if(skipped){
+          cellHtml = `<span class="excel-cell workout-skip" title="스킵 / 취소"></span>`;
+        } else {
+          cellHtml = `<span class="excel-cell empty" title="예정 / 미수행"></span>`;
+        }
       }
       html += `<td class="${isToday?'today-col':''}">${cellHtml}</td>`;
     }
