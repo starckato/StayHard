@@ -298,20 +298,33 @@ function renderWeightGraph(goal) {
   }
 
   const W = 340, H = 64, PAD_Y = 8, PAD_X = 4;
-  const minV = Math.min(...vals, goal ?? vals[0]) - 0.5;
-  const maxV = Math.max(...vals, goal ?? vals[0]) + 0.5;
+  // 기록 탭 그래프: 0.3~0.5kg 변동도 한눈에 보이게 과장.
+  // y range = 데이터 변동폭 1.5x, 최소 1kg. goal 은 범위 밖이면 가장자리에 클램프.
+  const dataLo = Math.min(...vals);
+  const dataHi = Math.max(...vals);
+  const span = Math.max(dataHi - dataLo, 1);
+  const pad = span * 0.25;
+  const minV = +(dataLo - pad).toFixed(1);
+  const maxV = +(dataHi + pad).toFixed(1);
   const range = (maxV - minV) || 1;
   const yFor = v => PAD_Y + (1 - (v - minV) / range) * (H - PAD_Y * 2);
+  const yForClamped = v => {
+    const c = Math.max(minV, Math.min(maxV, v));
+    return yFor(c);
+  };
   const xFor = i => PAD_X + (i / (history.length - 1)) * (W - PAD_X * 2);
 
   if (goal && goalLine && goalLabel) {
-    const gy = yFor(goal);
+    // goal 이 시야 밖이면 라벨에 ↑/↓ 표시.
+    const offTop = goal > maxV;
+    const offBot = goal < minV;
+    const gy = yForClamped(goal);
     goalLine.style.display = '';
     goalLabel.style.display = '';
     goalLine.setAttribute('y1', gy);
     goalLine.setAttribute('y2', gy);
     goalLabel.setAttribute('y', gy - 3);
-    goalLabel.textContent = goal.toFixed(1);
+    goalLabel.textContent = (offTop ? '↑ ' : offBot ? '↓ ' : '') + goal.toFixed(1);
   } else if (goalLine && goalLabel) {
     goalLine.style.display = 'none';
     goalLabel.style.display = 'none';
