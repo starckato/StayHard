@@ -251,6 +251,79 @@
       _drawFrame(cx, img, _roomFi, dx, dy, dw, dh);
     }
     // 덤벨 트리거 영역 — 시각적 hint 없이 hover 시 cursor 만 변화 (룸 그래픽 보호)
+
+    // 🚨 게이미피케이션: 미수행 유산소 추가 운동 있으면 감옥 철창 overlay
+    try{ if(_isInPenaltyMode()) _drawJailBars(cx); }catch(_){}
+  }
+
+  // 미수행 cardio penalty entry 1개라도 있으면 true
+  function _isInPenaltyMode(){
+    try{
+      const log = window.log;
+      if(!log || !Array.isArray(log.workouts)) return false;
+      for(const w of log.workouts){
+        if(!w) continue;
+        if(!(w._isPenalty || w.sessionName === '유산소 추가' || w.sessionName === '유산소 징역')) continue;
+        const status = w.status;
+        if(status !== 'done' && status !== 'completed' && status !== 'skipped' && status !== 'escaped') return true;
+      }
+      return false;
+    }catch(_){ return false; }
+  }
+
+  // 세로 철창 5개 + 좌상단 자물쇠 + "복역중" 라벨
+  function _drawJailBars(cx){
+    cx.save();
+    const barCount = 5;
+    const barW = 16;
+    const gap = (ROOM_W - barCount * barW) / (barCount + 1);
+    cx.shadowColor = 'rgba(0,0,0,0.6)';
+    cx.shadowBlur = 6;
+    cx.shadowOffsetX = 2;
+    for(let i = 0; i < barCount; i++){
+      const x = gap + i * (barW + gap);
+      // metallic gradient
+      const g = cx.createLinearGradient(x, 0, x + barW, 0);
+      g.addColorStop(0, '#3a3a42');
+      g.addColorStop(0.4, '#7a7a86');
+      g.addColorStop(0.6, '#9aa0aa');
+      g.addColorStop(1, '#3a3a42');
+      cx.fillStyle = g;
+      cx.fillRect(x, 0, barW, ROOM_H);
+      // top/bottom rivets
+      cx.shadowBlur = 0;
+      cx.fillStyle = '#1a1a1f';
+      cx.beginPath(); cx.arc(x + barW/2, 14, 3, 0, Math.PI*2); cx.fill();
+      cx.beginPath(); cx.arc(x + barW/2, ROOM_H - 14, 3, 0, Math.PI*2); cx.fill();
+      cx.shadowBlur = 6;
+    }
+    // 가로 frame top/bottom
+    cx.shadowBlur = 0;
+    const frameG = cx.createLinearGradient(0, 0, 0, 24);
+    frameG.addColorStop(0, '#5a5a64');
+    frameG.addColorStop(1, '#2a2a32');
+    cx.fillStyle = frameG;
+    cx.fillRect(0, 0, ROOM_W, 12);
+    cx.fillRect(0, ROOM_H - 12, ROOM_W, 12);
+    cx.restore();
+
+    // 좌상단 라벨 - "🔒 복역 중"
+    cx.save();
+    cx.fillStyle = 'rgba(0,0,0,0.78)';
+    const lbl = '🔒 복역 중';
+    cx.font = '700 13px "DM Sans", sans-serif';
+    const tw = cx.measureText(lbl).width;
+    const padX = 10, padY = 6;
+    const x = 14, y = 22;
+    cx.beginPath();
+    cx.roundRect(x, y, tw + padX*2, 14 + padY*2, 6);
+    cx.fill();
+    cx.strokeStyle = 'rgba(255,77,77,0.55)';
+    cx.lineWidth = 1.5;
+    cx.stroke();
+    cx.fillStyle = '#ff7a7a';
+    cx.fillText(lbl, x + padX, y + 14 + padY/2 - 1);
+    cx.restore();
   }
 
   function _roomLoop(now){
