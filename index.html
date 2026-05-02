@@ -28,7 +28,7 @@
      so window globals (dkey, normKey, ...) are set before inline code runs.
      Query version bumps cache when bundle content changes. Bump manually or
      via build script when shipping a new bundle. See MIGRATION_PLAN.md. -->
-<script src="/dist/app.js?v=20260502-phase-b-app"></script>
+<script src="/dist/app.js?v=20260502-phase-b-app-v2"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Archivo+Black&display=swap" rel="stylesheet">
 <!-- Phase 0: 디자인 토큰 (shared 먼저, palette 가 override). -->
 <link href="/src/styles/tokens.shared.css" rel="stylesheet">
@@ -1886,9 +1886,10 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
       </div>
     </div>
 
-    <!-- 로딩 -->
-    <div id="st-loading" style="text-align:center;padding:48px 0;color:var(--text3);font-size:var(--text-md);display:none;">
-      <div class="spinner" style="margin:0 auto 10px;"></div>데이터 불러오는 중…
+    <!-- 로딩 (Phase B-app: .state-loading 통일 컴포넌트) -->
+    <div id="st-loading" class="state state-loading" style="display:none;">
+      <div class="state-icon"></div>
+      <div class="state-msg">데이터 불러오는 중…</div>
     </div>
 
     <!-- Hero 제거됨 — 연속/등급은 bento 의 상단 컨텍스트로 충분. 레거시 DOM 은
@@ -3741,7 +3742,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
       <div style="font-size:var(--text-lg);font-weight:800;">🎬 내 운동 영상</div>
       <button onclick="closeModal('cv-list-modal')" style="background:none;border:none;font-size:var(--text-xl);color:var(--text3);cursor:pointer;padding:4px 8px;">✕</button>
     </div>
-    <div id="cv-list-body" style="font-size:var(--text-sm);color:var(--text3);text-align:center;padding:24px 0;">불러오는 중…</div>
+    <div id="cv-list-body" class="state state-loading state-compact"><div class="state-icon"></div><div class="state-msg">불러오는 중…</div></div>
   </div>
 </div>
 

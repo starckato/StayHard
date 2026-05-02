@@ -32,6 +32,18 @@ a {
   opacity: 0.85;
 }
 
+/* 자주 누르는 큰 영역 — 기존 :active 룰 없는 것들에만 추가.
+   transition 은 base 에 이미 정의되어 있으면 override X (transform/opacity 만 정의). */
+.slot-empty:active,
+.slot-filled:active,
+.s-card.accordion .cc:active,
+.tab-btn:active,
+.tab-bottom .tb-item:active,
+.act-row:active {
+  transform: scale(0.985);
+  opacity: 0.9;
+}
+
 /* disabled 상태 — pointer 차단 + 시각 신호 */
 button:disabled,
 button[disabled],
