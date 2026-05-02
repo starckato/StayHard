@@ -28,11 +28,13 @@
      so window globals (dkey, normKey, ...) are set before inline code runs.
      Query version bumps cache when bundle content changes. Bump manually or
      via build script when shipping a new bundle. See MIGRATION_PLAN.md. -->
-<script src="/dist/app.js?v=20260502-phase-c"></script>
+<script src="/dist/app.js?v=20260502-phase-b-app"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Archivo+Black&display=swap" rel="stylesheet">
 <!-- Phase 0: 디자인 토큰 (shared 먼저, palette 가 override). -->
 <link href="/src/styles/tokens.shared.css" rel="stylesheet">
 <link href="/src/styles/tokens.dark.css" rel="stylesheet">
+<!-- Phase B-app: tap feedback + state 컴포넌트 + skeleton. -->
+<link href="/src/styles/states.css" rel="stylesheet">
 <style>
 /* :root 토큰은 src/styles/tokens.{shared,dark}.css 로 이전됨 (Phase 0).
    index.html 은 다크 팔레트 사용. 추가 sub-palette (--radius-sm 등 legacy) 가

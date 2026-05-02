@@ -1,0 +1,152 @@
+/* StayHard · 앱 인터랙션 컴포넌트 (Phase B-app)
+ *
+ * 1) Tap feedback — 모든 button/카드 클릭 시 살짝 눌리는 피드백.
+ *    네이티브 앱에선 hover X. press feedback 으로 대체.
+ *
+ * 2) State 컴포넌트 — Empty / Loading / Error 일관 패턴.
+ *    기존 ad-hoc <div style="padding:..., color:var(--text3);"> 대신 사용.
+ *
+ * 3) Skeleton loader — 로딩 중 콘텐츠 placeholder (텍스트 "로딩 중…" 대체).
+ */
+
+/* ── 1) Tap feedback ─────────────────────────────────────────────────── */
+
+/* 베이스: tap-highlight 무력화 + manipulation hint.
+   기본 button 의 transform 은 건드리지 않음 — 기존 .btn-primary:active 등
+   custom :active 룰과 충돌 회피.
+   :active scale 피드백은 opt-in helper 클래스로만 적용. */
+button,
+[role="button"],
+a {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+/* opt-in: 새 코드는 .tap-feedback 추가, 또는 element 가 이미 :active 룰
+   없으면 안전하게 적용 가능 (universal default press feedback 제공). */
+.tap-feedback {
+  transition: transform .08s ease-out, opacity .08s ease-out;
+}
+.tap-feedback:active {
+  transform: scale(0.97);
+  opacity: 0.85;
+}
+
+/* disabled 상태 — pointer 차단 + 시각 신호 */
+button:disabled,
+button[disabled],
+[aria-disabled="true"] {
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+/* ── 2) State 컴포넌트 ─────────────────────────────────────────────── */
+
+.state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: var(--space-6) var(--space-4);
+  color: var(--text3);
+  font-size: var(--text-sm);
+  letter-spacing: -.005em;
+  line-height: var(--leading-snug);
+}
+
+.state-icon {
+  font-size: var(--text-3xl);
+  margin-bottom: var(--space-3);
+  opacity: 0.6;
+}
+
+.state-title {
+  font-size: var(--text-base);
+  font-weight: var(--weight-semi);
+  color: var(--text2);
+  margin-bottom: var(--space-1);
+}
+
+.state-msg {
+  font-size: var(--text-sm);
+  color: var(--text3);
+}
+
+.state-action {
+  margin-top: var(--space-4);
+  padding: var(--space-2) var(--space-4);
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  color: var(--text2);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semi);
+  cursor: pointer;
+}
+.state-action:active { transform: scale(0.97); }
+
+/* Variants */
+.state-error .state-icon { color: var(--accent); }
+.state-error .state-title { color: var(--accent); }
+
+.state-loading .state-icon {
+  display: inline-block;
+  width: 28px;
+  height: 28px;
+  border: 2.5px solid var(--accent-tint-3);
+  border-top-color: var(--accent);
+  border-radius: var(--radius-pill);
+  animation: spin .8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* compact variant (인라인 small loader) */
+.state.state-compact { padding: var(--space-4) var(--space-3); }
+.state.state-compact .state-icon { font-size: var(--text-xl); margin-bottom: var(--space-2); }
+.state.state-compact .state-title { font-size: var(--text-sm); }
+.state.state-compact .state-msg { font-size: var(--text-xs); }
+
+/* ── 3) Skeleton loader ─────────────────────────────────────────────── */
+
+.skel {
+  display: block;
+  background: linear-gradient(
+    90deg,
+    var(--surface2) 0%,
+    var(--surface3) 50%,
+    var(--surface2) 100%
+  );
+  background-size: 200% 100%;
+  animation: skelShimmer 1.4s ease-in-out infinite;
+  border-radius: var(--radius-md);
+}
+
+.skel-line {
+  height: 12px;
+  margin: 6px 0;
+}
+
+.skel-card {
+  height: 80px;
+  margin-bottom: 8px;
+}
+
+@keyframes skelShimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* reduce-motion 사용자 — 애니메이션 무력화 */
+@media (prefers-reduced-motion: reduce) {
+  .skel { animation: none; background: var(--surface2); }
+  .state-loading .state-icon { animation: none; }
+  button:active,
+  [role="button"]:active,
+  a:active,
+  .slot-filled:active,
+  .slot-empty:active,
+  .tap-feedback:active {
+    transform: none;
+  }
+}

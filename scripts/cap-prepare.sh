@@ -45,11 +45,14 @@ if [ -d dist ]; then
   cp -R dist www/
 fi
 
-# Design system tokens — index.html 가 <link href="/src/styles/tokens.*"> 로 직접 로드.
+# Design system tokens + 상태 컴포넌트 — index.html 가 <link> 로 직접 로드.
 # 누락 시 모든 색/사이즈 토큰이 unresolved 되어 native 앱이 무색·기본 사이즈로 깨짐.
 if [ -d src/styles ]; then
   mkdir -p www/src/styles
-  cp src/styles/tokens.shared.css src/styles/tokens.dark.css www/src/styles/
+  cp src/styles/tokens.shared.css \
+     src/styles/tokens.dark.css \
+     src/styles/states.css \
+     www/src/styles/
   # tokens.light.css 는 trainer 전용 (web-only) → native 빌드에 불필요. 제외.
 fi
 
