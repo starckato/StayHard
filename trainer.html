@@ -24,10 +24,10 @@
   body{background:var(--bg);color:var(--text);font-family:'DM Sans','Apple SD Gothic Neo','Pretendard',sans-serif;line-height:1.55;min-height:100vh;}
   a{color:var(--accent);text-decoration:none;}
   button{font-family:inherit;cursor:pointer;}
-  input,textarea,select{font-family:inherit;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--text);font-size:14px;outline:none;}
+  input,textarea,select{font-family:inherit;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-md);padding:10px 12px;color:var(--text);font-size:14px;outline:none;}
   input:focus,textarea:focus,select:focus{border-color:var(--accent);}
   textarea{resize:vertical;min-height:80px;}
-  .btn{display:inline-flex;align-items:center;gap:8px;padding:9px 16px;border-radius:8px;border:none;font-size:13px;font-weight:700;letter-spacing:-.01em;transition:all .15s;}
+  .btn{display:inline-flex;align-items:center;gap:8px;padding:9px 16px;border-radius:var(--radius-md);border:none;font-size:13px;font-weight:700;letter-spacing:-.01em;transition:all .15s;}
   .btn-primary{background:linear-gradient(135deg,#ff4d4d,#ff6b35);color:#fff;}
   .btn-primary:hover{transform:translateY(-1px);box-shadow:0 4px 12px var(--accent-tint-4);}
   .btn-ghost{background:var(--surface2);color:var(--text2);border:1px solid var(--border);}
@@ -45,7 +45,7 @@
   .auth-logo span{color:var(--accent);}
   .auth-sub{color:var(--text2);font-size:13px;margin-bottom:24px;}
   .auth-tabs{display:flex;gap:8px;margin-bottom:18px;}
-  .auth-tab{flex:1;padding:8px;text-align:center;border-radius:8px;color:var(--text3);cursor:pointer;font-size:13px;font-weight:600;}
+  .auth-tab{flex:1;padding:8px;text-align:center;border-radius:var(--radius-md);color:var(--text3);cursor:pointer;font-size:13px;font-weight:600;}
   .auth-tab.active{background:var(--surface2);color:var(--accent);}
   .field{margin-bottom:14px;}
   .field label{display:block;font-size:11px;color:var(--text3);margin-bottom:6px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;}
@@ -67,7 +67,7 @@
   .top-spacer{flex:1;}
   .top-user{display:flex;align-items:center;gap:10px;}
   .top-user .name{font-size:13px;font-weight:600;}
-  .top-user .role{font-size:10px;color:var(--text3);background:var(--surface2);padding:3px 8px;border-radius:4px;letter-spacing:.06em;}
+  .top-user .role{font-size:10px;color:var(--text3);background:var(--surface2);padding:3px 8px;border-radius:var(--radius-sm);letter-spacing:.06em;}
 
   .container{max-width:1400px;margin:0 auto;padding:24px;}
   .page-head{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;}
@@ -83,9 +83,9 @@
   tbody tr:hover{background:var(--surface2);}
   tbody tr:last-child td{border-bottom:none;}
   .row-name{font-weight:700;}
-  .row-name .pill{display:inline-block;font-size:9px;padding:2px 6px;border-radius:4px;background:rgba(52,211,153,0.18);color:var(--green);margin-left:6px;letter-spacing:.05em;}
+  .row-name .pill{display:inline-block;font-size:9px;padding:2px 6px;border-radius:var(--radius-sm);background:rgba(52,211,153,0.18);color:var(--green);margin-left:6px;letter-spacing:.05em;}
   .row-cubes{display:flex;gap:6px;align-items:center;}
-  .cube-sm{width:14px;height:14px;border-radius:2px;border:1px solid rgba(0,0,0,0.4);box-shadow:inset 0 1px 0 rgba(255,255,255,0.4);}
+  .cube-sm{width:14px;height:14px;border-radius:var(--radius-sm);border:1px solid rgba(0,0,0,0.4);box-shadow:inset 0 1px 0 rgba(255,255,255,0.4);}
   .cube-sm.gold{background:linear-gradient(135deg,#fff1a8,#ffd54a 45%,#c48c1a);}
   .cube-sm.silver{background:linear-gradient(135deg,#f2f4f7,#b5c0cc 45%,#6d7682);}
   .cube-sm.red{background:linear-gradient(135deg,#ff8080,#ff4d4d 45%,#8b1515);}
@@ -107,7 +107,7 @@
   .panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:16px;}
   .panel-title{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;font-weight:700;margin-bottom:10px;}
   .stat-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px;}
-  .stat{background:var(--surface2);border-radius:10px;padding:12px 14px;}
+  .stat{background:var(--surface2);border-radius:var(--radius-lg);padding:12px 14px;}
   .stat-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;}
   .stat-val{font-family:'Archivo Black',sans-serif;font-size:24px;margin-top:2px;letter-spacing:-.5px;}
   .stat-val.gold{color:var(--gold);}
@@ -115,25 +115,25 @@
   .stat-val.red{color:var(--red);}
   .stat-sub{font-size:10px;color:var(--text3);margin-top:2px;}
 
-  .seg{display:flex;gap:4px;background:var(--surface2);padding:4px;border-radius:8px;margin-bottom:14px;}
-  .seg button{flex:1;padding:7px;border:none;background:transparent;color:var(--text3);font-size:12px;font-weight:600;border-radius:6px;}
+  .seg{display:flex;gap:4px;background:var(--surface2);padding:4px;border-radius:var(--radius-md);margin-bottom:14px;}
+  .seg button{flex:1;padding:7px;border:none;background:transparent;color:var(--text3);font-size:12px;font-weight:600;border-radius:var(--radius-md);}
   .seg button.on{background:var(--accent);color:#fff;}
 
-  .meal-card,.workout-card,.routine-card{background:var(--surface2);border-radius:10px;padding:10px 14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;}
-  .meal-card .pill{font-size:10px;padding:2px 6px;border-radius:4px;letter-spacing:.05em;font-weight:700;text-transform:uppercase;}
+  .meal-card,.workout-card,.routine-card{background:var(--surface2);border-radius:var(--radius-lg);padding:10px 14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;}
+  .meal-card .pill{font-size:10px;padding:2px 6px;border-radius:var(--radius-sm);letter-spacing:.05em;font-weight:700;text-transform:uppercase;}
   .pill-green{background:rgba(52,211,153,0.18);color:var(--green);}
   .pill-normal{background:rgba(245,158,11,0.18);color:var(--amber);}
   .pill-red{background:var(--accent-tint-3);color:var(--red);}
   .pill-cheat{background:rgba(168,85,247,0.18);color:#c084fc;}
   .pill-pending{background:rgba(56,189,248,0.18);color:#38bdf8;font-weight:800;}
-  .meal-card img{width:48px;height:48px;border-radius:6px;object-fit:cover;}
-  .msg-bubble{background:var(--surface2);border-radius:10px;padding:10px 14px;margin-bottom:8px;}
+  .meal-card img{width:48px;height:48px;border-radius:var(--radius-md);object-fit:cover;}
+  .msg-bubble{background:var(--surface2);border-radius:var(--radius-lg);padding:10px 14px;margin-bottom:8px;}
   .msg-bubble .who{font-size:11px;color:var(--text3);margin-bottom:4px;}
   .msg-bubble .body{font-size:13px;line-height:1.5;}
   .msg-bubble .time{font-size:10px;color:var(--text3);margin-top:4px;}
 
   .preset-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin:10px 0;}
-  .preset-btn{padding:8px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-size:11px;color:var(--text2);text-align:left;cursor:pointer;transition:all .12s;}
+  .preset-btn{padding:8px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-md);font-size:11px;color:var(--text2);text-align:left;cursor:pointer;transition:all .12s;}
   .preset-btn:hover{border-color:var(--accent);color:var(--text);}
   .preset-btn.on{background:var(--accent);color:#fff;border-color:var(--accent);}
 
@@ -144,30 +144,30 @@
   .lib-row .nm{flex:1;}
   .lib-row .ms{font-size:10px;color:var(--text3);}
   .lib-row .add{flex-shrink:0;color:var(--accent);font-weight:800;}
-  .cat-chip{padding:3px 9px;border-radius:14px;font-size:10px;background:var(--surface2);border:1px solid var(--border);color:var(--text3);cursor:pointer;font-weight:600;}
+  .cat-chip{padding:3px 9px;border-radius:var(--radius-lg);font-size:10px;background:var(--surface2);border:1px solid var(--border);color:var(--text3);cursor:pointer;font-weight:600;}
   .cat-chip.on{background:var(--accent);color:#fff;border-color:var(--accent);}
-  .ex-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px;margin-bottom:8px;}
+  .ex-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:10px;margin-bottom:8px;}
   .ex-card-head{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
   .ex-card-head .nm{flex:1;font-weight:700;font-size:13px;}
   .ex-card-head .x{background:none;border:none;color:var(--text3);font-size:14px;cursor:pointer;padding:2px 6px;}
   .ex-card-head .x:hover{color:var(--red);}
   .set-row{display:grid;grid-template-columns:24px 1fr 1fr 28px;gap:6px;align-items:center;margin-bottom:4px;font-size:12px;}
   .set-row .num{font-family:'DM Mono',monospace;color:var(--text3);font-weight:700;text-align:center;}
-  .set-row input{width:100%;padding:5px 7px;font-size:12px;border-radius:5px;}
+  .set-row input{width:100%;padding:5px 7px;font-size:12px;border-radius:var(--radius-sm);}
   .set-row .rm{background:none;border:none;color:var(--text3);cursor:pointer;font-size:13px;}
   .set-row .rm:hover{color:var(--red);}
-  .add-set-btn{background:none;border:1px dashed var(--border2);border-radius:6px;color:var(--text3);font-size:11px;padding:5px;width:100%;cursor:pointer;font-weight:600;margin-top:4px;}
+  .add-set-btn{background:none;border:1px dashed var(--border2);border-radius:var(--radius-md);color:var(--text3);font-size:11px;padding:5px;width:100%;cursor:pointer;font-weight:600;margin-top:4px;}
   .add-set-btn:hover{border-color:var(--accent);color:var(--accent);}
   /* ── v1 list view 재설계 (트레이너 client roster) ── */
   .roster-toolbar{display:flex;gap:10px;align-items:center;margin-bottom:14px;flex-wrap:wrap;}
-  .roster-search{flex:1;min-width:240px;padding:9px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;}
-  .roster-filter{display:flex;gap:4px;padding:3px;background:var(--surface2);border-radius:8px;border:1px solid var(--border);}
-  .roster-filter button{padding:6px 12px;background:transparent;border:none;border-radius:5px;color:var(--text2);font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;}
+  .roster-search{flex:1;min-width:240px;padding:9px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-md);color:var(--text);font-size:13px;}
+  .roster-filter{display:flex;gap:4px;padding:3px;background:var(--surface2);border-radius:var(--radius-md);border:1px solid var(--border);}
+  .roster-filter button{padding:6px 12px;background:transparent;border:none;border-radius:var(--radius-sm);color:var(--text2);font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;}
   .roster-filter button.on{background:var(--accent);color:#fff;}
   .roster-list{display:flex;flex-direction:column;gap:6px;}
-  .roster-row{display:grid;grid-template-columns:44px 1fr 200px 180px 120px auto;align-items:center;gap:14px;padding:12px 14px;background:var(--surface);border:1px solid var(--border);border-radius:10px;cursor:pointer;transition:all .12s;}
+  .roster-row{display:grid;grid-template-columns:44px 1fr 200px 180px 120px auto;align-items:center;gap:14px;padding:12px 14px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);cursor:pointer;transition:all .12s;}
   .roster-row:hover{border-color:var(--border2);background:var(--surface2);}
-  .roster-row .avatar{width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,#ff4d4d,#ff6b35);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px;font-family:'Archivo Black',sans-serif;text-transform:uppercase;}
+  .roster-row .avatar{width:40px;height:40px;border-radius:var(--radius-lg);background:linear-gradient(135deg,#ff4d4d,#ff6b35);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px;font-family:'Archivo Black',sans-serif;text-transform:uppercase;}
   .roster-row .nameline{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
   .roster-row .nick{font-size:14px;font-weight:700;color:var(--text);letter-spacing:-.005em;}
   .roster-row .real{font-size:11px;color:var(--text3);font-weight:500;}
@@ -180,8 +180,8 @@
   .roster-status .dot.skipped{background:#ef4444;}
   .roster-status .dot.empty{background:transparent;border:1.5px solid var(--text3);}
   .roster-status .label{font-size:12px;font-weight:700;color:var(--text2);white-space:nowrap;}
-  .roster-status .progress{width:60px;height:4px;background:var(--surface2);border-radius:999px;overflow:hidden;flex-shrink:0;}
-  .roster-status .progress > div{height:100%;border-radius:999px;}
+  .roster-status .progress{width:60px;height:4px;background:var(--surface2);border-radius:var(--radius-pill);overflow:hidden;flex-shrink:0;}
+  .roster-status .progress > div{height:100%;border-radius:var(--radius-pill);}
   .roster-meal{font-size:11px;color:var(--text2);font-family:'DM Mono',monospace;font-weight:600;}
   .roster-meal .cnt{color:var(--text);font-size:13px;font-weight:800;font-family:'Archivo Black',sans-serif;margin-right:6px;}
   .roster-meal .red{color:#ef4444;font-weight:800;}
@@ -189,7 +189,7 @@
   .roster-last{font-size:11px;color:var(--text3);font-weight:600;white-space:nowrap;}
   .roster-actions{display:flex;gap:4px;opacity:0;transition:opacity .12s;}
   .roster-row:hover .roster-actions{opacity:1;}
-  .roster-actions button{width:30px;height:30px;background:var(--surface2);border:1px solid var(--border2);border-radius:7px;color:var(--text2);font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+  .roster-actions button{width:30px;height:30px;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius-md);color:var(--text2);font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
   .roster-actions button:hover{border-color:var(--accent);color:var(--accent);}
   .roster-empty{padding:60px 20px;text-align:center;color:var(--text3);}
   .roster-empty .icon{font-size:36px;margin-bottom:8px;opacity:.5;}
@@ -203,7 +203,7 @@
   }
 
   /* 세트 빠른 조정 버튼 — hug width */
-  .hwq-step{padding:5px 10px;background:var(--surface2);border:1px solid var(--border2);border-radius:6px;font-size:11px;color:var(--text2);font-weight:700;cursor:pointer;font-family:'DM Mono',monospace;letter-spacing:-.005em;white-space:nowrap;touch-action:manipulation;transition:all .12s;}
+  .hwq-step{padding:5px 10px;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius-md);font-size:11px;color:var(--text2);font-weight:700;cursor:pointer;font-family:'DM Mono',monospace;letter-spacing:-.005em;white-space:nowrap;touch-action:manipulation;transition:all .12s;}
   .hwq-step:hover{border-color:var(--accent);color:var(--accent);}
   .hwq-step:active{transform:scale(.96);}
 
@@ -214,8 +214,8 @@
   .dash3-col{border-left:1px solid var(--border);overflow-y:auto;height:calc(100vh - 56px);}
   .dash3-col:first-child{border-left:none;}
   .dash3-clients{padding:12px 10px;}
-  .dash3-clients-search{width:100%;padding:9px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;margin-bottom:8px;}
-  .dash3-client-row{display:flex;align-items:center;gap:8px;padding:9px 10px;border-radius:8px;cursor:pointer;margin-bottom:2px;transition:background .12s;border:1px solid transparent;}
+  .dash3-clients-search{width:100%;padding:9px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-md);color:var(--text);font-size:13px;margin-bottom:8px;}
+  .dash3-client-row{display:flex;align-items:center;gap:8px;padding:9px 10px;border-radius:var(--radius-md);cursor:pointer;margin-bottom:2px;transition:background .12s;border:1px solid transparent;}
   .dash3-client-row:hover{background:var(--surface2);}
   .dash3-client-row.on{background:var(--accent-tint-2);border-color:var(--accent-tint-4);}
   .dash3-client-row .ed{opacity:0;font-size:11px;color:var(--text3);padding:2px 4px;background:none;border:none;cursor:pointer;}
@@ -227,11 +227,11 @@
   .dash3-cal-head{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
   .dash3-cal-title{font-family:'Archivo Black',sans-serif;font-size:18px;flex:1;letter-spacing:-.005em;}
   .dash3-cal-nav{display:flex;gap:4px;}
-  .dash3-cal-nav button{padding:6px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text2);font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;}
+  .dash3-cal-nav button{padding:6px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-md);color:var(--text2);font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;}
   .dash3-cal-nav button:hover{border-color:var(--accent);color:var(--accent);}
   .dash3-cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;}
   .dash3-cal-dow{padding:6px 4px;text-align:center;font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.06em;}
-  .dash3-cal-cell{aspect-ratio:1;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:6px;cursor:pointer;display:flex;flex-direction:column;justify-content:space-between;transition:all .12s;min-height:74px;}
+  .dash3-cal-cell{aspect-ratio:1;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:6px;cursor:pointer;display:flex;flex-direction:column;justify-content:space-between;transition:all .12s;min-height:74px;}
   .dash3-cal-cell:hover{border-color:var(--border2);background:var(--surface2);}
   .dash3-cal-cell.outside{opacity:.3;}
   .dash3-cal-cell.today{border-color:var(--accent);}
@@ -257,7 +257,7 @@
   .dash3-section-title{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;font-weight:700;margin:14px 0 8px;}
 
   /* 헤더 토글 — feed/v1/v2 dashboard */
-  .dash-toggle{padding:5px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;font-size:11px;color:var(--text2);cursor:pointer;font-weight:600;}
+  .dash-toggle{padding:5px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-md);font-size:11px;color:var(--text2);cursor:pointer;font-weight:600;}
   .dash-toggle.on{background:var(--accent);color:#fff;border-color:var(--accent);}
 
   /* ── Feed view (단일 피드, 회원당 카드 1개) ── */
@@ -266,21 +266,21 @@
   .feed-head-title{font-family:'Archivo Black',sans-serif;font-size:20px;letter-spacing:-.01em;}
   .feed-head-sub{font-size:11px;color:var(--text3);margin-top:2px;letter-spacing:.04em;}
   .feed-head-actions{display:flex;gap:8px;align-items:center;}
-  .feed-search{flex:1;min-width:160px;max-width:260px;padding:8px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-size:13px;color:var(--text);}
+  .feed-search{flex:1;min-width:160px;max-width:260px;padding:8px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-md);font-size:13px;color:var(--text);}
   .feed-list{display:flex;flex-direction:column;gap:12px;}
-  .feed-empty{padding:80px 24px;text-align:center;color:var(--text3);font-size:13px;background:var(--surface);border:1px solid var(--border);border-radius:14px;}
-  .fcard{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px 16px;display:grid;gap:10px;grid-template-columns:1fr;transition:border-color .12s;}
+  .feed-empty{padding:80px 24px;text-align:center;color:var(--text3);font-size:13px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);}
+  .fcard{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 16px;display:grid;gap:10px;grid-template-columns:1fr;transition:border-color .12s;}
   .fcard:hover{border-color:var(--border2);}
   .fcard-row1{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
   .fcard-name{font-size:15px;font-weight:700;letter-spacing:-.005em;}
   .fcard-name-real{font-size:11px;color:var(--text3);font-weight:500;margin-left:6px;}
-  .fcard-attn{display:inline-block;font-size:9px;font-weight:800;padding:2px 7px;border-radius:5px;margin-left:6px;letter-spacing:.04em;}
+  .fcard-attn{display:inline-block;font-size:9px;font-weight:800;padding:2px 7px;border-radius:var(--radius-sm);margin-left:6px;letter-spacing:.04em;}
   .fcard-attn.alert{background:var(--accent-tint-3);color:#ff7a7a;}
   .fcard-attn.warn{background:rgba(245,158,11,0.2);color:#fbbf24;}
   .fcard-attn.ok{background:rgba(52,211,153,0.18);color:#34d399;}
   .fcard-last{font-size:11px;color:var(--text3);margin-left:auto;font-family:'DM Mono',monospace;}
   .fcard-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
-  .fcard-stat{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:8px 10px;}
+  .fcard-stat{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:8px 10px;}
   .fcard-stat-lbl{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;font-weight:700;margin-bottom:4px;}
   .fcard-stat-val{font-size:15px;font-weight:800;font-family:'DM Mono',monospace;color:var(--text);}
   .fcard-stat-val.alert{color:#ff7a7a;}
@@ -289,23 +289,23 @@
   .fcard-stat-val.muted{color:var(--text3);}
   .fcard-stat-sub{font-size:10px;color:var(--text3);margin-top:2px;}
   .fcard-meals{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;}
-  .fcard-meal{position:relative;aspect-ratio:1;background:var(--surface2);border:1px solid var(--border);border-radius:8px;overflow:hidden;display:flex;align-items:center;justify-content:center;}
+  .fcard-meal{position:relative;aspect-ratio:1;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-md);overflow:hidden;display:flex;align-items:center;justify-content:center;}
   .fcard-meal img{width:100%;height:100%;object-fit:cover;display:block;}
   .fcard-meal-empty{font-size:18px;color:var(--text3);opacity:.4;}
-  .fcard-meal-lbl{position:absolute;top:3px;left:4px;font-size:9px;font-weight:700;color:#fff;background:rgba(0,0,0,0.6);padding:1px 5px;border-radius:3px;letter-spacing:.02em;}
+  .fcard-meal-lbl{position:absolute;top:3px;left:4px;font-size:9px;font-weight:700;color:#fff;background:rgba(0,0,0,0.6);padding:1px 5px;border-radius:var(--radius-sm);letter-spacing:.02em;}
   .fcard-meal-type{position:absolute;bottom:3px;right:4px;width:8px;height:8px;border-radius:50%;border:1px solid rgba(0,0,0,.4);}
   .fcard-meal-type.green{background:#34d399;}
   .fcard-meal-type.normal{background:#7a7a86;}
   .fcard-meal-type.red{background:#ff4d4d;}
   .fcard-actions{display:flex;gap:6px;flex-wrap:wrap;}
-  .fcard-btn{padding:7px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-size:11px;font-weight:700;color:var(--text2);cursor:pointer;transition:all .12s;}
+  .fcard-btn{padding:7px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-md);font-size:11px;font-weight:700;color:var(--text2);cursor:pointer;transition:all .12s;}
   .fcard-btn:hover{border-color:var(--border2);color:var(--text);}
   .fcard-btn.primary{background:linear-gradient(135deg,#ff4d4d,#ff6b35);color:#fff;border-color:transparent;}
   .fcard-btn.primary:hover{box-shadow:0 2px 8px var(--accent-tint-4);}
   /* 동일 카드 layout PC + Mobile (사용자 결정). */
 
   /* ── 알림 카드 (액션 필요) ── */
-  .alert-card{background:linear-gradient(135deg,var(--accent-tint-2),rgba(255,107,53,0.04));border:1.5px solid var(--accent-tint-4);border-radius:12px;padding:11px 14px;margin-bottom:10px;}
+  .alert-card{background:linear-gradient(135deg,var(--accent-tint-2),rgba(255,107,53,0.04));border:1.5px solid var(--accent-tint-4);border-radius:var(--radius-lg);padding:11px 14px;margin-bottom:10px;}
   .alert-card.warn{background:linear-gradient(135deg,rgba(245,158,11,0.10),rgba(245,158,11,0.04));border-color:rgba(245,158,11,0.32);}
   .alert-card-hd{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
   .alert-card-hd .icon{font-size:14px;flex-shrink:0;}
@@ -313,18 +313,18 @@
   .alert-card-hd .ttl.alert{color:#ff7a7a;}
   .alert-card-hd .ttl.warn{color:#fbbf24;}
   .alert-card-chips{display:flex;flex-wrap:wrap;gap:5px;}
-  .alert-chip{padding:5px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;font-size:11px;font-weight:600;color:var(--text2);cursor:pointer;}
+  .alert-chip{padding:5px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-md);font-size:11px;font-weight:600;color:var(--text2);cursor:pointer;}
   .alert-chip:hover{color:var(--text);border-color:var(--border2);}
 
   /* ── 회원 카드 (접힘 default) — 운동 status + 식단 photo + actions ── */
-  .mcard{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;transition:border-color .12s;}
+  .mcard{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;transition:border-color .12s;}
   .mcard:hover{border-color:var(--border2);}
   .mcard.expanded{border-color:var(--accent-tint-4);}
   .mcard-summary{padding:13px 16px;cursor:pointer;display:flex;flex-direction:column;gap:8px;}
   .mcard-row1{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
   .mcard-name{font-size:15px;font-weight:700;letter-spacing:-.005em;}
   .mcard-name-real{font-size:11px;color:var(--text3);font-weight:500;}
-  .mcard-attn{display:inline-block;font-size:9px;font-weight:800;padding:2px 7px;border-radius:5px;letter-spacing:.04em;}
+  .mcard-attn{display:inline-block;font-size:9px;font-weight:800;padding:2px 7px;border-radius:var(--radius-sm);letter-spacing:.04em;}
   .mcard-attn.alert{background:var(--accent-tint-3);color:#ff7a7a;}
   .mcard-attn.warn{background:rgba(245,158,11,0.2);color:#fbbf24;}
   .mcard-attn.ok{background:rgba(52,211,153,0.18);color:#34d399;}
@@ -337,29 +337,29 @@
   .mcard-workout-status .ico.miss{background:var(--accent-tint-3);color:#ff7a7a;}
   .mcard-workout-status .ico.none{background:var(--surface2);color:var(--text3);}
   .mcard-workout-link{margin-left:6px;font-size:11px;color:var(--accent);font-weight:700;cursor:pointer;}
-  .mcard-last-wo{margin-left:auto;font-size:11px;color:var(--text2);font-weight:600;cursor:pointer;padding:3px 8px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;transition:all .12s;}
+  .mcard-last-wo{margin-left:auto;font-size:11px;color:var(--text2);font-weight:600;cursor:pointer;padding:3px 8px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-md);transition:all .12s;}
   .mcard-last-wo:hover{color:var(--text);border-color:var(--border2);}
   .mcard-last-wo.none{color:var(--text3);cursor:default;background:transparent;border:none;}
-  .mcard-weight{display:flex;align-items:center;gap:7px;font-size:12px;padding:6px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;}
+  .mcard-weight{display:flex;align-items:center;gap:7px;font-size:12px;padding:6px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-md);}
   .mcard-w-lbl{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;font-weight:700;}
   .mcard-w-cur{font-family:'DM Mono',monospace;font-weight:800;color:var(--text);font-size:13px;}
   .mcard-w-arrow{color:var(--text3);font-weight:700;}
   .mcard-w-goal{font-family:'DM Mono',monospace;font-weight:600;color:var(--text2);font-size:12px;}
-  .mcard-w-diff{margin-left:auto;font-family:'DM Mono',monospace;font-weight:800;font-size:11px;padding:2px 6px;border-radius:4px;}
+  .mcard-w-diff{margin-left:auto;font-family:'DM Mono',monospace;font-weight:800;font-size:11px;padding:2px 6px;border-radius:var(--radius-sm);}
   .mcard-w-diff.ok{background:rgba(52,211,153,0.18);color:#34d399;}
   .mcard-w-diff.over{background:var(--accent-tint-3);color:#ff7a7a;}
   .mcard-w-diff.under{background:rgba(56,189,248,0.18);color:#7dd3fc;}
   .mcard-meals{display:grid;grid-template-columns:repeat(4,minmax(0,96px));gap:6px;}
-  .mcard-meal{position:relative;aspect-ratio:1;background:var(--surface2);border:1px solid var(--border);border-radius:8px;overflow:hidden;display:flex;align-items:center;justify-content:center;cursor:pointer;}
+  .mcard-meal{position:relative;aspect-ratio:1;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-md);overflow:hidden;display:flex;align-items:center;justify-content:center;cursor:pointer;}
   .mcard-meal.red-bd{border:2px solid #ff4d4d;}
   .mcard-meal.green-bd{border:2px solid #34d399;}
   .mcard-meal img{width:100%;height:100%;object-fit:cover;display:block;}
   .mcard-meal-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;width:100%;height:100%;color:var(--text3);background:repeating-linear-gradient(45deg,transparent 0,transparent 6px,var(--border) 6px,var(--border) 12px);}
   .mcard-meal-empty svg{opacity:.45;}
   .mcard-meal-empty .ph-msg{font-size:8px;font-weight:600;letter-spacing:.04em;text-align:center;line-height:1.1;color:var(--text3);opacity:.85;}
-  .mcard-meal-lbl{position:absolute;top:3px;left:4px;font-size:9px;font-weight:700;color:#fff;background:rgba(0,0,0,0.6);padding:1px 5px;border-radius:3px;letter-spacing:.02em;z-index:1;}
+  .mcard-meal-lbl{position:absolute;top:3px;left:4px;font-size:9px;font-weight:700;color:#fff;background:rgba(0,0,0,0.6);padding:1px 5px;border-radius:var(--radius-sm);letter-spacing:.02em;z-index:1;}
   .mcard-actions{display:flex;gap:5px;flex-wrap:wrap;padding:0 16px 13px;}
-  .mcard-btn{flex:1;min-width:80px;padding:8px 6px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-size:11px;font-weight:700;color:var(--text2);cursor:pointer;transition:all .12s;text-align:center;}
+  .mcard-btn{flex:1;min-width:80px;padding:8px 6px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-md);font-size:11px;font-weight:700;color:var(--text2);cursor:pointer;transition:all .12s;text-align:center;}
   .mcard-btn:hover{border-color:var(--border2);color:var(--text);}
   .mcard-btn.primary{background:linear-gradient(135deg,#ff4d4d,#ff6b35);color:#fff;border-color:transparent;}
   .mcard-btn.primary:hover{box-shadow:0 2px 8px var(--accent-tint-4);}
@@ -371,7 +371,7 @@
   .excel-back:hover{color:var(--text);}
   .excel-title{font-family:'Archivo Black',sans-serif;font-size:18px;letter-spacing:-.005em;}
   .excel-actions{display:flex;gap:6px;flex-wrap:wrap;margin-left:auto;}
-  .excel-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;background:var(--surface);border:1px solid var(--border);border-radius:12px;}
+  .excel-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);}
   .excel-table{border-collapse:separate;border-spacing:0;width:100%;font-size:11px;}
   .excel-table th, .excel-table td{padding:8px 10px;text-align:center;border-bottom:1px solid var(--border);border-right:1px solid var(--border);white-space:nowrap;}
   .excel-table th:last-child, .excel-table td:last-child{border-right:none;}
@@ -380,7 +380,7 @@
   .excel-table th.row-lbl, .excel-table td.row-lbl{position:sticky;left:0;background:var(--surface);z-index:1;text-align:left;font-weight:700;color:var(--text2);min-width:80px;}
   .excel-table th.row-lbl{background:var(--surface2);}
   .excel-table td.today-col{background:var(--accent-tint-1);}
-  .excel-cell{display:inline-block;width:24px;height:24px;border-radius:5px;cursor:pointer;}
+  .excel-cell{display:inline-block;width:24px;height:24px;border-radius:var(--radius-sm);cursor:pointer;}
   .excel-cell.green{background:#34d399;}
   .excel-cell.normal{background:#fbbf24;}
   .excel-cell.red{background:#ff4d4d;}
@@ -389,7 +389,7 @@
   .excel-cell.empty{background:transparent;border:1px dashed var(--border2);}
   .excel-legend{display:flex;gap:14px;font-size:10px;color:var(--text3);margin-top:10px;flex-wrap:wrap;}
   .excel-legend-item{display:inline-flex;align-items:center;gap:4px;}
-  .excel-legend-dot{width:10px;height:10px;border-radius:3px;}
+  .excel-legend-dot{width:10px;height:10px;border-radius:var(--radius-sm);}
 
   /* ── Roster view (전체 회원 상태 파악, 주간 trend) ── */
   .roster-wrap{max-width:1280px;margin:0 auto;padding:18px 16px 60px;}
@@ -397,7 +397,7 @@
   .roster-head-title{font-family:'Archivo Black',sans-serif;font-size:20px;letter-spacing:-.01em;}
   .roster-head-sub{font-size:11px;color:var(--text3);margin-top:2px;letter-spacing:.04em;}
   .roster-head-actions{display:flex;gap:8px;align-items:center;}
-  .roster-table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;display:none;}
+  .roster-table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;display:none;}
   .roster-cards{display:flex;flex-direction:column;gap:10px;}
   .roster-table{width:100%;border-collapse:collapse;}
   .roster-table th{text-align:left;padding:11px 14px;font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;font-weight:700;border-bottom:1px solid var(--border);background:var(--surface2);user-select:none;cursor:pointer;}
@@ -416,13 +416,13 @@
   .roster-mono.ok{color:#34d399;}
   .roster-mono.muted{color:var(--text3);}
   .roster-meta{font-size:11px;color:var(--text3);}
-  .roster-empty{padding:60px 24px;text-align:center;color:var(--text3);background:var(--surface);border:1px solid var(--border);border-radius:14px;}
+  .roster-empty{padding:60px 24px;text-align:center;color:var(--text3);background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);}
   /* PC ≥ 980px : table  / Mobile : stacked card */
   @media (min-width: 980px){
     .roster-table-wrap{display:block;}
     .roster-cards{display:none;}
   }
-  .rcard{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:13px 14px;cursor:pointer;}
+  .rcard{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:13px 14px;cursor:pointer;}
   .rcard:hover{border-color:var(--border2);}
   .rcard-row1{display:flex;align-items:baseline;gap:10px;margin-bottom:8px;}
   .rcard-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px 12px;font-size:12px;}
@@ -437,23 +437,23 @@
   .dt-head-info{flex:1;min-width:160px;}
   .dt-head-name{font-family:'Archivo Black',sans-serif;font-size:22px;letter-spacing:-.01em;}
   .dt-head-meta{font-size:11px;color:var(--text3);margin-top:4px;line-height:1.6;}
-  .dt-head-weight{display:inline-flex;align-items:center;gap:8px;margin-top:8px;padding:6px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-size:12px;}
+  .dt-head-weight{display:inline-flex;align-items:center;gap:8px;margin-top:8px;padding:6px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-md);font-size:12px;}
   .dt-head-weight .lbl{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;font-weight:700;}
   .dt-head-weight .cur{font-family:'DM Mono',monospace;font-weight:800;color:var(--text);font-size:14px;}
   .dt-head-weight .arrow{color:var(--text3);}
   .dt-head-weight .goal{font-family:'DM Mono',monospace;font-weight:600;color:var(--text2);}
-  .dt-head-weight .diff{margin-left:6px;font-family:'DM Mono',monospace;font-weight:800;font-size:11px;padding:2px 7px;border-radius:4px;}
+  .dt-head-weight .diff{margin-left:6px;font-family:'DM Mono',monospace;font-weight:800;font-size:11px;padding:2px 7px;border-radius:var(--radius-sm);}
   .dt-head-weight .diff.ok{background:rgba(52,211,153,0.18);color:#34d399;}
   .dt-head-weight .diff.over{background:var(--accent-tint-3);color:#ff7a7a;}
   .dt-head-weight .diff.under{background:rgba(56,189,248,0.18);color:#7dd3fc;}
   .dt-head-actions{display:flex;gap:6px;flex-wrap:wrap;}
   .dt-head-actions .btn{padding:7px 14px;font-size:12px;}
-  .dt-section{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:12px;}
+  .dt-section{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 16px;margin-bottom:12px;}
   .dt-section-hd{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;font-weight:700;margin-bottom:10px;}
-  .dt-section-hd .add{margin-left:auto;font-size:11px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:3px 8px;color:var(--text2);cursor:pointer;font-weight:700;}
+  .dt-section-hd .add{margin-left:auto;font-size:11px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-md);padding:3px 8px;color:var(--text2);cursor:pointer;font-weight:700;}
   .dt-section-hd .add:hover{color:var(--text);border-color:var(--border2);}
-  .dt-memo-area{width:100%;min-height:60px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 10px;color:var(--text);font-size:13px;font-family:inherit;resize:vertical;}
-  .dt-memo-save{margin-top:6px;font-size:11px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:5px 12px;color:var(--text2);cursor:pointer;font-weight:700;}
+  .dt-memo-area{width:100%;min-height:60px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-md);padding:8px 10px;color:var(--text);font-size:13px;font-family:inherit;resize:vertical;}
+  .dt-memo-save{margin-top:6px;font-size:11px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-md);padding:5px 12px;color:var(--text2);cursor:pointer;font-weight:700;}
   .dt-memo-save:hover{color:var(--text);border-color:var(--border2);}
   .dt-note-row{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-top:1px solid var(--border);}
   .dt-note-row:first-of-type{border-top:none;}
@@ -464,15 +464,15 @@
   .dt-note-actions button:hover{color:var(--text);}
   .dt-tl-day{padding:10px 0;border-top:1px solid var(--border);cursor:pointer;}
   .dt-tl-day:first-of-type{border-top:none;}
-  .dt-tl-day:hover{background:var(--surface2);margin:0 -16px;padding:10px 16px;border-radius:6px;}
+  .dt-tl-day:hover{background:var(--surface2);margin:0 -16px;padding:10px 16px;border-radius:var(--radius-md);}
   .dt-tl-day-hd{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
   .dt-tl-day-date{font-size:12px;font-weight:700;color:var(--text);}
-  .dt-tl-day-tag{font-size:9px;font-weight:800;padding:2px 6px;border-radius:4px;background:var(--surface2);color:var(--text3);letter-spacing:.04em;}
+  .dt-tl-day-tag{font-size:9px;font-weight:800;padding:2px 6px;border-radius:var(--radius-sm);background:var(--surface2);color:var(--text3);letter-spacing:.04em;}
   .dt-tl-day-tag.today{background:var(--accent-tint-3);color:#ff7a7a;}
   .dt-tl-day-row{display:flex;align-items:center;gap:10px;font-size:11px;color:var(--text2);margin-top:3px;flex-wrap:wrap;}
   .dt-tl-day-row .lbl{color:var(--text3);font-size:10px;text-transform:uppercase;letter-spacing:.04em;font-weight:700;}
   .dt-tl-meals{display:flex;gap:3px;}
-  .dt-tl-meal-dot{width:18px;height:18px;border-radius:4px;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:8px;color:var(--text3);position:relative;overflow:hidden;}
+  .dt-tl-meal-dot{width:18px;height:18px;border-radius:var(--radius-sm);background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:8px;color:var(--text3);position:relative;overflow:hidden;}
   .dt-tl-meal-dot img{width:100%;height:100%;object-fit:cover;}
   .dt-tl-meal-dot.green{border-color:rgba(52,211,153,0.5);}
   .dt-tl-meal-dot.red{border-color:var(--accent-tint-5);}
@@ -485,10 +485,10 @@
   /* ── Workout summary modal (앱과 동일 형태) ── */
   .ws-summary-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:1500;display:none;align-items:center;justify-content:center;padding:20px;}
   .ws-summary-overlay.on{display:flex;}
-  .ws-summary{background:var(--bg);border:1px solid var(--border);border-radius:16px;max-width:560px;width:100%;max-height:85vh;overflow:hidden;display:flex;flex-direction:column;}
+  .ws-summary{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-xl);max-width:560px;width:100%;max-height:85vh;overflow:hidden;display:flex;flex-direction:column;}
   .ws-summary-hdr{display:flex;align-items:center;gap:10px;padding:18px 20px;border-bottom:1px solid var(--border);}
   .ws-summary-title{font-family:'Archivo Black',sans-serif;font-size:16px;flex:1;}
-  .ws-summary-close{background:var(--surface2);border:1px solid var(--border);border-radius:6px;width:28px;height:28px;font-size:14px;color:var(--text2);cursor:pointer;}
+  .ws-summary-close{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-md);width:28px;height:28px;font-size:14px;color:var(--text2);cursor:pointer;}
   .ws-summary-stats{display:flex;border-bottom:1px solid var(--border);}
   .ws-summary-stat{flex:1;text-align:center;padding:14px 0;}
   .ws-summary-stat + .ws-summary-stat{border-left:1px solid var(--border);}
@@ -501,13 +501,13 @@
   .ws-summary-ex-name{font-size:14px;font-weight:700;}
   .ws-summary-ex-meta{font-size:10px;color:var(--text3);}
   .ws-summary-sets{display:flex;flex-wrap:wrap;gap:5px;}
-  .ws-summary-set{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:3px 8px;font-size:10px;font-family:'DM Mono',monospace;color:var(--text2);}
+  .ws-summary-set{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-md);padding:3px 8px;font-size:10px;font-family:'DM Mono',monospace;color:var(--text2);}
   .ws-summary-set.done{background:var(--surface);border-color:var(--border2);color:var(--text);}
   .ws-summary-set.skip{opacity:.4;}
 
   .hidden{display:none !important;}
   .loader{padding:40px;text-align:center;color:var(--text3);font-size:13px;}
-  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--surface);border:1px solid var(--accent);padding:12px 20px;border-radius:10px;font-size:13px;font-weight:700;z-index:2000;display:none;}
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--surface);border:1px solid var(--accent);padding:12px 20px;border-radius:var(--radius-lg);font-size:13px;font-weight:700;z-index:2000;display:none;}
   .toast.on{display:block;}
 </style>
 </head>
@@ -733,7 +733,7 @@
       <div class="field-help">친구 코드는 정확 매칭, 닉네임은 부분 검색.</div>
     </div>
 
-    <div id="reg-results" style="max-height:280px;overflow-y:auto;background:var(--surface2);border:1px solid var(--border);border-radius:8px;margin-bottom:14px;display:none;"></div>
+    <div id="reg-results" style="max-height:280px;overflow-y:auto;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-md);margin-bottom:14px;display:none;"></div>
 
     <div class="field" style="margin-top:18px;border-top:1px solid var(--border);padding-top:14px;">
       <label>받은 응답 대기 중인 요청</label>
@@ -805,7 +805,7 @@
 
     <div class="field"><label>날짜</label><input type="date" id="assign-date" /></div>
 
-    <div style="font-size:11px;color:var(--text3);margin-top:8px;padding:8px 10px;background:rgba(56,189,248,0.08);border:1px solid rgba(56,189,248,0.22);border-radius:8px;line-height:1.5;">
+    <div style="font-size:11px;color:var(--text3);margin-top:8px;padding:8px 10px;background:rgba(56,189,248,0.08);border:1px solid rgba(56,189,248,0.22);border-radius:var(--radius-md);line-height:1.5;">
       💡 <strong style="color:var(--text);">왼쪽 라이브러리</strong>에서 운동을 누르면 <strong style="color:var(--text);">오른쪽 숙제</strong>에 추가됩니다. 종목별로 세트·반복·무게를 입력하세요.
     </div>
 
@@ -822,18 +822,18 @@
         <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px;" id="assign-muscle-chips"></div>
         <div style="font-size:9px;color:var(--text3);font-weight:700;letter-spacing:.06em;margin:6px 0 4px;">도구</div>
         <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px;" id="assign-equip-chips"></div>
-        <div id="assign-lib-results" style="height:480px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;background:var(--surface2);"></div>
+        <div id="assign-lib-results" style="height:480px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--radius-md);background:var(--surface2);"></div>
       </div>
       <!-- 우측 — 탭 기반 숙제 빌더 -->
       <div>
         <div style="font-size:11px;color:var(--text3);margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em;font-weight:700;display:flex;align-items:center;gap:6px;">
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          오늘의 숙제 <span style="background:var(--accent);color:#fff;padding:1px 7px;border-radius:8px;margin-left:4px;font-family:'DM Mono',monospace;letter-spacing:0;" id="assign-count">0</span>
+          오늘의 숙제 <span style="background:var(--accent);color:#fff;padding:1px 7px;border-radius:var(--radius-md);margin-left:4px;font-family:'DM Mono',monospace;letter-spacing:0;" id="assign-count">0</span>
         </div>
         <!-- 탭 nav — 종목별 -->
         <div id="assign-tab-nav" style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px;min-height:34px;align-items:center;"></div>
         <!-- 활성 탭 콘텐츠 -->
-        <div id="assign-tab-content" style="height:520px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;background:var(--surface2);padding:14px;">
+        <div id="assign-tab-content" style="height:520px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--radius-md);background:var(--surface2);padding:14px;">
           <div class="small" style="text-align:center;padding:120px 10px;color:var(--text3);line-height:1.8;font-size:13px;">
             ← 왼쪽 라이브러리에서 운동을 눌러<br>첫 종목 (숙제 1) 부터 시작하세요
           </div>
@@ -889,7 +889,7 @@
   <div class="modal">
     <div class="modal-title">동료 트레이너 추천 코드</div>
     <div class="modal-sub">발급한 코드를 동료 트레이너에게 전달하면, 해당 트레이너가 이 코드로 즉시 가입할 수 있습니다. 1 코드당 최대 5 명까지 사용 가능.</div>
-    <div id="referral-code-display" style="background:var(--surface2);padding:24px;border-radius:10px;text-align:center;margin-bottom:14px;">
+    <div id="referral-code-display" style="background:var(--surface2);padding:24px;border-radius:var(--radius-lg);text-align:center;margin-bottom:14px;">
       <div class="small" style="margin-bottom:8px;">발급된 코드</div>
       <div id="referral-code" style="font-family:'DM Mono',monospace;font-size:32px;font-weight:800;letter-spacing:.15em;color:var(--accent);">—</div>
       <button class="btn btn-ghost" id="referral-copy-btn" onclick="copyReferralCode()" style="margin-top:14px;font-size:11px;">📋 복사</button>
@@ -945,7 +945,7 @@
 </div>
 
 <style>
-  .cp-min-chip{padding:8px 14px;border-radius:8px;border:1px solid var(--border2);background:var(--surface2);font-size:13px;font-weight:700;color:var(--text2);cursor:pointer;font-family:inherit;}
+  .cp-min-chip{padding:8px 14px;border-radius:var(--radius-md);border:1px solid var(--border2);background:var(--surface2);font-size:13px;font-weight:700;color:var(--text2);cursor:pointer;font-family:inherit;}
   .cp-min-chip:hover{border-color:var(--border2);color:var(--text);}
   .cp-min-chip.sel{background:linear-gradient(135deg,#ff4d4d,#ff6b35);color:#fff;border-color:transparent;}
 </style>
@@ -959,8 +959,8 @@
     </div>
     <div style="padding:16px 20px 18px;">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
-        <span id="ml-slot-pill" style="font-size:10px;font-weight:800;padding:3px 8px;border-radius:5px;background:var(--surface2);color:var(--text2);letter-spacing:.06em;">—</span>
-        <span id="ml-type-pill" style="font-size:10px;font-weight:800;padding:3px 8px;border-radius:5px;letter-spacing:.06em;"></span>
+        <span id="ml-slot-pill" style="font-size:10px;font-weight:800;padding:3px 8px;border-radius:var(--radius-sm);background:var(--surface2);color:var(--text2);letter-spacing:.06em;">—</span>
+        <span id="ml-type-pill" style="font-size:10px;font-weight:800;padding:3px 8px;border-radius:var(--radius-sm);letter-spacing:.06em;"></span>
         <span id="ml-client" style="margin-left:auto;font-size:11px;color:var(--text3);font-weight:600;">—</span>
       </div>
       <div id="ml-name" style="font-size:16px;font-weight:700;color:var(--text);letter-spacing:-.005em;">—</div>
@@ -984,7 +984,7 @@
       <div id="ne-muscle-chips" style="display:flex;gap:5px;overflow-x:auto;padding:8px 0 4px;scrollbar-width:none;-webkit-overflow-scrolling:touch;"></div>
       <div id="ne-equip-chips" style="display:flex;gap:5px;overflow-x:auto;padding:0 0 8px;scrollbar-width:none;-webkit-overflow-scrolling:touch;"></div>
       <div id="ne-selected" style="font-size:12px;color:var(--text3);margin-bottom:6px;">선택된 운동 없음</div>
-      <div id="ne-list" style="max-height:280px;overflow-y:auto;background:var(--surface2);border:1px solid var(--border);border-radius:8px;"></div>
+      <div id="ne-list" style="max-height:280px;overflow-y:auto;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-md);"></div>
     </div>
 
     <div class="field">
@@ -1001,7 +1001,7 @@
 </div>
 
 <style>
-  .ne-chip{padding:5px 11px;border-radius:14px;border:1px solid var(--border);background:var(--surface2);font-size:11px;color:var(--text2);cursor:pointer;white-space:nowrap;font-weight:600;flex-shrink:0;font-family:inherit;}
+  .ne-chip{padding:5px 11px;border-radius:var(--radius-lg);border:1px solid var(--border);background:var(--surface2);font-size:11px;color:var(--text2);cursor:pointer;white-space:nowrap;font-weight:600;flex-shrink:0;font-family:inherit;}
   .ne-chip:hover{border-color:var(--border2);color:var(--text);}
   .ne-chip.sel-muscle{background:var(--accent-tint-2);color:var(--accent);border-color:var(--accent-tint-4);}
   .ne-chip.sel-equip{background:rgba(52,211,153,0.12);color:var(--green);border-color:rgba(52,211,153,0.4);}
@@ -1009,7 +1009,7 @@
   .ne-chip-row:last-child{border-bottom:none;}
   .ne-chip-row:hover{background:var(--surface2);}
   .ne-chip-row.sel{background:var(--accent-tint-2);}
-  .ne-thumb{width:48px;height:48px;border-radius:8px;background:var(--bg);display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;}
+  .ne-thumb{width:48px;height:48px;border-radius:var(--radius-md);background:var(--bg);display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;}
   .ne-thumb img{width:48px;height:48px;object-fit:cover;display:block;}
 </style>
 
@@ -1367,20 +1367,20 @@ function regSearch(){
 function _renderRegResult(u){
   const display = esc(u.display_name || u.username || '회원');
   const sub = u.username && u.username !== u.display_name ? `@${esc(u.username)}` : '';
-  const fcode = u.friend_code ? `<span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text3);background:var(--surface);padding:2px 6px;border-radius:4px;margin-left:6px;">${esc(u.friend_code)}</span>` : '';
+  const fcode = u.friend_code ? `<span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text3);background:var(--surface);padding:2px 6px;border-radius:var(--radius-sm);margin-left:6px;">${esc(u.friend_code)}</span>` : '';
   const joined = u.joined_at ? new Date(u.joined_at).toISOString().slice(0,10) : '';
   let actionBtn, statusBadge='';
   switch(u.relation_state){
     case 'active_with_me':
-      statusBadge = '<span style="font-size:9px;font-weight:800;padding:2px 7px;border-radius:5px;background:rgba(52,211,153,0.18);color:#34d399;letter-spacing:.04em;">현재 회원</span>';
+      statusBadge = '<span style="font-size:9px;font-weight:800;padding:2px 7px;border-radius:var(--radius-sm);background:rgba(52,211,153,0.18);color:#34d399;letter-spacing:.04em;">현재 회원</span>';
       actionBtn = '<button class="btn btn-ghost" disabled style="opacity:.5;cursor:not-allowed;">이미 등록됨</button>';
       break;
     case 'pending_with_me':
-      statusBadge = '<span style="font-size:9px;font-weight:800;padding:2px 7px;border-radius:5px;background:rgba(245,158,11,0.18);color:#fbbf24;letter-spacing:.04em;">요청 보냄</span>';
+      statusBadge = '<span style="font-size:9px;font-weight:800;padding:2px 7px;border-radius:var(--radius-sm);background:rgba(245,158,11,0.18);color:#fbbf24;letter-spacing:.04em;">요청 보냄</span>';
       actionBtn = `<button class="btn btn-ghost" onclick="regCancelRequest('${u.user_id}')">요청 취소</button>`;
       break;
     case 'has_other_trainer':
-      statusBadge = '<span style="font-size:9px;font-weight:800;padding:2px 7px;border-radius:5px;background:rgba(122,122,134,0.2);color:var(--text3);letter-spacing:.04em;">다른 트레이너</span>';
+      statusBadge = '<span style="font-size:9px;font-weight:800;padding:2px 7px;border-radius:var(--radius-sm);background:rgba(122,122,134,0.2);color:var(--text3);letter-spacing:.04em;">다른 트레이너</span>';
       actionBtn = '<button class="btn btn-ghost" disabled style="opacity:.5;cursor:not-allowed;">요청 불가</button>';
       break;
     default:
@@ -1566,14 +1566,14 @@ async function loadMeals(){
       const pillCls = m.type==='green'?'pill-green':m.type==='red'?'pill-red':m.category==='alcohol'?'pill-red':m.type==='cheat'?'pill-cheat':'pill-normal';
       const pillTxt = m.type==='green'?'클린':m.type==='red'?'금지':m.category==='alcohol'?'술':m.type==='cheat'?'치팅':'일반';
       // 사진: data: 는 그대로, storage path 는 signed URL 로 hydrate
-      let photoCell = '<div style="width:48px;height:48px;background:var(--surface);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:20px;">🍽️</div>';
+      let photoCell = '<div style="width:48px;height:48px;background:var(--surface);border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;font-size:20px;">🍽️</div>';
       if(m.photo){
         if(m.photo.startsWith('data:')){
-          photoCell = `<img src="${esc(m.photo)}" style="width:48px;height:48px;border-radius:6px;object-fit:cover;" />`;
+          photoCell = `<img src="${esc(m.photo)}" style="width:48px;height:48px;border-radius:var(--radius-md);object-fit:cover;" />`;
         } else {
           const path = _mealPhotoPath(m.photo);
           if(path){
-            photoCell = `<img data-meal-photo="${esc(path)}" style="width:48px;height:48px;border-radius:6px;object-fit:cover;background:var(--surface);opacity:0.4;transition:opacity .25s;" alt="" />`;
+            photoCell = `<img data-meal-photo="${esc(path)}" style="width:48px;height:48px;border-radius:var(--radius-md);object-fit:cover;background:var(--surface);opacity:0.4;transition:opacity .25s;" alt="" />`;
           }
         }
       }
@@ -1665,15 +1665,15 @@ async function loadAssignments(){
     const pillTxt = a.status==='completed'?'완료':a.status==='pending'?'예정':a.status==='in_progress'?'진행 중':a.status==='skipped'?'미수행':a.status;
     const wks = a.payload?.workouts || [];
     const canEdit = a.status !== 'completed' && a.status !== 'cancelled';
-    html += `<div style="background:var(--surface2);border-radius:10px;padding:10px 12px;margin-bottom:6px;">
+    html += `<div style="background:var(--surface2);border-radius:var(--radius-lg);padding:10px 12px;margin-bottom:6px;">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
         <div style="font-size:12px;font-weight:700;flex:1;">${a.assigned_for_date}</div>
         <span class="pill ${pillCls}">${pillTxt}</span>
       </div>
       <div class="small" style="line-height:1.5;margin-bottom:6px;">${wks.slice(0,3).map(w=>esc(w.name||'—')).join(' · ')}${wks.length>3?' +'+(wks.length-3):''}</div>
       <div style="display:flex;gap:4px;">
-        ${canEdit?`<button onclick="editAssignment('${a.id}')" style="flex:1;padding:5px 8px;background:var(--surface);border:1px solid var(--border2);border-radius:6px;font-size:10px;color:var(--text2);font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;">수정</button>`:''}
-        <button onclick="deleteAssignment('${a.id}','${a.assigned_for_date}')" style="flex:1;padding:5px 8px;background:var(--accent-tint-2);border:1px solid var(--accent-tint-4);border-radius:6px;font-size:10px;color:#ff6b6b;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;">삭제</button>
+        ${canEdit?`<button onclick="editAssignment('${a.id}')" style="flex:1;padding:5px 8px;background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius-md);font-size:10px;color:var(--text2);font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;">수정</button>`:''}
+        <button onclick="deleteAssignment('${a.id}','${a.assigned_for_date}')" style="flex:1;padding:5px 8px;background:var(--accent-tint-2);border:1px solid var(--accent-tint-4);border-radius:var(--radius-md);font-size:10px;color:#ff6b6b;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;">삭제</button>
       </div>
     </div>`;
   }
@@ -2004,7 +2004,7 @@ function renderAssignBuilder(){
     const bg = on ? 'var(--accent)' : 'var(--surface2)';
     const fg = on ? '#fff' : 'var(--text2)';
     const border = on ? 'var(--accent)' : 'var(--border2)';
-    return `<button onclick="setAssignActiveTab(${i})" style="padding:7px 11px;background:${bg};border:1px solid ${border};border-radius:8px;color:${fg};font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;">
+    return `<button onclick="setAssignActiveTab(${i})" style="padding:7px 11px;background:${bg};border:1px solid ${border};border-radius:var(--radius-md);color:${fg};font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;">
       <span style="opacity:.75;">숙제 ${i+1}</span>
       <span>${esc((ex.name||'').slice(0,12))}</span>
     </button>`;
@@ -2020,13 +2020,13 @@ function renderAssignBuilder(){
   content.innerHTML = `
     <!-- 종목 헤더 -->
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--border);">
-      <div style="width:48px;height:48px;border-radius:10px;background:var(--accent-tint-3);display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;">${headerIco}</div>
+      <div style="width:48px;height:48px;border-radius:var(--radius-lg);background:var(--accent-tint-3);display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;">${headerIco}</div>
       <div style="flex:1;min-width:0;">
         <div style="font-size:11px;color:var(--accent);font-weight:800;letter-spacing:.04em;">숙제 ${ASSIGN_ACTIVE_TAB+1}</div>
         <div style="font-size:18px;font-weight:700;margin-top:2px;letter-spacing:-.005em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(ex.name)}</div>
         <div style="font-size:11px;color:var(--text3);margin-top:2px;">${esc(ex.m||'')}${ex.e?' · '+esc(ex.e):''}</div>
       </div>
-      <button onclick="removeAssignExercise(${ASSIGN_ACTIVE_TAB})" style="background:var(--accent-tint-2);border:1px solid var(--accent-tint-4);border-radius:8px;color:#ff6b6b;padding:7px 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;flex-shrink:0;">탭 삭제</button>
+      <button onclick="removeAssignExercise(${ASSIGN_ACTIVE_TAB})" style="background:var(--accent-tint-2);border:1px solid var(--accent-tint-4);border-radius:var(--radius-md);color:#ff6b6b;padding:7px 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;flex-shrink:0;">탭 삭제</button>
     </div>
 
     <!-- 세트 입력 헤더 -->
@@ -2039,7 +2039,7 @@ function renderAssignBuilder(){
 
     <!-- 세트 list — kg/reps column 정렬, 버튼 아래에 -->
     ${ex.sets.map((s, si) => `
-      <div style="margin-bottom:8px;background:var(--surface);border-radius:8px;padding:8px 10px;border:1px solid var(--border);">
+      <div style="margin-bottom:8px;background:var(--surface);border-radius:var(--radius-md);padding:8px 10px;border:1px solid var(--border);">
         <div style="display:flex;align-items:flex-start;gap:10px;">
           <span style="width:24px;text-align:center;font-family:'DM Mono',monospace;font-weight:800;color:var(--text2);font-size:13px;padding-top:8px;flex-shrink:0;">${si+1}</span>
           <!-- kg column -->
@@ -2066,8 +2066,8 @@ function renderAssignBuilder(){
 
     <!-- 세트 추가 + 통일 -->
     <div style="display:flex;gap:6px;margin-top:10px;">
-      <button onclick="addSet(${ASSIGN_ACTIVE_TAB})" style="flex:1;padding:10px;background:none;border:1px dashed var(--border2);border-radius:8px;color:var(--text2);font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;">+ 세트 추가</button>
-      ${ex.sets.length >= 2 ? `<button onclick="unifyAssignSets(${ASSIGN_ACTIVE_TAB})" style="flex:1;padding:10px;background:none;border:1px dashed var(--border2);border-radius:8px;color:var(--text2);font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;" title="첫 세트 → 모든 세트 통일">↓ 첫 세트 → 통일</button>` : ''}
+      <button onclick="addSet(${ASSIGN_ACTIVE_TAB})" style="flex:1;padding:10px;background:none;border:1px dashed var(--border2);border-radius:var(--radius-md);color:var(--text2);font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;">+ 세트 추가</button>
+      ${ex.sets.length >= 2 ? `<button onclick="unifyAssignSets(${ASSIGN_ACTIVE_TAB})" style="flex:1;padding:10px;background:none;border:1px dashed var(--border2);border-radius:var(--radius-md);color:var(--text2);font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;" title="첫 세트 → 모든 세트 통일">↓ 첫 세트 → 통일</button>` : ''}
     </div>
   `;
 }
@@ -2420,7 +2420,7 @@ function renderDtNotes(){
   wrap.innerHTML = _dt.notes.map(n => {
     const thumb = exIconFn ? exIconFn(n.exercise_name, 36) : '🏋️';
     return `<div class="dt-note-row">
-      <div style="width:36px;height:36px;border-radius:7px;background:var(--surface2);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;">${thumb}</div>
+      <div style="width:36px;height:36px;border-radius:var(--radius-md);background:var(--surface2);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;">${thumb}</div>
       <div class="dt-note-ex" style="width:auto;min-width:90px;">${esc(n.exercise_name)}</div>
       <div class="dt-note-body">${esc(n.body)}</div>
       <div class="dt-note-actions">
@@ -2504,7 +2504,7 @@ function dtEditNote(noteId, exName, body){
   document.getElementById('ne-body').value = body;
   document.getElementById('ne-err').textContent = '';
   const thumb = (typeof window.exIcon === 'function') ? window.exIcon(exName, 32) : (meta?.i || '🏋️');
-  document.getElementById('ne-selected').innerHTML = `<span style="display:inline-flex;align-items:center;gap:8px;">선택됨: <span style="display:inline-flex;align-items:center;gap:6px;color:var(--accent);font-weight:700;"><span style="width:32px;height:32px;border-radius:6px;background:var(--surface2);display:inline-flex;align-items:center;justify-content:center;overflow:hidden;">${thumb}</span>${esc(exName)}</span></span>`;
+  document.getElementById('ne-selected').innerHTML = `<span style="display:inline-flex;align-items:center;gap:8px;">선택됨: <span style="display:inline-flex;align-items:center;gap:6px;color:var(--accent);font-weight:700;"><span style="width:32px;height:32px;border-radius:var(--radius-md);background:var(--surface2);display:inline-flex;align-items:center;justify-content:center;overflow:hidden;">${thumb}</span>${esc(exName)}</span></span>`;
   _neRenderChips();
   document.getElementById('ne-list').innerHTML = '';
   openModal('modal-note-edit');
@@ -2545,8 +2545,8 @@ function neRenderList(){
       <div style="flex:1;min-width:0;">
         <div style="font-size:13px;font-weight:${isSel?'700':'600'};color:${isSel?'var(--accent)':'var(--text)'};">${esc(e.n)}</div>
         <div style="display:flex;gap:5px;margin-top:3px;">
-          <span style="font-size:9px;padding:2px 6px;border-radius:4px;font-family:'DM Mono',monospace;background:var(--accent-tint-2);color:#ff7a7a;border:1px solid var(--accent-tint-3);">${esc(e.m||'')}</span>
-          ${e.e?`<span style="font-size:9px;padding:2px 6px;border-radius:4px;font-family:'DM Mono',monospace;background:rgba(52,211,153,0.1);color:var(--green);border:1px solid rgba(52,211,153,0.25);">${esc(e.e)}</span>`:''}
+          <span style="font-size:9px;padding:2px 6px;border-radius:var(--radius-sm);font-family:'DM Mono',monospace;background:var(--accent-tint-2);color:#ff7a7a;border:1px solid var(--accent-tint-3);">${esc(e.m||'')}</span>
+          ${e.e?`<span style="font-size:9px;padding:2px 6px;border-radius:var(--radius-sm);font-family:'DM Mono',monospace;background:rgba(52,211,153,0.1);color:var(--green);border:1px solid rgba(52,211,153,0.25);">${esc(e.e)}</span>`:''}
         </div>
       </div>
       ${isSel ? '<span style="color:var(--accent);font-size:16px;">✓</span>' : ''}
@@ -2558,7 +2558,7 @@ function neSelect(exName){
   _neState.selectedExName = exName;
   _neState.selectedExMeta = _neLookupExercise(exName);
   const thumb = (typeof window.exIcon === 'function') ? window.exIcon(exName, 32) : (_neState.selectedExMeta?.i || '🏋️');
-  document.getElementById('ne-selected').innerHTML = `<span style="display:inline-flex;align-items:center;gap:8px;">선택됨: <span style="display:inline-flex;align-items:center;gap:6px;color:var(--accent);font-weight:700;"><span style="width:32px;height:32px;border-radius:6px;background:var(--surface2);display:inline-flex;align-items:center;justify-content:center;overflow:hidden;">${thumb}</span>${esc(exName)}</span></span>`;
+  document.getElementById('ne-selected').innerHTML = `<span style="display:inline-flex;align-items:center;gap:8px;">선택됨: <span style="display:inline-flex;align-items:center;gap:6px;color:var(--accent);font-weight:700;"><span style="width:32px;height:32px;border-radius:var(--radius-md);background:var(--surface2);display:inline-flex;align-items:center;justify-content:center;overflow:hidden;">${thumb}</span>${esc(exName)}</span></span>`;
   neRenderList();
   setTimeout(()=>document.getElementById('ne-body').focus(), 0);
 }
@@ -3701,14 +3701,14 @@ async function renderDash3DateDetail(date){
       const pct = totalSets > 0 ? Math.round(doneSets/totalSets*100) : 0;
       const color = a.status==='completed'?'#34d399':a.status==='in_progress'?'#38bdf8':a.status==='skipped'?'#ef4444':'#f59e0b';
       const lbl = a.status==='completed'?'완료':a.status==='in_progress'?'진행 중':a.status==='skipped'?'미수행':'예정';
-      html += `<div style="background:var(--surface2);border-radius:10px;padding:10px 12px;margin-bottom:8px;">
+      html += `<div style="background:var(--surface2);border-radius:var(--radius-lg);padding:10px 12px;margin-bottom:8px;">
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
           <span style="font-size:11px;font-weight:800;color:${color};letter-spacing:.04em;">${lbl}</span>
           <span style="flex:1;font-size:11px;font-family:'DM Mono',monospace;color:var(--text2);">${doneSets}/${totalSets} 세트</span>
-          <button onclick="editAssignment('${a.id}')" style="font-size:10px;padding:3px 8px;background:var(--surface);border:1px solid var(--border2);border-radius:5px;color:var(--text2);cursor:pointer;font-weight:700;">수정</button>
-          <button onclick="deleteAssignment('${a.id}','${date}')" style="font-size:10px;padding:3px 8px;background:var(--accent-tint-2);border:1px solid var(--accent-tint-4);border-radius:5px;color:#ff6b6b;cursor:pointer;font-weight:700;">삭제</button>
+          <button onclick="editAssignment('${a.id}')" style="font-size:10px;padding:3px 8px;background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius-sm);color:var(--text2);cursor:pointer;font-weight:700;">수정</button>
+          <button onclick="deleteAssignment('${a.id}','${date}')" style="font-size:10px;padding:3px 8px;background:var(--accent-tint-2);border:1px solid var(--accent-tint-4);border-radius:var(--radius-sm);color:#ff6b6b;cursor:pointer;font-weight:700;">삭제</button>
         </div>
-        <div style="height:4px;background:var(--surface2);border-radius:999px;overflow:hidden;margin-bottom:6px;">
+        <div style="height:4px;background:var(--surface2);border-radius:var(--radius-pill);overflow:hidden;margin-bottom:6px;">
           <div style="height:100%;width:${pct}%;background:${color};"></div>
         </div>
         <div style="font-size:11px;color:var(--text3);line-height:1.5;">${wks.slice(0,4).map(w=>esc(w.name)).join(' · ')}${wks.length>4?' +'+(wks.length-4):''}</div>
@@ -3725,10 +3725,10 @@ async function renderDash3DateDetail(date){
     for(const m of meals){
       const pillCls = m.type==='green'?'pill-green':m.type==='red'?'pill-red':m.category==='alcohol'?'pill-red':'pill-normal';
       const pillTxt = m.type==='green'?'클린':m.type==='red'?'금지':m.category==='alcohol'?'술':'일반';
-      let photoEl = '<div style="width:48px;height:48px;background:var(--surface);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:18px;">🍽️</div>';
+      let photoEl = '<div style="width:48px;height:48px;background:var(--surface);border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;font-size:18px;">🍽️</div>';
       if(m.photo){
-        if(m.photo.startsWith('data:')) photoEl = `<img src="${esc(m.photo)}" style="width:48px;height:48px;border-radius:6px;object-fit:cover;" />`;
-        else { const p = _mealPhotoPath(m.photo); if(p) photoEl = `<img data-meal-photo="${esc(p)}" style="width:48px;height:48px;border-radius:6px;object-fit:cover;background:var(--surface);opacity:0.4;transition:opacity .25s;" />`; }
+        if(m.photo.startsWith('data:')) photoEl = `<img src="${esc(m.photo)}" style="width:48px;height:48px;border-radius:var(--radius-md);object-fit:cover;" />`;
+        else { const p = _mealPhotoPath(m.photo); if(p) photoEl = `<img data-meal-photo="${esc(p)}" style="width:48px;height:48px;border-radius:var(--radius-md);object-fit:cover;background:var(--surface);opacity:0.4;transition:opacity .25s;" />`; }
       }
       html += `<div style="display:flex;flex-direction:column;align-items:center;gap:3px;">${photoEl}<span class="pill ${pillCls}" style="font-size:9px;">${pillTxt}</span><span style="font-size:9px;color:var(--text3);max-width:48px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(m.time||m.category||'')}</span></div>`;
     }
@@ -3742,7 +3742,7 @@ async function renderDash3DateDetail(date){
   } else {
     for(const msg of msgs){
       const presetLbl = msg.preset_id ? (PRESETS[msg.preset_id]?.label||msg.preset_id) : '커스텀';
-      html += `<div style="background:var(--surface2);border-radius:8px;padding:8px 12px;margin-bottom:6px;">
+      html += `<div style="background:var(--surface2);border-radius:var(--radius-md);padding:8px 12px;margin-bottom:6px;">
         <div style="font-size:10px;color:var(--text3);margin-bottom:3px;">[${presetLbl}] ${msg.read_at?'읽음':'안읽음'}</div>
         <div style="font-size:12px;line-height:1.5;">${esc(msg.body)}</div>
       </div>`;
