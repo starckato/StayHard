@@ -14,17 +14,13 @@
   window.exIcon = exIcon;
   window.dispatchEvent(new Event('exercises-loaded'));
 </script>
+<!-- Phase 0: 디자인 토큰 (shared 먼저, light palette 가 trainer 전용). -->
+<link href="/src/styles/tokens.shared.css" rel="stylesheet">
+<link href="/src/styles/tokens.light.css" rel="stylesheet">
 <style>
   *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
-  :root{
-    --bg:#0a0a0c; --surface:#16161a; --surface2:#1c1c22;
-    --border:rgba(255,255,255,0.06); --border2:rgba(255,255,255,0.12);
-    --text:#f5f1ea; --text2:#a8a8b4; --text3:#7a7a86;
-    --accent:#ff4d4d; --accent2:#ff6b35;
-    --green:#34d399; --amber:#f59e0b; --red:#ff4d4d;
-    --gold:#ffd54a; --silver:#b5c0cc;
-    --radius:14px;
-  }
+  /* :root 토큰은 src/styles/tokens.{shared,light}.css 로 이전됨 (Phase 0).
+     trainer 는 light palette 사용. 인라인 :root 정의 금지. */
   body{background:var(--bg);color:var(--text);font-family:'DM Sans','Apple SD Gothic Neo','Pretendard',sans-serif;line-height:1.55;min-height:100vh;}
   a{color:var(--accent);text-decoration:none;}
   button{font-family:inherit;cursor:pointer;}
@@ -36,9 +32,9 @@
   .btn-primary:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(255,77,77,.4);}
   .btn-ghost{background:var(--surface2);color:var(--text2);border:1px solid var(--border);}
   .btn-ghost:hover{border-color:var(--border2);color:var(--text);}
-  .btn-danger{background:rgba(255,77,77,0.14);color:#ff6b6b;border:1px solid rgba(255,77,77,0.32);}
-  .btn-danger:hover{background:rgba(255,77,77,0.22);}
-  .err{color:#ff6b6b;font-size:12px;margin-top:6px;min-height:16px;}
+  .btn-danger{background:var(--accent-tint-2);color:var(--accent);border:1px solid var(--accent-tint-4);}
+  .btn-danger:hover{background:var(--accent-tint-3);}
+  .err{color:var(--accent);font-size:12px;margin-top:6px;min-height:16px;}
   .ok{color:var(--green);font-size:12px;margin-top:6px;}
   .small{font-size:11px;color:var(--text3);}
 
@@ -184,7 +180,7 @@
   .roster-status .dot.skipped{background:#ef4444;}
   .roster-status .dot.empty{background:transparent;border:1.5px solid var(--text3);}
   .roster-status .label{font-size:12px;font-weight:700;color:var(--text2);white-space:nowrap;}
-  .roster-status .progress{width:60px;height:4px;background:rgba(255,255,255,0.06);border-radius:999px;overflow:hidden;flex-shrink:0;}
+  .roster-status .progress{width:60px;height:4px;background:var(--surface2);border-radius:999px;overflow:hidden;flex-shrink:0;}
   .roster-status .progress > div{height:100%;border-radius:999px;}
   .roster-meal{font-size:11px;color:var(--text2);font-family:'DM Mono',monospace;font-weight:600;}
   .roster-meal .cnt{color:var(--text);font-size:13px;font-weight:800;font-family:'Archivo Black',sans-serif;margin-right:6px;}
@@ -317,8 +313,8 @@
   .alert-card-hd .ttl.alert{color:#ff7a7a;}
   .alert-card-hd .ttl.warn{color:#fbbf24;}
   .alert-card-chips{display:flex;flex-wrap:wrap;gap:5px;}
-  .alert-chip{padding:5px 10px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:6px;font-size:11px;font-weight:600;color:var(--text2);cursor:pointer;}
-  .alert-chip:hover{color:var(--text);border-color:rgba(255,255,255,0.2);}
+  .alert-chip{padding:5px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;font-size:11px;font-weight:600;color:var(--text2);cursor:pointer;}
+  .alert-chip:hover{color:var(--text);border-color:var(--border2);}
 
   /* ── 회원 카드 (접힘 default) — 운동 status + 식단 photo + actions ── */
   .mcard{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;transition:border-color .12s;}
@@ -358,7 +354,7 @@
   .mcard-meal.red-bd{border:2px solid #ff4d4d;}
   .mcard-meal.green-bd{border:2px solid #34d399;}
   .mcard-meal img{width:100%;height:100%;object-fit:cover;display:block;}
-  .mcard-meal-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;width:100%;height:100%;color:var(--text3);background:repeating-linear-gradient(45deg,transparent 0,transparent 6px,rgba(255,255,255,0.025) 6px,rgba(255,255,255,0.025) 12px);}
+  .mcard-meal-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;width:100%;height:100%;color:var(--text3);background:repeating-linear-gradient(45deg,transparent 0,transparent 6px,var(--border) 6px,var(--border) 12px);}
   .mcard-meal-empty svg{opacity:.45;}
   .mcard-meal-empty .ph-msg{font-size:8px;font-weight:600;letter-spacing:.04em;text-align:center;line-height:1.1;color:var(--text3);opacity:.85;}
   .mcard-meal-lbl{position:absolute;top:3px;left:4px;font-size:9px;font-weight:700;color:#fff;background:rgba(0,0,0,0.6);padding:1px 5px;border-radius:3px;letter-spacing:.02em;z-index:1;}
@@ -1011,7 +1007,7 @@
   .ne-chip.sel-equip{background:rgba(52,211,153,0.12);color:var(--green);border-color:rgba(52,211,153,0.4);}
   .ne-chip-row{display:flex;align-items:center;gap:10px;padding:8px 12px;cursor:pointer;border-bottom:1px solid var(--border);}
   .ne-chip-row:last-child{border-bottom:none;}
-  .ne-chip-row:hover{background:rgba(255,255,255,0.03);}
+  .ne-chip-row:hover{background:var(--surface2);}
   .ne-chip-row.sel{background:rgba(255,77,77,0.08);}
   .ne-thumb{width:48px;height:48px;border-radius:8px;background:var(--bg);display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;}
   .ne-thumb img{width:48px;height:48px;object-fit:cover;display:block;}
@@ -3712,7 +3708,7 @@ async function renderDash3DateDetail(date){
           <button onclick="editAssignment('${a.id}')" style="font-size:10px;padding:3px 8px;background:var(--surface);border:1px solid var(--border2);border-radius:5px;color:var(--text2);cursor:pointer;font-weight:700;">수정</button>
           <button onclick="deleteAssignment('${a.id}','${date}')" style="font-size:10px;padding:3px 8px;background:rgba(255,77,77,0.10);border:1px solid rgba(255,77,77,0.32);border-radius:5px;color:#ff6b6b;cursor:pointer;font-weight:700;">삭제</button>
         </div>
-        <div style="height:4px;background:rgba(255,255,255,0.06);border-radius:999px;overflow:hidden;margin-bottom:6px;">
+        <div style="height:4px;background:var(--surface2);border-radius:999px;overflow:hidden;margin-bottom:6px;">
           <div style="height:100%;width:${pct}%;background:${color};"></div>
         </div>
         <div style="font-size:11px;color:var(--text3);line-height:1.5;">${wks.slice(0,4).map(w=>esc(w.name)).join(' · ')}${wks.length>4?' +'+(wks.length-4):''}</div>

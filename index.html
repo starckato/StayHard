@@ -28,32 +28,15 @@
      so window globals (dkey, normKey, ...) are set before inline code runs.
      Query version bumps cache when bundle content changes. Bump manually or
      via build script when shipping a new bundle. See MIGRATION_PLAN.md. -->
-<script src="/dist/app.js?v=20260502-weight-fullhistory"></script>
+<script src="/dist/app.js?v=20260502-tokens-phase0"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Archivo+Black&display=swap" rel="stylesheet">
+<!-- Phase 0: 디자인 토큰 (shared 먼저, palette 가 override). -->
+<link href="/src/styles/tokens.shared.css" rel="stylesheet">
+<link href="/src/styles/tokens.dark.css" rel="stylesheet">
 <style>
-:root{
-  --bg:#0a0a0c;--surface:#141418;--surface2:#1c1c22;--surface3:#24242c;
-  --border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.10);
-  --text:#eaeaea;--text2:#a8a8b4;--text3:#7a7a86;
-  --green:#34d399;--green-bg:rgba(52,211,153,0.12);--green-bd:rgba(52,211,153,0.28);
-  --red:#ff4d4d;--red-bg:rgba(255,77,77,0.12);--red-bd:rgba(255,77,77,0.28);
-  --amber:#f59e0b;--amber-bg:rgba(245,158,11,0.12);--amber-bd:rgba(245,158,11,0.30);
-  --blue:#38bdf8;--blue-bg:rgba(56,189,248,0.12);
-  --accent:#ff4d4d;--accent-bg:rgba(255,77,77,0.10);--accent-bd:rgba(255,77,77,0.25);
-  --accent-red:#ff4d4d;
-  --accent-grad:linear-gradient(135deg,#ff4d4d 0%,#ff6b35 100%);
-  --radius:12px;--radius-sm:10px;
-  --glow:0 0 20px rgba(255,77,77,0.15);
-  /* Share 카드 전용 토큰 (DEV_ANSWER §4.2). 흑백 editorial + crimson 1도.
-     앱 내부 UI (rage-overlay, win-100-overlay) 와 분리. warm gradient 금지. */
-  --share-bg:#0A0A0A;
-  --share-surface:#1A1A1A;
-  --share-text:#F5F1EA;
-  --share-text-2:#A0A0A0;
-  --share-text-3:#5a5a66;
-  --share-accent:#B91C1C;
-  --share-gold:#C9A34E;
-}
+/* :root 토큰은 src/styles/tokens.{shared,dark}.css 로 이전됨 (Phase 0).
+   index.html 은 다크 팔레트 사용. 추가 sub-palette (--radius-sm 등 legacy) 가
+   필요하면 tokens.dark.css 에 추가. 인라인 :root 정의 금지. */
 
 /* CRITICAL FIX (2026-04-25): HTML [hidden] 속성이 display:flex/block 클래스에
    덮이는 버그 수정. Phase 2-4 에서 추가된 FF-gated UI (exempt-row, fc-card, vd-card,

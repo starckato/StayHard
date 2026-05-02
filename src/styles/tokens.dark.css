@@ -1,0 +1,70 @@
+/* StayHard Dark Palette — index.html (B2C 게이미피케이션).
+ * 큐브·캐릭터·강한 강조의 다크 무드.
+ *
+ * 액센트 변형은 5단계로 클램프 (.06 / .12 / .20 / .35 / .55).
+ * inline rgba(255,77,77,X) 변형 50개 → var(--accent-tint-N) 5개.
+ */
+
+:root {
+  /* ── Surface ─────────────────────────────────────── */
+  --bg: #0a0a0c;
+  --surface: #141418;
+  --surface2: #1c1c22;
+  --surface3: #24242c;
+
+  /* ── Border ─────────────────────────────────────── */
+  --border: rgba(255, 255, 255, 0.06);
+  --border2: rgba(255, 255, 255, 0.10);
+
+  /* ── Text ─────────────────────────────────────── */
+  --text: #eaeaea;
+  --text2: #a8a8b4;
+  --text3: #7a7a86;
+
+  /* ── Accent (red) — 5단계 ───────────────────────── */
+  --accent: #ff4d4d;
+  --accent-tint-1: rgba(255, 77, 77, 0.06);   /* hairline tint */
+  --accent-tint-2: rgba(255, 77, 77, 0.12);   /* badge bg */
+  --accent-tint-3: rgba(255, 77, 77, 0.20);   /* card hover bg */
+  --accent-tint-4: rgba(255, 77, 77, 0.35);   /* border emphasis */
+  --accent-tint-5: rgba(255, 77, 77, 0.55);   /* solid soft */
+  --accent-strong: #ff6b35;                    /* gradient end */
+  --accent-grad: linear-gradient(135deg, #ff4d4d 0%, #ff6b35 100%);
+
+  /* ── Backwards compat (Phase 1 에서 정리) ───────── */
+  --accent-bg: var(--accent-tint-2);
+  --accent-bd: var(--accent-tint-4);
+  --accent-red: var(--accent);
+
+  /* ── Semantic ─────────────────────────────────────── */
+  --green: #34d399;
+  --green-bg: rgba(52, 211, 153, 0.12);
+  --green-bd: rgba(52, 211, 153, 0.28);
+
+  --red: #ff4d4d;
+  --red-bg: rgba(255, 77, 77, 0.12);
+  --red-bd: rgba(255, 77, 77, 0.28);
+
+  --amber: #f59e0b;
+  --amber-bg: rgba(245, 158, 11, 0.12);
+  --amber-bd: rgba(245, 158, 11, 0.30);
+
+  --blue: #38bdf8;
+  --blue-bg: rgba(56, 189, 248, 0.12);
+
+  /* ── Glow / shadow ─────────────────────────────────────── */
+  --glow: 0 0 20px rgba(255, 77, 77, 0.15);
+
+  /* ── Share card — 흑백 editorial + crimson 1도 ── */
+  --share-bg: #0A0A0A;
+  --share-surface: #1A1A1A;
+  --share-text: #F5F1EA;
+  --share-text-2: #A0A0A0;
+  --share-text-3: #5a5a66;
+  --share-accent: #B91C1C;
+  --share-gold: #C9A34E;
+
+  /* ── Legacy radius alias (Phase 1 에서 정리) ─── */
+  --radius: var(--radius-lg);
+  --radius-sm: var(--radius-md);
+}
