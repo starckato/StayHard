@@ -28,7 +28,7 @@
      so window globals (dkey, normKey, ...) are set before inline code runs.
      Query version bumps cache when bundle content changes. Bump manually or
      via build script when shipping a new bundle. See MIGRATION_PLAN.md. -->
-<script src="/dist/app.js?v=20260502-tokens-phase0"></script>
+<script src="/dist/app.js?v=20260502-tokens-phase1a"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Archivo+Black&display=swap" rel="stylesheet">
 <!-- Phase 0: 디자인 토큰 (shared 먼저, palette 가 override). -->
 <link href="/src/styles/tokens.shared.css" rel="stylesheet">
@@ -50,7 +50,7 @@
 .hws-step:active{transform:scale(.96);}
 
 .fc-card{
-  background:linear-gradient(135deg,rgba(255,77,77,0.06) 0%,rgba(255,77,77,0.02) 100%);
+  background:linear-gradient(135deg,var(--accent-tint-1) 0%,var(--accent-tint-1) 100%);
   border:1px solid var(--accent-bd);
   border-radius:var(--radius);
   padding:18px 20px;
@@ -73,7 +73,7 @@
 .fc-hint{font-size:12px;color:var(--text2);line-height:1.5;}
 .fc-progress{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;}
 .fc-dot{width:8px;height:8px;border-radius:50%;background:var(--border);display:inline-block;transition:background .3s;}
-.fc-dot.on{background:var(--accent);box-shadow:0 0 8px rgba(255,77,77,.55);}
+.fc-dot.on{background:var(--accent);box-shadow:0 0 8px var(--accent-tint-5);}
 .fc-complete{background:linear-gradient(135deg,rgba(52,211,153,0.08) 0%,rgba(52,211,153,0.02) 100%);border-color:var(--green-bd);}
 .fc-complete .fc-kicker{color:var(--green);}
 
@@ -93,7 +93,7 @@
 .exempt-modal-reasons{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;}
 .exempt-reason{padding:10px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text2);font-size:13px;cursor:pointer;text-align:center;touch-action:manipulation;transition:border-color .15s,color .15s;font-family:'DM Sans',sans-serif;}
 .exempt-reason:hover{border-color:var(--border2);color:var(--text);}
-.exempt-reason.selected{border-color:var(--accent);color:var(--accent);background:rgba(255,77,77,0.06);}
+.exempt-reason.selected{border-color:var(--accent);color:var(--accent);background:var(--accent-tint-1);}
 .exempt-modal-footer{display:flex;gap:8px;}
 .exempt-btn-ghost{flex:1;padding:12px 10px;background:transparent;border:1px solid var(--text2);border-radius:10px;color:var(--text);font-size:12.5px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;letter-spacing:-.01em;line-height:1.3;}
 .exempt-btn-ghost:hover{border-color:var(--text);background:rgba(255,255,255,0.03);}
@@ -175,12 +175,12 @@ body[data-accent="deep_green"]{
 .btn-primary,.abtn,.ws-done-btn,.mbtn{
   background:var(--accent-grad)!important;
   border:none;color:#fff;font-weight:700;letter-spacing:.01em;
-  box-shadow:0 4px 16px rgba(255,77,77,.25),0 1px 4px rgba(0,0,0,.4);
+  box-shadow:0 4px 16px var(--accent-tint-3),0 1px 4px rgba(0,0,0,.4);
   transition:transform .1s ease,box-shadow .15s ease,filter .15s ease;
 }
 .btn-primary:active,.abtn:active,.ws-done-btn:active,.mbtn:active{
   transform:scale(.97);
-  box-shadow:0 2px 8px rgba(255,77,77,.18),0 1px 2px rgba(0,0,0,.3);
+  box-shadow:0 2px 8px var(--accent-tint-3),0 1px 2px rgba(0,0,0,.3);
   filter:brightness(1.1);
 }
 
@@ -220,7 +220,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 .stats-meta{font-size:11px;color:var(--text3);margin-bottom:10px;min-height:14px;}
 .stats-empty{text-align:center;padding:24px 0;font-size:12px;color:var(--text3);}
 .stats-card canvas{display:block;max-height:220px;}
-.stats-hero{margin:14px 14px 12px;padding:18px 18px 16px;border-radius:14px;background:linear-gradient(135deg,rgba(255,77,77,.14) 0%,rgba(255,107,53,.08) 100%);border:1px solid var(--accent-bd);}
+.stats-hero{margin:14px 14px 12px;padding:18px 18px 16px;border-radius:14px;background:linear-gradient(135deg,var(--accent-tint-2) 0%,rgba(255,107,53,.08) 100%);border:1px solid var(--accent-bd);}
 .stats-hero-top{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:10px;}
 .stats-hero-num{font-family:'DM Mono',monospace;font-weight:800;line-height:1;}
 .stats-hero-cell{flex:1;min-width:0;}
@@ -241,12 +241,12 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 .stats-hero-tier-from,.stats-hero-tier-to{font-size:9px;color:var(--text3);font-family:'DM Mono',monospace;letter-spacing:-.01em;white-space:nowrap;flex-shrink:0;}
 .stats-hero-tier-to{text-align:right;}
 .stats-tier-bar-slim{flex:1;height:4px;}
-.stats-tier-fill{height:100%;background:var(--accent-grad);transition:width .4s ease;box-shadow:0 0 6px rgba(255,77,77,.3);}
+.stats-tier-fill{height:100%;background:var(--accent-grad);transition:width .4s ease;box-shadow:0 0 6px var(--accent-tint-4);}
 .stats-sec-nav{display:flex;gap:6px;padding:0 16px 12px;overflow-x:auto;scrollbar-width:none;position:sticky;top:0;z-index:20;background:var(--bg);}
 .stats-sec-nav::-webkit-scrollbar{display:none;}
 .stats-sec-pill{flex-shrink:0;padding:6px 12px;border-radius:8px;border:1px solid var(--border2);background:transparent;color:var(--text3);font-size:12px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;touch-action:manipulation;transition:all .15s;white-space:nowrap;display:inline-flex;align-items:center;gap:6px;}
 .stats-sec-pill svg{flex-shrink:0;}
-.stats-sec-pill.active{background:var(--accent);border-color:var(--accent);color:#fff;box-shadow:0 2px 8px rgba(255,77,77,.2);}
+.stats-sec-pill.active{background:var(--accent);border-color:var(--accent);color:#fff;box-shadow:0 2px 8px var(--accent-tint-3);}
 .stats-section-panel{padding:0 16px;}
 .stats-section-panel.hidden{display:none;}
 .stats-featured canvas{max-height:220px;}
@@ -289,11 +289,11 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 .bento-sub{display:none;}
 
 /* STATS FOCUS CARD — "next week focus" manifesto */
-.stats-focus{margin:0 14px 14px;padding:14px 14px 15px;border-radius:var(--radius);background:linear-gradient(135deg,rgba(255,77,77,0.06),rgba(255,77,77,0.02));border:1px solid rgba(255,77,77,.22);}
+.stats-focus{margin:0 14px 14px;padding:14px 14px 15px;border-radius:var(--radius);background:linear-gradient(135deg,var(--accent-tint-1),var(--accent-tint-1));border:1px solid var(--accent-tint-3);}
 .stats-focus.tone-good{background:linear-gradient(135deg,rgba(52,211,153,.08),rgba(52,211,153,.02));border-color:rgba(52,211,153,.28);}
 .stats-focus.tone-warn{background:linear-gradient(135deg,rgba(245,158,11,.08),rgba(245,158,11,.02));border-color:rgba(245,158,11,.3);}
 .stats-focus-hdr{display:flex;align-items:center;gap:7px;margin-bottom:8px;}
-.stats-focus-tag{font-size:9px;font-weight:800;color:var(--accent);text-transform:uppercase;letter-spacing:.12em;padding:3px 8px;background:rgba(255,77,77,.12);border-radius:4px;}
+.stats-focus-tag{font-size:9px;font-weight:800;color:var(--accent);text-transform:uppercase;letter-spacing:.12em;padding:3px 8px;background:var(--accent-tint-2);border-radius:4px;}
 .stats-focus.tone-good .stats-focus-tag{color:var(--green);background:var(--green-bg);}
 .stats-focus.tone-warn .stats-focus-tag{color:var(--amber);background:var(--amber-bg);}
 .stats-focus-kind{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;}
@@ -316,13 +316,13 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 .stats-headline-unit{font-size:11px;font-weight:600;color:var(--text3);margin-left:2px;}
 .stats-delta{display:inline-flex;align-items:center;gap:2px;font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;font-family:'DM Sans',sans-serif;margin-top:2px;}
 .stats-delta.up{background:rgba(52,211,153,.15);color:#34d399;}
-.stats-delta.down{background:rgba(255,77,77,.12);color:#ff4d4d;}
+.stats-delta.down{background:var(--accent-tint-2);color:#ff4d4d;}
 .stats-delta.flat{background:rgba(136,136,136,.15);color:#888;}
 
 /* ── MICRO INTERACTIONS ── */
 
 /* Rage Overlay */
-#rage-overlay{position:fixed;inset:0;z-index:1000;display:none;flex-direction:column;align-items:center;justify-content:center;padding:32px;text-align:center;background:rgba(255,77,77,0.97);}
+#rage-overlay{position:fixed;inset:0;z-index:1000;display:none;flex-direction:column;align-items:center;justify-content:center;padding:32px;text-align:center;background:var(--accent);}
 #rage-overlay .rage-face{font-size:72px;margin-bottom:16px;animation:rageBounce .4s ease infinite alternate;}
 #rage-overlay .rage-msg{font-size:18px;font-weight:800;color:#fff;line-height:1.6;margin-bottom:24px;letter-spacing:-.3px;max-width:280px;word-break:keep-all;white-space:pre-line;}
 #rage-overlay .rage-close{padding:14px 40px;background:#fff;border:none;border-radius:30px;font-size:15px;font-weight:700;color:#ff4d4d;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;}
@@ -344,7 +344,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 @keyframes bonusFadeIn{from{opacity:0;}to{opacity:1;}}
 @keyframes bonusPop{0%{opacity:0;transform:scale(.82) translateY(8px);}60%{opacity:1;transform:scale(1.04) translateY(0);}100%{transform:scale(1);}}
 /* Muscle map share FAB — 매우 은은한 pulse (이전 대비 ~10%) */
-@keyframes mmFabPulse{0%,100%{box-shadow:0 8px 22px rgba(255,77,77,0.5), 0 0 0 0 rgba(255,77,77,0.045);}50%{box-shadow:0 8px 22px rgba(255,77,77,0.5), 0 0 0 10px rgba(255,77,77,0);}}
+@keyframes mmFabPulse{0%,100%{box-shadow:0 8px 22px var(--accent-tint-5), 0 0 0 0 var(--accent-tint-1);}50%{box-shadow:0 8px 22px var(--accent-tint-5), 0 0 0 10px transparent;}}
 @keyframes tierShareSlide{from{opacity:0;transform:translate(-50%,20px);}to{opacity:1;transform:translate(-50%,0);}}
 /* Nav badge — milestone reveal pulse (M2) */
 .nav-badge-dot{position:absolute;top:6px;right:50%;margin-right:-18px;width:8px;height:8px;border-radius:50%;background:#ff6b35;box-shadow:0 0 0 0 rgba(255,107,53,0.6);animation:navBadgePulse 1.6s ease-out infinite;}
@@ -373,7 +373,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 .auth-sub{font-size:13px;color:var(--text2);margin-bottom:36px;text-align:center;}
 .auth-tabs{display:flex;background:var(--surface);border-radius:12px;padding:4px;margin-bottom:20px;width:100%;max-width:320px;}
 .auth-tab{flex:1;padding:9px;text-align:center;font-size:13px;font-weight:600;border-radius:8px;cursor:pointer;color:var(--text3);transition:all .15s;}
-.auth-tab.active{background:var(--accent);color:#fff;box-shadow:0 2px 8px rgba(255,77,77,.2);}
+.auth-tab.active{background:var(--accent);color:#fff;box-shadow:0 2px 8px var(--accent-tint-3);}
 .aform{width:100%;max-width:320px;}
 .afield{margin-bottom:11px;}
 .alabel{font-size:12px;color:var(--text2);margin-bottom:7px;display:block;text-transform:uppercase;letter-spacing:.06em;font-weight:500;}
@@ -410,8 +410,8 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 .hdr-icon-badge{position:absolute;top:-2px;right:-2px;min-width:16px;height:16px;padding:0 4px;border-radius:8px;background:var(--accent);color:#fff;font-size:9px;font-weight:800;font-family:'DM Mono',monospace;display:inline-flex;align-items:center;justify-content:center;border:2px solid var(--bg);letter-spacing:-.02em;}
 
 /* ═════ STATUS BAND — 기록 탭 히어로 (점수/티어/스트릭/오늘 Δ/요약) ═════ */
-.sb{margin:8px 14px 12px;padding:16px 18px 14px;border-radius:16px;background:linear-gradient(140deg,rgba(255,77,77,.12) 0%,rgba(255,107,53,.04) 55%,rgba(255,77,77,.08) 100%);border:1px solid var(--accent-bd);position:relative;overflow:hidden;}
-.sb::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 88% -10%,rgba(255,77,77,.22) 0%,transparent 50%);pointer-events:none;}
+.sb{margin:8px 14px 12px;padding:16px 18px 14px;border-radius:16px;background:linear-gradient(140deg,var(--accent-tint-2) 0%,rgba(255,107,53,.04) 55%,var(--accent-tint-2) 100%);border:1px solid var(--accent-bd);position:relative;overflow:hidden;}
+.sb::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 88% -10%,var(--accent-tint-3) 0%,transparent 50%);pointer-events:none;}
 .sb>*{position:relative;}
 .sb-head{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
 .sb-canvas{flex-shrink:0;cursor:pointer;image-rendering:pixelated;touch-action:manipulation;}
@@ -480,10 +480,10 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 .sb-quote{font-size:12px;font-weight:600;font-style:italic;line-height:1.55;color:var(--text2);margin-bottom:14px;min-height:18px;word-break:keep-all;}
 .sb-progress-wrap{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
 .sb-progress-track{flex:1;height:5px;background:rgba(255,255,255,.07);border-radius:999px;overflow:hidden;}
-.sb-progress-fill{height:100%;border-radius:999px;background:var(--accent-grad);transition:width .6s cubic-bezier(.4,0,.2,1);width:0%;box-shadow:0 0 8px rgba(255,77,77,.4);}
+.sb-progress-fill{height:100%;border-radius:999px;background:var(--accent-grad);transition:width .6s cubic-bezier(.4,0,.2,1);width:0%;box-shadow:0 0 8px var(--accent-tint-4);}
 .sb-progress-label{font-size:10px;color:var(--text3);font-family:'DM Mono',monospace;flex-shrink:0;font-weight:600;}
 .sb-summary-btn{width:100%;display:flex;align-items:center;gap:10px;padding:12px 14px;background:rgba(10,10,12,.5);border:1px solid rgba(255,255,255,.08);border-radius:12px;color:var(--text);font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;transition:all .15s;}
-.sb-summary-btn:active{transform:scale(.98);background:rgba(255,77,77,.12);border-color:var(--accent-bd);}
+.sb-summary-btn:active{transform:scale(.98);background:var(--accent-tint-2);border-color:var(--accent-bd);}
 .sb-summary-dot{width:7px;height:7px;border-radius:50%;background:var(--amber);flex-shrink:0;box-shadow:0 0 6px currentColor;}
 .sb-summary-label{flex:1;text-align:left;letter-spacing:-.01em;}
 .sb-summary-arrow{font-size:15px;color:var(--text3);font-weight:700;}
@@ -520,7 +520,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 .cube-face{position:absolute;width:72px;height:72px;border-radius:6px;backface-visibility:hidden;}
 .cube-event[data-color="gold"] .cube-face{background:linear-gradient(135deg,#fff1a8 0%,#ffd54a 45%,#c48c1a 100%);border:1px solid rgba(255,233,128,0.85);box-shadow:0 0 1px rgba(255,255,255,0.9) inset,0 -6px 12px rgba(0,0,0,0.35) inset;}
 .cube-event[data-color="silver"] .cube-face{background:linear-gradient(135deg,#f2f4f7 0%,#b5c0cc 45%,#6d7682 100%);border:1px solid rgba(210,218,228,0.75);box-shadow:0 0 1px rgba(255,255,255,0.85) inset,0 -6px 12px rgba(0,0,0,0.30) inset;}
-.cube-event[data-color="crimson"] .cube-face{background:linear-gradient(135deg,#ff8080 0%,#ff4d4d 45%,#8b1515 100%);border:1px solid rgba(255,77,77,0.80);box-shadow:0 0 1px rgba(255,255,255,0.55) inset,0 -6px 12px rgba(0,0,0,0.45) inset;}
+.cube-event[data-color="crimson"] .cube-face{background:linear-gradient(135deg,#ff8080 0%,#ff4d4d 45%,#8b1515 100%);border:1px solid var(--accent-tint-5);box-shadow:0 0 1px rgba(255,255,255,0.55) inset,0 -6px 12px rgba(0,0,0,0.45) inset;}
 .cube-face.f-front  {transform:translateZ(36px);}
 .cube-face.f-back   {transform:translateZ(-36px) rotateY(180deg);}
 .cube-face.f-right  {transform:rotateY(90deg) translateZ(36px);}
@@ -574,7 +574,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
   content:"";
   width:4px;height:4px;border-radius:50%;
   background:#ff4d4d;
-  box-shadow:0 0 6px rgba(255,77,77,0.7);
+  box-shadow:0 0 6px var(--accent-tint-5);
   flex-shrink:0;
 }
 .micro-banner.on{opacity:1;transform:translate(-50%,0);}
@@ -589,11 +589,11 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 }
 
 /* ═════ SCORE GAIN CHIP — 액션 위치 → Status Band 점수 비행 (legacy, CUBE_UI_MODE off 시 유지) ═════ */
-.score-chip{position:fixed;padding:6px 13px;border-radius:22px;background:linear-gradient(135deg,#ff4d4d 0%,#ff6b35 100%);color:#fff;font-weight:900;font-family:'DM Mono',monospace;font-size:14px;z-index:1050;pointer-events:none;box-shadow:0 6px 24px rgba(255,77,77,.55),0 0 0 2px rgba(255,77,77,.35),0 0 20px rgba(255,77,77,.35);letter-spacing:-.02em;white-space:nowrap;will-change:transform,opacity;}
+.score-chip{position:fixed;padding:6px 13px;border-radius:22px;background:linear-gradient(135deg,#ff4d4d 0%,#ff6b35 100%);color:#fff;font-weight:900;font-family:'DM Mono',monospace;font-size:14px;z-index:1050;pointer-events:none;box-shadow:0 6px 24px var(--accent-tint-5),0 0 0 2px var(--accent-tint-4),0 0 20px var(--accent-tint-4);letter-spacing:-.02em;white-space:nowrap;will-change:transform,opacity;}
 .score-chip.neg{background:linear-gradient(135deg,#ff4d4d 0%,#b71c1c 100%);}
 .score-chip.init{transition:none;opacity:1;transform:translate(-50%,-50%) scale(1);}
 .score-chip.fly{transition:transform .9s cubic-bezier(.38,.02,.28,1),opacity .28s ease-out .58s;opacity:0;}
-@keyframes scorePulse{0%{transform:scale(1);}35%{transform:scale(1.16);color:var(--accent);text-shadow:0 0 12px rgba(255,77,77,.6);}100%{transform:scale(1);}}
+@keyframes scorePulse{0%{transform:scale(1);}35%{transform:scale(1.16);color:var(--accent);text-shadow:0 0 12px var(--accent-tint-5);}100%{transform:scale(1);}}
 #hdr-score.score-pulse{animation:scorePulse .45s cubic-bezier(.2,.9,.3,1);}
 @media (prefers-reduced-motion: reduce){
   .score-chip.fly{transition:opacity .2s ease!important;}
@@ -602,7 +602,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 
 /* ═════ YESTERDAY RIBBON — 어제 미완료/이월 할일 통합 ═════ */
 .yr{margin:8px 14px 0;border-radius:14px;overflow:hidden;animation:yrSlideIn .35s cubic-bezier(.2,.9,.3,1);}
-.yr-inner{background:linear-gradient(135deg,rgba(255,77,77,.96) 0%,rgba(255,107,53,.94) 100%);padding:13px 14px 14px;box-shadow:0 6px 20px rgba(255,77,77,.25);}
+.yr-inner{background:linear-gradient(135deg,var(--accent) 0%,rgba(255,107,53,.94) 100%);padding:13px 14px 14px;box-shadow:0 6px 20px var(--accent-tint-3);}
 .yr-head{display:flex;align-items:flex-start;gap:10px;}
 .yr-icon{font-size:24px;flex-shrink:0;line-height:1;padding-top:1px;}
 .yr-head-txt{flex:1;min-width:0;}
@@ -631,7 +631,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 .tab-bar{display:flex;gap:5px;padding:4px 16px 8px;overflow-x:auto;scrollbar-width:none;position:sticky;top:0;z-index:100;background:rgba(10,10,12,.94);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--border);}
 .tab-bar::-webkit-scrollbar{display:none;}
 .tbar-tab{padding:7px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;border:1px solid transparent;color:var(--text3);background:transparent;transition:all .15s;flex-shrink:0;min-height:34px;touch-action:manipulation;letter-spacing:.01em;}
-.tbar-tab.active{background:var(--accent);border-color:var(--accent);color:#fff;box-shadow:0 2px 10px rgba(255,77,77,.2);}
+.tbar-tab.active{background:var(--accent);border-color:var(--accent);color:#fff;box-shadow:0 2px 10px var(--accent-tint-3);}
 
 /* BOTTOM NAV */
 .bnav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:rgba(10,10,12,.97);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid var(--border);display:flex;padding:6px 0 20px;z-index:200;}
@@ -640,11 +640,11 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
    Segment bar in competition tab. Minimal chrome — editorial/dark. */
 .fr-segbar{display:flex;gap:0;margin:14px 0 16px;border:1px solid var(--border);border-radius:12px;background:var(--surface2);padding:3px;position:relative;}
 .fr-segbtn{flex:1;padding:9px 12px;background:transparent;border:none;color:var(--text3);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;border-radius:9px;transition:background .18s,color .18s;position:relative;letter-spacing:-.01em;}
-.fr-segbtn.on{background:var(--accent);color:#fff;box-shadow:0 2px 8px rgba(255,77,77,.28);}
+.fr-segbtn.on{background:var(--accent);color:#fff;box-shadow:0 2px 8px var(--accent-tint-4);}
 .fr-segbadge{position:absolute;top:2px;right:4px;min-width:16px;height:16px;background:#ff4d4d;color:#fff;border-radius:9px;font-size:9px;font-weight:800;line-height:16px;padding:0 4px;font-family:'DM Mono',monospace;}
 
 .fr-wrap{display:flex;flex-direction:column;gap:16px;padding-top:4px;}
-.fr-mycode{background:linear-gradient(135deg,rgba(255,77,77,.08) 0%,rgba(255,77,77,.04) 100%);border:1px solid rgba(255,77,77,.2);border-radius:14px;padding:14px 16px;}
+.fr-mycode{background:linear-gradient(135deg,var(--accent-tint-2) 0%,var(--accent-tint-1) 100%);border:1px solid var(--accent-tint-3);border-radius:14px;padding:14px 16px;}
 .fr-mycode-label{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--text3);margin-bottom:8px;}
 .fr-mycode-row{display:flex;align-items:center;gap:10px;}
 .fr-mycode-value{font-family:'DM Mono',monospace;font-size:22px;font-weight:700;letter-spacing:.18em;color:var(--accent);flex:1;}
@@ -693,7 +693,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 .fr-nudge-title{font-family:'Noto Serif KR',serif;font-size:16px;font-weight:500;letter-spacing:-.015em;}
 .fr-nudge-list{display:flex;flex-direction:column;gap:6px;margin-bottom:14px;}
 .fr-nudge-item{width:100%;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:11px;cursor:pointer;text-align:left;transition:border-color .15s,background .15s;font-family:inherit;}
-.fr-nudge-item:hover{border-color:var(--accent);background:rgba(255,77,77,.04);}
+.fr-nudge-item:hover{border-color:var(--accent);background:var(--accent-tint-1);}
 .fr-nudge-item:disabled{opacity:.5;cursor:not-allowed;}
 .fr-nudge-body{font-family:'Noto Serif KR',serif;font-size:15px;color:var(--text);letter-spacing:-.01em;margin-bottom:2px;}
 .fr-nudge-sub{font-size:10px;color:var(--text3);letter-spacing:.16em;text-transform:uppercase;font-family:'DM Sans',sans-serif;}
@@ -704,10 +704,10 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 .fr-link-btn{background:transparent;border:none;color:var(--text3);font-family:'DM Sans',sans-serif;font-size:11px;cursor:pointer;padding:4px 6px;letter-spacing:-.005em;border-radius:6px;touch-action:manipulation;}
 .fr-link-btn:hover{color:var(--text2);}
 .fr-inbox-row{display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--surface);border:1px solid var(--border);border-radius:12px;transition:border-color .15s,background .15s;cursor:default;}
-.fr-inbox-row.unread{border-color:rgba(255,77,77,.35);background:rgba(255,77,77,.04);cursor:pointer;}
+.fr-inbox-row.unread{border-color:var(--accent-tint-4);background:var(--accent-tint-1);cursor:pointer;}
 .fr-inbox-row.unread:hover{border-color:var(--accent);}
 .fr-inbox-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
-.fr-inbox-dot.on{background:var(--accent);box-shadow:0 0 6px rgba(255,77,77,.65);}
+.fr-inbox-dot.on{background:var(--accent);box-shadow:0 0 6px var(--accent-tint-5);}
 .fr-inbox-dot.off{background:var(--border);}
 .fr-inbox-main{flex:1;min-width:0;}
 .fr-inbox-body{font-family:'Noto Serif KR',serif;font-size:14.5px;letter-spacing:-.01em;color:var(--text);line-height:1.35;margin-bottom:3px;}
@@ -763,7 +763,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
 .s-card .cc-cube{display:inline-block;width:12px;height:12px;margin-left:8px;border-radius:3px;box-sizing:border-box;vertical-align:-1px;cursor:pointer;touch-action:manipulation;flex-shrink:0;}
 .s-card .cc-cube[data-color="gold"]{background:linear-gradient(135deg,#fff1a8 0%,#ffd54a 45%,#c48c1a 100%);border:1px solid rgba(255,233,128,0.70);box-shadow:0 0 3px rgba(255,213,74,0.50),inset 0 1px 0 rgba(255,255,255,0.45),inset 0 -1px 0 rgba(0,0,0,0.25);}
 .s-card .cc-cube[data-color="silver"]{background:linear-gradient(135deg,#f2f4f7 0%,#b5c0cc 45%,#6d7682 100%);border:1px solid rgba(210,218,228,0.55);box-shadow:0 0 3px rgba(181,192,204,0.40),inset 0 1px 0 rgba(255,255,255,0.32),inset 0 -1px 0 rgba(0,0,0,0.22);}
-.s-card .cc-cube[data-color="crimson"]{background:rgba(255,77,77,0.32);border:1px solid rgba(255,77,77,0.45);}
+.s-card .cc-cube[data-color="crimson"]{background:var(--accent-tint-4);border:1px solid var(--accent-tint-4);}
 .s-card .cc-cube[data-color="gray"]{background:transparent;border:1px solid rgba(255,255,255,0.14);}
 /* 운동 exercise_bonus 가 gold 일 때 card-cube 에 gold halo — filter drop-shadow 로
    기존 box-shadow(inset) 와 충돌 없이 바깥쪽으로 은은한 빛 확산. */
@@ -847,8 +847,8 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
 .meal-slot-list{padding:6px 14px 4px;display:flex;flex-direction:column;gap:6px;}
 .slot-empty{display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;cursor:pointer;transition:all .15s;touch-action:manipulation;}
 .slot-empty:active{background:var(--surface3);}
-.slot-empty.now{border-color:var(--accent-bd);background:rgba(255,77,77,.06);}
-.slot-empty.now:active{background:rgba(255,77,77,.12);}
+.slot-empty.now{border-color:var(--accent-bd);background:var(--accent-tint-1);}
+.slot-empty.now:active{background:var(--accent-tint-2);}
 .slot-empty-icon{width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;color:var(--text3);flex-shrink:0;font-size:15px;}
 .slot-empty.now .slot-empty-icon{color:var(--accent);}
 .slot-empty-label{font-size:13px;color:var(--text2);font-weight:500;flex:1;letter-spacing:-.01em;}
@@ -921,7 +921,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
 .wt2-bar-labels{display:flex;justify-content:space-between;margin-bottom:7px;}
 .wt2-bar-lbl{font-size:11px;color:var(--text3);}
 .wt2-bar-track{height:8px;background:var(--surface3);border-radius:999px;overflow:hidden;}
-.wt2-bar-fill{height:100%;border-radius:999px;background:var(--accent-grad);transition:width .6s cubic-bezier(.4,0,.2,1);box-shadow:0 0 8px rgba(255,77,77,.3);}
+.wt2-bar-fill{height:100%;border-radius:999px;background:var(--accent-grad);transition:width .6s cubic-bezier(.4,0,.2,1);box-shadow:0 0 8px var(--accent-tint-4);}
 .wt2-bar-foot{display:flex;justify-content:space-between;align-items:center;margin-top:7px;}
 .wt2-bar-range{font-size:12px;color:var(--text2);}
 .wt2-bar-pct{font-size:12px;font-weight:700;color:var(--accent);}
@@ -1027,8 +1027,8 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
 .tgt-btn.done{background:var(--green-bg);border-color:var(--green);color:var(--green);}
 .tgt-btn.fail{background:var(--red-bg);border-color:var(--red);color:var(--red);}
 /* Routine badge — makes "this is a recurring routine" unambiguous */
-.routine-pill{font-size:9px;font-weight:700;padding:2px 6px;border-radius:5px;background:rgba(255,77,77,.12);color:var(--accent-red);border:0.5px solid rgba(255,77,77,.4);margin-left:6px;vertical-align:middle;letter-spacing:.04em;text-transform:uppercase;}
-.routine-pill.auto{background:rgba(255,77,77,.12);color:var(--accent);border-color:var(--accent-bd);}
+.routine-pill{font-size:9px;font-weight:700;padding:2px 6px;border-radius:5px;background:var(--accent-tint-2);color:var(--accent-red);border:0.5px solid var(--accent-tint-4);margin-left:6px;vertical-align:middle;letter-spacing:.04em;text-transform:uppercase;}
+.routine-pill.auto{background:var(--accent-tint-2);color:var(--accent);border-color:var(--accent-bd);}
 .tgt-text.fail{text-decoration:line-through;color:var(--text3);}
 .tgt-text{font-size:16px;flex:1;}
 .tgt-text.done{text-decoration:line-through;color:var(--text2);}
@@ -1064,7 +1064,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
 .group-leaderboard{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:10px;}
 .lb-row{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--border);}
 .lb-row:last-child{border-bottom:none;}
-.lb-row.me{background:rgba(255,77,77,.06);}
+.lb-row.me{background:var(--accent-tint-1);}
 .lb-row.first{background:rgba(245,158,11,.05);}
 .lb-rank{font-size:15px;font-weight:700;width:22px;flex-shrink:0;text-align:center;}
 .lb-rank.r1{color:var(--amber);}
@@ -1129,7 +1129,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
 .mfield{margin-bottom:13px;}
 .mlabel{font-size:12px;color:var(--text2);margin-bottom:7px;text-transform:uppercase;letter-spacing:.06em;display:block;font-weight:500;}
 .minput{width:100%;background:var(--surface2);border:1.5px solid var(--border2);border-radius:var(--radius-sm);color:var(--text);font-family:'DM Sans',sans-serif;font-size:16px;padding:13px 14px;outline:none;min-height:48px;box-sizing:border-box;transition:border-color .15s;}
-.minput:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(255,77,77,.08);}
+.minput:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-tint-2);}
 .mbtn{width:100%;padding:15px;border-radius:var(--radius-sm);border:none;background:var(--accent);color:#fff;font-family:'DM Sans',sans-serif;font-size:16px;font-weight:700;cursor:pointer;margin-top:8px;min-height:50px;touch-action:manipulation;letter-spacing:.01em;}
 .mbtn:disabled{opacity:.4;cursor:not-allowed;}
 .mbtn-ghost{width:100%;padding:13px;border-radius:var(--radius-sm);border:none;background:transparent;color:var(--text3);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;margin-top:4px;min-height:44px;touch-action:manipulation;}
@@ -1180,7 +1180,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
 .wp-item.active{color:var(--text);font-size:26px;}
 .wp-dot{font-family:'DM Mono',monospace;font-size:22px;font-weight:700;color:var(--text);line-height:1;padding:0 2px 4px;user-select:none;align-self:center;}
 .wp-unit{font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;color:var(--text2);margin-left:6px;align-self:center;}
-.wp-window{position:absolute;left:0;right:0;top:72px;height:36px;border-top:1px solid var(--border2);border-bottom:1px solid var(--border2);pointer-events:none;z-index:0;background:rgba(255,77,77,.06);border-radius:4px;}
+.wp-window{position:absolute;left:0;right:0;top:72px;height:36px;border-top:1px solid var(--border2);border-bottom:1px solid var(--border2);pointer-events:none;z-index:0;background:var(--accent-tint-1);border-radius:4px;}
 .num-slider--compact .wp{height:144px;width:62px;flex-basis:62px;}
 .num-slider--compact .wp-list{padding:54px 0;}
 .num-slider--compact .wp-item{height:36px;font-size:17px;}
@@ -1205,7 +1205,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
 #workout-session-overlay.open{display:flex;}
 .ws-done-btn{flex:1;padding:14px;background:var(--accent);border:none;border-radius:var(--radius-sm);font-size:17px;font-weight:700;color:#fff;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;min-height:52px;transition:background .4s ease,box-shadow .4s ease;}
 .ws-ex-chip{flex:0 0 auto;padding:4px 10px;border-radius:10px;font-size:10px;font-weight:600;white-space:nowrap;cursor:pointer;border:1px solid var(--border);background:var(--surface2);color:var(--text3);display:flex;align-items:center;gap:5px;}
-.ws-ex-chip.add{background:rgba(255,77,77,.12);color:var(--accent);border-color:rgba(255,77,77,.30);}
+.ws-ex-chip.add{background:var(--accent-tint-2);color:var(--accent);border-color:var(--accent-tint-4);}
 .ws-ex-chip.done{background:var(--green-bg);color:var(--green);border-color:var(--green-bd);padding-left:7px;}
 .ws-ex-chip.done::before{content:'✓ ';font-weight:800;}
 .ws-ex-chip.active{background:var(--accent);color:#fff;border-color:var(--accent);}
@@ -1227,14 +1227,14 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
 .lib-header{display:flex;flex-direction:column;gap:8px;padding:52px 16px 10px;flex-shrink:0;}
 .lib-header-top{display:flex;align-items:center;gap:8px;}
 .lib-search{flex:1;background:var(--surface2);border:1.5px solid var(--border);border-radius:10px;padding:11px 14px;font-size:14px;color:var(--text);font-family:'DM Sans',sans-serif;outline:none;transition:border-color .15s;}
-.lib-search:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(255,77,77,.06);}
+.lib-search:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-tint-1);}
 .lib-search::placeholder{color:var(--text3);}
 .lib-back{background:none;border:none;color:var(--text2);font-size:20px;cursor:pointer;padding:0;flex-shrink:0;}
 .lib-chips{display:flex;gap:5px;overflow-x:auto;scrollbar-width:none;flex-shrink:0;cursor:grab;user-select:none;-webkit-user-select:none;padding-bottom:2px;}
 .lib-chips::-webkit-scrollbar{display:none;}
 .lib-chips.dragging{cursor:grabbing;}
 .lib-chip{padding:6px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;background:var(--surface2);color:var(--text3);border:1px solid var(--border);transition:all .12s;flex-shrink:0;}
-.lib-chip.sel{background:var(--accent);color:#fff;border-color:var(--accent);box-shadow:0 2px 8px rgba(255,77,77,.18);}
+.lib-chip.sel{background:var(--accent);color:#fff;border-color:var(--accent);box-shadow:0 2px 8px var(--accent-tint-3);}
 .lib-chip-eq{padding:5px 12px;border-radius:7px;font-size:11px;font-weight:500;cursor:pointer;white-space:nowrap;background:transparent;color:var(--text3);border:1px solid var(--border);transition:all .12s;flex-shrink:0;}
 .lib-chip-eq.sel{background:var(--surface3);color:var(--text);border-color:var(--border2);font-weight:600;}
 .lib-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:4px 0;}
@@ -1299,7 +1299,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
 @keyframes cv-rec-pulse{0%,100%{opacity:1}50%{opacity:.3}}
 .cv-countdown{position:absolute;inset:0;z-index:5;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.55);backdrop-filter:blur(6px);font-family:'DM Mono',monospace;font-size:clamp(120px,40vw,260px);font-weight:800;color:#fff;text-shadow:0 4px 32px rgba(0,0,0,.9);animation:cv-cd-pop .9s ease-out;}
 @keyframes cv-cd-pop{0%{transform:scale(.4);opacity:0}30%{transform:scale(1.15);opacity:1}100%{transform:scale(1);opacity:1}}
-.cv-bicep-banner{position:absolute;top:calc(env(safe-area-inset-top,12px) + 56px);left:50%;transform:translateX(-50%);z-index:3;background:linear-gradient(135deg,rgba(255,77,77,.90),rgba(96,165,250,.92));color:#fff;font-size:11px;font-weight:600;padding:8px 14px;border-radius:18px;box-shadow:0 4px 16px rgba(0,0,0,.45);max-width:90%;text-align:center;animation:cv-banner-in .4s ease-out;}
+.cv-bicep-banner{position:absolute;top:calc(env(safe-area-inset-top,12px) + 56px);left:50%;transform:translateX(-50%);z-index:3;background:linear-gradient(135deg,var(--accent),rgba(96,165,250,.92));color:#fff;font-size:11px;font-weight:600;padding:8px 14px;border-radius:18px;box-shadow:0 4px 16px rgba(0,0,0,.45);max-width:90%;text-align:center;animation:cv-banner-in .4s ease-out;}
 @keyframes cv-banner-in{from{opacity:0;transform:translate(-50%,-8px)}to{opacity:1;transform:translate(-50%,0)}}
 /* Persistent upload pill — survives cv-overlay close so user sees the outcome */
 #cv-upload-pill{position:fixed;top:calc(env(safe-area-inset-top,12px) + 8px);left:50%;transform:translateX(-50%);z-index:1000;background:rgba(0,0,0,.92);color:#fff;padding:10px 18px;border-radius:14px;font-size:13px;font-weight:600;font-family:'DM Sans',sans-serif;display:none;align-items:center;gap:10px;box-shadow:0 6px 24px rgba(0,0,0,.5);max-width:92%;backdrop-filter:blur(10px);}
@@ -1309,7 +1309,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
 @keyframes cv-spin{to{transform:rotate(360deg)}}
 .cv-pill-icon{font-size:16px;line-height:1;}
 /* Workout-session badge */
-#cv-session-badge{background:linear-gradient(135deg,rgba(255,77,77,.14),rgba(96,165,250,.18));border:1px solid var(--accent-bd);color:var(--accent);border-radius:8px;padding:6px 11px;font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;touch-action:manipulation;display:none;}
+#cv-session-badge{background:linear-gradient(135deg,var(--accent-tint-2),rgba(96,165,250,.18));border:1px solid var(--accent-bd);color:var(--accent);border-radius:8px;padding:6px 11px;font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;touch-action:manipulation;display:none;}
 /* Recording list modal items */
 .cv-list-item{display:flex;gap:12px;padding:10px;border:1px solid var(--border);border-radius:12px;margin-bottom:10px;align-items:center;}
 .cv-list-thumb{width:64px;height:64px;border-radius:8px;background:#000;flex-shrink:0;object-fit:cover;}
@@ -1393,7 +1393,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
     <div style="width:18px;height:18px;border-radius:2px;box-sizing:border-box;background:linear-gradient(135deg,#fff1a8 0%,#ffd54a 45%,#c48c1a 100%);border:1px solid rgba(255,233,128,0.70);box-shadow:0 0 4px rgba(255,213,74,0.55),inset 0 1px 0 rgba(255,255,255,0.45),inset 0 -1px 0 rgba(0,0,0,0.25);"></div>
     <div style="width:18px;height:18px;border-radius:2px;box-sizing:border-box;background:linear-gradient(135deg,#f2f4f7 0%,#b5c0cc 45%,#6d7682 100%);border:1px solid rgba(210,218,228,0.55);box-shadow:0 0 3px rgba(181,192,204,0.40),inset 0 1px 0 rgba(255,255,255,0.32),inset 0 -1px 0 rgba(0,0,0,0.22);"></div>
     <div style="width:18px;height:18px;border-radius:2px;box-sizing:border-box;background:transparent;border:1px solid rgba(255,255,255,0.10);"></div>
-    <div style="width:18px;height:18px;border-radius:2px;box-sizing:border-box;background:rgba(255,77,77,0.32);border:1px solid rgba(255,77,77,0.45);"></div>
+    <div style="width:18px;height:18px;border-radius:2px;box-sizing:border-box;background:var(--accent-tint-4);border:1px solid var(--accent-tint-4);"></div>
   </div>
   <div class="auth-sub">루틴을 기록하고, 함께 성장하세요.</div>
   <div class="auth-tabs">
@@ -1752,7 +1752,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
         <div id="homework-rows"></div>
         <div class="workout-rows" id="workout-rows"></div>
         <div style="display:flex;gap:8px;margin:8px 12px 12px;">
-          <div id="wo-add-cta" onclick="event.stopPropagation(); openWorkoutStartScreen();" style="flex:1;display:flex;align-items:center;justify-content:center;gap:8px;padding:12px;background:linear-gradient(135deg,rgba(255,77,77,.10),rgba(255,77,77,.08));border:1px solid rgba(255,77,77,.25);border-radius:10px;cursor:pointer;touch-action:manipulation;">
+          <div id="wo-add-cta" onclick="event.stopPropagation(); openWorkoutStartScreen();" style="flex:1;display:flex;align-items:center;justify-content:center;gap:8px;padding:12px;background:linear-gradient(135deg,var(--accent-tint-2),var(--accent-tint-2));border:1px solid var(--accent-tint-3);border-radius:10px;cursor:pointer;touch-action:manipulation;">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             <span id="wo-add-cta-lbl" style="font-size:13px;font-weight:700;color:var(--accent);">운동 추가</span>
           </div>
@@ -1814,10 +1814,10 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
     <div class="home-promo-block" style="margin-top:14px;">
 
       <!-- 트레이너 등록 요청 인박스 — pending 요청 있을 때만 노출 -->
-      <div id="trainer-req-inbox" class="s-card" style="display:none;margin:0 14px 10px;padding:14px 14px 12px;background:linear-gradient(135deg,rgba(255,77,77,0.10) 0%,rgba(255,107,53,0.05) 100%);border:1.5px solid rgba(255,77,77,0.32);"></div>
+      <div id="trainer-req-inbox" class="s-card" style="display:none;margin:0 14px 10px;padding:14px 14px 12px;background:linear-gradient(135deg,var(--accent-tint-2) 0%,rgba(255,107,53,0.05) 100%);border:1.5px solid var(--accent-tint-4);"></div>
 
       <!-- 첫 주 미션 — 가입 후 7일간 노출. renderFirstWeekCard() 가 상태 판별 + 숨김 처리 -->
-      <div id="first-week-card" class="s-card" style="display:none;margin:0 14px 10px;padding:14px 14px 12px;background:linear-gradient(135deg,rgba(255,77,77,0.08) 0%,rgba(255,107,53,0.04) 100%);border:1px solid rgba(255,77,77,0.22);">
+      <div id="first-week-card" class="s-card" style="display:none;margin:0 14px 10px;padding:14px 14px 12px;background:linear-gradient(135deg,var(--accent-tint-2) 0%,rgba(255,107,53,0.04) 100%);border:1px solid var(--accent-tint-3);">
         <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px;">
           <div style="flex:1;min-width:0;">
             <div style="font-size:13px;font-weight:800;color:var(--text);letter-spacing:-0.01em;line-height:1.2;">🔥 첫 주 미션</div>
@@ -1858,7 +1858,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
       <!-- 친구 초대 카드 — 항상 노출 (dismiss 가능). 바이럴 루프 진입점 -->
       <div id="invite-card" class="s-card" style="display:none;margin:0 14px 10px;padding:12px 14px;background:var(--surface);border:1px solid var(--border2);">
         <div style="display:flex;align-items:center;gap:12px;">
-          <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,rgba(255,77,77,0.18),rgba(255,107,53,0.12));display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px;">🙌</div>
+          <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--accent-tint-3),rgba(255,107,53,0.12));display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px;">🙌</div>
           <div style="flex:1;min-width:0;">
             <div style="font-size:13px;font-weight:800;color:var(--text);letter-spacing:-0.01em;line-height:1.2;">친구랑 같이 큐록</div>
             <div style="font-size:11px;color:var(--text3);margin-top:2px;line-height:1.3;">초대장 보내서 같이 기록하자</div>
@@ -2112,7 +2112,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
 
     <div id="sub-competition">
     <!-- 푸쉬업 챌린지 (최상단 — 사용자 선호) -->
-    <div id="puc-card" style="margin-top:16px;background:linear-gradient(135deg,rgba(255,77,77,.14) 0%,rgba(255,77,77,.12) 100%);border:1px solid var(--accent-bd);border-radius:18px;padding:18px;display:none;">
+    <div id="puc-card" style="margin-top:16px;background:linear-gradient(135deg,var(--accent-tint-2) 0%,var(--accent-tint-2) 100%);border:1px solid var(--accent-bd);border-radius:18px;padding:18px;display:none;">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
         <div style="font-size:22px;">💪</div>
         <div style="font-size:15px;font-weight:800;letter-spacing:-.2px;flex:1;">푸쉬업 챌린지</div>
@@ -2214,7 +2214,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
     <!-- 스크롤 영역 -->
     <div style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 20px 40px;">
       <!-- manifesto-voice explainer (M6) -->
-      <div style="margin-top:14px;padding:12px 14px;background:rgba(255,77,77,0.06);border:1px solid rgba(255,77,77,0.18);border-radius:12px;font-size:12px;color:var(--text2);line-height:1.6;">
+      <div style="margin-top:14px;padding:12px 14px;background:var(--accent-tint-1);border:1px solid var(--accent-tint-3);border-radius:12px;font-size:12px;color:var(--text2);line-height:1.6;">
         점수는 일회성 이벤트 아냐.<br>
         매일 체크, 매일 쌓아.<br>
         <span style="color:#ff6b35;font-weight:800;">꾸준함</span>이 너를 만든다.
@@ -2330,7 +2330,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
         <div style="font-size:11px;color:var(--text3);" id="room-subtitle"></div>
       </div>
       <button onclick="shareRoomCode()" style="background:var(--surface2);border:1px solid var(--border2);color:var(--text2);border-radius:8px;padding:7px 10px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">🔑 코드</button>
-      <button id="room-leave-btn" onclick="leaveOrCancelRoom()" style="background:rgba(255,77,77,.08);border:1px solid rgba(255,77,77,.20);color:#ff4d4d;border-radius:8px;padding:7px 10px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">나가기</button>
+      <button id="room-leave-btn" onclick="leaveOrCancelRoom()" style="background:var(--accent-tint-2);border:1px solid var(--accent-tint-3);color:#ff4d4d;border-radius:8px;padding:7px 10px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">나가기</button>
     </div>
 
     <!-- Room Body -->
@@ -2524,7 +2524,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
         <div id="join-comp-meta" style="color:var(--text3);"></div>
       </div>
       <div class="mfield">
-        <label class="mlabel" id="join-wgoal-label" style="display:flex;align-items:center;gap:6px;">내 목표 체중 (kg) <span style="font-size:10px;font-weight:600;padding:1px 6px;border-radius:6px;background:rgba(255,77,77,.10);color:#ff4d4d;border:1px solid rgba(255,77,77,.22);">필수</span></label>
+        <label class="mlabel" id="join-wgoal-label" style="display:flex;align-items:center;gap:6px;">내 목표 체중 (kg) <span style="font-size:10px;font-weight:600;padding:1px 6px;border-radius:6px;background:var(--accent-tint-2);color:#ff4d4d;border:1px solid var(--accent-tint-3);">필수</span></label>
         <div style="position:relative;">
           <input class="minput" id="join-wgoal" type="number" placeholder="예: 68.0" step="0.1" style="padding-right:40px;"/>
           <span style="position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:13px;color:var(--text3);">kg</span>
@@ -2570,10 +2570,10 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
   <!-- SESSION SUMMARY MODAL -->
   <!-- 유산소 추가 수행 처리 모달 -->
   <div id="cardio-penalty-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:600;align-items:flex-end;justify-content:center;padding:0;" onclick="if(event.target===this)closeCardioPenaltyModal()">
-    <div style="background:var(--surface);border-top-left-radius:18px;border-top-right-radius:18px;border-top:1.5px solid rgba(255,77,77,.4);padding:20px 18px 32px;max-width:480px;width:100%;max-height:88vh;overflow-y:auto;" onclick="event.stopPropagation()">
+    <div style="background:var(--surface);border-top-left-radius:18px;border-top-right-radius:18px;border-top:1.5px solid var(--accent-tint-4);padding:20px 18px 32px;max-width:480px;width:100%;max-height:88vh;overflow-y:auto;" onclick="event.stopPropagation()">
       <div style="width:36px;height:4px;background:var(--border2);border-radius:4px;margin:-10px auto 14px;"></div>
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
-        <div style="width:36px;height:36px;border-radius:9px;background:rgba(255,77,77,0.32);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">⏱</div>
+        <div style="width:36px;height:36px;border-radius:9px;background:var(--accent-tint-4);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">⏱</div>
         <div style="flex:1;">
           <div style="font-family:'Noto Serif KR',serif;font-size:17px;font-weight:700;letter-spacing:-.005em;">유산소 추가</div>
           <div id="cpm-sub" style="font-size:11px;color:var(--text3);margin-top:2px;">—</div>
@@ -2723,12 +2723,12 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
             </div>
           </div>
 
-          <div style="font-size:12px;color:var(--text2);line-height:1.6;margin-bottom:20px;padding:10px 12px;background:rgba(255,77,77,0.06);border:1px solid rgba(255,77,77,0.18);border-radius:10px;">
+          <div style="font-size:12px;color:var(--text2);line-height:1.6;margin-bottom:20px;padding:10px 12px;background:var(--accent-tint-1);border:1px solid var(--accent-tint-3);border-radius:10px;">
             하루 하나씩만 체크해.<br>
             그게 쌓여서 <span style="color:#ff4d4d;font-weight:800;">네가 된다</span>.
           </div>
 
-          <button onclick="obNext(2)" style="width:100%;padding:15px;background:linear-gradient(135deg,#ff4d4d,#ff6b35);border:none;border-radius:14px;color:#fff;font-size:16px;font-weight:800;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;box-shadow:0 8px 22px rgba(255,77,77,0.35);letter-spacing:-0.01em;">시작하기 →</button>
+          <button onclick="obNext(2)" style="width:100%;padding:15px;background:linear-gradient(135deg,#ff4d4d,#ff6b35);border:none;border-radius:14px;color:#fff;font-size:16px;font-weight:800;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;box-shadow:0 8px 22px var(--accent-tint-4);letter-spacing:-0.01em;">시작하기 →</button>
           <button onclick="obDismissWeek()" style="width:100%;padding:10px;background:none;border:none;color:var(--text3);font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;margin-top:6px;touch-action:manipulation;">1주일간 보이지 않기</button>
         </div>
 
@@ -2831,7 +2831,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
                 <div style="flex:1;font-size:12px;color:var(--text);font-weight:600;">Silver · 부분 완수</div>
               </div>
               <div style="display:flex;align-items:center;gap:10px;">
-                <div style="width:16px;height:16px;border-radius:3px;background:rgba(255,77,77,0.32);border:1px solid rgba(255,77,77,0.45);flex-shrink:0;"></div>
+                <div style="width:16px;height:16px;border-radius:3px;background:var(--accent-tint-4);border:1px solid var(--accent-tint-4);flex-shrink:0;"></div>
                 <div style="flex:1;font-size:12px;color:var(--text);font-weight:600;">Red · 금지식·실패</div>
               </div>
               <div style="display:flex;align-items:center;gap:10px;">
@@ -2855,7 +2855,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
             등록만으론 0점. 큐브가 나와야 점수예요.
           </div>
 
-          <button onclick="obFinish()" style="width:100%;padding:15px;background:linear-gradient(135deg,#ff4d4d,#ff6b35);border:none;border-radius:14px;color:#fff;font-size:16px;font-weight:800;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;box-shadow:0 8px 22px rgba(255,77,77,0.35);letter-spacing:-.01em;">오늘도 도전 →</button>
+          <button onclick="obFinish()" style="width:100%;padding:15px;background:linear-gradient(135deg,#ff4d4d,#ff6b35);border:none;border-radius:14px;color:#fff;font-size:16px;font-weight:800;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;box-shadow:0 8px 22px var(--accent-tint-4);letter-spacing:-.01em;">오늘도 도전 →</button>
         </div>
 
       </div>
@@ -2891,7 +2891,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
   <!-- SHARE CARD MODAL -->
   <div id="share-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:600;align-items:center;justify-content:center;padding:24px;">
     <div style="width:100%;max-width:380px;">
-      <div id="share-card" style="background:linear-gradient(135deg,#0a0a0c 0%,#141418 100%);border:1px solid rgba(255,77,77,.25);border-radius:20px;padding:28px 24px;font-family:'DM Sans',sans-serif;">
+      <div id="share-card" style="background:linear-gradient(135deg,#0a0a0c 0%,#141418 100%);border:1px solid var(--accent-tint-3);border-radius:20px;padding:28px 24px;font-family:'DM Sans',sans-serif;">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
           <div>
             <div style="font-size:18px;font-weight:700;color:#ff4d4d;letter-spacing:.5px;">큐록</div>
@@ -3134,7 +3134,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
 
     <!-- 체중 (tap-to-open) -->
     <div class="mfield" data-wt-field="weight">
-      <label class="mlabel">체중 (kg) <span style="font-size:10px;font-weight:600;padding:1px 6px;border-radius:5px;background:rgba(255,77,77,.10);color:#ff4d4d;border:1px solid rgba(255,77,77,.18);">필수</span></label>
+      <label class="mlabel">체중 (kg) <span style="font-size:10px;font-weight:600;padding:1px 6px;border-radius:5px;background:var(--accent-tint-2);color:#ff4d4d;border:1px solid var(--accent-tint-3);">필수</span></label>
       <input type="hidden" id="wt-inp">
       <div class="pk-chip pk-chip--empty" data-pk-for="wt-inp" data-pk-title="체중" data-pk-min="30" data-pk-max="150" data-pk-step="0.1" data-pk-unit="kg" data-pk-default="70" onclick="_pkOpenFromChip(this)">
         <div class="pk-chip-left"><span class="pk-chip-val">—</span><span class="pk-chip-unit">kg</span></div>
@@ -3548,7 +3548,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
   <div id="mm-body" style="flex:1;overflow:hidden;display:flex;align-items:center;justify-content:center;padding:4px 8px 0;min-height:0;"></div>
   <!-- Floating share FAB — body 와 legend 사이. margin-top 음수로 body 방향으로 끌어올려 간격 축소 -->
   <div style="flex-shrink:0;display:flex;justify-content:center;padding:0 0 10px;margin-top:-60px;">
-    <button id="mm-share-fab" onclick="shareMuscleMap()" aria-label="공유하기" title="공유하기" class="mm-fab-pulse" style="width:54px;height:54px;border-radius:50%;background:linear-gradient(135deg,#ff4d4d 0%,#ff6b35 100%);border:none;color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 8px 22px rgba(255,77,77,0.5);touch-action:manipulation;padding:0;">
+    <button id="mm-share-fab" onclick="shareMuscleMap()" aria-label="공유하기" title="공유하기" class="mm-fab-pulse" style="width:54px;height:54px;border-radius:50%;background:linear-gradient(135deg,#ff4d4d 0%,#ff6b35 100%);border:none;color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 8px 22px var(--accent-tint-5);touch-action:manipulation;padding:0;">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events:none;display:block;"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
     </button>
   </div>
@@ -3575,7 +3575,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
   <!-- 닫기 버튼 (상단 우측) -->
   <button onclick="closeRoomOverlay()" style="position:absolute;top:env(safe-area-inset-top,12px);right:12px;z-index:10;width:34px;height:34px;border-radius:50%;background:rgba(0,0,0,.5);backdrop-filter:blur(8px);border:0.5px solid rgba(255,255,255,.15);color:var(--text2);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;touch-action:manipulation;margin-top:8px;">✕</button>
   <!-- 진화형 캐릭터 coming soon 뱃지 -->
-  <div style="position:absolute;top:env(safe-area-inset-top,12px);left:14px;z-index:10;margin-top:14px;padding:6px 12px;background:rgba(10,10,16,0.6);backdrop-filter:blur(8px);border:0.5px solid rgba(255,77,77,.45);border-radius:20px;display:inline-flex;align-items:center;gap:8px;pointer-events:none;">
+  <div style="position:absolute;top:env(safe-area-inset-top,12px);left:14px;z-index:10;margin-top:14px;padding:6px 12px;background:rgba(10,10,16,0.6);backdrop-filter:blur(8px);border:0.5px solid var(--accent-tint-4);border-radius:20px;display:inline-flex;align-items:center;gap:8px;pointer-events:none;">
     <span style="width:6px;height:6px;background:#ff4d4d;border-radius:50%;box-shadow:0 0 8px #ff4d4d;"></span>
     <span style="font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;font-weight:600;color:#ff4d4d;font-family:'DM Mono',monospace;">진화형 캐릭터 · Coming Soon</span>
   </div>
@@ -3946,7 +3946,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
         </label>
       </div>
       <div id="notif-cat-list" style="display:flex;flex-direction:column;gap:8px;"></div>
-      <div id="notif-cta-permission" style="display:none;margin-top:10px;padding:10px;background:rgba(255,77,77,0.08);border:1px solid rgba(255,77,77,0.2);border-radius:8px;font-size:11px;color:var(--red);line-height:1.5;">
+      <div id="notif-cta-permission" style="display:none;margin-top:10px;padding:10px;background:var(--accent-tint-2);border:1px solid var(--accent-tint-3);border-radius:8px;font-size:11px;color:var(--red);line-height:1.5;">
         기기 설정에서 큐록 알림을 허용해 주세요.
       </div>
       <div id="notif-cta-web" style="display:none;margin-top:10px;padding:10px;background:var(--bg);border:1px dashed var(--border2);border-radius:8px;font-size:11px;color:var(--text3);line-height:1.5;">
@@ -3970,7 +3970,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
       <a href="/privacy" target="_blank" rel="noopener" style="color:var(--text2);text-decoration:underline;">개인정보처리방침</a>
     </div>
     <!-- 계정 삭제 — 파괴적 액션, 차가운 톤으로 -->
-    <button onclick="confirmDeleteAccount()" style="width:100%;padding:10px;background:transparent;border:1px solid rgba(255,77,77,0.3);border-radius:10px;color:var(--red);font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;letter-spacing:-.01em;">계정·데이터 완전 삭제</button>
+    <button onclick="confirmDeleteAccount()" style="width:100%;padding:10px;background:transparent;border:1px solid var(--accent-tint-4);border-radius:10px;color:var(--red);font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;letter-spacing:-.01em;">계정·데이터 완전 삭제</button>
   </div>
 </div>
 
@@ -4506,7 +4506,7 @@ async function renderTrainerRequestInbox(force){
       const tMsg = r.trainer_message ? `<div style="font-size:12px;color:var(--text);margin-top:8px;padding:8px 10px;background:rgba(255,255,255,0.04);border-left:2px solid var(--accent);border-radius:4px;line-height:1.5;">"${esc(r.trainer_message)}"</div>` : '';
       return `<div style="margin-bottom:10px;">
         <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:8px;">
-          <div style="width:32px;height:32px;border-radius:8px;background:rgba(255,77,77,0.18);display:flex;align-items:center;justify-content:center;flex-shrink:0;">🏋️</div>
+          <div style="width:32px;height:32px;border-radius:8px;background:var(--accent-tint-3);display:flex;align-items:center;justify-content:center;flex-shrink:0;">🏋️</div>
           <div style="flex:1;min-width:0;">
             <div style="font-size:11px;color:var(--accent);font-weight:800;letter-spacing:.04em;text-transform:uppercase;">트레이너 등록 요청</div>
             <div style="font-size:14px;font-weight:700;margin-top:2px;letter-spacing:-.005em;">${tName} 님이 회원 등록 요청</div>
@@ -4759,7 +4759,7 @@ function renderSession(){
       if(isLastEx){
         btn.textContent='운동 종료 ✓';
         btn.style.background='linear-gradient(135deg,#ff4d4d,#fb923c)';
-        btn.style.boxShadow='0 4px 18px rgba(255,77,77,.35)';
+        btn.style.boxShadow='0 4px 18px var(--accent-tint-4)';
       } else {
         btn.textContent='다음 운동 → 🔥';
         btn.style.background='linear-gradient(135deg,var(--accent),#34d399)';
@@ -4787,7 +4787,7 @@ function renderSession(){
       <div style="font-size:48px;">🏋️</div>
       <div style="font-size:16px;font-weight:700;">어떤 운동부터 시작할까요?</div>
       <div style="font-size:12px;color:var(--text3);line-height:1.6;margin-bottom:8px;">종목을 추가해서 시작하세요</div>
-      <button onclick="openLibraryForSession()" style="padding:12px 28px;background:var(--accent-grad);border:none;border-radius:var(--radius-sm);color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;box-shadow:0 4px 16px rgba(255,77,77,.25);">＋ 종목 추가</button>
+      <button onclick="openLibraryForSession()" style="padding:12px 28px;background:var(--accent-grad);border:none;border-radius:var(--radius-sm);color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;box-shadow:0 4px 16px var(--accent-tint-3);">＋ 종목 추가</button>
     </div>`;
     return;
   }
@@ -4878,7 +4878,7 @@ function renderSession(){
     ${prefillHintHtml}
     ${setsHtml}
     <div style="display:flex;gap:8px;margin-top:10px;align-items:center;">
-      <div onclick="addSet(${ei})" style="flex:1;font-size:12px;font-weight:700;color:var(--accent);padding:9px 12px;background:rgba(255,77,77,.10);border:1px solid rgba(255,77,77,.22);border-radius:8px;display:flex;align-items:center;justify-content:center;gap:5px;cursor:pointer;touch-action:manipulation;">
+      <div onclick="addSet(${ei})" style="flex:1;font-size:12px;font-weight:700;color:var(--accent);padding:9px 12px;background:var(--accent-tint-2);border:1px solid var(--accent-tint-3);border-radius:8px;display:flex;align-items:center;justify-content:center;gap:5px;cursor:pointer;touch-action:manipulation;">
         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> 세트 추가
       </div>
       ${isStr&&ex.sets.length>0?`<div onclick="wsCopyFirstSet(${ei})" style="font-size:11px;font-weight:600;color:var(--text3);padding:9px 10px;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;cursor:pointer;touch-action:manipulation;white-space:nowrap;">첫 세트 복사</div>`:''}
@@ -4995,7 +4995,7 @@ function _wsRenderFillBtn(ex,ei){
   const hasEmpty=ex.sets.slice(1).some(s=>!s.done&&(!(parseFloat(s.kg)>0)||!(parseInt(s.reps)>0)));
   if(!hasEmpty)return '';
   const displayKg=_wsUnit==='lb'?(firstKg*2.20462).toFixed(0):firstKg.toFixed(_wsUnit==='lb'?0:(firstKg%1===0?0:1));
-  return `<div onclick="wsFillRemainingSets(${ei})" style="margin-top:4px;padding:8px 12px;background:linear-gradient(135deg,rgba(255,77,77,.12),rgba(255,77,77,.1));border:1px dashed var(--accent-bd);border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;color:var(--accent);text-align:center;touch-action:manipulation;">
+  return `<div onclick="wsFillRemainingSets(${ei})" style="margin-top:4px;padding:8px 12px;background:linear-gradient(135deg,var(--accent-tint-2),var(--accent-tint-2));border:1px dashed var(--accent-bd);border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;color:var(--accent);text-align:center;touch-action:manipulation;">
     ↓ 나머지 세트 모두 <b>${displayKg}${_wsUnit} × ${firstReps}회</b>로 채우기
   </div>`;
 }
@@ -6983,7 +6983,7 @@ let _cubeEventShowing=false;
 function _cubeColorMeta(color){
   if(color==='gold')    return {fg:'#ffd54a',border:'rgba(255,213,74,0.55)',bg:'linear-gradient(135deg,rgba(255,241,168,0.15) 0%,rgba(255,213,74,0.10) 100%)'};
   if(color==='silver')  return {fg:'#b5c0cc',border:'rgba(181,192,204,0.50)',bg:'linear-gradient(135deg,rgba(242,244,247,0.12) 0%,rgba(181,192,204,0.08) 100%)'};
-  if(color==='crimson') return {fg:'#ff6b6b',border:'rgba(255,77,77,0.45)',bg:'rgba(255,77,77,0.10)'};
+  if(color==='crimson') return {fg:'#ff6b6b',border:'var(--accent-tint-4)',bg:'var(--accent-tint-2)'};
   return {fg:'#eaeaf0',border:'rgba(255,255,255,0.14)',bg:'rgba(20,20,24,0.92)'};
 }
 // 타이밍 상수 — CSS 와 일치시켜야 함. 유저 피드백 (2026-04-24): 글씨 읽기
@@ -8194,14 +8194,14 @@ function showBonusGrantModal(g){
   const msg=escMultiline(g.message||'');
   const pts=+g.points||0;
   el.innerHTML=`
-    <div class="bg-card" style="background:linear-gradient(155deg,#1a1a22 0%,#12080a 100%);border:1px solid rgba(255,107,53,.38);border-radius:24px;padding:34px 24px 22px;max-width:360px;width:100%;text-align:center;box-shadow:0 16px 56px rgba(255,77,77,.28),inset 0 0 0 1px rgba(255,255,255,.03);animation:bonusPop .5s cubic-bezier(.18,.9,.24,1.1);">
+    <div class="bg-card" style="background:linear-gradient(155deg,#1a1a22 0%,#12080a 100%);border:1px solid rgba(255,107,53,.38);border-radius:24px;padding:34px 24px 22px;max-width:360px;width:100%;text-align:center;box-shadow:0 16px 56px var(--accent-tint-4),inset 0 0 0 1px rgba(255,255,255,.03);animation:bonusPop .5s cubic-bezier(.18,.9,.24,1.1);">
       <div style="font-size:68px;line-height:1;margin-bottom:10px;filter:drop-shadow(0 8px 24px rgba(255,107,53,.55));">${icon}</div>
       <div style="font-family:'Archivo Black',sans-serif;font-size:22px;letter-spacing:-.02em;color:#fff;margin-bottom:4px;line-height:1.25;">${title}</div>
       <div style="font-family:'Archivo Black',sans-serif;font-size:58px;background:linear-gradient(135deg,#ff4d4d 0%,#ff9f43 100%);-webkit-background-clip:text;background-clip:text;color:transparent;margin:14px 0 2px;letter-spacing:-.04em;line-height:1;">+${pts}<span style="font-size:22px;letter-spacing:0;">pt</span></div>
       <div style="font-size:14px;color:#d8d8de;line-height:1.65;margin:16px 6px 22px;white-space:normal;">${msg}</div>
       <div style="display:flex;flex-direction:column;gap:9px;">
         <button onclick="shareBonusGrant()" style="padding:13px;border-radius:13px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.04);color:#fff;font-weight:700;font-size:14px;font-family:'DM Sans',sans-serif;cursor:pointer;touch-action:manipulation;letter-spacing:-.01em;">↗ 친구에게 자랑하기</button>
-        <button onclick="claimBonusGrant()" style="padding:15px;border-radius:13px;border:none;background:linear-gradient(135deg,#ff4d4d 0%,#ff6b35 100%);color:#fff;font-weight:900;font-size:15px;font-family:'DM Sans',sans-serif;cursor:pointer;letter-spacing:-.01em;box-shadow:0 10px 28px rgba(255,77,77,.45);touch-action:manipulation;">🔥 +${pts}점 받기</button>
+        <button onclick="claimBonusGrant()" style="padding:15px;border-radius:13px;border:none;background:linear-gradient(135deg,#ff4d4d 0%,#ff6b35 100%);color:#fff;font-weight:900;font-size:15px;font-family:'DM Sans',sans-serif;cursor:pointer;letter-spacing:-.01em;box-shadow:0 10px 28px var(--accent-tint-4);touch-action:manipulation;">🔥 +${pts}점 받기</button>
         <button onclick="dismissBonusGrant()" style="margin-top:2px;padding:9px;border:none;background:transparent;color:#6b6b78;font-size:12px;font-family:'DM Sans',sans-serif;cursor:pointer;touch-action:manipulation;">나중에 보기</button>
       </div>
     </div>
@@ -8339,12 +8339,12 @@ function maybeShowFriendWelcome(){
     el.id='friend-welcome-modal';
     el.style.cssText='position:fixed;inset:0;z-index:9995;background:rgba(0,0,0,.82);display:flex;align-items:center;justify-content:center;padding:22px;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);';
     el.innerHTML=`
-      <div style="background:linear-gradient(155deg,#1a1a22,#12080a);border:1px solid rgba(255,107,53,.35);border-radius:22px;padding:30px 22px 22px;max-width:340px;width:100%;text-align:center;box-shadow:0 16px 48px rgba(255,77,77,.25);">
+      <div style="background:linear-gradient(155deg,#1a1a22,#12080a);border:1px solid rgba(255,107,53,.35);border-radius:22px;padding:30px 22px 22px;max-width:340px;width:100%;text-align:center;box-shadow:0 16px 48px var(--accent-tint-3);">
         <div style="font-size:56px;line-height:1;margin-bottom:10px;">${icon}</div>
         <div style="font-family:'Archivo Black',sans-serif;font-size:18px;color:#fff;margin-bottom:8px;letter-spacing:-.02em;">${title}</div>
         <div style="font-size:13px;color:#d8d8de;line-height:1.6;margin-bottom:18px;">${body}</div>
         <div style="display:flex;flex-direction:column;gap:8px;">
-          <button onclick="_friendWelcomeCta('join')" style="padding:14px;border-radius:13px;border:none;background:linear-gradient(135deg,#ff4d4d,#ff6b35);color:#fff;font-weight:900;font-size:15px;font-family:'DM Sans',sans-serif;cursor:pointer;letter-spacing:-.01em;box-shadow:0 10px 24px rgba(255,77,77,.4);touch-action:manipulation;">🔥 나도 시작하기</button>
+          <button onclick="_friendWelcomeCta('join')" style="padding:14px;border-radius:13px;border:none;background:linear-gradient(135deg,#ff4d4d,#ff6b35);color:#fff;font-weight:900;font-size:15px;font-family:'DM Sans',sans-serif;cursor:pointer;letter-spacing:-.01em;box-shadow:0 10px 24px var(--accent-tint-4);touch-action:manipulation;">🔥 나도 시작하기</button>
           <button onclick="_friendWelcomeCta('login')" style="padding:12px;border-radius:13px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.04);color:#fff;font-weight:700;font-size:14px;font-family:'DM Sans',sans-serif;cursor:pointer;touch-action:manipulation;">이미 계정 있어요 (로그인)</button>
           <button onclick="_friendWelcomeCta('close')" style="padding:8px;border:none;background:transparent;color:#6b6b78;font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;">나중에</button>
         </div>
@@ -8487,7 +8487,7 @@ function _showDay1NudgeModal(msg){
   el.id='day1-nudge-modal';
   el.style.cssText='position:fixed;inset:0;z-index:9990;background:rgba(0,0,0,.85);display:flex;align-items:center;justify-content:center;padding:22px;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);';
   el.innerHTML=`
-    <div style="background:linear-gradient(155deg,#1a1a22,#12080a);border:1px solid rgba(255,107,53,0.35);border-radius:22px;padding:30px 22px 22px;max-width:320px;width:100%;text-align:center;box-shadow:0 16px 48px rgba(255,77,77,.25);">
+    <div style="background:linear-gradient(155deg,#1a1a22,#12080a);border:1px solid rgba(255,107,53,0.35);border-radius:22px;padding:30px 22px 22px;max-width:320px;width:100%;text-align:center;box-shadow:0 16px 48px var(--accent-tint-3);">
       <div style="font-size:48px;line-height:1;margin-bottom:12px;">🌱</div>
       <div style="font-family:'Archivo Black',sans-serif;font-size:17px;color:#fff;margin-bottom:10px;letter-spacing:-.02em;">첫날 저녁이야</div>
       <div style="font-size:13px;color:#d8d8de;line-height:1.7;margin-bottom:20px;white-space:pre-line;">${msg}</div>
@@ -8568,14 +8568,14 @@ function showTierUpShareCTA(tier){
   if(existing)existing.remove();
   const ribbon=document.createElement('div');
   ribbon.id='tierup-share-ribbon';
-  ribbon.style.cssText='position:fixed;left:50%;transform:translateX(-50%);bottom:88px;z-index:1100;width:calc(100% - 32px);max-width:400px;padding:12px 14px;background:linear-gradient(135deg,rgba(26,26,34,0.97),rgba(18,8,10,0.97));border:1px solid rgba(255,107,53,0.4);border-radius:14px;box-shadow:0 12px 32px rgba(255,77,77,0.35);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);display:flex;align-items:center;gap:10px;animation:tierShareSlide .4s ease;';
+  ribbon.style.cssText='position:fixed;left:50%;transform:translateX(-50%);bottom:88px;z-index:1100;width:calc(100% - 32px);max-width:400px;padding:12px 14px;background:linear-gradient(135deg,rgba(26,26,34,0.97),rgba(18,8,10,0.97));border:1px solid rgba(255,107,53,0.4);border-radius:14px;box-shadow:0 12px 32px var(--accent-tint-4);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);display:flex;align-items:center;gap:10px;animation:tierShareSlide .4s ease;';
   ribbon.innerHTML=`
     <div style="font-size:24px;flex-shrink:0;">${tier.icon||'🔥'}</div>
     <div style="flex:1;min-width:0;">
       <div style="font-size:13px;font-weight:800;color:#fff;letter-spacing:-.01em;">${tier.name} 달성!</div>
       <div style="font-size:11px;color:#b8b8c0;margin-top:1px;">친구한테 보여주자</div>
     </div>
-    <button onclick="shareInvite();(document.getElementById('tierup-share-ribbon')||{}).remove&&document.getElementById('tierup-share-ribbon').remove();" style="flex-shrink:0;padding:8px 14px;border:none;border-radius:9px;background:linear-gradient(135deg,#ff4d4d,#ff6b35);color:#fff;font-size:12px;font-weight:800;cursor:pointer;touch-action:manipulation;letter-spacing:-.01em;box-shadow:0 4px 12px rgba(255,77,77,0.4);">↗ 자랑하기</button>
+    <button onclick="shareInvite();(document.getElementById('tierup-share-ribbon')||{}).remove&&document.getElementById('tierup-share-ribbon').remove();" style="flex-shrink:0;padding:8px 14px;border:none;border-radius:9px;background:linear-gradient(135deg,#ff4d4d,#ff6b35);color:#fff;font-size:12px;font-weight:800;cursor:pointer;touch-action:manipulation;letter-spacing:-.01em;box-shadow:0 4px 12px var(--accent-tint-4);">↗ 자랑하기</button>
     <button onclick="(document.getElementById('tierup-share-ribbon')||{}).remove&&document.getElementById('tierup-share-ribbon').remove();" aria-label="닫기" style="flex-shrink:0;background:none;border:none;color:#6b6b78;font-size:14px;cursor:pointer;padding:4px;">✕</button>
   `;
   document.body.appendChild(ribbon);
@@ -8605,7 +8605,7 @@ async function shareInvite(){
     <div style="text-align:center;padding:30px 0 18px;">
       <div style="font-size:68px;line-height:1;margin-bottom:4px;">🙌</div>
       <div style="font-family:'Archivo Black',sans-serif;font-size:24px;letter-spacing:-.02em;margin-top:14px;line-height:1.25;">${safeName} 님이<br>너를 초대했어</div>
-      <div style="display:inline-flex;align-items:center;gap:6px;margin-top:14px;padding:6px 14px;background:rgba(255,77,77,0.12);border:1px solid rgba(255,77,77,0.3);border-radius:999px;font-size:12px;font-weight:700;color:#ff9f43;">${tier.icon} ${tier.name} · ${score.toLocaleString()}pt</div>
+      <div style="display:inline-flex;align-items:center;gap:6px;margin-top:14px;padding:6px 14px;background:var(--accent-tint-2);border:1px solid var(--accent-tint-4);border-radius:999px;font-size:12px;font-weight:700;color:#ff9f43;">${tier.icon} ${tier.name} · ${score.toLocaleString()}pt</div>
     </div>
     <div style="font-size:14px;color:#dadae0;line-height:1.65;text-align:center;padding:4px 8px 22px;">
       매일 체중 · 식단 · 운동 체크하고<br>
@@ -8790,7 +8790,7 @@ function renderCubeStack(){
     gray:   {label:'회색',txt:'#a8a8b4',
       style:'background:transparent;border:1px solid rgba(255,255,255,0.10);'},
     crimson:{label:'붉은',txt:'#ff6b6b',
-      style:'background:rgba(255,77,77,0.32);border:1px solid rgba(255,77,77,0.45);'},
+      style:'background:var(--accent-tint-4);border:1px solid var(--accent-tint-4);'},
   };
   const order=['gold','silver','gray','crimson'];
   const total=order.reduce((a,k)=>a+counts[k],0);
@@ -9583,7 +9583,7 @@ const _TOUR_SLIDES=[
       <div style="background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:10px 14px;margin-bottom:12px;">
         <div style="display:flex;align-items:center;padding:4px 0;"><span style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text);font-weight:600;"><span style="width:14px;height:14px;border-radius:3px;background:linear-gradient(135deg,#fff1a8 0%,#ffd54a 45%,#c48c1a 100%);border:1px solid rgba(255,233,128,0.70);flex-shrink:0;"></span>Gold · 완수</span></div>
         <div style="display:flex;align-items:center;padding:4px 0;"><span style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text);font-weight:600;"><span style="width:14px;height:14px;border-radius:3px;background:linear-gradient(135deg,#f2f4f7 0%,#b5c0cc 45%,#6d7682 100%);border:1px solid rgba(210,218,228,0.55);flex-shrink:0;"></span>Silver · 부분</span></div>
-        <div style="display:flex;align-items:center;padding:4px 0;"><span style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text);font-weight:600;"><span style="width:14px;height:14px;border-radius:3px;background:rgba(255,77,77,0.32);border:1px solid rgba(255,77,77,0.45);flex-shrink:0;"></span>Red · 금지식·실패</span></div>
+        <div style="display:flex;align-items:center;padding:4px 0;"><span style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text);font-weight:600;"><span style="width:14px;height:14px;border-radius:3px;background:var(--accent-tint-4);border:1px solid var(--accent-tint-4);flex-shrink:0;"></span>Red · 금지식·실패</span></div>
       </div>
       <div style="font-size:12px;color:var(--text2);text-align:center;line-height:1.55;font-weight:500;">등록만으론 0점. 큐브가 나와야 점수예요.</div>
     `,
@@ -9674,7 +9674,7 @@ const _TOUR_SLIDES=[
           빠진 칸은 변명하지 않는다<br>
           너의 <span style="color:var(--accent);font-weight:800;">매일</span>이 너를 만든다
         </div>
-        <div style="background:linear-gradient(135deg,rgba(255,77,77,0.08),rgba(255,107,53,0.04));border:1px solid rgba(255,77,77,0.22);border-radius:12px;padding:12px 16px;margin-bottom:10px;">
+        <div style="background:linear-gradient(135deg,var(--accent-tint-2),rgba(255,107,53,0.04));border:1px solid var(--accent-tint-3);border-radius:12px;padding:12px 16px;margin-bottom:10px;">
           <div style="font-size:11px;color:var(--text2);line-height:1.6;">
             네 가지 모두 완벽하게 잡는 걸<br>목표로, 오늘도 도전해요.
           </div>
@@ -9876,9 +9876,9 @@ function renderFirstWeekCard(){
   }).join('');
   // 보너스: 오늘 필수 루틴 전부 완료 시 팔굽혀펴기 챌린지 CTA
   if(m.dailyComplete){
-    html+=`<div style="margin-top:4px;padding:12px;background:linear-gradient(135deg,rgba(255,77,77,0.14),rgba(255,107,53,0.08));border:1px solid rgba(255,77,77,0.35);border-radius:10px;">
+    html+=`<div style="margin-top:4px;padding:12px;background:linear-gradient(135deg,var(--accent-tint-2),rgba(255,107,53,0.08));border:1px solid var(--accent-tint-4);border-radius:10px;">
       <div style="font-size:12px;font-weight:800;color:#fff;margin-bottom:8px;letter-spacing:-.01em;">💪 오늘 할 일 다 끝냈네. 보너스 미션.</div>
-      <button onclick="fwGotoPushup()" style="width:100%;padding:10px;background:linear-gradient(135deg,#ff4d4d,#ff6b35);border:none;border-radius:8px;color:#fff;font-size:13px;font-weight:800;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;letter-spacing:-.01em;box-shadow:0 4px 14px rgba(255,77,77,0.3);">🔥 팔굽혀펴기 챌린지 →</button>
+      <button onclick="fwGotoPushup()" style="width:100%;padding:10px;background:linear-gradient(135deg,#ff4d4d,#ff6b35);border:none;border-radius:8px;color:#fff;font-size:13px;font-weight:800;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;letter-spacing:-.01em;box-shadow:0 4px 14px var(--accent-tint-4);">🔥 팔굽혀펴기 챌린지 →</button>
     </div>`;
   }
   list.innerHTML=html;
@@ -10521,7 +10521,7 @@ function _msnResetCatBtns(){
 
 function _msnApplyCatStyle(el, cat){
   if(cat==='alcohol'){
-    el.style.borderColor='var(--red)';el.style.background='rgba(255,77,77,.22)';
+    el.style.borderColor='var(--red)';el.style.background='var(--accent-tint-3)';
     const lbl=el.querySelector('div:last-child');if(lbl)lbl.style.color='var(--red)';
   } else {
     el.style.borderColor='var(--accent)';el.style.background='var(--accent-bg)';
@@ -11094,7 +11094,7 @@ function closeWorkoutStartScreen(){
 function renderWssRoutineTiles(){
   const el=document.getElementById('wss-routine-tiles');
   if(!el)return;
-  const freeTile=`<div onclick="startGymSession()" style="flex:0 0 58px;min-width:58px;background:rgba(255,77,77,.08);border:1px dashed rgba(255,77,77,.35);border-radius:9px;padding:7px 6px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;touch-action:manipulation;">
+  const freeTile=`<div onclick="startGymSession()" style="flex:0 0 58px;min-width:58px;background:var(--accent-tint-2);border:1px dashed var(--accent-tint-4);border-radius:9px;padding:7px 6px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;touch-action:manipulation;">
     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#ff4d4d" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
     <span style="font-size:10px;color:#ff4d4d;text-align:center;font-weight:600;line-height:1.2;">자유<br>운동</span>
   </div>`;
@@ -11161,12 +11161,12 @@ function renderHomeworkRows(homework){
     const doneSets = exercises.reduce((sum, ex) => sum + (Array.isArray(ex.sets)?ex.sets.filter(s=>s.done).length:0), 0);
     const pct = totalSets > 0 ? Math.round(doneSets/totalSets*100) : 0;
     const isStarted = doneSets > 0 || w.status === 'in_progress';
-    html += `<div data-homework-idx="${origIdx}" style="margin:8px 12px;background:linear-gradient(135deg,rgba(255,77,77,.06),rgba(255,107,53,.04));border:1.5px solid rgba(255,77,77,.32);border-radius:12px;overflow:hidden;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:rgba(255,77,77,0.18);">
-      <div style="padding:11px 14px 9px;background:linear-gradient(135deg,rgba(255,77,77,.12),rgba(255,107,53,.08));border-bottom:1px solid rgba(255,77,77,.18);">
+    html += `<div data-homework-idx="${origIdx}" style="margin:8px 12px;background:linear-gradient(135deg,var(--accent-tint-1),rgba(255,107,53,.04));border:1.5px solid var(--accent-tint-4);border-radius:12px;overflow:hidden;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:var(--accent-tint-3);">
+      <div style="padding:11px 14px 9px;background:linear-gradient(135deg,var(--accent-tint-2),rgba(255,107,53,.08));border-bottom:1px solid var(--accent-tint-3);">
         <div style="display:flex;align-items:center;gap:8px;">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ff4d4d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="15" y2="17"/></svg>
           <div style="flex:1;font-size:13px;font-weight:800;color:var(--accent);letter-spacing:-.005em;">오늘의 운동 (트레이너)</div>
-          <div style="font-size:10px;font-weight:800;letter-spacing:.04em;padding:3px 8px;border-radius:5px;background:${isStarted?'rgba(56,189,248,0.18)':'rgba(255,77,77,0.18)'};color:${isStarted?'#38bdf8':'#ff6b6b'};">${isStarted?'진행 중':'예정'}</div>
+          <div style="font-size:10px;font-weight:800;letter-spacing:.04em;padding:3px 8px;border-radius:5px;background:${isStarted?'rgba(56,189,248,0.18)':'var(--accent-tint-3)'};color:${isStarted?'#38bdf8':'#ff6b6b'};">${isStarted?'진행 중':'예정'}</div>
         </div>
         <div style="font-size:11px;color:var(--text2);margin-top:6px;display:flex;align-items:center;gap:10px;">
           <span style="font-family:'DM Mono',monospace;font-weight:700;">${doneSets}/${totalSets} 세트</span>
@@ -11186,7 +11186,7 @@ function renderHomeworkRows(homework){
             <span style="font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;">${exDone}/${sets.length}</span>
           </div>`;
         }).join('')}
-        <div style="text-align:center;font-size:11px;color:var(--accent);font-weight:700;margin-top:6px;padding-top:8px;border-top:1px dashed rgba(255,77,77,0.18);">탭 → 운동 시작</div>
+        <div style="text-align:center;font-size:11px;color:var(--accent);font-weight:700;margin-top:6px;padding-top:8px;border-top:1px dashed var(--accent-tint-3);">탭 → 운동 시작</div>
       </div>
     </div>`;
   }
@@ -11432,15 +11432,15 @@ function renderWorkouts(){
             트레이너 부여: <span style="color:var(--text2);font-weight:600;">${esc(ptype)} · ${minutes}분</span>
           </div>`;
         } else {
-          cardBg = 'linear-gradient(135deg,rgba(255,77,77,0.14),rgba(255,107,53,0.06))';
+          cardBg = 'linear-gradient(135deg,var(--accent-tint-2),rgba(255,107,53,0.06))';
           borderLeft = '3px solid #ff4d4d';
-          iconBg = 'rgba(255,77,77,0.32)';
+          iconBg = 'var(--accent-tint-4)';
           iconChar = '⏱';
-          const stateBadge = '<span style="font-size:9px;font-weight:800;letter-spacing:.04em;padding:2px 7px;border-radius:5px;background:rgba(255,77,77,0.32);color:#fff;margin-left:6px;">⏱ 미수행</span>';
+          const stateBadge = '<span style="font-size:9px;font-weight:800;letter-spacing:.04em;padding:2px 7px;border-radius:5px;background:var(--accent-tint-4);color:#fff;margin-left:6px;">⏱ 미수행</span>';
           titleHtml = `<div style="font-size:15px;font-weight:800;display:flex;align-items:center;flex-wrap:wrap;letter-spacing:-.005em;">유산소 추가 ${esc(ptype)} ${minutes}분형${stateBadge}</div>`;
         }
 
-        const cursorStyle = canTap ? 'cursor:pointer;-webkit-tap-highlight-color:rgba(255,77,77,.2);' : '';
+        const cursorStyle = canTap ? 'cursor:pointer;-webkit-tap-highlight-color:var(--accent-tint-3);' : '';
         const revertBtn = (isDone || isEscaped) ? `<button data-penalty-revert="${i}" style="margin-top:10px;padding:8px 12px;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;color:var(--text2);font-size:11px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">↺ 미수행으로 되돌리기</button>` : '';
 
         return `<div data-penalty-idx="${i}" data-penalty-tap="${canTap?'1':'0'}" style="overflow:hidden;border-bottom:1px solid var(--border);background:${cardBg};border-left:${borderLeft};${cursorStyle}touch-action:manipulation;">
@@ -11474,16 +11474,16 @@ function renderWorkouts(){
       // 클릭 핸들러: 미완료 숙제는 openHomeworkStart, 그 외는 openSessionSummary
       const clickFn = isPending ? `openHomeworkStart(${i})` : `openSessionSummary(${i})`;
       const sessionTitle = isHomework ? (w.sessionName||'오늘의 운동 (트레이너)') : (w.sessionName||'헬스 세션');
-      const badge = isPending ? `<span style="font-size:9px;font-weight:800;letter-spacing:.04em;padding:2px 7px;border-radius:5px;background:rgba(255,77,77,0.18);color:#ff6b6b;margin-left:6px;">예정 ${totalSets}/${totalSetsAll}</span>` : (isHomework ? `<span style="font-size:9px;font-weight:800;letter-spacing:.04em;padding:2px 7px;border-radius:5px;background:rgba(52,211,153,0.18);color:var(--green);margin-left:6px;">완료</span>` : '');
-      const cardBg = isPending ? 'rgba(255,77,77,.06)' : 'transparent';
+      const badge = isPending ? `<span style="font-size:9px;font-weight:800;letter-spacing:.04em;padding:2px 7px;border-radius:5px;background:var(--accent-tint-3);color:#ff6b6b;margin-left:6px;">예정 ${totalSets}/${totalSetsAll}</span>` : (isHomework ? `<span style="font-size:9px;font-weight:800;letter-spacing:.04em;padding:2px 7px;border-radius:5px;background:rgba(52,211,153,0.18);color:var(--green);margin-left:6px;">완료</span>` : '');
+      const cardBg = isPending ? 'var(--accent-tint-1)' : 'transparent';
       // 트레이너 운동 완료 (status='done') 시 되돌리기 버튼 노출
       const isHomeworkDone = isHomework && w.status === 'done';
       const revertBtn = isHomeworkDone
         ? `<button onclick="event.stopPropagation();revertAssignment(${i})" style="padding:3px 8px;background:var(--surface3);border:1px solid var(--border2);border-radius:6px;font-size:10px;color:var(--text2);cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;flex-shrink:0;" title="미완료로 되돌리기">↺ 되돌리기</button>`
         : '';
       return`<div style="overflow:hidden;border-bottom:1px solid var(--border);background:${cardBg};">
-        <div style="display:flex;align-items:center;gap:10px;padding:12px 13px;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:rgba(255,77,77,0.18);" onclick="${clickFn}">
-          <div style="width:28px;height:28px;border-radius:7px;background:rgba(255,77,77,.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <div style="display:flex;align-items:center;gap:10px;padding:12px 13px;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:var(--accent-tint-3);" onclick="${clickFn}">
+          <div style="width:28px;height:28px;border-radius:7px;background:var(--accent-tint-2);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4v16M18 4v16M6 12h12"/><rect x="2" y="9" width="4" height="6" rx="1"/><rect x="18" y="9" width="4" height="6" rx="1"/></svg>
           </div>
           <div style="flex:1;min-width:0;">
@@ -12885,7 +12885,7 @@ function renderCustomMandRow(t,i,state,dow){
   const endBadge=t.end_date?`<span style="font-size:10px;color:var(--text3);margin-left:4px;">~${t.end_date.slice(5).replace('-','/')}</span>`:'';
   const isFail=!!state.fail;
   const isDone=!!state.done;
-  return`<div class="ck-row custom" data-ridx="${i}" style="${isFail?'background:rgba(255,77,77,0.06);':''}">
+  return`<div class="ck-row custom" data-ridx="${i}" style="${isFail?'background:var(--accent-tint-1);':''}">
     <div style="min-width:44px;min-height:44px;display:flex;align-items:center;justify-content:center;cursor:pointer;touch-action:manipulation;"
       onclick="togMand(${i})"
       ontouchstart="mandTouchStart()"
@@ -12970,7 +12970,7 @@ function delMand(i){
     </div>
     <div style="display:flex;flex-direction:column;gap:8px;">
       <button id="del-mand-today" style="width:100%;padding:13px;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;font-size:14px;font-weight:600;color:var(--text);cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">오늘만 삭제</button>
-      <button id="del-mand-future" style="width:100%;padding:13px;background:rgba(255,77,77,0.1);border:1px solid rgba(255,77,77,0.3);border-radius:10px;font-size:14px;font-weight:600;color:var(--red);cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">이후 일정 모두 삭제</button>
+      <button id="del-mand-future" style="width:100%;padding:13px;background:var(--accent-tint-2);border:1px solid var(--accent-tint-4);border-radius:10px;font-size:14px;font-weight:600;color:var(--red);cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">이후 일정 모두 삭제</button>
       <button id="del-mand-cancel" style="width:100%;padding:11px;background:transparent;border:none;font-size:13px;color:var(--text3);cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">취소</button>
     </div>
   `;
@@ -13188,7 +13188,7 @@ function renderTargets(){
       const isDone=t.st==='done';
       const isFail=t.st==='fail';
       const checkContent=isDone?'<span style="color:var(--green);font-size:14px;">✓</span>':isFail?'<span style="color:var(--red);font-size:12px;">✕</span>':'';
-      return`<div class="tgt-row" style="${isFail?'background:rgba(255,77,77,0.05);':''}">
+      return`<div class="tgt-row" style="${isFail?'background:var(--accent-tint-1);':''}">
         <div class="tgt-btn ${t.st||''}"
           onclick="togTgt(${i})"
           style="cursor:pointer;-webkit-user-select:none;user-select:none;flex-shrink:0;">
@@ -13451,8 +13451,8 @@ async function renderChallengeHome(){
 function buildHistoryCard(c){
   const isCompleted=c.status==='completed';
   const ac=isCompleted?'#3dd68c':'#ff4d4d';
-  const abg=isCompleted?'rgba(61,214,140,0.08)':'rgba(255,77,77,.08)';
-  const abd=isCompleted?'rgba(61,214,140,0.2)':'rgba(255,77,77,.18)';
+  const abg=isCompleted?'rgba(61,214,140,0.08)':'var(--accent-tint-2)';
+  const abd=isCompleted?'rgba(61,214,140,0.2)':'var(--accent-tint-3)';
   const label=isCompleted?'🏆 완주':'💀 실패';
   const cname=(c.name||'챌린지');
   return`<div style="background:var(--surface);border:1px solid ${abd};border-radius:12px;padding:12px 14px;opacity:.85;">
@@ -13686,7 +13686,7 @@ function _renderActivityFeed(activity){
     const me=e.user_id===CU?.id;
     const icon=esc(e.icon||'•');
     const labelTxt=esc(e.label||e.type||'');
-    return `<div style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:${me?'rgba(255,77,77,.08)':'var(--surface2)'};border:1px solid ${me?'rgba(255,77,77,.20)':'var(--border)'};border-radius:9px;">
+    return `<div style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:${me?'var(--accent-tint-2)':'var(--surface2)'};border:1px solid ${me?'var(--accent-tint-3)':'var(--border)'};border-radius:9px;">
       <span style="font-size:16px;flex-shrink:0;">${icon}</span>
       <div style="flex:1;min-width:0;overflow:hidden;">
         <div style="font-size:12px;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
@@ -14334,7 +14334,7 @@ async function shareMuscleMap(){
   comp.innerHTML=`
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
       <div style="display:flex;align-items:center;gap:10px;">
-        <div style="width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,#ff4d4d,#ff6b35);display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 4px 14px rgba(255,77,77,0.35);">💥</div>
+        <div style="width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,#ff4d4d,#ff6b35);display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 4px 14px var(--accent-tint-4);">💥</div>
         <div>
           <div style="font-size:15px;font-weight:900;color:#eaeaea;letter-spacing:0.8px;">QROK</div>
           <div style="font-size:10px;color:#6b6b78;margin-top:1px;">자극 부위 · ${modeLabel} · ${viewLabel}</div>
@@ -14342,7 +14342,7 @@ async function shareMuscleMap(){
       </div>
       <div style="font-size:10px;color:#6b6b78;font-family:'DM Mono',monospace;">${new Date().toLocaleDateString('ko-KR',{month:'2-digit',day:'2-digit'})}</div>
     </div>
-    <div style="margin:12px 0 4px;padding:14px 8px 10px;background:radial-gradient(ellipse at center,rgba(255,77,77,0.08) 0%,rgba(255,77,77,0) 70%);border:1px solid rgba(255,77,77,0.12);border-radius:18px;">
+    <div style="margin:12px 0 4px;padding:14px 8px 10px;background:radial-gradient(ellipse at center,var(--accent-tint-2) 0%,transparent 70%);border:1px solid var(--accent-tint-2);border-radius:18px;">
       <div style="display:flex;gap:6px;justify-content:center;align-items:flex-start;">
         <div style="flex:1;max-width:50%;display:flex;flex-direction:column;align-items:center;gap:3px;">
           <div style="font-size:8px;color:#6b6b78;letter-spacing:0.1em;font-weight:700;">FRONT</div>
@@ -14363,7 +14363,7 @@ async function shareMuscleMap(){
         <div style="font-size:14px;font-weight:800;color:#ff4d4d;letter-spacing:0.2px;">${punchline}</div>
         <div style="font-size:10px;color:#6b6b78;margin-top:2px;">qrok.app · ${tease}</div>
       </div>
-      <div style="padding:9px 13px;background:linear-gradient(135deg,#ff4d4d,#ff6b35);border-radius:10px;font-size:11px;font-weight:900;color:#fff;letter-spacing:0.5px;box-shadow:0 4px 12px rgba(255,77,77,0.3);">💪 QROK</div>
+      <div style="padding:9px 13px;background:linear-gradient(135deg,#ff4d4d,#ff6b35);border-radius:10px;font-size:11px;font-weight:900;color:#fff;letter-spacing:0.5px;box-shadow:0 4px 12px var(--accent-tint-4);">💪 QROK</div>
     </div>
   `;
   document.body.appendChild(comp);
@@ -15886,11 +15886,11 @@ function renderMuscleMap(){
       all:{title:'아직 훈련 기록이 없어요',body:'첫 세션부터 모든 기록이<br>근육맵에 누적돼요 📊',cta:'첫 세션 시작하기'}
     };
     const c=EMPTY_COPY[_mmMode]||EMPTY_COPY.today;
-    summary.innerHTML=`<div style="padding:14px 12px;background:linear-gradient(135deg,rgba(255,77,77,0.08) 0%,rgba(255,77,77,0.02) 100%);border:1px solid rgba(255,77,77,0.15);border-radius:12px;text-align:center;">
+    summary.innerHTML=`<div style="padding:14px 12px;background:linear-gradient(135deg,var(--accent-tint-2) 0%,var(--accent-tint-1) 100%);border:1px solid var(--accent-tint-2);border-radius:12px;text-align:center;">
       <div style="font-size:24px;margin-bottom:4px;">💪</div>
       <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px;">${c.title}</div>
       <div style="font-size:11px;color:var(--text3);line-height:1.5;margin-bottom:10px;">${c.body}</div>
-      <div role="button" tabindex="0" onclick="closeMuscleMap();setTimeout(openWorkoutModal,50);" ontouchend="event.preventDefault();closeMuscleMap();setTimeout(openWorkoutModal,50);" style="display:inline-flex;align-items:center;gap:6px;padding:10px 18px;background:linear-gradient(135deg,#ff4d4d,#ff6b35);border-radius:8px;font-size:13px;font-weight:700;color:#fff;cursor:pointer;box-shadow:0 3px 10px rgba(255,77,77,0.3);user-select:none;-webkit-user-select:none;">🔥 ${c.cta}</div>
+      <div role="button" tabindex="0" onclick="closeMuscleMap();setTimeout(openWorkoutModal,50);" ontouchend="event.preventDefault();closeMuscleMap();setTimeout(openWorkoutModal,50);" style="display:inline-flex;align-items:center;gap:6px;padding:10px 18px;background:linear-gradient(135deg,#ff4d4d,#ff6b35);border-radius:8px;font-size:13px;font-weight:700;color:#fff;cursor:pointer;box-shadow:0 3px 10px var(--accent-tint-4);user-select:none;-webkit-user-select:none;">🔥 ${c.cta}</div>
     </div>`;
   }
 }
@@ -16810,7 +16810,7 @@ function cvProcessFrame(){
 function cvDrawSkeleton(ctx,lm,w,h){
   ctx.lineWidth=2;
   // Draw connections
-  ctx.strokeStyle='rgba(255,77,77,.5)';
+  ctx.strokeStyle='var(--accent-tint-5)';
   CV_CONNECTIONS.forEach(([a,b])=>{
     const pa=lm[a],pb=lm[b];
     if(!pa||!pb||pa.visibility<0.5||pb.visibility<0.5)return;

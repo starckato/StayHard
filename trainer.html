@@ -29,7 +29,7 @@
   textarea{resize:vertical;min-height:80px;}
   .btn{display:inline-flex;align-items:center;gap:8px;padding:9px 16px;border-radius:8px;border:none;font-size:13px;font-weight:700;letter-spacing:-.01em;transition:all .15s;}
   .btn-primary{background:linear-gradient(135deg,#ff4d4d,#ff6b35);color:#fff;}
-  .btn-primary:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(255,77,77,.4);}
+  .btn-primary:hover{transform:translateY(-1px);box-shadow:0 4px 12px var(--accent-tint-4);}
   .btn-ghost{background:var(--surface2);color:var(--text2);border:1px solid var(--border);}
   .btn-ghost:hover{border-color:var(--border2);color:var(--text);}
   .btn-danger{background:var(--accent-tint-2);color:var(--accent);border:1px solid var(--accent-tint-4);}
@@ -123,7 +123,7 @@
   .meal-card .pill{font-size:10px;padding:2px 6px;border-radius:4px;letter-spacing:.05em;font-weight:700;text-transform:uppercase;}
   .pill-green{background:rgba(52,211,153,0.18);color:var(--green);}
   .pill-normal{background:rgba(245,158,11,0.18);color:var(--amber);}
-  .pill-red{background:rgba(255,77,77,0.18);color:var(--red);}
+  .pill-red{background:var(--accent-tint-3);color:var(--red);}
   .pill-cheat{background:rgba(168,85,247,0.18);color:#c084fc;}
   .pill-pending{background:rgba(56,189,248,0.18);color:#38bdf8;font-weight:800;}
   .meal-card img{width:48px;height:48px;border-radius:6px;object-fit:cover;}
@@ -139,7 +139,7 @@
 
   /* ── Workout Builder ── */
   .lib-row{padding:7px 10px;border-bottom:1px solid var(--border);cursor:pointer;display:flex;align-items:center;gap:8px;font-size:13px;transition:background .1s;}
-  .lib-row:hover{background:rgba(255,77,77,0.08);color:var(--text);}
+  .lib-row:hover{background:var(--accent-tint-2);color:var(--text);}
   .lib-row .ico{flex-shrink:0;font-size:16px;}
   .lib-row .nm{flex:1;}
   .lib-row .ms{font-size:10px;color:var(--text3);}
@@ -217,7 +217,7 @@
   .dash3-clients-search{width:100%;padding:9px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;margin-bottom:8px;}
   .dash3-client-row{display:flex;align-items:center;gap:8px;padding:9px 10px;border-radius:8px;cursor:pointer;margin-bottom:2px;transition:background .12s;border:1px solid transparent;}
   .dash3-client-row:hover{background:var(--surface2);}
-  .dash3-client-row.on{background:rgba(255,77,77,0.10);border-color:rgba(255,77,77,0.32);}
+  .dash3-client-row.on{background:var(--accent-tint-2);border-color:var(--accent-tint-4);}
   .dash3-client-row .ed{opacity:0;font-size:11px;color:var(--text3);padding:2px 4px;background:none;border:none;cursor:pointer;}
   .dash3-client-row:hover .ed{opacity:1;}
   .dash3-client-name{flex:1;min-width:0;font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
@@ -236,7 +236,7 @@
   .dash3-cal-cell.outside{opacity:.3;}
   .dash3-cal-cell.today{border-color:var(--accent);}
   .dash3-cal-cell.selected{background:var(--surface2);box-shadow:inset 3px 0 0 var(--accent);}
-  .dash3-cal-cell.has-data{background:linear-gradient(135deg,rgba(255,77,77,0.04),rgba(255,107,53,0.02));}
+  .dash3-cal-cell.has-data{background:linear-gradient(135deg,var(--accent-tint-1),rgba(255,107,53,0.02));}
   .dash3-cal-num{font-size:13px;font-weight:700;color:var(--text);font-family:'DM Mono',monospace;}
   .dash3-cal-num.today{color:var(--accent);}
   .dash3-cal-mini{font-size:9px;color:var(--text3);font-family:'DM Mono',monospace;text-align:right;}
@@ -275,7 +275,7 @@
   .fcard-name{font-size:15px;font-weight:700;letter-spacing:-.005em;}
   .fcard-name-real{font-size:11px;color:var(--text3);font-weight:500;margin-left:6px;}
   .fcard-attn{display:inline-block;font-size:9px;font-weight:800;padding:2px 7px;border-radius:5px;margin-left:6px;letter-spacing:.04em;}
-  .fcard-attn.alert{background:rgba(255,77,77,0.2);color:#ff7a7a;}
+  .fcard-attn.alert{background:var(--accent-tint-3);color:#ff7a7a;}
   .fcard-attn.warn{background:rgba(245,158,11,0.2);color:#fbbf24;}
   .fcard-attn.ok{background:rgba(52,211,153,0.18);color:#34d399;}
   .fcard-last{font-size:11px;color:var(--text3);margin-left:auto;font-family:'DM Mono',monospace;}
@@ -301,11 +301,11 @@
   .fcard-btn{padding:7px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-size:11px;font-weight:700;color:var(--text2);cursor:pointer;transition:all .12s;}
   .fcard-btn:hover{border-color:var(--border2);color:var(--text);}
   .fcard-btn.primary{background:linear-gradient(135deg,#ff4d4d,#ff6b35);color:#fff;border-color:transparent;}
-  .fcard-btn.primary:hover{box-shadow:0 2px 8px rgba(255,77,77,.4);}
+  .fcard-btn.primary:hover{box-shadow:0 2px 8px var(--accent-tint-4);}
   /* 동일 카드 layout PC + Mobile (사용자 결정). */
 
   /* ── 알림 카드 (액션 필요) ── */
-  .alert-card{background:linear-gradient(135deg,rgba(255,77,77,0.10),rgba(255,107,53,0.04));border:1.5px solid rgba(255,77,77,0.32);border-radius:12px;padding:11px 14px;margin-bottom:10px;}
+  .alert-card{background:linear-gradient(135deg,var(--accent-tint-2),rgba(255,107,53,0.04));border:1.5px solid var(--accent-tint-4);border-radius:12px;padding:11px 14px;margin-bottom:10px;}
   .alert-card.warn{background:linear-gradient(135deg,rgba(245,158,11,0.10),rgba(245,158,11,0.04));border-color:rgba(245,158,11,0.32);}
   .alert-card-hd{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
   .alert-card-hd .icon{font-size:14px;flex-shrink:0;}
@@ -319,13 +319,13 @@
   /* ── 회원 카드 (접힘 default) — 운동 status + 식단 photo + actions ── */
   .mcard{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;transition:border-color .12s;}
   .mcard:hover{border-color:var(--border2);}
-  .mcard.expanded{border-color:rgba(255,77,77,0.32);}
+  .mcard.expanded{border-color:var(--accent-tint-4);}
   .mcard-summary{padding:13px 16px;cursor:pointer;display:flex;flex-direction:column;gap:8px;}
   .mcard-row1{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
   .mcard-name{font-size:15px;font-weight:700;letter-spacing:-.005em;}
   .mcard-name-real{font-size:11px;color:var(--text3);font-weight:500;}
   .mcard-attn{display:inline-block;font-size:9px;font-weight:800;padding:2px 7px;border-radius:5px;letter-spacing:.04em;}
-  .mcard-attn.alert{background:rgba(255,77,77,0.2);color:#ff7a7a;}
+  .mcard-attn.alert{background:var(--accent-tint-3);color:#ff7a7a;}
   .mcard-attn.warn{background:rgba(245,158,11,0.2);color:#fbbf24;}
   .mcard-attn.ok{background:rgba(52,211,153,0.18);color:#34d399;}
   .mcard-last{font-size:11px;color:var(--text3);margin-left:auto;font-family:'DM Mono',monospace;}
@@ -334,7 +334,7 @@
   .mcard-workout-status .ico{width:18px;height:18px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;}
   .mcard-workout-status .ico.ok{background:rgba(52,211,153,0.25);color:#34d399;}
   .mcard-workout-status .ico.partial{background:rgba(245,158,11,0.25);color:#fbbf24;}
-  .mcard-workout-status .ico.miss{background:rgba(255,77,77,0.25);color:#ff7a7a;}
+  .mcard-workout-status .ico.miss{background:var(--accent-tint-3);color:#ff7a7a;}
   .mcard-workout-status .ico.none{background:var(--surface2);color:var(--text3);}
   .mcard-workout-link{margin-left:6px;font-size:11px;color:var(--accent);font-weight:700;cursor:pointer;}
   .mcard-last-wo{margin-left:auto;font-size:11px;color:var(--text2);font-weight:600;cursor:pointer;padding:3px 8px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;transition:all .12s;}
@@ -347,7 +347,7 @@
   .mcard-w-goal{font-family:'DM Mono',monospace;font-weight:600;color:var(--text2);font-size:12px;}
   .mcard-w-diff{margin-left:auto;font-family:'DM Mono',monospace;font-weight:800;font-size:11px;padding:2px 6px;border-radius:4px;}
   .mcard-w-diff.ok{background:rgba(52,211,153,0.18);color:#34d399;}
-  .mcard-w-diff.over{background:rgba(255,77,77,0.18);color:#ff7a7a;}
+  .mcard-w-diff.over{background:var(--accent-tint-3);color:#ff7a7a;}
   .mcard-w-diff.under{background:rgba(56,189,248,0.18);color:#7dd3fc;}
   .mcard-meals{display:grid;grid-template-columns:repeat(4,minmax(0,96px));gap:6px;}
   .mcard-meal{position:relative;aspect-ratio:1;background:var(--surface2);border:1px solid var(--border);border-radius:8px;overflow:hidden;display:flex;align-items:center;justify-content:center;cursor:pointer;}
@@ -362,7 +362,7 @@
   .mcard-btn{flex:1;min-width:80px;padding:8px 6px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-size:11px;font-weight:700;color:var(--text2);cursor:pointer;transition:all .12s;text-align:center;}
   .mcard-btn:hover{border-color:var(--border2);color:var(--text);}
   .mcard-btn.primary{background:linear-gradient(135deg,#ff4d4d,#ff6b35);color:#fff;border-color:transparent;}
-  .mcard-btn.primary:hover{box-shadow:0 2px 8px rgba(255,77,77,.4);}
+  .mcard-btn.primary:hover{box-shadow:0 2px 8px var(--accent-tint-4);}
 
   /* ── Excel grid (자세히 보기) ── */
   .excel-wrap{max-width:1280px;margin:0 auto;padding:18px 16px 60px;}
@@ -379,7 +379,7 @@
   .excel-table th{background:var(--surface2);font-weight:700;color:var(--text3);font-size:10px;letter-spacing:.04em;}
   .excel-table th.row-lbl, .excel-table td.row-lbl{position:sticky;left:0;background:var(--surface);z-index:1;text-align:left;font-weight:700;color:var(--text2);min-width:80px;}
   .excel-table th.row-lbl{background:var(--surface2);}
-  .excel-table td.today-col{background:rgba(255,77,77,0.04);}
+  .excel-table td.today-col{background:var(--accent-tint-1);}
   .excel-cell{display:inline-block;width:24px;height:24px;border-radius:5px;cursor:pointer;}
   .excel-cell.green{background:#34d399;}
   .excel-cell.normal{background:#fbbf24;}
@@ -444,7 +444,7 @@
   .dt-head-weight .goal{font-family:'DM Mono',monospace;font-weight:600;color:var(--text2);}
   .dt-head-weight .diff{margin-left:6px;font-family:'DM Mono',monospace;font-weight:800;font-size:11px;padding:2px 7px;border-radius:4px;}
   .dt-head-weight .diff.ok{background:rgba(52,211,153,0.18);color:#34d399;}
-  .dt-head-weight .diff.over{background:rgba(255,77,77,0.18);color:#ff7a7a;}
+  .dt-head-weight .diff.over{background:var(--accent-tint-3);color:#ff7a7a;}
   .dt-head-weight .diff.under{background:rgba(56,189,248,0.18);color:#7dd3fc;}
   .dt-head-actions{display:flex;gap:6px;flex-wrap:wrap;}
   .dt-head-actions .btn{padding:7px 14px;font-size:12px;}
@@ -468,14 +468,14 @@
   .dt-tl-day-hd{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
   .dt-tl-day-date{font-size:12px;font-weight:700;color:var(--text);}
   .dt-tl-day-tag{font-size:9px;font-weight:800;padding:2px 6px;border-radius:4px;background:var(--surface2);color:var(--text3);letter-spacing:.04em;}
-  .dt-tl-day-tag.today{background:rgba(255,77,77,0.18);color:#ff7a7a;}
+  .dt-tl-day-tag.today{background:var(--accent-tint-3);color:#ff7a7a;}
   .dt-tl-day-row{display:flex;align-items:center;gap:10px;font-size:11px;color:var(--text2);margin-top:3px;flex-wrap:wrap;}
   .dt-tl-day-row .lbl{color:var(--text3);font-size:10px;text-transform:uppercase;letter-spacing:.04em;font-weight:700;}
   .dt-tl-meals{display:flex;gap:3px;}
   .dt-tl-meal-dot{width:18px;height:18px;border-radius:4px;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:8px;color:var(--text3);position:relative;overflow:hidden;}
   .dt-tl-meal-dot img{width:100%;height:100%;object-fit:cover;}
   .dt-tl-meal-dot.green{border-color:rgba(52,211,153,0.5);}
-  .dt-tl-meal-dot.red{border-color:rgba(255,77,77,0.5);}
+  .dt-tl-meal-dot.red{border-color:var(--accent-tint-5);}
   .dt-tl-meal-dot.normal{border-color:rgba(122,122,134,0.4);}
   .dt-msg-row{padding:8px 0;border-top:1px solid var(--border);font-size:12px;}
   .dt-msg-row:first-of-type{border-top:none;}
@@ -1003,12 +1003,12 @@
 <style>
   .ne-chip{padding:5px 11px;border-radius:14px;border:1px solid var(--border);background:var(--surface2);font-size:11px;color:var(--text2);cursor:pointer;white-space:nowrap;font-weight:600;flex-shrink:0;font-family:inherit;}
   .ne-chip:hover{border-color:var(--border2);color:var(--text);}
-  .ne-chip.sel-muscle{background:rgba(255,77,77,0.12);color:var(--accent);border-color:rgba(255,77,77,0.4);}
+  .ne-chip.sel-muscle{background:var(--accent-tint-2);color:var(--accent);border-color:var(--accent-tint-4);}
   .ne-chip.sel-equip{background:rgba(52,211,153,0.12);color:var(--green);border-color:rgba(52,211,153,0.4);}
   .ne-chip-row{display:flex;align-items:center;gap:10px;padding:8px 12px;cursor:pointer;border-bottom:1px solid var(--border);}
   .ne-chip-row:last-child{border-bottom:none;}
   .ne-chip-row:hover{background:var(--surface2);}
-  .ne-chip-row.sel{background:rgba(255,77,77,0.08);}
+  .ne-chip-row.sel{background:var(--accent-tint-2);}
   .ne-thumb{width:48px;height:48px;border-radius:8px;background:var(--bg);display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;}
   .ne-thumb img{width:48px;height:48px;object-fit:cover;display:block;}
 </style>
@@ -1673,7 +1673,7 @@ async function loadAssignments(){
       <div class="small" style="line-height:1.5;margin-bottom:6px;">${wks.slice(0,3).map(w=>esc(w.name||'—')).join(' · ')}${wks.length>3?' +'+(wks.length-3):''}</div>
       <div style="display:flex;gap:4px;">
         ${canEdit?`<button onclick="editAssignment('${a.id}')" style="flex:1;padding:5px 8px;background:var(--surface);border:1px solid var(--border2);border-radius:6px;font-size:10px;color:var(--text2);font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;">수정</button>`:''}
-        <button onclick="deleteAssignment('${a.id}','${a.assigned_for_date}')" style="flex:1;padding:5px 8px;background:rgba(255,77,77,0.08);border:1px solid rgba(255,77,77,0.32);border-radius:6px;font-size:10px;color:#ff6b6b;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;">삭제</button>
+        <button onclick="deleteAssignment('${a.id}','${a.assigned_for_date}')" style="flex:1;padding:5px 8px;background:var(--accent-tint-2);border:1px solid var(--accent-tint-4);border-radius:6px;font-size:10px;color:#ff6b6b;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;">삭제</button>
       </div>
     </div>`;
   }
@@ -2020,13 +2020,13 @@ function renderAssignBuilder(){
   content.innerHTML = `
     <!-- 종목 헤더 -->
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--border);">
-      <div style="width:48px;height:48px;border-radius:10px;background:rgba(255,77,77,0.18);display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;">${headerIco}</div>
+      <div style="width:48px;height:48px;border-radius:10px;background:var(--accent-tint-3);display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;">${headerIco}</div>
       <div style="flex:1;min-width:0;">
         <div style="font-size:11px;color:var(--accent);font-weight:800;letter-spacing:.04em;">숙제 ${ASSIGN_ACTIVE_TAB+1}</div>
         <div style="font-size:18px;font-weight:700;margin-top:2px;letter-spacing:-.005em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(ex.name)}</div>
         <div style="font-size:11px;color:var(--text3);margin-top:2px;">${esc(ex.m||'')}${ex.e?' · '+esc(ex.e):''}</div>
       </div>
-      <button onclick="removeAssignExercise(${ASSIGN_ACTIVE_TAB})" style="background:rgba(255,77,77,0.10);border:1px solid rgba(255,77,77,0.28);border-radius:8px;color:#ff6b6b;padding:7px 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;flex-shrink:0;">탭 삭제</button>
+      <button onclick="removeAssignExercise(${ASSIGN_ACTIVE_TAB})" style="background:var(--accent-tint-2);border:1px solid var(--accent-tint-4);border-radius:8px;color:#ff6b6b;padding:7px 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;flex-shrink:0;">탭 삭제</button>
     </div>
 
     <!-- 세트 입력 헤더 -->
@@ -2545,7 +2545,7 @@ function neRenderList(){
       <div style="flex:1;min-width:0;">
         <div style="font-size:13px;font-weight:${isSel?'700':'600'};color:${isSel?'var(--accent)':'var(--text)'};">${esc(e.n)}</div>
         <div style="display:flex;gap:5px;margin-top:3px;">
-          <span style="font-size:9px;padding:2px 6px;border-radius:4px;font-family:'DM Mono',monospace;background:rgba(255,77,77,0.1);color:#ff7a7a;border:1px solid rgba(255,77,77,0.25);">${esc(e.m||'')}</span>
+          <span style="font-size:9px;padding:2px 6px;border-radius:4px;font-family:'DM Mono',monospace;background:var(--accent-tint-2);color:#ff7a7a;border:1px solid var(--accent-tint-3);">${esc(e.m||'')}</span>
           ${e.e?`<span style="font-size:9px;padding:2px 6px;border-radius:4px;font-family:'DM Mono',monospace;background:rgba(52,211,153,0.1);color:var(--green);border:1px solid rgba(52,211,153,0.25);">${esc(e.e)}</span>`:''}
         </div>
       </div>
@@ -3197,9 +3197,9 @@ function openMealLightbox(clientName, slot, photoPath, type, name, category){
   const typeMap = {
     green:  {label:'클린식', bg:'rgba(52,211,153,0.2)',  color:'#34d399'},
     normal: {label:'일반식', bg:'rgba(245,158,11,0.18)', color:'#fbbf24'},
-    red:    {label:'금지식', bg:'rgba(255,77,77,0.22)',  color:'#ff7a7a'},
+    red:    {label:'금지식', bg:'var(--accent-tint-3)',  color:'#ff7a7a'},
     cheat:  {label:'치팅',   bg:'rgba(245,158,11,0.18)', color:'#fbbf24'},
-    alcohol:{label:'음주',   bg:'rgba(255,77,77,0.22)',  color:'#ff7a7a'},
+    alcohol:{label:'음주',   bg:'var(--accent-tint-3)',  color:'#ff7a7a'},
     skip:   {label:'스킵',   bg:'rgba(122,122,134,0.22)',color:'#aaa'},
   };
   const t = typeMap[type] || {label:'미분류', bg:'var(--surface2)', color:'var(--text3)'};
@@ -3706,7 +3706,7 @@ async function renderDash3DateDetail(date){
           <span style="font-size:11px;font-weight:800;color:${color};letter-spacing:.04em;">${lbl}</span>
           <span style="flex:1;font-size:11px;font-family:'DM Mono',monospace;color:var(--text2);">${doneSets}/${totalSets} 세트</span>
           <button onclick="editAssignment('${a.id}')" style="font-size:10px;padding:3px 8px;background:var(--surface);border:1px solid var(--border2);border-radius:5px;color:var(--text2);cursor:pointer;font-weight:700;">수정</button>
-          <button onclick="deleteAssignment('${a.id}','${date}')" style="font-size:10px;padding:3px 8px;background:rgba(255,77,77,0.10);border:1px solid rgba(255,77,77,0.32);border-radius:5px;color:#ff6b6b;cursor:pointer;font-weight:700;">삭제</button>
+          <button onclick="deleteAssignment('${a.id}','${date}')" style="font-size:10px;padding:3px 8px;background:var(--accent-tint-2);border:1px solid var(--accent-tint-4);border-radius:5px;color:#ff6b6b;cursor:pointer;font-weight:700;">삭제</button>
         </div>
         <div style="height:4px;background:var(--surface2);border-radius:999px;overflow:hidden;margin-bottom:6px;">
           <div style="height:100%;width:${pct}%;background:${color};"></div>
