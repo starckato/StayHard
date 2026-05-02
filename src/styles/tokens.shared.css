@@ -24,15 +24,18 @@
   --radius-xl: 16px;
   --radius-pill: 999px;
 
-  /* ── Font size (8단계) ─────────────────────────────────── */
-  --text-2xs: 10px;   /* micro labels */
-  --text-xs:  11px;   /* caption */
-  --text-sm:  12px;   /* body small */
-  --text-md:  13px;   /* body default */
-  --text-base: 14px;  /* button / form */
-  --text-lg:  16px;   /* card title */
-  --text-xl:  20px;   /* section heading */
-  --text-2xl: 28px;   /* hero number */
+  /* ── Font size (11단계: 9 typographic + 2 hero) ────────── */
+  --text-2xs:  10px;   /* micro labels (badges) */
+  --text-xs:   11px;   /* caption */
+  --text-sm:   12px;   /* body small */
+  --text-md:   13px;   /* body default */
+  --text-base: 14px;   /* button / form */
+  --text-lg:   16px;   /* card title */
+  --text-xl:   20px;   /* section heading */
+  --text-2xl:  24px;   /* sub-hero */
+  --text-3xl:  36px;   /* hero number / brand */
+  --text-4xl:  64px;   /* score banner */
+  --text-5xl:  92px;   /* peak hero (rage / win overlay) */
 
   /* ── Font weight ─────────────────────────────────────── */
   --weight-regular: 400;
