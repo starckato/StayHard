@@ -256,8 +256,8 @@ export function renderWeight() {
     goalBtn.textContent = goal ? '목표 편집' : '목표 설정';
   }
 
-  // Axis labels
-  const history = collectHistory(30);
+  // Axis labels — 최초 기록 → 현재
+  const history = collectFullHistory();
   const vals = history.filter(v => v != null);
   if (axisStart) axisStart.textContent = vals.length ? vals[0].toFixed(1) : '—';
   if (axisEnd) axisEnd.textContent = info.value != null ? info.value.toFixed(1) : (vals.length ? vals[vals.length - 1].toFixed(1) : '—');
@@ -277,6 +277,38 @@ function collectHistory(days) {
   return out;
 }
 
+// 최초 체중 기록일부터 오늘까지 전체 history.
+// 캐시에서 가장 오래된 weight 기록 날짜를 찾아 그 날부터 오늘까지의 일별 배열 반환.
+// 최대 lookback = 730일 (안전 상한). 최초 기록 없으면 빈 배열.
+function collectFullHistory() {
+  const cache = window.logCache || {};
+  const today = new Date(window.now);
+  const dkey = window.dkey;
+  if (!dkey) return [];
+  // 가장 오래된 weight 기록일 찾기 (역순 730일 스캔 → 가장 오래된 것 기록)
+  let firstKey = null;
+  for (let i = 0; i <= 730; i++) {
+    const d = new Date(today); d.setDate(today.getDate() - i);
+    const k = dkey(d);
+    const l = cache[k];
+    if (l && l.weight != null && isFinite(parseFloat(l.weight))) firstKey = k;
+  }
+  if (!firstKey) return [];
+  // firstKey 부터 today 까지 하루씩
+  const firstDate = new Date(firstKey + 'T00:00:00');
+  const dayMs = 86400000;
+  const totalDays = Math.floor((today - firstDate) / dayMs) + 1;
+  const out = [];
+  for (let i = 0; i < totalDays; i++) {
+    const d = new Date(firstDate); d.setDate(firstDate.getDate() + i);
+    const k = dkey(d);
+    const l = cache[k];
+    const w = l?.weight != null ? parseFloat(l.weight) : null;
+    out.push(isFinite(w) ? w : null);
+  }
+  return out;
+}
+
 function renderWeightGraph(goal) {
   const points = document.getElementById('wt-points');
   const linePath = document.getElementById('wt-line-path');
@@ -285,7 +317,7 @@ function renderWeightGraph(goal) {
   const goalLabel = document.getElementById('wt-goal-label');
   if (!points || !linePath || !areaPath) return;
 
-  const history = collectHistory(30);
+  const history = collectFullHistory();
   const vals = history.filter(v => v != null);
 
   if (!vals.length) {
@@ -298,33 +330,24 @@ function renderWeightGraph(goal) {
   }
 
   const W = 340, H = 64, PAD_Y = 8, PAD_X = 4;
-  // 기록 탭 그래프: 0.3~0.5kg 변동도 한눈에 보이게 과장.
-  // y range = 데이터 변동폭 1.5x, 최소 1kg. goal 은 범위 밖이면 가장자리에 클램프.
-  const dataLo = Math.min(...vals);
-  const dataHi = Math.max(...vals);
-  const span = Math.max(dataHi - dataLo, 1);
-  const pad = span * 0.25;
-  const minV = +(dataLo - pad).toFixed(1);
-  const maxV = +(dataHi + pad).toFixed(1);
-  const range = (maxV - minV) || 1;
+  // 현실적인 비율: 데이터 + goal 모두 포함, ±0.5kg 패딩.
+  // 1점 기록만 있는 경우에도 ±1kg 범위 보장.
+  const minV = Math.min(...vals, goal ?? vals[0]) - 0.5;
+  const maxV = Math.max(...vals, goal ?? vals[0]) + 0.5;
+  const range = Math.max(maxV - minV, 1);
   const yFor = v => PAD_Y + (1 - (v - minV) / range) * (H - PAD_Y * 2);
-  const yForClamped = v => {
-    const c = Math.max(minV, Math.min(maxV, v));
-    return yFor(c);
-  };
-  const xFor = i => PAD_X + (i / (history.length - 1)) * (W - PAD_X * 2);
+  const xFor = i => history.length > 1
+    ? PAD_X + (i / (history.length - 1)) * (W - PAD_X * 2)
+    : W / 2;
 
   if (goal && goalLine && goalLabel) {
-    // goal 이 시야 밖이면 라벨에 ↑/↓ 표시.
-    const offTop = goal > maxV;
-    const offBot = goal < minV;
-    const gy = yForClamped(goal);
+    const gy = yFor(goal);
     goalLine.style.display = '';
     goalLabel.style.display = '';
     goalLine.setAttribute('y1', gy);
     goalLine.setAttribute('y2', gy);
     goalLabel.setAttribute('y', gy - 3);
-    goalLabel.textContent = (offTop ? '↑ ' : offBot ? '↓ ' : '') + goal.toFixed(1);
+    goalLabel.textContent = goal.toFixed(1);
   } else if (goalLine && goalLabel) {
     goalLine.style.display = 'none';
     goalLabel.style.display = 'none';
