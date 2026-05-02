@@ -28,7 +28,7 @@
      so window globals (dkey, normKey, ...) are set before inline code runs.
      Query version bumps cache when bundle content changes. Bump manually or
      via build script when shipping a new bundle. See MIGRATION_PLAN.md. -->
-<script src="/dist/app.js?v=20260502-notif-prune"></script>
+<script src="/dist/app.js?v=20260503-cube-shape"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Archivo+Black&display=swap" rel="stylesheet">
 <!-- Phase 0: 디자인 토큰 (shared 먼저, palette 가 override). -->
 <link href="/src/styles/tokens.shared.css" rel="stylesheet">
@@ -483,11 +483,6 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 .sb-progress-track{flex:1;height:5px;background:rgba(255,255,255,.07);border-radius:var(--radius-pill);overflow:hidden;}
 .sb-progress-fill{height:100%;border-radius:var(--radius-pill);background:var(--accent-grad);transition:width .6s cubic-bezier(.4,0,.2,1);width:0%;box-shadow:0 0 8px var(--accent-tint-4);}
 .sb-progress-label{font-size:var(--text-2xs);color:var(--text3);font-family:'DM Mono',monospace;flex-shrink:0;font-weight:600;}
-.sb-summary-btn{width:100%;display:flex;align-items:center;gap:10px;padding:12px 14px;background:rgba(10,10,12,.5);border:1px solid rgba(255,255,255,.08);border-radius:var(--radius-lg);color:var(--text);font-size:var(--text-md);font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;transition:all .15s;}
-.sb-summary-btn:active{transform:scale(.98);background:var(--accent-tint-2);border-color:var(--accent-bd);}
-.sb-summary-dot{width:7px;height:7px;border-radius:50%;background:var(--amber);flex-shrink:0;box-shadow:0 0 6px currentColor;}
-.sb-summary-label{flex:1;text-align:left;letter-spacing:-.01em;}
-.sb-summary-arrow{font-size:var(--text-base);color:var(--text3);font-weight:700;}
 /* Status Band reveal sequence — 최초 렌더 시 1회 */
 .sb-reveal{animation:sbFadeIn .45s cubic-bezier(.2,.9,.3,1);}
 .sb-reveal .sb-tier{animation:sbStamp .55s .12s cubic-bezier(.2,.9,.3,1) backwards;display:inline-block;}
@@ -496,7 +491,6 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 .sb-reveal .sb-score-row{animation:sbFadeIn .5s .08s cubic-bezier(.2,.9,.3,1) backwards;}
 .sb-reveal .sb-quote{animation:sbFadeIn .45s .38s cubic-bezier(.2,.9,.3,1) backwards;}
 .sb-reveal .sb-progress-wrap{animation:sbFadeIn .45s .46s cubic-bezier(.2,.9,.3,1) backwards;}
-.sb-reveal .sb-summary-btn{animation:sbSlide .45s .54s cubic-bezier(.2,.9,.3,1) backwards;}
 @keyframes sbFadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
 @keyframes sbStamp{0%{opacity:0;transform:scale(.6);}60%{transform:scale(1.08);}100%{opacity:1;transform:scale(1);}}
 @keyframes sbSlide{from{opacity:0;transform:translateX(12px);}to{opacity:1;transform:translateX(0);}}
@@ -1011,7 +1005,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
 .ck-row.tgt-type{border-left:3px solid var(--border2);padding-left:10px;margin-left:-13px;}
 .ck-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);touch-action:manipulation;-webkit-tap-highlight-color:transparent;min-height:48px;}
 .ck-row:last-child{border-bottom:none;}
-.ck-box{width:26px;height:26px;border-radius:50%;border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:var(--text-md);cursor:pointer;flex-shrink:0;transition:all .15s;background:transparent;touch-action:manipulation;-webkit-user-select:none;user-select:none;}
+.ck-box{width:26px;height:26px;border-radius:var(--radius-sm);border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:var(--text-md);cursor:pointer;flex-shrink:0;transition:all .15s;background:transparent;touch-action:manipulation;-webkit-user-select:none;user-select:none;}
 .ck-box.done{background:var(--green);border-color:var(--green);box-shadow:0 0 8px rgba(52,211,153,.25);}
 .ck-box.fail{background:var(--red-bg);border-color:var(--red);}
 .ck-name.fail{text-decoration:line-through;color:var(--text3);}
@@ -1024,7 +1018,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
 /* TARGETS */
 .tgt-row{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);touch-action:manipulation;-webkit-tap-highlight-color:transparent;min-height:52px;}
 .tgt-row:last-child{border-bottom:none;}
-.tgt-btn{width:28px;height:28px;border-radius:50%;border:2px solid var(--border2);background:transparent;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:var(--text-base);transition:all .15s;-webkit-user-select:none;user-select:none;touch-action:manipulation;}
+.tgt-btn{width:28px;height:28px;border-radius:var(--radius-sm);border:2px solid var(--border2);background:transparent;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:var(--text-base);transition:all .15s;-webkit-user-select:none;user-select:none;touch-action:manipulation;}
 .tgt-btn.done{background:var(--green-bg);border-color:var(--green);color:var(--green);}
 .tgt-btn.fail{background:var(--red-bg);border-color:var(--red);color:var(--red);}
 /* Routine badge — makes "this is a recurring routine" unambiguous */
@@ -1553,12 +1547,6 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
         </div>
         <div class="sb-progress-label" id="char-progress-label">—</div>
       </div>
-
-      <button class="sb-summary-btn" id="summary-open-btn" onclick="openSummaryModal()">
-        <span class="sb-summary-dot" id="summary-btn-dot"></span>
-        <span class="sb-summary-label">오늘 기록 요약</span>
-        <span class="sb-summary-arrow">›</span>
-      </button>
 
       <span id="char-tier-name" style="display:none;"></span>
       <span id="char-pts" style="display:none;"></span>
@@ -3453,70 +3441,6 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
         style="padding:9px 14px;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius-lg);color:var(--text2);font-size:var(--text-sm);font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;display:none;">← 이전</button>
       <button id="tour-next-btn" onclick="tourNext()"
         style="padding:9px 16px;background:var(--accent);border:none;border-radius:var(--radius-lg);color:#fff;font-size:var(--text-md);font-weight:800;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">다음 →</button>
-    </div>
-  </div>
-</div>
-
-<div id="summary-modal"
-  style="display:none;position:fixed;top:0;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;z-index:850;background:rgba(0,0,0,0.65);align-items:flex-end;justify-content:center;"
-  onclick="if(event.target===this)closeSummaryModal()">
-  <div style="background:var(--surface);border-radius:var(--radius-xl) var(--radius-xl) 0 0;border-top:0.5px solid var(--border2);width:100%;display:flex;flex-direction:column;">
-    <div style="width:32px;height:4px;background:var(--border2);border-radius:var(--radius-sm);margin:10px auto 0;flex-shrink:0;"></div>
-    <!-- 헤더 -->
-    <div style="padding:12px 18px 10px;display:flex;justify-content:space-between;align-items:center;border-bottom:0.5px solid var(--border);flex-shrink:0;">
-      <div>
-        <div style="font-size:var(--text-lg);font-weight:700;color:var(--text);">오늘의 요약</div>
-        <div id="summ-modal-date" style="font-size:var(--text-xs);color:var(--text3);font-family:'DM Mono',monospace;"></div>
-      </div>
-      <div style="display:flex;gap:8px;align-items:center;">
-        <button onclick="shareSummary()"
-          style="display:flex;align-items:center;gap:5px;padding:6px 12px;background:var(--accent-bg);border:1px solid var(--accent-bd);border-radius:var(--radius-xl);color:var(--accent);font-size:var(--text-sm);font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;touch-action:manipulation;">
-          📸 공유
-        </button>
-        <button onclick="closeSummaryModal()"
-          style="width:26px;height:26px;border-radius:50%;background:var(--surface2);border:none;color:var(--text2);font-size:var(--text-md);cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
-      </div>
-    </div>
-    <!-- 캡쳐 타겟 영역 -->
-    <div id="summary-capture-area" style="padding:16px 18px 28px;display:flex;flex-direction:column;gap:0;">
-      <!-- 스트릭 + 누적 -->
-      <div style="display:flex;justify-content:space-between;align-items:center;background:var(--surface2);border-radius:var(--radius-lg);padding:12px 14px;margin-bottom:16px;">
-        <div>
-          <div id="summ-total-pts" style="font-size:var(--text-xs);color:var(--text3);"></div>
-        </div>
-        <div style="text-align:right;">
-          <div id="summ-streak-modal" style="font-size:var(--text-lg);font-weight:700;color:var(--amber);"></div>
-          <div style="font-size:var(--text-xs);color:var(--text3);margin-top:2px;">연속 달성</div>
-        </div>
-      </div>
-      <!-- 항목 리스트 -->
-      <div style="display:flex;flex-direction:column;gap:0;">
-        <div style="display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:0.5px solid var(--border);">
-          <span style="font-size:var(--text-md);color:var(--text2);">체중</span>
-          <span id="summ-w" style="font-size:var(--text-md);font-weight:600;"></span>
-        </div>
-        <div style="display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:0.5px solid var(--border);">
-          <span style="font-size:var(--text-md);color:var(--text2);">식단</span>
-          <span id="summ-d" style="font-size:var(--text-sm);font-weight:500;text-align:right;"></span>
-        </div>
-        <div style="display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:0.5px solid var(--border);">
-          <span style="font-size:var(--text-md);color:var(--text2);">운동</span>
-          <span id="summ-wo" style="font-size:var(--text-md);font-weight:600;"></span>
-        </div>
-        <div style="display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:0.5px solid var(--border);">
-          <span style="font-size:var(--text-md);color:var(--text2);">필수 루틴</span>
-          <span id="summ-rt" style="font-size:var(--text-md);font-weight:600;"></span>
-        </div>
-        <div style="display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:0.5px solid var(--border);">
-          <span style="font-size:var(--text-md);color:var(--text2);">오늘의 할일</span>
-          <span id="summ-tg" style="font-size:var(--text-md);font-weight:600;"></span>
-        </div>
-      </div>
-      <!-- 오늘의 행위 — 기록탭에서 발생한 행위 + 횟수 (점수 표기 X) -->
-      <div id="summ-pts-breakdown-wrap" style="margin-top:14px;display:none;">
-        <div style="font-size:var(--text-2xs);color:var(--text3);letter-spacing:0.08em;margin-bottom:8px;font-weight:600;">오늘의 행위</div>
-        <div id="summ-pts-breakdown" style="display:flex;flex-direction:column;gap:5px;"></div>
-      </div>
     </div>
   </div>
 </div>
@@ -8211,7 +8135,6 @@ async function claimBonusGrant(){
       if(typeof data.total_score==='number'&&CP)CP.total_score=data.total_score;
       try{updateHeaderStatus();}catch(e){}
       try{renderCharCard();}catch(e){}
-      try{renderSummaryCard();}catch(e){}
       showToast('🔥 +'+(data.points||0)+'점 적립!');
       try{track('bonus_claimed',{event_key:g.event_key,points:data.points});}catch(e){}
     } else if(data&&data.error==='already_claimed'){
@@ -9250,168 +9173,12 @@ async function jumpToDateFromWeekly(k,yr,mo,day){
 // shiftWeek removed — heatmap has native horizontal scroll.
 
 // ── RENDER ROUTINE ──
-function renderSummaryCard(){
-  // 버튼 상태 도트 업데이트
-  const l=logCache[TODAY]||log;
-  const meals=l.meals||[];
-  const hasWorkout=(l.workouts||[]).some(w=>w.status==='done');
-  const dow=(new Date().getDay()+6)%7;
-  const todayMand=(l.mandatory||[]).filter(t=>!(t.days&&!t.days.includes(dow)));
-  const mandDone=todayMand.filter(m=>m.done).length;
-  const tgts=(l.targets||[]).filter(t=>!t._meta&&t.text);
-  const tgtDone=tgts.filter(t=>t.st==='done').length;
-  const allDone=hasWorkout&&
-    (todayMand.length>0&&mandDone===todayMand.length)&&
-    (tgts.length>0&&tgtDone===tgts.length)&&
-    meals.filter(m=>m.type).length>0;
-  const dot=document.getElementById('summary-btn-dot');
-  if(dot)dot.style.background=allDone?'var(--green)':'var(--amber)';
-}
-function openSummaryModal(){
-  renderSummaryModal();
-  document.getElementById('summary-modal').style.display='flex';
-  document.body.style.overflow='hidden';
-}
-function closeSummaryModal(){
-  document.getElementById('summary-modal').style.display='none';
-  document.body.style.overflow='';
-}
-function renderSummaryModal(){
-  const l=logCache[selectedKey]||log;
-  const isToday=selectedKey===TODAY;
-  // 날짜
-  const d=new Date(selectedDate);
-  const weekday=['일','월','화','수','목','금','토'][d.getDay()];
-  const dateStr=(d.getMonth()+1)+'월 '+d.getDate()+'일 ('+weekday+')';
-  document.getElementById('summ-modal-date').textContent=dateStr+(isToday?' · 오늘':'');
-  // 오늘 획득 점수 표기 제거 (UI 패러다임: 행위·점수 노출 X). 누적·스트릭만 유지.
-  const totalPtsEl=document.getElementById('summ-total-pts');
-  if(isToday){
-    totalPtsEl.textContent='누적 '+(+(CP?.total_score)||0).toLocaleString()+'pts';
-  } else {
-    totalPtsEl.textContent=dateStr+' 기록';
-  }
-  // 스트릭: 오늘만 의미 있음
-  const streakRow=document.getElementById('summ-streak-modal')?.parentElement;
-  if(streakRow)streakRow.style.display=isToday?'':'none';
-  if(isToday)document.getElementById('summ-streak-modal').textContent='🔥 '+calcStreak()+'일';
-  // 체중
-  const wEl=document.getElementById('summ-w');
-  if(l.weight!=null){wEl.textContent=parseFloat(l.weight).toFixed(1)+'kg';wEl.style.color='var(--text)';}
-  else{wEl.textContent='미기록';wEl.style.color='var(--text3)';}
-  // 식단
-  const meals=l.meals||[];
-  const tc={green:0,normal:0,red:0,cheat:0,alcohol:0};
-  meals.forEach(m=>{if(m.type&&tc[m.type]!=null)tc[m.type]++;});
-  const parts=[];
-  if(tc.green)  parts.push('<span style="color:var(--green)">클린 '+tc.green+'</span>');
-  if(tc.normal) parts.push('<span style="color:var(--text2)">일반 '+tc.normal+'</span>');
-  if(tc.red)    parts.push('<span style="color:var(--red)">금지 '+tc.red+'</span>');
-  if(tc.cheat)  parts.push('<span style="color:var(--amber)">치팅 '+tc.cheat+'</span>');
-  if(tc.alcohol)parts.push('<span style="color:var(--red)">음주 '+tc.alcohol+'</span>');
-  document.getElementById('summ-d').innerHTML=parts.length?parts.join(' · '):'<span style="color:var(--text3)">미기록</span>';
-  // 운동
-  const doneWo=(l.workouts||[]).filter(w=>w.status==='done');
-  const woEl=document.getElementById('summ-wo');
-  if(doneWo.length===0){woEl.textContent='미완';woEl.style.color='var(--text3)';}
-  else{
-    const gymCount=doneWo.filter(w=>w.type==='gym').length;
-    const actCounts={};
-    doneWo.filter(w=>w.type==='activity').forEach(w=>{actCounts[w.name]=(actCounts[w.name]||0)+1;});
-    const woParts=[];
-    if(gymCount>0)woParts.push('헬스 '+gymCount+'회');
-    Object.entries(actCounts).forEach(([name,cnt])=>woParts.push(name+' '+cnt+'회'));
-    woEl.textContent=woParts.join(' · ');
-    woEl.style.color='var(--green)';
-  }
-  // 필수 루틴
-  const dow=(d.getDay()+6)%7;
-  const todayMand=(l.mandatory||[]).filter(t=>!(t.days&&!t.days.includes(dow))).slice(0,10);
-  const mandDone=todayMand.filter(m=>m.done).length;
-  const rtEl=document.getElementById('summ-rt');
-  if(todayMand.length===0){rtEl.textContent='—';rtEl.style.color='var(--text3)';}
-  else{rtEl.textContent=mandDone+'/'+todayMand.length;rtEl.style.color=mandDone===todayMand.length?'var(--green)':'var(--text3)';}
-  // 할일
-  const tgts=(l.targets||[]).filter(t=>!t._meta&&t.text);
-  const tgtDone=tgts.filter(t=>t.st==='done').length;
-  const tgEl=document.getElementById('summ-tg');
-  if(tgts.length===0){tgEl.textContent='—';tgEl.style.color='var(--text3)';}
-  else{tgEl.textContent=tgtDone+'/'+tgts.length;tgEl.style.color=tgtDone===tgts.length?'var(--green)':'var(--text3)';}
-
-  // 오늘의 행위 — 기록탭 prefix entry 만 표시 (다른 탭은 노출 X). 점수 숫자 표기 X.
-  // 라벨: SCORE_EVENTS[type].label single source. 미정의 시 SUMMARY_LABEL_FALLBACK.
-  const RECORD_TAB_PREFIXES=['diet_','workout_','routine_','target_'];
-  const SUMMARY_LABEL_FALLBACK={
-    diet_clean:'클린 식단', diet_clean_register:'클린 식단', diet_clean_cancel:'클린 식단 취소', diet_clean_delete:'클린 식단 삭제',
-    diet_log:'식단 등록', diet_log_only:'식단 등록', diet_log_cancel:'식단 등록 취소', diet_log_only_cancel:'식단 등록 취소',
-    diet_junk:'금지 식단', diet_junk_cancel:'금지 식단 만회',
-    diet_alcohol_register:'음주 기록', diet_alcohol_cancel:'음주 기록 취소',
-    workout_done:'근력 운동 완료', workout_cardio_done:'유산소 완료',
-    workout_done_cancel:'근력 운동 취소', workout_cardio_done_cancel:'유산소 취소',
-    workout_delete:'운동 취소', workout_deleted:'운동 삭제',
-    routine_done:'필수 루틴 완료', routine_done_cancel:'루틴 완료 취소',
-    routine_fail:'필수 루틴 실패', routine_fail_cancel:'루틴 실패 취소',
-    routine_skip:'필수 루틴 스킵', routine_skip_cancel:'루틴 스킵 취소',
-    target_done:'할일 완료', target_done_cancel:'할일 완료 취소',
-    target_fail:'할일 실패', target_fail_cancel:'할일 실패 취소',
-  };
-  const ptsLog=(l._ptsLog||[]).filter(e=>RECORD_TAB_PREFIXES.some(p=>(e.type||'').startsWith(p)));
-  const wrap=document.getElementById('summ-pts-breakdown-wrap');
-  const list=document.getElementById('summ-pts-breakdown');
-  if(wrap&&list){
-    if(!ptsLog.length){wrap.style.display='none';}
-    else{
-      wrap.style.display='block';
-      const byType={};
-      ptsLog.forEach(e=>{
-        const t=e.type||'기타';
-        if(!byType[t])byType[t]={count:0,sign:0};
-        byType[t].count++;
-        byType[t].sign=(byType[t].sign||0)+(e.pts||0);
-      });
-      list.innerHTML=Object.entries(byType)
-        .sort(([,a],[,b])=>b.count-a.count)
-        .map(([type,info])=>{
-          const lbl=(window.SCORE_EVENTS&&window.SCORE_EVENTS[type]?.label)||SUMMARY_LABEL_FALLBACK[type]||type;
-          const col=info.sign<0?'var(--red)':'var(--text2)';
-          const countStr=`<span style="color:var(--text3);font-size:var(--text-xs);font-family:'DM Mono',monospace;">×${info.count}</span>`;
-          return `<div style="display:flex;justify-content:space-between;align-items:center;font-size:var(--text-sm);padding:4px 0;">
-            <span style="color:${col};">${lbl}</span>
-            ${countStr}
-          </div>`;
-        }).join('');
-    }
-  }
-}
-async function shareSummary(){
-  const area=document.getElementById('summary-capture-area');
-  if(!area)return;
-  showToast('캡쳐 중…');
-  try{
-    const canvas=await html2canvas(area,{backgroundColor:'#18181c',scale:2,useCORS:true,logging:false});
-    canvas.toBlob(async blob=>{
-      if(!blob){showToast('캡쳐 실패 😢');return;}
-      const file=new File([blob],'qrok-'+selectedKey+'.png',{type:'image/png'});
-      if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){
-        try{await navigator.share({files:[file],title:'QROK — 오늘의 요약'});return;}catch(e){}
-      }
-      const url=URL.createObjectURL(blob);
-      const a=document.createElement('a');
-      a.href=url;a.download=file.name;a.click();
-      URL.revokeObjectURL(url);
-      showToast('📸 이미지 저장됨!');
-    },'image/png');
-  }catch(err){
-    console.error('[shareSummary]',err);
-    showToast('캡쳐 실패. 스크린샷을 이용해주세요 📸');
-  }
-}
 function scrollToSection(s){
   const map={weight:'wt-empty-state',diet:'meal-rows',workout:'workout-rows',routine:'check-rows',targets:'tgt-rows'};
   const el=document.getElementById(map[s]);
   if(el)el.scrollIntoView({behavior:'smooth',block:'center'});
 }
-function renderRoutine(){try{recomputeCubesHook(null,{silent:true});}catch(e){}renderCharCard();renderSummaryCard();renderWeight();renderMeals();renderCheatBadge();renderWater();renderWorkouts();renderMandatory();renderTargets();updateHeaderStatus();revealStatusBand();try{renderFirstWeekCard();}catch(e){console.warn('[fw-card]',e);}try{renderInviteCard();}catch(e){console.warn('[invite-card]',e);}try{renderWeeklyFeatureRibbon();}catch(e){console.warn('[wf-ribbon]',e);}try{if(typeof window.buildHeatmapGrid==='function')window.buildHeatmapGrid();}catch(e){}try{renderCardCubes();}catch(e){console.warn('[card-cubes]',e);}try{arrangePromos();}catch(e){console.warn('[promo-arrange]',e);}try{checkOptInRequest();}catch(e){console.warn('[opt-in]',e);}try{renderTrainerRequestInbox();}catch(e){console.warn('[trainer-req-inbox]',e);}}
+function renderRoutine(){try{recomputeCubesHook(null,{silent:true});}catch(e){}renderCharCard();renderWeight();renderMeals();renderCheatBadge();renderWater();renderWorkouts();renderMandatory();renderTargets();updateHeaderStatus();revealStatusBand();try{renderFirstWeekCard();}catch(e){console.warn('[fw-card]',e);}try{renderInviteCard();}catch(e){console.warn('[invite-card]',e);}try{renderWeeklyFeatureRibbon();}catch(e){console.warn('[wf-ribbon]',e);}try{if(typeof window.buildHeatmapGrid==='function')window.buildHeatmapGrid();}catch(e){}try{renderCardCubes();}catch(e){console.warn('[card-cubes]',e);}try{arrangePromos();}catch(e){console.warn('[promo-arrange]',e);}try{checkOptInRequest();}catch(e){console.warn('[opt-in]',e);}try{renderTrainerRequestInbox();}catch(e){console.warn('[trainer-req-inbox]',e);}}
 
 // ── Priority gate for promo/notification cards ─────────────────────
 // Each existing render function (renderFirstWeekCard, renderInviteCard,
@@ -10143,7 +9910,6 @@ async function deleteMeal(i){
   renderCharCard();
   recomputeCubesHook();
   updateHeaderStatus();
-  renderSummaryCard();
   saveNow();
   // CUBE mode: 점수 문자열 생략 — cube 큐브 업데이트로 대신 피드백.
   const scoreStr=window.CUBE_UI_MODE===true?'':
@@ -12345,7 +12111,6 @@ function delWO(i){
   renderCharCard();
   recomputeCubesHook();
   updateHeaderStatus();
-  renderSummaryCard();
   saveNow();
   // CUBE mode: 점수 문자열 생략 — cube 큐브 업데이트로 대신 피드백.
   const scoreStr=window.CUBE_UI_MODE===true?'':(scoreDelta<0?' ('+scoreDelta+'점)':'');
@@ -15548,7 +15313,7 @@ function _isAnyOverlayOpen(){
   if(document.querySelectorAll('.modal-overlay.open').length>0)return true;
   // Check all full-screen overlay elements that lock scroll directly
   const overlayIds=['workout-session-overlay','workout-start-screen','room-overlay',
-    'challenge-room','ch-create-overlay','ch-join-overlay','summary-modal',
+    'challenge-room','ch-create-overlay','ch-join-overlay',
     'session-summary-modal','score-guide-modal','win-100-overlay','inbody-popup','inbody-edit-popup',
     'add-exercise-modal','cv-list-modal'];
   for(const id of overlayIds){
