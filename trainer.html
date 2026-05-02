@@ -341,6 +341,18 @@
   .mcard-workout-status .ico.miss{background:rgba(255,77,77,0.25);color:#ff7a7a;}
   .mcard-workout-status .ico.none{background:var(--surface2);color:var(--text3);}
   .mcard-workout-link{margin-left:6px;font-size:11px;color:var(--accent);font-weight:700;cursor:pointer;}
+  .mcard-last-wo{margin-left:auto;font-size:11px;color:var(--text2);font-weight:600;cursor:pointer;padding:3px 8px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;transition:all .12s;}
+  .mcard-last-wo:hover{color:var(--text);border-color:var(--border2);}
+  .mcard-last-wo.none{color:var(--text3);cursor:default;background:transparent;border:none;}
+  .mcard-weight{display:flex;align-items:center;gap:7px;font-size:12px;padding:6px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;}
+  .mcard-w-lbl{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;font-weight:700;}
+  .mcard-w-cur{font-family:'DM Mono',monospace;font-weight:800;color:var(--text);font-size:13px;}
+  .mcard-w-arrow{color:var(--text3);font-weight:700;}
+  .mcard-w-goal{font-family:'DM Mono',monospace;font-weight:600;color:var(--text2);font-size:12px;}
+  .mcard-w-diff{margin-left:auto;font-family:'DM Mono',monospace;font-weight:800;font-size:11px;padding:2px 6px;border-radius:4px;}
+  .mcard-w-diff.ok{background:rgba(52,211,153,0.18);color:#34d399;}
+  .mcard-w-diff.over{background:rgba(255,77,77,0.18);color:#ff7a7a;}
+  .mcard-w-diff.under{background:rgba(56,189,248,0.18);color:#7dd3fc;}
   .mcard-meals{display:grid;grid-template-columns:repeat(4,minmax(0,96px));gap:6px;}
   .mcard-meal{position:relative;aspect-ratio:1;background:var(--surface2);border:1px solid var(--border);border-radius:8px;overflow:hidden;display:flex;align-items:center;justify-content:center;cursor:pointer;}
   .mcard-meal.red-bd{border:2px solid #ff4d4d;}
@@ -429,6 +441,15 @@
   .dt-head-info{flex:1;min-width:160px;}
   .dt-head-name{font-family:'Archivo Black',sans-serif;font-size:22px;letter-spacing:-.01em;}
   .dt-head-meta{font-size:11px;color:var(--text3);margin-top:4px;line-height:1.6;}
+  .dt-head-weight{display:inline-flex;align-items:center;gap:8px;margin-top:8px;padding:6px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-size:12px;}
+  .dt-head-weight .lbl{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;font-weight:700;}
+  .dt-head-weight .cur{font-family:'DM Mono',monospace;font-weight:800;color:var(--text);font-size:14px;}
+  .dt-head-weight .arrow{color:var(--text3);}
+  .dt-head-weight .goal{font-family:'DM Mono',monospace;font-weight:600;color:var(--text2);}
+  .dt-head-weight .diff{margin-left:6px;font-family:'DM Mono',monospace;font-weight:800;font-size:11px;padding:2px 7px;border-radius:4px;}
+  .dt-head-weight .diff.ok{background:rgba(52,211,153,0.18);color:#34d399;}
+  .dt-head-weight .diff.over{background:rgba(255,77,77,0.18);color:#ff7a7a;}
+  .dt-head-weight .diff.under{background:rgba(56,189,248,0.18);color:#7dd3fc;}
   .dt-head-actions{display:flex;gap:6px;flex-wrap:wrap;}
   .dt-head-actions .btn{padding:7px 14px;font-size:12px;}
   .dt-section{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:12px;}
@@ -634,6 +655,7 @@
       <div class="dt-head-info">
         <div class="dt-head-name" id="dt-name">—</div>
         <div class="dt-head-meta" id="dt-meta">—</div>
+        <div class="dt-head-weight" id="dt-head-weight" style="display:none;"></div>
       </div>
       <div class="dt-head-actions">
         <button class="btn btn-primary" onclick="dtAssign()">+ 운동 배정</button>
@@ -823,7 +845,7 @@
       </div>
     </div>
 
-    <div class="field" style="margin-top:12px;"><label>메모 (선택)</label><textarea id="assign-notes" rows="2" placeholder="컨디션 봐서 무게 조절"></textarea></div>
+    <div class="field" style="margin-top:12px;"><label>메모 (선택)</label><textarea id="assign-notes" rows="2" placeholder="예: 컨디션을 보고 무게를 조절해 주세요"></textarea></div>
     <div id="assign-err" class="err"></div>
     <div class="modal-actions">
       <button class="btn btn-ghost" onclick="closeModal('modal-assign')">취소</button>
@@ -893,7 +915,7 @@
     <div class="field">
       <label>운동 종류</label>
       <div id="cp-type-chips" style="display:flex;gap:5px;flex-wrap:wrap;"></div>
-      <div class="field-help">"자유" 선택 시 회원이 직접 종류를 선택해서 수행.</div>
+      <div class="field-help">"자유" 선택 시 회원분이 직접 종류를 선택해서 수행합니다.</div>
     </div>
 
     <div class="field">
@@ -915,7 +937,7 @@
 
     <div class="field">
       <label>코칭 메모 (선택, 회원에게 표시됨)</label>
-      <textarea id="cp-notes" rows="2" maxlength="200" placeholder="다음에는 야식 줄여라. 30분 천천히라도 OK."></textarea>
+      <textarea id="cp-notes" rows="2" maxlength="200" placeholder="예: 다음부터는 야식을 줄여 주세요. 30분 천천히라도 괜찮습니다."></textarea>
     </div>
 
     <div id="cp-err" class="err"></div>
@@ -932,11 +954,33 @@
   .cp-min-chip.sel{background:linear-gradient(135deg,#ff4d4d,#ff6b35);color:#fff;border-color:transparent;}
 </style>
 
+<!-- ============= 식단 사진 라이트박스 (인페이지 오버레이) ============= -->
+<div class="modal-overlay" id="modal-meal-lightbox" onclick="closeModal('modal-meal-lightbox')">
+  <div class="modal" style="max-width:520px;padding:0;overflow:hidden;background:var(--surface);" onclick="event.stopPropagation();">
+    <div id="ml-photo-wrap" style="background:#000;display:flex;align-items:center;justify-content:center;min-height:280px;max-height:60vh;overflow:hidden;">
+      <div id="ml-photo-loading" style="color:#fff;font-size:13px;opacity:0.7;">사진 로딩 중…</div>
+      <img id="ml-photo" alt="" style="max-width:100%;max-height:60vh;object-fit:contain;display:none;" />
+    </div>
+    <div style="padding:16px 20px 18px;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+        <span id="ml-slot-pill" style="font-size:10px;font-weight:800;padding:3px 8px;border-radius:5px;background:var(--surface2);color:var(--text2);letter-spacing:.06em;">—</span>
+        <span id="ml-type-pill" style="font-size:10px;font-weight:800;padding:3px 8px;border-radius:5px;letter-spacing:.06em;"></span>
+        <span id="ml-client" style="margin-left:auto;font-size:11px;color:var(--text3);font-weight:600;">—</span>
+      </div>
+      <div id="ml-name" style="font-size:16px;font-weight:700;color:var(--text);letter-spacing:-.005em;">—</div>
+      <div id="ml-empty" style="margin-top:6px;font-size:12px;color:var(--text3);"></div>
+    </div>
+    <div class="modal-actions" style="padding:0 20px 16px;">
+      <button class="btn btn-ghost" onclick="closeModal('modal-meal-lightbox')" style="width:100%;justify-content:center;">닫기</button>
+    </div>
+  </div>
+</div>
+
 <!-- ============= 운동별 자세 메모 편집 모달 (운동 이름 picker + 필터 + GIF) ============= -->
 <div class="modal-overlay" id="modal-note-edit">
   <div class="modal" style="max-width:580px;">
     <div class="modal-title" id="ne-title">운동 메모 추가</div>
-    <div class="modal-sub">회원이 그 운동을 시작할 때 노란 박스로 표시돼.</div>
+    <div class="modal-sub">회원분이 해당 운동을 시작할 때 노란 박스로 표시됩니다.</div>
 
     <div class="field">
       <label>운동 (라이브러리에서 선택)</label>
@@ -1317,7 +1361,7 @@ function regSearch(){
     const {data, error} = await sb.rpc('search_users_for_trainer', {p_query: q});
     if(error){ wrap.innerHTML='<div style="padding:14px;font-size:12px;color:#ff7a7a;">검색 실패: '+esc(error.message)+'</div>'; return; }
     if(!data || data.length === 0){
-      wrap.innerHTML='<div style="padding:14px;font-size:12px;color:var(--text3);">결과 없음. 닉네임이나 친구 코드를 정확히 확인.</div>';
+      wrap.innerHTML='<div style="padding:14px;font-size:12px;color:var(--text3);">결과가 없습니다. 닉네임이나 친구 코드를 정확히 확인해 주세요.</div>';
       return;
     }
     wrap.innerHTML = data.map(u => _renderRegResult(u)).join('');
@@ -1369,7 +1413,7 @@ async function regSendRequest(clientId, displayName){
 }
 
 async function regCancelRequest(clientId){
-  if(!confirm('이 등록 요청을 취소할까?')) return;
+  if(!confirm('이 등록 요청을 취소하시겠습니까?')) return;
   // pending request 의 id 가져오기
   const {data, error} = await sb.from('trainer_relationship_requests')
     .select('id')
@@ -1646,11 +1690,11 @@ async function editAssignment(assignmentId){
   const {data, error} = await sb.from('workout_assignments').select('*').eq('id', assignmentId).maybeSingle();
   if(error || !data){ showToast('배정을 찾을 수 없어요.'); return; }
   if(data.status === 'completed' || data.status === 'cancelled'){
-    showToast('완료/취소된 배정은 수정 불가.');
+    showToast('완료/취소된 배정은 수정할 수 없습니다.');
     return;
   }
   if(data.status === 'in_progress'){
-    if(!confirm('회원이 이미 진행 중입니다. 수정 시 진행 상태가 초기화됩니다. 계속?')) return;
+    if(!confirm('회원분이 이미 진행 중입니다. 수정 시 진행 상태가 초기화됩니다. 계속하시겠습니까?')) return;
   }
   // ASSIGN_SELECTED prefill
   _editingAssignmentId = assignmentId;
@@ -1678,8 +1722,8 @@ async function editAssignment(assignmentId){
 }
 
 async function deleteAssignment(assignmentId, dateStr){
-  if(!confirm(`${dateStr} 배정을 삭제할까요? 회원의 운동 카드에서도 사라집니다.`)) return;
-  if(!confirm('한 번 더 확인. 정말 삭제?')) return;
+  if(!confirm(`${dateStr} 배정을 삭제하시겠습니까? 회원분의 운동 카드에서도 사라집니다.`)) return;
+  if(!confirm('한 번 더 확인합니다. 정말 삭제하시겠습니까?')) return;
   const {error} = await sb.rpc('trainer_delete_assignment', {p_assignment_id: assignmentId});
   if(error){ showToast('삭제 실패: '+error.message); return; }
   showToast('배정 삭제됨.');
@@ -2295,6 +2339,25 @@ async function loadDetail(relId, clientId){
     if(cached.week_active_days != null) lines.push(`이번주 활성 ${cached.week_active_days}/7일`);
     if(cached.last_activity) lines.push(`마지막 ${_relTime(cached.last_activity)}`);
     document.getElementById('dt-meta').textContent = lines.join(' · ') || '—';
+    // 체중 chip — 현재 → 목표
+    const wEl = document.getElementById('dt-head-weight');
+    const wCur = (cached.weight_current!=null) ? parseFloat(cached.weight_current) : null;
+    const wGoal = (cached.weight_goal!=null) ? parseFloat(cached.weight_goal) : null;
+    if(wEl && (wCur!=null || wGoal!=null)){
+      const curStr = wCur!=null ? wCur.toFixed(1)+'kg' : '—';
+      const goalStr = wGoal!=null ? wGoal.toFixed(1)+'kg' : '—';
+      let diffStr = '';
+      if(wCur!=null && wGoal!=null){
+        const diff = wCur - wGoal;
+        const sign = diff>0 ? '+' : '';
+        const cls = Math.abs(diff)<0.5 ? 'ok' : (diff>0 ? 'over' : 'under');
+        diffStr = `<span class="diff ${cls}">${sign}${diff.toFixed(1)}</span>`;
+      }
+      wEl.innerHTML = `<span class="lbl">체중</span><span class="cur">${curStr}</span><span class="arrow">→</span><span class="goal">목표 ${goalStr}</span>${diffStr}`;
+      wEl.style.display = 'inline-flex';
+    } else if(wEl){
+      wEl.style.display = 'none';
+    }
   } else {
     document.getElementById('dt-name').textContent = '회원';
   }
@@ -2354,7 +2417,7 @@ async function _hydrateDtDailyLogs(clientId){
 function renderDtNotes(){
   const wrap = document.getElementById('dt-notes-list');
   if(_dt.notes.length === 0){
-    wrap.innerHTML = '<div style="font-size:12px;color:var(--text3);padding:6px 0;">아직 메모 없음. 회원이 자주 하는 운동에 자세 가이드를 남겨봐.</div>';
+    wrap.innerHTML = '<div style="font-size:12px;color:var(--text3);padding:6px 0;">아직 메모가 없습니다. 회원분이 자주 하는 운동에 자세 가이드를 남겨주세요.</div>';
     return;
   }
   const exIconFn = (typeof window.exIcon === 'function') ? window.exIcon : null;
@@ -2535,7 +2598,7 @@ function neSave(){
 }
 
 function dtDeleteNote(noteId){
-  if(!confirm('이 메모를 삭제할까?')) return;
+  if(!confirm('이 메모를 삭제하시겠습니까?')) return;
   sb.rpc('trainer_delete_exercise_note', {p_note_id: noteId}).then(({error})=>{
     if(error){ showToast('삭제 실패: '+error.message); return; }
     _dt.notes = _dt.notes.filter(n => n.id !== noteId);
@@ -2597,6 +2660,22 @@ function renderDtExcelGrid(){
     html += `<th class="${isToday?'today-col':''}">${dt.getMonth()+1}/${dt.getDate()}<br><span style="color:var(--text3);font-size:9px;">(${wd})</span></th>`;
   }
   html += '</tr></thead><tbody>';
+
+  // 체중 row (일별 weight) — 상단에 배치
+  html += `<tr><td class="row-lbl">⚖ 체중</td>`;
+  for(const d of days){
+    const log = _dtDailyLogs[d];
+    const w = (log && log.weight!=null) ? parseFloat(log.weight) : null;
+    const isToday = d === today;
+    let cellHtml;
+    if(w==null || isNaN(w)){
+      cellHtml = `<span style="color:var(--text3);font-size:10px;">—</span>`;
+    } else {
+      cellHtml = `<span style="font-family:'DM Mono',monospace;font-size:11px;font-weight:700;color:var(--text);">${w.toFixed(1)}</span>`;
+    }
+    html += `<td class="${isToday?'today-col':''}">${cellHtml}</td>`;
+  }
+  html += '</tr>';
 
   // 식단 row
   for(const row of mealRows){
@@ -2992,7 +3071,7 @@ function _renderMcard(r){
       return `<div class="mcard-meal" onclick="event.stopPropagation();"><span class="mcard-meal-lbl">${slot[0]}</span><span class="mcard-meal-empty">${_emptyMealSvg}<span class="ph-msg">기록 없음</span></span></div>`;
     }
     if(m.type === 'skip'){
-      return `<div class="mcard-meal" style="background:rgba(122,122,134,0.18);border-color:rgba(122,122,134,0.5);" onclick="event.stopPropagation();"><span class="mcard-meal-lbl">${slot[0]}</span><span class="mcard-meal-empty" style="background:transparent;color:var(--text3);opacity:0.85;">${_skipMealSvg}<span class="ph-msg" style="color:var(--text3);">스킵</span></span></div>`;
+      return `<div class="mcard-meal" style="background:rgba(122,122,134,0.18);border-color:rgba(122,122,134,0.5);" onclick="event.stopPropagation();openMealLightbox('${esc(display)}','${slot}',null,'skip','','')"><span class="mcard-meal-lbl">${slot[0]}</span><span class="mcard-meal-empty" style="background:transparent;color:var(--text3);opacity:0.85;">${_skipMealSvg}<span class="ph-msg" style="color:var(--text3);">스킵</span></span></div>`;
     }
     const isRed = m.type === 'red' || m.category === 'alcohol';
     const isGreen = m.type === 'green';
@@ -3001,8 +3080,45 @@ function _renderMcard(r){
       ? `<img data-feed-meal-photo="${esc(photo)}" alt="" />`
       : `<span class="mcard-meal-empty">${_emptyMealSvg}<span class="ph-msg">${isRed?'금지식 (사진 X)':(isGreen?'클린식 (사진 X)':'사진 없음')}</span></span>`;
     const bdCls = isRed ? 'red-bd' : (isGreen ? 'green-bd' : '');
-    return `<div class="mcard-meal ${bdCls}" onclick="event.stopPropagation();openMealPhotoLightbox('${esc(photo||'')}')"><span class="mcard-meal-lbl">${slot[0]}</span>${img}</div>`;
+    const safeName = (m.name||'').replace(/'/g,"\\'");
+    const safeCat  = (m.category||'meal').replace(/'/g,"\\'");
+    return `<div class="mcard-meal ${bdCls}" onclick="event.stopPropagation();openMealLightbox('${esc(display)}','${slot}','${esc(photo||'')}','${m.type||''}','${esc(safeName)}','${esc(safeCat)}')"><span class="mcard-meal-lbl">${slot[0]}</span>${img}</div>`;
   }).join('');
+
+  // 체중: 현재 → 목표
+  const wCur = (r.weight_current!=null) ? parseFloat(r.weight_current) : null;
+  const wGoal = (r.weight_goal!=null) ? parseFloat(r.weight_goal) : null;
+  let weightHtml = '';
+  if(wCur!=null || wGoal!=null){
+    const curStr = wCur!=null ? wCur.toFixed(1)+'kg' : '—';
+    const goalStr = wGoal!=null ? wGoal.toFixed(1)+'kg' : '—';
+    let diffStr = '';
+    if(wCur!=null && wGoal!=null){
+      const diff = wCur - wGoal;
+      const sign = diff>0 ? '+' : '';
+      const cls = Math.abs(diff)<0.5 ? 'ok' : (diff>0 ? 'over' : 'under');
+      diffStr = `<span class="mcard-w-diff ${cls}">${sign}${diff.toFixed(1)}</span>`;
+    }
+    weightHtml = `<div class="mcard-weight">
+      <span class="mcard-w-lbl">체중</span>
+      <span class="mcard-w-cur">${curStr}</span>
+      <span class="mcard-w-arrow">→</span>
+      <span class="mcard-w-goal">목표 ${goalStr}</span>
+      ${diffStr}
+    </div>`;
+  }
+
+  // 마지막 운동 (운동 미배정/완료된 표시 옆에 보조)
+  let lastWoHtml = '';
+  if(r.last_workout_date){
+    const todayD = new Date(); todayD.setHours(0,0,0,0);
+    const lwD = new Date(r.last_workout_date+'T00:00:00');
+    const dayDiff = Math.floor((todayD - lwD)/(86400000));
+    const ago = dayDiff===0 ? '오늘' : (dayDiff===1 ? '어제' : dayDiff+'일 전');
+    lastWoHtml = `<span class="mcard-last-wo" onclick="event.stopPropagation();feedShowSummaryDate('${r.client_id}','${r.last_workout_date}')">📋 마지막 운동: ${ago}</span>`;
+  } else {
+    lastWoHtml = `<span class="mcard-last-wo none">마지막 운동: 기록 없음</span>`;
+  }
 
   return `<div class="mcard" data-mcard="${r.client_id}">
     <div class="mcard-summary">
@@ -3018,7 +3134,9 @@ function _renderMcard(r){
           <span>${woLabel}</span>
           ${woLink}
         </span>
+        ${lastWoHtml}
       </div>
+      ${weightHtml}
       <div class="mcard-meals">${mealHtml}</div>
     </div>
     <div class="mcard-actions">
@@ -3063,12 +3181,79 @@ async function hydrateFeedMealPhotos(){
   }
 }
 
+// 인페이지 오버레이로 식단 사진 + 메타 보기.
+// 신호: type='skip' 인 경우 사진 자리 → '안 먹음 (스킵)' 표시.
+function openMealLightbox(clientName, slot, photoPath, type, name, category){
+  const overlay = document.getElementById('modal-meal-lightbox');
+  if(!overlay) return;
+  const img = document.getElementById('ml-photo');
+  const loading = document.getElementById('ml-photo-loading');
+  const wrap = document.getElementById('ml-photo-wrap');
+  const slotPill = document.getElementById('ml-slot-pill');
+  const typePill = document.getElementById('ml-type-pill');
+  const nameEl = document.getElementById('ml-name');
+  const emptyEl = document.getElementById('ml-empty');
+  const clientEl = document.getElementById('ml-client');
+
+  slotPill.textContent = slot || '—';
+  clientEl.textContent = clientName || '';
+  // type pill
+  const typeMap = {
+    green:  {label:'클린식', bg:'rgba(52,211,153,0.2)',  color:'#34d399'},
+    normal: {label:'일반식', bg:'rgba(245,158,11,0.18)', color:'#fbbf24'},
+    red:    {label:'금지식', bg:'rgba(255,77,77,0.22)',  color:'#ff7a7a'},
+    cheat:  {label:'치팅',   bg:'rgba(245,158,11,0.18)', color:'#fbbf24'},
+    alcohol:{label:'음주',   bg:'rgba(255,77,77,0.22)',  color:'#ff7a7a'},
+    skip:   {label:'스킵',   bg:'rgba(122,122,134,0.22)',color:'#aaa'},
+  };
+  const t = typeMap[type] || {label:'미분류', bg:'var(--surface2)', color:'var(--text3)'};
+  typePill.textContent = t.label;
+  typePill.style.background = t.bg;
+  typePill.style.color = t.color;
+
+  if(type === 'skip'){
+    img.style.display = 'none';
+    loading.style.display = 'block';
+    loading.textContent = '⏭ 안 먹음 (스킵 처리)';
+    wrap.style.minHeight = '180px';
+    nameEl.textContent = '스킵된 끼니';
+    emptyEl.textContent = '회원이 이번 끼니를 명시적으로 스킵하였습니다.';
+  } else if(!photoPath){
+    img.style.display = 'none';
+    loading.style.display = 'block';
+    loading.textContent = '🍽 사진 없음';
+    wrap.style.minHeight = '180px';
+    nameEl.textContent = name || '(이름 없음)';
+    emptyEl.textContent = '회원이 사진 없이 텍스트로만 기록하였습니다.';
+  } else {
+    nameEl.textContent = name || '(이름 없음)';
+    emptyEl.textContent = '';
+    wrap.style.minHeight = '280px';
+    // signed URL 가져오기 (캐시 우선)
+    const cached = _feedMealPhotoCache.get(photoPath);
+    if(cached){
+      img.src = cached; img.style.display = 'block'; loading.style.display = 'none';
+    } else {
+      img.style.display = 'none'; loading.style.display = 'block'; loading.textContent = '사진 로딩 중…';
+      sb.storage.from('meal-photos').createSignedUrl(photoPath, 3600).then(({data, error}) => {
+        if(!error && data?.signedUrl){
+          _feedMealPhotoCache.set(photoPath, data.signedUrl);
+          img.src = data.signedUrl;
+          img.style.display = 'block';
+          loading.style.display = 'none';
+        } else {
+          loading.textContent = '사진 로딩 실패';
+        }
+      }).catch(() => { loading.textContent = '사진 로딩 실패'; });
+    }
+  }
+  openModal('modal-meal-lightbox');
+}
+
+// 호환 alias (excel grid 등 기존 호출 — 사진만 표시)
 function openMealPhotoLightbox(path){
-  if(!path) return;
-  const url = _feedMealPhotoCache.get(path);
-  if(!url){ showToast('사진 로딩 중…'); return; }
-  // simple lightbox: open in new tab
-  window.open(url, '_blank');
+  if(!path){ showToast('사진 없음'); return; }
+  openMealLightbox('', '식단', path, 'normal', '', 'meal');
 }
 
 function _relTime(ts){
@@ -3578,7 +3763,7 @@ async function renderDash3DateDetail(date){
 }
 
 function openAssignFromDash3(){
-  if(!_dash3SelectedClient){ showToast('먼저 회원 선택.'); return; }
+  if(!_dash3SelectedClient){ showToast('먼저 회원을 선택해 주세요.'); return; }
   CURRENT_CLIENT = _dash3SelectedClient.client_id;
   CURRENT_RELATIONSHIP = _dash3SelectedClient.relationship_id;
   // d-name 도 갱신 — 운동 빌더 modal title 에 사용됨
