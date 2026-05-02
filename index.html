@@ -28,7 +28,7 @@
      so window globals (dkey, normKey, ...) are set before inline code runs.
      Query version bumps cache when bundle content changes. Bump manually or
      via build script when shipping a new bundle. See MIGRATION_PLAN.md. -->
-<script src="/dist/app.js?v=20260503-cube-shape"></script>
+<script src="/dist/app.js?v=20260503-cube-shape-2"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Archivo+Black&display=swap" rel="stylesheet">
 <!-- Phase 0: 디자인 토큰 (shared 먼저, palette 가 override). -->
 <link href="/src/styles/tokens.shared.css" rel="stylesheet">
@@ -465,7 +465,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 .cc-stack{display:flex;flex-direction:column;gap:6px;margin-bottom:6px;}
 .cc-row{display:flex;align-items:center;gap:10px;}
 .cc-tower{display:flex;flex-direction:column-reverse;gap:1px;width:20px;flex-shrink:0;}
-.cc-token{width:20px;height:8px;border-radius:var(--radius-sm);box-sizing:border-box;}
+.cc-token{width:20px;height:8px;border-radius:2px;box-sizing:border-box;}
 .cc-token.gold{background:linear-gradient(135deg,#fff1a8 0%,#ffd54a 45%,#c48c1a 100%);border:1px solid rgba(255,233,128,0.65);box-shadow:0 0 3px rgba(255,213,74,0.45),inset 0 1px 0 rgba(255,255,255,0.45);}
 .cc-token.silver{background:linear-gradient(135deg,#f2f4f7 0%,#b5c0cc 45%,#6d7682 100%);border:1px solid rgba(210,218,228,0.55);box-shadow:0 0 3px rgba(181,192,204,0.40),inset 0 1px 0 rgba(255,255,255,0.40);}
 .cc-num{font-family:'Archivo Black','DM Mono',monospace;font-size:var(--text-2xl);line-height:1;color:var(--text);letter-spacing:-1.5px;}
@@ -473,7 +473,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 @keyframes ccBump{0%{transform:scale(1);}40%{transform:scale(1.18);color:#ffd54a;}100%{transform:scale(1);color:var(--text);}}
 .cc-label{font-size:var(--text-xs);color:var(--text3);letter-spacing:.04em;font-weight:600;font-family:'DM Sans',sans-serif;text-transform:uppercase;}
 .cc-today{display:flex;gap:4px;align-items:center;}
-.cc-today-dot{width:8px;height:8px;border-radius:var(--radius-sm);}
+.cc-today-dot{width:8px;height:8px;border-radius:2px;}
 .cc-today-dot.gold{background:linear-gradient(135deg,#fff1a8 0%,#ffd54a 45%,#c48c1a 100%);}
 .cc-today-dot.silver{background:linear-gradient(135deg,#f2f4f7 0%,#b5c0cc 45%,#6d7682 100%);}
 .cc-today-dot.red{background:linear-gradient(135deg,#ff8080 0%,#ff4d4d 45%,#8b1515 100%);}
@@ -755,7 +755,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
 .s-card .cc-title{font-size:var(--text-md);font-weight:700;color:var(--text);letter-spacing:-.01em;}
 /* Will Cube card-header chip — 오늘의 큐브 색상을 accordion 타이틀 우측에 소형 square 로 표시.
    heatmap indicator 와 동일한 gold/silver/crimson 팔레트. display:none 인 상태는 빈 날. */
-.s-card .cc-cube{display:inline-block;width:12px;height:12px;margin-left:8px;border-radius:var(--radius-sm);box-sizing:border-box;vertical-align:-1px;cursor:pointer;touch-action:manipulation;flex-shrink:0;}
+.s-card .cc-cube{display:inline-block;width:12px;height:12px;margin-left:8px;border-radius:2px;box-sizing:border-box;vertical-align:-1px;cursor:pointer;touch-action:manipulation;flex-shrink:0;}
 .s-card .cc-cube[data-color="gold"]{background:linear-gradient(135deg,#fff1a8 0%,#ffd54a 45%,#c48c1a 100%);border:1px solid rgba(255,233,128,0.70);box-shadow:0 0 3px rgba(255,213,74,0.50),inset 0 1px 0 rgba(255,255,255,0.45),inset 0 -1px 0 rgba(0,0,0,0.25);}
 .s-card .cc-cube[data-color="silver"]{background:linear-gradient(135deg,#f2f4f7 0%,#b5c0cc 45%,#6d7682 100%);border:1px solid rgba(210,218,228,0.55);box-shadow:0 0 3px rgba(181,192,204,0.40),inset 0 1px 0 rgba(255,255,255,0.32),inset 0 -1px 0 rgba(0,0,0,0.22);}
 .s-card .cc-cube[data-color="crimson"]{background:var(--accent-tint-4);border:1px solid var(--accent-tint-4);}
@@ -8670,7 +8670,7 @@ function renderCubeStack(){
     container.innerHTML='<div style="text-align:center;padding:20px 0;color:var(--text3);font-size:var(--text-sm);">아직 큐브가 없어요. 오늘 칸을 채워보세요.</div>';
     return;
   }
-  const cubeStyle=(meta,size)=>`width:${size}px;height:${size}px;${meta.style}border-radius:var(--radius-sm);flex-shrink:0;box-sizing:border-box;`;
+  const cubeStyle=(meta,size)=>`width:${size}px;height:${size}px;${meta.style}border-radius:2px;flex-shrink:0;box-sizing:border-box;`;
   container.innerHTML=order.map(color=>{
     const cnt=counts[color];
     const meta=colorMap[color];
