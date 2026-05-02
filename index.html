@@ -28,7 +28,7 @@
      so window globals (dkey, normKey, ...) are set before inline code runs.
      Query version bumps cache when bundle content changes. Bump manually or
      via build script when shipping a new bundle. See MIGRATION_PLAN.md. -->
-<script src="/dist/app.js?v=20260502-tokens-phase1c"></script>
+<script src="/dist/app.js?v=20260502-phase2-cleanup"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Archivo+Black&display=swap" rel="stylesheet">
 <!-- Phase 0: 디자인 토큰 (shared 먼저, palette 가 override). -->
 <link href="/src/styles/tokens.shared.css" rel="stylesheet">
@@ -38,12 +38,11 @@
    index.html 은 다크 팔레트 사용. 추가 sub-palette (--radius-sm 등 legacy) 가
    필요하면 tokens.dark.css 에 추가. 인라인 :root 정의 금지. */
 
-/* CRITICAL FIX (2026-04-25): HTML [hidden] 속성이 display:flex/block 클래스에
-   덮이는 버그 수정. Phase 2-4 에서 추가된 FF-gated UI (exempt-row, fc-card, vd-card,
-   exempt-modal, accent-picker-card 등) 가 FF off 인데도 강제 표시되던 문제. */
+/* HTML [hidden] 속성이 display:flex/block 클래스 specificity 에 덮이는 문제 방어.
+   FF-gated UI (exempt-row, fc-card, vd-card, accent-picker-card 등) 가
+   flag off 인데도 강제 표시되는 버그를 방지. */
 [hidden]{display:none !important;}
 
-/* First Cube Activation Card — Phase 1C */
 /* Homework session 세트 빠른 조정 버튼 — hug width */
 .hws-step{padding:5px 10px;background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius-md);font-size:var(--text-xs);color:var(--text2);font-weight:700;cursor:pointer;font-family:'DM Mono',monospace;letter-spacing:-.005em;white-space:nowrap;touch-action:manipulation;transition:all .12s;}
 .hws-step:hover{border-color:var(--accent);color:var(--accent);}
@@ -77,7 +76,7 @@
 .fc-complete{background:linear-gradient(135deg,rgba(52,211,153,0.08) 0%,rgba(52,211,153,0.02) 100%);border-color:var(--green-bd);}
 .fc-complete .fc-kicker{color:var(--green);}
 
-/* Exempt 1-tap — Phase 2A */
+/* Exempt 1-tap row */
 .exempt-row{display:flex;justify-content:center;padding:6px 16px 2px;}
 .exempt-btn{display:inline-flex;align-items:center;gap:8px;padding:7px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-pill);color:var(--text2);font-family:'DM Sans',sans-serif;font-size:11.5px;cursor:pointer;letter-spacing:-.005em;transition:border-color .15s,color .15s;touch-action:manipulation;}
 .exempt-btn:hover{border-color:var(--border2);color:var(--text);}
@@ -100,7 +99,7 @@
 .exempt-btn-confirm{flex:1.2;padding:12px 10px;background:var(--accent);border:none;border-radius:var(--radius-lg);color:#fff;font-size:12.5px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;letter-spacing:-.01em;line-height:1.3;}
 .exempt-btn-confirm:disabled{opacity:.4;cursor:not-allowed;}
 
-/* Layout v2 — Phase 2B. Status Band 컴팩트 모드.
+/* Layout v2 — Status Band 컴팩트 모드 (FF gated, layout_v2 플래그).
    body.layout-v2 클래스 토글로 활성. 변화 더 명확하게 — score 28px, padding 8px. */
 body.layout-v2 .sb{padding:10px 14px;margin-bottom:6px;}
 body.layout-v2 .sb .sb-score{font-size:var(--text-2xl) !important;letter-spacing:-1px;line-height:1;}
@@ -126,7 +125,7 @@ body.layout-v2 #targets-card{order:4;}
 body.layout-v2 #view-routine.active{display:flex;flex-direction:column;}
 body.layout-v2 .sb,body.layout-v2 .home-promo-block,body.layout-v2 #first-cube-card,body.layout-v2 #exempt-row,body.layout-v2 #yesterday-ribbon{order:-1;}
 
-/* Volume Delta mini-chart — Phase 3A (collapsible) */
+/* Volume Delta mini-chart (collapsible) */
 .vd-card{margin:0 16px 8px;padding:0;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;}
 .vd-head{display:flex;justify-content:space-between;align-items:baseline;cursor:pointer;padding:14px 16px;user-select:none;touch-action:manipulation;transition:background .15s;}
 .vd-head:hover{background:rgba(255,255,255,0.02);}
@@ -148,7 +147,7 @@ body.layout-v2 .sb,body.layout-v2 .home-promo-block,body.layout-v2 #first-cube-c
 .vd-delta.down{color:var(--red);}
 .vd-delta.flat{color:var(--text3);}
 
-/* Accent presets — Phase 3B. body[data-accent="..."] 로 토글. */
+/* Accent presets — body[data-accent="..."] 로 사용자 선택 색상 토글. */
 body[data-accent="charcoal"]{
   --accent:#6b7280;--accent-bg:rgba(107,114,128,0.10);--accent-bd:rgba(107,114,128,0.28);
   --accent-red:#6b7280;

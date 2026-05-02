@@ -582,9 +582,6 @@
     </div>
     <div class="top-spacer"></div>
     <div class="top-user">
-      <!-- 토글 폐기 (2026-05-02) — 단일 화면 통합 -->
-      <button class="dash-toggle on" id="dash-toggle-feed" onclick="setDashView('feed')" style="display:none;"></button>
-      <button class="dash-toggle" id="dash-toggle-roster" style="display:none;"></button>
       <button class="btn btn-ghost" onclick="openReferralModal()" style="font-size:var(--text-sm);">동료 추천 코드</button>
       <div onclick="openTrainerSelfEdit()" style="cursor:pointer;text-align:right;" title="이름·소개 편집">
         <div class="name" id="me-name">—</div>
@@ -2117,7 +2114,7 @@ async function doAssignWorkout(){
 // ═══════════════════════════════════════════════
 // Phase 7b: 3-column 캘린더 dashboard (v2)
 // ═══════════════════════════════════════════════
-let _dashView = 'feed';                   // 'feed' | 'v1' | 'v2'
+let _dashView = 'feed';                   // 'feed' | 'detail' (v1/v2 폐기됨)
 let _dash3Clients = [];                   // overview rows + relationship_id
 let _dash3SelectedClient = null;          // {client_id, relationship_id, name, ...}
 let _dash3ViewYear = (new Date()).getFullYear();
@@ -3772,13 +3769,11 @@ function openAssignFromDash3(){
   }
 }
 
-// 운동 배정 / 삭제 후 캘린더 invalidate — 외부에서 호출
+// 운동 배정 / 삭제 후 캘린더 invalidate — 외부에서 호출.
+// 옛 v2 dash3 뷰가 폐기되어 본문은 캐시 클리어만 수행 (no-op 분기 제거).
+// dash3 시스템 전체는 별도 refactor 에서 정리 예정.
 function _dash3InvalidateCache(){
   _dash3CalCache.clear();
-  if(_dashView==='v2' && _dash3SelectedClient){
-    renderDash3Calendar();
-    if(_dash3SelectedDate) renderDash3DateDetail(_dash3SelectedDate);
-  }
 }
 
 // ─── 트레이너 본인 정보 편집 ───
