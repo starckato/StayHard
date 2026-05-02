@@ -341,7 +341,7 @@
   .mcard-workout-status .ico.miss{background:rgba(255,77,77,0.25);color:#ff7a7a;}
   .mcard-workout-status .ico.none{background:var(--surface2);color:var(--text3);}
   .mcard-workout-link{margin-left:6px;font-size:11px;color:var(--accent);font-weight:700;cursor:pointer;}
-  .mcard-meals{display:grid;grid-template-columns:repeat(4,minmax(0,68px));gap:6px;}
+  .mcard-meals{display:grid;grid-template-columns:repeat(4,minmax(0,96px));gap:6px;}
   .mcard-meal{position:relative;aspect-ratio:1;background:var(--surface2);border:1px solid var(--border);border-radius:8px;overflow:hidden;display:flex;align-items:center;justify-content:center;cursor:pointer;}
   .mcard-meal.red-bd{border:2px solid #ff4d4d;}
   .mcard-meal.green-bd{border:2px solid #34d399;}
@@ -637,7 +637,7 @@
       </div>
       <div class="dt-head-actions">
         <button class="btn btn-primary" onclick="dtAssign()">+ 운동 배정</button>
-        <button class="btn btn-ghost" onclick="dtCardioPenalty()">🚨 페널티 부여</button>
+        <button class="btn btn-ghost" onclick="dtCardioPenalty()">🚨 유산소 형량 부여</button>
         <button class="btn btn-ghost" onclick="dtMessage()">💬 메시지</button>
         <button class="btn btn-ghost" onclick="dtNickname()">✎ 별명</button>
         <button class="btn btn-danger" onclick="dtGraduate()">졸업</button>
@@ -884,10 +884,10 @@
   </div>
 </div>
 
-<!-- ============= 페널티 (유산소 추가) 부여 모달 ============= -->
+<!-- ============= 유산소 형량 부여 모달 ============= -->
 <div class="modal-overlay" id="modal-cardio-penalty">
   <div class="modal" style="max-width:480px;">
-    <div class="modal-title">🚨 페널티 부여</div>
+    <div class="modal-title">🚨 유산소 형량 부여</div>
     <div class="modal-sub" id="cp-target">—</div>
 
     <div class="field">
@@ -3023,7 +3023,7 @@ function _renderMcard(r){
     </div>
     <div class="mcard-actions">
       <button class="mcard-btn primary" onclick="mcardAssign('${r.relationship_id}','${r.client_id}')">+ 운동 배정</button>
-      <button class="mcard-btn" onclick="mcardOpenCardio('${r.relationship_id}','${r.client_id}')">🚨 페널티 부여</button>
+      <button class="mcard-btn" onclick="mcardOpenCardio('${r.relationship_id}','${r.client_id}')">🚨 유산소 형량 부여</button>
       <button class="mcard-btn" onclick="mcardOpenMessage('${r.relationship_id}','${r.client_id}')">💬 메시지</button>
       <button class="mcard-btn" onclick="mcardOpenDetail('${r.relationship_id}','${r.client_id}')">📊 자세히 보기</button>
     </div>
@@ -3088,7 +3088,7 @@ function _relTime(ts){
 function _feedFindRow(clientId){ return _feedRows.find(r => r.client_id === clientId); }
 
 // ═══════════════════════════════════════════════
-// 유산소 추가 부여 모달
+// 유산소 형량 부여 모달
 // ═══════════════════════════════════════════════
 const CP_TYPES = ['달리기','걷기','자전거','수영','로잉','줄넘기','자유'];
 let _cpState = {clientId:null, relId:null, minutes:30, cardioType:'자유', name:''};
