@@ -471,6 +471,11 @@ const CUBE_TOOLTIP_COPY = {
     crimson: '할일 실패 있음',
     gray:    '할일 미등록',
   },
+  weight: {
+    gold:    '목표 방향 이동',
+    silver:  '체중 기록',
+    gray:    '체중 미기록',
+  },
 };
 
 function _cubeColorForCat(dl, cat) {
@@ -480,6 +485,12 @@ function _cubeColorForCat(dl, cat) {
 }
 
 function _legacyColorForCat(dl, cat) {
+  if (cat === 'weight') {
+    if (!dl) return 'gray';
+    const cur = (dl.weight != null) ? parseFloat(dl.weight) : NaN;
+    if (isNaN(cur) || cur <= 0) return 'gray';
+    return 'silver'; // 방향 판정은 카드 칩이 담당. tooltip 은 silver/gray 만으로 충분.
+  }
   const status = cellStatus(dl, cat, false);
   // cellStatus → cube color (역매핑)
   if (status === 'pass') return 'gold';

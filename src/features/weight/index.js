@@ -561,5 +561,9 @@ export async function saveWeight() {
   if (!alreadyLoss && prev !== null && prev !== undefined && v < prev) { addScore('weight_loss'); setTimeout(() => showWin('weight_loss', SCORE_EVENTS.weight_loss.pts, '감량 성공!'), 500); }
   const goal = getWeightGoal();
   if (goal && v <= goal && (prev === null || prev > goal)) { addScore('weight_goal'); setTimeout(() => showWin('weight_goal', SCORE_EVENTS.weight_goal.pts, '목표 체중 달성!'), 800); }
+  // Will Cube — 체중 입력 즉시 큐브 카운트 갱신 (silver / gold). 다른 액션 핸들러와
+  // 동일하게 hook → save 순서. recomputeCubesHook 이 prevWeight + weight_goal 컨텍스트를
+  // 자동으로 채워 cubes/judge.js 의 체중 규칙을 적용하고 #hdr-cube-stack · 카드 chip · 히트맵을 즉시 재렌더한다.
+  try { if (typeof recomputeCubesHook === 'function') recomputeCubesHook(); } catch (_) {}
   saveNow();
 }

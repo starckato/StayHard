@@ -173,3 +173,22 @@ export function judgeTasks(targets) {
   if (doneCount === real.length) return 'gold';
   return 'silver';
 }
+
+// 체중 입력 → 카드 칩 색상.
+// 입력만: silver. 어제 대비 목표 방향으로 이동: gold. 멀어지거나 정보 부족: silver.
+// 미입력: 'gray'. (judgeAccumulator 의 ── 체중 ── 블록과 같은 규칙.)
+export function judgeWeight(log, ctx = {}) {
+  if (!log) return 'gray';
+  const cur = (log.weight != null) ? parseFloat(log.weight) : NaN;
+  if (isNaN(cur) || cur <= 0) return 'gray';
+  const prev = (typeof ctx.prevWeight === 'number') ? ctx.prevWeight : null;
+  const goal = (typeof ctx.weightGoal === 'number' && ctx.weightGoal > 0) ? ctx.weightGoal : null;
+  if (prev != null && goal != null) {
+    const wantDecrease = prev > goal;
+    const wantIncrease = prev < goal;
+    if ((wantDecrease && cur < prev) || (wantIncrease && cur > prev)) {
+      return 'gold';
+    }
+  }
+  return 'silver';
+}

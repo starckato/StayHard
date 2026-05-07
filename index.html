@@ -1605,6 +1605,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
         <div class="card-collapsed-left">
           <span class="cc-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="14" width="18" height="6" rx="1.5"/><path d="M8 14v-2a4 4 0 0 1 8 0v2"/><circle cx="12" cy="18" r=".9" fill="currentColor"/></svg></span>
           <span class="cc-title">체중</span>
+          <span class="cc-cube" id="cc-cube-weight" data-cat="weight" style="display:none;" onclick="event.stopPropagation();dhShowCubeTooltip&&dhShowCubeTooltip(event,TODAY,'weight')"></span>
         </div>
         <div class="cc-summary">
           <span class="main" id="wt-cc-main">—</span>
@@ -6159,7 +6160,7 @@ async function onLogin(user){
     try{ _paintInitialUI(user); _snapPainted=true; window._paintedUserId=user.id; }catch(e){console.warn('snap paint failed',e);}
   }
   // 첫 페인트 경로를 병렬화 — profile + 오늘 로그 + 루틴 + 챌린지 동시 fetch
-  const profilePromise=sb.from('profiles').select('id,username,display_name,water_goal,onboarded,total_score,weight_goal,cheat_quota,cheat_used,cheat_reset_month,cheat_reset_week,system_notice,is_admin,feature_flags,return_state,exempt_log,accent_preference,notif_opt_in_history,onboarding_state').eq('id',user.id).maybeSingle();
+  const profilePromise=sb.from('profiles').select('id,username,display_name,water_goal,onboarded,total_score,weight_goal,cheat_quota,cheat_used,cheat_reset_month,cheat_reset_week,system_notice,is_admin,feature_flags,return_state,exempt_log,accent_preference,notif_opt_in_history,onboarding_state,lifetime_gold,lifetime_silver,lifetime_red').eq('id',user.id).maybeSingle();
   const [profileRes]=await Promise.all([
     profilePromise,
     loadLog(TODAY, _snapPainted), // 스냅샷으로 이미 그린 경우 강제 revalidate
@@ -7331,11 +7332,26 @@ function renderCardCubes(){
     const exObj = (typeof J.judgeExercise==='function') ? J.judgeExercise(workouts) : {exercise:null, exercise_bonus:null};
     const routineColor = (typeof J.judgeRoutine==='function') ? J.judgeRoutine(mandatory, wd) : null;
     const tasksColor = (typeof J.judgeTasks==='function') ? J.judgeTasks(targets) : null;
+    // 체중 — 어제 weight + CP.weight_goal 컨텍스트로 방향 판정. 없으면 silver.
+    let prevWeightForChip=null;
+    try{
+      const d=new Date(key+'T00:00:00');d.setDate(d.getDate()-1);
+      const yKey=d.toISOString().slice(0,10);
+      const yLog=window.logCache&&window.logCache[yKey];
+      if(yLog&&yLog.weight!=null){const w=parseFloat(yLog.weight);if(!isNaN(w))prevWeightForChip=w;}
+    }catch(_){}
+    const weightGoalForChip=(CP&&CP.weight_goal!=null)?parseFloat(CP.weight_goal):null;
+    const weightColorRaw=(typeof J.judgeWeight==='function')
+      ? J.judgeWeight(l,{prevWeight:prevWeightForChip,weightGoal:weightGoalForChip})
+      : null;
+    // 'gray' 는 chip 자체를 숨김 (식단/운동/루틴 카드와 동일 패턴).
+    const weightColor=(weightColorRaw && weightColorRaw!=='gray') ? weightColorRaw : null;
     const map={
       'cc-cube-diet': dietColor,
       'cc-cube-exercise': exObj.exercise,
       'cc-cube-routine': routineColor,
       'cc-cube-tasks': tasksColor,
+      'cc-cube-weight': weightColor,
     };
     Object.keys(map).forEach(id=>{
       const el=document.getElementById(id);
@@ -7439,6 +7455,40 @@ function recomputeCubesHook(key,opts){
         }
       }
     }catch(e){console.warn('[cube-score-sync]',e&&e.message);}
+    // ── Phase 2 (Will Cube · B 공식): lifetime delta + red destruction ──
+    // beforeCubes vs l.cubes 의 delta 를 profiles.lifetime_gold/silver/red 에 누적.
+    // red 발생 (dR>0) 시 추가로 lifetime_gold -= 2 + lifetime_silver -= 2 per red.
+    // undo (음수 delta) 시 가역 — 단, red 차감은 비가역 (파괴는 복구되지 않음).
+    // 과거 날짜 편집도 lifetime 에 반영 (사용자가 어제 한 일을 오늘 기록한 케이스).
+    // silent (renderRoutine 자동 sync) 또는 CP 없음 → skip.
+    try{
+      if(!silent && CP){
+        const before=beforeCubes||{};
+        const after=(l&&l.cubes)||{};
+        const dG=(+after.gold||0)-(+before.gold||0);
+        const dS=(+after.silver||0)-(+before.silver||0);
+        const dR=(+after.red||0)-(+before.red||0);
+        if(dG!==0||dS!==0||dR!==0){
+          CP.lifetime_gold=+CP.lifetime_gold||0;
+          CP.lifetime_silver=+CP.lifetime_silver||0;
+          CP.lifetime_red=+CP.lifetime_red||0;
+          let nG=Math.max(0,CP.lifetime_gold+dG);
+          let nS=Math.max(0,CP.lifetime_silver+dS);
+          let nR=Math.max(0,CP.lifetime_red+dR);
+          // Red destruction — 사용자 결정 N=2 (1 red = -2g -2s).
+          if(dR>0){
+            nG=Math.max(0,nG-2*dR);
+            nS=Math.max(0,nS-2*dR);
+          }
+          CP.lifetime_gold=nG;CP.lifetime_silver=nS;CP.lifetime_red=nR;
+          if(CU){
+            sb.from('profiles').update({
+              lifetime_gold:nG,lifetime_silver:nS,lifetime_red:nR
+            }).eq('id',CU.id).then(()=>{},err=>console.warn('[lifetime-cube] sync',err&&err.message));
+          }
+        }
+      }
+    }catch(e){console.warn('[lifetime-cube]',e&&e.message);}
     // hdr-score / sb-today 실시간 refresh — 모든 점수 표시 한꺼번에.
     try{updateHeaderStatus();}catch(e){}
     // Cube 변화 팝오버 — 오늘 날짜일 때만. 과거 로그 수정 / silent sync 는 조용히.

@@ -26,6 +26,40 @@ export function getTier(score) {
   return [...TIERS].reverse().find(t => score >= t.min) || TIERS[0];
 }
 
+/** Will Cube B 공식 티어 임계 — DB 의 tier_from_cubes RPC 와 1:1 매칭.
+ *  사용자 결정 (2026-05-06): 12 / 60 / 200 / 500 / 1400.
+ *  index 는 TIERS 배열과 순서 일치 (0 방관자 ~ 5 기록자). */
+export const CUBE_TIER_THRESHOLDS = [0, 12, 60, 200, 500, 1400];
+
+/**
+ * Will Cube B 공식 티어 산출.
+ * score = gold + silver / 3.
+ * red 는 lifetime_gold/silver 갱신 시점에 클라이언트가 즉시 차감하므로 인자 미사용.
+ * (시그니처 호환성 위해 받음. 향후 audit/통계용으로 활용 가능.)
+ *
+ * @param {number} gold   profiles.lifetime_gold
+ * @param {number} silver profiles.lifetime_silver
+ * @param {number} [red]  profiles.lifetime_red (계산 미반영)
+ * @returns {typeof TIERS[number]}
+ */
+export function getTierFromCubes(gold, silver, red) {
+  const g = Math.max(0, +gold || 0);
+  const s = Math.max(0, +silver || 0);
+  const score = g + s / 3;
+  // 가장 높은 임계부터 역순 스캔.
+  for (let i = CUBE_TIER_THRESHOLDS.length - 1; i >= 0; i--) {
+    if (score >= CUBE_TIER_THRESHOLDS[i]) return TIERS[i];
+  }
+  return TIERS[0];
+}
+
+/** Will Cube B 공식 점수 환산 (UI 표시 / 정렬 용). */
+export function scoreFromLifetime(gold, silver) {
+  const g = Math.max(0, +gold || 0);
+  const s = Math.max(0, +silver || 0);
+  return g + s / 3;
+}
+
 /** Supabase public storage base for tier character/room art. */
 export const ASSET_BASE = 'https://uvaosxhsjscigheyymus.supabase.co/storage/v1/object/public/game-assets';
 
