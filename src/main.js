@@ -48,13 +48,24 @@ import * as exempt from './features/exempt/index.js';
 import * as deeplink from './features/deeplink/index.js';
 import * as notifOptIn from './features/notif/opt-in-scheduler.js';
 import * as volumeDelta from './features/volume-delta/index.js';
+import * as targets from './features/targets/index.js';
+import './features/targets/tests.js'; // window.runTargetsTests() 노출
 
 Object.assign(
   window,
   date, tier, icons, env, analytics, mealPhoto, cheat, toast,
   scoreEvents, mottos, exercises, muscle, rewardMessages, pushupCV,
-  stats, onboarding, weight, rewards, dateHeatmap
+  stats, onboarding, weight, rewards, dateHeatmap,
+  targets
 );
+// Targets feature — DOMContentLoaded 후 키 바인딩
+if (typeof window !== 'undefined') {
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => targets.initTargetsModule());
+  } else {
+    targets.initTargetsModule();
+  }
+}
 window.PushupChallenge = pushupChallenge;
 window.openPushupCounter = pushupCounter.openPushupCounter;
 window.sb = sb;

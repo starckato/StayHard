@@ -1,9 +1,9 @@
 /* QROK · modular CSS entry point
  *
- * Migration phase: 0 (setup only — no styles imported yet)
- * See: document-private/MIGRATION_PLAN.md
+ * Feature-folder CSS @imports go here. 한 폴더 = 한 기능 컨벤션.
+ * See: ARCHITECTURE.md — "Feature Folder 컨벤션".
  *
- * In Phase 1, this file will @import all extracted CSS partials.
- * For now it is intentionally empty — the existing inline <style> block in
- * index.html still owns all production styling.
+ * Phase 1 (2026-05-07): 첫 추출 — targets.
  */
+
+@import './../features/targets/targets.css';

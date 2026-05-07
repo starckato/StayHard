@@ -35,6 +35,8 @@
 <link href="/src/styles/tokens.dark.css" rel="stylesheet">
 <!-- Phase B-app: tap feedback + state 컴포넌트 + skeleton. -->
 <link href="/src/styles/states.css" rel="stylesheet">
+<!-- Feature folder CSS — 한 폴더 = 한 기능 컨벤션 (ARCHITECTURE.md). -->
+<link href="/src/features/targets/targets.css" rel="stylesheet">
 <style>
 /* :root 토큰은 src/styles/tokens.{shared,dark}.css 로 이전됨 (Phase 0).
    index.html 은 다크 팔레트 사용. 추가 sub-palette (--radius-sm 등 legacy) 가
@@ -1016,24 +1018,12 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
 .ck-del{background:none;border:none;color:var(--text3);cursor:pointer;font-size:var(--text-sm);padding:3px;}
 
 /* TARGETS */
-.tgt-row{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);touch-action:manipulation;-webkit-tap-highlight-color:transparent;min-height:52px;}
-.tgt-row:last-child{border-bottom:none;}
-.tgt-btn{width:28px;height:28px;border-radius:var(--radius-sm);border:2px solid var(--border2);background:transparent;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:var(--text-base);transition:all .15s;-webkit-user-select:none;user-select:none;touch-action:manipulation;}
-.tgt-btn.done{background:var(--green-bg);border-color:var(--green);color:var(--green);}
-.tgt-btn.fail{background:var(--red-bg);border-color:var(--red);color:var(--red);}
+/* targets card CSS → src/features/targets/targets.css (2026-05-07 추출) */
 /* Routine badge — makes "this is a recurring routine" unambiguous */
 .routine-pill{font-size:var(--text-2xs);font-weight:700;padding:2px 6px;border-radius:var(--radius-sm);background:var(--accent-tint-2);color:var(--accent-red);border:0.5px solid var(--accent-tint-4);margin-left:6px;vertical-align:middle;letter-spacing:.04em;text-transform:uppercase;}
 .routine-pill.auto{background:var(--accent-tint-2);color:var(--accent);border-color:var(--accent-bd);}
-.tgt-text.fail{text-decoration:line-through;color:var(--text3);}
-.tgt-text{font-size:var(--text-lg);flex:1;}
-.tgt-text.done{text-decoration:line-through;color:var(--text2);}
-.tgt-empty{font-size:var(--text-sm);color:var(--text3);font-style:italic;padding:8px 0;}
+/* .tgt-text / .tgt-empty / .add-tgt-input* / .add-tgt-go → src/features/targets/targets.css */
 .add-tgt{display:flex;align-items:center;gap:8px;padding:10px 14px;cursor:pointer;color:var(--text3);font-size:var(--text-sm);border-top:1px solid var(--border);}
-.add-tgt-input{display:none;gap:8px;padding:8px 14px;border-top:1px solid var(--border);}
-.add-tgt-input.open{display:flex;}
-.add-tgt-input input{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:'DM Sans',sans-serif;font-size:var(--text-lg);padding:13px 14px;outline:none;min-height:48px;}
-.add-tgt-input input:focus{border-color:var(--accent);}
-.add-tgt-go{padding:12px 18px;background:var(--accent);color:#fff;border:none;border-radius:var(--radius-sm);font-family:'DM Sans',sans-serif;font-size:var(--text-base);font-weight:500;cursor:pointer;min-height:48px;touch-action:manipulation;}
 /* ─── COMPETITION TAB ─── */
 #view-competition{padding:0;padding-bottom:20px;}
 .setup-screen{display:none;padding:0 16px;}.setup-screen.active{display:block;padding:0 16px 40px;}
@@ -9864,12 +9854,7 @@ function toggleRoutineCard(){
   card.classList.toggle('expanded');
 }
 
-function toggleTargetsCard(){
-  if(typeof window.setExclusiveCard==='function'){window.setExclusiveCard('targets-card');return;}
-  const card=document.getElementById('targets-card');
-  if(!card)return;
-  card.classList.toggle('expanded');
-}
+// toggleTargetsCard → src/features/targets/index.js (2026-05-07 추출)
 
 // Summary for the collapsed 루틴 header. Respects today's dow filter
 // so the badge matches what the expanded body actually lists.
@@ -9891,22 +9876,7 @@ function renderRoutineSummary(){
   sum.innerHTML=`<span class="q-chip normal">루틴 <span class="n">${done}/${items.length}</span></span>`;
 }
 
-// Summary for the collapsed 할일 header.
-function renderTargetsSummary(){
-  const sum=document.getElementById('targets-summary');
-  if(!sum)return;
-  const tgts=(log.targets||[]).filter(t=>t&&t.text);
-  if(tgts.length===0){
-    sum.innerHTML='<span class="summary-cta">할일 추가하기 →</span>';
-    return;
-  }
-  const done=tgts.filter(t=>t.st==='done').length;
-  if(done===tgts.length){
-    sum.innerHTML='<span style="color:var(--green);font-weight:600;">✓ 완료</span>';
-    return;
-  }
-  sum.innerHTML=`<span class="q-chip normal">할일 <span class="n">${done}/${tgts.length}</span></span>`;
-}
+// renderTargetsSummary → src/features/targets/index.js (2026-05-07 추출)
 
 // Summary for the collapsed workout header. Priority: strength volume >
 // cardio distance > sport/recovery duration. Shows at most two KPIs.
@@ -12934,163 +12904,16 @@ function toggleDay(el,idx){
   else{newMandDays.push(idx);el.classList.add('on');}
 }
 
-// TARGETS
-function renderTargets(){
-  if(!log.targets)log.targets=[];
-  const done=log.targets.filter(t=>t.st==='done').length;
-  const b=document.getElementById('tgt-badge');if(b){b.textContent=done+'/'+log.targets.length;b.className='s-badge '+(done>0&&done===log.targets.length?'green':'');}
-  if(typeof updateTasksBadge==='function')updateTasksBadge();
-  document.getElementById('tgt-rows').innerHTML=log.targets.length===0
-    ?`<div style="padding:16px 0;text-align:center;">
-  <div style="font-size:var(--text-2xl);margin-bottom:6px;">🎯</div>
-  <div style="font-size:var(--text-md);color:var(--text3);margin-bottom:4px;">오늘의 할일을 설정하세요</div>
-  <div style="font-size:var(--text-xs);color:var(--text3);margin-bottom:10px;">예: 링크드인 연락 · 보고서 작성 · 병원 예약</div>
-  <div style="display:inline-flex;align-items:center;gap:6px;font-size:var(--text-2xs);font-weight:600;padding:5px 10px;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius-pill);color:var(--text3);letter-spacing:-.01em;">
-    <span style="color:var(--green);">+2pt</span>완료 · <span style="color:var(--red);">-2pt</span>실패
-  </div>
-</div>`
-    :log.targets.map((t,i)=>{
-      const isDone=t.st==='done';
-      const isFail=t.st==='fail';
-      const checkContent=isDone?'<span style="color:var(--green);font-size:var(--text-base);">✓</span>':isFail?'<span style="color:var(--red);font-size:var(--text-sm);">✕</span>':'';
-      return`<div class="tgt-row" style="${isFail?'background:var(--accent-tint-1);':''}">
-        <div class="tgt-btn ${t.st||''}"
-          onclick="togTgt(${i})"
-          style="cursor:pointer;-webkit-user-select:none;user-select:none;flex-shrink:0;">
-          ${checkContent}
-        </div>
-        <div class="tgt-text ${isDone?'done':isFail?'fail':''}"
-          onclick="togTgt(${i})"
-          style="cursor:pointer;flex:1;padding:12px 4px;-webkit-user-select:none;user-select:none;">${esc(t.text||'')}${t._carried?` <span style="font-size:var(--text-2xs);font-weight:600;padding:1px 5px;border-radius:var(--radius-sm);background:var(--accent-bg);color:var(--accent);border:0.5px solid var(--accent-bd);vertical-align:middle;">이월</span>`:''}
-        </div>
-        ${!isDone?`<button onclick="markFail(${i})" style="font-size:var(--text-xs);padding:5px 10px;border-radius:var(--radius-md);border:1px solid ${isFail?'var(--red)':'var(--border2)'};background:${isFail?'var(--red-bg)':'transparent'};color:${isFail?'var(--red)':'var(--text3)'};cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;white-space:nowrap;flex-shrink:0;">${isFail?'취소':'실패'}</button>`:''}
-        <button onclick="openPromoteTodoModal(${i})" title="매일 반복하는 필수 루틴으로 변환" style="background:none;border:none;color:var(--accent);cursor:pointer;font-size:var(--text-base);padding:6px 8px;min-width:36px;touch-action:manipulation;">↻</button>
-        <button onclick="delTgt(${i})" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:var(--text-xl);padding:6px 8px;min-width:36px;touch-action:manipulation;">✕</button>
-      </div>`;
-    }).join('');
-  try{renderTargetsSummary();}catch(e){}
-}
-
-// Tap = toggle done/undone
-function togTgt(i){
-  const s=log.targets[i].st||'';
-  const nowDone=s!=='done';
-  // 토글 전에 origin 좌표 캡처
-  const _origin=document.querySelectorAll('#tgt-rows .tgt-btn')[i]||null;
-  const _originRect=_origin?_origin.getBoundingClientRect():null;
-  log.targets[i].st=nowDone?'done':'';
-  renderTargets();recomputeCubesHook();saveNow();
-  if(nowDone){
-    // 개별 행동 → 조용한 응원. gold 완결은 cube 연출이 담당.
-    _tryMicroReward('tasks');
-    addScore('target_done');
-    if(_originRect){
-      const proxy={getBoundingClientRect:()=>_originRect};
-      showScoreGain(SCORE_EVENTS.target_done.pts,proxy);
-    }
-    setTimeout(()=>{
-      // 방금 완료한 할일만 bounce (인덱스로 정확히 매칭 — 마지막 done 전체 bounce 되던 버그 수정)
-      const btn=document.querySelectorAll('#tgt-rows .tgt-btn')[i];
-      if(btn)bounceEl(btn);
-      showWin('task',SCORE_EVENTS.target_done.pts,'할일 완료!');
-      checkPerfectDay();
-    },50);
-  } else {
-    addScore('target_done_cancel'); // -2점 (새 target_done=2 취소)
-  }
-}
-
-// Long press / right click = mark as failed
-function markFail(i){
-  const wasFail=log.targets[i].st==='fail';
-  log.targets[i].st=wasFail?'':'fail';
-  if(!wasFail){
-    addScore('target_fail'); // -3점
-  } else {
-    addScore('target_fail_cancel'); // now 0점 — Q3=C 패널티 제거
-  }
-  renderTargets();recomputeCubesHook();saveNow();
-}
+// TARGETS — renderTargets / togTgt / markFail / delTgt / addTarget / toggleAddTgt /
+// openPromoteTodoModal / togglePromoteDay / setPromoteEnd / confirmPromoteTodo /
+// renderTargetsSummary / toggleTargetsCard 모두 src/features/targets/index.js 로 추출됨
+// (2026-05-07). main.js 가 window.* 로 노출 — 인라인 onclick 호환 유지.
 
 // Touch: simple tap only (fail button replaces long press)
 document.addEventListener('touchmove',()=>{_mandMoved=true;},{passive:true});
 
-function delTgt(i){log.targets.splice(i,1);renderTargets();saveNow();}
-
-// ── Promote todo → custom mandatory routine (Q6) ──
-let _promoteTodoIdx=null, _promoteDays=[0,1,2,3,4,5,6], _promoteEndDate=null;
-function openPromoteTodoModal(i){
-  const t=log.targets[i];
-  if(!t)return;
-  _promoteTodoIdx=i;
-  _promoteDays=[0,1,2,3,4,5,6];
-  _promoteEndDate=null;
-  document.getElementById('promote-todo-text').textContent='"'+t.text+'"을(를) 매일 반복하는 필수 루틴으로 변환합니다.';
-  // Build day chips
-  const daysEl=document.getElementById('promote-days');
-  const names=['월','화','수','목','금','토','일'];
-  daysEl.innerHTML=names.map((n,idx)=>
-    `<button type="button" data-day="${idx}" onclick="togglePromoteDay(${idx},this)" style="flex:1;min-width:38px;padding:10px 0;background:var(--accent);border:1px solid var(--accent);border-radius:var(--radius-lg);color:#fff;font-size:var(--text-md);font-weight:600;cursor:pointer;touch-action:manipulation;">${n}</button>`
-  ).join('');
-  document.getElementById('promote-end-date').value='';
-  openModal('promote-modal');
-}
-function togglePromoteDay(idx,el){
-  if(_promoteDays.includes(idx)){
-    _promoteDays=_promoteDays.filter(d=>d!==idx);
-    el.style.background='var(--surface2)';el.style.borderColor='var(--border2)';el.style.color='var(--text3)';
-  } else {
-    _promoteDays.push(idx);
-    el.style.background='var(--accent)';el.style.borderColor='var(--accent)';el.style.color='#fff';
-  }
-}
-function setPromoteEnd(days){
-  if(days===null){
-    _promoteEndDate=null;
-    document.getElementById('promote-end-date').value='';
-  } else {
-    const d=new Date();d.setDate(d.getDate()+days);
-    _promoteEndDate=d.toISOString().slice(0,10);
-    document.getElementById('promote-end-date').value=_promoteEndDate;
-  }
-}
-// Sync manual date input
-document.addEventListener('change',e=>{
-  if(e.target&&e.target.id==='promote-end-date'){
-    _promoteEndDate=e.target.value||null;
-  }
-});
-function confirmPromoteTodo(){
-  if(_promoteTodoIdx==null)return;
-  const t=log.targets[_promoteTodoIdx];
-  if(!t){closeModal('promote-modal');return;}
-  if(_promoteDays.length===0){showToast('최소 1개 요일을 선택해주세요');return;}
-  // Check custom routine slot limit
-  const customCount=(log.mandatory||[]).filter(m=>m&&m.type==='custom').length;
-  if(customCount>=10){
-    showToast('필수 루틴은 최대 10개까지 추가할 수 있어요.');
-    closeModal('promote-modal');return;
-  }
-  // Create custom mandatory entry
-  const entry={
-    type:'custom',
-    name:t.text,
-    done:t.st==='done',
-    days:[..._promoteDays].sort((a,b)=>a-b),
-    end_date:_promoteEndDate
-  };
-  log.mandatory.push(entry);
-  // Remove from todos
-  log.targets.splice(_promoteTodoIdx,1);
-  _promoteTodoIdx=null;
-  closeModal('promote-modal');
-  renderMandatory();renderTargets();queueSave();
-  propagateMandatoryDefs(log.mandatory);
-  showToast('↻ 매일 반복 루틴으로 변환됐어요');
-}
-function toggleAddTgt(){const x=document.getElementById('add-tgt-input');x.classList.toggle('open');if(x.classList.contains('open'))document.getElementById('tgt-inp').focus();}
-function addTarget(){const inp=document.getElementById('tgt-inp');const t=inp.value.trim();if(!t)return;log.targets.push({text:t,st:''});inp.value='';document.getElementById('add-tgt-input').classList.remove('open');renderTargets();saveNow();}
-document.getElementById('tgt-inp').addEventListener('keydown',e=>{if(e.key==='Enter')addTarget();});
+// 모든 promote/add/toggle/keydown 핸들러 → src/features/targets/index.js (2026-05-07).
+// initTargetsModule() 가 keydown / change 이벤트 바인딩.
 // WEEKLY VIEW — moved to src/features/weekly-view/index.js (Phase 3.9). window.* via bundle.
 // ── COMPETITION ──
 // ── CHALLENGE HOME ──

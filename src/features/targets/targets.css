@@ -1,0 +1,98 @@
+/* 큐록 · features/targets — 할일 카드 스타일.
+   index.html 의 ~1018-1036 region 에서 추출 (2026-05-07).
+   글로벌 토큰 (var(--accent), var(--border) 등) 은 styles/tokens.shared.css 에서. */
+
+.tgt-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  min-height: 52px;
+}
+.tgt-row:last-child { border-bottom: none; }
+
+.tgt-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
+  border: 2px solid var(--border2);
+  background: transparent;
+  cursor: pointer;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--text-base);
+  transition: all .15s;
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: manipulation;
+}
+.tgt-btn.done { background: var(--green-bg); border-color: var(--green); color: var(--green); }
+.tgt-btn.fail { background: var(--red-bg); border-color: var(--red); color: var(--red); }
+
+.tgt-text {
+  font-size: var(--text-lg);
+  flex: 1;
+}
+.tgt-text.done { text-decoration: line-through; color: var(--text2); }
+.tgt-text.fail { text-decoration: line-through; color: var(--text3); }
+
+.tgt-empty {
+  font-size: var(--text-sm);
+  color: var(--text3);
+  font-style: italic;
+  padding: 8px 0;
+}
+
+.add-tgt-input {
+  display: none;
+  gap: 8px;
+  padding: 8px 14px;
+  border-top: 1px solid var(--border);
+}
+.add-tgt-input.open { display: flex; }
+.add-tgt-input input {
+  flex: 1;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-size: var(--text-lg);
+  padding: 13px 14px;
+  outline: none;
+  min-height: 48px;
+}
+.add-tgt-input input:focus { border-color: var(--accent); }
+.add-tgt-go {
+  padding: 12px 18px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-family: 'DM Sans', sans-serif;
+  font-size: var(--text-base);
+  font-weight: 500;
+  cursor: pointer;
+  min-height: 48px;
+  touch-action: manipulation;
+}
+
+/* 완료 시 체크 버튼 작은 bounce 애니. index.html:343 의 .tgt-btn.bounce 와 동기 */
+@keyframes checkBounce {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.25); }
+  100% { transform: scale(1); }
+}
+.tgt-btn.bounce { animation: checkBounce .35s ease; }
+
+/* 할일 카드 type 분리선 (체크-row 와 공유) */
+.ck-row.tgt-type {
+  border-left: 3px solid var(--border2);
+  padding-left: 10px;
+  margin-left: -13px;
+}
