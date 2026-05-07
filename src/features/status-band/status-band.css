@@ -39,9 +39,9 @@
   width: 100%;
   height: 100%;
   display: block;
-  /* 픽셀 sprite 확대 시 blur 방지 */
-  image-rendering: pixelated;
-  image-rendering: crisp-edges;
+  /* sprite 가 724×724 high-res 소스 → 부드러운 scale (auto = browser smoothing).
+     pixel-art 픽셀화 효과는 100×120 비정수배 downscale 시 들쭉날쭉 → smooth 권장. */
+  image-rendering: auto;
 }
 .sb-canvas-wrap img {
   position: absolute;
@@ -49,7 +49,8 @@
   width: 100%;
   height: 100%;
   object-fit: contain;
-  image-rendering: pixelated;
+  /* tier2/tier3 정적 프로필 (553×900 nat) → 100×120 smooth downscale */
+  image-rendering: auto;
   pointer-events: none;
 }
 

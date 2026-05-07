@@ -91,7 +91,11 @@
     const cv = document.getElementById('char-mini-canvas');
     if(!cv) return;
     const cx = cv.getContext('2d');
-    cx.imageSmoothingEnabled = false; // 픽셀 아트 — frame bleed 방지
+    // Status Band Hero v2 (2026-05-07) — 100×120 표시 + 200×240 internal (2x oversample)
+    // sprite source 가 724×724 (sheet) 라서 nearest-neighbor 비정수배 downscale 시
+    // 들쭉날쭉. 부드러운 downscale 사용. CSS image-rendering: auto 와 짝.
+    cx.imageSmoothingEnabled = true;
+    cx.imageSmoothingQuality = 'high';
     const W = cv.width || 44;
     const H = cv.height || 52;
     function loop(now){
