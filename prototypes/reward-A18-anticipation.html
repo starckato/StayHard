@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Reward A18 · Anticipation Tap</title>
+<link rel="stylesheet" href="_shared.css">
+<link rel="stylesheet" href="_reward-shared.css">
+<style>
+.phone-content{display:flex;flex-direction:column;}
+.suspended{position:fixed;width:32px;height:32px;border-radius:4px;border:1px solid rgba(0,0,0,0.4);box-shadow:inset 0 1px 0 rgba(255,255,255,0.45),inset 0 -2px 4px rgba(0,0,0,0.4),0 0 24px rgba(255,213,74,0.55),0 8px 20px rgba(0,0,0,0.5);z-index:100;cursor:pointer;animation:floatBob 1.6s ease-in-out infinite;}
+@keyframes floatBob{0%,100%{transform:translateY(0) rotate(-3deg);}50%{transform:translateY(-6px) rotate(3deg);}}
+.suspended.gold{background:linear-gradient(135deg,#fff1a8,#ffd54a 50%,#c48c1a);}
+.suspended.silver{background:linear-gradient(135deg,#f2f4f7,#b5c0cc 50%,#6d7682);box-shadow:inset 0 1px 0 rgba(255,255,255,0.45),inset 0 -2px 4px rgba(0,0,0,0.4),0 0 18px rgba(181,192,204,0.5),0 8px 20px rgba(0,0,0,0.5);}
+.suspended.red{background:linear-gradient(135deg,#ff8080,#ff4d4d 50%,#8b1515);box-shadow:inset 0 1px 0 rgba(255,255,255,0.45),inset 0 -2px 4px rgba(0,0,0,0.4),0 0 22px rgba(255,77,77,0.6),0 8px 20px rgba(0,0,0,0.5);}
+.suspended.committed{animation:slam .35s cubic-bezier(.5,0,.4,1.6) forwards;}
+@keyframes slam{0%{transform:translate(0,0) scale(1);}100%{transform:translate(var(--dx),var(--dy)) scale(0.5);opacity:0;}}
+.suspended.auto-deliver{animation:autoGlide .65s cubic-bezier(.32,1,.42,1) forwards;}
+@keyframes autoGlide{0%{transform:translate(0,0) scale(1);opacity:1;}100%{transform:translate(var(--dx),var(--dy)) scale(0.6);opacity:0;}}
+.tap-hint{position:fixed;font-family:'DM Sans',sans-serif;font-size:11px;color:#ffd54a;font-weight:700;letter-spacing:-.005em;background:rgba(0,0,0,0.85);padding:5px 10px;border-radius:14px;border:1px solid rgba(255,213,74,0.35);pointer-events:none;z-index:101;animation:hintBob 1.6s ease-in-out infinite;}
+@keyframes hintBob{0%,100%{transform:translate(-50%,0);}50%{transform:translate(-50%,-3px);}}
+.tap-hint.silver{color:#dde1e6;border-color:rgba(221,225,230,0.35);}
+.tap-hint.red{color:#ff8080;border-color:rgba(255,128,128,0.35);}
+.sb-stack-dot.commit{animation:commitBump .45s cubic-bezier(.32,1.6,.42,1);}
+@keyframes commitBump{0%,100%{transform:scale(1);}40%{transform:scale(1.5);box-shadow:0 0 18px currentColor;}}
+</style></head>
+<body>
+<div class="head">
+  <a class="back" href="index.html">← 목록</a>
+  <div class="title"><div class="opt">REWARD A18</div><div class="t">Anticipation Tap — 큐브 부유 → 사용자 *탭* 으로 commit</div></div>
+</div>
+
+<div class="phone">
+  <div class="phone-content">
+    <div class="sb">
+      <div class="sb-row"><div class="sb-tier"><span class="ic">😴</span><span>방관자</span></div><div class="sb-streak">🔥 12일</div></div>
+      <div class="sb-bar"><div class="sb-fill-gold" id="fillG" style="width:25%;"></div><div class="sb-fill-silver" id="fillS" style="left:25%;width:25%;"></div></div>
+      <div class="sb-meta"><span><b id="metaScore">6</b> / 12 → 각성자</span><span id="metaPct">50%</span></div>
+      <div class="sb-stack">
+        <div class="sb-stack-item"><div class="sb-stack-dot gold" id="dotG"></div><div class="sb-stack-num" id="numG">3</div><div class="sb-stack-lbl">G</div></div>
+        <div class="sb-stack-item"><div class="sb-stack-dot silver" id="dotS"></div><div class="sb-stack-num" id="numS">9</div><div class="sb-stack-lbl">S</div></div>
+        <div class="sb-stack-item"><div class="sb-stack-dot red" id="dotR"></div><div class="sb-stack-num" id="numR">0</div><div class="sb-stack-lbl">R</div></div>
+      </div>
+    </div>
+    <div class="room">
+      <div class="room-bg"></div>
+      <div class="room-char"></div>
+      <div class="card-stub">
+        <div class="card-row">
+          <span class="card-icon">🥗</span>
+          <span class="card-title">식단</span>
+          <span style="margin-left:auto;font-size:10px;color:#ffd54a;font-family:'DM Mono',monospace;">탭 commit</span>
+        </div>
+        <button class="card-action" onclick="trigger('gold',event)">+ 클린식 (gold)</button>
+        <button class="card-action" style="margin-top:5px;background:linear-gradient(135deg,#94a3b8,#475569);" onclick="trigger('silver',event)">+ 일반식 (silver)</button>
+        <button class="card-action" style="margin-top:5px;background:linear-gradient(135deg,#8b1515,#ff4d4d);" onclick="trigger('red',event)">+ 음주 (red)</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="note">
+  <b>A18 — Anticipation Tap</b>: 액션 → 큐브 0.5s 공중 부유 (bob 애니). 부유 중 *탭* 하면 강한 slam (heavy haptic) + dot bump 확대. 안 탭 하면 ~2s 후 자동 부드럽게 미끄러져 stack 으로. red 도 동일 — 탭하면 *내가 책임지고 등록* 의 의미. 게임화 된 commit 모먼트.<br>
+  <b>장점</b>: <b>의식적 commit</b>. 그냥 등록 vs 내가 손으로 박은 등록의 감정 차이. 만족감 ↑. red 는 한 번 더 보고 결정 — 충동 차단 효과. <b>단점</b>: 마찰 — 잦은 액션 시 탭 부담. 자동 deliver fallback 으로 완화 가능하지만 핵심 모먼트가 약해짐.<br>
+  <b>플레이</b>: + 큐브 → 큐브 부유 + "탭하면 슬램 / 안 누르면 글라이드" hint → 탭 OR 기다리기 비교.
+</div>
+
+<script>
+const counts={gold:3,silver:9,red:0};
+const TIER_NEXT=12;
+function score(){return counts.gold + counts.silver/3;}
+function update(){
+  document.getElementById('numG').textContent=counts.gold;
+  document.getElementById('numS').textContent=counts.silver;
+  document.getElementById('numR').textContent=counts.red;
+  const s=score();
+  const goldPct=Math.min(100,counts.gold/TIER_NEXT*100);
+  const silverPct=Math.min(100-goldPct, (counts.silver/3)/TIER_NEXT*100);
+  document.getElementById('fillG').style.width=goldPct+'%';
+  document.getElementById('fillS').style.left=goldPct+'%';
+  document.getElementById('fillS').style.width=silverPct+'%';
+  document.getElementById('metaScore').textContent=Math.round(s*10)/10;
+  document.getElementById('metaPct').textContent=Math.min(100,Math.round(s/TIER_NEXT*100))+'%';
+}
+function applyCount(color){
+  if(color==='red'){counts.red++;counts.gold=Math.max(0,counts.gold-2);counts.silver=Math.max(0,counts.silver-2);}
+  else counts[color]++;
+  update();
+}
+function bumpDot(color){
+  const map={gold:'dotG',silver:'dotS',red:'dotR'};
+  const dot=document.getElementById(map[color]);
+  dot.classList.add('commit');setTimeout(()=>dot.classList.remove('commit'),500);
+}
+function trigger(color, ev){
+  const btn=ev.currentTarget;
+  const oRect=btn.getBoundingClientRect();
+  const cube=document.createElement('div');
+  cube.className='suspended '+color;
+  // Position above the button (in the room area)
+  const phoneRect=document.querySelector('.phone').getBoundingClientRect();
+  const startX=oRect.left+oRect.width/2-16;
+  const startY=phoneRect.top+phoneRect.height*0.42;
+  cube.style.left=startX+'px';cube.style.top=startY+'px';
+  document.body.appendChild(cube);
+  const hint=document.createElement('div');
+  hint.className='tap-hint '+(color==='silver'?'silver':color==='red'?'red':'');
+  hint.textContent='탭으로 commit';
+  hint.style.left=(startX+16)+'px';hint.style.top=(startY+50)+'px';
+  document.body.appendChild(hint);
+  let committed=false;
+  const tMap={gold:'dotG',silver:'dotS',red:'dotR'};
+  function commit(){
+    if(committed)return;committed=true;
+    const tDot=document.getElementById(tMap[color]);
+    const tRect=tDot.getBoundingClientRect();
+    const cRect=cube.getBoundingClientRect();
+    cube.style.setProperty('--dx',(tRect.left+tRect.width/2-cRect.left-cRect.width/2)+'px');
+    cube.style.setProperty('--dy',(tRect.top+tRect.height/2-cRect.top-cRect.height/2)+'px');
+    cube.classList.add('committed');
+    if(navigator.vibrate)navigator.vibrate(35);
+    hint.remove();
+    setTimeout(()=>{
+      cube.remove();
+      applyCount(color);
+      bumpDot(color==='red'?'gold':color);
+    },300);
+  }
+  function autoDeliver(){
+    if(committed)return;committed=true;
+    const tDot=document.getElementById(tMap[color]);
+    const tRect=tDot.getBoundingClientRect();
+    const cRect=cube.getBoundingClientRect();
+    cube.style.setProperty('--dx',(tRect.left+tRect.width/2-cRect.left-cRect.width/2)+'px');
+    cube.style.setProperty('--dy',(tRect.top+tRect.height/2-cRect.top-cRect.height/2)+'px');
+    cube.classList.add('auto-deliver');
+    hint.remove();
+    setTimeout(()=>{
+      cube.remove();
+      applyCount(color);
+    },650);
+  }
+  cube.onclick=commit;
+  setTimeout(autoDeliver, 2000);
+}
+update();
+</script>
+</body></html>

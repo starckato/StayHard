@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Reward A21 · Garden</title>
+<link rel="stylesheet" href="_shared.css">
+<link rel="stylesheet" href="_reward-shared.css">
+<style>
+.phone-content{display:flex;flex-direction:column;}
+.room{background:linear-gradient(180deg,#1a2210 0%,#0e1408 100%);}
+.room-bg{display:none;}
+.room-char{bottom:130px;}
+.garden{position:absolute;left:0;right:0;bottom:0;height:120px;display:flex;align-items:flex-end;justify-content:space-around;padding:0 8px 6px;pointer-events:none;}
+.garden-soil{position:absolute;left:0;right:0;bottom:0;height:18px;background:linear-gradient(180deg,#3a2818,#1f1408);border-top:1px solid #2a1c10;box-shadow:inset 0 1px 0 rgba(255,255,255,0.05);}
+.plant{position:relative;font-size:24px;line-height:1;transform-origin:bottom center;transition:transform .65s cubic-bezier(.32,1.5,.42,1),opacity .35s ease;animation:sway 3s ease-in-out infinite;animation-delay:var(--d, 0s);filter:drop-shadow(0 0 6px rgba(255,213,74,0.15));}
+@keyframes sway{0%,100%{transform:rotate(-2deg);}50%{transform:rotate(2deg);}}
+.plant.gold{font-size:30px;filter:drop-shadow(0 0 8px rgba(255,213,74,0.45));}
+.plant.silver{font-size:20px;opacity:0.85;}
+.plant.red{filter:saturate(0.3) drop-shadow(0 0 6px rgba(255,77,77,0.4));opacity:0.6;}
+.plant.sprouting{animation:sprout 1s cubic-bezier(.32,1.5,.42,1);}
+@keyframes sprout{0%{transform:scale(0) translateY(10px);opacity:0;}30%{opacity:1;}55%{transform:scale(1.25) translateY(-2px);}100%{transform:scale(1) translateY(0);opacity:1;}}
+.plant.wilting{animation:wilt 1.2s ease forwards;}
+@keyframes wilt{0%{transform:rotate(0);opacity:1;}100%{transform:rotate(45deg) translateY(8px);opacity:0.3;filter:saturate(0) blur(1px);}}
+.weather{position:absolute;top:6px;right:14px;font-size:11px;color:rgba(255,255,255,0.4);font-family:'DM Mono',monospace;}
+</style></head>
+<body>
+<div class="head">
+  <a class="back" href="index.html">← 목록</a>
+  <div class="title"><div class="opt">REWARD A21</div><div class="t">Garden — 룸이 식물로 차오름. 시간 = 정원</div></div>
+</div>
+
+<div class="phone">
+  <div class="phone-content">
+    <div class="sb">
+      <div class="sb-row"><div class="sb-tier"><span class="ic">🌱</span><span>방관자</span></div><div class="sb-streak">🔥 12일</div></div>
+      <div class="sb-bar"><div class="sb-fill-gold" id="fillG" style="width:25%;"></div><div class="sb-fill-silver" id="fillS" style="left:25%;width:25%;"></div></div>
+      <div class="sb-meta"><span><b id="metaScore">6</b> / 12 → 각성자</span><span id="cubeCounts">G 3 · S 9 · R 0</span></div>
+    </div>
+    <div class="room">
+      <div class="weather">☀️ 오늘 자라는 정원</div>
+      <div class="room-char"></div>
+      <div class="garden-soil"></div>
+      <div class="garden" id="garden"></div>
+      <div class="card-stub">
+        <div class="card-row">
+          <span class="card-icon">🥗</span>
+          <span class="card-title">식단</span>
+        </div>
+        <button class="card-action" onclick="trigger('gold')">+ 클린식 (gold = 🌻 꽃)</button>
+        <button class="card-action" style="margin-top:5px;background:linear-gradient(135deg,#94a3b8,#475569);" onclick="trigger('silver')">+ 일반식 (silver = 🌿 잎)</button>
+        <button class="card-action" style="margin-top:5px;background:linear-gradient(135deg,#8b1515,#ff4d4d);" onclick="trigger('red')">+ 음주 (red = 시들음)</button>
+        <button class="card-action" style="margin-top:5px;background:rgba(255,255,255,0.05);color:#a8a8b4;" onclick="reset()">초기화</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="note">
+  <b>A21 — Garden</b>: 룸이 풍경 = *정원*. gold = 🌻 꽃 (가장 큼, 빛남), silver = 🌿 잎 (보통), red = 시든 식물 (saturate 0). 새 액션 = 흙에서 뿌리내려 솟아오름 (sprout 애니). red 는 가장 최근 식물 2개 *시들게* 함. 시간이 갈수록 룸이 *살아있는* 정원.<br>
+  <b>장점</b>: <b>큐록 철학과 강한 fit</b> — "기록" 이 살아 자라는 풍경. 매일 보면서 흐뭇함. 룸 진입 안 해도 즉각 자랑 가능. <b>단점</b>: 식물 시각이 너무 순함 — 큐록의 "직면" 톤과 충돌 가능. 어두운 정원 변주 (이끼/돌) 검토.
+</div>
+
+<script>
+const counts={gold:3,silver:9,red:0};
+const TIER_NEXT=12;
+const garden=[]; // [{type:'gold'|'silver'|'red', el}]
+const PLANT_EMOJI={gold:['🌻','🌹','🌼'],silver:['🌿','🍀','🌱'],red:['🥀','🍂']};
+function score(){return counts.gold + counts.silver/3;}
+function pick(arr){return arr[Math.floor(Math.random()*arr.length)];}
+function update(){
+  const s=score();
+  const goldPct=Math.min(100,counts.gold/TIER_NEXT*100);
+  const silverPct=Math.min(100-goldPct, (counts.silver/3)/TIER_NEXT*100);
+  document.getElementById('fillG').style.width=goldPct+'%';
+  document.getElementById('fillS').style.left=goldPct+'%';
+  document.getElementById('fillS').style.width=silverPct+'%';
+  document.getElementById('metaScore').textContent=Math.round(s*10)/10;
+  document.getElementById('cubeCounts').textContent=`G ${counts.gold} · S ${counts.silver} · R ${counts.red}`;
+}
+function addPlant(type){
+  const g=document.getElementById('garden');
+  const p=document.createElement('span');
+  p.className='plant '+type+' sprouting';
+  p.textContent=pick(PLANT_EMOJI[type]);
+  p.style.setProperty('--d', (Math.random()*2)+'s');
+  g.appendChild(p);
+  garden.push({type,el:p});
+  setTimeout(()=>p.classList.remove('sprouting'),1000);
+}
+function wilt(n){
+  const candidates=garden.filter(p=>p.type!=='red');
+  for(let i=0;i<n && candidates.length>0;i++){
+    const idx=garden.indexOf(candidates[candidates.length-1-i]);
+    if(idx<0)continue;
+    const p=garden[idx];p.el.classList.add('wilting');
+    setTimeout(()=>p.el.remove(), 1200);
+    garden.splice(idx,1);
+  }
+}
+function init(){
+  document.getElementById('garden').innerHTML='';garden.length=0;
+  for(let i=0;i<counts.gold;i++)addPlant('gold');
+  for(let i=0;i<Math.floor(counts.silver/3);i++)addPlant('silver');
+  garden.forEach(p=>p.el.classList.remove('sprouting'));
+  update();
+}
+function trigger(color){
+  if(color==='red'){
+    counts.red++;counts.gold=Math.max(0,counts.gold-2);counts.silver=Math.max(0,counts.silver-2);
+    addPlant('red');
+    wilt(2);
+  } else if(color==='gold'){
+    counts.gold++;addPlant('gold');
+  } else {
+    counts.silver++;
+    if(counts.silver%3===0)addPlant('silver');
+  }
+  update();
+}
+function reset(){counts.gold=3;counts.silver=9;counts.red=0;init();}
+init();
+</script>
+</body></html>

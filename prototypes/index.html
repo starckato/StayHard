@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Prototypes · 캐릭터룸 큐브</title>
+<title>Prototypes · 큐록</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
 body{background:#0a0a0c;color:#f5f1ea;font-family:'DM Sans','Apple SD Gothic Neo',sans-serif;padding:40px 20px;min-height:100vh;}
@@ -20,14 +20,77 @@ a.card:hover{border-color:#ff4d4d;transform:translateY(-2px);}
 </style></head>
 <body>
 <div class="wrap">
-  <h1>캐릭터룸 ↔ 큐브 4 옵션</h1>
-  <div class="lead">각 옵션을 직접 눌러보고 느낌 비교. [+Gold] [+Silver] [+Red] 버튼 인터랙션 포함.</div>
+  <h1>보상 인터랙션 — Reward Loop</h1>
+  <div class="lead">B 공식 (gold + silver/3) 확정 후 보상 인터랙션 prototype. A 모먼트 (액션 → 큐브) 13 변형 + B/C/D 각 1개.<br>사용자 keep: <b>A3 / A4 / A6</b>. 추가 ideation: 캐릭터·격자·탑·2단계 (A9/A11/A15/A18) → metaphor 확장 (A21 정원 / A22 별자리 / A24 일지 / A25 도가니).</div>
+
+  <h2 style="font-size:14px;color:#34d399;margin:16px 0 10px;font-family:'DM Mono',monospace;letter-spacing:.06em;text-transform:uppercase;">★ 채택 — A6 + A18 결합 (Zen Tap)</h2>
   <div class="row">
-    <a class="card" href="option-a.html"><div class="opt">A</div><div class="t">바닥 더미</div><div class="d">한 코너에 stack 으로 쌓임. "내가 쌓은 것".</div></a>
-    <a class="card" href="option-b.html"><div class="opt">B</div><div class="t">진열장</div><div class="d">격자 선반 100칸. 빈 칸이 다음 목표.</div></a>
-    <a class="card" href="option-c.html"><div class="opt">C</div><div class="t">흩어짐</div><div class="d">바닥에 organic 배치. "기록은 살아있다".</div></a>
-    <a class="card" href="option-d.html"><div class="opt">D</div><div class="t">인벤토리 패널</div><div class="d">룸 그대로 + 하단 카운터 패널.</div></a>
+    <a class="card" href="reward-A6-A18-zen-tap.html" style="border:2px solid #34d399;background:linear-gradient(135deg,rgba(52,211,153,0.08),rgba(52,211,153,0.02));"><div class="opt" style="color:#34d399;">A6 + A18 ★ 채택</div><div class="t">Zen Tap</div><div class="d">차분 + 의식적 commit. 카드 위 큐브 1.8s 부유 → 탭 OR 자동 glide. odometer tween + tint 펄스. red 즉시 차감.</div></a>
   </div>
-  <a class="compare" href="character-room-cubes.html">↗ 4 옵션 한 페이지에서 정적 비교 보기</a>
+
+  <h2 style="font-size:14px;color:#a8a8b4;margin:24px 0 10px;font-family:'DM Mono',monospace;letter-spacing:.06em;text-transform:uppercase;">결합 재료 (단독 prototype)</h2>
+  <div class="row">
+    <a class="card" href="reward-A3-origin.html" style="border-color:rgba(52,211,153,0.35);"><div class="opt" style="color:#34d399;">A3 ✓ KEEP</div><div class="t">Card Origin</div><div class="d">큐브가 카드 칩에서 *태어남*. 인과 또렷.</div></a>
+    <a class="card" href="reward-A4-stamp.html" style="border-color:rgba(52,211,153,0.35);"><div class="opt" style="color:#34d399;">A4 ✓ KEEP</div><div class="t">Stamp Imprint</div><div class="d">큐브가 카드 안에 *각인*. 카드 = 오늘 결과물.</div></a>
+    <a class="card" href="reward-A6-zen.html" style="border-color:rgba(52,211,153,0.35);"><div class="opt" style="color:#34d399;">A6 ✓ KEEP</div><div class="t">Zen Numerical</div><div class="d">날아가는 큐브 없음. 색조 tint + odometer-tween.</div></a>
+  </div>
+
+  <h2 style="font-size:14px;color:#a8a8b4;margin:24px 0 10px;font-family:'DM Mono',monospace;letter-spacing:.06em;text-transform:uppercase;">A · 다른 차원 (캐릭터·공간·인터랙션)</h2>
+  <div class="row">
+    <a class="card" href="reward-A9-character.html"><div class="opt">A9</div><div class="t">Character Consumes</div><div class="d">큐브 → 캐릭터가 *먹음*. red 는 *맞고* 휘청. "큐브 = 너를 만든다".</div></a>
+    <a class="card" href="reward-A11-slot-grid.html"><div class="opt">A11</div><div class="t">Slot Ripple</div><div class="d">progress = 12 슬롯 격자. 다음 슬롯 ripple 채움.</div></a>
+    <a class="card" href="reward-A15-tower.html"><div class="opt">A15</div><div class="t">Tower Builder</div><div class="d">score = 수직 *탑*. red = 위 2층 무너짐.</div></a>
+    <a class="card" href="reward-A18-anticipation.html"><div class="opt">A18</div><div class="t">Anticipation Tap</div><div class="d">큐브 0.5s 부유 → 탭으로 commit. 의식적 *수확*.</div></a>
+  </div>
+
+  <h2 style="font-size:14px;color:#a8a8b4;margin:24px 0 10px;font-family:'DM Mono',monospace;letter-spacing:.06em;text-transform:uppercase;">A · Game UI 차용 (NEW · 사용자 요청)</h2>
+  <div class="row">
+    <a class="card" href="reward-A30-crystal-drop.html" style="border-color:rgba(255,213,74,0.4);"><div class="opt" style="color:#ffd54a;">A30 NEW</div><div class="t">Crystal Drop 💎</div><div class="d">Diablo · PoE 스타일. 큐브가 *루트 크리스탈* 처럼 떨어져 임팩트 + 희귀도 텍스트.</div></a>
+    <a class="card" href="reward-A31-persona-burst.html" style="border-color:rgba(255,77,77,0.4);"><div class="opt" style="color:#ff4d4d;">A31 NEW ★</div><div class="t">Persona Burst ⚡</div><div class="d">Persona 5 스타일. 대각선 슬래시 + 각도 타이포 burst + 그레인 flash. 가장 시그니처.</div></a>
+    <a class="card" href="reward-A34-card-flip.html" style="border-color:rgba(255,213,74,0.4);"><div class="opt" style="color:#ffd54a;">A34 NEW</div><div class="t">Card Flip 🃏</div><div class="d">Hearthstone TCG 스타일. 큐브 = *수집 카드*. 360° 플립 + 홀로그래픽 shimmer.</div></a>
+    <a class="card" href="reward-A35-combo.html" style="border-color:rgba(255,139,80,0.4);"><div class="opt" style="color:#ff8b50;">A35 NEW</div><div class="t">Combo Counter 💢</div><div class="d">DMC · SF · Bayonetta. 5초 안에 연타 → ×2 GOOD → ×8 SAVAGE!! + 화면 흔들림.</div></a>
+  </div>
+
+  <details style="margin-top:18px;color:#7a7a86;font-size:11px;"><summary style="cursor:pointer;">↓ Metaphor ideation (사용자 비선호 — 정원/별자리/일지/도가니)</summary>
+    <div class="row" style="margin-top:10px;opacity:0.55;">
+      <a class="card" href="reward-A21-garden.html"><div class="opt">A21</div><div class="t">Garden 🌱</div><div class="d">룸이 정원으로.</div></a>
+      <a class="card" href="reward-A22-constellation.html"><div class="opt">A22</div><div class="t">Constellation ✨</div><div class="d">밤하늘 별자리.</div></a>
+      <a class="card" href="reward-A24-ledger.html"><div class="opt">A24</div><div class="t">Ledger 📜</div><div class="d">영수증 일지.</div></a>
+      <a class="card" href="reward-A25-forge.html"><div class="opt">A25</div><div class="t">Forge 🔥</div><div class="d">B 공식 도가니.</div></a>
+    </div>
+  </details>
+
+  <details style="margin-top:8px;color:#7a7a86;font-size:11px;"><summary style="cursor:pointer;">↓ 이전 motion ideation (A1 Physics / A8 Combo)</summary>
+    <div class="row" style="margin-top:10px;opacity:0.55;">
+      <a class="card" href="reward-A1-physics.html"><div class="opt">A1</div><div class="t">Physics</div><div class="d">색마다 다른 motion.</div></a>
+      <a class="card" href="reward-A8-combo.html"><div class="opt">A8</div><div class="t">Combo Cascade</div><div class="d">다중 큐브 시 리듬 chain.</div></a>
+    </div>
+  </details>
+
+  <h2 style="font-size:14px;color:#a8a8b4;margin:24px 0 10px;font-family:'DM Mono',monospace;letter-spacing:.06em;text-transform:uppercase;">B / C / D 모먼트</h2>
+  <div class="row">
+    <a class="card" href="reward-B2-collapse.html"><div class="opt">B2</div><div class="t">Stack Collapse (red)</div><div class="d">red 등록 시 stack 균열 + 토큰 추락. flash + crack + toast.</div></a>
+    <a class="card" href="reward-C-transform.html"><div class="opt">C</div><div class="t">Transform (티어업)</div><div class="d">임박감 (C2) → 변신 시퀀스 (C3). orb 응축 + 캐릭터 + 룸 morph.</div></a>
+    <a class="card" href="reward-D2-wrap.html"><div class="opt">D2</div><div class="t">Daily Wrap</div><div class="d">홈 최상단 어제 결산 카드. 평균 비교 + 공유.</div></a>
+  </div>
+
+  <hr style="margin:32px 0;border:none;border-top:1px solid rgba(255,255,255,0.06);">
+  <h1 style="font-size:18px;color:#7a7a86;">티어 시스템 — 3 옵션 (B 확정)</h1>
+  <div class="lead">점수제 → 큐브제 전환. gold + silver + red 가 어떻게 티어를 결정할지 결정. 각 옵션 직접 눌러보고 느낌 비교.<br>공통: 1 red = gold 2 + silver 2 즉시 차감. 임계는 약간 빡세게.</div>
+  <div class="row">
+    <a class="card" href="tier-A-pure-gold.html"><div class="opt">A</div><div class="t">Pure Gold</div><div class="d">티어는 <b>gold 만</b> 결정. silver 는 활동 기록 (스트릭/뱃지 용). 모호함 없음. silver 가 헐거워짐.</div></a>
+    <a class="card" href="tier-B-conversion.html"><div class="opt">B</div><div class="t">Conversion</div><div class="d">3 silver = 1 gold 환산. 통합 점수로 티어. 모든 행동 기여. 큐브 색은 시각화일 뿐 — "결국 점수?" 의문 남음.</div></a>
+    <a class="card" href="tier-C-dual-gate.html"><div class="opt">C</div><div class="t">Dual Gate</div><div class="d">gold AND silver 둘 다 충족. 균형 강제. 두 숫자 추적 인지 부하. 한 axis 멈추면 답답.</div></a>
+  </div>
+
+  <hr style="margin:32px 0;border:none;border-top:1px solid rgba(255,255,255,0.06);">
+  <h1 style="font-size:18px;color:#7a7a86;">캐릭터룸 — 4 옵션 (이전 작업)</h1>
+  <div class="row" style="margin-top:14px;">
+    <a class="card" href="option-a.html"><div class="opt">A</div><div class="t">바닥 더미</div><div class="d">한 코너에 stack 으로 쌓임.</div></a>
+    <a class="card" href="option-b.html"><div class="opt">B</div><div class="t">진열장</div><div class="d">격자 선반 100칸.</div></a>
+    <a class="card" href="option-c.html"><div class="opt">C</div><div class="t">흩어짐</div><div class="d">바닥에 organic 배치.</div></a>
+    <a class="card" href="option-d.html"><div class="opt">D</div><div class="t">인벤토리 패널</div><div class="d">룸 + 하단 카운터.</div></a>
+  </div>
+  <a class="compare" href="character-room-cubes.html">↗ 캐릭터룸 4옵션 정적 비교</a>
 </div>
 </body></html>

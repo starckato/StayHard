@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Reward A4 · Stamp Imprint</title>
+<link rel="stylesheet" href="_shared.css">
+<link rel="stylesheet" href="_reward-shared.css">
+<style>
+.phone-content{display:flex;flex-direction:column;}
+.card-stub{padding:12px 14px;}
+.card-history{display:flex;gap:3px;flex-wrap:wrap;min-height:18px;margin:8px 0;padding:8px;background:rgba(255,255,255,0.025);border:1px dashed rgba(255,255,255,0.06);border-radius:6px;}
+.history-cube{width:12px;height:12px;border-radius:2px;border:1px solid rgba(0,0,0,0.4);box-shadow:inset 0 1px 0 rgba(255,255,255,0.4),inset 0 -1.5px 2px rgba(0,0,0,0.4);}
+.history-cube.gold{background:linear-gradient(135deg,#fff1a8,#ffd54a 50%,#c48c1a);}
+.history-cube.silver{background:linear-gradient(135deg,#f2f4f7,#b5c0cc 50%,#6d7682);}
+.history-cube.red{background:linear-gradient(135deg,#ff8080,#ff4d4d 50%,#8b1515);}
+.history-cube.stamping{animation:stampIn .55s cubic-bezier(.32,1.7,.42,1);}
+@keyframes stampIn{0%{transform:scale(3.5);opacity:0;}25%{opacity:1;}55%{transform:scale(0.85);}100%{transform:scale(1);opacity:1;}}
+.history-empty{font-size:9px;color:rgba(255,255,255,0.18);font-style:italic;}
+.card-stub-flash{animation:cardFlash .4s ease;}
+@keyframes cardFlash{0%,100%{box-shadow:0 0 0 rgba(0,0,0,0);}50%{box-shadow:0 0 24px rgba(255,213,74,0.45),inset 0 0 16px rgba(255,213,74,0.12);}}
+</style></head>
+<body>
+<div class="head">
+  <a class="back" href="index.html">← 목록</a>
+  <div class="title"><div class="opt">REWARD A4</div><div class="t">Stamp Imprint — 큐브가 카드 안에 *각인*</div></div>
+</div>
+
+<div class="phone">
+  <div class="phone-content">
+    <div class="sb">
+      <div class="sb-row"><div class="sb-tier"><span class="ic">😴</span><span>방관자</span></div><div class="sb-streak">🔥 12일</div></div>
+      <div class="sb-bar"><div class="sb-fill-gold" id="fillG" style="width:25%;"></div><div class="sb-fill-silver" id="fillS" style="left:25%;width:25%;"></div></div>
+      <div class="sb-meta"><span><b id="metaScore">6</b> / 12 → 각성자</span><span id="metaPct">50%</span></div>
+      <div class="sb-stack" id="stack">
+        <div class="sb-stack-item"><div class="sb-stack-dot gold"></div><div class="sb-stack-num" id="numG">3</div><div class="sb-stack-lbl">G</div></div>
+        <div class="sb-stack-item"><div class="sb-stack-dot silver"></div><div class="sb-stack-num" id="numS">9</div><div class="sb-stack-lbl">S</div></div>
+        <div class="sb-stack-item"><div class="sb-stack-dot red"></div><div class="sb-stack-num" id="numR">0</div><div class="sb-stack-lbl">R</div></div>
+      </div>
+    </div>
+    <div class="room">
+      <div class="room-bg"></div>
+      <div class="room-char"></div>
+      <div class="card-stub" id="cardStub">
+        <div class="card-row">
+          <span class="card-icon">🥗</span>
+          <span class="card-title">식단</span>
+          <span style="margin-left:auto;font-size:10px;color:#7a7a86;font-family:'DM Mono',monospace;">오늘의 인장</span>
+        </div>
+        <div class="card-history" id="cardHistory">
+          <span class="history-empty">아직 비어있다</span>
+        </div>
+        <button class="card-action" onclick="trigger('gold')">+ 클린식 (gold)</button>
+        <button class="card-action" style="margin-top:5px;background:linear-gradient(135deg,#94a3b8,#475569);" onclick="trigger('silver')">+ 일반식 (silver)</button>
+        <button class="card-action" style="margin-top:5px;background:linear-gradient(135deg,#8b1515,#ff4d4d);" onclick="trigger('red')">+ 음주 (red)</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="note">
+  <b>A4 — Stamp Imprint</b>: 큐브가 *날아가지 않음*. 대신 카드 안에 *각인* — 큰 사이즈로 시작해 도장처럼 쾅 (scale 3.5 → 1, bounce). 카드는 *오늘 무엇을 만들었는지* 의 시각적 기록. Status Band 카운트는 silent 하게 ↑.<br>
+  <b>장점</b>: 카드 자체가 *오늘의 결과물* 이 됨 — 행동의 *흔적* 이 보임. "오늘 식단에서 gold 3개 만들었네" 직관적. <b>단점</b>: Status Band 와 카드 두 군데에 정보 분산.
+</div>
+
+<script>
+const counts={gold:3,silver:9,red:0};
+const TIER_NEXT=12;
+const history=[];
+function score(){return counts.gold + counts.silver/3;}
+function bump(el){if(!el)return;el.classList.remove('bumped');void el.offsetWidth;el.classList.add('bumped');}
+function update(){
+  document.getElementById('numG').textContent=counts.gold;
+  document.getElementById('numS').textContent=counts.silver;
+  document.getElementById('numR').textContent=counts.red;
+  const s=score();
+  const goldPct=Math.min(100,counts.gold/TIER_NEXT*100);
+  const silverPct=Math.min(100-goldPct, (counts.silver/3)/TIER_NEXT*100);
+  document.getElementById('fillG').style.width=goldPct+'%';
+  document.getElementById('fillS').style.left=goldPct+'%';
+  document.getElementById('fillS').style.width=silverPct+'%';
+  document.getElementById('metaScore').textContent=Math.round(s*10)/10;
+  document.getElementById('metaPct').textContent=Math.min(100,Math.round(s/TIER_NEXT*100))+'%';
+}
+function renderHistory(){
+  const h=document.getElementById('cardHistory');
+  if(history.length===0){h.innerHTML='<span class="history-empty">아직 비어있다</span>';return;}
+  h.innerHTML='';
+  history.forEach((c,i)=>{
+    const d=document.createElement('div');
+    d.className='history-cube '+c;
+    if(i===history.length-1)d.classList.add('stamping');
+    h.appendChild(d);
+  });
+}
+function trigger(color){
+  if(color==='red'){
+    // red: removes 2 from history (gold or silver), and visually 도장 빨갛게
+    history.push('red');
+    counts.red++;counts.gold=Math.max(0,counts.gold-2);counts.silver=Math.max(0,counts.silver-2);
+    // remove last 2 non-red from history visually
+    let removed=0;
+    for(let i=history.length-2;i>=0&&removed<2;i--){
+      if(history[i]!=='red'){history.splice(i,1);removed++;}
+    }
+  } else {
+    history.push(color);
+    counts[color]++;
+  }
+  renderHistory();
+  update();
+  // Card flash
+  const c=document.getElementById('cardStub');
+  c.classList.remove('card-stub-flash');void c.offsetWidth;c.classList.add('card-stub-flash');
+}
+update();renderHistory();
+</script>
+</body></html>

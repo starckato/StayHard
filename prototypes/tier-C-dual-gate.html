@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>티어 C · Dual Gate</title>
+<link rel="stylesheet" href="_shared.css">
+<style>
+.character{bottom:130px;left:50%;transform:translateX(-50%);}
+.tier-band{position:absolute;top:0;left:0;right:0;padding:14px 18px 12px;background:linear-gradient(180deg,rgba(0,0,0,0.85),rgba(0,0,0,0.45) 70%,transparent);z-index:6;}
+.tb-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.tb-tier{font-family:'Archivo Black',sans-serif;font-size:18px;letter-spacing:-0.02em;}
+.tb-tier .ic{font-size:14px;margin-right:5px;}
+.tb-streak{font-size:11px;color:#ffb84d;font-weight:700;margin-left:auto;}
+.dual{display:flex;flex-direction:column;gap:6px;}
+.dual-row{display:flex;align-items:center;gap:8px;}
+.dual-icon{width:13px;height:13px;border-radius:2px;flex-shrink:0;border:1px solid rgba(0,0,0,0.4);}
+.dual-icon.gold{background:linear-gradient(135deg,#fff1a8,#ffd54a 50%,#c48c1a);}
+.dual-icon.silver{background:linear-gradient(135deg,#f2f4f7,#b5c0cc 50%,#6d7682);}
+.dual-bar{flex:1;height:6px;background:rgba(255,255,255,0.06);border-radius:999px;overflow:hidden;border:1px solid rgba(255,255,255,0.05);position:relative;}
+.dual-fill{height:100%;border-radius:999px;transition:width .6s cubic-bezier(.4,0,.2,1);}
+.dual-fill.gold{background:linear-gradient(90deg,#ffd54a,#fff1a8 60%,#ffd54a);box-shadow:0 0 6px rgba(255,213,74,0.45);}
+.dual-fill.silver{background:linear-gradient(90deg,#b5c0cc,#dde1e6);}
+.dual-stat{font-family:'DM Mono',monospace;font-size:10px;color:#a8a8b4;min-width:60px;text-align:right;}
+.dual-stat.met{color:#34d399;font-weight:700;}
+.dual-stat.met:after{content:' ✓';}
+.gate-msg{font-size:9.5px;color:#7a7a86;margin-top:6px;font-family:'DM Mono',monospace;text-align:center;}
+.gate-msg.both{color:#34d399;}
+.cube-shelf{position:absolute;left:14px;right:14px;bottom:18px;background:rgba(20,20,28,0.88);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:8px 14px;display:flex;align-items:center;gap:14px;}
+.cs-block{display:flex;align-items:center;gap:6px;}
+.cs-icon{width:13px;height:13px;border-radius:2px;}
+.cs-icon.gold{background:linear-gradient(135deg,#fff1a8,#ffd54a 50%,#c48c1a);}
+.cs-icon.silver{background:linear-gradient(135deg,#f2f4f7,#b5c0cc 50%,#6d7682);}
+.cs-icon.red{background:linear-gradient(135deg,#ff8080,#ff4d4d 50%,#8b1515);}
+.cs-num{font-family:'Archivo Black',sans-serif;font-size:15px;letter-spacing:-0.4px;}
+.cs-lbl{font-size:9px;color:#7a7a86;letter-spacing:0.06em;text-transform:uppercase;font-weight:700;}
+.bumped{animation:bump .35s ease;}
+@keyframes bump{0%{transform:scale(1);}40%{transform:scale(1.18);color:#fff;}100%{transform:scale(1);}}
+.tier-up-flash{position:absolute;inset:0;background:radial-gradient(circle,rgba(255,213,74,0.6) 0%,transparent 60%);opacity:0;pointer-events:none;z-index:7;}
+.tier-up-flash.go{animation:flash 1.2s ease-out;}
+@keyframes flash{0%{opacity:0;}30%{opacity:1;}100%{opacity:0;}}
+</style></head>
+<body>
+<div class="head">
+  <a class="back" href="index.html">← 목록</a>
+  <div class="title"><div class="opt">티어 C</div><div class="t">Dual Gate (gold AND silver 둘 다 충족)</div></div>
+</div>
+
+<div class="phone">
+  <div class="phone-content">
+    <div class="tier-band">
+      <div class="tb-row"><div class="tb-tier" id="tbTier"><span class="ic">😴</span><span id="tbTierName">방관자</span></div><div class="tb-streak">🔥 12일</div></div>
+      <div class="dual">
+        <div class="dual-row"><div class="dual-icon gold"></div><div class="dual-bar"><div class="dual-fill gold" id="fillG" style="width:0%;"></div></div><div class="dual-stat" id="statG">0/7</div></div>
+        <div class="dual-row"><div class="dual-icon silver"></div><div class="dual-bar"><div class="dual-fill silver" id="fillS" style="width:0%;"></div></div><div class="dual-stat" id="statS">0/20</div></div>
+      </div>
+      <div class="gate-msg" id="gateMsg">다음 티어로 가려면 둘 다 채워야 한다 → 각성자</div>
+    </div>
+    <div class="room">
+      <div class="room-bg"></div>
+      <div class="character" id="char"></div>
+      <div class="cube-shelf">
+        <div class="cs-block"><div class="cs-icon gold"></div><div class="cs-num" id="numGold">0</div><div class="cs-lbl">G</div></div>
+        <div class="cs-block"><div class="cs-icon silver"></div><div class="cs-num" id="numSilver">0</div><div class="cs-lbl">S</div></div>
+        <div class="cs-block"><div class="cs-icon red"></div><div class="cs-num" id="numRed">0</div><div class="cs-lbl">R</div></div>
+      </div>
+      <div class="tier-up-flash" id="flash"></div>
+    </div>
+  </div>
+</div>
+
+<div class="controls">
+  <button class="gold" onclick="addCube('gold', this)">+ Gold</button>
+  <button class="silver" onclick="addCube('silver', this)">+ Silver</button>
+  <button class="red" onclick="addCube('red', this)">+ Red</button>
+  <button class="reset" onclick="resetAll()">초기화</button>
+</div>
+
+<div class="note">
+  <b>핵심</b>: 다음 티어로 가려면 <b>gold ≥ G[t] AND silver ≥ S[t]</b> 둘 다 충족. 한쪽만 충족 시 진척 ✓ 표시되지만 티어업 X. 1 red = gold 2 + silver 2 차감.<br>
+  <b>임계 (gold/silver)</b>: 각성자 7/20 · 저항자 40/100 · 수련자 130/320 · 지배자 320/800 · 기록자 900/2000.<br>
+  <b>장점</b>: 둘 다 의미 있음. 균형 강제 — "gold 만 쌓고 활동 안 함" / "참여만 하고 절제 없음" 모두 차단. <b>단점</b>: 한 axis 가 멈추면 답답. 두 숫자 추적 인지 부하.<br>
+  <b>플레이</b>: + Gold 만 7번 → gold ✓ 인데 티어 그대로. + Silver 20번 추가 → 둘 다 ✓ → 각성자.
+</div>
+
+<script src="_shared.js"></script>
+<script>
+const TIERS=[
+  {gold:0,   silver:0,    name:'방관자', icon:'😴', next:'각성자'},
+  {gold:7,   silver:20,   name:'각성자', icon:'⚡', next:'저항자'},
+  {gold:40,  silver:100,  name:'저항자', icon:'🦴', next:'수련자'},
+  {gold:130, silver:320,  name:'수련자', icon:'🔥', next:'지배자'},
+  {gold:320, silver:800,  name:'지배자', icon:'👑', next:'기록자'},
+  {gold:900, silver:2000, name:'기록자', icon:'🏆', next:null},
+];
+let counts={gold:0,silver:0,red:0};
+let lastTier=0;
+function effG(){return Math.max(0, counts.gold);} // red 즉시 차감됨
+function effS(){return Math.max(0, counts.silver);}
+function currentTierIdx(){
+  const g=effG();const s=effS();
+  let idx=0;
+  for(let i=TIERS.length-1;i>=0;i--){if(g>=TIERS[i].gold && s>=TIERS[i].silver){idx=i;break;}}
+  return idx;
+}
+function update(){
+  const idx=currentTierIdx();
+  const t=TIERS[idx];
+  const nextT=TIERS[idx+1]||t;
+  const g=effG();const s=effS();
+  const gSpan=nextT.gold - t.gold || 1;
+  const sSpan=nextT.silver - t.silver || 1;
+  const gPct=nextT===t?100:Math.min(100,Math.max(0,Math.round((g - t.gold)/gSpan*100)));
+  const sPct=nextT===t?100:Math.min(100,Math.max(0,Math.round((s - t.silver)/sSpan*100)));
+  document.getElementById('tbTierName').textContent=t.name;
+  document.querySelector('#tbTier .ic').textContent=t.icon;
+  document.getElementById('fillG').style.width=gPct+'%';
+  document.getElementById('fillS').style.width=sPct+'%';
+  const sg=document.getElementById('statG');sg.textContent=`${g}/${nextT.gold}`;sg.classList.toggle('met', g>=nextT.gold);
+  const ss=document.getElementById('statS');ss.textContent=`${s}/${nextT.silver}`;ss.classList.toggle('met', s>=nextT.silver);
+  const gMet=g>=nextT.gold;const sMet=s>=nextT.silver;
+  const gm=document.getElementById('gateMsg');
+  if(nextT===t){gm.textContent='정점';gm.className='gate-msg both';}
+  else if(gMet && sMet){gm.textContent=`준비됨 → ${nextT.name}`;gm.className='gate-msg both';}
+  else if(gMet)gm.textContent=`silver 만 ${nextT.silver - s}개 더 → ${nextT.name}`;
+  else if(sMet)gm.textContent=`gold 만 ${nextT.gold - g}개 더 → ${nextT.name}`;
+  else{gm.textContent=`다음 티어로 가려면 둘 다 채워야 한다 → ${nextT.name}`;gm.className='gate-msg';}
+  document.getElementById('numGold').textContent=counts.gold;bumpCounter(document.getElementById('numGold'));
+  document.getElementById('numSilver').textContent=counts.silver;bumpCounter(document.getElementById('numSilver'));
+  document.getElementById('numRed').textContent=counts.red;
+  if(idx>lastTier){
+    const f=document.getElementById('flash');f.classList.remove('go');void f.offsetWidth;f.classList.add('go');
+  }
+  lastTier=idx;
+}
+function addCube(color, btn){
+  flyCubeToCharacter(btn, color, (c)=>{
+    if(c==='red'){counts.red++;counts.gold=Math.max(0,counts.gold-2);counts.silver=Math.max(0,counts.silver-2);}
+    else counts[c]++;
+    update();
+  });
+}
+function resetAll(){counts={gold:0,silver:0,red:0};lastTier=0;update();}
+counts={gold:6,silver:18,red:0};lastTier=currentTierIdx();update();
+</script>
+</body></html>

@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Reward A24 · Ledger Receipt</title>
+<link rel="stylesheet" href="_shared.css">
+<link rel="stylesheet" href="_reward-shared.css">
+<style>
+.phone-content{display:flex;flex-direction:column;}
+.room-char{bottom:140px;left:30%;}
+.ledger-strip{position:absolute;right:14px;top:14px;bottom:240px;width:120px;background:repeating-linear-gradient(180deg,rgba(245,241,234,0.96) 0,rgba(245,241,234,0.96) 22px,rgba(220,210,195,0.94) 22px,rgba(220,210,195,0.94) 23px);border-radius:4px 4px 8px 8px;box-shadow:0 8px 24px rgba(0,0,0,0.4),inset 0 0 0 1px rgba(0,0,0,0.06);overflow:hidden;display:flex;flex-direction:column;}
+.ledger-head{padding:10px 8px 8px;border-bottom:1px dashed rgba(0,0,0,0.2);text-align:center;color:#1a1a1a;}
+.ledger-title{font-family:'Archivo Black',sans-serif;font-size:11px;letter-spacing:0.04em;}
+.ledger-date{font-size:9px;color:#5a5a5a;font-family:'DM Mono',monospace;margin-top:2px;}
+.ledger-rows{flex:1;overflow:hidden;padding:6px 8px;font-family:'DM Mono',monospace;font-size:9.5px;color:#1a1a1a;letter-spacing:-.01em;display:flex;flex-direction:column;gap:2px;}
+.ledger-row{display:flex;align-items:center;gap:4px;padding:1.5px 0;border-bottom:1px dotted rgba(0,0,0,0.08);animation:printLine .35s ease;}
+@keyframes printLine{0%{opacity:0;transform:translateY(-6px);}100%{opacity:1;transform:translateY(0);}}
+.ledger-cube{width:7px;height:7px;border-radius:1px;border:0.5px solid rgba(0,0,0,0.4);flex-shrink:0;}
+.ledger-cube.gold{background:linear-gradient(135deg,#fff1a8,#ffd54a 50%,#c48c1a);}
+.ledger-cube.silver{background:linear-gradient(135deg,#f2f4f7,#b5c0cc 50%,#6d7682);}
+.ledger-cube.red{background:linear-gradient(135deg,#ff8080,#ff4d4d 50%,#8b1515);}
+.ledger-time{color:#7a5a3a;font-weight:700;}
+.ledger-lbl{flex:1;font-size:8.5px;color:#3a3a3a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.ledger-amt{font-weight:700;font-size:9px;color:#1a1a1a;}
+.ledger-amt.neg{color:#a01515;}
+.ledger-foot{padding:6px 8px;border-top:1px dashed rgba(0,0,0,0.2);text-align:center;color:#3a3a3a;font-family:'DM Mono',monospace;font-size:9px;background:rgba(0,0,0,0.02);}
+.ledger-foot b{font-family:'Archivo Black',sans-serif;font-size:11px;color:#1a1a1a;}
+.ledger-tear{position:absolute;left:0;right:0;height:8px;background:repeating-linear-gradient(90deg,rgba(245,241,234,0.96) 0,rgba(245,241,234,0.96) 4px,transparent 4px,transparent 8px);}
+.printer-flash{animation:flash .4s ease;}
+@keyframes flash{0%{box-shadow:0 8px 24px rgba(0,0,0,0.4),inset 0 0 0 1px rgba(0,0,0,0.06);}50%{box-shadow:0 8px 32px rgba(255,213,74,0.4),inset 0 0 0 1px rgba(0,0,0,0.06);}}
+</style></head>
+<body>
+<div class="head">
+  <a class="back" href="index.html">← 목록</a>
+  <div class="title"><div class="opt">REWARD A24</div><div class="t">Ledger Receipt — 영수증/일지에 자동 인쇄</div></div>
+</div>
+
+<div class="phone">
+  <div class="phone-content">
+    <div class="sb">
+      <div class="sb-row"><div class="sb-tier"><span class="ic">📜</span><span>방관자</span></div><div class="sb-streak">🔥 12일</div></div>
+      <div class="sb-bar"><div class="sb-fill-gold" id="fillG" style="width:25%;"></div><div class="sb-fill-silver" id="fillS" style="left:25%;width:25%;"></div></div>
+      <div class="sb-meta"><span><b id="metaScore">6</b> / 12 → 각성자</span><span id="cubeCounts">G 3 · S 9 · R 0</span></div>
+    </div>
+    <div class="room">
+      <div class="room-bg"></div>
+      <div class="room-char"></div>
+      <div class="ledger-strip" id="ledger">
+        <div class="ledger-head">
+          <div class="ledger-title">QROK · 일지</div>
+          <div class="ledger-date" id="ledgerDate">2026-05-07 (수)</div>
+        </div>
+        <div class="ledger-rows" id="ledgerRows"></div>
+        <div class="ledger-foot">
+          오늘 <b id="ledgerScore">6.0</b> score
+        </div>
+      </div>
+      <div class="card-stub" style="left:14px;right:148px;">
+        <div class="card-row">
+          <span class="card-icon">🥗</span>
+          <span class="card-title">식단</span>
+        </div>
+        <button class="card-action" onclick="trigger('gold','클린식 — 닭가슴살 샐러드')">+ 클린식 (gold)</button>
+        <button class="card-action" style="margin-top:5px;background:linear-gradient(135deg,#94a3b8,#475569);" onclick="trigger('silver','일반식 — 비빔밥')">+ 일반식 (silver)</button>
+        <button class="card-action" style="margin-top:5px;background:linear-gradient(135deg,#8b1515,#ff4d4d);" onclick="trigger('red','음주 — 소주 1병')">+ 음주 (red)</button>
+        <button class="card-action" style="margin-top:5px;background:rgba(255,255,255,0.05);color:#a8a8b4;" onclick="reset()">초기화</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="note">
+  <b>A24 — Ledger Receipt</b>: 룸 옆에 *영수증 일지* — 액션마다 새 행 인쇄. 각 행: ◾ 큐브 색 점 · 시간 · 라벨 · ±수량. red 는 빨간 음수. 하단에 "오늘 N score" 합계. 한 종이 면 = 하루. 자정에 archive 되어 다음날 새 종이.<br>
+  <b>장점</b>: <b>"기록" 의 본질에 충실</b> — 행동마다 명시적 영수증. 단정함. 스크롤 = 오늘 복기. <b>단점</b>: 영수증 시각이 *과거 metaphor* — 디지털/제너레이션 Z 톤과 거리. 대안: 디지털 터미널 로그 스타일도 검토.<br>
+  <b>플레이</b>: 액션 누르면 새 줄이 위에서 *인쇄*.
+</div>
+
+<script>
+const counts={gold:3,silver:9,red:0};
+const TIER_NEXT=12;
+const log=[];
+function score(){return counts.gold + counts.silver/3;}
+function nowTime(){
+  const d=new Date();return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
+}
+function update(){
+  const s=score();
+  const goldPct=Math.min(100,counts.gold/TIER_NEXT*100);
+  const silverPct=Math.min(100-goldPct, (counts.silver/3)/TIER_NEXT*100);
+  document.getElementById('fillG').style.width=goldPct+'%';
+  document.getElementById('fillS').style.left=goldPct+'%';
+  document.getElementById('fillS').style.width=silverPct+'%';
+  document.getElementById('metaScore').textContent=Math.round(s*10)/10;
+  document.getElementById('cubeCounts').textContent=`G ${counts.gold} · S ${counts.silver} · R ${counts.red}`;
+  document.getElementById('ledgerScore').textContent=(Math.round(s*10)/10).toFixed(1);
+}
+function renderLog(){
+  const r=document.getElementById('ledgerRows');
+  r.innerHTML='';
+  // Show most recent first (top)
+  log.slice(-12).reverse().forEach(e=>{
+    const row=document.createElement('div');row.className='ledger-row';
+    row.innerHTML=`<div class="ledger-cube ${e.color}"></div><span class="ledger-time">${e.time}</span><span class="ledger-lbl">${e.label}</span><span class="ledger-amt ${e.amt.startsWith('-')?'neg':''}">${e.amt}</span>`;
+    r.appendChild(row);
+  });
+}
+function trigger(color, label){
+  const t=nowTime();
+  if(color==='red'){
+    counts.red++;counts.gold=Math.max(0,counts.gold-2);counts.silver=Math.max(0,counts.silver-2);
+    log.push({color:'red',time:t,label,amt:'+1 R'});
+    log.push({color:'gold',time:t,label:'└ red 차감',amt:'-2'});
+    log.push({color:'silver',time:t,label:'└ red 차감',amt:'-2'});
+  } else if(color==='gold'){
+    counts.gold++;
+    log.push({color:'gold',time:t,label,amt:'+1'});
+  } else {
+    counts.silver++;
+    log.push({color:'silver',time:t,label,amt:'+1'});
+  }
+  renderLog();update();
+  const l=document.getElementById('ledger');
+  l.classList.remove('printer-flash');void l.offsetWidth;l.classList.add('printer-flash');
+}
+function init(){
+  // seed history
+  log.push({color:'gold',time:'08:12',label:'클린식 — 오트밀',amt:'+1'});
+  log.push({color:'silver',time:'08:30',label:'물 250ml',amt:'+1'});
+  log.push({color:'silver',time:'09:15',label:'물 250ml',amt:'+1'});
+  log.push({color:'silver',time:'10:42',label:'루틴 — 찬물샤워',amt:'+1'});
+  log.push({color:'silver',time:'12:20',label:'일반식 — 비빔밥',amt:'+1'});
+  log.push({color:'gold',time:'13:05',label:'운동 — 가슴 세션',amt:'+1'});
+  log.push({color:'silver',time:'14:18',label:'물 250ml',amt:'+1'});
+  log.push({color:'silver',time:'15:00',label:'할일 — 보고서 작성',amt:'+1'});
+  log.push({color:'silver',time:'17:30',label:'할일 — 운동 등록',amt:'+1'});
+  log.push({color:'gold',time:'19:10',label:'클린식 — 닭가슴샐러드',amt:'+1'});
+  log.push({color:'silver',time:'20:00',label:'물 250ml',amt:'+1'});
+  log.push({color:'silver',time:'21:15',label:'루틴 — 새벽기상 셋업',amt:'+1'});
+  renderLog();update();
+}
+function reset(){counts.gold=3;counts.silver=9;counts.red=0;log.length=0;init();}
+init();
+</script>
+</body></html>

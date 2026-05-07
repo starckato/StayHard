@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Reward A3 · Card Origin</title>
+<link rel="stylesheet" href="_shared.css">
+<link rel="stylesheet" href="_reward-shared.css">
+<style>
+.phone-content{display:flex;flex-direction:column;}
+.card-chip{position:relative;cursor:pointer;}
+.card-chip.spawning{animation:chipSpawn .35s ease;}
+@keyframes chipSpawn{0%{transform:scale(1);}40%{transform:scale(1.5);box-shadow:0 0 16px rgba(255,213,74,0.8),inset 0 1px 0 rgba(255,255,255,0.4);}100%{transform:scale(1);}}
+.card-chip.silver.spawning{animation:chipSpawnSilver .35s ease;}
+@keyframes chipSpawnSilver{0%{transform:scale(1);}40%{transform:scale(1.5);box-shadow:0 0 16px rgba(181,192,204,0.8),inset 0 1px 0 rgba(255,255,255,0.4);}100%{transform:scale(1);}}
+.card-chip.red.spawning{animation:chipSpawnRed .35s ease;}
+@keyframes chipSpawnRed{0%{transform:scale(1);}40%{transform:scale(1.5);box-shadow:0 0 16px rgba(255,77,77,0.85),inset 0 1px 0 rgba(255,255,255,0.4);}100%{transform:scale(1);}}
+.flyer.fly-to-stack{transform:translate(var(--dx),var(--dy)) scale(0.7);opacity:0;}
+.sb-stack-dot.bumped{animation:dotBump .4s ease;}
+@keyframes dotBump{0%,100%{transform:scale(1);}45%{transform:scale(1.35);box-shadow:0 0 12px currentColor;}}
+.card-row{align-items:center;}
+.chip-label{font-size:9px;color:#7a7a86;letter-spacing:0.06em;text-transform:uppercase;font-weight:700;margin-right:4px;}
+</style></head>
+<body>
+<div class="head">
+  <a class="back" href="index.html">← 목록</a>
+  <div class="title"><div class="opt">REWARD A3</div><div class="t">Card Origin — 큐브가 카드 칩에서 *태어남*</div></div>
+</div>
+
+<div class="phone">
+  <div class="phone-content">
+    <div class="sb">
+      <div class="sb-row"><div class="sb-tier"><span class="ic">😴</span><span>방관자</span></div><div class="sb-streak">🔥 12일</div></div>
+      <div class="sb-bar"><div class="sb-fill-gold" id="fillG" style="width:25%;"></div><div class="sb-fill-silver" id="fillS" style="left:25%;width:25%;"></div></div>
+      <div class="sb-meta"><span><b id="metaScore">6</b> / 12 → 각성자</span><span id="metaPct">50%</span></div>
+      <div class="sb-stack" id="stack">
+        <div class="sb-stack-item"><div class="sb-stack-dot gold" id="dotG"></div><div class="sb-stack-num" id="numG">3</div><div class="sb-stack-lbl">G</div></div>
+        <div class="sb-stack-item"><div class="sb-stack-dot silver" id="dotS"></div><div class="sb-stack-num" id="numS">9</div><div class="sb-stack-lbl">S</div></div>
+        <div class="sb-stack-item"><div class="sb-stack-dot red" id="dotR"></div><div class="sb-stack-num" id="numR">0</div><div class="sb-stack-lbl">R</div></div>
+      </div>
+    </div>
+    <div class="room">
+      <div class="room-bg"></div>
+      <div class="room-char"></div>
+      <div class="card-stub">
+        <div class="card-row" style="margin-bottom:8px;">
+          <span class="card-icon">🥗</span>
+          <span class="card-title">식단</span>
+          <span style="margin-left:auto;display:flex;gap:4px;align-items:center;">
+            <span class="chip-label">Today</span>
+            <span class="card-chip empty" id="chipDiet"></span>
+          </span>
+        </div>
+        <button class="card-action" onclick="trigger('gold')">+ 클린식 (gold)</button>
+        <button class="card-action" style="margin-top:5px;background:linear-gradient(135deg,#94a3b8,#475569);" onclick="trigger('silver')">+ 일반식 (silver)</button>
+        <button class="card-action" style="margin-top:5px;background:linear-gradient(135deg,#8b1515,#ff4d4d);" onclick="trigger('red')">+ 음주 (red)</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="note">
+  <b>A3 — Card Origin</b>: 카드 우상단의 cc-cube 칩이 *반응* — 빛나며 부풀고 → 새 큐브가 거기서 분리되어 stack 으로 이동. 칩 색은 그대로 남아 "오늘 이 카드의 결과" 를 보여줌. red 도 동일 패턴 (칩 빨개짐 + 큐브 이동 + stack 차감 시각).<br>
+  <b>장점</b>: <b>인과 가장 또렷</b> — "내가 식단 등록했더니 식단 카드에서 큐브가 태어났다". 칩이 dynamic 정보 표시기 + 보상 source 두 역할. <b>단점</b>: 카드 칩이 작아서 motion 시작점 미세함.
+</div>
+
+<script>
+const counts={gold:3,silver:9,red:0};
+const TIER_NEXT=12;
+function score(){return counts.gold + counts.silver/3;}
+function bump(el){if(!el)return;el.classList.remove('bumped');void el.offsetWidth;el.classList.add('bumped');}
+function update(){
+  document.getElementById('numG').textContent=counts.gold;bump(document.getElementById('numG'));
+  document.getElementById('numS').textContent=counts.silver;bump(document.getElementById('numS'));
+  document.getElementById('numR').textContent=counts.red;
+  const s=score();
+  const goldPct=Math.min(100,counts.gold/TIER_NEXT*100);
+  const silverPct=Math.min(100-goldPct, (counts.silver/3)/TIER_NEXT*100);
+  document.getElementById('fillG').style.width=goldPct+'%';
+  document.getElementById('fillS').style.left=goldPct+'%';
+  document.getElementById('fillS').style.width=silverPct+'%';
+  document.getElementById('metaScore').textContent=Math.round(s*10)/10;
+  document.getElementById('metaPct').textContent=Math.min(100,Math.round(s/TIER_NEXT*100))+'%';
+}
+function trigger(color){
+  const chip=document.getElementById('chipDiet');
+  // chip color update (persistent today indicator)
+  chip.classList.remove('empty','gold','silver','red');
+  chip.classList.add(color);
+  // chip pulse
+  chip.classList.add('spawning');
+  setTimeout(()=>chip.classList.remove('spawning'), 400);
+  // spawn flyer at chip
+  const cRect=chip.getBoundingClientRect();
+  const targetMap={gold:'dotG',silver:'dotS',red:'dotR'};
+  const tDot=document.getElementById(targetMap[color]);
+  const tRect=tDot.getBoundingClientRect();
+  const f=document.createElement('div');
+  f.className='flyer '+color;
+  f.style.left=(cRect.left+cRect.width/2-12)+'px';
+  f.style.top=(cRect.top+cRect.height/2-12)+'px';
+  const dx=tRect.left+tRect.width/2 - (cRect.left+cRect.width/2);
+  const dy=tRect.top+tRect.height/2 - (cRect.top+cRect.height/2);
+  f.style.setProperty('--dx', dx+'px');
+  f.style.setProperty('--dy', dy+'px');
+  document.body.appendChild(f);
+  requestAnimationFrame(()=>requestAnimationFrame(()=>f.classList.add('fly-to-stack')));
+  setTimeout(()=>{
+    f.remove();
+    if(color==='red'){counts.red++;counts.gold=Math.max(0,counts.gold-2);counts.silver=Math.max(0,counts.silver-2);}
+    else counts[color]++;
+    update();
+    tDot.classList.add('bumped');setTimeout(()=>tDot.classList.remove('bumped'),400);
+  }, 600);
+}
+update();
+</script>
+</body></html>

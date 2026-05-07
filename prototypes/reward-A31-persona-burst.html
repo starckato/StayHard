@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Reward A31 · Persona Burst</title>
+<link rel="stylesheet" href="_shared.css">
+<link rel="stylesheet" href="_reward-shared.css">
+<style>
+.phone-content{display:flex;flex-direction:column;}
+.slash{position:absolute;inset:0;pointer-events:none;z-index:60;overflow:hidden;}
+.slash-bar{position:absolute;left:-30%;top:50%;width:160%;height:80px;transform:rotate(-12deg) translateY(-50%) scaleX(0);transform-origin:left center;background:linear-gradient(90deg,transparent 0%,var(--slash-color) 30%,var(--slash-color) 70%,transparent 100%);opacity:0;}
+.slash-bar.go{animation:slashGo .55s cubic-bezier(.5,0,.5,1) forwards;}
+@keyframes slashGo{0%{transform:rotate(-12deg) translateY(-50%) scaleX(0);opacity:0;}25%{opacity:1;}80%{opacity:1;transform:rotate(-12deg) translateY(-50%) scaleX(1);}100%{transform:rotate(-12deg) translateY(-50%) scaleX(1);opacity:0;}}
+.slash.gold .slash-bar{--slash-color:#ff4d4d;}
+.slash.silver .slash-bar{--slash-color:#dde1e6;}
+.slash.red .slash-bar{--slash-color:#ff4d4d;}
+.burst-text{position:absolute;left:50%;top:48%;transform:translate(-50%,-50%) rotate(-8deg) scale(0.6);font-family:'Archivo Black',sans-serif;font-size:54px;letter-spacing:-0.04em;color:#fff;text-shadow:4px 4px 0 #000,8px 8px 0 var(--shadow);opacity:0;pointer-events:none;z-index:62;white-space:nowrap;}
+.burst-text.gold{--shadow:#ffd54a;}
+.burst-text.silver{--shadow:#94a3b8;}
+.burst-text.red{--shadow:#8b1515;color:#ff8080;}
+.burst-text.go{animation:burstIn .9s cubic-bezier(.32,1.7,.42,1) forwards;}
+@keyframes burstIn{0%{opacity:0;transform:translate(-50%,-50%) rotate(-8deg) scale(0.4);}25%{opacity:1;transform:translate(-50%,-50%) rotate(-8deg) scale(1.18);}50%{transform:translate(-50%,-50%) rotate(-8deg) scale(1);}80%{opacity:1;transform:translate(-50%,-50%) rotate(-8deg) scale(1) translateX(0);}100%{opacity:0;transform:translate(-50%,-50%) rotate(-8deg) scale(1) translateX(20px);}}
+.burst-sub{position:absolute;left:50%;top:62%;transform:translate(-50%,0) rotate(-8deg);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:800;color:#fff;letter-spacing:0.12em;text-transform:uppercase;text-shadow:2px 2px 0 #000;opacity:0;pointer-events:none;z-index:62;}
+.burst-sub.go{animation:subIn .9s ease forwards;}
+@keyframes subIn{0%{opacity:0;transform:translate(-50%,10px) rotate(-8deg);}30%{opacity:1;transform:translate(-50%,0) rotate(-8deg);}80%{opacity:1;}100%{opacity:0;}}
+.grain{position:absolute;inset:0;pointer-events:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23n)' opacity='0.3'/%3E%3C/svg%3E");opacity:0;mix-blend-mode:overlay;z-index:61;}
+.grain.go{animation:grainFlash .6s ease;}
+@keyframes grainFlash{0%,100%{opacity:0;}30%{opacity:0.55;}}
+.flash-bg{position:absolute;inset:0;background:radial-gradient(circle at 50% 40%,var(--flash) 0%,transparent 60%);opacity:0;pointer-events:none;z-index:59;}
+.flash-bg.gold{--flash:rgba(255,77,77,0.5);}
+.flash-bg.silver{--flash:rgba(120,120,140,0.4);}
+.flash-bg.red{--flash:rgba(139,21,21,0.6);}
+.flash-bg.go{animation:flashIn .55s ease;}
+@keyframes flashIn{0%,100%{opacity:0;}40%{opacity:1;}}
+.room-char.struck{animation:strike .4s ease;}
+@keyframes strike{0%,100%{transform:translateX(-50%) scale(1);}30%{transform:translateX(-50%) scale(1.18) rotate(-4deg);}}
+</style></head>
+<body>
+<div class="head">
+  <a class="back" href="index.html">← 목록</a>
+  <div class="title"><div class="opt">REWARD A31</div><div class="t">Persona Burst · Persona 5 — 대각선 슬래시 + 타이포</div></div>
+</div>
+
+<div class="phone">
+  <div class="phone-content">
+    <div class="sb">
+      <div class="sb-row"><div class="sb-tier"><span class="ic" style="color:#ff4d4d;">★</span><span>방관자</span></div><div class="sb-streak">🔥 12일</div></div>
+      <div class="sb-bar"><div class="sb-fill-gold" id="fillG" style="width:25%;"></div><div class="sb-fill-silver" id="fillS" style="left:25%;width:25%;"></div></div>
+      <div class="sb-meta"><span><b id="metaScore">6</b> / 12 → 각성자</span><span id="metaPct">50%</span></div>
+      <div class="sb-stack" id="stack">
+        <div class="sb-stack-item"><div class="sb-stack-dot gold"></div><div class="sb-stack-num" id="numG">3</div><div class="sb-stack-lbl">G</div></div>
+        <div class="sb-stack-item"><div class="sb-stack-dot silver"></div><div class="sb-stack-num" id="numS">9</div><div class="sb-stack-lbl">S</div></div>
+        <div class="sb-stack-item"><div class="sb-stack-dot red"></div><div class="sb-stack-num" id="numR">0</div><div class="sb-stack-lbl">R</div></div>
+      </div>
+    </div>
+    <div class="room">
+      <div class="room-bg"></div>
+      <div class="room-char" id="char"></div>
+      <div class="flash-bg" id="flashBg"></div>
+      <div class="grain" id="grain"></div>
+      <div class="slash" id="slash"><div class="slash-bar"></div></div>
+      <div class="burst-text" id="burst"></div>
+      <div class="burst-sub" id="burstSub"></div>
+      <div class="card-stub">
+        <div class="card-row">
+          <span class="card-icon">🥗</span>
+          <span class="card-title">식단</span>
+          <span style="margin-left:auto;font-size:10px;color:#ff4d4d;font-family:'DM Mono',monospace;">PERSONA · STYLISH</span>
+        </div>
+        <button class="card-action" onclick="trigger('gold')">+ 클린식 (gold)</button>
+        <button class="card-action" style="margin-top:5px;background:linear-gradient(135deg,#94a3b8,#475569);" onclick="trigger('silver')">+ 일반식 (silver)</button>
+        <button class="card-action" style="margin-top:5px;background:linear-gradient(135deg,#8b1515,#ff4d4d);" onclick="trigger('red')">+ 음주 (red)</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="note">
+  <b>A31 — Persona Burst</b> (Persona 5 · Catherine · No More Heroes): 액션 → 대각선 슬래시가 화면 가로지름 → 굵은 각도 타이포 burst (4겹 그림자) → 캐릭터 strike 포즈 → 그레인 텍스처 flash → 페이드. 격렬한 *스타일* 강조. 행동 = 펀치라인.<br>
+  <b>장점</b>: <b>가장 시그니처한 보상 모먼트</b>. 스크린샷 자랑 매력. 타이포그래피만으로 강한 인상. 카피 변주 무한 ("STYLISH!" / "RUTHLESS!" / "STAY HARD!"). 큐록 톤 (직면/단련) 과 결이 맞음. <b>단점</b>: 잦은 액션에 부담 — 평범한 silver 등록 시에도 같은 강도면 피로. *gold/red 만 burst* + silver 는 mute 정책 검토.
+</div>
+
+<script>
+const counts={gold:3,silver:9,red:0};
+const TIER_NEXT=12;
+const COPY={
+  gold:[['+1 GOLD','STAY HARD!'],['CLEAN!','+1 GOLD'],['STYLISH!','GOLD CUBE']],
+  silver:[['+1','RECORDED'],['LOGGED','+1 SILVER'],['NOTED!','SILVER CUBE']],
+  red:[['−2G −2S','RUTHLESS!'],['BROKEN','RECORD CRACKED'],['DOWN!','−2 GOLD · −2 SILVER']],
+};
+function pick(arr){return arr[Math.floor(Math.random()*arr.length)];}
+function score(){return counts.gold + counts.silver/3;}
+function update(){
+  document.getElementById('numG').textContent=counts.gold;
+  document.getElementById('numS').textContent=counts.silver;
+  document.getElementById('numR').textContent=counts.red;
+  const s=score();
+  const goldPct=Math.min(100,counts.gold/TIER_NEXT*100);
+  const silverPct=Math.min(100-goldPct, (counts.silver/3)/TIER_NEXT*100);
+  document.getElementById('fillG').style.width=goldPct+'%';
+  document.getElementById('fillS').style.left=goldPct+'%';
+  document.getElementById('fillS').style.width=silverPct+'%';
+  document.getElementById('metaScore').textContent=Math.round(s*10)/10;
+  document.getElementById('metaPct').textContent=Math.min(100,Math.round(s/TIER_NEXT*100))+'%';
+}
+function trigger(color){
+  const [main,sub]=pick(COPY[color]);
+  // slash
+  const slash=document.getElementById('slash');slash.className='slash '+color;
+  const slashBar=slash.querySelector('.slash-bar');slashBar.classList.remove('go');void slashBar.offsetWidth;slashBar.classList.add('go');
+  // flash
+  const fb=document.getElementById('flashBg');fb.className='flash-bg '+color;void fb.offsetWidth;fb.classList.add('go');setTimeout(()=>fb.classList.remove('go'),550);
+  // grain
+  const g=document.getElementById('grain');g.classList.remove('go');void g.offsetWidth;g.classList.add('go');
+  // burst text
+  setTimeout(()=>{
+    const b=document.getElementById('burst');b.className='burst-text '+color;b.textContent=main;void b.offsetWidth;b.classList.add('go');
+    const bs=document.getElementById('burstSub');bs.textContent=sub;void bs.offsetWidth;bs.classList.add('go');
+    setTimeout(()=>{b.classList.remove('go');bs.classList.remove('go');},950);
+  },180);
+  // char strike
+  setTimeout(()=>{const c=document.getElementById('char');c.classList.add('struck');setTimeout(()=>c.classList.remove('struck'),420);},150);
+  // counts
+  setTimeout(()=>{
+    if(color==='red'){counts.red++;counts.gold=Math.max(0,counts.gold-2);counts.silver=Math.max(0,counts.silver-2);}
+    else counts[color]++;
+    update();
+    if(navigator.vibrate)navigator.vibrate(color==='red'?[40,30,40]:25);
+  },550);
+}
+update();
+</script>
+</body></html>

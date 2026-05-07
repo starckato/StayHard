@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Reward B2 · Stack Collapse</title>
+<link rel="stylesheet" href="_shared.css">
+<link rel="stylesheet" href="_reward-shared.css">
+<style>
+.phone-content{display:flex;flex-direction:column;}
+.sb-flash-red{animation:flashRed .9s ease;}
+@keyframes flashRed{0%,100%{background:linear-gradient(180deg,rgba(0,0,0,0.92),rgba(0,0,0,0.55) 70%,transparent);}30%{background:linear-gradient(180deg,rgba(180,30,30,0.65),rgba(120,20,20,0.4) 70%,transparent);}}
+.crack-overlay{position:absolute;inset:0;pointer-events:none;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 100'%3E%3Cpath d='M30 10 L45 35 L40 50 L55 60 L48 78 M120 5 L130 28 L122 42 L138 55 L128 75 L145 90' stroke='%23ff4d4d' stroke-width='1.2' fill='none' opacity='0.7'/%3E%3C/svg%3E") center/cover no-repeat;opacity:0;transition:opacity .3s ease;}
+.crack-overlay.show{opacity:0.85;animation:crackFade 1.4s ease forwards;}
+@keyframes crackFade{0%{opacity:0;}25%{opacity:0.85;}100%{opacity:0;}}
+.toast-collapse{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) translateY(-20px);background:rgba(20,20,28,0.96);border:1px solid rgba(255,77,77,0.45);border-radius:10px;padding:14px 22px;color:#fff;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;letter-spacing:-.01em;box-shadow:0 12px 36px rgba(0,0,0,0.6),0 0 24px rgba(255,77,77,0.25);opacity:0;pointer-events:none;z-index:6;transition:opacity .3s ease,transform .3s ease;text-align:center;}
+.toast-collapse.show{opacity:1;transform:translate(-50%,-50%);}
+.toast-collapse small{display:block;font-size:11px;font-weight:500;color:#ff8080;margin-top:4px;letter-spacing:0;}
+@keyframes fallOff{0%{transform:translate(0,0) rotate(0);opacity:1;}100%{transform:translate(var(--fx),120px) rotate(var(--rot));opacity:0;}}
+.fall-cube{position:fixed;width:14px;height:14px;border-radius:2px;border:1px solid rgba(0,0,0,0.4);box-shadow:inset 0 1px 0 rgba(255,255,255,0.4),inset 0 -1.5px 2px rgba(0,0,0,0.4);z-index:99;pointer-events:none;animation:fallOff .8s cubic-bezier(.55,0,.95,.45) forwards;}
+.fall-cube.gold{background:linear-gradient(135deg,#fff1a8,#ffd54a 50%,#c48c1a);}
+.fall-cube.silver{background:linear-gradient(135deg,#f2f4f7,#b5c0cc 50%,#6d7682);}
+.red-bullet{position:fixed;width:18px;height:18px;border-radius:3px;background:linear-gradient(135deg,#ff8080,#ff4d4d 50%,#8b1515);border:1px solid rgba(0,0,0,0.5);box-shadow:0 0 12px rgba(255,77,77,0.6);z-index:99;pointer-events:none;animation:redDive .7s cubic-bezier(.55,0,.85,.65) forwards;}
+@keyframes redDive{0%{transform:translate(0,-180px) scale(1) rotate(-15deg);opacity:0;}25%{opacity:1;}100%{transform:translate(0,0) scale(0.7) rotate(0deg);opacity:0;}}
+</style></head>
+<body>
+<div class="head">
+  <a class="back" href="index.html">← 목록</a>
+  <div class="title"><div class="opt">REWARD B2</div><div class="t">Stack Collapse — Red 발생 시 stack 균열 + 토큰 추락</div></div>
+</div>
+
+<div class="phone">
+  <div class="phone-content">
+    <div class="sb" id="sb">
+      <div class="sb-row"><div class="sb-tier"><span class="ic">⚡</span><span>각성자</span></div><div class="sb-streak">🔥 12일</div></div>
+      <div class="sb-bar"><div class="sb-fill-gold" id="fillG"></div><div class="sb-fill-silver" id="fillS"></div></div>
+      <div class="sb-meta"><span><b id="metaScore">14</b> / 60 → 저항자</span><span id="metaPct">23%</span></div>
+      <div class="sb-stack" id="stack">
+        <div class="sb-stack-item"><div class="sb-stack-dot gold" id="dotG"></div><div class="sb-stack-num" id="numG">8</div><div class="sb-stack-lbl">G</div></div>
+        <div class="sb-stack-item"><div class="sb-stack-dot silver" id="dotS"></div><div class="sb-stack-num" id="numS">18</div><div class="sb-stack-lbl">S</div></div>
+        <div class="sb-stack-item"><div class="sb-stack-dot red" id="dotR"></div><div class="sb-stack-num" id="numR">0</div><div class="sb-stack-lbl">R</div></div>
+      </div>
+      <div class="crack-overlay" id="crack"></div>
+    </div>
+    <div class="room">
+      <div class="room-bg"></div>
+      <div class="room-char"></div>
+      <div class="toast-collapse" id="toast"></div>
+      <div class="card-stub">
+        <div class="card-row">
+          <span class="card-icon">🍺</span>
+          <span class="card-title">식단 — 음주</span>
+          <span style="margin-left:auto;font-size:10px;color:#ff8080;font-family:'DM Mono',monospace;">red 카테고리</span>
+        </div>
+        <button class="card-action" style="background:linear-gradient(135deg,#8b1515,#ff4d4d);" onclick="triggerRed()">+ 음주 한 잔 등록</button>
+        <button class="card-action" style="margin-top:5px;background:rgba(255,255,255,0.06);color:#a8a8b4;" onclick="reset()">초기화</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="note">
+  <b>B2 — Stack Collapse</b>: red 등록 즉시 (확인 모달 없음). (1) red 큐브 위에서 stack 으로 dive (2) Status Band 0.9s 빨간 tint flash (3) crack overlay 1.4s 깜빡 (4) gold 1 토큰 + silver 1 토큰 stack 에서 떨어져 화면 밖으로 (gravity) (5) 카운트 -2g -2s (6) toast "기록이 무너졌다" 1.5s.<br>
+  <b>장점</b>: silent 디폴트 — 마찰 없이 등록은 됨. 시각적 *사건성* 강함. 차감액 명시적. <b>단점</b>: 자주 겪으면 dramatic 감 떨어짐. 같은 주에 red 누적 시 추가 layer 필요 (ideation §3-B 의 sentinel 모달).<br>
+  <b>플레이</b>: + 음주 → 시퀀스 전체 관찰. 초기화 후 반복.
+</div>
+
+<script>
+const counts={gold:8,silver:18,red:0};
+const TIER_NEXT=60; // 각성자 → 저항자
+const TIER_BASE=12;
+function score(){return counts.gold + counts.silver/3;}
+function update(){
+  document.getElementById('numG').textContent=counts.gold;
+  document.getElementById('numS').textContent=counts.silver;
+  document.getElementById('numR').textContent=counts.red;
+  const s=score();
+  const into=Math.max(0,s - TIER_BASE);
+  const span=TIER_NEXT - TIER_BASE;
+  const goldContrib=Math.max(0,counts.gold - TIER_BASE);
+  const goldPct=Math.min(100,Math.max(0,goldContrib/span*100));
+  const totalPct=Math.min(100,Math.max(0,into/span*100));
+  document.getElementById('fillG').style.width=goldPct+'%';
+  document.getElementById('fillS').style.left=goldPct+'%';
+  document.getElementById('fillS').style.width=Math.max(0,totalPct-goldPct)+'%';
+  document.getElementById('metaScore').textContent=Math.round(s*10)/10;
+  document.getElementById('metaPct').textContent=Math.round(totalPct)+'%';
+}
+function spawnFallCube(color, fromRect){
+  const c=document.createElement('div');
+  c.className='fall-cube '+color;
+  c.style.left=(fromRect.left+fromRect.width/2-7)+'px';
+  c.style.top=(fromRect.top+fromRect.height/2-7)+'px';
+  c.style.setProperty('--fx',((Math.random()*2-1)*40)+'px');
+  c.style.setProperty('--rot',((Math.random()*2-1)*180)+'deg');
+  document.body.appendChild(c);
+  setTimeout(()=>c.remove(),900);
+}
+function triggerRed(){
+  // Step 1: red bullet from above
+  const dot=document.getElementById('dotR');
+  const dRect=dot.getBoundingClientRect();
+  const b=document.createElement('div');b.className='red-bullet';
+  b.style.left=(dRect.left+dRect.width/2-9)+'px';b.style.top=(dRect.top+dRect.height/2-9)+'px';
+  document.body.appendChild(b);
+  setTimeout(()=>{
+    b.remove();
+    counts.red++;
+    // Step 2: flash + crack
+    const sb=document.getElementById('sb');sb.classList.remove('sb-flash-red');void sb.offsetWidth;sb.classList.add('sb-flash-red');
+    const crack=document.getElementById('crack');crack.classList.remove('show');void crack.offsetWidth;crack.classList.add('show');
+    // Step 3: cubes fall off
+    if(navigator.vibrate)navigator.vibrate(40);
+    const gRect=document.getElementById('dotG').getBoundingClientRect();
+    const sRect=document.getElementById('dotS').getBoundingClientRect();
+    spawnFallCube('gold',gRect);spawnFallCube('gold',gRect);
+    setTimeout(()=>{spawnFallCube('silver',sRect);spawnFallCube('silver',sRect);},120);
+    // Step 4: counts decrement after small delay
+    setTimeout(()=>{
+      counts.gold=Math.max(0,counts.gold-2);
+      counts.silver=Math.max(0,counts.silver-2);
+      update();
+      // Step 5: toast
+      const t=document.getElementById('toast');
+      t.innerHTML='기록이 무너졌다<small>−2 gold · −2 silver · 점수 −2.67</small>';
+      t.classList.add('show');
+      clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),1700);
+    },300);
+  },650);
+}
+function reset(){counts.gold=8;counts.silver=18;counts.red=0;update();}
+update();
+</script>
+</body></html>

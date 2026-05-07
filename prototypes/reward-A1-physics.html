@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Reward A1 · Weight Physics</title>
+<link rel="stylesheet" href="_shared.css">
+<link rel="stylesheet" href="_reward-shared.css">
+<style>
+.phone-content{display:flex;flex-direction:column;}
+@keyframes goldDrop{0%{transform:translate(var(--dx),-160px) scale(1);opacity:0;}20%{opacity:1;}100%{transform:translate(var(--dx),0) scale(0.7);opacity:0;}}
+@keyframes silverGlide{0%{transform:translate(0,0) scale(0.85);opacity:0;}20%{opacity:1;}100%{transform:translate(var(--dx),var(--dy)) scale(0.6);opacity:0;}}
+@keyframes redFall{0%{transform:translate(var(--dx),-160px) scale(1) rotate(0deg);opacity:0;}25%{opacity:1;}100%{transform:translate(var(--dx),0) scale(0.6) rotate(-15deg);opacity:0;}}
+.flyer.anim-gold{animation:goldDrop .65s cubic-bezier(.5,0,.7,1.6) forwards;}
+.flyer.anim-silver{animation:silverGlide .55s cubic-bezier(.32,1.2,.42,1) forwards;}
+.flyer.anim-red{animation:redFall .85s cubic-bezier(.55,-.1,.85,.55) forwards;}
+.sb-stack-dot.shake{animation:shake .35s ease;}
+@keyframes shake{0%,100%{transform:translateX(0);}25%{transform:translateX(-2px);}75%{transform:translateX(2px);}}
+.sb-stack.thud{animation:thud .25s ease;}
+@keyframes thud{0%,100%{transform:translateY(0);}50%{transform:translateY(2px);}}
+</style></head>
+<body>
+<div class="head">
+  <a class="back" href="index.html">← 목록</a>
+  <div class="title"><div class="opt">REWARD A1</div><div class="t">무게 차등 Physics — gold 슬램 / silver 글라이드 / red 추락</div></div>
+</div>
+
+<div class="phone">
+  <div class="phone-content">
+    <div class="sb">
+      <div class="sb-row"><div class="sb-tier"><span class="ic">😴</span><span>방관자</span></div><div class="sb-streak">🔥 12일</div></div>
+      <div class="sb-bar"><div class="sb-fill-gold" id="fillG" style="width:25%;"></div><div class="sb-fill-silver" id="fillS" style="left:25%;width:25%;"></div></div>
+      <div class="sb-meta"><span><b id="metaScore">6</b> / 12 → 각성자</span><span id="metaPct">50%</span></div>
+      <div class="sb-stack" id="stack">
+        <div class="sb-stack-item"><div class="sb-stack-dot gold"></div><div class="sb-stack-num" id="numG">3</div><div class="sb-stack-lbl">G</div></div>
+        <div class="sb-stack-item"><div class="sb-stack-dot silver"></div><div class="sb-stack-num" id="numS">9</div><div class="sb-stack-lbl">S</div></div>
+        <div class="sb-stack-item"><div class="sb-stack-dot red"></div><div class="sb-stack-num" id="numR">0</div><div class="sb-stack-lbl">R</div></div>
+      </div>
+    </div>
+    <div class="room">
+      <div class="room-bg"></div>
+      <div class="room-char"></div>
+      <div class="card-stub">
+        <div class="card-row">
+          <span class="card-icon">🥗</span>
+          <span class="card-title">식단</span>
+          <span style="margin-left:auto;display:flex;gap:4px;">
+            <span class="card-chip gold" id="chipG"></span>
+          </span>
+        </div>
+        <button class="card-action" onclick="trigger('gold','#chipG',event)">+ 클린식 등록 (gold)</button>
+        <button class="card-action" style="margin-top:5px;background:linear-gradient(135deg,#94a3b8,#475569);" onclick="trigger('silver','#chipG',event)">+ 일반식 등록 (silver)</button>
+        <button class="card-action" style="margin-top:5px;background:linear-gradient(135deg,#8b1515,#ff4d4d);" onclick="trigger('red','#chipG',event)">+ 음주 등록 (red — 2g + 2s 차감)</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="note">
+  <b>A1 — Physics</b>: 색마다 다른 motion. <b>Gold</b> 위에서 떨어져 stack 에 슬램 (medium haptic). <b>Silver</b> 부드럽게 옆에서 글라이드 (light haptic). <b>Red</b> 어둡게 추락 → stack 의 gold 1 + silver 1 토큰이 흔들리며 카운트 차감 (heavy haptic).<br>
+  <b>장점</b>: 큐브의 *물성* 강함. 색의 의미가 motion 으로 각인. <b>단점</b>: 잦은 액션 시 motion 부담 가능. 익숙해지면 만족감 ↑.<br>
+  <b>플레이</b>: 버튼 누르면 큐브 fly + stack 카운트 ↑ + 진행 bar ↑. red 누르면 stack 흔들림 + 차감.
+</div>
+
+<script>
+const target={gold:'.sb-stack-item:nth-child(1) .sb-stack-dot',silver:'.sb-stack-item:nth-child(2) .sb-stack-dot',red:'.sb-stack-item:nth-child(3) .sb-stack-dot'};
+const counts={gold:3,silver:9,red:0};
+const TIER_NEXT=12;
+function score(){return counts.gold + counts.silver/3;}
+function bump(el){if(!el)return;el.classList.remove('bumped');void el.offsetWidth;el.classList.add('bumped');}
+function update(){
+  document.getElementById('numG').textContent=counts.gold;bump(document.getElementById('numG'));
+  document.getElementById('numS').textContent=counts.silver;bump(document.getElementById('numS'));
+  document.getElementById('numR').textContent=counts.red;
+  const s=score();
+  const goldPct=Math.min(100,counts.gold/TIER_NEXT*100);
+  const silverPct=Math.min(100-goldPct, (counts.silver/3)/TIER_NEXT*100);
+  document.getElementById('fillG').style.width=goldPct+'%';
+  document.getElementById('fillS').style.left=goldPct+'%';
+  document.getElementById('fillS').style.width=silverPct+'%';
+  document.getElementById('metaScore').textContent=Math.round(s*10)/10;
+  document.getElementById('metaPct').textContent=Math.min(100,Math.round(s/TIER_NEXT*100))+'%';
+}
+function spawnFlyer(color, originRect, targetRect, animClass){
+  const f=document.createElement('div');
+  f.className='flyer '+color+' '+animClass;
+  const sx=originRect.left+originRect.width/2-12;
+  const sy=originRect.top+originRect.height/2-12;
+  const dx=targetRect.left+targetRect.width/2 - (originRect.left+originRect.width/2);
+  const dy=targetRect.top+targetRect.height/2 - (originRect.top+originRect.height/2);
+  f.style.left=sx+'px';f.style.top=sy+'px';
+  f.style.setProperty('--dx', dx+'px');
+  f.style.setProperty('--dy', dy+'px');
+  document.body.appendChild(f);
+  setTimeout(()=>f.remove(), 900);
+}
+function trigger(color, chipSel, ev){
+  const btn=ev.currentTarget;
+  const oRect=btn.getBoundingClientRect();
+  const tDot=document.querySelector(target[color]);
+  const tRect=tDot.getBoundingClientRect();
+  if(color==='red'){
+    // Red: drop from above
+    const f=document.createElement('div');f.className='flyer red anim-red';
+    f.style.left=(tRect.left+tRect.width/2-12)+'px';f.style.top=(tRect.top+tRect.height/2-12)+'px';
+    f.style.setProperty('--dx','0px');document.body.appendChild(f);
+    setTimeout(()=>{
+      counts.red++;counts.gold=Math.max(0,counts.gold-2);counts.silver=Math.max(0,counts.silver-2);
+      update();
+      document.getElementById('stack').classList.add('thud');setTimeout(()=>document.getElementById('stack').classList.remove('thud'),250);
+      document.querySelectorAll('.sb-stack-dot').forEach(d=>{d.classList.add('shake');setTimeout(()=>d.classList.remove('shake'),350);});
+      f.remove();
+    },800);
+    return;
+  }
+  if(color==='gold'){
+    spawnFlyer('gold', oRect, tRect, 'anim-gold');
+    setTimeout(()=>{
+      counts.gold++;update();
+      document.getElementById('stack').classList.add('thud');setTimeout(()=>document.getElementById('stack').classList.remove('thud'),250);
+    }, 600);
+  } else {
+    spawnFlyer('silver', oRect, tRect, 'anim-silver');
+    setTimeout(()=>{counts.silver++;update();}, 500);
+  }
+}
+update();
+</script>
+</body></html>

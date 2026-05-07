@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Reward A6 · Zen Numerical</title>
+<link rel="stylesheet" href="_shared.css">
+<link rel="stylesheet" href="_reward-shared.css">
+<style>
+.phone-content{display:flex;flex-direction:column;}
+.sb-tint-gold{animation:tintGold 1s ease;}
+@keyframes tintGold{0%,100%{background:linear-gradient(180deg,rgba(0,0,0,0.92),rgba(0,0,0,0.55) 70%,transparent);}50%{background:linear-gradient(180deg,rgba(255,213,74,0.25),rgba(0,0,0,0.55) 70%,transparent);}}
+.sb-tint-silver{animation:tintSilver .9s ease;}
+@keyframes tintSilver{0%,100%{background:linear-gradient(180deg,rgba(0,0,0,0.92),rgba(0,0,0,0.55) 70%,transparent);}50%{background:linear-gradient(180deg,rgba(181,192,204,0.18),rgba(0,0,0,0.55) 70%,transparent);}}
+.sb-tint-red{animation:tintRed 1.1s ease;}
+@keyframes tintRed{0%,100%{background:linear-gradient(180deg,rgba(0,0,0,0.92),rgba(0,0,0,0.55) 70%,transparent);}50%{background:linear-gradient(180deg,rgba(255,77,77,0.22),rgba(0,0,0,0.55) 70%,transparent);}}
+.card-stub-pulse-gold{animation:cardPulseG .9s ease;}
+@keyframes cardPulseG{0%,100%{background:rgba(20,20,28,0.92);}50%{background:rgba(255,213,74,0.12);}}
+.card-stub-pulse-silver{animation:cardPulseS .9s ease;}
+@keyframes cardPulseS{0%,100%{background:rgba(20,20,28,0.92);}50%{background:rgba(181,192,204,0.10);}}
+.card-stub-pulse-red{animation:cardPulseR .9s ease;}
+@keyframes cardPulseR{0%,100%{background:rgba(20,20,28,0.92);}50%{background:rgba(255,77,77,0.14);}}
+.sb-stack-num{transition:color .35s ease;}
+.sb-stack-num.changed{color:#fff;}
+</style></head>
+<body>
+<div class="head">
+  <a class="back" href="index.html">← 목록</a>
+  <div class="title"><div class="opt">REWARD A6</div><div class="t">Zen Numerical — 큐브 motion 없음. 숫자 + 색조 tint 만</div></div>
+</div>
+
+<div class="phone">
+  <div class="phone-content">
+    <div class="sb" id="sb">
+      <div class="sb-row"><div class="sb-tier"><span class="ic">😴</span><span>방관자</span></div><div class="sb-streak">🔥 12일</div></div>
+      <div class="sb-bar"><div class="sb-fill-gold" id="fillG" style="width:25%;"></div><div class="sb-fill-silver" id="fillS" style="left:25%;width:25%;"></div></div>
+      <div class="sb-meta"><span><b id="metaScore">6</b> / 12 → 각성자</span><span id="metaPct">50%</span></div>
+      <div class="sb-stack" id="stack">
+        <div class="sb-stack-item"><div class="sb-stack-dot gold"></div><div class="sb-stack-num" id="numG">3</div><div class="sb-stack-lbl">G</div></div>
+        <div class="sb-stack-item"><div class="sb-stack-dot silver"></div><div class="sb-stack-num" id="numS">9</div><div class="sb-stack-lbl">S</div></div>
+        <div class="sb-stack-item"><div class="sb-stack-dot red"></div><div class="sb-stack-num" id="numR">0</div><div class="sb-stack-lbl">R</div></div>
+      </div>
+    </div>
+    <div class="room">
+      <div class="room-bg"></div>
+      <div class="room-char"></div>
+      <div class="card-stub" id="cardStub">
+        <div class="card-row">
+          <span class="card-icon">🥗</span>
+          <span class="card-title">식단</span>
+        </div>
+        <button class="card-action" onclick="trigger('gold')">+ 클린식 (gold)</button>
+        <button class="card-action" style="margin-top:5px;background:linear-gradient(135deg,#94a3b8,#475569);" onclick="trigger('silver')">+ 일반식 (silver)</button>
+        <button class="card-action" style="margin-top:5px;background:linear-gradient(135deg,#8b1515,#ff4d4d);" onclick="trigger('red')">+ 음주 (red)</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="note">
+  <b>A6 — Zen Numerical</b>: 날아가는 큐브 없음. 액션 시 (1) 카드 배경이 0.9s 색조로 펄스 (2) Status Band 가 0.9s 색조 tint (3) 숫자 odometer-tween (이전 → 다음) (4) progress bar 부드럽게 fill. haptic 가벼움. silent 디폴트 친화.<br>
+  <b>장점</b>: 잦은 액션에 부담 없음. 명상적. UI 가 차분. <b>단점</b>: 만족감/임팩트 약함. 첫 사용자에게 *큐브* 가 무엇인지 시각적 학습 어려움.
+</div>
+
+<script>
+const counts={gold:3,silver:9,red:0};
+const TIER_NEXT=12;
+function score(){return counts.gold + counts.silver/3;}
+function tweenNum(el, from, to, dur=520){
+  const start=performance.now();
+  function tick(ts){
+    const p=Math.min(1,(ts-start)/dur);
+    const eased=1-Math.pow(1-p,3);
+    el.textContent=Math.round(from + (to-from)*eased);
+    if(p<1)requestAnimationFrame(tick);
+    else{el.textContent=to;el.classList.remove('changed');}
+  }
+  el.classList.add('changed');requestAnimationFrame(tick);
+}
+function update(prev){
+  const s=score();
+  const goldPct=Math.min(100,counts.gold/TIER_NEXT*100);
+  const silverPct=Math.min(100-goldPct, (counts.silver/3)/TIER_NEXT*100);
+  document.getElementById('fillG').style.width=goldPct+'%';
+  document.getElementById('fillS').style.left=goldPct+'%';
+  document.getElementById('fillS').style.width=silverPct+'%';
+  document.getElementById('metaScore').textContent=Math.round(s*10)/10;
+  document.getElementById('metaPct').textContent=Math.min(100,Math.round(s/TIER_NEXT*100))+'%';
+  if(prev){
+    if(prev.gold!==counts.gold)tweenNum(document.getElementById('numG'),prev.gold,counts.gold);
+    if(prev.silver!==counts.silver)tweenNum(document.getElementById('numS'),prev.silver,counts.silver);
+    if(prev.red!==counts.red)tweenNum(document.getElementById('numR'),prev.red,counts.red);
+  } else {
+    document.getElementById('numG').textContent=counts.gold;
+    document.getElementById('numS').textContent=counts.silver;
+    document.getElementById('numR').textContent=counts.red;
+  }
+}
+function trigger(color){
+  const prev={...counts};
+  if(color==='red'){counts.red++;counts.gold=Math.max(0,counts.gold-2);counts.silver=Math.max(0,counts.silver-2);}
+  else counts[color]++;
+  // tints
+  const sb=document.getElementById('sb');const card=document.getElementById('cardStub');
+  sb.classList.remove('sb-tint-gold','sb-tint-silver','sb-tint-red');void sb.offsetWidth;sb.classList.add('sb-tint-'+color);
+  card.classList.remove('card-stub-pulse-gold','card-stub-pulse-silver','card-stub-pulse-red');void card.offsetWidth;card.classList.add('card-stub-pulse-'+color);
+  update(prev);
+}
+update();
+</script>
+</body></html>

@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Reward A22 · Constellation</title>
+<link rel="stylesheet" href="_shared.css">
+<link rel="stylesheet" href="_reward-shared.css">
+<style>
+.phone-content{display:flex;flex-direction:column;}
+.room{background:radial-gradient(ellipse at top,#0f1428 0%,#05060c 70%);}
+.room-bg{display:none;}
+.room-char{bottom:130px;filter:brightness(0.65) drop-shadow(0 0 8px rgba(120,140,200,0.3));}
+.sky{position:absolute;inset:0;pointer-events:none;}
+.star{position:absolute;border-radius:50%;background:radial-gradient(circle,#fff 0%,rgba(255,255,255,0.5) 40%,rgba(255,255,255,0) 70%);box-shadow:0 0 6px rgba(255,255,255,0.6);opacity:0;transform:scale(0.4);transition:opacity .6s ease,transform .6s ease;animation:twinkle 3s ease-in-out infinite;animation-delay:var(--d, 0s);}
+.star.show{opacity:1;transform:scale(1);}
+.star.gold{width:6px;height:6px;background:radial-gradient(circle,#fff 0%,#ffd54a 35%,rgba(255,213,74,0.4) 65%,rgba(255,213,74,0) 100%);box-shadow:0 0 12px rgba(255,213,74,0.8),0 0 24px rgba(255,213,74,0.3);}
+.star.silver{width:3px;height:3px;background:radial-gradient(circle,#fff 0%,#dde1e6 50%,rgba(221,225,230,0) 100%);box-shadow:0 0 6px rgba(221,225,230,0.6);}
+.star.red{width:5px;height:5px;background:radial-gradient(circle,#ff8080 0%,#ff4d4d 50%,rgba(139,21,21,0) 100%);box-shadow:0 0 12px rgba(255,77,77,0.7);}
+.star.exploding{animation:explode 1.2s ease forwards;}
+@keyframes explode{0%{transform:scale(1);opacity:1;}30%{transform:scale(2.5);opacity:0.8;}100%{transform:scale(0.2);opacity:0;}}
+@keyframes twinkle{0%,100%{filter:brightness(1);}50%{filter:brightness(1.4);}}
+.constellation-line{position:absolute;height:1px;background:linear-gradient(90deg,rgba(255,213,74,0.4),rgba(255,213,74,0.05),rgba(255,213,74,0.4));transform-origin:left center;opacity:0;transition:opacity .8s ease;}
+.constellation-line.show{opacity:0.6;}
+.sky-meta{position:absolute;top:8px;right:14px;font-size:10px;color:rgba(255,255,255,0.35);font-family:'DM Mono',monospace;letter-spacing:0.04em;}
+</style></head>
+<body>
+<div class="head">
+  <a class="back" href="index.html">← 목록</a>
+  <div class="title"><div class="opt">REWARD A22</div><div class="t">Constellation — 룸 BG가 별자리. 큐브 = 별</div></div>
+</div>
+
+<div class="phone">
+  <div class="phone-content">
+    <div class="sb">
+      <div class="sb-row"><div class="sb-tier"><span class="ic">✨</span><span>방관자</span></div><div class="sb-streak">🔥 12일</div></div>
+      <div class="sb-bar"><div class="sb-fill-gold" id="fillG" style="width:25%;"></div><div class="sb-fill-silver" id="fillS" style="left:25%;width:25%;"></div></div>
+      <div class="sb-meta"><span><b id="metaScore">6</b> / 12 → 각성자</span><span id="cubeCounts">G 3 · S 9 · R 0</span></div>
+    </div>
+    <div class="room">
+      <div class="sky-meta" id="skyMeta">3 별 · 6 score</div>
+      <div class="sky" id="sky"></div>
+      <div class="room-char"></div>
+      <div class="card-stub">
+        <div class="card-row">
+          <span class="card-icon">🥗</span>
+          <span class="card-title">식단</span>
+        </div>
+        <button class="card-action" onclick="trigger('gold')">+ 클린식 (gold = 큰 별)</button>
+        <button class="card-action" style="margin-top:5px;background:linear-gradient(135deg,#94a3b8,#475569);" onclick="trigger('silver')">+ 일반식 (silver = 작은 별)</button>
+        <button class="card-action" style="margin-top:5px;background:linear-gradient(135deg,#8b1515,#ff4d4d);" onclick="trigger('red')">+ 음주 (red = 별 폭발)</button>
+        <button class="card-action" style="margin-top:5px;background:rgba(255,255,255,0.05);color:#a8a8b4;" onclick="reset()">초기화</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="note">
+  <b>A22 — Constellation</b>: 룸 BG = 밤하늘. gold = 큰 노란 별 (강한 glow), silver = 작은 흰 별 (희미한 glow), red = 빨간 별 폭발 후 *근처 별 2개 사라짐*. 5개 이상 모이면 인접 별끼리 *별자리 line* 으로 연결. 시간이 갈수록 자기만의 별자리 완성.<br>
+  <b>장점</b>: <b>매우 시적</b>. 작은 별 (silver) 도 미적으로 매력. 별자리 = 지문처럼 unique. 룸 BG 자체가 보상. <b>단점</b>: 별이 너무 작아 카운트 글랜스 약함. 많아질수록 어수선해질 수 있음 — fade-out 정책 필요 (오래된 별 희미해짐).
+</div>
+
+<script>
+const counts={gold:3,silver:9,red:0};
+const TIER_NEXT=12;
+const stars=[]; // {type, el, x, y}
+function score(){return counts.gold + counts.silver/3;}
+function update(){
+  const s=score();
+  const goldPct=Math.min(100,counts.gold/TIER_NEXT*100);
+  const silverPct=Math.min(100-goldPct, (counts.silver/3)/TIER_NEXT*100);
+  document.getElementById('fillG').style.width=goldPct+'%';
+  document.getElementById('fillS').style.left=goldPct+'%';
+  document.getElementById('fillS').style.width=silverPct+'%';
+  document.getElementById('metaScore').textContent=Math.round(s*10)/10;
+  document.getElementById('cubeCounts').textContent=`G ${counts.gold} · S ${counts.silver} · R ${counts.red}`;
+  document.getElementById('skyMeta').textContent=`${stars.length} 별 · ${Math.round(s*10)/10} score`;
+}
+function addStar(type){
+  const sky=document.getElementById('sky');
+  const rect=sky.getBoundingClientRect();
+  const x=8+Math.random()*84;
+  const y=8+Math.random()*55;
+  const s=document.createElement('div');
+  s.className='star '+type;
+  s.style.left=x+'%';s.style.top=y+'%';
+  s.style.setProperty('--d', (Math.random()*3)+'s');
+  sky.appendChild(s);
+  requestAnimationFrame(()=>requestAnimationFrame(()=>s.classList.add('show')));
+  stars.push({type,el:s,x,y});
+  drawConstellationLines();
+}
+function explode(n){
+  const candidates=stars.filter(s=>s.type!=='red');
+  for(let i=0;i<n && candidates.length>0;i++){
+    const target=candidates[candidates.length-1-i];
+    if(!target)break;
+    target.el.classList.add('exploding');
+    setTimeout(()=>target.el.remove(), 1300);
+    const idx=stars.indexOf(target);if(idx>=0)stars.splice(idx,1);
+  }
+  drawConstellationLines();
+}
+function drawConstellationLines(){
+  const sky=document.getElementById('sky');
+  sky.querySelectorAll('.constellation-line').forEach(l=>l.remove());
+  if(stars.length<5)return;
+  // Connect nearest gold stars to nearest other stars
+  const goldStars=stars.filter(s=>s.type==='gold');
+  goldStars.forEach(g=>{
+    const others=stars.filter(s=>s!==g && s.type!=='red');
+    others.sort((a,b)=>{
+      const da=Math.hypot(a.x-g.x,a.y-g.y);
+      const db=Math.hypot(b.x-g.x,b.y-g.y);
+      return da-db;
+    });
+    others.slice(0,1).forEach(o=>{
+      const dx=o.x-g.x;const dy=o.y-g.y;
+      const dist=Math.hypot(dx,dy);
+      const angle=Math.atan2(dy,dx)*180/Math.PI;
+      const line=document.createElement('div');
+      line.className='constellation-line';
+      const skyRect=sky.getBoundingClientRect();
+      line.style.left=g.x+'%';line.style.top=g.y+'%';
+      line.style.width=(dist*skyRect.width/100)+'px';
+      line.style.transform=`rotate(${angle}deg)`;
+      sky.appendChild(line);
+      requestAnimationFrame(()=>requestAnimationFrame(()=>line.classList.add('show')));
+    });
+  });
+}
+function init(){
+  document.getElementById('sky').innerHTML='';stars.length=0;
+  for(let i=0;i<counts.gold;i++)addStar('gold');
+  for(let i=0;i<Math.floor(counts.silver/3);i++)addStar('silver');
+  stars.forEach(s=>s.el.classList.add('show'));
+  update();
+}
+function trigger(color){
+  if(color==='red'){
+    counts.red++;counts.gold=Math.max(0,counts.gold-2);counts.silver=Math.max(0,counts.silver-2);
+    addStar('red');
+    explode(2);
+  } else if(color==='gold'){
+    counts.gold++;addStar('gold');
+  } else {
+    counts.silver++;
+    if(counts.silver%3===0)addStar('silver');
+  }
+  update();
+}
+function reset(){counts.gold=3;counts.silver=9;counts.red=0;init();}
+init();
+</script>
+</body></html>

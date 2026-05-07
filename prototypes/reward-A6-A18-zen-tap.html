@@ -1,0 +1,355 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Reward A6+A18 v2 · Zen Tap + Sticky Header + Red Collapse</title>
+<link rel="stylesheet" href="_shared.css">
+<link rel="stylesheet" href="_reward-shared.css">
+<style>
+.phone-content{display:flex;flex-direction:column;}
+
+/* ── Sticky Header (NEW · 신규 영역) ── */
+.sticky-header{position:relative;background:linear-gradient(180deg,rgba(15,15,20,0.96),rgba(15,15,20,0.88));backdrop-filter:blur(12px);border-bottom:1px solid rgba(255,255,255,0.06);box-shadow:0 4px 16px rgba(0,0,0,0.4);z-index:10;transition:box-shadow .3s ease;}
+.sh-top{display:flex;align-items:center;gap:10px;padding:10px 14px 8px;}
+.sh-tier{display:flex;align-items:center;gap:5px;flex-shrink:0;}
+.sh-tier-icon{font-size:14px;}
+.sh-tier-name{font-family:'Archivo Black',sans-serif;font-size:13px;letter-spacing:-0.02em;color:#f5f1ea;}
+.sh-streak{font-size:10px;color:#ffb84d;font-weight:700;margin-left:4px;}
+.sh-cubes{display:flex;align-items:center;gap:8px;margin-left:auto;}
+.sh-cube-item{display:flex;align-items:center;gap:4px;}
+.sh-cube-dot{width:9px;height:9px;border-radius:1.5px;border:0.5px solid rgba(0,0,0,0.4);box-shadow:inset 0 0.5px 0 rgba(255,255,255,0.4);transition:transform .35s cubic-bezier(.32,1.6,.42,1),box-shadow .35s ease;}
+.sh-cube-dot.gold{background:linear-gradient(135deg,#fff1a8,#ffd54a 50%,#c48c1a);}
+.sh-cube-dot.silver{background:linear-gradient(135deg,#f2f4f7,#b5c0cc 50%,#6d7682);}
+.sh-cube-dot.red{background:linear-gradient(135deg,#ff8080,#ff4d4d 50%,#8b1515);}
+.sh-cube-dot.bumped{transform:scale(1.5);box-shadow:0 0 12px var(--bump);}
+.sh-cube-dot.gold.bumped{--bump:rgba(255,213,74,0.9);}
+.sh-cube-dot.silver.bumped{--bump:rgba(221,225,230,0.9);}
+.sh-cube-dot.red.bumped{--bump:rgba(255,77,77,1);}
+.sh-cube-num{font-family:'Archivo Black',sans-serif;font-size:13px;color:#f5f1ea;letter-spacing:-0.02em;transition:color .4s ease;}
+.sh-cube-num.tweening{color:#ffd54a;}
+.sh-cube-num.tweening-loss{color:#ff8080;}
+.sh-progress-meta{display:flex;flex-direction:column;align-items:flex-end;gap:1px;font-family:'DM Mono',monospace;font-size:9.5px;flex-shrink:0;border-left:1px solid rgba(255,255,255,0.08);padding-left:10px;}
+.sh-progress-meta .next{color:#ffd54a;font-weight:700;}
+.sh-progress-meta .pct{color:#7a7a86;}
+.sh-bar{height:3px;background:rgba(255,255,255,0.05);position:relative;overflow:hidden;}
+.sh-bar-gold{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,#ffd54a,#fff1a8 60%,#ffd54a);transition:width .55s cubic-bezier(.4,0,.2,1);box-shadow:0 0 5px rgba(255,213,74,0.5);}
+.sh-bar-silver{position:absolute;top:0;bottom:0;background:linear-gradient(90deg,#b5c0cc,#dde1e6);transition:left .55s cubic-bezier(.4,0,.2,1),width .55s cubic-bezier(.4,0,.2,1);opacity:0.85;}
+.sticky-pin{position:absolute;top:50%;right:14px;transform:translateY(-50%);font-size:8px;color:#34d399;font-family:'DM Mono',monospace;letter-spacing:0.1em;font-weight:800;display:none;}
+
+/* Sticky shake on red */
+.sticky-header.shaking{animation:stickyShake .45s ease;}
+@keyframes stickyShake{0%,100%{transform:translateX(0);}15%{transform:translateX(-7px);}30%{transform:translateX(7px);}45%{transform:translateX(-5px);}60%{transform:translateX(4px);}80%{transform:translateX(-2px);}}
+.sticky-header.red-burn{animation:stickyBurn .9s ease;}
+@keyframes stickyBurn{0%,100%{box-shadow:0 4px 16px rgba(0,0,0,0.4);}30%{box-shadow:0 4px 16px rgba(0,0,0,0.4),inset 0 0 0 2px rgba(255,77,77,0.7),inset 0 -3px 0 rgba(255,77,77,0.9);}}
+
+/* Tint pulses on commit (A6 zen) */
+.sticky-header.tint-gold{animation:shTintGold .8s ease;}
+@keyframes shTintGold{0%,100%{background:linear-gradient(180deg,rgba(15,15,20,0.96),rgba(15,15,20,0.88));}50%{background:linear-gradient(180deg,rgba(60,40,10,0.96),rgba(40,30,5,0.88));}}
+.sticky-header.tint-silver{animation:shTintSilver .7s ease;}
+@keyframes shTintSilver{0%,100%{background:linear-gradient(180deg,rgba(15,15,20,0.96),rgba(15,15,20,0.88));}50%{background:linear-gradient(180deg,rgba(40,45,55,0.96),rgba(30,35,45,0.88));}}
+
+/* ── Card tint pulses (A6) ── */
+.card-tint-gold{animation:cardTintGold 1s ease;}
+@keyframes cardTintGold{0%,100%{background:rgba(20,20,28,0.92);}50%{background:rgba(255,213,74,0.10);}}
+.card-tint-silver{animation:cardTintSilver .9s ease;}
+@keyframes cardTintSilver{0%,100%{background:rgba(20,20,28,0.92);}50%{background:rgba(181,192,204,0.08);}}
+.card-tint-red{animation:cardTintRed 1.1s ease;}
+@keyframes cardTintRed{0%,100%{background:rgba(20,20,28,0.92);}50%{background:rgba(255,77,77,0.14);}}
+.card-chip{transition:box-shadow .35s ease,transform .35s ease;}
+.card-chip.glowing{transform:scale(1.3);box-shadow:0 0 14px var(--chip-glow);}
+.card-chip.gold{--chip-glow:rgba(255,213,74,0.65);}
+.card-chip.silver{--chip-glow:rgba(221,225,230,0.6);}
+.card-chip.red{--chip-glow:rgba(255,77,77,0.65);}
+
+/* ── Suspended Zen Cube (A18) ── */
+.zen-cube{position:fixed;width:34px;height:34px;border-radius:6px;border:1px solid rgba(0,0,0,0.45);box-shadow:inset 0 1.5px 0 rgba(255,255,255,0.5),inset 0 -2.5px 5px rgba(0,0,0,0.4),0 0 32px var(--zen-glow),0 12px 24px rgba(0,0,0,0.5);z-index:90;cursor:pointer;animation:zenBob 2.6s ease-in-out infinite;will-change:transform;}
+@keyframes zenBob{0%,100%{transform:translateY(0) rotate(-2deg);}50%{transform:translateY(-6px) rotate(2deg);}}
+.zen-cube.gold{background:linear-gradient(135deg,#fff1a8,#ffd54a 50%,#c48c1a);--zen-glow:rgba(255,213,74,0.55);}
+.zen-cube.silver{background:linear-gradient(135deg,#f2f4f7,#b5c0cc 50%,#6d7682);--zen-glow:rgba(221,225,230,0.5);}
+.zen-cube.committed-tap{animation:tapCommit .55s cubic-bezier(.5,0,.5,1) forwards;}
+@keyframes tapCommit{0%{transform:translate(0,0) scale(1.18);box-shadow:inset 0 1.5px 0 rgba(255,255,255,0.55),0 0 42px var(--zen-glow),0 0 0 10px rgba(255,255,255,0.2);}100%{transform:translate(var(--dx),var(--dy)) scale(0.55);opacity:0;box-shadow:none;}}
+.zen-cube.committed-auto{animation:autoCommit .85s cubic-bezier(.32,1,.42,1) forwards;}
+@keyframes autoCommit{0%{transform:translate(0,0) scale(1);}100%{transform:translate(var(--dx),var(--dy)) scale(0.55);opacity:0;}}
+
+/* Countdown ring — 두껍고 우아하게 + 트랙 + 글로우 */
+.countdown-ring{position:fixed;width:64px;height:64px;pointer-events:none;z-index:89;animation:ringBob 2.6s ease-in-out infinite;will-change:transform;}
+@keyframes ringBob{0%,100%{transform:translateY(0);}50%{transform:translateY(-6px);}}
+.countdown-ring svg{width:100%;height:100%;transform:rotate(-90deg);overflow:visible;}
+.countdown-ring .ring-track{fill:none;stroke:rgba(255,255,255,0.06);stroke-width:2.5;}
+.countdown-ring .ring-fg{fill:none;stroke:var(--ring-color);stroke-width:2.5;stroke-linecap:round;stroke-dasharray:176;stroke-dashoffset:0;transition:stroke-dashoffset 1.8s linear;filter:drop-shadow(0 0 6px var(--ring-glow)) drop-shadow(0 0 2px var(--ring-glow));}
+.countdown-ring.go .ring-fg{stroke-dashoffset:176;}
+.countdown-ring.gold{--ring-color:#ffd54a;--ring-glow:rgba(255,213,74,0.7);}
+.countdown-ring.silver{--ring-color:#dde1e6;--ring-glow:rgba(221,225,230,0.5);}
+
+/* Tap label — 우아한 미니 라벨 */
+.tap-label{position:fixed;font-family:'DM Sans',sans-serif;font-size:10px;font-weight:800;letter-spacing:0.32em;text-transform:uppercase;pointer-events:none;z-index:91;text-align:center;width:60px;animation:tapPulse 1.6s ease-in-out infinite;text-shadow:0 1px 4px rgba(0,0,0,0.7),0 0 10px var(--label-glow);}
+.tap-label.gold{color:rgba(255,213,74,0.92);--label-glow:rgba(255,213,74,0.4);}
+.tap-label.silver{color:rgba(221,225,230,0.85);--label-glow:rgba(221,225,230,0.3);}
+@keyframes tapPulse{0%,100%{opacity:0.55;transform:translateY(0);}50%{opacity:1;transform:translateY(1px);}}
+.tap-label.fading{animation:none;transition:opacity .3s ease,transform .3s ease;opacity:0;transform:translateY(-3px);}
+
+/* ── RED Collapse FX (NEW · 강화) ── */
+@keyframes charHurt{
+  0%{transform:translateX(-50%) scale(1) rotate(0);filter:saturate(1) brightness(1);}
+  10%{transform:translate(calc(-50% - 8px),0) scale(0.9,1.1) rotate(-7deg);filter:saturate(0.3) brightness(0.65);}
+  25%{transform:translate(calc(-50% + 8px),2px) scale(1.05,0.92) rotate(5deg);filter:saturate(0.4) brightness(0.75);}
+  45%{transform:translate(calc(-50% - 3px),0) scale(0.97,1.03) rotate(-2deg);filter:saturate(0.6) brightness(0.85);}
+  70%{transform:translateX(-50%) scale(1) rotate(1deg);filter:saturate(0.85);}
+  100%{transform:translateX(-50%) scale(1) rotate(0);filter:saturate(1) brightness(1);}
+}
+.room-char.hurt{animation:charHurt 1s cubic-bezier(.55,0,.45,1);}
+
+@keyframes tokenFallOff{0%{opacity:1;transform:translate(0,0) rotate(0) scale(1);}30%{opacity:1;transform:translate(calc(var(--fx)*0.3),-12px) rotate(calc(var(--rot)*0.3)) scale(1.1);}100%{opacity:0;transform:translate(var(--fx),120px) rotate(var(--rot)) scale(0.7);}}
+.fall-token{position:fixed;width:10px;height:10px;border-radius:1.5px;border:0.5px solid rgba(0,0,0,0.5);box-shadow:inset 0 0.5px 0 rgba(255,255,255,0.4),inset 0 -1px 1.5px rgba(0,0,0,0.4),0 0 8px rgba(0,0,0,0.4);z-index:95;pointer-events:none;animation:tokenFallOff 1.1s cubic-bezier(.45,0,.95,.4) forwards;}
+.fall-token.gold{background:linear-gradient(135deg,#fff1a8,#ffd54a 50%,#c48c1a);}
+.fall-token.silver{background:linear-gradient(135deg,#f2f4f7,#b5c0cc 50%,#6d7682);}
+
+@keyframes redBullet{0%{transform:translateY(-100px) scale(1.3) rotate(-20deg);opacity:0;}25%{opacity:1;}100%{transform:translateY(0) scale(0.6) rotate(0);opacity:0;}}
+.red-bullet{position:fixed;width:18px;height:18px;border-radius:3px;background:linear-gradient(135deg,#ff8080,#ff4d4d 50%,#8b1515);border:1px solid rgba(0,0,0,0.5);box-shadow:0 0 14px rgba(255,77,77,0.7);z-index:96;pointer-events:none;animation:redBullet .65s cubic-bezier(.5,0,.85,.5) forwards;}
+
+@keyframes crackFade{0%{opacity:0;}25%{opacity:0.85;}100%{opacity:0;}}
+.crack-overlay{position:absolute;left:0;right:0;top:0;height:50px;pointer-events:none;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 50'%3E%3Cpath d='M30 5 L45 18 L40 25 L55 32 L48 44 M120 3 L130 14 L122 22 L138 30 L128 42 L145 48' stroke='%23ff4d4d' stroke-width='1.4' fill='none' opacity='0.85'/%3E%3C/svg%3E") center/cover no-repeat;opacity:0;z-index:11;}
+.crack-overlay.show{animation:crackFade 1s ease forwards;}
+
+.collapse-toast{position:fixed;left:50%;top:55%;transform:translate(-50%,-50%) translateY(-15px);background:rgba(15,15,20,0.97);border:1px solid rgba(255,77,77,0.55);border-radius:10px;padding:12px 20px;color:#fff;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;letter-spacing:-.005em;box-shadow:0 14px 40px rgba(0,0,0,0.7),0 0 28px rgba(255,77,77,0.3);opacity:0;pointer-events:none;z-index:97;transition:opacity .3s ease,transform .35s ease;text-align:center;min-width:220px;}
+.collapse-toast.show{opacity:1;transform:translate(-50%,-50%);}
+.collapse-toast .ct-title{color:#ff8080;font-family:'Archivo Black',sans-serif;font-size:14px;letter-spacing:0.04em;text-transform:uppercase;margin-bottom:5px;}
+.collapse-toast .ct-detail{font-size:11.5px;font-weight:500;color:rgba(255,255,255,0.75);font-family:'DM Mono',monospace;}
+
+/* Demo content padding so character/card visible properly */
+.scroll-area-hint{position:absolute;left:14px;right:14px;top:6px;font-size:9.5px;color:rgba(52,211,153,0.7);font-family:'DM Mono',monospace;letter-spacing:0.06em;text-align:center;pointer-events:none;}
+</style></head>
+<body>
+<div class="head">
+  <a class="back" href="index.html">← 목록</a>
+  <div class="title"><div class="opt">A6+A18 v2 ★</div><div class="t">Zen Tap + Sticky Header + Red Collapse</div></div>
+</div>
+
+<div class="phone">
+  <div class="phone-content">
+    <!-- 신규: Sticky Header (실 앱 진짜 sticky 가 될 곳) -->
+    <div class="sticky-header" id="stickyHeader">
+      <div class="sh-top">
+        <div class="sh-tier">
+          <span class="sh-tier-icon" id="shTierIcon">😴</span>
+          <span class="sh-tier-name" id="shTierName">방관자</span>
+          <span class="sh-streak">🔥 12</span>
+        </div>
+        <div class="sh-cubes">
+          <span class="sh-cube-item"><span class="sh-cube-dot gold" id="dotG"></span><span class="sh-cube-num" id="numG">3</span></span>
+          <span class="sh-cube-item"><span class="sh-cube-dot silver" id="dotS"></span><span class="sh-cube-num" id="numS">9</span></span>
+          <span class="sh-cube-item"><span class="sh-cube-dot red" id="dotR"></span><span class="sh-cube-num" id="numR">0</span></span>
+        </div>
+        <div class="sh-progress-meta">
+          <span class="next"><b id="metaScore">6</b>/12</span>
+          <span class="pct" id="metaNext">→ 각성자</span>
+        </div>
+      </div>
+      <div class="sh-bar"><div class="sh-bar-gold" id="fillG" style="width:50%;"></div><div class="sh-bar-silver" id="fillS" style="left:50%;width:25%;"></div></div>
+      <div class="crack-overlay" id="crack"></div>
+    </div>
+    <div class="room">
+      <div class="room-bg"></div>
+      <div class="scroll-area-hint">↑ Sticky · 스크롤해도 항상 위에 고정 ↑</div>
+      <div class="room-char" id="char"></div>
+      <div class="card-stub" id="cardStub">
+        <div class="card-row">
+          <span class="card-icon">🥗</span>
+          <span class="card-title">식단</span>
+          <span style="margin-left:auto;display:flex;gap:5px;align-items:center;">
+            <span style="font-size:10px;color:#7a7a86;font-family:'DM Mono',monospace;">오늘</span>
+            <span class="card-chip silver" id="chipDiet"></span>
+          </span>
+        </div>
+        <button class="card-action" onclick="trigger('gold')">+ 클린식 (gold · suspend)</button>
+        <button class="card-action" style="margin-top:5px;background:linear-gradient(135deg,#94a3b8,#475569);" onclick="trigger('silver')">+ 일반식 (silver · suspend)</button>
+        <button class="card-action" style="margin-top:5px;background:linear-gradient(135deg,#8b1515,#ff4d4d);" onclick="trigger('red')">+ 음주 (red · 즉시 collapse FX)</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="note">
+  <b>A6+A18 v2 — Zen Tap + Sticky + Collapse</b><br>
+  <b>1) Sticky Header (NEW)</b>: 기존 Status Band 를 *슬림 sticky* 로 압축. 56px 높이. 위치 = 화면 최상단 고정. 안쪽 = 티어 + streak + gold/silver/red 카운트 + 진행도 + 4px progress bar. 실 앱에선 스크롤해도 항상 보임. 룸/카드/하단 nav 와 분리.<br>
+  <b>2) Zen commit (gold/silver)</b>: 카드 위 큐브 1.8s 부유 → 탭 OR 자동 → 헤더 점 bump + 카운터 odometer tween + 헤더 tint 펄스.<br>
+  <b>3) Red Collapse (강화)</b>: red 누르면 (a) 빨간 큐브 위에서 dive (b) Sticky 좌우로 흔들림 + 빨간 burn flash + crack overlay (c) gold 점 + silver 점에서 *작은 토큰 2개씩 떨어져 화면 밖* (d) 카운터 빨간색으로 tween down (e) <b>캐릭터 휘청 (squash + saturate ↓ + brightness ↓)</b> (f) toast "기록이 무너졌다 −2 GOLD · −2 SILVER" (g) heavy haptic [40,30,40].<br>
+  <b>플레이</b>: gold/silver 누르고 탭 vs 대기 비교. red 누르면 *모든 collapse FX* 한 번에 발동.
+</div>
+
+<script>
+const counts={gold:3,silver:9,red:0};
+const TIER_NEXT=12;
+const SUSPEND_MS=1800;
+function score(){return counts.gold + counts.silver/3;}
+
+function tweenNum(el, from, to, dur=520, loss=false){
+  if(from===to){el.textContent=to;return;}
+  const start=performance.now();
+  el.classList.add(loss?'tweening-loss':'tweening');
+  function step(ts){
+    const p=Math.min(1,(ts-start)/dur);
+    const eased=1-Math.pow(1-p,3);
+    el.textContent=Math.round(from+(to-from)*eased);
+    if(p<1)requestAnimationFrame(step);
+    else{el.textContent=to;el.classList.remove('tweening','tweening-loss');}
+  }
+  requestAnimationFrame(step);
+}
+function updateProgress(){
+  const s=score();
+  const goldPct=Math.min(100,counts.gold/TIER_NEXT*100);
+  const silverPct=Math.min(100-goldPct, (counts.silver/3)/TIER_NEXT*100);
+  document.getElementById('fillG').style.width=goldPct+'%';
+  document.getElementById('fillS').style.left=goldPct+'%';
+  document.getElementById('fillS').style.width=silverPct+'%';
+  document.getElementById('metaScore').textContent=Math.round(s*10)/10;
+}
+function applyCounts(prev, color, isLoss=false){
+  if(color==='red'){
+    counts.red++;counts.gold=Math.max(0,counts.gold-2);counts.silver=Math.max(0,counts.silver-2);
+  } else counts[color]++;
+  if(prev.gold!==counts.gold)tweenNum(document.getElementById('numG'),prev.gold,counts.gold,520,counts.gold<prev.gold);
+  if(prev.silver!==counts.silver)tweenNum(document.getElementById('numS'),prev.silver,counts.silver,520,counts.silver<prev.silver);
+  if(prev.red!==counts.red)tweenNum(document.getElementById('numR'),prev.red,counts.red);
+  updateProgress();
+}
+function tintCard(color){
+  const card=document.getElementById('cardStub');
+  card.classList.remove('card-tint-gold','card-tint-silver','card-tint-red');
+  void card.offsetWidth;card.classList.add('card-tint-'+color);
+}
+function tintSticky(color){
+  if(color==='red')return; // red gets burn instead
+  const sh=document.getElementById('stickyHeader');
+  sh.classList.remove('tint-gold','tint-silver');void sh.offsetWidth;
+  sh.classList.add('tint-'+color);
+  setTimeout(()=>sh.classList.remove('tint-'+color),900);
+}
+function pulseChip(color){
+  const chip=document.getElementById('chipDiet');
+  chip.classList.remove('gold','silver','red');
+  chip.classList.add(color, 'glowing');
+  setTimeout(()=>chip.classList.remove('glowing'),380);
+}
+function bumpDot(color){
+  const map={gold:'dotG',silver:'dotS',red:'dotR'};
+  const dot=document.getElementById(map[color]);
+  dot.classList.add('bumped');setTimeout(()=>dot.classList.remove('bumped'),420);
+}
+
+/* ── A18 Suspended cube ── */
+function spawnZenCube(color){
+  const card=document.getElementById('cardStub');
+  const cardRect=card.getBoundingClientRect();
+  // cube center
+  const cx=cardRect.left+cardRect.width/2;
+  const cy=cardRect.top-46;
+  const startX=cx-17;       // cube top-left (34/2)
+  const startY=cy-17;
+  const cube=document.createElement('div');
+  cube.className='zen-cube '+color;
+  cube.style.left=startX+'px';cube.style.top=startY+'px';
+  document.body.appendChild(cube);
+  // ring (centered around cube, 64x64)
+  const ring=document.createElement('div');
+  ring.className='countdown-ring '+color;
+  ring.style.left=(cx-32)+'px';ring.style.top=(cy-32)+'px';
+  ring.innerHTML='<svg viewBox="0 0 64 64"><circle class="ring-track" cx="32" cy="32" r="28"/><circle class="ring-fg" cx="32" cy="32" r="28"/></svg>';
+  document.body.appendChild(ring);
+  requestAnimationFrame(()=>ring.classList.add('go'));
+  // tap label below
+  const label=document.createElement('div');
+  label.className='tap-label '+color;
+  label.textContent='탭';
+  label.style.left=(cx-30)+'px';label.style.top=(cy+38)+'px';
+  document.body.appendChild(label);
+  return {cube, ring, label, startX, startY, cx, cy};
+}
+function commitZen(els, color, viaTap){
+  if(els.cube._committed)return;els.cube._committed=true;
+  const tMap={gold:'dotG',silver:'dotS',red:'dotR'};
+  const tDot=document.getElementById(tMap[color]);
+  const tRect=tDot.getBoundingClientRect();
+  els.cube.style.setProperty('--dx',(tRect.left+tRect.width/2-els.cx)+'px');
+  els.cube.style.setProperty('--dy',(tRect.top+tRect.height/2-els.cy)+'px');
+  els.cube.classList.add(viaTap?'committed-tap':'committed-auto');
+  els.label.classList.add('fading');setTimeout(()=>els.label.remove(),320);
+  els.ring.remove();
+  if(navigator.vibrate)navigator.vibrate(viaTap?20:10);
+  setTimeout(()=>{
+    const prev={...counts};applyCounts(prev,color);tintSticky(color);bumpDot(color);
+  },viaTap?180:550);
+  setTimeout(()=>els.cube.remove(),viaTap?580:870);
+}
+
+/* ── Red Collapse 강화 ── */
+function spawnFallToken(color, fromRect){
+  const t=document.createElement('div');
+  t.className='fall-token '+color;
+  t.style.left=(fromRect.left+fromRect.width/2-5+(Math.random()*4-2))+'px';
+  t.style.top=(fromRect.top+fromRect.height/2-5)+'px';
+  t.style.setProperty('--fx',((Math.random()*2-1)*40)+'px');
+  t.style.setProperty('--rot',((Math.random()*2-1)*360)+'deg');
+  document.body.appendChild(t);
+  setTimeout(()=>t.remove(),1100);
+}
+function showCollapseToast(){
+  const t=document.createElement('div');
+  t.className='collapse-toast';
+  t.innerHTML='<div class="ct-title">기록이 무너졌다</div><div class="ct-detail">−2 GOLD · −2 SILVER</div>';
+  document.body.appendChild(t);
+  requestAnimationFrame(()=>t.classList.add('show'));
+  setTimeout(()=>{t.classList.remove('show');setTimeout(()=>t.remove(),350);},1800);
+}
+function triggerRed(){
+  // 1. Card tint
+  tintCard('red');pulseChip('red');
+  // 2. Red bullet from above onto sticky red dot
+  const dotR=document.getElementById('dotR');
+  const dRect=dotR.getBoundingClientRect();
+  const b=document.createElement('div');b.className='red-bullet';
+  b.style.left=(dRect.left+dRect.width/2-9)+'px';b.style.top=(dRect.top+dRect.height/2-9)+'px';
+  document.body.appendChild(b);
+  setTimeout(()=>{
+    b.remove();
+    // 3. Sticky shake + burn + crack
+    const sh=document.getElementById('stickyHeader');
+    sh.classList.remove('shaking','red-burn');void sh.offsetWidth;
+    sh.classList.add('shaking','red-burn');
+    setTimeout(()=>sh.classList.remove('shaking','red-burn'),950);
+    const crack=document.getElementById('crack');crack.classList.remove('show');void crack.offsetWidth;crack.classList.add('show');
+    // 4. Tokens fall off gold/silver dots
+    const gRect=document.getElementById('dotG').getBoundingClientRect();
+    const sRect=document.getElementById('dotS').getBoundingClientRect();
+    spawnFallToken('gold',gRect);spawnFallToken('gold',gRect);
+    setTimeout(()=>{spawnFallToken('silver',sRect);spawnFallToken('silver',sRect);},120);
+    // 5. Counts decrement (with tween)
+    setTimeout(()=>{
+      const prev={...counts};applyCounts(prev,'red');
+      bumpDot('red');
+    },280);
+    // 6. Character hurt
+    const char=document.getElementById('char');
+    char.classList.remove('hurt');void char.offsetWidth;char.classList.add('hurt');
+    setTimeout(()=>char.classList.remove('hurt'),1000);
+    // 7. Toast
+    setTimeout(showCollapseToast,400);
+    // 8. Haptic
+    if(navigator.vibrate)navigator.vibrate([40,30,40,30,60]);
+  },650);
+}
+
+function trigger(color){
+  if(color==='red'){triggerRed();return;}
+  // gold/silver suspend flow
+  tintCard(color);pulseChip(color);
+  const els=spawnZenCube(color);
+  els.cube.onclick=()=>commitZen(els,color,true);
+  setTimeout(()=>commitZen(els,color,false),SUSPEND_MS);
+}
+
+updateProgress();
+</script>
+</body></html>

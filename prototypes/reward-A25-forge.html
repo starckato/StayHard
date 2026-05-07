@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Reward A25 · Forge</title>
+<link rel="stylesheet" href="_shared.css">
+<link rel="stylesheet" href="_reward-shared.css">
+<style>
+.phone-content{display:flex;flex-direction:column;}
+.forge-area{position:absolute;left:50%;top:38%;transform:translate(-50%,-50%);width:120px;height:140px;display:flex;flex-direction:column;align-items:center;}
+.forge-glow{position:absolute;inset:-20px;background:radial-gradient(circle,rgba(255,107,53,0.18) 0%,rgba(255,107,53,0.05) 40%,transparent 70%);pointer-events:none;animation:emberGlow 3s ease-in-out infinite;}
+@keyframes emberGlow{0%,100%{opacity:0.6;}50%{opacity:1;}}
+.crucible{position:relative;width:100px;height:80px;background:linear-gradient(180deg,#3a2820,#1a0e08);border:2px solid #5a3a28;border-radius:0 0 40px 40px;border-top:none;box-shadow:inset 0 -10px 20px rgba(255,107,53,0.3),0 4px 12px rgba(0,0,0,0.6);overflow:visible;display:flex;flex-direction:column-reverse;align-items:center;padding:8px 12px;gap:3px;}
+.crucible:before{content:'';position:absolute;left:-8px;right:-8px;top:0;height:6px;background:linear-gradient(180deg,#6a4a30,#3a2818);border-radius:3px;border-bottom:1px solid #1a0e08;}
+.crucible-handle{position:absolute;width:14px;height:14px;border:2px solid #5a3a28;border-radius:50%;top:-4px;background:transparent;}
+.crucible-handle.left{left:-12px;}
+.crucible-handle.right{right:-12px;}
+.lava{position:absolute;left:6px;right:6px;bottom:6px;height:30px;background:linear-gradient(180deg,rgba(255,107,53,0.4),rgba(255,77,77,0.2));border-radius:0 0 32px 32px;animation:bubble 2s ease-in-out infinite;}
+@keyframes bubble{0%,100%{filter:brightness(1);}50%{filter:brightness(1.3);}}
+.cube-in-crucible{width:14px;height:14px;border-radius:2px;border:1px solid rgba(0,0,0,0.4);box-shadow:inset 0 1px 0 rgba(255,255,255,0.4),inset 0 -1.5px 2px rgba(0,0,0,0.4),0 0 6px rgba(255,107,53,0.4);transition:transform .35s ease,opacity .35s ease;animation:cubeJiggle 2s ease-in-out infinite;animation-delay:var(--d);}
+@keyframes cubeJiggle{0%,100%{transform:translateY(0) rotate(-2deg);}50%{transform:translateY(-2px) rotate(2deg);}}
+.cube-in-crucible.gold{background:linear-gradient(135deg,#fff1a8,#ffd54a 50%,#c48c1a);}
+.cube-in-crucible.silver{background:linear-gradient(135deg,#f2f4f7,#b5c0cc 50%,#6d7682);}
+.cube-in-crucible.entering{animation:dropIn .55s cubic-bezier(.5,0,.4,1.5);}
+@keyframes dropIn{0%{transform:translateY(-100px) scale(1.4) rotate(-30deg);opacity:0;}30%{opacity:1;}70%{transform:translateY(4px) scale(0.85);}100%{transform:translateY(0) scale(1) rotate(0);opacity:1;}}
+.cube-in-crucible.merging{animation:merge .9s ease forwards;}
+@keyframes merge{0%{transform:scale(1);opacity:1;filter:brightness(1);}40%{transform:translateY(-8px) scale(1.3);filter:brightness(2);}100%{transform:translateY(-30px) scale(0.2);opacity:0;filter:brightness(3);}}
+.merge-flash{position:absolute;inset:-30px;background:radial-gradient(circle,rgba(255,213,74,0.7) 0%,transparent 50%);opacity:0;pointer-events:none;}
+.merge-flash.go{animation:flashGo 1s ease forwards;}
+@keyframes flashGo{0%{opacity:0;}30%{opacity:1;}100%{opacity:0;}}
+.alchemy-msg{position:absolute;top:-22px;left:50%;transform:translateX(-50%) translateY(0);font-family:'Archivo Black',sans-serif;font-size:11px;color:#ffd54a;text-shadow:0 0 8px rgba(255,213,74,0.7);opacity:0;letter-spacing:-.01em;white-space:nowrap;transition:opacity .4s ease,transform .4s ease;}
+.alchemy-msg.show{opacity:1;transform:translateX(-50%) translateY(-8px);}
+.forge-label{font-family:'Archivo Black',sans-serif;font-size:9px;color:#ff8b4d;letter-spacing:0.16em;text-transform:uppercase;margin-top:6px;text-shadow:0 0 6px rgba(255,107,53,0.4);}
+</style></head>
+<body>
+<div class="head">
+  <a class="back" href="index.html">← 목록</a>
+  <div class="title"><div class="opt">REWARD A25</div><div class="t">Forge — B 공식 시각화. 3 silver 가 *연금술* 로 1 gold</div></div>
+</div>
+
+<div class="phone">
+  <div class="phone-content">
+    <div class="sb">
+      <div class="sb-row"><div class="sb-tier"><span class="ic">🔥</span><span>방관자</span></div><div class="sb-streak">🔥 12일</div></div>
+      <div class="sb-bar"><div class="sb-fill-gold" id="fillG" style="width:25%;"></div><div class="sb-fill-silver" id="fillS" style="left:25%;width:25%;"></div></div>
+      <div class="sb-meta"><span><b id="metaScore">6</b> / 12 → 각성자</span><span id="cubeCounts">G 3 (forged: 0) · S 9 (in forge: 0)</span></div>
+    </div>
+    <div class="room">
+      <div class="room-bg" style="opacity:0.3;"></div>
+      <div class="forge-area">
+        <div class="forge-glow"></div>
+        <div class="merge-flash" id="flash"></div>
+        <div class="alchemy-msg" id="alchemyMsg">3 silver → 1 gold</div>
+        <div class="crucible" id="crucible">
+          <div class="crucible-handle left"></div>
+          <div class="crucible-handle right"></div>
+          <div class="lava"></div>
+        </div>
+        <div class="forge-label">⚒ 도가니</div>
+      </div>
+      <div class="card-stub">
+        <div class="card-row">
+          <span class="card-icon">🥗</span>
+          <span class="card-title">식단</span>
+          <span style="margin-left:auto;font-size:10px;color:#ff8b4d;font-family:'DM Mono',monospace;">B 공식 가시화</span>
+        </div>
+        <button class="card-action" onclick="trigger('gold')">+ 클린식 (gold 직접)</button>
+        <button class="card-action" style="margin-top:5px;background:linear-gradient(135deg,#94a3b8,#475569);" onclick="trigger('silver')">+ 일반식 (silver → 도가니)</button>
+        <button class="card-action" style="margin-top:5px;background:linear-gradient(135deg,#8b1515,#ff4d4d);" onclick="trigger('red')">+ 음주 (red = forge 차감)</button>
+        <button class="card-action" style="margin-top:5px;background:rgba(255,255,255,0.05);color:#a8a8b4;" onclick="reset()">초기화</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="note">
+  <b>A25 — Forge</b>: 화면 중앙 *도가니*. silver 큐브가 떨어져 도가니 안에서 보글보글. <b>3 silver 가 모이면 → 자동 연금술</b>: 3개가 위로 솟아 합쳐져 → gold 1개가 stack 으로 슬램 ("3 silver → 1 gold" 메시지 + flash). gold 는 도가니 거치지 않고 직접 stack 으로. red 는 도가니 안 silver 차감.<br>
+  <b>장점</b>: <b>B 공식이 살아있는 *경험*</b>. 사용자 우려 ("점수제 같음") 해결 — 큐브 색이 *진짜* 의미가 다름을 매번 본다. 연금술 metaphor 가 큐록의 "단련" 컨셉과 강한 fit. <b>단점</b>: 도가니가 화면 중앙 차지 — 룸/캐릭터 가림. 작은 코너 버전 검토.<br>
+  <b>플레이</b>: silver 3번 → 자동 융합. gold 직접 vs forged gold 의 의미 같지만 시각적 *서사* 다름.
+</div>
+
+<script>
+const counts={gold:3,silver:9,red:0};
+const TIER_NEXT=12;
+const inForge=[]; // [{el}] silvers currently in crucible
+function score(){return counts.gold + counts.silver/3;}
+function update(){
+  const s=score();
+  const goldPct=Math.min(100,counts.gold/TIER_NEXT*100);
+  const silverPct=Math.min(100-goldPct, (counts.silver/3)/TIER_NEXT*100);
+  document.getElementById('fillG').style.width=goldPct+'%';
+  document.getElementById('fillS').style.left=goldPct+'%';
+  document.getElementById('fillS').style.width=silverPct+'%';
+  document.getElementById('metaScore').textContent=Math.round(s*10)/10;
+  document.getElementById('cubeCounts').textContent=`G ${counts.gold} · S ${counts.silver} (도가니: ${inForge.length})`;
+}
+function dropIntoCrucible(color){
+  const c=document.getElementById('crucible');
+  const cube=document.createElement('div');
+  cube.className='cube-in-crucible '+color+' entering';
+  cube.style.setProperty('--d', (Math.random()*2)+'s');
+  c.appendChild(cube);
+  setTimeout(()=>cube.classList.remove('entering'), 600);
+  inForge.push({el:cube});
+  update();
+  if(inForge.length>=3){
+    setTimeout(performAlchemy, 600);
+  }
+}
+function performAlchemy(){
+  const msg=document.getElementById('alchemyMsg');
+  msg.classList.add('show');
+  const flash=document.getElementById('flash');
+  flash.classList.remove('go');void flash.offsetWidth;flash.classList.add('go');
+  // Take 3 silvers
+  const three=inForge.splice(0,3);
+  three.forEach(s=>{
+    s.el.classList.add('merging');
+    setTimeout(()=>s.el.remove(), 920);
+  });
+  // After merge: gold cube emerges and flies to a "header gold display"
+  setTimeout(()=>{
+    counts.gold++; // forged gold
+    update();
+    msg.classList.remove('show');
+    if(navigator.vibrate)navigator.vibrate(40);
+  }, 950);
+}
+function trigger(color){
+  if(color==='gold'){
+    counts.gold++;update();
+    // optional: gold flash via flash element
+    const flash=document.getElementById('flash');flash.classList.remove('go');void flash.offsetWidth;flash.classList.add('go');
+  } else if(color==='silver'){
+    counts.silver++;
+    dropIntoCrucible('silver');
+  } else { // red
+    counts.red++;
+    counts.gold=Math.max(0,counts.gold-2);
+    // remove up to 2 silvers from forge first, then from counts
+    let removedFromForge=0;
+    while(removedFromForge<2 && inForge.length>0){
+      const s=inForge.pop();
+      s.el.classList.add('merging');s.el.style.animation='crumble .4s ease forwards';
+      setTimeout(()=>s.el.remove(),400);
+      removedFromForge++;
+    }
+    counts.silver=Math.max(0,counts.silver-2);
+    update();
+  }
+}
+function init(){
+  document.getElementById('crucible').querySelectorAll('.cube-in-crucible').forEach(c=>c.remove());
+  inForge.length=0;
+  update();
+}
+function reset(){counts.gold=3;counts.silver=9;counts.red=0;init();}
+init();
+</script>
+</body></html>

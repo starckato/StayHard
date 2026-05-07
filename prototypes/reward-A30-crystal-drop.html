@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Reward A30 · Crystal Drop</title>
+<link rel="stylesheet" href="_shared.css">
+<link rel="stylesheet" href="_reward-shared.css">
+<style>
+.phone-content{display:flex;flex-direction:column;}
+.crystal{position:fixed;width:36px;height:48px;z-index:80;pointer-events:none;filter:drop-shadow(0 0 18px var(--glow));}
+.crystal svg{width:100%;height:100%;}
+.crystal.gold{--glow:rgba(255,213,74,0.85);}
+.crystal.silver{--glow:rgba(221,225,230,0.7);}
+.crystal.red{--glow:rgba(255,77,77,0.85);}
+@keyframes crystalFall{0%{transform:translateY(-180px) rotate(-30deg) scale(0.7);opacity:0;}15%{opacity:1;}85%{transform:translateY(0) rotate(15deg) scale(1.1);opacity:1;}100%{transform:translateY(0) rotate(0deg) scale(1);opacity:1;}}
+.crystal.dropping{animation:crystalFall .9s cubic-bezier(.5,0,.5,1.2) forwards;}
+@keyframes crystalAbsorb{0%{transform:scale(1);opacity:1;}100%{transform:translate(var(--dx),var(--dy)) scale(0.3) rotate(180deg);opacity:0;}}
+.crystal.absorbing{animation:crystalAbsorb .55s cubic-bezier(.5,0,.7,1) forwards;}
+.shockwave{position:fixed;width:80px;height:80px;border:2px solid var(--shock);border-radius:50%;z-index:79;pointer-events:none;opacity:0;}
+.shockwave.go{animation:shock .8s ease-out forwards;}
+@keyframes shock{0%{transform:scale(0.2);opacity:1;}100%{transform:scale(2.5);opacity:0;border-width:0;}}
+.shockwave.gold{--shock:#ffd54a;}
+.shockwave.silver{--shock:#dde1e6;}
+.shockwave.red{--shock:#ff4d4d;}
+.rarity-text{position:fixed;font-family:'Archivo Black',sans-serif;font-size:14px;letter-spacing:0.18em;text-transform:uppercase;z-index:81;pointer-events:none;opacity:0;text-align:center;white-space:nowrap;text-shadow:0 0 12px currentColor,0 4px 8px rgba(0,0,0,0.7);}
+.rarity-text.gold{color:#ffd54a;}
+.rarity-text.silver{color:#dde1e6;}
+.rarity-text.red{color:#ff4d4d;}
+.rarity-text small{display:block;font-size:9px;letter-spacing:0.3em;color:rgba(255,255,255,0.6);font-weight:500;margin-top:2px;}
+.rarity-text.show{animation:rarityIn 1.4s ease forwards;}
+@keyframes rarityIn{0%{opacity:0;transform:translateY(20px) scale(0.7);}25%{opacity:1;transform:translateY(0) scale(1.05);}45%{transform:scale(1);}80%{opacity:1;}100%{opacity:0;transform:translateY(-15px) scale(1);}}
+.glow-halo{position:fixed;width:100px;height:100px;border-radius:50%;z-index:78;pointer-events:none;opacity:0;background:radial-gradient(circle,var(--halo) 0%,transparent 60%);}
+.glow-halo.go{animation:halo 1.2s ease forwards;}
+@keyframes halo{0%{opacity:0;transform:scale(0.4);}30%{opacity:1;}100%{opacity:0;transform:scale(1.6);}}
+.glow-halo.gold{--halo:rgba(255,213,74,0.65);}
+.glow-halo.silver{--halo:rgba(221,225,230,0.55);}
+.glow-halo.red{--halo:rgba(255,77,77,0.65);}
+</style></head>
+<body>
+<div class="head">
+  <a class="back" href="index.html">← 목록</a>
+  <div class="title"><div class="opt">REWARD A30</div><div class="t">Crystal Drop · Diablo / PoE — 루트 드롭 크리스탈</div></div>
+</div>
+
+<div class="phone">
+  <div class="phone-content">
+    <div class="sb">
+      <div class="sb-row"><div class="sb-tier"><span class="ic">⚔️</span><span>방관자</span></div><div class="sb-streak">🔥 12일</div></div>
+      <div class="sb-bar"><div class="sb-fill-gold" id="fillG" style="width:25%;"></div><div class="sb-fill-silver" id="fillS" style="left:25%;width:25%;"></div></div>
+      <div class="sb-meta"><span><b id="metaScore">6</b> / 12 → 각성자</span><span id="metaPct">50%</span></div>
+      <div class="sb-stack" id="stack">
+        <div class="sb-stack-item"><div class="sb-stack-dot gold" id="dotG"></div><div class="sb-stack-num" id="numG">3</div><div class="sb-stack-lbl">G</div></div>
+        <div class="sb-stack-item"><div class="sb-stack-dot silver" id="dotS"></div><div class="sb-stack-num" id="numS">9</div><div class="sb-stack-lbl">S</div></div>
+        <div class="sb-stack-item"><div class="sb-stack-dot red" id="dotR"></div><div class="sb-stack-num" id="numR">0</div><div class="sb-stack-lbl">R</div></div>
+      </div>
+    </div>
+    <div class="room">
+      <div class="room-bg"></div>
+      <div class="room-char"></div>
+      <div class="card-stub">
+        <div class="card-row">
+          <span class="card-icon">🥗</span>
+          <span class="card-title">식단</span>
+          <span style="margin-left:auto;font-size:10px;color:#7a7a86;font-family:'DM Mono',monospace;">루트 드롭</span>
+        </div>
+        <button class="card-action" onclick="trigger('gold',event)">+ 클린식 (LEGENDARY · gold)</button>
+        <button class="card-action" style="margin-top:5px;background:linear-gradient(135deg,#94a3b8,#475569);" onclick="trigger('silver',event)">+ 일반식 (RARE · silver)</button>
+        <button class="card-action" style="margin-top:5px;background:linear-gradient(135deg,#8b1515,#ff4d4d);" onclick="trigger('red',event)">+ 음주 (CURSED · red)</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="note">
+  <b>A30 — Crystal Drop</b> (Diablo · Path of Exile · Last Epoch): 큐브 = *루트 크리스탈*. 화면 위에서 회전하며 떨어짐 → 캐릭터 위치에 *임팩트* (shockwave + halo) → 희귀도 텍스트 노출 ("LEGENDARY · +1 GOLD CRYSTAL") → 큐브 수축해 stack 으로 흡수.<br>
+  <b>장점</b>: <b>루트 시스템 친숙도</b>. 게이머에게 즉시 이해. 희귀도 색 = 큐브 색 매핑 자연스러움. red = CURSED 라는 framing 이 음주의 부정적 의미 강조. <b>단점</b>: ARPG 톤이 강해 큐록 *직면/단련* 톤보다 *판타지* 색채 — 브랜드 정체성 검토 필요.
+</div>
+
+<script>
+const counts={gold:3,silver:9,red:0};
+const TIER_NEXT=12;
+function score(){return counts.gold + counts.silver/3;}
+function update(){
+  document.getElementById('numG').textContent=counts.gold;
+  document.getElementById('numS').textContent=counts.silver;
+  document.getElementById('numR').textContent=counts.red;
+  const s=score();
+  const goldPct=Math.min(100,counts.gold/TIER_NEXT*100);
+  const silverPct=Math.min(100-goldPct, (counts.silver/3)/TIER_NEXT*100);
+  document.getElementById('fillG').style.width=goldPct+'%';
+  document.getElementById('fillS').style.left=goldPct+'%';
+  document.getElementById('fillS').style.width=silverPct+'%';
+  document.getElementById('metaScore').textContent=Math.round(s*10)/10;
+  document.getElementById('metaPct').textContent=Math.min(100,Math.round(s/TIER_NEXT*100))+'%';
+}
+function crystalSVG(color){
+  const grad=color==='gold'?['#fff1a8','#ffd54a','#c48c1a']:color==='silver'?['#f2f4f7','#b5c0cc','#6d7682']:['#ff8080','#ff4d4d','#8b1515'];
+  return `<svg viewBox="0 0 36 48"><defs><linearGradient id="g${color}" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="${grad[0]}"/><stop offset="50%" stop-color="${grad[1]}"/><stop offset="100%" stop-color="${grad[2]}"/></linearGradient></defs><polygon points="18,2 32,16 28,40 18,46 8,40 4,16" fill="url(#g${color})" stroke="rgba(0,0,0,0.4)" stroke-width="0.8"/><polygon points="18,2 32,16 18,20 4,16" fill="rgba(255,255,255,0.25)"/><line x1="18" y1="2" x2="18" y2="46" stroke="rgba(255,255,255,0.4)" stroke-width="0.5"/></svg>`;
+}
+function trigger(color, ev){
+  const charRect=document.querySelector('.room-char').getBoundingClientRect();
+  const landX=charRect.left+charRect.width/2-18;
+  const landY=charRect.top+10;
+  // crystal
+  const c=document.createElement('div');c.className='crystal '+color+' dropping';c.innerHTML=crystalSVG(color);
+  c.style.left=landX+'px';c.style.top=landY+'px';
+  document.body.appendChild(c);
+  setTimeout(()=>{
+    // shockwave + halo
+    const sw=document.createElement('div');sw.className='shockwave '+color;sw.style.left=(landX+18-40)+'px';sw.style.top=(landY+24-40)+'px';document.body.appendChild(sw);
+    requestAnimationFrame(()=>sw.classList.add('go'));setTimeout(()=>sw.remove(),900);
+    const h=document.createElement('div');h.className='glow-halo '+color;h.style.left=(landX+18-50)+'px';h.style.top=(landY+24-50)+'px';document.body.appendChild(h);
+    requestAnimationFrame(()=>h.classList.add('go'));setTimeout(()=>h.remove(),1300);
+    // rarity text
+    const rt=document.createElement('div');rt.className='rarity-text '+color;
+    const lbl=color==='gold'?'LEGENDARY':color==='silver'?'RARE':'CURSED';
+    const amt=color==='red'?'−2 GOLD · −2 SILVER':color==='gold'?'+1 GOLD CRYSTAL':'+1 SILVER CRYSTAL';
+    rt.innerHTML=`${lbl}<small>${amt}</small>`;
+    rt.style.left=(landX+18-90)+'px';rt.style.top=(landY-18)+'px';rt.style.width='180px';
+    document.body.appendChild(rt);requestAnimationFrame(()=>rt.classList.add('show'));setTimeout(()=>rt.remove(),1500);
+    if(navigator.vibrate)navigator.vibrate(color==='red'?50:25);
+    // absorb crystal into stack
+    setTimeout(()=>{
+      const tMap={gold:'dotG',silver:'dotS',red:'dotR'};
+      const tDot=document.getElementById(tMap[color]);
+      const tRect=tDot.getBoundingClientRect();
+      c.style.setProperty('--dx',(tRect.left+tRect.width/2-landX-18)+'px');
+      c.style.setProperty('--dy',(tRect.top+tRect.height/2-landY-24)+'px');
+      c.classList.remove('dropping');c.classList.add('absorbing');
+      setTimeout(()=>{
+        c.remove();
+        if(color==='red'){counts.red++;counts.gold=Math.max(0,counts.gold-2);counts.silver=Math.max(0,counts.silver-2);}
+        else counts[color]++;
+        update();
+      },550);
+    },800);
+  },900);
+}
+update();
+</script>
+</body></html>

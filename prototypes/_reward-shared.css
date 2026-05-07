@@ -1,0 +1,55 @@
+/* Shared scaffolding for reward-* prototypes.
+   B 공식 (score = gold + silver/3) 기반. */
+
+/* Status Band */
+.sb{padding:14px 16px 12px;background:linear-gradient(180deg,rgba(0,0,0,0.92),rgba(0,0,0,0.55) 70%,transparent);}
+.sb-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.sb-tier{font-family:'Archivo Black',sans-serif;font-size:16px;letter-spacing:-.02em;}
+.sb-tier .ic{font-size:13px;margin-right:5px;}
+.sb-streak{font-size:11px;color:#ffb84d;font-weight:700;margin-left:auto;}
+.sb-bar{height:8px;background:rgba(255,255,255,0.06);border-radius:999px;overflow:hidden;border:1px solid rgba(255,255,255,0.05);position:relative;}
+.sb-fill-gold{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,#ffd54a,#fff1a8 60%,#ffd54a);box-shadow:0 0 6px rgba(255,213,74,0.4);transition:width .55s cubic-bezier(.4,0,.2,1);border-radius:999px;}
+.sb-fill-silver{position:absolute;top:0;bottom:0;background:linear-gradient(90deg,#b5c0cc,#dde1e6);transition:left .55s cubic-bezier(.4,0,.2,1),width .55s cubic-bezier(.4,0,.2,1);opacity:0.85;border-radius:999px;}
+.sb-meta{display:flex;justify-content:space-between;font-size:10.5px;color:#a8a8b4;font-family:'DM Mono',monospace;margin-top:5px;}
+.sb-meta b{color:#ffd54a;font-weight:700;}
+.sb-stack{display:flex;align-items:center;gap:14px;margin-top:10px;}
+.sb-stack-item{display:flex;align-items:center;gap:5px;}
+.sb-stack-dot{width:11px;height:11px;border-radius:2px;border:1px solid rgba(0,0,0,0.4);box-shadow:inset 0 1px 0 rgba(255,255,255,0.4),inset 0 -1.5px 2px rgba(0,0,0,0.4);flex-shrink:0;}
+.sb-stack-dot.gold{background:linear-gradient(135deg,#fff1a8,#ffd54a 50%,#c48c1a);}
+.sb-stack-dot.silver{background:linear-gradient(135deg,#f2f4f7,#b5c0cc 50%,#6d7682);}
+.sb-stack-dot.red{background:linear-gradient(135deg,#ff8080,#ff4d4d 50%,#8b1515);}
+.sb-stack-num{font-family:'Archivo Black',sans-serif;font-size:14px;letter-spacing:-.4px;}
+.sb-stack-lbl{font-size:9px;color:#7a7a86;letter-spacing:0.06em;text-transform:uppercase;font-weight:700;}
+
+/* Room area */
+.room{flex:1;position:relative;background:linear-gradient(180deg,#1a1a22 0%,#0e0e14 100%);overflow:hidden;}
+.room-bg{position:absolute;inset:0;background:url('/assets/rooms/Tier2_room.png') center/cover no-repeat;opacity:0.7;}
+.room-char{position:absolute;width:64px;height:80px;background:url('/assets/tier2/Tier2_cha_nobg.png') center/contain no-repeat;image-rendering:pixelated;bottom:80px;left:50%;transform:translateX(-50%);}
+
+/* Action card stub (mock 식단 카드) */
+.card-stub{position:absolute;left:14px;right:14px;bottom:14px;background:rgba(20,20,28,0.92);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:10px 12px;}
+.card-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
+.card-icon{width:18px;height:18px;color:#a8a8b4;}
+.card-title{font-size:12px;color:#f5f1ea;font-weight:700;}
+.card-chip{width:13px;height:13px;border-radius:2px;border:1px solid rgba(0,0,0,0.4);box-shadow:inset 0 1px 0 rgba(255,255,255,0.4),inset 0 -1.5px 2px rgba(0,0,0,0.4);transition:transform .2s,box-shadow .2s;}
+.card-chip.gold{background:linear-gradient(135deg,#fff1a8,#ffd54a 50%,#c48c1a);}
+.card-chip.silver{background:linear-gradient(135deg,#f2f4f7,#b5c0cc 50%,#6d7682);}
+.card-chip.red{background:linear-gradient(135deg,#ff8080,#ff4d4d 50%,#8b1515);}
+.card-chip.empty{background:rgba(255,255,255,0.04);border-color:rgba(255,255,255,0.08);box-shadow:none;}
+.card-action{padding:8px 12px;background:linear-gradient(135deg,#ff4d4d,#ff6b35);border:none;border-radius:8px;color:#fff;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;cursor:pointer;width:100%;margin-top:6px;}
+.card-action:active{transform:scale(0.97);}
+
+/* Bumps + flashes */
+.bumped{animation:bump .4s ease;}
+@keyframes bump{0%{transform:scale(1);}40%{transform:scale(1.22);color:#fff;}100%{transform:scale(1);}}
+
+/* Cube fly element (positioned absolute, z 99) */
+.flyer{position:fixed;width:24px;height:24px;border-radius:3px;border:1px solid rgba(0,0,0,0.4);box-shadow:inset 0 1px 0 rgba(255,255,255,0.45),inset 0 -2px 4px rgba(0,0,0,0.4),0 4px 12px rgba(0,0,0,0.4);z-index:99;pointer-events:none;transition:transform .55s cubic-bezier(.32,1.5,.42,1),opacity .25s ease;}
+.flyer.gold{background:linear-gradient(135deg,#fff1a8,#ffd54a 50%,#c48c1a);}
+.flyer.silver{background:linear-gradient(135deg,#f2f4f7,#b5c0cc 50%,#6d7682);}
+.flyer.red{background:linear-gradient(135deg,#ff8080,#ff4d4d 50%,#8b1515);}
+
+/* Note bottom area */
+.note{width:100%;max-width:430px;margin-top:14px;font-size:11px;color:#7a7a86;line-height:1.6;}
+.note b{color:#f5f1ea;}
+.note kbd{font-family:'DM Mono',monospace;font-size:10px;background:rgba(255,255,255,0.06);padding:1px 5px;border-radius:3px;border:1px solid rgba(255,255,255,0.08);}

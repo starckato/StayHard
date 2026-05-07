@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Reward A8 · Combo Cascade</title>
+<link rel="stylesheet" href="_shared.css">
+<link rel="stylesheet" href="_reward-shared.css">
+<style>
+.phone-content{display:flex;flex-direction:column;}
+@keyframes flyIn{0%{transform:translate(0,0) scale(1);opacity:0;}15%{opacity:1;}100%{transform:translate(var(--dx),var(--dy)) scale(0.65);opacity:0;}}
+.flyer.fly{animation:flyIn .45s cubic-bezier(.32,1.2,.42,1) forwards;}
+.combo-banner{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) scale(0.6);font-family:'Archivo Black',sans-serif;font-size:48px;color:#ffd54a;text-shadow:0 0 20px rgba(255,213,74,0.7),0 4px 16px rgba(0,0,0,0.6);letter-spacing:-0.04em;opacity:0;pointer-events:none;z-index:5;transition:transform .25s cubic-bezier(.3,1.5,.5,1),opacity .25s ease;}
+.combo-banner.show{transform:translate(-50%,-50%) scale(1);opacity:1;}
+.combo-banner small{font-size:18px;display:block;color:#fff;letter-spacing:0;font-family:'DM Sans',sans-serif;font-weight:700;}
+.sb-stack-dot.shimmer{animation:shimmer .8s ease;}
+@keyframes shimmer{0%,100%{box-shadow:inset 0 1px 0 rgba(255,255,255,0.4),inset 0 -1.5px 2px rgba(0,0,0,0.4);}40%{box-shadow:0 0 16px gold,inset 0 1px 0 rgba(255,255,255,0.4),inset 0 -1.5px 2px rgba(0,0,0,0.4);}}
+.sb-stack.combo-thud{animation:comboThud .35s ease;}
+@keyframes comboThud{0%,100%{transform:translateY(0);}30%{transform:translateY(3px);}60%{transform:translateY(-1px);}}
+</style></head>
+<body>
+<div class="head">
+  <a class="back" href="index.html">← 목록</a>
+  <div class="title"><div class="opt">REWARD A8</div><div class="t">Combo Cascade — 다중 큐브 발생 시 리듬 chain</div></div>
+</div>
+
+<div class="phone">
+  <div class="phone-content">
+    <div class="sb">
+      <div class="sb-row"><div class="sb-tier"><span class="ic">😴</span><span>방관자</span></div><div class="sb-streak">🔥 12일</div></div>
+      <div class="sb-bar"><div class="sb-fill-gold" id="fillG" style="width:25%;"></div><div class="sb-fill-silver" id="fillS" style="left:25%;width:25%;"></div></div>
+      <div class="sb-meta"><span><b id="metaScore">6</b> / 12 → 각성자</span><span id="metaPct">50%</span></div>
+      <div class="sb-stack" id="stack">
+        <div class="sb-stack-item"><div class="sb-stack-dot gold" id="dotG"></div><div class="sb-stack-num" id="numG">3</div><div class="sb-stack-lbl">G</div></div>
+        <div class="sb-stack-item"><div class="sb-stack-dot silver" id="dotS"></div><div class="sb-stack-num" id="numS">9</div><div class="sb-stack-lbl">S</div></div>
+        <div class="sb-stack-item"><div class="sb-stack-dot red"></div><div class="sb-stack-num" id="numR">0</div><div class="sb-stack-lbl">R</div></div>
+      </div>
+    </div>
+    <div class="room">
+      <div class="room-bg"></div>
+      <div class="room-char"></div>
+      <div class="combo-banner" id="banner"></div>
+      <div class="card-stub">
+        <div class="card-row">
+          <span class="card-icon">🔁</span>
+          <span class="card-title">루틴</span>
+          <span style="margin-left:auto;font-size:10px;color:#7a7a86;">3 항목 · 미완료</span>
+        </div>
+        <button class="card-action" onclick="comboFire([['silver',1],['silver',1],['silver',1],['gold',1]])">⚡ 루틴 모두 완료 (silver×3 + gold×1)</button>
+        <button class="card-action" style="margin-top:5px;background:linear-gradient(135deg,#a855f7,#7e22ce);" onclick="comboFire([['silver',1],['gold',1],['silver',1],['gold',1],['silver',1]])">🔥 풀하우스 (할일+루틴+운동 = 5 큐브)</button>
+        <button class="card-action" style="margin-top:5px;background:linear-gradient(135deg,#94a3b8,#475569);" onclick="comboFire([['silver',1]])">+ 단일 (silver 1)</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="note">
+  <b>A8 — Combo Cascade</b>: 단일 액션은 평범 (single fly). 다중 발생 시 (모든 루틴 완료, 운동+식단+할일 한 세트) 리듬 cascade — 큐브 100ms 간격으로 순차 fly + combo 카운터 화면 중앙에 등장 (×2 → ×3 → ×4!) + 마지막 큐브 도착 시 stack shimmer + combo thud.<br>
+  <b>장점</b>: <b>큰 성취 = 큰 보상</b>. 게임적 만족감. 풀하우스 시 정말 좋은 기분. <b>단점</b>: 평범한 액션과 차이가 너무 큼 — 단일 액션이 상대적으로 초라. A1/A3 와 결합 가능.
+</div>
+
+<script>
+const counts={gold:3,silver:9,red:0};
+const TIER_NEXT=12;
+function score(){return counts.gold + counts.silver/3;}
+function update(){
+  document.getElementById('numG').textContent=counts.gold;
+  document.getElementById('numS').textContent=counts.silver;
+  document.getElementById('numR').textContent=counts.red;
+  const s=score();
+  const goldPct=Math.min(100,counts.gold/TIER_NEXT*100);
+  const silverPct=Math.min(100-goldPct, (counts.silver/3)/TIER_NEXT*100);
+  document.getElementById('fillG').style.width=goldPct+'%';
+  document.getElementById('fillS').style.left=goldPct+'%';
+  document.getElementById('fillS').style.width=silverPct+'%';
+  document.getElementById('metaScore').textContent=Math.round(s*10)/10;
+  document.getElementById('metaPct').textContent=Math.min(100,Math.round(s/TIER_NEXT*100))+'%';
+}
+function showCombo(n){
+  const b=document.getElementById('banner');
+  b.innerHTML=`×${n}<small>${n===2?'좋아':n===3?'타오른다':n===4?'폭주':'전부 완수'}</small>`;
+  b.classList.add('show');
+  clearTimeout(b._t);b._t=setTimeout(()=>b.classList.remove('show'), 800);
+}
+function comboFire(seq){
+  const cardBtn=event.currentTarget;
+  const oRect=cardBtn.getBoundingClientRect();
+  let i=0;
+  function next(){
+    if(i>=seq.length){
+      // final shimmer
+      const stack=document.getElementById('stack');
+      stack.classList.add('combo-thud');setTimeout(()=>stack.classList.remove('combo-thud'),400);
+      document.getElementById('dotG').classList.add('shimmer');document.getElementById('dotS').classList.add('shimmer');
+      setTimeout(()=>{document.getElementById('dotG').classList.remove('shimmer');document.getElementById('dotS').classList.remove('shimmer');},900);
+      return;
+    }
+    const [color, n]=seq[i];
+    const targetId=color==='gold'?'dotG':'dotS';
+    const tDot=document.getElementById(targetId);
+    const tRect=tDot.getBoundingClientRect();
+    const f=document.createElement('div');
+    f.className='flyer '+color+' fly';
+    f.style.left=(oRect.left+oRect.width/2-12)+'px';
+    f.style.top=(oRect.top+oRect.height/2-12)+'px';
+    f.style.setProperty('--dx',(tRect.left+tRect.width/2 - (oRect.left+oRect.width/2))+'px');
+    f.style.setProperty('--dy',(tRect.top+tRect.height/2 - (oRect.top+oRect.height/2))+'px');
+    document.body.appendChild(f);
+    setTimeout(()=>{
+      counts[color]+=n;
+      update();
+      f.remove();
+      if(seq.length>1 && i>=1)showCombo(i+1);
+    }, 380);
+    i++;
+    setTimeout(next, 110);
+  }
+  next();
+}
+update();
+</script>
+</body></html>

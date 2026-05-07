@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Reward C · Transform</title>
+<link rel="stylesheet" href="_shared.css">
+<link rel="stylesheet" href="_reward-shared.css">
+<style>
+.phone-content{display:flex;flex-direction:column;}
+.imminent .sb-bar{box-shadow:0 0 12px rgba(255,213,74,0.4);animation:imminent 1.6s ease infinite;}
+@keyframes imminent{0%,100%{box-shadow:0 0 12px rgba(255,213,74,0.4);}50%{box-shadow:0 0 22px rgba(255,213,74,0.7);}}
+.sb-imminent-msg{font-size:11px;color:#ffd54a;font-weight:700;text-align:center;margin-top:6px;letter-spacing:-.005em;animation:pulse 1.6s ease infinite;}
+@keyframes pulse{0%,100%{opacity:0.6;}50%{opacity:1;}}
+.transform-overlay{position:absolute;inset:0;background:#000;opacity:0;pointer-events:none;z-index:8;transition:opacity .5s ease;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;}
+.transform-overlay.show{opacity:1;pointer-events:auto;}
+.glow-orb{width:60px;height:60px;border-radius:50%;background:radial-gradient(circle,#fff 0%,#ffd54a 30%,rgba(255,213,74,0) 70%);box-shadow:0 0 80px rgba(255,213,74,0.9);transition:transform 1.2s cubic-bezier(.4,0,.2,1),opacity .6s ease;opacity:0;transform:scale(0.2);}
+.glow-orb.expand{transform:scale(8);opacity:1;}
+.glow-orb.fade{opacity:0;}
+.new-tier-name{font-family:'Archivo Black',sans-serif;font-size:36px;letter-spacing:-0.04em;color:#ffd54a;text-shadow:0 0 24px rgba(255,213,74,0.7);opacity:0;transform:translateY(12px);transition:opacity .5s ease .3s,transform .5s ease .3s;text-align:center;}
+.new-tier-name.show{opacity:1;transform:translateY(0);}
+.new-tier-desc{font-size:13px;color:#a8a8b4;margin-top:8px;opacity:0;transition:opacity .5s ease .6s;text-align:center;}
+.new-tier-desc.show{opacity:1;}
+.transform-cta{display:flex;gap:8px;margin-top:24px;opacity:0;transition:opacity .5s ease .9s;}
+.transform-cta.show{opacity:1;}
+.transform-cta button{padding:10px 18px;border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;cursor:pointer;}
+.transform-cta .primary{background:linear-gradient(135deg,#ff4d4d,#ff6b35);color:#fff;}
+.transform-cta .ghost{background:rgba(255,255,255,0.08);color:#a8a8b4;border:1px solid rgba(255,255,255,0.1);}
+.room-bg{transition:opacity 1s ease,filter 1s ease;}
+.room-bg.morph{opacity:0;filter:blur(8px);}
+.room-bg-new{position:absolute;inset:0;background:url('/assets/rooms/Tier3_room.png') center/cover no-repeat;opacity:0;transition:opacity 1s ease;}
+.room-bg-new.show{opacity:0.85;}
+.room-char{transition:opacity .6s ease,filter .6s ease,transform .6s ease;}
+.room-char.fade{opacity:0;filter:blur(6px);transform:translateX(-50%) scale(0.5);}
+.room-char-new{position:absolute;width:64px;height:80px;background:url('/assets/tier3/Tier3_cha_nobg.png') center/contain no-repeat;image-rendering:pixelated;bottom:80px;left:50%;transform:translateX(-50%) scale(0.5);opacity:0;transition:opacity .6s ease,transform .6s ease;}
+.room-char-new.show{opacity:1;transform:translateX(-50%) scale(1);}
+</style></head>
+<body>
+<div class="head">
+  <a class="back" href="index.html">← 목록</a>
+  <div class="title"><div class="opt">REWARD C</div><div class="t">Transform — 임박 (C2) → 변신 시퀀스 (C3)</div></div>
+</div>
+
+<div class="phone">
+  <div class="phone-content">
+    <div class="sb imminent" id="sb">
+      <div class="sb-row"><div class="sb-tier"><span class="ic">⚡</span><span id="sbTierName">각성자</span></div><div class="sb-streak">🔥 12일</div></div>
+      <div class="sb-bar"><div class="sb-fill-gold" id="fillG" style="width:80%;"></div><div class="sb-fill-silver" id="fillS" style="left:80%;width:18%;"></div></div>
+      <div class="sb-meta"><span><b id="metaScore">58</b> / 60 → <span id="metaNext">저항자</span></span><span id="metaPct">97%</span></div>
+      <div class="sb-imminent-msg" id="imminentMsg">다음 1개로 → 저항자</div>
+      <div class="sb-stack">
+        <div class="sb-stack-item"><div class="sb-stack-dot gold"></div><div class="sb-stack-num" id="numG">38</div><div class="sb-stack-lbl">G</div></div>
+        <div class="sb-stack-item"><div class="sb-stack-dot silver"></div><div class="sb-stack-num" id="numS">60</div><div class="sb-stack-lbl">S</div></div>
+        <div class="sb-stack-item"><div class="sb-stack-dot red"></div><div class="sb-stack-num" id="numR">0</div><div class="sb-stack-lbl">R</div></div>
+      </div>
+    </div>
+    <div class="room">
+      <div class="room-bg" id="bg"></div>
+      <div class="room-bg-new" id="bgNew"></div>
+      <div class="room-char" id="char"></div>
+      <div class="room-char-new" id="charNew"></div>
+      <div class="card-stub">
+        <div class="card-row">
+          <span class="card-icon">🥗</span>
+          <span class="card-title">식단</span>
+          <span style="margin-left:auto;font-size:10px;color:#ffd54a;font-family:'DM Mono',monospace;">의식적 진입 ↓</span>
+        </div>
+        <button class="card-action" onclick="triggerLast()" id="lastBtn">+ 마지막 클린식 → 승급 발동</button>
+      </div>
+      <div class="transform-overlay" id="overlay">
+        <div class="glow-orb" id="orb"></div>
+        <div class="new-tier-name" id="tierName">저항자</div>
+        <div class="new-tier-desc" id="tierDesc">나태함에 맞서 싸우기 시작한 자</div>
+        <div class="transform-cta" id="cta">
+          <button class="primary" onclick="closeOverlay()">내 룸 보기</button>
+          <button class="ghost" onclick="resetDemo()">다시 보기</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="note">
+  <b>C — Transform (C2 + C3)</b>: 점수 58/60 → bar 가 펄스 + "다음 1개로 → 저항자" 카피 (C2 임박감). 사용자가 *알면서* 액션 → 큐브 cascade → score 60 도달 → 변신 시퀀스 (C3): (1) 화면 black-out (2) glow orb 응축 → 8× 확장 (3) 새 티어 이름/카피 reveal (4) 캐릭터 페이드 swap + 룸 BG morph (5) CTA — 룸 보기 / 닫기.<br>
+  <b>장점</b>: 점수 confetti 폐기 + *변신* 메타포. 사용자 agency (마지막 액션을 의식적으로 함). <b>단점</b>: 첫 1~2회 강력하지만 동일 시퀀스 반복 시 "또 그거" 가 될 수 있음 — 티어별 약간씩 시퀀스 변주 필요.<br>
+  <b>플레이</b>: 마지막 액션 버튼 누르면 시퀀스 발동.
+</div>
+
+<script>
+const counts={gold:38,silver:60,red:0};
+const TIER_BASE=12, TIER_NEXT=60;
+function score(){return counts.gold + counts.silver/3;}
+function update(){
+  document.getElementById('numG').textContent=counts.gold;
+  document.getElementById('numS').textContent=counts.silver;
+  document.getElementById('numR').textContent=counts.red;
+  const s=score();
+  const into=Math.max(0,s-TIER_BASE);const span=TIER_NEXT-TIER_BASE;
+  const goldContrib=Math.max(0,counts.gold-TIER_BASE);
+  const goldPct=Math.min(100,goldContrib/span*100);
+  const totalPct=Math.min(100,into/span*100);
+  document.getElementById('fillG').style.width=goldPct+'%';
+  document.getElementById('fillS').style.left=goldPct+'%';
+  document.getElementById('fillS').style.width=Math.max(0,totalPct-goldPct)+'%';
+  document.getElementById('metaScore').textContent=Math.round(s*10)/10;
+  document.getElementById('metaPct').textContent=Math.round(totalPct)+'%';
+}
+function triggerLast(){
+  document.getElementById('lastBtn').disabled=true;
+  // Cube cascade (single gold)
+  const oRect=document.getElementById('lastBtn').getBoundingClientRect();
+  const tRect=document.querySelector('.sb-stack-item:first-child .sb-stack-dot').getBoundingClientRect();
+  const f=document.createElement('div');f.className='flyer gold';
+  f.style.left=(oRect.left+oRect.width/2-12)+'px';f.style.top=(oRect.top+oRect.height/2-12)+'px';
+  document.body.appendChild(f);
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    f.style.transform=`translate(${tRect.left+tRect.width/2-(oRect.left+oRect.width/2)}px,${tRect.top+tRect.height/2-(oRect.top+oRect.height/2)}px) scale(0.7)`;
+    f.style.opacity='0';
+  }));
+  setTimeout(()=>{
+    f.remove();counts.gold+=2;update();
+    document.getElementById('sb').classList.remove('imminent');
+    document.getElementById('imminentMsg').style.display='none';
+    setTimeout(beginTransform, 350);
+  }, 600);
+}
+function beginTransform(){
+  const o=document.getElementById('overlay');o.classList.add('show');
+  // Step 1: orb expand
+  setTimeout(()=>document.getElementById('orb').classList.add('expand'), 80);
+  // Step 2: orb fade, name in
+  setTimeout(()=>{
+    document.getElementById('orb').classList.add('fade');
+    document.getElementById('tierName').classList.add('show');
+    document.getElementById('tierDesc').classList.add('show');
+    // Tier name update + char swap behind
+    document.getElementById('sbTierName').textContent='저항자';
+    document.querySelector('#sb .ic').textContent='🦴';
+    document.getElementById('metaNext').textContent='수련자';
+    document.getElementById('char').classList.add('fade');
+    document.getElementById('bg').classList.add('morph');
+    setTimeout(()=>{
+      document.getElementById('charNew').classList.add('show');
+      document.getElementById('bgNew').classList.add('show');
+    }, 400);
+  }, 1300);
+  // Step 3: CTA
+  setTimeout(()=>document.getElementById('cta').classList.add('show'), 2300);
+}
+function closeOverlay(){
+  document.getElementById('overlay').classList.remove('show');
+}
+function resetDemo(){
+  document.getElementById('overlay').classList.remove('show');
+  setTimeout(()=>{
+    counts.gold=38;counts.silver=60;counts.red=0;
+    document.getElementById('orb').classList.remove('expand','fade');
+    document.getElementById('tierName').classList.remove('show');
+    document.getElementById('tierDesc').classList.remove('show');
+    document.getElementById('cta').classList.remove('show');
+    document.getElementById('char').classList.remove('fade');
+    document.getElementById('charNew').classList.remove('show');
+    document.getElementById('bg').classList.remove('morph');
+    document.getElementById('bgNew').classList.remove('show');
+    document.getElementById('sbTierName').textContent='각성자';
+    document.querySelector('#sb .ic').textContent='⚡';
+    document.getElementById('metaNext').textContent='저항자';
+    document.getElementById('sb').classList.add('imminent');
+    document.getElementById('imminentMsg').style.display='block';
+    document.getElementById('lastBtn').disabled=false;
+    update();
+  }, 400);
+}
+update();
+</script>
+</body></html>

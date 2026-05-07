@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Reward A35 · Combo Counter</title>
+<link rel="stylesheet" href="_shared.css">
+<link rel="stylesheet" href="_reward-shared.css">
+<style>
+.phone-content{display:flex;flex-direction:column;}
+.combo-area{position:absolute;right:14px;top:50%;transform:translateY(-50%);text-align:right;pointer-events:none;z-index:60;font-family:'Archivo Black',sans-serif;}
+.combo-counter{font-size:64px;line-height:0.85;color:#ffd54a;text-shadow:3px 3px 0 #000,6px 6px 0 rgba(255,77,77,0.5);letter-spacing:-0.04em;opacity:0;transition:opacity .5s ease;}
+.combo-counter.active{opacity:1;}
+.combo-counter .x{font-size:40px;color:#fff;letter-spacing:0;}
+.combo-rank{font-size:22px;line-height:1;color:#ff4d4d;text-shadow:2px 2px 0 #000;letter-spacing:0.04em;text-transform:uppercase;margin-top:4px;opacity:0;transition:opacity .3s ease;}
+.combo-rank.active{opacity:1;}
+.combo-rank.rank-good{color:#dde1e6;}
+.combo-rank.rank-great{color:#ffd54a;}
+.combo-rank.rank-stylish{color:#ff8b50;text-shadow:2px 2px 0 #000,0 0 12px rgba(255,139,80,0.8);}
+.combo-rank.rank-savage{color:#ff4d4d;text-shadow:2px 2px 0 #000,0 0 16px rgba(255,77,77,0.9);font-size:26px;}
+.hit-text{position:absolute;font-family:'Archivo Black',sans-serif;font-size:28px;color:#fff;text-shadow:2px 2px 0 #000,4px 4px 0 var(--shadow);letter-spacing:-0.02em;opacity:0;pointer-events:none;z-index:62;}
+.hit-text.gold{--shadow:#ffd54a;}
+.hit-text.silver{--shadow:#94a3b8;}
+.hit-text.red{--shadow:#ff4d4d;color:#ff8080;}
+.hit-text.go{animation:hitFly .65s cubic-bezier(.5,0,.5,1) forwards;}
+@keyframes hitFly{0%{opacity:0;transform:translate(0,10px) scale(0.5);}25%{opacity:1;transform:translate(0,-10px) scale(1.1);}65%{opacity:1;transform:translate(var(--tx),-30px) scale(1);}100%{opacity:0;transform:translate(var(--tx),-50px) scale(0.9);}}
+.shake{animation:shake .25s ease;}
+@keyframes shake{0%,100%{transform:translate(0,0);}20%{transform:translate(-3px,2px);}40%{transform:translate(3px,-2px);}60%{transform:translate(-2px,1px);}80%{transform:translate(2px,-1px);}}
+.shake-strong{animation:shakeS .35s ease;}
+@keyframes shakeS{0%,100%{transform:translate(0,0);}20%{transform:translate(-6px,4px);}40%{transform:translate(6px,-4px);}60%{transform:translate(-4px,2px);}80%{transform:translate(4px,-2px);}}
+.combo-bar{position:absolute;bottom:6px;left:0;right:0;height:3px;background:rgba(255,213,74,0.15);border-radius:999px;overflow:hidden;}
+.combo-bar-fill{height:100%;background:linear-gradient(90deg,#ffd54a,#ff4d4d);transform-origin:right center;transition:transform 1s linear;}
+</style></head>
+<body>
+<div class="head">
+  <a class="back" href="index.html">← 목록</a>
+  <div class="title"><div class="opt">REWARD A35</div><div class="t">Combo Counter · DMC / SF / Bayonetta — 연속 액션 콤보</div></div>
+</div>
+
+<div class="phone" id="phone">
+  <div class="phone-content">
+    <div class="sb">
+      <div class="sb-row"><div class="sb-tier"><span class="ic">💢</span><span>방관자</span></div><div class="sb-streak">🔥 12일</div></div>
+      <div class="sb-bar"><div class="sb-fill-gold" id="fillG" style="width:25%;"></div><div class="sb-fill-silver" id="fillS" style="left:25%;width:25%;"></div></div>
+      <div class="sb-meta"><span><b id="metaScore">6</b> / 12 → 각성자</span><span id="metaPct">50%</span></div>
+      <div class="sb-stack" id="stack">
+        <div class="sb-stack-item"><div class="sb-stack-dot gold"></div><div class="sb-stack-num" id="numG">3</div><div class="sb-stack-lbl">G</div></div>
+        <div class="sb-stack-item"><div class="sb-stack-dot silver"></div><div class="sb-stack-num" id="numS">9</div><div class="sb-stack-lbl">S</div></div>
+        <div class="sb-stack-item"><div class="sb-stack-dot red"></div><div class="sb-stack-num" id="numR">0</div><div class="sb-stack-lbl">R</div></div>
+      </div>
+    </div>
+    <div class="room">
+      <div class="room-bg"></div>
+      <div class="room-char"></div>
+      <div class="combo-area">
+        <div class="combo-counter" id="comboCounter"><span class="x">x</span><span id="comboNum">0</span></div>
+        <div class="combo-rank" id="comboRank"></div>
+        <div class="combo-bar" id="comboBarWrap" style="display:none;"><div class="combo-bar-fill" id="comboBar"></div></div>
+      </div>
+      <div class="card-stub">
+        <div class="card-row">
+          <span class="card-icon">🥗</span>
+          <span class="card-title">식단</span>
+          <span style="margin-left:auto;font-size:10px;color:#ff8b50;font-family:'DM Mono',monospace;">5초 안에 연타 = 콤보</span>
+        </div>
+        <button class="card-action" onclick="trigger('gold',event)">+ 클린식 (gold)</button>
+        <button class="card-action" style="margin-top:5px;background:linear-gradient(135deg,#94a3b8,#475569);" onclick="trigger('silver',event)">+ 일반식 (silver)</button>
+        <button class="card-action" style="margin-top:5px;background:linear-gradient(135deg,#8b1515,#ff4d4d);" onclick="trigger('red',event)">+ 음주 (red — 콤보 BREAK)</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="note">
+  <b>A35 — Combo Counter</b> (DMC · Bayonetta · Street Fighter): 5초 안에 연속 액션 → 콤보 누적. ×2 GOOD → ×3 GREAT → ×5 STYLISH → ×8 SAVAGE. 매 hit 마다 작은 "+1" 텍스트 fly + 콤보 ↑. 큰 콤보일수록 화면 흔들림 (큰 흔들림 = 큰 만족). red = 콤보 BREAK.<br>
+  <b>장점</b>: <b>여러 액션 한꺼번에 할 때 폭발적 만족</b>. 아침 루틴 (찬물샤워+물+체중+식단) 연타 시 ×8 SAVAGE 가능. 게임 플레이 같은 *흐름*. <b>단점</b>: 5초 윈도우는 모바일 앱 사용 패턴과 어긋남 (앱 잠깐 보고 닫는 경향). 콤보 못 만들면 매번 평범. 트리거 조건 재설계 필요.
+</div>
+
+<script>
+const counts={gold:3,silver:9,red:0};
+const TIER_NEXT=12;
+let combo=0;
+let comboTimer=null;
+const COMBO_WINDOW=5000;
+function score(){return counts.gold + counts.silver/3;}
+function update(){
+  document.getElementById('numG').textContent=counts.gold;
+  document.getElementById('numS').textContent=counts.silver;
+  document.getElementById('numR').textContent=counts.red;
+  const s=score();
+  const goldPct=Math.min(100,counts.gold/TIER_NEXT*100);
+  const silverPct=Math.min(100-goldPct, (counts.silver/3)/TIER_NEXT*100);
+  document.getElementById('fillG').style.width=goldPct+'%';
+  document.getElementById('fillS').style.left=goldPct+'%';
+  document.getElementById('fillS').style.width=silverPct+'%';
+  document.getElementById('metaScore').textContent=Math.round(s*10)/10;
+  document.getElementById('metaPct').textContent=Math.min(100,Math.round(s/TIER_NEXT*100))+'%';
+}
+function rankFor(n){
+  if(n<2)return null;
+  if(n<3)return {label:'GOOD',cls:'rank-good'};
+  if(n<5)return {label:'GREAT',cls:'rank-great'};
+  if(n<8)return {label:'STYLISH!',cls:'rank-stylish'};
+  return {label:'SAVAGE!!',cls:'rank-savage'};
+}
+function spawnHitText(color, ev){
+  const btn=ev.currentTarget;
+  const r=btn.getBoundingClientRect();
+  const txt=color==='red'?'BREAK':color==='gold'?'+1 G':'+1 S';
+  const t=document.createElement('div');
+  t.className='hit-text '+color;t.textContent=txt;
+  t.style.left=(r.left+r.width/2-30)+'px';t.style.top=(r.top-10)+'px';
+  t.style.setProperty('--tx',((Math.random()*2-1)*30)+'px');
+  document.body.appendChild(t);requestAnimationFrame(()=>t.classList.add('go'));setTimeout(()=>t.remove(),700);
+}
+function refreshComboTimer(){
+  if(comboTimer)clearTimeout(comboTimer);
+  // bar visualization
+  const wrap=document.getElementById('comboBarWrap');const bar=document.getElementById('comboBar');
+  if(combo>=1){
+    wrap.style.display='block';bar.style.transition='none';bar.style.transform='scaleX(1)';
+    requestAnimationFrame(()=>{bar.style.transition=`transform ${COMBO_WINDOW}ms linear`;bar.style.transform='scaleX(0)';});
+  }
+  comboTimer=setTimeout(()=>{combo=0;updateCombo();wrap.style.display='none';},COMBO_WINDOW);
+}
+function updateCombo(){
+  const cc=document.getElementById('comboCounter');const cn=document.getElementById('comboNum');const cr=document.getElementById('comboRank');
+  if(combo<2){cc.classList.remove('active');cr.classList.remove('active');return;}
+  cn.textContent=combo;cc.classList.add('active');
+  const r=rankFor(combo);
+  if(r){cr.textContent=r.label;cr.className='combo-rank active '+r.cls;}
+  // shake on big combos
+  if(combo>=5)document.getElementById('phone').classList.add('shake-strong');
+  else if(combo>=3)document.getElementById('phone').classList.add('shake');
+  setTimeout(()=>{document.getElementById('phone').classList.remove('shake','shake-strong');},350);
+}
+function trigger(color, ev){
+  spawnHitText(color, ev);
+  if(color==='red'){
+    counts.red++;counts.gold=Math.max(0,counts.gold-2);counts.silver=Math.max(0,counts.silver-2);
+    combo=0;
+    document.getElementById('comboCounter').classList.remove('active');
+    document.getElementById('comboRank').classList.remove('active');
+    document.getElementById('comboBarWrap').style.display='none';
+    if(comboTimer){clearTimeout(comboTimer);comboTimer=null;}
+    document.getElementById('phone').classList.add('shake-strong');setTimeout(()=>document.getElementById('phone').classList.remove('shake-strong'),350);
+  } else {
+    counts[color]++;
+    combo++;
+    refreshComboTimer();
+    updateCombo();
+  }
+  update();
+  if(navigator.vibrate)navigator.vibrate(combo>=5?[30,20,30]:25);
+}
+update();
+</script>
+</body></html>

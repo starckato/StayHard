@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Reward A9 · Character Consumes</title>
+<link rel="stylesheet" href="_shared.css">
+<link rel="stylesheet" href="_reward-shared.css">
+<style>
+.phone-content{display:flex;flex-direction:column;}
+/* Squash/stretch keyframes — 훨씬 과장된 모션 */
+@keyframes eatGold{
+  0%{transform:translateX(-50%) scale(1,1) translateY(0);filter:drop-shadow(0 0 0 rgba(255,213,74,0));}
+  15%{transform:translateX(-50%) scale(1.45,0.7) translateY(4px);filter:drop-shadow(0 0 24px rgba(255,213,74,1)) brightness(1.3);}
+  35%{transform:translateX(-50%) scale(0.85,1.35) translateY(-12px);filter:drop-shadow(0 0 30px rgba(255,213,74,0.95)) brightness(1.4);}
+  55%{transform:translateX(-50%) scale(1.18,0.92) translateY(0);filter:drop-shadow(0 0 18px rgba(255,213,74,0.7)) brightness(1.15);}
+  80%{transform:translateX(-50%) scale(0.96,1.06) translateY(-2px);filter:drop-shadow(0 0 8px rgba(255,213,74,0.4));}
+  100%{transform:translateX(-50%) scale(1,1) translateY(0);filter:drop-shadow(0 0 0 rgba(255,213,74,0));}
+}
+@keyframes eatSilver{
+  0%{transform:translateX(-50%) scale(1,1);filter:drop-shadow(0 0 0 rgba(181,192,204,0));}
+  20%{transform:translateX(-50%) scale(1.25,0.85) translateY(-6px);filter:drop-shadow(0 0 14px rgba(221,225,230,0.85));}
+  50%{transform:translateX(-50%) scale(0.92,1.12);filter:drop-shadow(0 0 10px rgba(221,225,230,0.6));}
+  100%{transform:translateX(-50%) scale(1,1);filter:drop-shadow(0 0 0 rgba(221,225,230,0));}
+}
+@keyframes hurtRed{
+  0%{transform:translateX(-50%) scale(1,1) rotate(0);filter:drop-shadow(0 0 0 rgba(255,77,77,0)) saturate(1);}
+  10%{transform:translateX(-50%) scale(1.15,0.85) rotate(-8deg) translateX(calc(-50% - 8px));filter:drop-shadow(8px 0 16px rgba(255,77,77,1)) saturate(0.3) brightness(0.7);}
+  25%{transform:translateX(-50%) scale(0.9,1.1) rotate(6deg) translateX(calc(-50% + 6px)) translateY(2px);filter:drop-shadow(-6px 0 14px rgba(255,77,77,0.9)) saturate(0.4) brightness(0.8);}
+  45%{transform:translateX(-50%) scale(1.05,0.95) rotate(-3deg);filter:drop-shadow(0 0 12px rgba(255,77,77,0.6)) saturate(0.6);}
+  70%{transform:translateX(-50%) scale(0.98,1.02) rotate(1deg);filter:saturate(0.85);}
+  100%{transform:translateX(-50%) scale(1,1) rotate(0);filter:saturate(1);}
+}
+.room-char{transform-origin:center bottom;}
+.room-char.eat{animation:eatGold .85s cubic-bezier(.32,1.4,.4,1);}
+.room-char.eat-silver{animation:eatSilver .55s cubic-bezier(.32,1.3,.4,1);}
+.room-char.hurt{animation:hurtRed .9s cubic-bezier(.55,0,.45,1);}
+
+@keyframes flyToChar{0%{transform:translate(0,0) scale(1);opacity:0;}15%{opacity:1;}100%{transform:translate(var(--dx),var(--dy)) scale(0.3);opacity:0;}}
+.flyer.fly-char{animation:flyToChar .5s cubic-bezier(.5,0,.4,1.4) forwards;}
+
+/* Impact particles when cube hits character */
+.particle{position:fixed;width:6px;height:6px;border-radius:50%;pointer-events:none;z-index:20;opacity:0;}
+.particle.gold{background:radial-gradient(circle,#fff 0%,#ffd54a 50%,rgba(196,140,26,0) 100%);box-shadow:0 0 8px rgba(255,213,74,0.9);}
+.particle.silver{background:radial-gradient(circle,#fff 0%,#dde1e6 50%,rgba(109,118,130,0) 100%);box-shadow:0 0 6px rgba(221,225,230,0.8);}
+.particle.red{background:radial-gradient(circle,#fff 0%,#ff4d4d 50%,rgba(139,21,21,0) 100%);box-shadow:0 0 8px rgba(255,77,77,0.9);}
+.particle.go{animation:particleFly .7s cubic-bezier(.4,0,.6,1) forwards;}
+@keyframes particleFly{0%{opacity:1;transform:translate(0,0) scale(1.2);}100%{opacity:0;transform:translate(var(--px),var(--py)) scale(0.3);}}
+
+/* Impact ring at character on arrival */
+.impact-ring{position:fixed;width:80px;height:80px;border:3px solid var(--ring);border-radius:50%;pointer-events:none;z-index:18;opacity:0;}
+.impact-ring.gold{--ring:#ffd54a;}
+.impact-ring.silver{--ring:#dde1e6;}
+.impact-ring.red{--ring:#ff4d4d;}
+.impact-ring.go{animation:impactRingGo .55s ease-out forwards;}
+@keyframes impactRingGo{0%{opacity:1;transform:scale(0.3);border-width:4px;}100%{opacity:0;transform:scale(1.6);border-width:0px;}}
+
+.echo-num{position:fixed;font-family:'Archivo Black',sans-serif;font-size:22px;color:#ffd54a;text-shadow:2px 2px 0 #000,0 0 12px rgba(255,213,74,0.9);pointer-events:none;z-index:25;opacity:0;letter-spacing:-.02em;font-weight:900;}
+.echo-num.silver-echo{color:#dde1e6;text-shadow:2px 2px 0 #000,0 0 10px rgba(221,225,230,0.8);}
+.echo-num.red-echo{color:#ff8080;text-shadow:2px 2px 0 #000,0 0 12px rgba(255,77,77,0.9);}
+.echo-num.go{animation:echoFly 1.2s cubic-bezier(.32,1,.42,1) forwards;}
+@keyframes echoFly{0%{opacity:0;transform:translateY(0) scale(0.5);}20%{opacity:1;transform:translateY(-8px) scale(1.2);}50%{transform:translateY(-30px) scale(1);}100%{opacity:0;transform:translateY(-60px) scale(0.95);}}
+</style></head>
+<body>
+<div class="head">
+  <a class="back" href="index.html">← 목록</a>
+  <div class="title"><div class="opt">REWARD A9</div><div class="t">Character Consumes — 캐릭터가 큐브를 *먹음*</div></div>
+</div>
+
+<div class="phone">
+  <div class="phone-content">
+    <div class="sb">
+      <div class="sb-row"><div class="sb-tier"><span class="ic">😴</span><span>방관자</span></div><div class="sb-streak">🔥 12일</div></div>
+      <div class="sb-bar"><div class="sb-fill-gold" id="fillG" style="width:25%;"></div><div class="sb-fill-silver" id="fillS" style="left:25%;width:25%;"></div></div>
+      <div class="sb-meta"><span><b id="metaScore">6</b> / 12 → 각성자</span><span id="metaPct">50%</span></div>
+      <div class="sb-stack">
+        <div class="sb-stack-item"><div class="sb-stack-dot gold"></div><div class="sb-stack-num" id="numG">3</div><div class="sb-stack-lbl">G</div></div>
+        <div class="sb-stack-item"><div class="sb-stack-dot silver"></div><div class="sb-stack-num" id="numS">9</div><div class="sb-stack-lbl">S</div></div>
+        <div class="sb-stack-item"><div class="sb-stack-dot red"></div><div class="sb-stack-num" id="numR">0</div><div class="sb-stack-lbl">R</div></div>
+      </div>
+    </div>
+    <div class="room">
+      <div class="room-bg"></div>
+      <div class="room-char" id="char"></div>
+      <div class="card-stub">
+        <div class="card-row">
+          <span class="card-icon">🥗</span>
+          <span class="card-title">식단</span>
+          <span style="margin-left:auto;font-size:10px;color:#7a7a86;font-family:'DM Mono',monospace;">큐브 → 캐릭터</span>
+        </div>
+        <button class="card-action" onclick="trigger('gold',event)">+ 클린식 (gold)</button>
+        <button class="card-action" style="margin-top:5px;background:linear-gradient(135deg,#94a3b8,#475569);" onclick="trigger('silver',event)">+ 일반식 (silver)</button>
+        <button class="card-action" style="margin-top:5px;background:linear-gradient(135deg,#8b1515,#ff4d4d);" onclick="trigger('red',event)">+ 음주 (red)</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="note">
+  <b>A9 — Character Consumes</b> (v2 · 강화): 큐브 fly target = 캐릭터 입 부근. 도착 시 → (1) 임팩트 ring 폭발 (2) 8~14개 파티클 사방으로 (3) 캐릭터 squash/stretch 애니 (gold 점프 12px ↑ + 글로우 강함 / silver 가벼운 hop / <b>red 좌우로 휘청 + 채도 0.3 + 어둠</b>) (4) echo 텍스트 위로 떠오름 (5) haptic. Status Band 카운트는 silent 갱신.<br>
+  <b>장점</b>: <b>"큐브가 너를 만든다"</b> 의 메타포가 *직관적*. 캐릭터 = 너 자신, 큐브 = 영양 / red = 타격. 룸 진입 안 해도 캐릭터 의미 강함. <b>단점</b>: Status Band 와 분리 — 진척률 파악 글랜스 어려움.<br>
+  <b>플레이</b>: 버튼 누르면 큐브가 캐릭터 입으로 → 임팩트 → 캐릭터 squash/stretch → 글로우 사라짐. red 버튼 시 캐릭터 휘청거림 확인.
+</div>
+
+<script>
+const counts={gold:3,silver:9,red:0};
+const TIER_NEXT=12;
+function score(){return counts.gold + counts.silver/3;}
+function update(){
+  document.getElementById('numG').textContent=counts.gold;
+  document.getElementById('numS').textContent=counts.silver;
+  document.getElementById('numR').textContent=counts.red;
+  const s=score();
+  const goldPct=Math.min(100,counts.gold/TIER_NEXT*100);
+  const silverPct=Math.min(100-goldPct, (counts.silver/3)/TIER_NEXT*100);
+  document.getElementById('fillG').style.width=goldPct+'%';
+  document.getElementById('fillS').style.left=goldPct+'%';
+  document.getElementById('fillS').style.width=silverPct+'%';
+  document.getElementById('metaScore').textContent=Math.round(s*10)/10;
+  document.getElementById('metaPct').textContent=Math.min(100,Math.round(s/TIER_NEXT*100))+'%';
+}
+function showEcho(text, color, charRect){
+  const e=document.createElement('div');
+  e.className='echo-num';
+  if(color==='silver')e.classList.add('silver-echo');
+  if(color==='red')e.classList.add('red-echo');
+  e.textContent=text;
+  e.style.left=(charRect.left+charRect.width/2-50)+'px';
+  e.style.top=(charRect.top-20)+'px';
+  e.style.width='100px';
+  e.style.textAlign='center';
+  document.body.appendChild(e);
+  requestAnimationFrame(()=>e.classList.add('go'));
+  setTimeout(()=>e.remove(), 1250);
+}
+function spawnParticles(color, charRect){
+  const cx=charRect.left+charRect.width/2;
+  const cy=charRect.top+charRect.height*0.35; // upper part of character (mouth area)
+  const count=color==='gold'?12:color==='red'?14:8;
+  for(let i=0;i<count;i++){
+    const p=document.createElement('div');
+    p.className='particle '+color;
+    p.style.left=(cx-3)+'px';p.style.top=(cy-3)+'px';
+    const angle=(Math.PI*2*i/count)+Math.random()*0.4;
+    const dist=30+Math.random()*40;
+    p.style.setProperty('--px',(Math.cos(angle)*dist)+'px');
+    p.style.setProperty('--py',(Math.sin(angle)*dist*(color==='red'?1.2:0.8))+'px');
+    document.body.appendChild(p);
+    requestAnimationFrame(()=>p.classList.add('go'));
+    setTimeout(()=>p.remove(), 750);
+  }
+}
+function spawnImpactRing(color, charRect){
+  const r=document.createElement('div');
+  r.className='impact-ring '+color;
+  r.style.left=(charRect.left+charRect.width/2-40)+'px';
+  r.style.top=(charRect.top+charRect.height*0.35-40)+'px';
+  document.body.appendChild(r);
+  requestAnimationFrame(()=>r.classList.add('go'));
+  setTimeout(()=>r.remove(), 600);
+}
+function trigger(color, ev){
+  const btn=ev.currentTarget;
+  const oRect=btn.getBoundingClientRect();
+  const charRect=document.getElementById('char').getBoundingClientRect();
+  const f=document.createElement('div');
+  f.className='flyer '+color+' fly-char';
+  f.style.left=(oRect.left+oRect.width/2-12)+'px';
+  f.style.top=(oRect.top+oRect.height/2-12)+'px';
+  // Target: mouth area (upper third of character) for "eating" feel
+  const targetX=charRect.left+charRect.width/2;
+  const targetY=charRect.top+charRect.height*0.35;
+  f.style.setProperty('--dx',(targetX - (oRect.left+oRect.width/2))+'px');
+  f.style.setProperty('--dy',(targetY - (oRect.top+oRect.height/2))+'px');
+  document.body.appendChild(f);
+  // On cube arrival: impact ring + particles + character animation
+  setTimeout(()=>{
+    f.remove();
+    const char=document.getElementById('char');
+    const cRect=char.getBoundingClientRect();
+    spawnImpactRing(color, cRect);
+    spawnParticles(color, cRect);
+    if(navigator.vibrate)navigator.vibrate(color==='red'?[40,30,40]:color==='gold'?40:20);
+    if(color==='red'){
+      counts.red++;counts.gold=Math.max(0,counts.gold-2);counts.silver=Math.max(0,counts.silver-2);
+      char.classList.remove('hurt');void char.offsetWidth;char.classList.add('hurt');
+      setTimeout(()=>char.classList.remove('hurt'),920);
+      showEcho('−2 G · −2 S','red',cRect);
+    } else if(color==='gold'){
+      counts.gold++;
+      char.classList.remove('eat');void char.offsetWidth;char.classList.add('eat');
+      setTimeout(()=>char.classList.remove('eat'),870);
+      showEcho('+1 GOLD','gold',cRect);
+    } else {
+      counts.silver++;
+      char.classList.remove('eat-silver');void char.offsetWidth;char.classList.add('eat-silver');
+      setTimeout(()=>char.classList.remove('eat-silver'),570);
+      showEcho('+1 SILVER','silver',cRect);
+    }
+    update();
+  },480);
+}
+update();
+</script>
+</body></html>

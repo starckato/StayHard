@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Reward A34 · Card Flip</title>
+<link rel="stylesheet" href="_shared.css">
+<link rel="stylesheet" href="_reward-shared.css">
+<style>
+.phone-content{display:flex;flex-direction:column;}
+.tcg-card{position:fixed;width:100px;height:140px;perspective:800px;z-index:80;pointer-events:none;}
+.tcg-inner{position:relative;width:100%;height:100%;transform-style:preserve-3d;transition:transform .8s cubic-bezier(.5,0,.4,1);transform:rotateY(180deg);}
+.tcg-card.flipped .tcg-inner{transform:rotateY(0deg);}
+.tcg-front,.tcg-back{position:absolute;inset:0;backface-visibility:hidden;border-radius:8px;border:2px solid;overflow:hidden;}
+.tcg-back{background:linear-gradient(135deg,#16161a 0%,#2a2a32 50%,#16161a 100%);border-color:rgba(255,255,255,0.18);display:flex;align-items:center;justify-content:center;font-family:'Archivo Black',sans-serif;color:rgba(255,213,74,0.5);font-size:38px;letter-spacing:-0.04em;}
+.tcg-back:after{content:'';position:absolute;inset:6px;border-radius:5px;border:1px solid rgba(255,213,74,0.18);}
+.tcg-front{transform:rotateY(180deg);display:flex;flex-direction:column;padding:8px;color:#fff;}
+.tcg-front.gold{background:linear-gradient(135deg,#fff1a8 0%,#ffd54a 50%,#c48c1a 100%);border-color:#a06a08;color:#3a1a00;}
+.tcg-front.silver{background:linear-gradient(135deg,#f2f4f7 0%,#b5c0cc 50%,#6d7682 100%);border-color:#4a5160;color:#16161a;}
+.tcg-front.red{background:linear-gradient(135deg,#ff8080 0%,#ff4d4d 50%,#8b1515 100%);border-color:#5a0808;color:#fff;}
+.tcg-rarity{font-family:'DM Mono',monospace;font-size:8px;font-weight:800;letter-spacing:0.16em;text-transform:uppercase;text-align:center;border-bottom:1px solid currentColor;padding-bottom:3px;}
+.tcg-art{flex:1;display:flex;align-items:center;justify-content:center;font-size:44px;}
+.tcg-name{font-family:'Archivo Black',sans-serif;font-size:11px;letter-spacing:-0.02em;text-align:center;line-height:1.1;}
+.tcg-cost{position:absolute;top:5px;right:5px;width:20px;height:20px;background:rgba(0,0,0,0.5);border:1.5px solid currentColor;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Archivo Black',sans-serif;font-size:10px;color:#fff;}
+.holo-shimmer{position:absolute;inset:0;pointer-events:none;background:linear-gradient(110deg,transparent 30%,rgba(255,255,255,0.4) 50%,transparent 70%);opacity:0;}
+.tcg-card.shimmering .holo-shimmer{animation:shimmer 1.4s ease;}
+@keyframes shimmer{0%{opacity:0;transform:translateX(-100%);}50%{opacity:1;}100%{opacity:0;transform:translateX(100%);}}
+.tcg-card.entering{animation:cardIn .35s ease forwards;}
+@keyframes cardIn{0%{transform:translate(var(--ox),var(--oy)) scale(0.4) rotate(-15deg);opacity:0;}100%{transform:translate(0,0) scale(1) rotate(0deg);opacity:1;}}
+.tcg-card.tucking{animation:tuck .55s cubic-bezier(.5,0,.7,1) forwards;}
+@keyframes tuck{0%{transform:translate(0,0) scale(1);opacity:1;}100%{transform:translate(var(--tx),var(--ty)) scale(0.15) rotate(720deg);opacity:0;}}
+.glow-aura{position:fixed;border-radius:12px;z-index:79;pointer-events:none;opacity:0;}
+.glow-aura.gold{box-shadow:0 0 60px 12px rgba(255,213,74,0.65);}
+.glow-aura.silver{box-shadow:0 0 50px 10px rgba(221,225,230,0.55);}
+.glow-aura.red{box-shadow:0 0 60px 12px rgba(255,77,77,0.65);}
+.glow-aura.go{animation:auraGo 1.4s ease forwards;}
+@keyframes auraGo{0%{opacity:0;}25%{opacity:1;}80%{opacity:1;}100%{opacity:0;}}
+</style></head>
+<body>
+<div class="head">
+  <a class="back" href="index.html">← 목록</a>
+  <div class="title"><div class="opt">REWARD A34</div><div class="t">Card Flip · Hearthstone — TCG 카드 플립 reveal</div></div>
+</div>
+
+<div class="phone">
+  <div class="phone-content">
+    <div class="sb">
+      <div class="sb-row"><div class="sb-tier"><span class="ic">🃏</span><span>방관자</span></div><div class="sb-streak">🔥 12일</div></div>
+      <div class="sb-bar"><div class="sb-fill-gold" id="fillG" style="width:25%;"></div><div class="sb-fill-silver" id="fillS" style="left:25%;width:25%;"></div></div>
+      <div class="sb-meta"><span><b id="metaScore">6</b> / 12 → 각성자</span><span id="metaPct">50%</span></div>
+      <div class="sb-stack" id="stack">
+        <div class="sb-stack-item"><div class="sb-stack-dot gold" id="dotG"></div><div class="sb-stack-num" id="numG">3</div><div class="sb-stack-lbl">G</div></div>
+        <div class="sb-stack-item"><div class="sb-stack-dot silver" id="dotS"></div><div class="sb-stack-num" id="numS">9</div><div class="sb-stack-lbl">S</div></div>
+        <div class="sb-stack-item"><div class="sb-stack-dot red" id="dotR"></div><div class="sb-stack-num" id="numR">0</div><div class="sb-stack-lbl">R</div></div>
+      </div>
+    </div>
+    <div class="room">
+      <div class="room-bg"></div>
+      <div class="room-char"></div>
+      <div class="card-stub">
+        <div class="card-row">
+          <span class="card-icon">🥗</span>
+          <span class="card-title">식단</span>
+          <span style="margin-left:auto;font-size:10px;color:#ffd54a;font-family:'DM Mono',monospace;">CARD PACK</span>
+        </div>
+        <button class="card-action" onclick="trigger('gold',event)">+ 클린식 (LEGENDARY 카드)</button>
+        <button class="card-action" style="margin-top:5px;background:linear-gradient(135deg,#94a3b8,#475569);" onclick="trigger('silver',event)">+ 일반식 (RARE 카드)</button>
+        <button class="card-action" style="margin-top:5px;background:linear-gradient(135deg,#8b1515,#ff4d4d);" onclick="trigger('red',event)">+ 음주 (CURSED 카드)</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="note">
+  <b>A34 — Card Flip</b> (Hearthstone · Pokemon TCG · Genshin gacha): 큐브 = *수집 카드*. 카드가 카드팩에서 튀어나와 (random rotation) → 화면 중앙에 도착 → 360° 플립 reveal → 희귀도에 맞는 글로우 + 홀로그램 shimmer → tap 영역 (auto 1.5s 후 stack 으로 360° 회전하며 흡수).<br>
+  <b>장점</b>: <b>수집 만족감 극대화</b>. 카드 = 명시적 소유물. 매 액션이 *오프닝* 처럼 느껴짐. red 도 CURSED 카드라는 framing 으로 부정성 약간 완화. <b>단점</b>: 잦은 액션 시 카드 플립 시간 (~1.5s) 누적 부담. 평범한 silver 까지 풀 ceremony 면 피로.
+</div>
+
+<script>
+const counts={gold:3,silver:9,red:0};
+const TIER_NEXT=12;
+const ART={gold:'⚔️',silver:'🛡️',red:'💀'};
+const NAME={gold:'CLEAN STRIKE',silver:'STEADY RECORD',red:'BROKEN VOW'};
+const COST={gold:'L',silver:'R',red:'C'};
+function score(){return counts.gold + counts.silver/3;}
+function update(){
+  document.getElementById('numG').textContent=counts.gold;
+  document.getElementById('numS').textContent=counts.silver;
+  document.getElementById('numR').textContent=counts.red;
+  const s=score();
+  const goldPct=Math.min(100,counts.gold/TIER_NEXT*100);
+  const silverPct=Math.min(100-goldPct, (counts.silver/3)/TIER_NEXT*100);
+  document.getElementById('fillG').style.width=goldPct+'%';
+  document.getElementById('fillS').style.left=goldPct+'%';
+  document.getElementById('fillS').style.width=silverPct+'%';
+  document.getElementById('metaScore').textContent=Math.round(s*10)/10;
+  document.getElementById('metaPct').textContent=Math.min(100,Math.round(s/TIER_NEXT*100))+'%';
+}
+function trigger(color, ev){
+  const btn=ev.currentTarget;
+  const oRect=btn.getBoundingClientRect();
+  const phoneRect=document.querySelector('.phone').getBoundingClientRect();
+  const cx=phoneRect.left+phoneRect.width/2-50;
+  const cy=phoneRect.top+phoneRect.height*0.32;
+  // Card element
+  const card=document.createElement('div');card.className='tcg-card';
+  card.innerHTML=`
+    <div class="tcg-inner">
+      <div class="tcg-back">Q</div>
+      <div class="tcg-front ${color}">
+        <div class="tcg-rarity">${color==='gold'?'LEGENDARY':color==='silver'?'RARE':'CURSED'}</div>
+        <div class="tcg-art">${ART[color]}</div>
+        <div class="tcg-name">${NAME[color]}</div>
+        <div class="tcg-cost">${COST[color]}</div>
+      </div>
+      <div class="holo-shimmer"></div>
+    </div>`;
+  card.style.left=cx+'px';card.style.top=cy+'px';
+  card.style.setProperty('--ox',(oRect.left-cx)+'px');
+  card.style.setProperty('--oy',(oRect.top-cy)+'px');
+  document.body.appendChild(card);
+  card.classList.add('entering');
+  // Glow aura behind card
+  const aura=document.createElement('div');aura.className='glow-aura '+color;
+  aura.style.left=(cx+10)+'px';aura.style.top=(cy+10)+'px';aura.style.width='80px';aura.style.height='120px';
+  document.body.appendChild(aura);
+  // After enter: flip + shimmer
+  setTimeout(()=>{
+    card.classList.add('flipped');
+    if(color==='gold')card.classList.add('shimmering');
+    aura.classList.add('go');
+    if(navigator.vibrate)navigator.vibrate(20);
+  },350);
+  // After reveal: tuck into stack
+  setTimeout(()=>{
+    const tMap={gold:'dotG',silver:'dotS',red:'dotR'};
+    const tDot=document.getElementById(tMap[color]);
+    const tRect=tDot.getBoundingClientRect();
+    card.style.setProperty('--tx',(tRect.left+tRect.width/2-cx-50)+'px');
+    card.style.setProperty('--ty',(tRect.top+tRect.height/2-cy-70)+'px');
+    card.classList.add('tucking');
+    setTimeout(()=>{
+      card.remove();aura.remove();
+      if(color==='red'){counts.red++;counts.gold=Math.max(0,counts.gold-2);counts.silver=Math.max(0,counts.silver-2);}
+      else counts[color]++;
+      update();
+    },560);
+  },1700);
+}
+update();
+</script>
+</body></html>

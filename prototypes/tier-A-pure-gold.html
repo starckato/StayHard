@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>티어 A · Pure Gold</title>
+<link rel="stylesheet" href="_shared.css">
+<style>
+.character{bottom:120px;left:50%;transform:translateX(-50%);}
+.tier-band{position:absolute;top:0;left:0;right:0;padding:14px 18px 12px;background:linear-gradient(180deg,rgba(0,0,0,0.85),rgba(0,0,0,0.45) 70%,transparent);z-index:6;}
+.tb-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.tb-tier{font-family:'Archivo Black',sans-serif;font-size:18px;letter-spacing:-0.02em;}
+.tb-tier .ic{font-size:14px;margin-right:5px;}
+.tb-streak{font-size:11px;color:#ffb84d;font-weight:700;margin-left:auto;}
+.tb-bar{height:7px;background:rgba(255,255,255,0.06);border-radius:999px;overflow:hidden;border:1px solid rgba(255,255,255,0.05);}
+.tb-fill{height:100%;background:linear-gradient(90deg,#ffd54a,#fff1a8 60%,#ffd54a);border-radius:999px;transition:width .6s cubic-bezier(.4,0,.2,1);box-shadow:0 0 6px rgba(255,213,74,0.5);}
+.tb-meta{display:flex;justify-content:space-between;font-size:10.5px;color:#a8a8b4;font-family:'DM Mono',monospace;margin-top:4px;letter-spacing:0.02em;}
+.tb-meta b{color:#ffd54a;font-weight:700;}
+.tb-formula{font-size:9.5px;color:#7a7a86;margin-top:4px;font-family:'DM Mono',monospace;}
+.silver-shelf{position:absolute;left:14px;right:14px;bottom:18px;background:rgba(20,20,28,0.88);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:10px 14px;display:flex;align-items:center;gap:10px;}
+.ss-icon{width:14px;height:14px;border-radius:2px;background:linear-gradient(135deg,#f2f4f7,#b5c0cc 50%,#6d7682);}
+.ss-num{font-family:'Archivo Black',sans-serif;font-size:18px;letter-spacing:-0.5px;}
+.ss-lbl{font-size:10px;color:#7a7a86;letter-spacing:0.06em;text-transform:uppercase;font-weight:700;}
+.ss-aux{margin-left:auto;font-size:10px;color:#7a7a86;font-family:'DM Mono',monospace;}
+.bumped{animation:bump .35s ease;}
+@keyframes bump{0%{transform:scale(1);}40%{transform:scale(1.18);color:#fff;}100%{transform:scale(1);}}
+.tier-up-flash{position:absolute;inset:0;background:radial-gradient(circle,rgba(255,213,74,0.6) 0%,transparent 60%);opacity:0;pointer-events:none;z-index:7;}
+.tier-up-flash.go{animation:flash 1.2s ease-out;}
+@keyframes flash{0%{opacity:0;}30%{opacity:1;}100%{opacity:0;}}
+</style></head>
+<body>
+<div class="head">
+  <a class="back" href="index.html">← 목록</a>
+  <div class="title"><div class="opt">티어 A</div><div class="t">Pure Gold (gold 만 티어 결정 · silver = 활동 기록)</div></div>
+</div>
+
+<div class="phone">
+  <div class="phone-content">
+    <div class="tier-band">
+      <div class="tb-row"><div class="tb-tier" id="tbTier"><span class="ic">😴</span><span id="tbTierName">방관자</span></div><div class="tb-streak">🔥 12일</div></div>
+      <div class="tb-bar"><div class="tb-fill" id="tbFill" style="width:0%;"></div></div>
+      <div class="tb-meta"><span><b id="tbEff">0</b> / <span id="tbNeed">8</span> gold → <span id="tbNext">각성자</span></span><span id="tbPct">0%</span></div>
+      <div class="tb-formula">effective_gold = <span id="tbG">0</span> · 1 red 발생 시 → gold 2 + silver 2 즉시 차감 (red 카운트 <span id="tbR">0</span>)</div>
+    </div>
+    <div class="room">
+      <div class="room-bg"></div>
+      <div class="character" id="char"></div>
+      <div class="silver-shelf">
+        <div class="ss-icon"></div>
+        <div class="ss-num" id="ssNum">0</div>
+        <div class="ss-lbl">기록 (silver)</div>
+        <div class="ss-aux">티어와 무관 · 그만큼 기록했어</div>
+      </div>
+      <div class="tier-up-flash" id="flash"></div>
+    </div>
+  </div>
+</div>
+
+<div class="controls">
+  <button class="gold" onclick="addCube('gold', this)">+ Gold</button>
+  <button class="silver" onclick="addCube('silver', this)">+ Silver</button>
+  <button class="red" onclick="addCube('red', this)">+ Red</button>
+  <button class="reset" onclick="resetAll()">초기화</button>
+</div>
+
+<div class="note">
+  <b>핵심</b>: 티어는 <b>gold 만</b> 본다. silver 는 활동량 기록 (스트릭/뱃지/공유에만 사용). 1 red = gold 2개 + silver 2개 차감 (모두 max 0).<br>
+  <b>임계</b>: 각성자 8 / 저항자 40 / 수련자 130 / 지배자 320 / 기록자 900 (effective gold 기준).<br>
+  <b>장점</b>: 각 gold 가 진짜 성취 (절제·완수). 모호함 없음. <b>단점</b>: silver 의 가치 약해짐 — "왜 silver 가 있지?" 라는 질문.<br>
+  <b>플레이</b>: + Gold 8번 → 각성자. red 누르면 effective gold 떨어져서 다시 방관자.
+</div>
+
+<script src="_shared.js"></script>
+<script>
+const TIERS=[
+  {min:0, name:'방관자', icon:'😴', next:'각성자'},
+  {min:8, name:'각성자', icon:'⚡', next:'저항자'},
+  {min:40, name:'저항자', icon:'🦴', next:'수련자'},
+  {min:130, name:'수련자', icon:'🔥', next:'지배자'},
+  {min:320, name:'지배자', icon:'👑', next:'기록자'},
+  {min:900, name:'기록자', icon:'🏆', next:null},
+];
+let counts={gold:0,silver:0,red:0};
+let lastTier=0;
+function effectiveGold(){return Math.max(0, counts.gold);} // red 가 이미 즉시 차감됨
+function currentTierIdx(){const eg=effectiveGold();let idx=0;for(let i=TIERS.length-1;i>=0;i--){if(eg>=TIERS[i].min){idx=i;break;}}return idx;}
+function update(){
+  const eg=effectiveGold();
+  const idx=currentTierIdx();
+  const t=TIERS[idx];
+  const nextT=TIERS[idx+1]||t;
+  const span=nextT.min - t.min || 1;
+  const into=eg - t.min;
+  const pct=nextT===t?100:Math.min(100,Math.max(0,Math.round(into/span*100)));
+  document.getElementById('tbTierName').textContent=t.name;
+  document.querySelector('#tbTier .ic').textContent=t.icon;
+  document.getElementById('tbFill').style.width=pct+'%';
+  document.getElementById('tbEff').textContent=eg;
+  document.getElementById('tbNeed').textContent=nextT.min;
+  document.getElementById('tbNext').textContent=nextT===t?'정점':nextT.name;
+  document.getElementById('tbPct').textContent=pct+'%';
+  document.getElementById('tbG').textContent=counts.gold;
+  document.getElementById('tbR').textContent=counts.red;
+  const sn=document.getElementById('ssNum');sn.textContent=counts.silver.toLocaleString();bumpCounter(sn);
+  if(idx>lastTier){
+    const f=document.getElementById('flash');f.classList.remove('go');void f.offsetWidth;f.classList.add('go');
+  }
+  lastTier=idx;
+}
+function addCube(color, btn){
+  flyCubeToCharacter(btn, color, (c)=>{
+    if(c==='red'){counts.red++;counts.gold=Math.max(0,counts.gold-2);counts.silver=Math.max(0,counts.silver-2);}
+    else counts[c]++;
+    update();
+  });
+}
+function resetAll(){counts={gold:0,silver:0,red:0};lastTier=0;update();}
+counts={gold:6,silver:18,red:0};lastTier=currentTierIdx();update();
+</script>
+</body></html>

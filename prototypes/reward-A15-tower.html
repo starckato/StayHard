@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Reward A15 · Tower Builder</title>
+<link rel="stylesheet" href="_shared.css">
+<link rel="stylesheet" href="_reward-shared.css">
+<style>
+.phone-content{display:flex;flex-direction:column;}
+.tower-wrap{position:absolute;right:14px;bottom:130px;width:34px;height:240px;display:flex;flex-direction:column-reverse;align-items:center;justify-content:flex-start;z-index:3;}
+.tower-base{width:34px;height:6px;background:linear-gradient(180deg,#3a3a45,#1f1f28);border-radius:2px;margin-bottom:1px;box-shadow:0 0 6px rgba(0,0,0,0.6);flex-shrink:0;}
+.tower-block{width:30px;height:8px;border-radius:2px;flex-shrink:0;margin-bottom:1.5px;border:1px solid rgba(0,0,0,0.4);box-shadow:inset 0 1px 0 rgba(255,255,255,0.4),inset 0 -1px 1px rgba(0,0,0,0.4);transition:opacity .35s ease,transform .45s cubic-bezier(.32,1.5,.42,1);}
+.tower-block.gold{background:linear-gradient(135deg,#fff1a8,#ffd54a 50%,#c48c1a);}
+.tower-block.silver{background:linear-gradient(135deg,#f2f4f7,#b5c0cc 50%,#6d7682);}
+.tower-block.land{animation:landBlock .55s cubic-bezier(.5,0,.4,1.5);}
+@keyframes landBlock{0%{transform:translateY(-30px) scale(1.4);opacity:0;}40%{opacity:1;}70%{transform:translateY(2px) scale(0.95);}100%{transform:translateY(0) scale(1);opacity:1;}}
+.tower-block.crumble{animation:crumble .6s ease forwards;}
+@keyframes crumble{0%{transform:translateY(0) rotate(0);opacity:1;}100%{transform:translateY(60px) rotate(45deg);opacity:0;}}
+.tower-tier-line{position:absolute;left:-6px;right:-6px;height:1.5px;background:rgba(255,213,74,0.45);box-shadow:0 0 6px rgba(255,213,74,0.4);}
+.tower-tier-line:after{content:attr(data-tier);position:absolute;right:38px;top:-7px;font-size:9px;color:rgba(255,213,74,0.8);font-family:'DM Mono',monospace;font-weight:700;white-space:nowrap;}
+.tower-label{position:absolute;left:-50px;bottom:0;font-family:'DM Mono',monospace;font-size:9px;color:#7a7a86;writing-mode:vertical-rl;letter-spacing:0.08em;text-transform:uppercase;font-weight:700;}
+.tower-cap{position:absolute;top:-18px;width:34px;text-align:center;font-family:'Archivo Black',sans-serif;font-size:14px;color:#ffd54a;letter-spacing:-.02em;text-shadow:0 0 8px rgba(255,213,74,0.4);}
+</style></head>
+<body>
+<div class="head">
+  <a class="back" href="index.html">← 목록</a>
+  <div class="title"><div class="opt">REWARD A15</div><div class="t">Tower Builder — score 가 *수직 탑*. 자라는 게 보임</div></div>
+</div>
+
+<div class="phone">
+  <div class="phone-content">
+    <div class="sb">
+      <div class="sb-row"><div class="sb-tier"><span class="ic">😴</span><span>방관자</span></div><div class="sb-streak">🔥 12일</div></div>
+      <div class="sb-meta" style="font-size:11px;"><span><b id="metaScore">6</b> / 12 → 각성자</span><span id="cubeCounts">G 3 · S 9 · R 0</span></div>
+    </div>
+    <div class="room">
+      <div class="room-bg"></div>
+      <div class="room-char"></div>
+      <div class="tower-wrap" id="towerWrap">
+        <div class="tower-cap" id="towerCap">6</div>
+        <div class="tower-base"></div>
+        <!-- blocks injected via JS -->
+      </div>
+      <div class="card-stub">
+        <div class="card-row">
+          <span class="card-icon">🥗</span>
+          <span class="card-title">식단</span>
+          <span style="margin-left:auto;font-size:10px;color:#7a7a86;font-family:'DM Mono',monospace;">탑이 자란다</span>
+        </div>
+        <button class="card-action" onclick="trigger('gold')">+ 클린식 (gold = 굵은 황금 층)</button>
+        <button class="card-action" style="margin-top:5px;background:linear-gradient(135deg,#94a3b8,#475569);" onclick="trigger('silver')">+ 일반식 (silver = 얇은 회색 층)</button>
+        <button class="card-action" style="margin-top:5px;background:linear-gradient(135deg,#8b1515,#ff4d4d);" onclick="trigger('red')">+ 음주 (red = 위 2층 무너짐)</button>
+        <button class="card-action" style="margin-top:5px;background:rgba(255,255,255,0.05);color:#a8a8b4;" onclick="reset()">초기화</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="note">
+  <b>A15 — Tower Builder</b>: score 의 *물리적 구현*. 탑이 자라면 score 가 자란 것. gold = 굵은 황금 층 (12px), silver = 얇은 회색 층 (4px) — silver/3 비율 시각화. red = 위 2층이 *떨어져 무너짐*. 룸 안에 탑이 항상 보임 — score 와 룸이 한 시야.<br>
+  <b>장점</b>: <b>가장 직관적</b> — 키 = 점수. 시간이 지날수록 탑이 자라는 누적 만족감. 룸 풍경의 일부가 됨. <b>단점</b>: 임계 큰 구간 (지배자 500) 에서는 탑이 너무 길어짐 — 다음 티어까지 *시각적 segment* 로 끊는 정책 필요.
+</div>
+
+<script>
+const counts={gold:3,silver:9,red:0};
+const TIER_NEXT=12;
+function score(){return counts.gold + counts.silver/3;}
+const blocks=[]; // {color, el}
+function init(){
+  const wrap=document.getElementById('towerWrap');
+  // remove existing block elements (keep base + cap)
+  wrap.querySelectorAll('.tower-block').forEach(b=>b.remove());
+  blocks.length=0;
+  for(let i=0;i<counts.gold;i++)addBlock('gold', false);
+  for(let i=0;i<Math.floor(counts.silver/3);i++)addBlock('silver', false);
+  // partial silver also draws thin (use 1 silver = 1/3 block, fractional)
+  const partial=counts.silver%3;
+  if(partial>0){
+    const w=document.getElementById('towerWrap');
+    const b=document.createElement('div');b.className='tower-block silver';b.style.height=(8*partial/3)+'px';b.style.opacity=0.65;
+    w.insertBefore(b, w.firstElementChild.nextSibling);
+    blocks.push({color:'silver-partial',el:b});
+  }
+  updateMeta();
+}
+function addBlock(color, animate=true){
+  const wrap=document.getElementById('towerWrap');
+  const b=document.createElement('div');b.className='tower-block '+color;
+  if(color==='gold')b.style.height='12px';
+  if(animate)b.classList.add('land');
+  wrap.insertBefore(b, wrap.firstElementChild.nextSibling); // after .tower-base
+  blocks.push({color,el:b});
+  if(animate)setTimeout(()=>b.classList.remove('land'),550);
+}
+function crumble(n){
+  const realBlocks=blocks.filter(b=>b.color!=='silver-partial');
+  let removed=0;
+  for(let i=realBlocks.length-1;i>=0&&removed<n;i--){
+    const blk=realBlocks[i].el;
+    blk.classList.add('crumble');
+    setTimeout(()=>{blk.remove();},620);
+    blocks.splice(blocks.indexOf(realBlocks[i]),1);
+    removed++;
+  }
+}
+function updateMeta(){
+  const s=score();
+  document.getElementById('metaScore').textContent=Math.round(s*10)/10;
+  document.getElementById('cubeCounts').textContent=`G ${counts.gold} · S ${counts.silver} · R ${counts.red}`;
+  document.getElementById('towerCap').textContent=Math.round(s*10)/10;
+}
+function trigger(color){
+  if(color==='gold'){counts.gold++;addBlock('gold');}
+  else if(color==='silver'){
+    counts.silver++;
+    const newSlots=Math.floor(counts.silver/3);
+    const oldSlots=Math.floor((counts.silver-1)/3);
+    if(newSlots>oldSlots){addBlock('silver');}
+    // partial silver visual ignored for simplicity in this demo
+  } else { // red
+    counts.red++;
+    counts.gold=Math.max(0,counts.gold-2);
+    counts.silver=Math.max(0,counts.silver-2);
+    crumble(2);
+  }
+  updateMeta();
+}
+function reset(){counts.gold=3;counts.silver=9;counts.red=0;init();}
+init();
+</script>
+</body></html>

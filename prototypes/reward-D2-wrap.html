@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Reward D2 · Daily Wrap</title>
+<link rel="stylesheet" href="_shared.css">
+<link rel="stylesheet" href="_reward-shared.css">
+<style>
+.phone-content{display:flex;flex-direction:column;}
+.wrap-card{margin:14px 14px 0;padding:18px;background:linear-gradient(135deg,rgba(255,213,74,0.08),rgba(255,107,53,0.04));border:1px solid rgba(255,213,74,0.18);border-radius:14px;position:relative;}
+.wc-head{display:flex;align-items:center;gap:8px;margin-bottom:14px;}
+.wc-tag{font-size:9.5px;font-weight:800;color:#ffd54a;letter-spacing:0.12em;text-transform:uppercase;}
+.wc-close{margin-left:auto;font-size:14px;color:#7a7a86;cursor:pointer;background:none;border:none;}
+.wc-score-row{display:flex;align-items:flex-end;gap:12px;margin-bottom:14px;}
+.wc-score{font-family:'Archivo Black',sans-serif;font-size:46px;color:#fff;letter-spacing:-0.04em;line-height:0.9;}
+.wc-score-unit{font-size:13px;color:#a8a8b4;margin-bottom:6px;}
+.wc-vs{margin-left:auto;text-align:right;}
+.wc-vs-num{font-family:'DM Mono',monospace;font-size:14px;color:#34d399;font-weight:700;}
+.wc-vs-num.down{color:#ff8080;}
+.wc-vs-lbl{font-size:9.5px;color:#7a7a86;letter-spacing:0.04em;}
+.wc-cube-row{display:flex;gap:14px;margin-bottom:14px;padding:10px 12px;background:rgba(0,0,0,0.25);border-radius:8px;}
+.wc-cube-item{display:flex;align-items:center;gap:5px;}
+.wc-cube-dot{width:11px;height:11px;border-radius:2px;border:1px solid rgba(0,0,0,0.4);box-shadow:inset 0 1px 0 rgba(255,255,255,0.4);}
+.wc-cube-dot.gold{background:linear-gradient(135deg,#fff1a8,#ffd54a 50%,#c48c1a);}
+.wc-cube-dot.silver{background:linear-gradient(135deg,#f2f4f7,#b5c0cc 50%,#6d7682);}
+.wc-cube-dot.red{background:linear-gradient(135deg,#ff8080,#ff4d4d 50%,#8b1515);}
+.wc-cube-num{font-family:'Archivo Black',sans-serif;font-size:14px;}
+.wc-cube-lbl{font-size:9px;color:#7a7a86;letter-spacing:0.06em;}
+.wc-streak{display:flex;align-items:center;gap:8px;padding:8px 10px;background:rgba(255,184,77,0.08);border:1px solid rgba(255,184,77,0.18);border-radius:8px;margin-bottom:12px;}
+.wc-streak-fire{font-size:14px;}
+.wc-streak-num{font-family:'Archivo Black',sans-serif;font-size:16px;color:#ffb84d;}
+.wc-streak-lbl{font-size:10px;color:#a8a8b4;}
+.wc-quote{font-size:12.5px;color:#dcdce4;line-height:1.55;font-style:italic;padding:0 4px;letter-spacing:-.005em;border-left:2px solid rgba(255,213,74,0.4);padding-left:10px;}
+.wc-cta{display:flex;gap:6px;margin-top:14px;}
+.wc-cta button{flex:1;padding:9px;border:none;border-radius:7px;font-family:'DM Sans',sans-serif;font-size:11.5px;font-weight:700;cursor:pointer;}
+.wc-cta .primary{background:linear-gradient(135deg,#ff4d4d,#ff6b35);color:#fff;}
+.wc-cta .ghost{background:rgba(255,255,255,0.05);color:#a8a8b4;border:1px solid rgba(255,255,255,0.08);}
+.home-stub{padding:14px;font-size:11px;color:#7a7a86;text-align:center;font-family:'DM Mono',monospace;}
+</style></head>
+<body>
+<div class="head">
+  <a class="back" href="index.html">← 목록</a>
+  <div class="title"><div class="opt">REWARD D2</div><div class="t">Daily Wrap — 어제 결산 카드 (홈 첫 카드)</div></div>
+</div>
+
+<div class="phone">
+  <div class="phone-content">
+    <div class="sb">
+      <div class="sb-row"><div class="sb-tier"><span class="ic">⚡</span><span>각성자</span></div><div class="sb-streak">🔥 12일</div></div>
+      <div class="sb-bar"><div class="sb-fill-gold" style="width:42%;"></div><div class="sb-fill-silver" style="left:42%;width:18%;"></div></div>
+      <div class="sb-meta"><span><b>22.7</b> / 60 → 저항자</span><span>38%</span></div>
+    </div>
+    <div class="room" style="background:#0e0e14;">
+      <div class="wrap-card" id="card">
+        <div class="wc-head">
+          <span class="wc-tag">🌙 어제의 결산</span>
+          <button class="wc-close" onclick="document.getElementById('card').style.display='none';">✕</button>
+        </div>
+        <div class="wc-score-row">
+          <div class="wc-score" id="wcScore">5.7</div>
+          <div class="wc-score-unit">점수</div>
+          <div class="wc-vs">
+            <div class="wc-vs-num">+35%</div>
+            <div class="wc-vs-lbl">최근 7일 평균 4.2</div>
+          </div>
+        </div>
+        <div class="wc-cube-row">
+          <div class="wc-cube-item"><div class="wc-cube-dot gold"></div><div class="wc-cube-num">3</div><div class="wc-cube-lbl">G</div></div>
+          <div class="wc-cube-item"><div class="wc-cube-dot silver"></div><div class="wc-cube-num">8</div><div class="wc-cube-lbl">S</div></div>
+          <div class="wc-cube-item"><div class="wc-cube-dot red"></div><div class="wc-cube-num">0</div><div class="wc-cube-lbl">R</div></div>
+        </div>
+        <div class="wc-streak">
+          <span class="wc-streak-fire">🔥</span>
+          <span class="wc-streak-num">12일</span>
+          <span class="wc-streak-lbl">연속 기록 — 깨지 마라</span>
+        </div>
+        <div class="wc-quote">"불편함을 택한 하루가 기록된다."</div>
+        <div class="wc-cta">
+          <button class="primary">📷 공유</button>
+          <button class="ghost" onclick="document.getElementById('card').style.display='none';">닫기</button>
+        </div>
+      </div>
+      <div class="home-stub" id="homeStub" style="display:none;">— 홈 나머지 카드들 (체중/식단/운동/...) —</div>
+    </div>
+  </div>
+</div>
+
+<div class="note">
+  <b>D2 — Daily Wrap</b>: 자정~첫 진입 사이에 *홈 최상단 카드* 로 자동 노출. 닫기 가능. 다음날 갱신. 모달 아님 — 마찰 없음. 표시 정보: (1) 어제 점수 + 7일 평균 대비 (2) gold/silver/red 카운트 (3) streak 일자 (4) 현재 티어 quote 풀에서 1개 (5) 공유 / 닫기.<br>
+  <b>장점</b>: 매일 1회 *복기* 의 의식. 자랑 거리 즉시 공유 가능. 평균 비교로 *내 패턴* 인식. <b>단점</b>: 홈 promo 영역과 위치 경쟁 (첫 주 미션 / 위클리 / 친구 초대 와 자리 다툼). 우선순위 정책 필요.<br>
+  <b>플레이</b>: ✕ 클릭 → 카드 사라짐 (다음날 자동 재노출).
+</div>
+</body></html>
