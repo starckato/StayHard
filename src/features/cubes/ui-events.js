@@ -151,12 +151,17 @@ function _bumpStackNum(numEl, color) {
 }
 
 /**
- * Red collapse (간소): 캐릭터 휘청 + body shake. 다음 단계: sticky shake + token fall.
+ * Red collapse: sticky shake + 캐릭터 휘청 + 카드 tint + heavy haptic.
+ * (token fall + crack overlay 는 후속 단계에서 추가)
  */
 function _playRedCollapse(ev, onDone) {
   const cardEl = _zenCardForEvent(ev);
   _tintCard(cardEl, 'red');
-  // 캐릭터 휘청 — 기존 .sb-canvas-wrap 사용.
+
+  // Sticky header shake + burn flash — sticky-header feature 의 헬퍼 호출.
+  try { window.applyRedCollapse?.(); } catch (_) {}
+
+  // 캐릭터 휘청.
   try {
     const charEl = document.querySelector('.sb-canvas-wrap');
     if (charEl && charEl.animate) {
@@ -171,9 +176,14 @@ function _playRedCollapse(ev, onDone) {
       );
     }
   } catch (_) { /* silent */ }
+
+  // Heavy haptic.
   if (window.sh?.haptics?.tap) window.sh.haptics.tap('medium');
-  else if (typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function') navigator.vibrate([35, 25, 35]);
-  setTimeout(() => onDone?.(), 800);
+  else if (typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function') {
+    navigator.vibrate([40, 30, 40, 30, 60]);
+  }
+
+  setTimeout(() => onDone?.(), 900);
 }
 
 /**

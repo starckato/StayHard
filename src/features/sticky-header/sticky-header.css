@@ -1,0 +1,195 @@
+/* 큐록 · features/sticky-header/sticky-header.css
+   슬림 56px 고정 헤더. prototype A6+A18 v2 (reward-A6-A18-zen-tap.html) 의
+   .sticky-header 디자인을 실 앱 layout 에 맞춰 통합 (2026-05-07).
+   안의 cube counter / tier / streak / progress 는 모두 .sb 에서 이전. */
+
+.sticky-header {
+  position: fixed;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 430px;
+  background: linear-gradient(180deg, rgba(15, 15, 20, 0.96), rgba(15, 15, 20, 0.92));
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  z-index: 50;
+  padding-top: env(safe-area-inset-top, 0);
+}
+
+.sh-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px 8px;
+}
+
+.sh-tier {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.sh-tier-icon { font-size: 14px; }
+.sh-tier-name {
+  font-family: 'Archivo Black', sans-serif;
+  font-size: 13px;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+.sh-streak {
+  font-size: 11px;
+  color: #ffb84d;
+  font-weight: 700;
+  margin-left: 4px;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.sh-cubes {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.sh-cube-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.sh-cube-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 1.5px;
+  border: 0.5px solid rgba(0, 0, 0, 0.4);
+  box-shadow: inset 0 0.5px 0 rgba(255, 255, 255, 0.4);
+  transition: transform 0.35s cubic-bezier(.32, 1.6, .42, 1), box-shadow 0.35s ease;
+  flex-shrink: 0;
+}
+.sh-cube-dot.gold   { background: linear-gradient(135deg, #fff1a8, #ffd54a 50%, #c48c1a); }
+.sh-cube-dot.silver { background: linear-gradient(135deg, #f2f4f7, #b5c0cc 50%, #6d7682); }
+.sh-cube-dot.red    { background: linear-gradient(135deg, #ff8080, #ff4d4d 50%, #8b1515); }
+.sh-cube-dot.bumped {
+  transform: scale(1.5);
+  box-shadow: 0 0 12px var(--bump);
+}
+.sh-cube-dot.gold.bumped   { --bump: rgba(255, 213, 74, 0.9); }
+.sh-cube-dot.silver.bumped { --bump: rgba(221, 225, 230, 0.9); }
+.sh-cube-dot.red.bumped    { --bump: rgba(255, 77, 77, 1); }
+
+.sh-cube-num {
+  font-family: 'Archivo Black', sans-serif;
+  font-size: 13px;
+  color: var(--text);
+  letter-spacing: -0.02em;
+  transition: color 0.4s ease;
+}
+.sh-cube-num.tweening      { color: #ffd54a; }
+.sh-cube-num.tweening-loss { color: #ff8080; }
+
+.sh-progress-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1px;
+  font-family: 'DM Mono', monospace;
+  font-size: 9.5px;
+  flex-shrink: 0;
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+  padding-left: 10px;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.sh-progress-meta .next { color: #ffd54a; font-weight: 700; }
+.sh-progress-meta .pct  { color: var(--text3); }
+
+/* 4px 진행 막대 — gold + silver 영역 분리 */
+.sh-bar {
+  height: 3px;
+  background: rgba(255, 255, 255, 0.05);
+  position: relative;
+  overflow: hidden;
+}
+.sh-bar-gold {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, #ffd54a, #fff1a8 60%, #ffd54a);
+  transition: width 0.55s cubic-bezier(.4, 0, .2, 1);
+  box-shadow: 0 0 5px rgba(255, 213, 74, 0.5);
+}
+.sh-bar-silver {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, #b5c0cc, #dde1e6);
+  transition: left 0.55s cubic-bezier(.4, 0, .2, 1), width 0.55s cubic-bezier(.4, 0, .2, 1);
+  opacity: 0.85;
+}
+
+/* Red collapse FX (다음 단계 — 본 파일에 자리만 잡아둠) */
+.sticky-header.shaking { animation: stickyShake 0.45s ease; }
+@keyframes stickyShake {
+  0%, 100% { transform: translateX(-50%); }
+  15%      { transform: translate(calc(-50% - 7px), 0); }
+  30%      { transform: translate(calc(-50% + 7px), 0); }
+  45%      { transform: translate(calc(-50% - 5px), 0); }
+  60%      { transform: translate(calc(-50% + 4px), 0); }
+  80%      { transform: translate(calc(-50% - 2px), 0); }
+}
+.sticky-header.red-burn { animation: stickyBurn 0.9s ease; }
+@keyframes stickyBurn {
+  0%, 100% { box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4); }
+  30%      {
+    box-shadow:
+      0 4px 16px rgba(0, 0, 0, 0.4),
+      inset 0 0 0 2px rgba(255, 77, 77, 0.7),
+      inset 0 -3px 0 rgba(255, 77, 77, 0.9);
+  }
+}
+
+/* Status Band 슬림화 후 보정 — body padding-top 으로 sticky 가린다 */
+#app-screen {
+  padding-top: calc(56px + env(safe-area-inset-top, 0));
+}
+
+/* Status Band 슬림 — 큐브 stack / tier / streak / today / progress 모두 sticky 로 이전됨.
+   .sb 는 character canvas + quote 만 남김. */
+.sb {
+  padding: 14px 16px 12px;
+  background: linear-gradient(135deg, var(--surface) 0%, var(--surface2) 100%);
+  border-radius: var(--radius-xl);
+  margin: 12px 14px;
+  border: 1px solid var(--border);
+}
+.sb .sb-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.sb .sb-canvas-wrap {
+  position: relative;
+  width: 56px;
+  height: 64px;
+  flex-shrink: 0;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.sb .sb-quote {
+  flex: 1;
+  font-family: 'Noto Serif KR', 'Nanum Myeongjo', serif;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--text2);
+  line-height: 1.5;
+  font-style: italic;
+}

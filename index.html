@@ -39,6 +39,7 @@
 <link href="/src/features/targets/targets.css" rel="stylesheet">
 <link href="/src/features/cubes/cubes-ui.css" rel="stylesheet">
 <link href="/src/features/water/water.css" rel="stylesheet">
+<link href="/src/features/sticky-header/sticky-header.css" rel="stylesheet">
 <style>
 /* :root 토큰은 src/styles/tokens.{shared,dark}.css 로 이전됨 (Phase 0).
    index.html 은 다크 팔레트 사용. 추가 sub-palette (--radius-sm 등 legacy) 가
@@ -1350,6 +1351,40 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
 
 <!-- ══ APP ══ -->
 <div id="app-screen">
+  <!-- Sticky Header — slim 56px, position:fixed. Status Band 의 tier/streak/cube/progress 를
+       이전. 항상 화면 상단 고정. (2026-05-07 prototype 통합) -->
+  <div class="sticky-header" id="sticky-header">
+    <div class="sh-top">
+      <div class="sh-tier" onclick="openScoreGuide()">
+        <span class="sh-tier-icon" id="hdr-tier-icon">😴</span>
+        <span class="sh-tier-name" id="hdr-tier">방관자</span>
+        <span class="sh-streak"><span class="streak-fire">🔥</span> <span id="hdr-streak">0일</span></span>
+      </div>
+      <div class="sh-cubes" onclick="openScoreGuide()">
+        <span class="sh-cube-item"><span class="sh-cube-dot gold" id="sh-dot-gold"></span><span class="sh-cube-num" id="cc-num-gold">0</span></span>
+        <span class="sh-cube-item"><span class="sh-cube-dot silver" id="sh-dot-silver"></span><span class="sh-cube-num" id="cc-num-silver">0</span></span>
+        <span class="sh-cube-item"><span class="sh-cube-dot red" id="sh-dot-red"></span><span class="sh-cube-num" id="cc-num-red">0</span></span>
+      </div>
+      <div class="sh-progress-meta" onclick="openScoreGuide()">
+        <span class="next" id="sb-today">+0</span>
+        <span class="pct" id="char-progress-label">—</span>
+      </div>
+    </div>
+    <div class="sh-bar">
+      <div class="sh-bar-gold" id="char-progress" style="width:0%;"></div>
+      <div class="sh-bar-silver" id="sh-bar-silver" style="left:0%;width:0%;"></div>
+    </div>
+    <!-- 호환용 hidden 노드 — 옛 코드 (score-pulse 등) 직접 참조 안전망 -->
+    <div id="hdr-score" style="display:none;">0</div>
+    <span id="char-tier-name" style="display:none;"></span>
+    <span id="char-pts" style="display:none;"></span>
+    <!-- legacy hidden — Status Band 에 있던 cube tower (renderCubeStack 호환). -->
+    <div id="hdr-cube-stack" style="display:none;">
+      <div id="cc-tower-gold" aria-hidden="true"></div>
+      <div id="cc-tower-silver" aria-hidden="true"></div>
+    </div>
+  </div>
+
   <div class="hdr">
     <!-- 1행: 타이틀 + 우측 액션 (알림 종 + 프로필) -->
     <div style="display:flex;align-items:center;justify-content:space-between;width:100%;">
@@ -1399,60 +1434,19 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
       </div>
     </div>
 
-    <!-- STATUS BAND — unified hero: score/tier/streak/today Δ/quote/progress/summary -->
+    <!-- STATUS BAND (slim) — 캐릭터 + quote 만 남김. tier/streak/cube/progress
+         는 Sticky Header 로 이전 (2026-05-07). -->
     <div class="sb">
       <div class="sb-head">
-        <div class="sb-canvas-wrap" style="position:relative;width:44px;height:52px;flex-shrink:0;" onclick="openRoomOverlay()">
-          <canvas id="char-mini-canvas" class="sb-canvas" width="44" height="52" style="width:44px;height:52px;"></canvas>
-          <!-- 각성자 (tier index 1, 200-599pt) — assets/tier2/ 햄버거 던지기 캐릭터 정적 프로필. -->
-          <img id="char-mini-tier2" src="/assets/tier2/Tier2_cha_nobg.png" alt="" style="display:none;position:absolute;inset:0;width:44px;height:52px;object-fit:contain;image-rendering:pixelated;pointer-events:none;" />
-          <!-- 저항자 (tier index 2, 600-1499pt) — assets/tier3/ walking 근육질 캐릭터 정적 프로필. -->
-          <img id="char-mini-tier3" src="/assets/tier3/Tier3_cha_nobg.png" alt="" style="display:none;position:absolute;inset:0;width:44px;height:52px;object-fit:contain;image-rendering:pixelated;pointer-events:none;" />
+        <div class="sb-canvas-wrap" onclick="openRoomOverlay()">
+          <canvas id="char-mini-canvas" class="sb-canvas" width="56" height="64" style="width:56px;height:64px;"></canvas>
+          <!-- 각성자 정적 프로필 — assets/tier2/ -->
+          <img id="char-mini-tier2" src="/assets/tier2/Tier2_cha_nobg.png" alt="" style="display:none;position:absolute;inset:0;width:56px;height:64px;object-fit:contain;image-rendering:pixelated;pointer-events:none;" />
+          <!-- 저항자 정적 프로필 — assets/tier3/ -->
+          <img id="char-mini-tier3" src="/assets/tier3/Tier3_cha_nobg.png" alt="" style="display:none;position:absolute;inset:0;width:56px;height:64px;object-fit:contain;image-rendering:pixelated;pointer-events:none;" />
         </div>
-        <div class="sb-meta">
-          <div class="sb-tier" id="hdr-tier" onclick="openScoreGuide()">😴 방관자</div>
-          <div class="sb-streak"><span class="streak-fire">🔥</span> <span id="hdr-streak">0일</span></div>
-        </div>
-        <div class="sb-today-cell" onclick="openScoreGuide()">
-          <div class="sb-today-label">오늘</div>
-          <div class="sb-today-val" id="sb-today">+0<span class="sb-today-unit">pt</span></div>
-        </div>
+        <div class="sb-quote" id="char-quote"></div>
       </div>
-
-      <!-- 큐브 누적 카운터 — 점수 숫자 대체. 내부 score 시스템 그대로. -->
-      <div class="cc-stack" id="hdr-cube-stack" onclick="openScoreGuide()" style="cursor:pointer;touch-action:manipulation;">
-        <div class="cc-row">
-          <div class="cc-tower" id="cc-tower-gold" aria-hidden="true">
-            <div class="cc-token gold"></div>
-            <div class="cc-token gold"></div>
-            <div class="cc-token gold"></div>
-          </div>
-          <div class="cc-num" id="cc-num-gold">0</div>
-          <div class="cc-label">Gold</div>
-        </div>
-        <div class="cc-row">
-          <div class="cc-tower" id="cc-tower-silver" aria-hidden="true">
-            <div class="cc-token silver"></div>
-            <div class="cc-token silver"></div>
-          </div>
-          <div class="cc-num" id="cc-num-silver">0</div>
-          <div class="cc-label">Silver</div>
-        </div>
-      </div>
-      <!-- 호환용 hidden 노드 — 옛 코드 (score-pulse, countUpScore 등) 가 직접 참조 시 안전망 -->
-      <div id="hdr-score" style="display:none;">0</div>
-
-      <div class="sb-quote" id="char-quote"></div>
-
-      <div class="sb-progress-wrap">
-        <div class="sb-progress-track">
-          <div class="sb-progress-fill" id="char-progress"></div>
-        </div>
-        <div class="sb-progress-label" id="char-progress-label">—</div>
-      </div>
-
-      <span id="char-tier-name" style="display:none;"></span>
-      <span id="char-pts" style="display:none;"></span>
     </div>
 
     <!-- Exempt 1-tap — FF exempt_tap 뒤. Status Band 직하단. 주 2회 상한. -->
@@ -8559,9 +8553,21 @@ function updateHeaderStatus(){
     silverEl.textContent=lc.silver;
     if(lc.silver>prev){silverEl.classList.remove('bumped');void silverEl.offsetWidth;silverEl.classList.add('bumped');}
   }
+  // 신규: red 카운터 (sticky header 도입과 함께 추가).
+  const redEl=document.getElementById('cc-num-red');
+  if(redEl){
+    const prev=parseInt(redEl.textContent||'0',10)||0;
+    const redCount=(lc.red!=null)?lc.red:((CP&&CP.lifetime_red)||0);
+    redEl.textContent=redCount;
+    if(redCount>prev){redEl.classList.remove('bumped');void redEl.offsetWidth;redEl.classList.add('bumped');}
+  }
+  // tier-icon 분리 — sticky 의 .sh-tier-icon span (이모지만)
+  const tierIconEl=document.getElementById('hdr-tier-icon');
+  if(tierIconEl)tierIconEl.textContent=tier.icon||'😴';
   const tierEl=document.getElementById('hdr-tier');
   if(tierEl){
-    tierEl.textContent=tier.icon+' '+tier.name;
+    // sticky header 분리 후 — 이름만 (icon 은 #hdr-tier-icon).
+    tierEl.textContent=tier.name;
     tierEl.style.color=tier.color;
   }
   // 오늘 만든 큐브 색별 카운터 — sb-today 자리.

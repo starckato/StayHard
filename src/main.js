@@ -52,13 +52,14 @@ import * as targets from './features/targets/index.js';
 import './features/targets/tests.js'; // window.runTargetsTests() 노출
 import * as cubesUiEvents from './features/cubes/ui-events.js';
 import * as water from './features/water/index.js';
+import * as stickyHeader from './features/sticky-header/index.js';
 
 Object.assign(
   window,
   date, tier, icons, env, analytics, mealPhoto, cheat, toast,
   scoreEvents, mottos, exercises, muscle, rewardMessages, pushupCV,
   stats, onboarding, weight, rewards, dateHeatmap,
-  targets, cubesUiEvents, water
+  targets, cubesUiEvents, water, stickyHeader
 );
 // Targets feature — DOMContentLoaded 후 키 바인딩
 if (typeof window !== 'undefined') {
