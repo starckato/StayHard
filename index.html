@@ -40,6 +40,7 @@
 <link href="/src/features/cubes/cubes-ui.css" rel="stylesheet">
 <link href="/src/features/water/water.css" rel="stylesheet">
 <link href="/src/features/sticky-header/sticky-header.css" rel="stylesheet">
+<link href="/src/features/status-band/status-band.css" rel="stylesheet">
 <style>
 /* :root 토큰은 src/styles/tokens.{shared,dark}.css 로 이전됨 (Phase 0).
    index.html 은 다크 팔레트 사용. 추가 sub-palette (--radius-sm 등 legacy) 가
@@ -1434,18 +1435,24 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
       </div>
     </div>
 
-    <!-- STATUS BAND (slim) — 캐릭터 + quote 만 남김. tier/streak/cube/progress
-         는 Sticky Header 로 이전 (2026-05-07). -->
+    <!-- STATUS BAND (Tier Hero v2) — 캐릭터 100×120 + quote large + tier caption + ladder.
+         Stats summary 는 sticky-header. .sb 는 캐릭터 정체성 + 동기부여 (2026-05-07). -->
     <div class="sb">
-      <div class="sb-head">
+      <div class="sb-hero">
         <div class="sb-canvas-wrap" onclick="openRoomOverlay()">
-          <canvas id="char-mini-canvas" class="sb-canvas" width="56" height="64" style="width:56px;height:64px;"></canvas>
+          <canvas id="char-mini-canvas" class="sb-canvas" width="56" height="64"></canvas>
           <!-- 각성자 정적 프로필 — assets/tier2/ -->
-          <img id="char-mini-tier2" src="/assets/tier2/Tier2_cha_nobg.png" alt="" style="display:none;position:absolute;inset:0;width:56px;height:64px;object-fit:contain;image-rendering:pixelated;pointer-events:none;" />
+          <img id="char-mini-tier2" src="/assets/tier2/Tier2_cha_nobg.png" alt="" style="display:none;" />
           <!-- 저항자 정적 프로필 — assets/tier3/ -->
-          <img id="char-mini-tier3" src="/assets/tier3/Tier3_cha_nobg.png" alt="" style="display:none;position:absolute;inset:0;width:56px;height:64px;object-fit:contain;image-rendering:pixelated;pointer-events:none;" />
+          <img id="char-mini-tier3" src="/assets/tier3/Tier3_cha_nobg.png" alt="" style="display:none;" />
         </div>
-        <div class="sb-quote" id="char-quote"></div>
+        <div class="sb-quote-block">
+          <div class="sb-quote" id="char-quote">"오늘이 첫 칸이다."</div>
+          <div class="sb-tier-caption"><span class="dash">─</span><span id="sb-tier-caption-name">방관자</span></div>
+        </div>
+      </div>
+      <div class="sb-ladder" id="sb-ladder">
+        <!-- renderTierLadder() 가 6 step 채움 -->
       </div>
     </div>
 
@@ -5204,14 +5211,23 @@ function renderCharCard(){
     if(miniT3)miniT3.style.display=showResister?'block':'none';
     mini.style.opacity=(showAwakened||showResister)?'0':'';
   }
-  const quotes=TIER_QUOTES[tier.name]||TIER_QUOTES['방관자'];
-  const quote=quotes[Math.floor(Math.random()*quotes.length)];
+  // Tier Hero v2 — quote = tier 풀의 *영속 인덱스* (localStorage). 사용자가 클릭해서
+  // 회전한 자리를 보존. random 배치 X. status-band/index.js 의 getCurrentQuote 사용.
+  const getCurQuote=window.getCurrentQuote;
+  const quote=(typeof getCurQuote==='function')?getCurQuote(tier.name):
+    ((TIER_QUOTES[tier.name]||TIER_QUOTES['방관자'])[0]||'오늘이 첫 칸이다.');
   const quoteEl=document.getElementById('char-quote');
   if(quoteEl){quoteEl.textContent='"'+quote+'"';quoteEl.style.color=tier.color;}
+  // Tier caption — "─ 저항자" 식으로 화자 명시.
+  const capEl=document.getElementById('sb-tier-caption-name');
+  if(capEl){capEl.textContent=tier.name;capEl.style.color=tier.color;}
+  // Tier ladder — 6단 dots 렌더 (현재 idx highlight).
+  if(typeof window.renderTierLadder==='function')window.renderTierLadder(tierIdx);
+  // Progress bar (sticky 안) — sticky 가 own 하지만 호환성 유지.
   const prog=document.getElementById('char-progress');
   if(prog)prog.style.width=pct+'%';
   const lbl=document.getElementById('char-progress-label');
-  if(lbl)lbl.textContent=tierIdx===TIERS.length-1?'🎉 최고 티어':'다음: '+next.name;
+  if(lbl)lbl.textContent=tierIdx===TIERS.length-1?'정점':'→ '+next.name;
 }
 
 function openRoomOverlay(){

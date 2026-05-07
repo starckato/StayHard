@@ -161,35 +161,4 @@
   padding-top: calc(56px + env(safe-area-inset-top, 0));
 }
 
-/* Status Band 슬림 — 큐브 stack / tier / streak / today / progress 모두 sticky 로 이전됨.
-   .sb 는 character canvas + quote 만 남김. */
-.sb {
-  padding: 14px 16px 12px;
-  background: linear-gradient(135deg, var(--surface) 0%, var(--surface2) 100%);
-  border-radius: var(--radius-xl);
-  margin: 12px 14px;
-  border: 1px solid var(--border);
-}
-.sb .sb-head {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-.sb .sb-canvas-wrap {
-  position: relative;
-  width: 56px;
-  height: 64px;
-  flex-shrink: 0;
-  cursor: pointer;
-  touch-action: manipulation;
-}
-.sb .sb-quote {
-  flex: 1;
-  font-family: 'Noto Serif KR', 'Nanum Myeongjo', serif;
-  font-size: 13px;
-  font-weight: 500;
-  letter-spacing: -0.01em;
-  color: var(--text2);
-  line-height: 1.5;
-  font-style: italic;
-}
+/* .sb (Status Band) 룰 → src/features/status-band/status-band.css 로 이전 (2026-05-07) */
