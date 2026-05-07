@@ -38,6 +38,7 @@
 <!-- Feature folder CSS — 한 폴더 = 한 기능 컨벤션 (ARCHITECTURE.md). -->
 <link href="/src/features/targets/targets.css" rel="stylesheet">
 <link href="/src/features/cubes/cubes-ui.css" rel="stylesheet">
+<link href="/src/features/water/water.css" rel="stylesheet">
 <style>
 /* :root 토큰은 src/styles/tokens.{shared,dark}.css 로 이전됨 (Phase 0).
    index.html 은 다크 팔레트 사용. 추가 sub-palette (--radius-sm 등 legacy) 가
@@ -367,8 +368,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 .streak-fire{display:inline-block;animation:firePulse 1s ease infinite;}
 
 /* WATER GOAL BUTTONS */
-.wg-btn{padding:6px 10px;border-radius:var(--radius-md);border:1px solid var(--border2);font-size:var(--text-sm);cursor:pointer;font-weight:500;background:var(--surface3);color:var(--text2);transition:all .15s;}
-.wg-btn.active{background:var(--blue-bg);border-color:#38bdf8;color:#38bdf8;}
+/* .wg-btn → src/features/water/water.css (2026-05-07 추출) */
 
 /* AUTH */
 #auth-screen{display:none;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:32px 24px;}
@@ -899,12 +899,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
 .add-snack-btn:active{opacity:0.7;transform:scale(0.98);}
 .add-snack-btn-text{font-size:var(--text-sm);color:var(--text2);font-weight:500;}
 
-/* WATER */
-.water-strip{display:flex;align-items:center;gap:10px;padding:12px 16px 14px;}
-.water-cups{display:flex;gap:4px;flex:1;}
-.wc{flex:1;min-width:0;height:24px;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:var(--surface2);cursor:pointer;transition:all .15s;touch-action:manipulation;}
-.wc.on{background:#0ea5e9;border-color:#38bdf8;box-shadow:0 0 8px rgba(56,189,248,.25);}
-.water-val{font-family:'DM Mono',monospace;font-size:var(--text-sm);color:var(--blue);min-width:28px;text-align:right;}
+/* WATER → src/features/water/water.css (2026-05-07 추출) */
 
 /* WORKOUTS */
 .workout-rows{padding:4px 16px 4px;}
@@ -5962,36 +5957,8 @@ function hide(id){
   if(id==='loading'){clearTimeout(_loadingTimeout);const rb=document.getElementById('loading-retry');if(rb)rb.style.display='none';}
 }
 
-function getWaterGoal(){return CP?.water_goal||6;}
-function toggleWaterGoalPanel(){
-  const panel=document.getElementById('water-goal-panel');
-  if(!panel)return;
-  const open=panel.style.display==='none';
-  panel.style.display=open?'block':'none';
-  const btn=document.getElementById('water-gear-btn');
-  if(btn)btn.style.color=open?'var(--accent)':'var(--text3)';
-  if(open)refreshWaterGoalUI();
-}
-async function setWaterGoal(cups){
-  if(!CP)return;
-  CP.water_goal=cups;
-  await sb.from('profiles').update({water_goal:cups}).eq('id',CU.id);
-  refreshWaterGoalUI();
-  renderWater();
-  // Close panel after selection
-  const panel=document.getElementById('water-goal-panel');
-  if(panel)panel.style.display='none';
-  const gearBtn=document.getElementById('water-gear-btn');
-  if(gearBtn)gearBtn.style.color='var(--text3)';
-  showToast('물 목표: '+(cups*.5).toFixed(1)+'L 설정됨 💧');
-}
-function refreshWaterGoalUI(){
-  const goal=CP?.water_goal||6;
-  for(let i=1;i<=12;i++){
-    const btn=document.getElementById('wg-btn-'+i);
-    if(btn){btn.classList.toggle('active',i===goal);}
-  }
-}
+// getWaterGoal / toggleWaterGoalPanel / setWaterGoal / refreshWaterGoalUI →
+// src/features/water/index.js (2026-05-07 추출). main.js 가 window 에 노출.
 
 async function onLogin(user){
   // 이전 유저 데이터 완전 초기화 (계정 전환 시 혼재 방지)
@@ -10258,24 +10225,7 @@ function delPhoto(){
 }
 
 
-function renderWater(){
-  const c=document.getElementById('water-cups');c.innerHTML='';
-  for(let i=0;i<12;i++){const d=document.createElement('div');d.className='wc'+(i<log.water_cups?' on':'');d.onclick=()=>{tipWater();const prev=log.water_cups;log.water_cups=(log.water_cups===i+1)?i:i+1;renderWater();scheduleSave();if(log.water_cups>prev){try{_tryMicroReward('water');}catch(_){}}try{recomputeCubesHook();}catch(_){}};c.appendChild(d);}
-  const val=document.getElementById('water-val');
-  const goal=CP?.water_goal||6;
-  const met=log.water_cups>=goal;
-  const curL=(log.water_cups*.5).toFixed(1);
-  const goalL=(goal*.5).toFixed(1);
-  if(val){
-    val.textContent=curL+' / '+goalL+'L'+(met?' ✓':'');
-    val.style.color=met?'var(--blue)':'var(--text2)';
-  }
-  // Tint the gear button when goal is met
-  const gear=document.getElementById('water-gear-btn');
-  if(gear)gear.style.color=met?'var(--blue)':'var(--text3)';
-  // Keep the food card's collapsed summary in sync with water changes
-  try{renderFoodSummary();}catch(e){}
-}
+// renderWater → src/features/water/index.js (2026-05-07 추출).
 
 // ══════════════════════════════════════════════
 // WORKOUT SYSTEM — REDESIGNED
