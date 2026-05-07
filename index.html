@@ -1426,14 +1426,17 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
           <div class="sb-tier-caption"><span class="dash">─</span><span id="sb-tier-caption-name">방관자</span></div>
         </div>
       </div>
-      <div class="sb-ladder" id="sb-ladder">
-        <!-- renderTierLadder() 가 6 step 채움 -->
-      </div>
+      <!-- 6단 ladder 제거 (2026-05-08) — 사용자 피드백. 자리는 비워두고 후속에 다른 콘텐츠.
+           renderTierLadder() 는 #sb-ladder 없으면 no-op 이라 호출은 그대로 둠. -->
     </div>
 
     <!-- Sticky Header — .sb 바로 아래. position:sticky;top:0 으로 자연스레
-         스크롤 시 분리되어 상단 고정. (2026-05-08 합쳐+분리 패턴) -->
+         스크롤 시 분리되어 상단 고정. progress bar 상단 (rounded corners 와 매끈히 결합). -->
     <div class="sticky-header" id="sticky-header">
+      <div class="sh-bar">
+        <div class="sh-bar-gold" id="char-progress" style="width:0%;"></div>
+        <div class="sh-bar-silver" id="sh-bar-silver" style="left:0%;width:0%;"></div>
+      </div>
       <div class="sh-top">
         <div class="sh-tier" onclick="openScoreGuide()">
           <span class="sh-tier-icon" id="hdr-tier-icon">😴</span>
@@ -1449,10 +1452,6 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
           <span class="sh-next-count" id="sb-today">+12</span>
           <span class="sh-next-tier" id="char-progress-label">→ 각성자</span>
         </div>
-      </div>
-      <div class="sh-bar">
-        <div class="sh-bar-gold" id="char-progress" style="width:0%;"></div>
-        <div class="sh-bar-silver" id="sh-bar-silver" style="left:0%;width:0%;"></div>
       </div>
     </div>
 

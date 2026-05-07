@@ -92,61 +92,8 @@
   opacity: 0.6;
 }
 
-/* ── Tier Ladder row (6단 dots) ────────────────────────── */
-.sb-ladder {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 0;
-  margin-top: 14px;
-  padding-top: 14px;
-  border-top: 1px solid var(--border2);
-}
-.sb-ladder-step {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  /* mobile tap area — 44px 확보 */
-  padding: 4px 0;
-  flex: 1;
-  min-width: 0;
-  cursor: pointer;
-  touch-action: manipulation;
-}
-.sb-ladder-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  transition: background 0.25s ease, transform 0.3s cubic-bezier(.32, 1.5, .42, 1), box-shadow 0.3s ease;
-}
-.sb-ladder-step.is-done .sb-ladder-dot {
-  background: rgba(52, 211, 153, 0.45);
-  border-color: rgba(52, 211, 153, 0.75);
-}
-.sb-ladder-step.is-current .sb-ladder-dot {
-  width: 11px;
-  height: 11px;
-  background: var(--ladder-color, var(--accent));
-  border-color: var(--ladder-color, var(--accent));
-  box-shadow: 0 0 12px var(--ladder-color, var(--accent));
-}
-.sb-ladder-name {
-  font-family: 'DM Mono', monospace;
-  font-size: 9px;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  color: var(--text3);
-  white-space: nowrap;
-  text-align: center;
-  line-height: 1.2;
-}
-.sb-ladder-step.is-current .sb-ladder-name {
-  color: var(--ladder-color, var(--accent));
-  font-weight: 800;
-}
+/* Tier Ladder 제거 (2026-05-08 사용자 피드백). 빈 자리 채울 컨텐츠는 후속.
+   renderTierLadder() 는 #sb-ladder 없으면 no-op — module 코드 유지. */
 
 /* ── Compact mode (yesterday-ribbon 노출 시) ──────────── */
 /* CWV: max-height + opacity 만 사용. height auto-transition 금지. */
@@ -160,18 +107,10 @@ body.has-yr-active .sb-canvas-wrap {
 body.has-yr-active .sb-quote {
   font-size: 14.5px;
 }
-body.has-yr-active .sb-ladder {
-  max-height: 0;
-  margin-top: 0;
-  padding-top: 0;
-  border-top: 0;
-  overflow: hidden;
-  opacity: 0;
-  transition: max-height 0.3s ease, opacity 0.2s ease, padding-top 0.3s ease, margin-top 0.3s ease;
-}
+/* (sb-ladder 제거됨 — compact 모드 처리 룰도 같이 제거) */
 
 /* ── Reduced motion ───────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
-  .sb, .sb-canvas-wrap, .sb-quote, .sb-ladder-dot, .sb-ladder { transition: none !important; }
+  .sb, .sb-canvas-wrap, .sb-quote { transition: none !important; }
   .sb-quote.cycling { opacity: 0.4; transform: none; }
 }

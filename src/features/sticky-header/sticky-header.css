@@ -128,12 +128,19 @@
   line-height: 1;
 }
 
-/* 4px 진행 막대 — gold + silver 영역 분리 */
+/* Progress bar — sticky 상단 (rounded corners 와 매끈히 결합).
+   gold portion (메인) + silver portion (가산). 두께 6px 로 가시성 ↑.
+   (2026-05-08 사용자 피드백 — 둥근 corner 에 가려져 잘 안 보였던 문제 해결) */
 .sh-bar {
-  height: 3px;
-  background: rgba(255, 255, 255, 0.05);
   position: relative;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.06);
   overflow: hidden;
+  /* 위쪽만 둥글게 — sticky-header 의 top-radius (16px) 와 정렬. */
+  border-top-left-radius: var(--radius-xl);
+  border-top-right-radius: var(--radius-xl);
+  /* sh-top 과 시각적으로 분리되도록 살짝 inset shadow */
+  box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.2);
 }
 .sh-bar-gold {
   position: absolute;
@@ -142,7 +149,8 @@
   bottom: 0;
   background: linear-gradient(90deg, #ffd54a, #fff1a8 60%, #ffd54a);
   transition: width 0.55s cubic-bezier(.4, 0, .2, 1);
-  box-shadow: 0 0 5px rgba(255, 213, 74, 0.5);
+  box-shadow: 0 0 8px rgba(255, 213, 74, 0.6);
+  border-top-left-radius: var(--radius-xl);
 }
 .sh-bar-silver {
   position: absolute;
@@ -150,7 +158,7 @@
   bottom: 0;
   background: linear-gradient(90deg, #b5c0cc, #dde1e6);
   transition: left 0.55s cubic-bezier(.4, 0, .2, 1), width 0.55s cubic-bezier(.4, 0, .2, 1);
-  opacity: 0.85;
+  opacity: 0.9;
 }
 
 /* Red collapse FX (다음 단계 — 본 파일에 자리만 잡아둠) */
