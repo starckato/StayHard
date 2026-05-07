@@ -139,13 +139,24 @@
 }
 .cm-cell:active { background: rgba(255, 255, 255, 0.04); }
 
+/* SVG icon (no emoji — 카드 헤더 SVG 재사용). currentColor 로 색 inherit. */
 .cm-icon {
-  font-size: 18px;
-  opacity: 0.4;
+  width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text3);
+  opacity: 0.5;
   transition:
     opacity 0.3s ease,
     transform 0.35s cubic-bezier(.32, 1.5, .42, 1),
-    filter 0.3s ease;
+    filter 0.3s ease,
+    color 0.3s ease;
+}
+.cm-icon svg {
+  width: 100%;
+  height: 100%;
 }
 .cm-label {
   font-family: 'DM Mono', monospace;
@@ -156,10 +167,11 @@
   transition: color 0.3s ease;
 }
 
-/* Done state — gold (cube 완수 색) */
+/* Done state — gold (cube 완수 색). SVG stroke = currentColor. */
 .cm-cell.is-done .cm-icon {
   opacity: 1;
-  transform: scale(1.06);
+  color: #ffd54a;
+  transform: scale(1.08);
   filter: drop-shadow(0 0 8px rgba(255, 213, 74, 0.55));
 }
 .cm-cell.is-done .cm-label {
@@ -169,7 +181,8 @@
 
 /* Partial state — silver (cube 일부 완수 색) */
 .cm-cell.is-partial .cm-icon {
-  opacity: 0.78;
+  opacity: 0.85;
+  color: #d8dfe7;
   filter: drop-shadow(0 0 4px rgba(216, 223, 231, 0.3));
 }
 .cm-cell.is-partial .cm-label {
@@ -179,8 +192,9 @@
 
 /* Fail state — crimson (cube 실패 색, 큐록 accent 와 통일) */
 .cm-cell.is-fail .cm-icon {
-  opacity: 0.9;
-  filter: saturate(0.6) drop-shadow(0 0 6px rgba(255, 77, 77, 0.45));
+  opacity: 0.95;
+  color: #ff6b6b;
+  filter: drop-shadow(0 0 6px rgba(255, 77, 77, 0.45));
 }
 .cm-cell.is-fail .cm-label {
   color: #ff6b6b;
