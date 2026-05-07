@@ -28,7 +28,7 @@
      so window globals (dkey, normKey, ...) are set before inline code runs.
      Query version bumps cache when bundle content changes. Bump manually or
      via build script when shipping a new bundle. See MIGRATION_PLAN.md. -->
-<script src="/dist/app.js?v=d94613cf"></script>
+<script src="/dist/app.js?v=31615592"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Archivo+Black&display=swap" rel="stylesheet">
 <!-- Phase 0: 디자인 토큰 (shared 먼저, palette 가 override). -->
 <link href="/src/styles/tokens.shared.css" rel="stylesheet">
@@ -1410,10 +1410,18 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
       </div>
     </div>
 
-    <!-- STATUS BAND (Tier Hero v2) — 캐릭터 100×120 + quote large + tier caption + ladder.
-         Stats summary 는 sticky-header. .sb 는 캐릭터 정체성 + 동기부여 (2026-05-07). -->
+    <!-- STATUS BAND (Tier Hero v3) — Editorial poster (2026-05-08).
+         Layout: 인용문 headline → hairline rule → stage row (char + ledger + N/4).
+         Stats summary 는 sticky-header. .sb 는 캐릭터 정체성 + 동기부여. -->
     <div class="sb">
-      <div class="sb-hero">
+      <!-- 1. Headline: 큐록의 한 마디 (lead) + tier eyebrow -->
+      <div class="sb-headline">
+        <div class="sb-quote" id="char-quote">"오늘이 첫 칸이다."</div>
+        <div class="sb-tier-caption"><span class="dash">─</span><span id="sb-tier-caption-name">방관자</span></div>
+      </div>
+      <!-- 2. Stage: character (figure) + ledger cells + N/4 stat.
+           cube system 컬러 매핑: gold = 완수 · silver = 부분 · crimson = 실패 · gray = 미시작. -->
+      <div class="sb-stage">
         <div class="sb-canvas-wrap" onclick="openRoomOverlay()">
           <canvas id="char-mini-canvas" class="sb-canvas" width="200" height="240"></canvas>
           <!-- 각성자 정적 프로필 — assets/tier2/ -->
@@ -1421,15 +1429,6 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
           <!-- 저항자 정적 프로필 — assets/tier3/ -->
           <img id="char-mini-tier3" src="/assets/tier3/Tier3_cha_nobg.png" alt="" style="display:none;" />
         </div>
-        <div class="sb-quote-block">
-          <div class="sb-quote" id="char-quote">"오늘이 첫 칸이다."</div>
-          <div class="sb-tier-caption"><span class="dash">─</span><span id="sb-tier-caption-name">방관자</span></div>
-        </div>
-      </div>
-      <!-- 4 카테고리 완수도 (2026-05-08) — 식단/운동/루틴/할일 오늘 완수 상태 + N/4 stat.
-           cube system 컬러 매핑: gold = 완수 (강조) · silver = 부분 (중간) · crimson = 실패 (빨간) · gray = 미시작 (dim). -->
-      <div class="sb-bottom">
-        <div class="sb-bottom-label">오늘 완수</div>
         <div class="sb-completion" id="sb-completion">
           <div class="cm-cells">
             <div class="cm-cell" data-cat="diet" onclick="window.scrollTo&&window.scrollTo({top:document.getElementById('food-card')?.offsetTop-80||0,behavior:'smooth'})">
@@ -1450,7 +1449,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
             </div>
           </div>
           <div class="cm-stat">
-            <span id="cm-stat-num">0</span><span class="cm-stat-denom">/4</span>
+            <span id="cm-stat-num">0</span><span class="cm-stat-denom">4</span>
           </div>
         </div>
       </div>
@@ -5246,6 +5245,9 @@ function renderCharCard(){
   // Tier caption — "─ 저항자" 식으로 화자 명시.
   const capEl=document.getElementById('sb-tier-caption-name');
   if(capEl){capEl.textContent=tier.name;capEl.style.color=tier.color;}
+  // Tier color → .sb 좌측 accent stripe (Hero v3 editorial layout, 2026-05-08).
+  const sbEl=document.querySelector('.sb');
+  if(sbEl)sbEl.style.setProperty('--sb-accent', tier.color);
   // Tier ladder — 6단 dots 렌더 (현재 idx highlight). 마크업 제거됨 (2026-05-08) —
   // 함수는 #sb-ladder DOM 가드로 no-op.
   if(typeof window.renderTierLadder==='function')window.renderTierLadder(tierIdx);

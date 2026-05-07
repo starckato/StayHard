@@ -1,30 +1,90 @@
 /* 큐록 · features/status-band/status-band.css
-   Tier Hero v2 — 캐릭터 100×120 + quote large + tier caption + tier ladder 6단.
-   audit 표준 패턴 (2026-05-07). prototype A6+A18 zen 톤 유지.
+   Tier Hero v3 — Editorial poster layout (2026-05-08).
 
-   역할 분담:
-     sticky-header → stats summary (항상 노출)
-     status-band   → 캐릭터 정체성 + 동기부여 (스크롤하면 사라짐)
+   재기획 (사용자 피드백 "디자인 레이아웃만"):
+     OLD: hero (char + quote 좌우) / divider / 4-cell row 위아래 stack
+     NEW: 인용문 = headline (full width, large serif) → hairline rule
+          → stage row (char + ledger cells + N/4)
+
+   직면 / 단련 / 책임 톤:
+     - 큐록의 "오늘의 한 마디" 가 먼저 눈에 들어옴 (인용문 lead)
+     - 캐릭터는 ledger 옆에 서 있는 figure ("오늘의 증인")
+     - 완수 cells = 회계장부식 vertical hairline divider
+     - tier color accent 좌측 stripe (정체성 강조)
 */
 
 /* ── 컨테이너 ─────────────────────────────────────────── */
 .sb {
+  position: relative;
   margin: 12px 14px;
-  /* 콤팩트 vertical rhythm — 12 / 14 (사용자 피드백 2026-05-08).
-     가로 16 유지 (캐릭터 + quote 좌우 호흡), 세로만 압축. */
-  padding: 12px 16px 10px;
+  padding: 16px 18px 14px;
   background: linear-gradient(135deg, var(--surface) 0%, var(--surface2) 100%);
   border: 1px solid var(--border);
   border-radius: var(--radius-xl);
-  /* CWV: layout-bound transition 회피. compact 전환 시 max-height + opacity 만 사용. */
+  overflow: hidden;
+  /* CWV: layout-bound transition 회피. compact 전환 시 padding 만 변경. */
   transition: padding 0.3s cubic-bezier(.32, 1, .42, 1);
 }
 
-/* ── Hero row (캐릭터 + quote block) ───────────────────── */
-.sb-hero {
+/* 좌측 tier color accent stripe — 정체성 표식. inline style 로 색 주입. */
+.sb::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 16px;
+  bottom: 14px;
+  width: 2px;
+  background: var(--sb-accent, var(--text3));
+  opacity: 0.55;
+  border-radius: 0 1px 1px 0;
+}
+
+/* ── Headline (quote + tier eyebrow) ──────────────────── */
+.sb-headline {
+  padding-bottom: 12px;
+  margin-bottom: 14px;
+  border-bottom: 1px solid var(--border2);
+}
+
+.sb-quote {
+  font-family: 'Noto Serif KR', 'Nanum Myeongjo', serif;
+  font-size: 18.5px;
+  line-height: 1.45;
+  font-style: italic;
+  font-weight: 500;
+  letter-spacing: -0.015em;
+  color: var(--text);
+  margin-bottom: 8px;
+  cursor: pointer;
+  touch-action: manipulation;
+  word-break: keep-all;
+  transition: opacity 0.25s ease, transform 0.35s cubic-bezier(.32, 1, .42, 1);
+  /* tier color 가 inline style 로 주입됨 */
+}
+.sb-quote:active { opacity: 0.65; }
+.sb-quote.cycling {
+  opacity: 0;
+  transform: translateY(-4px);
+}
+
+.sb-tier-caption {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text3);
+}
+.sb-tier-caption .dash {
+  /* 새 레이아웃에선 dash 제거 — 트래킹된 mono caps 만으로 hierarchy 충분. */
+  display: none;
+}
+
+/* ── Stage row (character + ledger + stat) ────────────── */
+.sb-stage {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 14px;
 }
 
 .sb-canvas-wrap {
@@ -41,8 +101,7 @@
   width: 100%;
   height: 100%;
   display: block;
-  /* sprite 가 724×724 high-res 소스 → 부드러운 scale (auto = browser smoothing).
-     pixel-art 픽셀화 효과는 100×120 비정수배 downscale 시 들쭉날쭉 → smooth 권장. */
+  /* high-res sprite → smooth downscale. 정수배 X 라 nearest 면 saw-tooth. */
   image-rendering: auto;
 }
 .sb-canvas-wrap img {
@@ -51,95 +110,40 @@
   width: 100%;
   height: 100%;
   object-fit: contain;
-  /* tier2/tier3 정적 프로필 (553×900 nat) → 100×120 smooth downscale */
   image-rendering: auto;
   pointer-events: none;
 }
 
-.sb-quote-block {
+/* Ledger 영역 (cells + stat) ─────────────────────────── */
+.sb-completion {
   flex: 1;
   min-width: 0;
   display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-.sb-quote {
-  font-family: 'Noto Serif KR', 'Nanum Myeongjo', serif;
-  font-size: 17px;
-  line-height: 1.5;
-  font-style: italic;
-  font-weight: 500;
-  letter-spacing: -0.01em;
-  color: var(--text2);
-  cursor: pointer;
-  touch-action: manipulation;
-  transition: opacity 0.25s ease, transform 0.35s cubic-bezier(.32, 1, .42, 1);
-  /* tier color 가 inline style 로 주입됨 */
-}
-.sb-quote:active { opacity: 0.65; }
-.sb-quote.cycling {
-  /* 회전 중 — 잠깐 dim. transform 만 사용 (CWV 규칙). */
-  opacity: 0;
-  transform: translateY(-4px);
-}
-.sb-tier-caption {
-  font-family: 'DM Mono', monospace;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  color: var(--text3);
-}
-.sb-tier-caption .dash {
-  margin-right: 6px;
-  opacity: 0.6;
-}
-
-/* ── 오늘 4 카테고리 완수도 (2026-05-08 채택) ────────────
-   디자인 시스템 cube color 매핑:
-     gold (#ffd54a)    = 완수 — 강조 + glow
-     silver (#d8dfe7)  = 부분 — 중간 opacity
-     crimson (#ff6b6b) = 실패 — 빨간 (cube system 의 red 와 통일)
-     기본 (gray)       = 미시작 — dim
-   Tier Hero (캐릭터 + quote) 와 cube system 일관성. 초록 #34d399 사용 X. */
-
-.sb-bottom {
-  /* divider 양쪽 호흡 — 10 / 10. (이전 14 / 14 → 8px 단축) */
-  margin-top: 10px;
-  padding-top: 10px;
-  border-top: 1px solid var(--border2);
-}
-.sb-bottom-label {
-  font-family: 'DM Mono', monospace;
-  font-size: 9.5px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--text3);
-  margin-bottom: 6px;
-}
-
-.sb-completion {
-  display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
 }
+
 .cm-cells {
-  display: flex;
-  gap: 6px;
   flex: 1;
+  display: flex;
+  /* gap 제거 — vertical hairline divider 가 cell 구분. */
+  gap: 0;
 }
 .cm-cell {
   flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
-  /* 콤팩트 — icon (22) + 4 + label (10) ≈ 36px 총 높이 */
-  gap: 4px;
-  padding: 2px 2px;
-  border-radius: var(--radius-sm);
+  gap: 5px;
+  /* 회계장부식 hairline — 마지막 cell 만 우측 border 제거. */
+  padding: 6px 2px;
+  border-right: 1px solid var(--border2);
   cursor: pointer;
   touch-action: manipulation;
   transition: background 0.25s ease;
+}
+.cm-cell:last-child {
+  border-right: none;
 }
 .cm-cell:active { background: rgba(255, 255, 255, 0.04); }
 
@@ -183,7 +187,7 @@
   font-weight: 800;
 }
 
-/* Partial state — silver (cube 일부 완수 색) */
+/* Partial state — silver */
 .cm-cell.is-partial .cm-icon {
   opacity: 0.85;
   color: #d8dfe7;
@@ -194,7 +198,7 @@
   font-weight: 700;
 }
 
-/* Fail state — crimson (cube 실패 색, 큐록 accent 와 통일) */
+/* Fail state — crimson */
 .cm-cell.is-fail .cm-icon {
   opacity: 0.95;
   color: #ff6b6b;
@@ -205,31 +209,44 @@
   font-weight: 700;
 }
 
-/* Stat (N/4) — gold 강조 (sticky "+N → 각성자" 와 같은 톤) */
+/* Stat (N/4) — large display, vertical stack ("0 ─ 4" 회계 ledger 식) */
 .cm-stat {
-  font-family: 'Archivo Black', sans-serif;
-  font-size: 18px;
-  letter-spacing: -0.02em;
-  color: #ffd54a;
   flex-shrink: 0;
   display: flex;
-  align-items: baseline;
-  gap: 1px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  /* 위/아래 stack 으로 분수 표현 → 화면 중앙성 강조 */
+  gap: 0;
+  padding: 0 2px;
+  font-family: 'Archivo Black', sans-serif;
+  letter-spacing: -0.02em;
+  color: #ffd54a;
   text-shadow: 0 0 10px rgba(255, 213, 74, 0.35);
   transition: text-shadow 0.4s ease;
+}
+.cm-stat #cm-stat-num {
+  font-size: 22px;
+  line-height: 1;
 }
 .cm-stat-denom {
   font-size: 11px;
   color: var(--text3);
   font-weight: 600;
+  margin-top: 2px;
+  font-family: 'DM Mono', monospace;
+  letter-spacing: 0.04em;
 }
+.cm-stat-denom::before {
+  content: '/ ';
+}
+
 /* 4/4 도달 — 더 강한 glow */
 .cm-stat.is-perfect {
   text-shadow: 0 0 18px rgba(255, 213, 74, 0.7), 0 0 32px rgba(255, 213, 74, 0.35);
 }
 
 /* ── Compact mode (yesterday-ribbon 노출 시) ──────────── */
-/* CWV: max-height + opacity 만 사용. height auto-transition 금지. */
 body.has-yr-active .sb {
   padding: 12px 14px 12px;
 }
@@ -238,9 +255,12 @@ body.has-yr-active .sb-canvas-wrap {
   height: 96px;
 }
 body.has-yr-active .sb-quote {
-  font-size: 14.5px;
+  font-size: 15.5px;
 }
-/* (sb-ladder 제거됨 — compact 모드 처리 룰도 같이 제거) */
+body.has-yr-active .sb-headline {
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+}
 
 /* ── Reduced motion ───────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
