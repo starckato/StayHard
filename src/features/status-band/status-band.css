@@ -10,12 +10,14 @@
 /* ── 컨테이너 ─────────────────────────────────────────── */
 .sb {
   margin: 12px 14px;
-  padding: 18px 18px 16px;
+  /* 콤팩트 vertical rhythm — 12 / 14 (사용자 피드백 2026-05-08).
+     가로 16 유지 (캐릭터 + quote 좌우 호흡), 세로만 압축. */
+  padding: 12px 16px 10px;
   background: linear-gradient(135deg, var(--surface) 0%, var(--surface2) 100%);
   border: 1px solid var(--border);
   border-radius: var(--radius-xl);
   /* CWV: layout-bound transition 회피. compact 전환 시 max-height + opacity 만 사용. */
-  transition: padding 0.4s cubic-bezier(.32, 1, .42, 1);
+  transition: padding 0.3s cubic-bezier(.32, 1, .42, 1);
 }
 
 /* ── Hero row (캐릭터 + quote block) ───────────────────── */
@@ -59,7 +61,7 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 }
 .sb-quote {
   font-family: 'Noto Serif KR', 'Nanum Myeongjo', serif;
@@ -101,8 +103,9 @@
    Tier Hero (캐릭터 + quote) 와 cube system 일관성. 초록 #34d399 사용 X. */
 
 .sb-bottom {
-  margin-top: 14px;
-  padding-top: 14px;
+  /* divider 양쪽 호흡 — 10 / 10. (이전 14 / 14 → 8px 단축) */
+  margin-top: 10px;
+  padding-top: 10px;
   border-top: 1px solid var(--border2);
 }
 .sb-bottom-label {
@@ -112,7 +115,7 @@
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--text3);
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .sb-completion {
@@ -130,8 +133,9 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 5px;
-  padding: 6px 4px;
+  /* 콤팩트 — icon (22) + 4 + label (10) ≈ 36px 총 높이 */
+  gap: 4px;
+  padding: 2px 2px;
   border-radius: var(--radius-sm);
   cursor: pointer;
   touch-action: manipulation;
