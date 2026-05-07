@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>SB A · 7일 Heatmap</title>
+<link rel="stylesheet" href="_sb-shared.css">
+<style>
+.sb-heatmap {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.hm-cell {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.hm-dot {
+  width: 100%;
+  max-width: 32px;
+  aspect-ratio: 1;
+  border-radius: 4px;
+  border: 1px solid rgba(0, 0, 0, 0.3);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3), inset 0 -1px 1px rgba(0, 0, 0, 0.3);
+}
+.hm-dot.gold   { background: linear-gradient(135deg, #fff1a8, #ffd54a 50%, #c48c1a); }
+.hm-dot.silver { background: linear-gradient(135deg, #f2f4f7, #b5c0cc 50%, #6d7682); }
+.hm-dot.red    { background: linear-gradient(135deg, #ff8080, #ff4d4d 50%, #8b1515); }
+.hm-dot.empty  { background: rgba(255, 255, 255, 0.04); border: 1px dashed rgba(255, 255, 255, 0.12); box-shadow: none; }
+.hm-dot.today  { box-shadow: 0 0 0 2px var(--accent), 0 0 12px rgba(255, 77, 77, 0.5); }
+.hm-day {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  color: var(--text3);
+  font-weight: 600;
+}
+.hm-day.is-today { color: var(--accent); font-weight: 800; }
+</style>
+</head>
+<body>
+<div class="head">
+  <a class="back" href="index.html">← 목록</a>
+  <div class="title"><div class="opt">SB FILLER A</div><div class="t">7일 활동 Heatmap</div></div>
+</div>
+
+<div class="phone">
+  <div class="sb">
+    <div class="sb-hero">
+      <div class="sb-canvas-wrap"></div>
+      <div class="sb-quote-block">
+        <div class="sb-quote">"한 칸이 다음 칸을 부른다."</div>
+        <div class="sb-tier-caption"><span class="dash">─</span><b>저항자</b></div>
+      </div>
+    </div>
+    <div class="sb-bottom">
+      <div class="sb-bottom-label">최근 7일</div>
+      <div class="sb-heatmap">
+        <div class="hm-cell"><div class="hm-dot gold"></div><div class="hm-day">월</div></div>
+        <div class="hm-cell"><div class="hm-dot silver"></div><div class="hm-day">화</div></div>
+        <div class="hm-cell"><div class="hm-dot empty"></div><div class="hm-day">수</div></div>
+        <div class="hm-cell"><div class="hm-dot red"></div><div class="hm-day">목</div></div>
+        <div class="hm-cell"><div class="hm-dot silver"></div><div class="hm-day">금</div></div>
+        <div class="hm-cell"><div class="hm-dot gold"></div><div class="hm-day">토</div></div>
+        <div class="hm-cell"><div class="hm-dot today silver"></div><div class="hm-day is-today">오늘</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="note">
+  <b>A — 7일 Heatmap</b>: 그날의 메인 큐브 색을 dot 으로. 빈 칸 (점선) 은 활동 없음. 오늘 = 빨간 outline.<br>
+  <b>장점</b>: 큐록 컨셉 (꾸준함 / 빈칸이 너를 대신 말한다) 과 직접 매칭. 시각적 리듬으로 동기 자연 발생. 데이터 이미 있음 (logCache).<br>
+  <b>단점</b>: 빈 칸 많을 때 "낙오자 같음" 부정 정서 위험 — 카피 (TIER_QUOTES) 와 함께 보면 단련 톤으로 해석.
+</div>
+</body></html>

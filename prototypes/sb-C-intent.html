@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>SB C · 오늘의 의도</title>
+<link rel="stylesheet" href="_sb-shared.css">
+<style>
+.sb-intent-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 14px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-md);
+  cursor: text;
+  transition: border-color 0.2s ease;
+}
+.sb-intent-box:focus-within { border-color: var(--accent); }
+.sb-intent-prefix {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 14px;
+  color: var(--text3);
+  font-style: italic;
+  flex-shrink: 0;
+}
+.sb-intent-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-family: 'Noto Serif KR', serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: -0.01em;
+}
+.sb-intent-input::placeholder { color: var(--text3); font-style: italic; }
+.sb-intent-suffix {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 14px;
+  color: var(--text3);
+  font-style: italic;
+  flex-shrink: 0;
+}
+.sb-intent-set {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px 14px;
+  background: rgba(245, 158, 11, 0.06);
+  border: 1px solid rgba(245, 158, 11, 0.18);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+}
+.sb-intent-quote-mark {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 18px;
+  color: #f59e0b;
+  font-weight: 700;
+  line-height: 1;
+}
+.sb-intent-text {
+  flex: 1;
+  font-family: 'Noto Serif KR', serif;
+  font-size: 14px;
+  color: var(--text);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.4;
+}
+.sb-intent-edit { font-size: 11px; color: var(--text3); flex-shrink: 0; }
+</style>
+</head>
+<body>
+<div class="head">
+  <a class="back" href="index.html">← 목록</a>
+  <div class="title"><div class="opt">SB FILLER C</div><div class="t">오늘의 의도</div></div>
+</div>
+
+<div class="phone">
+  <!-- Empty state — 입력 안한 상태 -->
+  <div class="sb">
+    <div class="sb-hero">
+      <div class="sb-canvas-wrap"></div>
+      <div class="sb-quote-block">
+        <div class="sb-quote">"한 칸이 다음 칸을 부른다."</div>
+        <div class="sb-tier-caption"><span class="dash">─</span><b>저항자</b></div>
+      </div>
+    </div>
+    <div class="sb-bottom">
+      <div class="sb-bottom-label">오늘의 의도</div>
+      <div class="sb-intent-box">
+        <span class="sb-intent-prefix">"오늘</span>
+        <input class="sb-intent-input" type="text" placeholder="___" />
+        <span class="sb-intent-suffix">한다."</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Set state — 입력 완료 -->
+  <div class="sb" style="margin-top:8px;">
+    <div class="sb-hero">
+      <div class="sb-canvas-wrap"></div>
+      <div class="sb-quote-block">
+        <div class="sb-quote">"한 칸이 다음 칸을 부른다."</div>
+        <div class="sb-tier-caption"><span class="dash">─</span><b>저항자</b></div>
+      </div>
+    </div>
+    <div class="sb-bottom">
+      <div class="sb-bottom-label">오늘의 의도</div>
+      <div class="sb-intent-set">
+        <span class="sb-intent-quote-mark">"</span>
+        <div class="sb-intent-text">오늘 새벽 5시에 일어나서 30분 운동한다.</div>
+        <span class="sb-intent-edit">편집</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="note">
+  <b>C — 오늘의 의도 input</b>: 1줄 사용자 입력 (자정 reset, localStorage 영속). 단련 톤과 결 맞음 — "오늘 ___ 한다" 자기 약속 frame.<br>
+  <b>장점</b>: 매일 자기 의도 명시 — Goggins/단련 컨셉 강한 매핑. 반복 = 습관화.<br>
+  <b>단점</b>: 매일 입력 부담 (이탈 위험). 안 채우면 휑함 그대로. 첫 진입 친절도 ↓.
+</div>
+</body></html>

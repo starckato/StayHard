@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>SB D · Sparkline</title>
+<link rel="stylesheet" href="_sb-shared.css">
+<style>
+.sb-spark-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.sb-spark-svg {
+  flex: 1;
+  height: 36px;
+}
+.sb-spark-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+.sb-spark-num {
+  font-family: 'Archivo Black', sans-serif;
+  font-size: 18px;
+  letter-spacing: -0.02em;
+  color: #ffd54a;
+  line-height: 1;
+}
+.sb-spark-delta {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  color: #34d399;
+  font-weight: 700;
+}
+.sb-spark-delta.down { color: #ff8080; }
+</style>
+</head>
+<body>
+<div class="head">
+  <a class="back" href="index.html">← 목록</a>
+  <div class="title"><div class="opt">SB FILLER D</div><div class="t">7일 Score Sparkline</div></div>
+</div>
+
+<div class="phone">
+  <div class="sb">
+    <div class="sb-hero">
+      <div class="sb-canvas-wrap"></div>
+      <div class="sb-quote-block">
+        <div class="sb-quote">"한 칸이 다음 칸을 부른다."</div>
+        <div class="sb-tier-caption"><span class="dash">─</span><b>저항자</b></div>
+      </div>
+    </div>
+    <div class="sb-bottom">
+      <div class="sb-bottom-label">최근 7일 score</div>
+      <div class="sb-spark-row">
+        <svg class="sb-spark-svg" viewBox="0 0 200 36" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="spark-area" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#ffd54a" stop-opacity="0.4"/>
+              <stop offset="100%" stop-color="#ffd54a" stop-opacity="0"/>
+            </linearGradient>
+          </defs>
+          <!-- Area + line — 7 points: 4, 6, 3, 7, 5, 8, 6 -->
+          <path d="M0,32 L0,24 L33,16 L66,28 L100,12 L133,20 L166,8 L200,16 L200,32 Z" fill="url(#spark-area)"/>
+          <polyline points="0,24 33,16 66,28 100,12 133,20 166,8 200,16"
+            fill="none" stroke="#ffd54a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          <!-- Today marker (last point) -->
+          <circle cx="200" cy="16" r="3.5" fill="#ffd54a" stroke="#0a0a0c" stroke-width="1.5"/>
+        </svg>
+        <div class="sb-spark-stat">
+          <span class="sb-spark-num">+15</span>
+          <span class="sb-spark-delta">↑ vs 평균</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="note">
+  <b>D — 7일 Score Sparkline</b>: 최근 7일 score (gold + silver/3) 미니 line chart. 우측 = 오늘 score + 평균 대비 ↑/↓.<br>
+  <b>장점</b>: 추세 한 눈에. 미적이고 데코적. 데이터 있음 (logCache).<br>
+  <b>단점</b>: 추상적 (구체 행동 hint X). 7일 가운데 어떤 게 오늘인지 위치 인지 약함. stats 탭과 정보 중복.
+</div>
+</body></html>
