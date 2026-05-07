@@ -1426,8 +1426,30 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
           <div class="sb-tier-caption"><span class="dash">─</span><span id="sb-tier-caption-name">방관자</span></div>
         </div>
       </div>
-      <!-- 6단 ladder 제거 (2026-05-08) — 사용자 피드백. 자리는 비워두고 후속에 다른 콘텐츠.
-           renderTierLadder() 는 #sb-ladder 없으면 no-op 이라 호출은 그대로 둠. -->
+      <!-- 4 카테고리 완수도 (2026-05-08) — 식단/운동/루틴/할일 오늘 완수 상태 + N/4 stat.
+           cube system 컬러 매핑: gold = 완수 (강조) · silver = 부분 (중간) · crimson = 실패 (빨간) · gray = 미시작 (dim). -->
+      <div class="sb-bottom">
+        <div class="sb-bottom-label">오늘 완수</div>
+        <div class="sb-completion" id="sb-completion">
+          <div class="cm-cells">
+            <div class="cm-cell" data-cat="diet" onclick="window.scrollTo&&window.scrollTo({top:document.getElementById('food-card')?.offsetTop-80||0,behavior:'smooth'})">
+              <span class="cm-icon">🥗</span><span class="cm-label">식단</span>
+            </div>
+            <div class="cm-cell" data-cat="exercise" onclick="window.scrollTo&&window.scrollTo({top:document.getElementById('workout-card')?.offsetTop-80||0,behavior:'smooth'})">
+              <span class="cm-icon">💪</span><span class="cm-label">운동</span>
+            </div>
+            <div class="cm-cell" data-cat="routine" onclick="window.scrollTo&&window.scrollTo({top:document.getElementById('routine-card')?.offsetTop-80||0,behavior:'smooth'})">
+              <span class="cm-icon">🔁</span><span class="cm-label">루틴</span>
+            </div>
+            <div class="cm-cell" data-cat="tasks" onclick="window.scrollTo&&window.scrollTo({top:document.getElementById('targets-card')?.offsetTop-80||0,behavior:'smooth'})">
+              <span class="cm-icon">✓</span><span class="cm-label">할일</span>
+            </div>
+          </div>
+          <div class="cm-stat">
+            <span id="cm-stat-num">0</span><span class="cm-stat-denom">/4</span>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Sticky Header — .sb 바로 아래. position:sticky;top:0 으로 자연스레
@@ -5220,8 +5242,11 @@ function renderCharCard(){
   // Tier caption — "─ 저항자" 식으로 화자 명시.
   const capEl=document.getElementById('sb-tier-caption-name');
   if(capEl){capEl.textContent=tier.name;capEl.style.color=tier.color;}
-  // Tier ladder — 6단 dots 렌더 (현재 idx highlight).
+  // Tier ladder — 6단 dots 렌더 (현재 idx highlight). 마크업 제거됨 (2026-05-08) —
+  // 함수는 #sb-ladder DOM 가드로 no-op.
   if(typeof window.renderTierLadder==='function')window.renderTierLadder(tierIdx);
+  // 4 카테고리 완수도 — 식단/운동/루틴/할일 cube color 기반 갱신.
+  if(typeof window.renderCompletion==='function')window.renderCompletion();
   // Progress bar (sticky 안) — sticky 가 own 하지만 호환성 유지.
   const prog=document.getElementById('char-progress');
   if(prog)prog.style.width=pct+'%';

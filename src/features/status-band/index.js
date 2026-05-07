@@ -99,3 +99,59 @@ export function setupStatusBand() {
 export function setYrActive(active) {
   document.body.classList.toggle('has-yr-active', !!active);
 }
+
+/**
+ * 오늘 4 카테고리 (식단·운동·루틴·할일) 완수도 렌더.
+ * Cube system 의 categorical judger (judgeDiet/judgeExercise/judgeRoutine/judgeTasks)
+ * 결과를 그대로 사용 — 디자인 시스템 일관성.
+ *
+ * 각 cell 의 상태 클래스:
+ *   gold (clean / all done)        → .is-done
+ *   silver (partial / 1+ logged)   → .is-partial
+ *   crimson (fail / red registered) → .is-fail
+ *   gray / null                    → (no class — dim)
+ *
+ * stat (N/4) — gold 카테고리 갯수. 4/4 = .is-perfect (강한 glow).
+ *
+ * renderCharCard 가 호출 — 모든 액션 후 자동 갱신.
+ */
+export function renderCompletion() {
+  const log = window.log;
+  if (!log) return;
+  const Cubes = window.Cubes || {};
+  const judgeDiet     = Cubes.judgeDiet     || (() => 'gray');
+  const judgeExercise = Cubes.judgeExercise || (() => ({ exercise: 'gray' }));
+  const judgeRoutine  = Cubes.judgeRoutine  || (() => 'gray');
+  const judgeTasks    = Cubes.judgeTasks    || (() => null);
+
+  // 오늘 요일 (Mon-based) — judgeRoutine 패턴.
+  const wd = (new Date().getDay() + 6) % 7;
+
+  const states = {
+    diet:     judgeDiet(log.meals || []),
+    exercise: (judgeExercise(log.workouts || []) || {}).exercise || 'gray',
+    routine:  judgeRoutine(log.mandatory || [], wd),
+    tasks:    judgeTasks(log.targets || []),
+  };
+
+  let doneCount = 0;
+  Object.entries(states).forEach(([cat, color]) => {
+    const cell = document.querySelector(`.cm-cell[data-cat="${cat}"]`);
+    if (!cell) return;
+    cell.classList.remove('is-done', 'is-partial', 'is-fail');
+    if (color === 'gold') {
+      cell.classList.add('is-done');
+      doneCount++;
+    } else if (color === 'silver') {
+      cell.classList.add('is-partial');
+    } else if (color === 'crimson') {
+      cell.classList.add('is-fail');
+    }
+    // gray / null = no class → dim default
+  });
+
+  const num = document.getElementById('cm-stat-num');
+  if (num) num.textContent = doneCount;
+  const stat = num?.parentElement;
+  if (stat) stat.classList.toggle('is-perfect', doneCount === 4);
+}

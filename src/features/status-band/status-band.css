@@ -92,8 +92,123 @@
   opacity: 0.6;
 }
 
-/* Tier Ladder 제거 (2026-05-08 사용자 피드백). 빈 자리 채울 컨텐츠는 후속.
-   renderTierLadder() 는 #sb-ladder 없으면 no-op — module 코드 유지. */
+/* ── 오늘 4 카테고리 완수도 (2026-05-08 채택) ────────────
+   디자인 시스템 cube color 매핑:
+     gold (#ffd54a)    = 완수 — 강조 + glow
+     silver (#d8dfe7)  = 부분 — 중간 opacity
+     crimson (#ff6b6b) = 실패 — 빨간 (cube system 의 red 와 통일)
+     기본 (gray)       = 미시작 — dim
+   Tier Hero (캐릭터 + quote) 와 cube system 일관성. 초록 #34d399 사용 X. */
+
+.sb-bottom {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border2);
+}
+.sb-bottom-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text3);
+  margin-bottom: 8px;
+}
+
+.sb-completion {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.cm-cells {
+  display: flex;
+  gap: 6px;
+  flex: 1;
+}
+.cm-cell {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 4px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: background 0.25s ease;
+}
+.cm-cell:active { background: rgba(255, 255, 255, 0.04); }
+
+.cm-icon {
+  font-size: 18px;
+  opacity: 0.4;
+  transition:
+    opacity 0.3s ease,
+    transform 0.35s cubic-bezier(.32, 1.5, .42, 1),
+    filter 0.3s ease;
+}
+.cm-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--text3);
+  letter-spacing: 0.04em;
+  transition: color 0.3s ease;
+}
+
+/* Done state — gold (cube 완수 색) */
+.cm-cell.is-done .cm-icon {
+  opacity: 1;
+  transform: scale(1.06);
+  filter: drop-shadow(0 0 8px rgba(255, 213, 74, 0.55));
+}
+.cm-cell.is-done .cm-label {
+  color: #ffd54a;
+  font-weight: 800;
+}
+
+/* Partial state — silver (cube 일부 완수 색) */
+.cm-cell.is-partial .cm-icon {
+  opacity: 0.78;
+  filter: drop-shadow(0 0 4px rgba(216, 223, 231, 0.3));
+}
+.cm-cell.is-partial .cm-label {
+  color: #d8dfe7;
+  font-weight: 700;
+}
+
+/* Fail state — crimson (cube 실패 색, 큐록 accent 와 통일) */
+.cm-cell.is-fail .cm-icon {
+  opacity: 0.9;
+  filter: saturate(0.6) drop-shadow(0 0 6px rgba(255, 77, 77, 0.45));
+}
+.cm-cell.is-fail .cm-label {
+  color: #ff6b6b;
+  font-weight: 700;
+}
+
+/* Stat (N/4) — gold 강조 (sticky "+N → 각성자" 와 같은 톤) */
+.cm-stat {
+  font-family: 'Archivo Black', sans-serif;
+  font-size: 18px;
+  letter-spacing: -0.02em;
+  color: #ffd54a;
+  flex-shrink: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 1px;
+  text-shadow: 0 0 10px rgba(255, 213, 74, 0.35);
+  transition: text-shadow 0.4s ease;
+}
+.cm-stat-denom {
+  font-size: 11px;
+  color: var(--text3);
+  font-weight: 600;
+}
+/* 4/4 도달 — 더 강한 glow */
+.cm-stat.is-perfect {
+  text-shadow: 0 0 18px rgba(255, 213, 74, 0.7), 0 0 32px rgba(255, 213, 74, 0.35);
+}
 
 /* ── Compact mode (yesterday-ribbon 노출 시) ──────────── */
 /* CWV: max-height + opacity 만 사용. height auto-transition 금지. */
