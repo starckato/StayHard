@@ -1,0 +1,91 @@
+/* 큐록 · features/cubes/cubes-ui.css — 큐브 보상 인터랙션 CSS.
+   index.html 의 ~503-586 region 에서 추출 (2026-05-07).
+   ui-events.js 의 _playCubeEvent / playMicroReward 와 매칭. */
+
+/* ═════ WILL CUBE IMPACT ANIMATION — 심플 3-stage ═════
+   1) 등장 (0~280ms): fade + scale + 살짝 튀어나오는 느낌
+   2) 정지 (280~480ms): 라벨 읽기
+   3) 회전+비상 (480~1180ms): Y축 1회 회전 + 상단으로 스르륵 fade out
+   총 1.18초. ui-events.js 의 _CUBE_SHOW_MS / _LINGER_MS / _DEPART_MS 와 동기화 필수. */
+.cube-event-stage{position:fixed;inset:0;z-index:10001;pointer-events:none;display:flex;align-items:center;justify-content:center;contain:layout style paint;transform:translateZ(0);}
+.cube-event-stage.dim{background:radial-gradient(circle at center,rgba(0,0,0,0.22) 0%,transparent 55%);opacity:0;transition:opacity 280ms ease-out;}
+.cube-event-stage.dim.on{opacity:1;}
+.cube-event-wrap{position:relative;display:flex;flex-direction:column;align-items:center;gap:14px;opacity:0;transform:translateY(16px) scale(0.7);transition:opacity 280ms ease-out,transform 340ms cubic-bezier(0.16,1,0.3,1);will-change:transform,opacity;backface-visibility:hidden;}
+.cube-event-wrap.show{opacity:1;transform:translateY(0) scale(1);}
+.cube-event-wrap.depart{opacity:0;transform:translateY(calc(-50vh + 40px)) scale(0.24);transition:opacity 760ms ease-in,transform 900ms cubic-bezier(0.4,0,0.2,1);}
+
+/* 3D 큐브 — preserve-3d, 초기 회전 각도 + .depart 시 1회전. */
+.cube-event-cube{width:72px;height:72px;position:relative;transform-style:preserve-3d;transform:rotateX(-16deg) rotateY(-22deg);transition:transform 900ms cubic-bezier(0.4,0,0.2,1);will-change:transform;backface-visibility:hidden;}
+.cube-event-wrap.depart .cube-event-cube{transform:rotateX(-16deg) rotateY(338deg);}
+.cube-face{position:absolute;width:72px;height:72px;border-radius:var(--radius-md);backface-visibility:hidden;}
+.cube-event[data-color="gold"]    .cube-face{background:linear-gradient(135deg,#fff1a8 0%,#ffd54a 45%,#c48c1a 100%);border:1px solid rgba(255,233,128,0.85);box-shadow:0 0 1px rgba(255,255,255,0.9) inset,0 -6px 12px rgba(0,0,0,0.35) inset;}
+.cube-event[data-color="silver"]  .cube-face{background:linear-gradient(135deg,#f2f4f7 0%,#b5c0cc 45%,#6d7682 100%);border:1px solid rgba(210,218,228,0.75);box-shadow:0 0 1px rgba(255,255,255,0.85) inset,0 -6px 12px rgba(0,0,0,0.30) inset;}
+.cube-event[data-color="crimson"] .cube-face{background:linear-gradient(135deg,#ff8080 0%,#ff4d4d 45%,#8b1515 100%);border:1px solid var(--accent-tint-5);box-shadow:0 0 1px rgba(255,255,255,0.55) inset,0 -6px 12px rgba(0,0,0,0.45) inset;}
+.cube-face.f-front  {transform:translateZ(36px);}
+.cube-face.f-back   {transform:translateZ(-36px) rotateY(180deg);}
+.cube-face.f-right  {transform:rotateY(90deg) translateZ(36px);}
+.cube-face.f-left   {transform:rotateY(-90deg) translateZ(36px);}
+.cube-face.f-top    {transform:rotateX(90deg) translateZ(36px);}
+.cube-face.f-bottom {transform:rotateX(-90deg) translateZ(36px);}
+
+/* 라벨 — wrap 의 fade 에 맞춰 같이 등장 */
+.cube-event-label{display:flex;flex-direction:column;align-items:center;gap:2px;}
+.cube-event-title{font-size:var(--text-md);font-weight:800;color:var(--text);letter-spacing:-0.005em;text-shadow:0 1px 4px rgba(0,0,0,0.5);}
+.cube-event-body{font-size:var(--text-xs);font-weight:600;color:var(--text2);letter-spacing:-0.005em;text-shadow:0 1px 3px rgba(0,0,0,0.5);}
+.cube-event-delta{font-size:var(--text-base);font-weight:900;font-family:'DM Mono',monospace;letter-spacing:-0.02em;text-shadow:0 1px 4px rgba(0,0,0,0.5);}
+.cube-event[data-color="gold"]    .cube-event-delta{color:#ffd54a;}
+.cube-event[data-color="silver"]  .cube-event-delta{color:#d8dfe7;}
+.cube-event[data-color="crimson"] .cube-event-delta{color:#ff6b6b;}
+
+/* Aura — 큐브 뒤 radial glow. show 시 fade in. */
+.cube-event-aura{position:absolute;top:50%;left:50%;width:280px;height:280px;margin:-140px 0 0 -140px;border-radius:50%;pointer-events:none;opacity:0;transform:scale(0.7);transition:opacity 320ms ease-out,transform 420ms cubic-bezier(0.16,1,0.3,1);}
+.cube-event[data-color="gold"]    .cube-event-aura{background:radial-gradient(circle,rgba(255,213,74,0.50) 0%,rgba(255,213,74,0.22) 30%,transparent 70%);}
+.cube-event[data-color="silver"]  .cube-event-aura{background:radial-gradient(circle,rgba(210,220,232,0.40) 0%,rgba(210,220,232,0.18) 30%,transparent 70%);}
+.cube-event[data-color="crimson"] .cube-event-aura{background:radial-gradient(circle,rgba(255,60,60,0.50) 0%,rgba(100,0,0,0.25) 30%,transparent 70%);}
+.cube-event-aura.on{opacity:1;transform:scale(1.1);}
+
+/* ── Micro Reward Banner ─────────────────────────────────
+   Silver 큐브 (진행 중) 대신 사용. Gold (완료) 만 큐브 연출 유지.
+   Top-center serif, 900ms linger, 명사구/해라체. */
+.micro-banner {
+  position: fixed;
+  top: calc(env(safe-area-inset-top, 12px) + 14px);
+  left: 50%;
+  transform: translate(-50%, -12px);
+  padding: 9px 18px;
+  background: rgba(12, 12, 16, 0.86);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 0.5px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-pill);
+  font-family: 'Noto Serif KR', 'Nanum Myeongjo', serif;
+  font-size: 13.5px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: #ececf0;
+  z-index: 9000;
+  opacity: 0;
+  transition: opacity 220ms ease-out, transform 340ms cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.micro-banner::before {
+  content: "";
+  width: 4px; height: 4px; border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 6px var(--accent-tint-5);
+  flex-shrink: 0;
+}
+.micro-banner.on  { opacity: 1; transform: translate(-50%, 0); }
+.micro-banner.off { opacity: 0; transform: translate(-50%, -8px); transition: opacity 260ms ease-in, transform 300ms ease-in; }
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .micro-banner { transition: opacity 120ms; }
+  .cube-event-wrap, .cube-event-wrap.show, .cube-event-wrap.depart, .cube-event-cube, .cube-event-aura { transition: none !important; }
+  .cube-event-wrap { opacity: 1; transform: none; }
+  .cube-event-aura { opacity: 1; }
+}

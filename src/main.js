@@ -50,13 +50,14 @@ import * as notifOptIn from './features/notif/opt-in-scheduler.js';
 import * as volumeDelta from './features/volume-delta/index.js';
 import * as targets from './features/targets/index.js';
 import './features/targets/tests.js'; // window.runTargetsTests() 노출
+import * as cubesUiEvents from './features/cubes/ui-events.js';
 
 Object.assign(
   window,
   date, tier, icons, env, analytics, mealPhoto, cheat, toast,
   scoreEvents, mottos, exercises, muscle, rewardMessages, pushupCV,
   stats, onboarding, weight, rewards, dateHeatmap,
-  targets
+  targets, cubesUiEvents
 );
 // Targets feature — DOMContentLoaded 후 키 바인딩
 if (typeof window !== 'undefined') {
