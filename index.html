@@ -3978,7 +3978,14 @@ function showRoutineConfirmSheet(routineId){
   if(!sheet)return;
   const pills=document.getElementById('routine-confirm-pills');
   if(pills){
-    pills.innerHTML=(r.exercises||[]).map(e=>`<span style="font-size:var(--text-xs);padding:4px 9px;border-radius:var(--radius-xl);background:var(--surface2);border:1px solid var(--border2);color:var(--text2);font-family:'DM Mono',monospace;">${e.icon||'💪'} ${e.name}</span>`).join('');
+    // textContent 로 escape — 운동 이름이 사용자 입력이라 innerHTML 직접 interpolation 시 XSS.
+    pills.textContent='';
+    (r.exercises||[]).forEach(e=>{
+      const span=document.createElement('span');
+      span.style.cssText='font-size:var(--text-xs);padding:4px 9px;border-radius:var(--radius-xl);background:var(--surface2);border:1px solid var(--border2);color:var(--text2);font-family:\'DM Mono\',monospace;margin-right:4px;display:inline-block;';
+      span.textContent=`${e.icon||'💪'} ${e.name||''}`;
+      pills.appendChild(span);
+    });
   }
   const yesBtn=document.getElementById('routine-confirm-yes-btn');
   if(yesBtn)yesBtn.onclick=()=>confirmAddRoutine(routineId);
@@ -7455,37 +7462,32 @@ function recomputeCubesHook(key,opts){
         }
       }
     }catch(e){console.warn('[cube-score-sync]',e&&e.message);}
-    // ── Phase 2 (Will Cube · B 공식): lifetime delta + red destruction ──
-    // beforeCubes vs l.cubes 의 delta 를 profiles.lifetime_gold/silver/red 에 누적.
-    // red 발생 (dR>0) 시 추가로 lifetime_gold -= 2 + lifetime_silver -= 2 per red.
-    // undo (음수 delta) 시 가역 — 단, red 차감은 비가역 (파괴는 복구되지 않음).
-    // 과거 날짜 편집도 lifetime 에 반영 (사용자가 어제 한 일을 오늘 기록한 케이스).
+    // ── Phase 2 (Will Cube · B 공식): lifetime delta via apply_cube_delta RPC ──
+    // beforeCubes vs l.cubes 의 delta 를 *서버 측* RPC 로 전달. 클라이언트가 lifetime_*
+    // 직접 UPDATE 하면 트리거가 차단 (migrations/049). 검증 + max 0 + red destruction (N=2)
+    // 모두 서버 책임. RPC 가 새 lifetime 값 반환 → CP 갱신.
     // silent (renderRoutine 자동 sync) 또는 CP 없음 → skip.
     try{
-      if(!silent && CP){
+      if(!silent && CP && CU){
         const before=beforeCubes||{};
         const after=(l&&l.cubes)||{};
         const dG=(+after.gold||0)-(+before.gold||0);
         const dS=(+after.silver||0)-(+before.silver||0);
         const dR=(+after.red||0)-(+before.red||0);
         if(dG!==0||dS!==0||dR!==0){
-          CP.lifetime_gold=+CP.lifetime_gold||0;
-          CP.lifetime_silver=+CP.lifetime_silver||0;
-          CP.lifetime_red=+CP.lifetime_red||0;
-          let nG=Math.max(0,CP.lifetime_gold+dG);
-          let nS=Math.max(0,CP.lifetime_silver+dS);
-          let nR=Math.max(0,CP.lifetime_red+dR);
-          // Red destruction — 사용자 결정 N=2 (1 red = -2g -2s).
-          if(dR>0){
-            nG=Math.max(0,nG-2*dR);
-            nS=Math.max(0,nS-2*dR);
-          }
-          CP.lifetime_gold=nG;CP.lifetime_silver=nS;CP.lifetime_red=nR;
-          if(CU){
-            sb.from('profiles').update({
-              lifetime_gold:nG,lifetime_silver:nS,lifetime_red:nR
-            }).eq('id',CU.id).then(()=>{},err=>console.warn('[lifetime-cube] sync',err&&err.message));
-          }
+          sb.rpc('apply_cube_delta',{
+            p_log_date: k,
+            p_delta_gold: dG,
+            p_delta_silver: dS,
+            p_delta_red: dR
+          }).then(({data,error})=>{
+            if(error){console.warn('[lifetime-cube] rpc',error.message);return;}
+            if(data&&typeof data==='object'){
+              CP.lifetime_gold=+data.gold||0;
+              CP.lifetime_silver=+data.silver||0;
+              CP.lifetime_red=+data.red||0;
+            }
+          });
         }
       }
     }catch(e){console.warn('[lifetime-cube]',e&&e.message);}
