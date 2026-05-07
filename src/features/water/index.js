@@ -17,8 +17,9 @@ export function getWaterGoal() {
   return (CP && CP.water_goal) || 6;
 }
 
-/** 12개 0.5L 단위 버튼 중 현재 목표에 해당하는 버튼만 active. */
-function refreshWaterGoalUI() {
+/** 12개 0.5L 단위 버튼 중 현재 목표에 해당하는 버튼만 active.
+ *  inline 스크립트 (onLogin / _paintInitialUI 등) 가 직접 호출하므로 export. */
+export function refreshWaterGoalUI() {
   const goal = getWaterGoal();
   for (let i = 1; i <= 12; i++) {
     const btn = document.getElementById('wg-btn-' + i);

@@ -8,13 +8,17 @@ export const config = { matcher: '/' };
 const CSP = [
   "default-src 'self'",
   // 'unsafe-inline' 은 임시 — index.html 의 16,000줄 inline script 가 외부로 빠지면 제거 가능.
-  "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net",
+  // 'wasm-unsafe-eval' — MediaPipe vision tasks 가 wasm 실행.
+  "script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://cdn.jsdelivr.net",
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "font-src 'self' data: https://fonts.gstatic.com",
   "img-src 'self' data: blob: https:",
   // Supabase API + Realtime + Storage signed URLs.
-  "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.supabase.com",
+  // jsdelivr — Chart.js / supabase-js / html2canvas / MediaPipe vision_bundle.mjs + wasm 동적 로딩.
+  "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.supabase.com https://cdn.jsdelivr.net",
   "media-src 'self' blob: https:",
+  // worker-src — MediaPipe 가 web worker 로 wasm 실행.
+  "worker-src 'self' blob:",
   "frame-src 'none'",
   "object-src 'none'",
   "base-uri 'self'",
