@@ -4,19 +4,24 @@
    안의 cube counter / tier / streak / progress 는 모두 .sb 에서 이전. */
 
 .sticky-header {
-  position: fixed;
+  /* 합쳐+분리 패턴 — .sb 바로 아래 in-flow 위치, top:0 으로 sticky.
+     스크롤 시 자동으로 분리되어 viewport 상단 고정. (2026-05-08) */
+  position: sticky;
   top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 100%;
-  max-width: 430px;
-  background: linear-gradient(180deg, rgba(15, 15, 20, 0.96), rgba(15, 15, 20, 0.92));
+  margin: 0 14px 12px;
+  background: linear-gradient(180deg, rgba(15, 15, 20, 0.94), rgba(15, 15, 20, 0.88));
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
-  z-index: 50;
-  padding-top: env(safe-area-inset-top, 0);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: var(--radius-xl);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  z-index: 30;
+  overflow: hidden;
+}
+/* .sb 바로 위에 붙어 있을 때 (rest 상태) — 시각적으로 .sb 와 한 카드처럼.
+   margin-top 음수로 살짝 겹쳐 부드러운 연결. */
+.sb + .sticky-header {
+  margin-top: -4px;
 }
 
 .sh-top {
@@ -94,21 +99,34 @@
 .sh-cube-num.tweening      { color: #ffd54a; }
 .sh-cube-num.tweening-loss { color: #ff8080; }
 
-.sh-progress-meta {
+/* 우측 column — 다음 티어까지 +N 명료하게 (2026-05-08 사용자 피드백 반영).
+   "다음 레벨업까지 필요 갯수" 가 직관적이도록 +N 큰 숫자 + arrow + 다음 티어 이름. */
+.sh-next {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 1px;
-  font-family: 'DM Mono', monospace;
-  font-size: 9.5px;
+  gap: 2px;
   flex-shrink: 0;
   border-left: 1px solid rgba(255, 255, 255, 0.08);
   padding-left: 10px;
   cursor: pointer;
   touch-action: manipulation;
 }
-.sh-progress-meta .next { color: #ffd54a; font-weight: 700; }
-.sh-progress-meta .pct  { color: var(--text3); }
+.sh-next-count {
+  font-family: 'Archivo Black', sans-serif;
+  font-size: 13px;
+  letter-spacing: -0.02em;
+  color: #ffd54a;
+  line-height: 1;
+}
+.sh-next-tier {
+  font-family: 'DM Mono', monospace;
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--text3);
+  line-height: 1;
+}
 
 /* 4px 진행 막대 — gold + silver 영역 분리 */
 .sh-bar {
@@ -156,9 +174,7 @@
   }
 }
 
-/* Status Band 슬림화 후 보정 — body padding-top 으로 sticky 가린다 */
-#app-screen {
-  padding-top: calc(56px + env(safe-area-inset-top, 0));
-}
+/* sticky-header 가 .sb 아래 in-flow 로 배치 (position:sticky) — #app-screen
+   padding-top 보정 더 이상 필요 없음. (2026-05-08 합쳐+분리 패턴) */
 
-/* .sb (Status Band) 룰 → src/features/status-band/status-band.css 로 이전 (2026-05-07) */
+/* .sb (Status Band) 룰 → src/features/status-band/status-band.css */

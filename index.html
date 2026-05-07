@@ -1352,38 +1352,13 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
 
 <!-- ══ APP ══ -->
 <div id="app-screen">
-  <!-- Sticky Header — slim 56px, position:fixed. Status Band 의 tier/streak/cube/progress 를
-       이전. 항상 화면 상단 고정. (2026-05-07 prototype 통합) -->
-  <div class="sticky-header" id="sticky-header">
-    <div class="sh-top">
-      <div class="sh-tier" onclick="openScoreGuide()">
-        <span class="sh-tier-icon" id="hdr-tier-icon">😴</span>
-        <span class="sh-tier-name" id="hdr-tier">방관자</span>
-        <span class="sh-streak"><span class="streak-fire">🔥</span> <span id="hdr-streak">0일</span></span>
-      </div>
-      <div class="sh-cubes" onclick="openScoreGuide()">
-        <span class="sh-cube-item"><span class="sh-cube-dot gold" id="sh-dot-gold"></span><span class="sh-cube-num" id="cc-num-gold">0</span></span>
-        <span class="sh-cube-item"><span class="sh-cube-dot silver" id="sh-dot-silver"></span><span class="sh-cube-num" id="cc-num-silver">0</span></span>
-        <span class="sh-cube-item"><span class="sh-cube-dot red" id="sh-dot-red"></span><span class="sh-cube-num" id="cc-num-red">0</span></span>
-      </div>
-      <div class="sh-progress-meta" onclick="openScoreGuide()">
-        <span class="next" id="sb-today">+0</span>
-        <span class="pct" id="char-progress-label">—</span>
-      </div>
-    </div>
-    <div class="sh-bar">
-      <div class="sh-bar-gold" id="char-progress" style="width:0%;"></div>
-      <div class="sh-bar-silver" id="sh-bar-silver" style="left:0%;width:0%;"></div>
-    </div>
-    <!-- 호환용 hidden 노드 — 옛 코드 (score-pulse 등) 직접 참조 안전망 -->
-    <div id="hdr-score" style="display:none;">0</div>
-    <span id="char-tier-name" style="display:none;"></span>
-    <span id="char-pts" style="display:none;"></span>
-    <!-- legacy hidden — Status Band 에 있던 cube tower (renderCubeStack 호환). -->
-    <div id="hdr-cube-stack" style="display:none;">
-      <div id="cc-tower-gold" aria-hidden="true"></div>
-      <div id="cc-tower-silver" aria-hidden="true"></div>
-    </div>
+  <!-- Hidden compat 노드 — 옛 코드 직접 참조 안전망 (sb 안 / sticky 안 어디 옮겨도 동작) -->
+  <div id="hdr-score" style="display:none;">0</div>
+  <span id="char-tier-name" style="display:none;"></span>
+  <span id="char-pts" style="display:none;"></span>
+  <div id="hdr-cube-stack" style="display:none;">
+    <div id="cc-tower-gold" aria-hidden="true"></div>
+    <div id="cc-tower-silver" aria-hidden="true"></div>
   </div>
 
   <div class="hdr">
@@ -1453,6 +1428,31 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
       </div>
       <div class="sb-ladder" id="sb-ladder">
         <!-- renderTierLadder() 가 6 step 채움 -->
+      </div>
+    </div>
+
+    <!-- Sticky Header — .sb 바로 아래. position:sticky;top:0 으로 자연스레
+         스크롤 시 분리되어 상단 고정. (2026-05-08 합쳐+분리 패턴) -->
+    <div class="sticky-header" id="sticky-header">
+      <div class="sh-top">
+        <div class="sh-tier" onclick="openScoreGuide()">
+          <span class="sh-tier-icon" id="hdr-tier-icon">😴</span>
+          <span class="sh-tier-name" id="hdr-tier">방관자</span>
+          <span class="sh-streak"><span class="streak-fire">🔥</span> <span id="hdr-streak">0일</span></span>
+        </div>
+        <div class="sh-cubes" onclick="openScoreGuide()">
+          <span class="sh-cube-item"><span class="sh-cube-dot gold" id="sh-dot-gold"></span><span class="sh-cube-num" id="cc-num-gold">0</span></span>
+          <span class="sh-cube-item"><span class="sh-cube-dot silver" id="sh-dot-silver"></span><span class="sh-cube-num" id="cc-num-silver">0</span></span>
+          <span class="sh-cube-item"><span class="sh-cube-dot red" id="sh-dot-red"></span><span class="sh-cube-num" id="cc-num-red">0</span></span>
+        </div>
+        <div class="sh-next" onclick="openScoreGuide()">
+          <span class="sh-next-count" id="sb-today">+12</span>
+          <span class="sh-next-tier" id="char-progress-label">→ 각성자</span>
+        </div>
+      </div>
+      <div class="sh-bar">
+        <div class="sh-bar-gold" id="char-progress" style="width:0%;"></div>
+        <div class="sh-bar-silver" id="sh-bar-silver" style="left:0%;width:0%;"></div>
       </div>
     </div>
 
@@ -8586,19 +8586,26 @@ function updateHeaderStatus(){
     tierEl.textContent=tier.name;
     tierEl.style.color=tier.color;
   }
-  // 오늘 만든 큐브 색별 카운터 — sb-today 자리.
+  // sticky 우측 — "다음 티어까지 +N" (2026-05-08 사용자 피드백).
+  // 이전: 오늘 cube 카운트 표시 → 가운데 lifetime 카운트와 중복으로 헷갈림.
+  // B 공식 score = lifetime_gold + lifetime_silver/3.
+  // remaining = next_threshold - score (round up). 정점이면 "정점".
   const todayEl=document.getElementById('sb-today');
   if(todayEl){
-    const tc=getCubeCounts('today');
-    const total2=tc.gold+tc.silver+tc.red;
-    if(total2===0){
-      todayEl.innerHTML='<span class="sb-today-unit" style="color:var(--text3);">—</span>';
+    const lg=+(CP&&CP.lifetime_gold)||0;
+    const ls=+(CP&&CP.lifetime_silver)||0;
+    const score=lg+ls/3;
+    // CUBE_TIER_THRESHOLDS = [0, 12, 60, 200, 500, 1400] — src/lib/tier.js
+    const T=window.CUBE_TIER_THRESHOLDS||[0,12,60,200,500,1400];
+    let nextIdx=-1;
+    for(let i=0;i<T.length;i++){if(score<T[i]){nextIdx=i;break;}}
+    if(nextIdx<0){
+      todayEl.textContent='정점';
+      todayEl.style.color='var(--text3)';
     } else {
-      const parts=[];
-      if(tc.gold>0)parts.push(`<span class="cc-today-dot gold"></span><span style="color:#ffd54a;font-weight:800;">${tc.gold}</span>`);
-      if(tc.silver>0)parts.push(`<span class="cc-today-dot silver"></span><span style="color:#d8dfe7;font-weight:800;">${tc.silver}</span>`);
-      if(tc.red>0)parts.push(`<span class="cc-today-dot red"></span><span style="color:#ff6b6b;font-weight:800;">${tc.red}</span>`);
-      todayEl.innerHTML='<span class="cc-today">'+parts.join('<span style="width:4px;"></span>')+'</span>';
+      const remaining=Math.max(0,Math.ceil(T[nextIdx]-score));
+      todayEl.textContent='+'+remaining;
+      todayEl.style.color='#ffd54a';
     }
   }
 }
