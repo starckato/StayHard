@@ -27,6 +27,11 @@
     { "source": "/preview", "destination": "/preview.html" },
     { "source": "/privacy", "destination": "/privacy.html" },
     { "source": "/terms", "destination": "/terms.html" },
+    { "source": "/prototypes/:path*", "destination": "/prototypes/:path*" },
+    { "source": "/dist/:path*", "destination": "/dist/:path*" },
+    { "source": "/src/:path*", "destination": "/src/:path*" },
+    { "source": "/assets/:path*", "destination": "/assets/:path*" },
+    { "source": "/migrations/:path*", "destination": "/migrations/:path*" },
     { "source": "/:path*", "destination": "/index.html" }
   ],
   "headers": [
