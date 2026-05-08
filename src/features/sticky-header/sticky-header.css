@@ -3,9 +3,17 @@
    .sticky-header 디자인을 실 앱 layout 에 맞춰 통합 (2026-05-07).
    안의 cube counter / tier / streak / progress 는 모두 .sb 에서 이전. */
 
+/* Sentinel — sticky 바로 위 1px element, IntersectionObserver 로 stuck 감지. */
+.sticky-sentinel {
+  height: 1px;
+  margin: 0;
+  visibility: hidden;
+}
+
 .sticky-header {
-  /* 합쳐+분리 패턴 — .sb 바로 아래 in-flow 위치, top:0 으로 sticky.
-     스크롤 시 자동으로 분리되어 viewport 상단 고정. (2026-05-08) */
+  /* 합쳐+분리 패턴 (2026-05-08 v2):
+       rest  — .sb 와 시각적으로 한 카드 (좌우 14px margin, top corners flat)
+       stuck — 풀 너비로 *확장* (margin 0, corners 0, 강한 그림자) */
   position: sticky;
   top: 0;
   margin: 0 14px 12px;
@@ -13,15 +21,28 @@
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: var(--radius-xl);
+  /* .sb 와 합쳐진 카드처럼 보이도록 top corners flat / top border invisible */
+  border-top: 1px solid transparent;
+  border-radius: 0 0 var(--radius-xl) var(--radius-xl);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
   z-index: 30;
   overflow: hidden;
+  /* CWV: layout-bound transition 회피. margin / border-radius / box-shadow / opacity 만. */
+  transition:
+    margin 0.28s cubic-bezier(.32, 1, .42, 1),
+    border-radius 0.28s cubic-bezier(.32, 1, .42, 1),
+    box-shadow 0.28s ease,
+    border-color 0.28s ease;
 }
-/* .sb 바로 위에 붙어 있을 때 (rest 상태) — 시각적으로 .sb 와 한 카드처럼.
-   margin-top 음수로 살짝 겹쳐 부드러운 연결. */
-.sb + .sticky-header {
-  margin-top: -4px;
+
+/* Stuck 상태 — viewport 상단 도달 시. 풀-블리드 + sharp corners + 강 그림자. */
+.sticky-header.is-stuck {
+  margin: 0 0 12px;
+  border-radius: 0;
+  border-left-color: transparent;
+  border-right-color: transparent;
+  border-top-color: rgba(255, 255, 255, 0.06);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.55);
 }
 
 .sh-top {

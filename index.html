@@ -28,7 +28,7 @@
      so window globals (dkey, normKey, ...) are set before inline code runs.
      Query version bumps cache when bundle content changes. Bump manually or
      via build script when shipping a new bundle. See MIGRATION_PLAN.md. -->
-<script src="/dist/app.js?v=31615592"></script>
+<script src="/dist/app.js?v=a68e3b08"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Archivo+Black&display=swap" rel="stylesheet">
 <!-- Phase 0: 디자인 토큰 (shared 먼저, palette 가 override). -->
 <link href="/src/styles/tokens.shared.css" rel="stylesheet">
@@ -394,7 +394,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 #app-screen{display:none;}
 
 /* HEADER */
-.hdr{padding:54px 20px 8px;display:flex;flex-direction:column;gap:0;}
+.hdr{padding:max(env(safe-area-inset-top,0px),16px) 20px 6px;display:flex;flex-direction:column;gap:0;}
 .hdr-left{flex:1;}
 .hdr-title{font-size:var(--text-xl);font-weight:700;letter-spacing:1.2px;text-transform:uppercase;}
 .hdr-sub{font-size:var(--text-2xs);color:var(--text3);margin-top:2px;font-family:'DM Mono',monospace;letter-spacing:.03em;}
@@ -1378,10 +1378,8 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
         </button>
       </div>
     </div>
-    <!-- 2행: 유저명 -->
+    <!-- 2행: 유저명 — 모토는 캐릭터 quote 와 중복이므로 제거 (2026-05-08). -->
     <div class="hdr-sub" id="hdr-sub" style="margin-top:2px;">로딩 중…</div>
-    <!-- 3행: 모토 (전체 너비, 줄바꿈 허용) -->
-    <div id="daily-motto" style="font-size:var(--text-2xs);color:var(--accent);margin-top:3px;font-weight:500;letter-spacing:.02em;font-family:'DM Sans',sans-serif;line-height:1.5;"></div>
   </div>
 
   <div id="offline-banner" style="display:none;margin:0 14px 6px;padding:8px 14px;background:var(--amber-bg);border:1px solid var(--amber-bd);border-radius:var(--radius-sm);display:none;align-items:center;gap:8px;">
@@ -1455,8 +1453,11 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
       </div>
     </div>
 
+    <!-- Sticky-stuck sentinel — IntersectionObserver 가 stuck 감지. .sb 와 sticky 사이 1px. -->
+    <div class="sticky-sentinel" id="sticky-sentinel" aria-hidden="true"></div>
+
     <!-- Sticky Header — .sb 바로 아래. position:sticky;top:0 으로 자연스레
-         스크롤 시 분리되어 상단 고정. progress bar 상단 (rounded corners 와 매끈히 결합). -->
+         스크롤 시 분리되어 상단 고정. stuck 시 .is-stuck 으로 *확장* (full-bleed). -->
     <div class="sticky-header" id="sticky-header">
       <div class="sh-bar">
         <div class="sh-bar-gold" id="char-progress" style="width:0%;"></div>

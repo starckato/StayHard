@@ -16,13 +16,14 @@
 /* ── 컨테이너 ─────────────────────────────────────────── */
 .sb {
   position: relative;
-  margin: 12px 14px;
-  padding: 16px 18px 14px;
+  /* sticky-header 와 시각적으로 한 카드 — bottom corners flat, 좌우 14px margin */
+  margin: 6px 14px 0;
+  padding: 12px 16px 12px;
   background: linear-gradient(135deg, var(--surface) 0%, var(--surface2) 100%);
   border: 1px solid var(--border);
-  border-radius: var(--radius-xl);
+  border-bottom: 1px solid var(--border2);
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
   overflow: hidden;
-  /* CWV: layout-bound transition 회피. compact 전환 시 padding 만 변경. */
   transition: padding 0.3s cubic-bezier(.32, 1, .42, 1);
 }
 
@@ -31,8 +32,8 @@
   content: '';
   position: absolute;
   left: 0;
-  top: 16px;
-  bottom: 14px;
+  top: 12px;
+  bottom: 12px;
   width: 2px;
   background: var(--sb-accent, var(--text3));
   opacity: 0.55;
@@ -41,20 +42,20 @@
 
 /* ── Headline (quote + tier eyebrow) ──────────────────── */
 .sb-headline {
-  padding-bottom: 12px;
-  margin-bottom: 14px;
+  padding-bottom: 8px;
+  margin-bottom: 10px;
   border-bottom: 1px solid var(--border2);
 }
 
 .sb-quote {
   font-family: 'Noto Serif KR', 'Nanum Myeongjo', serif;
-  font-size: 18.5px;
-  line-height: 1.45;
+  font-size: 17px;
+  line-height: 1.4;
   font-style: italic;
   font-weight: 500;
   letter-spacing: -0.015em;
   color: var(--text);
-  margin-bottom: 8px;
+  margin-bottom: 4px;
   cursor: pointer;
   touch-action: manipulation;
   word-break: keep-all;
@@ -89,8 +90,8 @@
 
 .sb-canvas-wrap {
   position: relative;
-  width: 100px;
-  height: 120px;
+  width: 90px;
+  height: 108px;
   flex-shrink: 0;
   cursor: pointer;
   touch-action: manipulation;
@@ -134,9 +135,9 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 5px;
+  gap: 4px;
   /* 회계장부식 hairline — 마지막 cell 만 우측 border 제거. */
-  padding: 6px 2px;
+  padding: 4px 2px;
   border-right: 1px solid var(--border2);
   cursor: pointer;
   touch-action: manipulation;

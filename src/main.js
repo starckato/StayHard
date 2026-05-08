@@ -64,11 +64,16 @@ Object.assign(
   targets, cubesUiEvents, water, stickyHeader, statusBand
 );
 // Status Band — DOMContentLoaded 후 quote 클릭 wiring.
+// Sticky Header — IntersectionObserver 로 stuck 감지 (확장 효과).
 if (typeof window !== 'undefined') {
+  const _initBands = () => {
+    statusBand.setupStatusBand();
+    if (typeof stickyHeader.setupStickyHeader === 'function') stickyHeader.setupStickyHeader();
+  };
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => statusBand.setupStatusBand());
+    document.addEventListener('DOMContentLoaded', _initBands);
   } else {
-    setTimeout(() => statusBand.setupStatusBand(), 0);
+    setTimeout(_initBands, 0);
   }
 }
 // Targets feature — DOMContentLoaded 후 키 바인딩

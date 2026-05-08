@@ -31,3 +31,29 @@ export function bumpStickyDot(color) {
   dot.classList.add('bumped');
   setTimeout(() => dot.classList.remove('bumped'), 420);
 }
+
+/**
+ * Sticky-stuck detection — 스크롤로 상단 고정될 때 .is-stuck 토글.
+ *
+ * "합쳐+분리" 패턴 (Material collapsing toolbar / iOS large title 응용):
+ *   rest 상태  → .sb 와 한 카드처럼 (둥근 모서리, 좌우 14px margin)
+ *   stuck 상태 → 풀 너비로 *확장*, 모서리 sharp, 강한 그림자
+ *
+ * IntersectionObserver sentinel pattern:
+ *   sticky 바로 위에 1px sentinel. sentinel 이 viewport 밖으로 나가면 sticky 가
+ *   stuck 상태. 스크롤 핸들러보다 가볍고 정확.
+ */
+export function setupStickyHeader() {
+  const sticky = document.getElementById('sticky-header');
+  const sentinel = document.getElementById('sticky-sentinel');
+  if (!sticky || !sentinel) return;
+  if (sticky._stuckObs) return; // 중복 wiring 방지
+  const observer = new IntersectionObserver(
+    ([entry]) => {
+      sticky.classList.toggle('is-stuck', !entry.isIntersecting);
+    },
+    { threshold: 0 }
+  );
+  observer.observe(sentinel);
+  sticky._stuckObs = observer;
+}
