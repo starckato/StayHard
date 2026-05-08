@@ -27,17 +27,17 @@
   transition: padding 0.3s cubic-bezier(.32, 1, .42, 1);
 }
 
-/* 좌측 tier color accent stripe — 정체성 표식. 두께 ↑ + opacity ↑ (Phase 2). */
+/* 좌측 tier color accent stripe — 정체성 표식. inline style 로 색 주입. */
 .sb::before {
   content: '';
   position: absolute;
   left: 0;
   top: 12px;
   bottom: 12px;
-  width: 3px;
+  width: 2px;
   background: var(--sb-accent, var(--text3));
-  opacity: 0.8;
-  border-radius: 0 2px 2px 0;
+  opacity: 0.55;
+  border-radius: 0 1px 1px 0;
 }
 
 /* ── Headline (quote + tier eyebrow) ──────────────────── */
@@ -49,14 +49,13 @@
 
 .sb-quote {
   font-family: 'Noto Serif KR', 'Nanum Myeongjo', serif;
-  /* Phase 2 — Quote 가 hero 역할. 모바일 18px → 데스크탑 22px 까지 fluid. */
-  font-size: clamp(18px, 4.4vw, 22px);
+  font-size: 17px;
   line-height: 1.4;
   font-style: italic;
   font-weight: 500;
   letter-spacing: -0.015em;
   color: var(--text);
-  margin-bottom: 0;
+  margin-bottom: 4px;
   cursor: pointer;
   touch-action: manipulation;
   word-break: keep-all;
@@ -69,7 +68,18 @@
   transform: translateY(-4px);
 }
 
-/* .sb-tier-caption — 마크업 제거됨 (Phase 1, 방관자 중복 해소). sticky 가 owns. */
+.sb-tier-caption {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text3);
+}
+.sb-tier-caption .dash {
+  /* 새 레이아웃에선 dash 제거 — 트래킹된 mono caps 만으로 hierarchy 충분. */
+  display: none;
+}
 
 /* ── Stage row (character + ledger + stat) ────────────── */
 .sb-stage {
@@ -88,19 +98,6 @@
   transition: transform 0.35s cubic-bezier(.32, 1.5, .42, 1), filter 0.35s ease;
 }
 .sb-canvas-wrap:active { transform: scale(0.96); }
-/* Phase 2 — 캐릭터 발 밑 platform shadow. floating 해소, "stage 위에 서 있다" 시그널. */
-.sb-canvas-wrap::after {
-  content: '';
-  position: absolute;
-  left: 50%;
-  bottom: -3px;
-  width: 62%;
-  height: 6px;
-  transform: translateX(-50%);
-  background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.55) 0%, rgba(0, 0, 0, 0) 70%);
-  filter: blur(2px);
-  pointer-events: none;
-}
 .sb-canvas {
   width: 100%;
   height: 100%;
@@ -134,14 +131,13 @@
   gap: 0;
 }
 .cm-cell {
-  position: relative;
   flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 4px;
   /* 회계장부식 hairline — 마지막 cell 만 우측 border 제거. */
-  padding: 4px 2px 8px;
+  padding: 4px 2px;
   border-right: 1px solid var(--border2);
   cursor: pointer;
   touch-action: manipulation;
@@ -151,25 +147,6 @@
   border-right: none;
 }
 .cm-cell:active { background: rgba(255, 255, 255, 0.04); }
-/* Phase 2 — 빈 셀 (default) 에 dashed underline marker — "ledger 의 빈 칸" 표식.
-   상태 클래스 (is-done / is-partial / is-fail) 가 붙으면 fade out. */
-.cm-cell::after {
-  content: '';
-  position: absolute;
-  left: 25%;
-  right: 25%;
-  bottom: 2px;
-  height: 0;
-  border-bottom: 1px dashed var(--border2);
-  opacity: 0.7;
-  transition: opacity 0.25s ease;
-  pointer-events: none;
-}
-.cm-cell.is-done::after,
-.cm-cell.is-partial::after,
-.cm-cell.is-fail::after {
-  opacity: 0;
-}
 
 /* SVG icon (no emoji — 카드 헤더 SVG 재사용). currentColor 로 색 inherit. */
 .cm-icon {
