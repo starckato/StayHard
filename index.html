@@ -8654,23 +8654,26 @@ function updateHeaderStatus(){
     }
   }
   // ✅ Progress bar: gold portion + silver portion stacked (B 공식 시각화).
-  //    gold_share = goldScore / totalScore. silver overlay 가 gold 끝점부터 시작.
-  //    현재 tier 의 [tier.min, next.min] 범위에서 비율 분배.
+  //    ⚠️ TIERS[].min 은 *legacy* 점수 스케일 (0/200/600/...). cubeScore 는
+  //    *cube* 스케일 (0/12/60/200/500/1400) — getTier 와 임계가 달라서 그대로
+  //    쓰면 진행도가 ~16x undershoot 됨. CUBE_TIER_THRESHOLDS 로 별도 계산.
   try{
     const gold=document.getElementById('char-progress');
     const silver=document.getElementById('sh-bar-silver');
-    const tierIdx=TIERS.indexOf(tier);
-    const isMaxTier=(tierIdx===TIERS.length-1);
+    const T=window.CUBE_TIER_THRESHOLDS||[0,12,60,200,500,1400];
+    // cubeScore 기준 tier 인덱스 (역순 스캔, 가장 높은 임계부터).
+    let cIdx=0;
+    for(let i=T.length-1;i>=0;i--){if(cubeScore>=T[i]){cIdx=i;break;}}
+    const isMaxTier=(cIdx===T.length-1);
     if(isMaxTier){
       if(gold)gold.style.width='100%';
       if(silver){silver.style.left='0%';silver.style.width='0%';}
     } else {
-      const next=TIERS[tierIdx+1];
-      const range=next.min-tier.min;
-      // pct = 0~100, 현재 tier 진행도.
-      const pct=Math.max(0,Math.min(100,(cubeScore-tier.min)/range*100));
-      // gold/silver 비례 분배 — 사용자 직관 ("내 gold 큐브 만큼 gold 색이 차고
-      // silver 큐브의 1/3 만큼 silver 색이 이어진다").
+      const tMin=T[cIdx];
+      const tNext=T[cIdx+1];
+      const range=Math.max(1,tNext-tMin);
+      const pct=Math.max(0,Math.min(100,(cubeScore-tMin)/range*100));
+      // gold/silver 비례 분배 — 사용자 직관: gold 색 = lg / total, silver 색 이어붙임.
       const gShare=cubeScore>0?(lg/cubeScore):1;
       const goldPct=pct*gShare;
       const silverPct=pct-goldPct;
