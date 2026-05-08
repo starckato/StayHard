@@ -28,7 +28,7 @@
      so window globals (dkey, normKey, ...) are set before inline code runs.
      Query version bumps cache when bundle content changes. Bump manually or
      via build script when shipping a new bundle. See MIGRATION_PLAN.md. -->
-<script src="/dist/app.js?v=a68e3b08"></script>
+<script src="/dist/app.js?v=6b3f16bc"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Archivo+Black&display=swap" rel="stylesheet">
 <!-- Phase 0: 디자인 토큰 (shared 먼저, palette 가 override). -->
 <link href="/src/styles/tokens.shared.css" rel="stylesheet">
@@ -1412,10 +1412,9 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
          Layout: 인용문 headline → hairline rule → stage row (char + ledger + N/4).
          Stats summary 는 sticky-header. .sb 는 캐릭터 정체성 + 동기부여. -->
     <div class="sb">
-      <!-- 1. Headline: 큐록의 한 마디 (lead) + tier eyebrow -->
+      <!-- 1. Headline: 큐록의 한 마디 (lead). 방관자 caption 은 sticky 만 노출 (중복 제거 2026-05-08). -->
       <div class="sb-headline">
         <div class="sb-quote" id="char-quote">"오늘이 첫 칸이다."</div>
-        <div class="sb-tier-caption"><span class="dash">─</span><span id="sb-tier-caption-name">방관자</span></div>
       </div>
       <!-- 2. Stage: character (figure) + ledger cells + N/4 stat.
            cube system 컬러 매핑: gold = 완수 · silver = 부분 · crimson = 실패 · gray = 미시작. -->
