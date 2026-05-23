@@ -28,7 +28,7 @@
      so window globals (dkey, normKey, ...) are set before inline code runs.
      Query version bumps cache when bundle content changes. Bump manually or
      via build script when shipping a new bundle. See MIGRATION_PLAN.md. -->
-<script src="/dist/app.js?v=a0060b15"></script>
+<script src="/dist/app.js?v=4528d460"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Archivo+Black&display=swap" rel="stylesheet">
 <!-- Phase 0: 디자인 토큰 (shared 먼저, palette 가 override). -->
 <link href="/src/styles/tokens.shared.css" rel="stylesheet">
@@ -1412,20 +1412,21 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
          Layout: 인용문 headline → hairline rule → stage row (char + ledger + N/4).
          Stats summary 는 sticky-header. .sb 는 캐릭터 정체성 + 동기부여. -->
     <div class="sb">
-      <!-- 1. Headline: 큐록의 한 마디 (lead) + tier eyebrow -->
-      <div class="sb-headline">
-        <div class="sb-quote" id="char-quote">"오늘이 첫 칸이다."</div>
-        <div class="sb-tier-caption"><span class="dash">─</span><span id="sb-tier-caption-name">방관자</span></div>
-      </div>
-      <!-- 2. Stage: character (figure) + ledger cells + N/4 stat.
+      <!-- Stage: speech bubble (캐릭터 머리 위) + character + ledger cells + N/4 stat.
+           v4 (2026-05-24): 인용문이 headline 에서 캐릭터 column 으로 이동 — 말풍선.
            cube system 컬러 매핑: gold = 완수 · silver = 부분 · crimson = 실패 · gray = 미시작. -->
       <div class="sb-stage">
-        <div class="sb-canvas-wrap" onclick="openRoomOverlay()">
-          <canvas id="char-mini-canvas" class="sb-canvas" width="200" height="240"></canvas>
-          <!-- 각성자 정적 프로필 — assets/tier2/ -->
-          <img id="char-mini-tier2" src="/assets/tier2/Tier2_cha_nobg.png" alt="" style="display:none;" />
-          <!-- 저항자 정적 프로필 — assets/tier3/ -->
-          <img id="char-mini-tier3" src="/assets/tier3/Tier3_cha_nobg.png" alt="" style="display:none;" />
+        <div class="sb-char-col">
+          <div class="sb-speech" id="char-quote-wrap">
+            <span class="sb-quote" id="char-quote">"오늘이 첫 칸이다."</span>
+          </div>
+          <div class="sb-canvas-wrap" onclick="openRoomOverlay()">
+            <canvas id="char-mini-canvas" class="sb-canvas" width="200" height="240"></canvas>
+            <!-- 각성자 정적 프로필 — assets/tier2/ -->
+            <img id="char-mini-tier2" src="/assets/tier2/Tier2_cha_nobg.png" alt="" style="display:none;" />
+            <!-- 저항자 정적 프로필 — assets/tier3/ -->
+            <img id="char-mini-tier3" src="/assets/tier3/Tier3_cha_nobg.png" alt="" style="display:none;" />
+          </div>
         </div>
         <div class="sb-completion" id="sb-completion">
           <div class="cm-cells">
@@ -2975,7 +2976,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
         </div>
         <button id="msn-alcohol-cheat-toggle" onclick="toggleAlcoholCheat()" style="padding:5px 12px;border-radius:var(--radius-xl);border:1.5px solid var(--red-bd);background:transparent;color:var(--red);font-size:var(--text-xs);font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">치팅 적용</button>
       </div>
-      <div id="msn-alcohol-penalty-label" style="font-size:var(--text-xs);color:var(--red);opacity:0.8;line-height:1.6;padding-top:6px;border-top:0.5px solid var(--red-bd);">고정 <strong>−30점</strong> 패널티</div>
+      <div id="msn-alcohol-penalty-label" style="font-size:var(--text-xs);color:var(--red);opacity:0.8;line-height:1.6;padding-top:6px;border-top:0.5px solid var(--red-bd);"><strong>red 큐브</strong> 적립</div>
     </div>
 
     <!-- 음식 이름 -->
@@ -3028,8 +3029,8 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
     <div id="cheat-skull-display" style="display:flex;justify-content:center;gap:24px;margin-bottom:6px;min-height:60px;"></div>
     <div id="cheat-modal-status" style="text-align:center;font-size:var(--text-sm);color:var(--text2);margin-bottom:14px;"></div>
     <div style="background:var(--surface2);border-radius:var(--radius-sm);padding:10px 12px;margin-bottom:16px;font-size:var(--text-sm);color:var(--text2);line-height:1.7;">
-      안 쓴 치팅 1개당 <span style="color:var(--amber);font-weight:600;">+50점</span> 지급<br>
-      매주 <span style="color:var(--text);font-weight:600;">월요일</span> 자동 초기화 + 보너스 계산
+      안 쓴 치팅은 <span style="color:var(--amber);font-weight:600;">gold 큐브</span> 보너스<br>
+      매주 <span style="color:var(--text);font-weight:600;">월요일</span> 자동 초기화
     </div>
     <button class="mbtn-ghost" onclick="closeModal('cheat-modal')">닫기</button>
   </div>
@@ -3687,7 +3688,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
             <div style="font-size:var(--text-base);font-weight:600;">찬물 샤워</div>
             <div style="font-size:var(--text-xs);color:var(--text3);">매일 아침 냉수 샤워. 의지력의 시작.</div>
           </div>
-          <div style="font-size:var(--text-xs);font-weight:700;color:#f59e0b;background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.3);border-radius:var(--radius-md);padding:3px 8px;">+10점</div>
+          <div style="font-size:var(--text-xs);font-weight:700;color:#f59e0b;background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.3);border-radius:var(--radius-md);padding:3px 8px;">추천</div>
         </div>
 
         <div onclick="pickRecommendedRoutine('🌅 새벽 6시 기상','early_rise')" style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-lg);cursor:pointer;touch-action:manipulation;">
@@ -3696,7 +3697,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
             <div style="font-size:var(--text-base);font-weight:600;">새벽 6시 기상</div>
             <div style="font-size:var(--text-xs);color:var(--text3);">새벽 6시 전 기상. 세상이 달라 보인다.</div>
           </div>
-          <div style="font-size:var(--text-xs);font-weight:700;color:#f59e0b;background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.3);border-radius:var(--radius-md);padding:3px 8px;">+10점</div>
+          <div style="font-size:var(--text-xs);font-weight:700;color:#f59e0b;background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.3);border-radius:var(--radius-md);padding:3px 8px;">추천</div>
         </div>
 
 
@@ -3706,7 +3707,6 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
             <div style="font-size:var(--text-base);font-weight:600;">독서 30분</div>
             <div style="font-size:var(--text-xs);color:var(--text3);">하루 30분 독서. 생각이 넓어진다.</div>
           </div>
-          <div style="font-size:var(--text-xs);color:var(--text3);">+1점</div>
         </div>
 
       </div>
@@ -7686,12 +7686,12 @@ async function claimBonusGrant(){
       if(typeof data.total_score==='number'&&CP)CP.total_score=data.total_score;
       try{updateHeaderStatus();}catch(e){}
       try{renderCharCard();}catch(e){}
-      showToast('🔥 +'+(data.points||0)+'점 적립!');
+      showToast('🔥 보너스 적립!');
       try{track('bonus_claimed',{event_key:g.event_key,points:data.points});}catch(e){}
     } else if(data&&data.error==='already_claimed'){
       showToast('이미 받은 보너스예요');
     } else {
-      showToast('⚠️ 점수 적용 실패');
+      showToast('⚠️ 적립 실패');
     }
   }catch(e){console.warn('[bonus] claim err',e);showToast('⚠️ 네트워크 오류');}
   finally{dismissBonusGrant();}
@@ -7937,7 +7937,7 @@ function checkDay1EveningNudge(){
     const msgs=[
       '첫날이야.\n완벽하지 않아도 돼.\n하나만 해.',
       '오늘 아무것도 안 했어?\n지금이라도 해.\n내일이 쉬워져.',
-      '시작은 지금이다.\n루틴 하나 체크하면 +1pt.\n그게 네 첫 점수야.',
+      '시작은 지금이다.\n루틴 하나만 체크해.\n그게 첫 칸이다.',
     ];
     const msg=msgs[Math.floor(Math.random()*msgs.length)];
     _showDay1NudgeModal(msg);
@@ -9972,9 +9972,9 @@ function _updateAlcoholCheatUI(){
       btn.style.background='var(--amber)';btn.style.borderColor='var(--amber)';btn.style.color='#fff';
       btn.textContent='치팅 적용 중 ✓';
       if(isTodayAlcoholCheatUsed()){
-        label.textContent='오늘 음주 치팅 이미 사용 중 — 이 기록도 ±0점';
+        label.textContent='오늘 음주 치팅 이미 사용 중 — red 면제';
       } else {
-        label.textContent='쿼터 내 음주 — ±0점 (잔여 '+(remaining-1)+'/'+getAlcoholQuota()+'회)';
+        label.textContent='쿼터 내 음주 — red 면제 (잔여 '+(remaining-1)+'/'+getAlcoholQuota()+'회)';
       }
       label.style.opacity='1';
       if(hint)hint.textContent='이번주 음주 쿼터 '+getAlcoholUsed()+'/'+getAlcoholQuota()+'회 사용 중';
@@ -9982,13 +9982,13 @@ function _updateAlcoholCheatUI(){
       _alcoholCheatOn=false;
       btn.style.background='transparent';btn.style.borderColor='var(--red-bd)';btn.style.color='var(--red)';
       btn.textContent='치팅 적용';
-      label.innerHTML='이번주 음주 쿼터 소진 — 고정 <strong>−30점</strong>';
+      label.innerHTML='이번주 음주 쿼터 소진 — <strong>red 큐브</strong> 적립';
       if(hint)hint.textContent='다음주 월요일 초기화';
     }
   } else {
     btn.style.background='transparent';btn.style.borderColor='var(--red-bd)';btn.style.color='var(--red)';
     btn.textContent='치팅 적용';
-    label.innerHTML='고정 <strong>−30점</strong> 패널티';
+    label.innerHTML='<strong>red 큐브</strong> 적립';
     label.style.opacity='0.8';
     if(hint)hint.textContent=remaining>0?'이번주 음주 쿼터 '+remaining+'회 남음':'이번주 음주 쿼터 소진';
   }
@@ -10124,11 +10124,11 @@ function applyMealScore(prevType,newType,isNew,category,silent=false){
     if(isNew){
       if(_alcoholCheatOn){
         if(isTodayAlcoholCheatUsed()){
-          if(!silent)showToast('오늘 음주 치팅 적용 중 — ±0점');
+          if(!silent)showToast('오늘 음주 치팅 적용 중');
         } else {
           alcoholCheatUse().then(ok=>{
             if(ok){
-              if(!silent)showToast('음주 치팅 사용 — ±0점 (잔여 '+getAlcoholRemaining()+'/'+getAlcoholQuota()+'회)');
+              if(!silent)showToast('음주 치팅 사용 (잔여 '+getAlcoholRemaining()+'/'+getAlcoholQuota()+'회)');
             } else {
               addScore('diet_alcohol_register','',null,silent);
               showRage();
@@ -10216,9 +10216,9 @@ async function _doSaveMeal(){
   if(!wasCheat&&isCheat){
     const ok=await cheatUse();
     if(!ok){
-      // 쿼터 소진 — 저장은 되지만 -30점 패널티
+      // 쿼터 소진 — red 큐브 적립
       addScore('diet_junk');
-      showToast('치팅 쿼터 소진! −30점 패널티');
+      showToast('치팅 쿼터 소진. red 큐브 적립.');
     } else {
       const rem=getCheatRemaining();
       showToast(rem<=0?'치팅 사용. 이번주 치팅 소진.':'💀 치팅 사용! 이번주 잔여 '+rem+'회');
@@ -12142,7 +12142,7 @@ function renderMandatory(){
       +'<div style="font-size:var(--text-md);color:var(--text3);margin-bottom:4px;">매일 반복할 루틴을 추가하세요</div>'
       +'<div style="font-size:var(--text-xs);color:var(--text3);margin-bottom:10px;">예: 💪 팔굽혀펴기 10개 · 🚶 걷기 30분 · 💧 물 2L</div>'
       +'<div style="display:inline-flex;align-items:center;gap:6px;font-size:var(--text-2xs);font-weight:600;padding:5px 10px;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius-pill);color:var(--text3);letter-spacing:-.01em;">'
-      +'<span style="color:var(--green);">+1pt</span>체크 · <span style="color:var(--red);">-1pt</span>실패/스킵'
+      +'체크 시 silver · 모두 완수 gold'
       +'</div>'
       +'</div>';
     return;

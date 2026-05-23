@@ -1,16 +1,14 @@
 /* 큐록 · features/status-band/status-band.css
-   Tier Hero v3 — Editorial poster layout (2026-05-08).
+   Tier Hero v4 — Speech Bubble + Larger Character (2026-05-24).
 
-   재기획 (사용자 피드백 "디자인 레이아웃만"):
-     OLD: hero (char + quote 좌우) / divider / 4-cell row 위아래 stack
-     NEW: 인용문 = headline (full width, large serif) → hairline rule
-          → stage row (char + ledger cells + N/4)
+   재구성 (사용자 피드백):
+     v3: headline (quote 전체 너비) → divider → stage (작은 char + cells)
+     v4: stage 안에 char column (말풍선 + 큰 char) + cells + N/4 stat
 
    직면 / 단련 / 책임 톤:
-     - 큐록의 "오늘의 한 마디" 가 먼저 눈에 들어옴 (인용문 lead)
-     - 캐릭터는 ledger 옆에 서 있는 figure ("오늘의 증인")
-     - 완수 cells = 회계장부식 vertical hairline divider
-     - tier color accent 좌측 stripe (정체성 강조)
+     - 캐릭터가 명확한 *figure* — 110×132 (이전 90×108)
+     - 인용문은 *말풍선* — 캐릭터가 *말하는* 것임을 시각적으로 표현
+     - tier color 좌측 stripe (정체성 강조)
 */
 
 /* ── 컨테이너 ─────────────────────────────────────────── */
@@ -18,7 +16,7 @@
   position: relative;
   /* sticky-header 와 시각적으로 한 카드 — bottom corners flat, 좌우 14px margin */
   margin: 6px 14px 0;
-  padding: 12px 16px 12px;
+  padding: 14px 16px 14px;
   background: linear-gradient(135deg, var(--surface) 0%, var(--surface2) 100%);
   border: 1px solid var(--border);
   border-bottom: 1px solid var(--border2);
@@ -32,66 +30,103 @@
   content: '';
   position: absolute;
   left: 0;
-  top: 12px;
-  bottom: 12px;
+  top: 14px;
+  bottom: 14px;
   width: 2px;
   background: var(--sb-accent, var(--text3));
   opacity: 0.55;
   border-radius: 0 1px 1px 0;
 }
 
-/* ── Headline (quote + tier eyebrow) ──────────────────── */
-.sb-headline {
-  padding-bottom: 8px;
-  margin-bottom: 10px;
-  border-bottom: 1px solid var(--border2);
-}
-
-.sb-quote {
-  font-family: 'Noto Serif KR', 'Nanum Myeongjo', serif;
-  font-size: 17px;
-  line-height: 1.4;
-  font-style: italic;
-  font-weight: 500;
-  letter-spacing: -0.015em;
-  color: var(--text);
-  margin-bottom: 4px;
-  cursor: pointer;
-  touch-action: manipulation;
-  word-break: keep-all;
-  transition: opacity 0.25s ease, transform 0.35s cubic-bezier(.32, 1, .42, 1);
-  /* tier color 가 inline style 로 주입됨 */
-}
-.sb-quote:active { opacity: 0.65; }
-.sb-quote.cycling {
-  opacity: 0;
-  transform: translateY(-4px);
-}
-
-.sb-tier-caption {
-  font-family: 'DM Mono', monospace;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--text3);
-}
-.sb-tier-caption .dash {
-  /* 새 레이아웃에선 dash 제거 — 트래킹된 mono caps 만으로 hierarchy 충분. */
-  display: none;
-}
-
-/* ── Stage row (character + ledger + stat) ────────────── */
+/* ── Stage row: char column + ledger ──────────────────── */
 .sb-stage {
   display: flex;
   align-items: center;
   gap: 14px;
 }
 
+/* Character column — 말풍선 + 캐릭터를 세로 stack */
+.sb-char-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  width: 110px;
+}
+
+/* 말풍선 — 캐릭터 머리 위, 꼬리는 아래쪽 향함 */
+.sb-speech {
+  position: relative;
+  width: 100%;
+  min-height: 48px;
+  padding: 8px 10px 9px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border2);
+  border-radius: 12px;
+  cursor: pointer;
+  touch-action: manipulation;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  /* 꼬리 (캐릭터 머리 가리키는 ▼) */
+}
+/* 꼬리 — 두 겹 (border outer + bg inner) 으로 보더 연속성 확보 */
+.sb-speech::before {
+  /* 외곽 보더 라인 */
+  content: '';
+  position: absolute;
+  bottom: -7px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-top: 8px solid var(--border2);
+}
+.sb-speech::after {
+  /* 내부 채움 — 보더 위에 살짝 작게 얹어서 보더 라인이 V 자로 남음 */
+  content: '';
+  position: absolute;
+  bottom: -5px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 7px solid transparent;
+  border-right: 7px solid transparent;
+  border-top: 7px solid rgba(255, 255, 255, 0.06);
+  /* 부모 surface gradient 위에 올라가므로 약간 boost */
+  background: transparent;
+  filter: brightness(1.05);
+}
+.sb-speech:active { opacity: 0.7; }
+
+.sb-quote {
+  font-family: 'Noto Serif KR', 'Nanum Myeongjo', serif;
+  font-size: 13px;
+  line-height: 1.35;
+  font-style: italic;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--text);
+  word-break: keep-all;
+  transition: opacity 0.25s ease, transform 0.35s cubic-bezier(.32, 1, .42, 1);
+  /* tier color 가 inline style 로 주입됨 */
+}
+.sb-speech .sb-quote.cycling {
+  opacity: 0;
+  transform: translateY(-4px);
+}
+
+/* ── Character canvas ─────────────────────────────────── */
 .sb-canvas-wrap {
   position: relative;
-  width: 90px;
-  height: 108px;
+  /* v4 — 크게: 90×108 → 110×132 */
+  width: 110px;
+  height: 132px;
   flex-shrink: 0;
   cursor: pointer;
   touch-action: manipulation;
@@ -102,7 +137,6 @@
   width: 100%;
   height: 100%;
   display: block;
-  /* high-res sprite → smooth downscale. 정수배 X 라 nearest 면 saw-tooth. */
   image-rendering: auto;
 }
 .sb-canvas-wrap img {
@@ -115,19 +149,18 @@
   pointer-events: none;
 }
 
-/* Ledger 영역 (cells + stat) ─────────────────────────── */
+/* ── Ledger 영역 (cells + stat) ──────────────────────── */
 .sb-completion {
   flex: 1;
   min-width: 0;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 }
 
 .cm-cells {
   flex: 1;
   display: flex;
-  /* gap 제거 — vertical hairline divider 가 cell 구분. */
   gap: 0;
 }
 .cm-cell {
@@ -136,7 +169,6 @@
   flex-direction: column;
   align-items: center;
   gap: 4px;
-  /* 회계장부식 hairline — 마지막 cell 만 우측 border 제거. */
   padding: 4px 2px;
   border-right: 1px solid var(--border2);
   cursor: pointer;
@@ -148,7 +180,7 @@
 }
 .cm-cell:active { background: rgba(255, 255, 255, 0.04); }
 
-/* SVG icon (no emoji — 카드 헤더 SVG 재사용). currentColor 로 색 inherit. */
+/* SVG icon */
 .cm-icon {
   width: 22px;
   height: 22px;
@@ -176,7 +208,6 @@
   transition: color 0.3s ease;
 }
 
-/* Done state — gold (cube 완수 색). SVG stroke = currentColor. */
 .cm-cell.is-done .cm-icon {
   opacity: 1;
   color: #ffd54a;
@@ -188,7 +219,6 @@
   font-weight: 800;
 }
 
-/* Partial state — silver */
 .cm-cell.is-partial .cm-icon {
   opacity: 0.85;
   color: #d8dfe7;
@@ -199,7 +229,6 @@
   font-weight: 700;
 }
 
-/* Fail state — crimson */
 .cm-cell.is-fail .cm-icon {
   opacity: 0.95;
   color: #ff6b6b;
@@ -210,14 +239,13 @@
   font-weight: 700;
 }
 
-/* Stat (N/4) — large display, vertical stack ("0 ─ 4" 회계 ledger 식) */
+/* Stat (N/4) — large display, vertical stack */
 .cm-stat {
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  /* 위/아래 stack 으로 분수 표현 → 화면 중앙성 강조 */
   gap: 0;
   padding: 0 2px;
   font-family: 'Archivo Black', sans-serif;
@@ -242,25 +270,27 @@
   content: '/ ';
 }
 
-/* 4/4 도달 — 더 강한 glow */
 .cm-stat.is-perfect {
   text-shadow: 0 0 18px rgba(255, 213, 74, 0.7), 0 0 32px rgba(255, 213, 74, 0.35);
 }
 
 /* ── Compact mode (yesterday-ribbon 노출 시) ──────────── */
 body.has-yr-active .sb {
-  padding: 12px 14px 12px;
+  padding: 10px 14px 12px;
 }
 body.has-yr-active .sb-canvas-wrap {
-  width: 80px;
-  height: 96px;
+  width: 88px;
+  height: 106px;
+}
+body.has-yr-active .sb-char-col {
+  width: 88px;
+}
+body.has-yr-active .sb-speech {
+  min-height: 40px;
+  padding: 6px 8px 7px;
 }
 body.has-yr-active .sb-quote {
-  font-size: 15.5px;
-}
-body.has-yr-active .sb-headline {
-  margin-bottom: 10px;
-  padding-bottom: 8px;
+  font-size: 12px;
 }
 
 /* ── Reduced motion ───────────────────────────────────── */
