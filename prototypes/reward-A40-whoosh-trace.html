@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Reward A40 · Whoosh Trace</title>
+<link rel="stylesheet" href="_shared.css">
+<link rel="stylesheet" href="_reward-shared.css">
+<style>
+.phone-content{display:flex;flex-direction:column;}
+.card-stub{padding:12px 14px;}
+.btn-row{display:flex;flex-direction:column;gap:5px;}
+
+/* Whoosh Trace — 큐브가 *streak* 으로 빨려감.
+   spawn → 0.05s flash → 0.22s 모션블러 streak 으로 counter 까지 직선 → 끝. */
+.whoosh-trace{
+  position:fixed;
+  width:14px;height:14px;
+  border-radius:2px;
+  border:1px solid rgba(0,0,0,0.4);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,0.5),inset 0 -1.5px 2px rgba(0,0,0,0.4);
+  z-index:99;
+  pointer-events:none;
+  /* 진행 방향으로 살짝 늘려 motion-blur 느낌 (transform-origin 시작점) */
+  transform-origin:left center;
+  will-change:transform,filter,opacity;
+}
+.whoosh-trace.gold{background:linear-gradient(135deg,#fff1a8,#ffd54a 50%,#c48c1a);}
+.whoosh-trace.silver{background:linear-gradient(135deg,#f2f4f7,#b5c0cc 50%,#6d7682);}
+.whoosh-trace.red{background:linear-gradient(135deg,#ff8080,#ff4d4d 50%,#8b1515);}
+
+/* 도착 직전 dot pulse */
+.sb-stack-dot.pulse{animation:dotPulse .35s cubic-bezier(.32,1.7,.42,1);}
+@keyframes dotPulse{
+  0%{transform:scale(1);box-shadow:inset 0 1px 0 rgba(255,255,255,0.4),inset 0 -1.5px 2px rgba(0,0,0,0.4),0 0 0 rgba(255,213,74,0);}
+  50%{transform:scale(1.55);box-shadow:inset 0 1px 0 rgba(255,255,255,0.4),inset 0 -1.5px 2px rgba(0,0,0,0.4),0 0 14px var(--pulse-color,rgba(255,213,74,0.85));}
+  100%{transform:scale(1);}
+}
+.card-stub-flash{animation:cardEdge .25s ease;}
+@keyframes cardEdge{0%,100%{box-shadow:0 0 0 transparent;}45%{box-shadow:0 0 0 1.5px var(--edge-color,rgba(255,213,74,0.5));}}
+</style></head>
+<body>
+<div class="head">
+  <a class="back" href="index.html">← 목록</a>
+  <div class="title"><div class="opt">REWARD A40 · Whoosh Trace</div><div class="t">~250ms 직선 streak — 큐브가 *빨려간다* 느낌</div></div>
+</div>
+
+<div class="phone">
+  <div class="phone-content">
+    <div class="sb">
+      <div class="sb-row"><div class="sb-tier"><span class="ic">😴</span><span>방관자</span></div><div class="sb-streak">🔥 12일</div></div>
+      <div class="sb-bar"><div class="sb-fill-gold" id="fillG" style="width:25%;"></div><div class="sb-fill-silver" id="fillS" style="left:25%;width:25%;"></div></div>
+      <div class="sb-meta"><span><b id="metaScore">6</b> / 12 → 각성자</span><span id="metaPct">50%</span></div>
+      <div class="sb-stack" id="stack">
+        <div class="sb-stack-item"><div class="sb-stack-dot gold" id="dotG"></div><div class="sb-stack-num" id="numG">3</div><div class="sb-stack-lbl">G</div></div>
+        <div class="sb-stack-item"><div class="sb-stack-dot silver" id="dotS"></div><div class="sb-stack-num" id="numS">9</div><div class="sb-stack-lbl">S</div></div>
+        <div class="sb-stack-item"><div class="sb-stack-dot red" id="dotR"></div><div class="sb-stack-num" id="numR">0</div><div class="sb-stack-lbl">R</div></div>
+      </div>
+    </div>
+    <div class="room">
+      <div class="room-bg"></div>
+      <div class="room-char"></div>
+      <div class="card-stub" id="cardStub">
+        <div class="card-row">
+          <span class="card-icon">🥗</span>
+          <span class="card-title">식단</span>
+          <span style="margin-left:auto;font-size:10px;color:#7a7a86;font-family:'DM Mono',monospace;">whoosh</span>
+        </div>
+        <div class="btn-row">
+          <button class="card-action" onclick="trigger('gold')">+ 클린식 (gold)</button>
+          <button class="card-action" style="background:linear-gradient(135deg,#94a3b8,#475569);" onclick="trigger('silver')">+ 일반식 (silver)</button>
+          <button class="card-action" style="background:linear-gradient(135deg,#8b1515,#ff4d4d);" onclick="trigger('red')">+ 음주 (red)</button>
+          <button class="card-action" style="background:linear-gradient(135deg,#334155,#1e293b);font-size:11px;" onclick="trigger('burst')">+ Burst (gold+silver×3)</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const COLOR = {
+  gold:'rgba(255,213,74,0.85)',
+  silver:'rgba(216,223,231,0.8)',
+  red:'rgba(255,77,77,0.85)',
+};
+
+function whoosh(color, sourceEl){
+  const cardStub = document.getElementById('cardStub');
+  const targetDot = document.getElementById('dot' + color[0].toUpperCase());
+  const numEl = document.getElementById('num' + color[0].toUpperCase());
+
+  // source = button rect 중앙 / fallback = card 중앙
+  const srcRect = (sourceEl || cardStub).getBoundingClientRect();
+  const sx = srcRect.left + srcRect.width / 2;
+  const sy = srcRect.top + srcRect.height / 2;
+
+  const dRect = targetDot.getBoundingClientRect();
+  const tx = dRect.left + dRect.width / 2;
+  const ty = dRect.top + dRect.height / 2;
+
+  // card edge flash (소스에서 발사됐다는 신호)
+  cardStub.style.setProperty('--edge-color', COLOR[color]);
+  cardStub.classList.remove('card-stub-flash');
+  void cardStub.offsetWidth;
+  cardStub.classList.add('card-stub-flash');
+
+  // cube spawn
+  const cube = document.createElement('div');
+  cube.className = 'whoosh-trace ' + color;
+  cube.style.left = (sx - 7) + 'px';
+  cube.style.top = (sy - 7) + 'px';
+  document.body.appendChild(cube);
+
+  const dx = tx - sx;
+  const dy = ty - sy;
+  const dist = Math.hypot(dx, dy);
+  const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+
+  // 진행 방향으로 회전 → scaleX(2.3) 으로 streak 효과
+  // CSS transition 으로 한 번에 (linear) — "휙" 짧고 직선적.
+  requestAnimationFrame(() => {
+    cube.style.transition = 'transform 0.22s cubic-bezier(0.55, 0, 0.1, 1), opacity 0.22s ease, filter 0.22s ease';
+    cube.style.transform = `translate(${dx}px, ${dy}px) rotate(${angle}deg) scaleX(2.6) scaleY(0.6)`;
+    cube.style.filter = 'blur(1.2px) brightness(1.15)';
+    cube.style.opacity = '0.9';
+  });
+
+  // 도착 시 pulse + 카운터 bump + cleanup
+  setTimeout(() => {
+    targetDot.style.setProperty('--pulse-color', COLOR[color]);
+    targetDot.classList.remove('pulse');
+    void targetDot.offsetWidth;
+    targetDot.classList.add('pulse');
+
+    numEl.textContent = (+numEl.textContent || 0) + 1;
+    numEl.classList.remove('bumped');
+    void numEl.offsetWidth;
+    numEl.classList.add('bumped');
+
+    cube.style.opacity = '0';
+    setTimeout(() => cube.remove(), 100);
+
+    if (navigator.vibrate) navigator.vibrate(color === 'gold' ? 22 : 14);
+  }, 220);
+}
+
+function trigger(color){
+  if (color === 'burst'){
+    // 4 cubes (gold + 3 silver) 0.04s stagger
+    whoosh('gold');
+    setTimeout(() => whoosh('silver'), 40);
+    setTimeout(() => whoosh('silver'), 80);
+    setTimeout(() => whoosh('silver'), 120);
+    return;
+  }
+  whoosh(color);
+}
+</script>
+</body>
+</html>

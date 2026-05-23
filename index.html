@@ -11326,9 +11326,8 @@ function startTrainerRealtimeSync(userId){
               renderRoutine();
               if(detected.newPenalty || detected.newHomework){
                 _notifyTrainerEvent(detected);
-              } else {
-                showToast('🔔 트레이너 업데이트 적용됨');
               }
+              // 일반 trainer realtime update 는 silent — toast 노이즈 제거 (2026-05-23).
             }
           }catch(e){ console.warn('[trainer-rt] reload', e); }
         }, 800);

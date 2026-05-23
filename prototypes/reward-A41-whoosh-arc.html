@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Reward A41 · Whoosh Arc</title>
+<link rel="stylesheet" href="_shared.css">
+<link rel="stylesheet" href="_reward-shared.css">
+<style>
+.phone-content{display:flex;flex-direction:column;}
+.card-stub{padding:12px 14px;}
+.btn-row{display:flex;flex-direction:column;gap:5px;}
+
+/* Arc Throw — 큐브가 *던져진다*. spawn → 0.42s 베지어 포물선 → 회전 → counter */
+.whoosh-arc{
+  position:fixed;
+  width:18px;height:18px;
+  border-radius:3px;
+  border:1px solid rgba(0,0,0,0.4);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,0.45),inset 0 -2px 4px rgba(0,0,0,0.4),0 3px 8px rgba(0,0,0,0.5);
+  z-index:99;
+  pointer-events:none;
+  will-change:transform,opacity;
+}
+.whoosh-arc.gold{background:linear-gradient(135deg,#fff1a8,#ffd54a 50%,#c48c1a);}
+.whoosh-arc.silver{background:linear-gradient(135deg,#f2f4f7,#b5c0cc 50%,#6d7682);}
+.whoosh-arc.red{background:linear-gradient(135deg,#ff8080,#ff4d4d 50%,#8b1515);}
+
+/* 베지어 곡선은 CSS keyframes 50% midpoint 로 표현 — JS 가 --midX/--midY 주입 */
+@keyframes arcThrow{
+  0%   { transform: translate(0,0) rotate(0); opacity:1; }
+  50%  { transform: translate(var(--midX), var(--midY)) rotate(180deg); opacity:1; }
+  100% { transform: translate(var(--endX), var(--endY)) rotate(360deg) scale(0.7); opacity:0.95; }
+}
+
+.sb-stack-dot.pulse{animation:dotPulse .35s cubic-bezier(.32,1.7,.42,1);}
+@keyframes dotPulse{
+  0%{transform:scale(1);box-shadow:inset 0 1px 0 rgba(255,255,255,0.4),inset 0 -1.5px 2px rgba(0,0,0,0.4),0 0 0 rgba(255,213,74,0);}
+  50%{transform:scale(1.55);box-shadow:inset 0 1px 0 rgba(255,255,255,0.4),inset 0 -1.5px 2px rgba(0,0,0,0.4),0 0 14px var(--pulse-color,rgba(255,213,74,0.85));}
+  100%{transform:scale(1);}
+}
+</style></head>
+<body>
+<div class="head">
+  <a class="back" href="index.html">← 목록</a>
+  <div class="title"><div class="opt">REWARD A41 · Whoosh Arc</div><div class="t">~420ms 포물선 — 동전 *던지는* 느낌</div></div>
+</div>
+
+<div class="phone">
+  <div class="phone-content">
+    <div class="sb">
+      <div class="sb-row"><div class="sb-tier"><span class="ic">😴</span><span>방관자</span></div><div class="sb-streak">🔥 12일</div></div>
+      <div class="sb-bar"><div class="sb-fill-gold" id="fillG" style="width:25%;"></div><div class="sb-fill-silver" id="fillS" style="left:25%;width:25%;"></div></div>
+      <div class="sb-meta"><span><b id="metaScore">6</b> / 12 → 각성자</span><span id="metaPct">50%</span></div>
+      <div class="sb-stack" id="stack">
+        <div class="sb-stack-item"><div class="sb-stack-dot gold" id="dotG"></div><div class="sb-stack-num" id="numG">3</div><div class="sb-stack-lbl">G</div></div>
+        <div class="sb-stack-item"><div class="sb-stack-dot silver" id="dotS"></div><div class="sb-stack-num" id="numS">9</div><div class="sb-stack-lbl">S</div></div>
+        <div class="sb-stack-item"><div class="sb-stack-dot red" id="dotR"></div><div class="sb-stack-num" id="numR">0</div><div class="sb-stack-lbl">R</div></div>
+      </div>
+    </div>
+    <div class="room">
+      <div class="room-bg"></div>
+      <div class="room-char"></div>
+      <div class="card-stub" id="cardStub">
+        <div class="card-row">
+          <span class="card-icon">🥗</span>
+          <span class="card-title">식단</span>
+          <span style="margin-left:auto;font-size:10px;color:#7a7a86;font-family:'DM Mono',monospace;">arc throw</span>
+        </div>
+        <div class="btn-row">
+          <button class="card-action" onclick="trigger('gold')">+ 클린식 (gold)</button>
+          <button class="card-action" style="background:linear-gradient(135deg,#94a3b8,#475569);" onclick="trigger('silver')">+ 일반식 (silver)</button>
+          <button class="card-action" style="background:linear-gradient(135deg,#8b1515,#ff4d4d);" onclick="trigger('red')">+ 음주 (red)</button>
+          <button class="card-action" style="background:linear-gradient(135deg,#334155,#1e293b);font-size:11px;" onclick="trigger('burst')">+ Burst (gold+silver×3)</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const COLOR = {
+  gold:'rgba(255,213,74,0.85)',
+  silver:'rgba(216,223,231,0.8)',
+  red:'rgba(255,77,77,0.85)',
+};
+const ARC_HEIGHT = 90; // 포물선 꼭대기 — 시작점에서 위로 N px
+
+function arc(color, sourceEl){
+  const cardStub = document.getElementById('cardStub');
+  const targetDot = document.getElementById('dot' + color[0].toUpperCase());
+  const numEl = document.getElementById('num' + color[0].toUpperCase());
+
+  const srcRect = (sourceEl || cardStub).getBoundingClientRect();
+  const sx = srcRect.left + srcRect.width / 2;
+  const sy = srcRect.top + srcRect.height / 2;
+
+  const dRect = targetDot.getBoundingClientRect();
+  const tx = dRect.left + dRect.width / 2;
+  const ty = dRect.top + dRect.height / 2;
+
+  const dx = tx - sx;
+  const dy = ty - sy;
+  // 포물선 정점 = 직선 중간점에서 위로 ARC_HEIGHT
+  const midX = dx / 2;
+  const midY = dy / 2 - ARC_HEIGHT;
+
+  const cube = document.createElement('div');
+  cube.className = 'whoosh-arc ' + color;
+  cube.style.left = (sx - 9) + 'px';
+  cube.style.top = (sy - 9) + 'px';
+  cube.style.setProperty('--midX', midX + 'px');
+  cube.style.setProperty('--midY', midY + 'px');
+  cube.style.setProperty('--endX', dx + 'px');
+  cube.style.setProperty('--endY', dy + 'px');
+  cube.style.animation = 'arcThrow 0.42s cubic-bezier(0.4, 0, 0.6, 1) forwards';
+  document.body.appendChild(cube);
+
+  // 도착 시 pulse
+  setTimeout(() => {
+    targetDot.style.setProperty('--pulse-color', COLOR[color]);
+    targetDot.classList.remove('pulse');
+    void targetDot.offsetWidth;
+    targetDot.classList.add('pulse');
+
+    numEl.textContent = (+numEl.textContent || 0) + 1;
+    numEl.classList.remove('bumped');
+    void numEl.offsetWidth;
+    numEl.classList.add('bumped');
+
+    cube.remove();
+
+    if (navigator.vibrate) navigator.vibrate(color === 'gold' ? 28 : 16);
+  }, 420);
+}
+
+function trigger(color){
+  if (color === 'burst'){
+    arc('gold');
+    setTimeout(() => arc('silver'), 60);
+    setTimeout(() => arc('silver'), 120);
+    setTimeout(() => arc('silver'), 180);
+    return;
+  }
+  arc(color);
+}
+</script>
+</body>
+</html>

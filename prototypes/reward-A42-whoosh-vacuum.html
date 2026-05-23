@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Reward A42 · Whoosh Vacuum</title>
+<link rel="stylesheet" href="_shared.css">
+<link rel="stylesheet" href="_reward-shared.css">
+<style>
+.phone-content{display:flex;flex-direction:column;}
+.card-stub{padding:12px 14px;}
+.btn-row{display:flex;flex-direction:column;gap:5px;}
+
+/* Vacuum — *큐브 element 없음*. 카드 edge 미세 flash + counter dot 자체가 흡입 + 펄스.
+   가장 미니멀. 비주얼 인식 약함 — 빠른 행동 누적 시 가장 자연스러움. */
+
+.card-stub-flash{animation:cardEdge .18s ease;}
+@keyframes cardEdge{0%,100%{box-shadow:0 0 0 transparent;}50%{box-shadow:0 0 0 2px var(--edge-color,rgba(255,213,74,0.55));}}
+
+/* dot 안쪽으로 *말려들어가는* 짧은 펄스 — 가운데에서 외부로 확장 X, 내부 collapse 가 본질 */
+.sb-stack-dot.vacuum{animation:dotVacuum .22s cubic-bezier(.42,0,.2,1);}
+@keyframes dotVacuum{
+  0%   {transform:scale(1);   box-shadow:inset 0 1px 0 rgba(255,255,255,0.4),inset 0 -1.5px 2px rgba(0,0,0,0.4),0 0 0 rgba(255,213,74,0);}
+  35%  {transform:scale(0.78);box-shadow:inset 0 1px 0 rgba(255,255,255,0.4),inset 0 -1.5px 2px rgba(0,0,0,0.4),0 0 0 5px var(--ring-color,rgba(255,213,74,0.18));}
+  70%  {transform:scale(1.32);box-shadow:inset 0 1px 0 rgba(255,255,255,0.5),inset 0 -1.5px 2px rgba(0,0,0,0.4),0 0 12px var(--pulse-color,rgba(255,213,74,0.7));}
+  100% {transform:scale(1);   box-shadow:inset 0 1px 0 rgba(255,255,255,0.4),inset 0 -1.5px 2px rgba(0,0,0,0.4),0 0 0 rgba(255,213,74,0);}
+}
+
+/* 숫자 부드러운 count-up (transform 만, 레이아웃 영향 X) */
+.sb-stack-num.tick{animation:numTick .22s ease;}
+@keyframes numTick{0%{transform:translateY(2px);opacity:0.4;}50%{transform:translateY(-1px);opacity:1;color:var(--tick-color,#ffd54a);}100%{transform:translateY(0);opacity:1;}}
+</style></head>
+<body>
+<div class="head">
+  <a class="back" href="index.html">← 목록</a>
+  <div class="title"><div class="opt">REWARD A42 · Whoosh Vacuum</div><div class="t">~200ms 큐브 element 없음 — counter 가 *흡입*</div></div>
+</div>
+
+<div class="phone">
+  <div class="phone-content">
+    <div class="sb">
+      <div class="sb-row"><div class="sb-tier"><span class="ic">😴</span><span>방관자</span></div><div class="sb-streak">🔥 12일</div></div>
+      <div class="sb-bar"><div class="sb-fill-gold" id="fillG" style="width:25%;"></div><div class="sb-fill-silver" id="fillS" style="left:25%;width:25%;"></div></div>
+      <div class="sb-meta"><span><b id="metaScore">6</b> / 12 → 각성자</span><span id="metaPct">50%</span></div>
+      <div class="sb-stack" id="stack">
+        <div class="sb-stack-item"><div class="sb-stack-dot gold" id="dotG"></div><div class="sb-stack-num" id="numG">3</div><div class="sb-stack-lbl">G</div></div>
+        <div class="sb-stack-item"><div class="sb-stack-dot silver" id="dotS"></div><div class="sb-stack-num" id="numS">9</div><div class="sb-stack-lbl">S</div></div>
+        <div class="sb-stack-item"><div class="sb-stack-dot red" id="dotR"></div><div class="sb-stack-num" id="numR">0</div><div class="sb-stack-lbl">R</div></div>
+      </div>
+    </div>
+    <div class="room">
+      <div class="room-bg"></div>
+      <div class="room-char"></div>
+      <div class="card-stub" id="cardStub">
+        <div class="card-row">
+          <span class="card-icon">🥗</span>
+          <span class="card-title">식단</span>
+          <span style="margin-left:auto;font-size:10px;color:#7a7a86;font-family:'DM Mono',monospace;">vacuum</span>
+        </div>
+        <div class="btn-row">
+          <button class="card-action" onclick="trigger('gold')">+ 클린식 (gold)</button>
+          <button class="card-action" style="background:linear-gradient(135deg,#94a3b8,#475569);" onclick="trigger('silver')">+ 일반식 (silver)</button>
+          <button class="card-action" style="background:linear-gradient(135deg,#8b1515,#ff4d4d);" onclick="trigger('red')">+ 음주 (red)</button>
+          <button class="card-action" style="background:linear-gradient(135deg,#334155,#1e293b);font-size:11px;" onclick="trigger('burst')">+ Burst (gold+silver×3)</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const COLOR = {
+  gold:  { pulse:'rgba(255,213,74,0.85)',  ring:'rgba(255,213,74,0.2)',  edge:'rgba(255,213,74,0.6)',  tick:'#ffd54a' },
+  silver:{ pulse:'rgba(216,223,231,0.8)',  ring:'rgba(216,223,231,0.18)',edge:'rgba(216,223,231,0.55)',tick:'#dde1e6' },
+  red:   { pulse:'rgba(255,77,77,0.85)',   ring:'rgba(255,77,77,0.2)',   edge:'rgba(255,77,77,0.6)',   tick:'#ff8080' },
+};
+
+function vacuum(color){
+  const cardStub = document.getElementById('cardStub');
+  const targetDot = document.getElementById('dot' + color[0].toUpperCase());
+  const numEl = document.getElementById('num' + color[0].toUpperCase());
+  const c = COLOR[color];
+
+  // 카드 edge 잠깐 flash — 출처 인식
+  cardStub.style.setProperty('--edge-color', c.edge);
+  cardStub.classList.remove('card-stub-flash');
+  void cardStub.offsetWidth;
+  cardStub.classList.add('card-stub-flash');
+
+  // dot vacuum
+  targetDot.style.setProperty('--pulse-color', c.pulse);
+  targetDot.style.setProperty('--ring-color', c.ring);
+  targetDot.classList.remove('vacuum');
+  void targetDot.offsetWidth;
+  targetDot.classList.add('vacuum');
+
+  // number tick (+1)
+  numEl.textContent = (+numEl.textContent || 0) + 1;
+  numEl.style.setProperty('--tick-color', c.tick);
+  numEl.classList.remove('tick');
+  void numEl.offsetWidth;
+  numEl.classList.add('tick');
+
+  if (navigator.vibrate) navigator.vibrate(color === 'gold' ? 18 : 10);
+}
+
+function trigger(color){
+  if (color === 'burst'){
+    vacuum('gold');
+    setTimeout(() => vacuum('silver'), 50);
+    setTimeout(() => vacuum('silver'), 100);
+    setTimeout(() => vacuum('silver'), 150);
+    return;
+  }
+  vacuum(color);
+}
+</script>
+</body>
+</html>
