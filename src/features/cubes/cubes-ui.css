@@ -91,110 +91,48 @@
 }
 
 /* ═════════════════════════════════════════════════════════════
-   ZEN TAP — A6+A18 prototype 통합 (2026-05-07)
-   카드 위 큐브 부유 → 탭 OR 1.8s 자동 → header stack 으로 glide.
+   ARC THROW — prototype A41 통합 (2026-05-23)
+   카드 중앙 spawn → 베지어 포물선 → sticky counter 도착.
+   이전 Zen Tap (1.8s 부유 + 탭/대기) 폐기 — "휙" 가벼움.
    ═════════════════════════════════════════════════════════════ */
 
-.zen-cube {
+.arc-cube {
   position: fixed;
-  width: 34px; height: 34px;
-  border-radius: 6px;
+  width: 18px;
+  height: 18px;
+  border-radius: 3px;
   border: 1px solid rgba(0, 0, 0, 0.45);
   box-shadow:
-    inset 0 1.5px 0 rgba(255, 255, 255, 0.5),
-    inset 0 -2.5px 5px rgba(0, 0, 0, 0.4),
-    0 0 32px var(--zen-glow, rgba(255, 213, 74, 0.55)),
-    0 12px 24px rgba(0, 0, 0, 0.5);
+    inset 0 1px 0 rgba(255, 255, 255, 0.45),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.4),
+    0 3px 10px rgba(0, 0, 0, 0.5);
   z-index: 9500;
-  cursor: pointer;
-  animation: zenBob 2.6s ease-in-out infinite;
-  will-change: transform;
-}
-@keyframes zenBob {
-  0%, 100% { transform: translateY(0) rotate(-2deg); }
-  50%      { transform: translateY(-6px) rotate(2deg); }
-}
-.zen-cube.gold   { background: linear-gradient(135deg, #fff1a8, #ffd54a 50%, #c48c1a); --zen-glow: rgba(255, 213, 74, 0.55); }
-.zen-cube.silver { background: linear-gradient(135deg, #f2f4f7, #b5c0cc 50%, #6d7682); --zen-glow: rgba(221, 225, 230, 0.5); }
-.zen-cube.red,
-.zen-cube.crimson { background: linear-gradient(135deg, #ff8080, #ff4d4d 50%, #8b1515); --zen-glow: rgba(255, 77, 77, 0.55); }
-
-.zen-cube.committed-tap {
-  animation: zenTapCommit 0.55s cubic-bezier(.5, 0, .5, 1) forwards;
-}
-@keyframes zenTapCommit {
-  0%   { transform: translate(0, 0) scale(1.18); box-shadow: inset 0 1.5px 0 rgba(255, 255, 255, 0.55), 0 0 42px var(--zen-glow), 0 0 0 10px rgba(255, 255, 255, 0.2); }
-  100% { transform: translate(var(--dx), var(--dy)) scale(0.55); opacity: 0; box-shadow: none; }
-}
-.zen-cube.committed-auto {
-  animation: zenAutoCommit 0.85s cubic-bezier(.32, 1, .42, 1) forwards;
-}
-@keyframes zenAutoCommit {
-  0%   { transform: translate(0, 0) scale(1); }
-  100% { transform: translate(var(--dx), var(--dy)) scale(0.55); opacity: 0; }
-}
-
-/* Countdown ring — 카드 위 큐브 둘레 */
-.zen-ring {
-  position: fixed;
-  width: 64px; height: 64px;
   pointer-events: none;
-  z-index: 9499;
-  animation: zenBob 2.6s ease-in-out infinite;
+  will-change: transform, opacity;
 }
-.zen-ring svg {
-  width: 100%; height: 100%;
-  transform: rotate(-90deg);
-  overflow: visible;
-}
-.zen-ring .ring-track {
-  fill: none;
-  stroke: rgba(255, 255, 255, 0.06);
-  stroke-width: 2.5;
-}
-.zen-ring .ring-fg {
-  fill: none;
-  stroke: var(--ring-color, #ffd54a);
-  stroke-width: 2.5;
-  stroke-linecap: round;
-  stroke-dasharray: 176;
-  stroke-dashoffset: 0;
-  transition: stroke-dashoffset 1.8s linear;
-  filter: drop-shadow(0 0 6px var(--ring-glow)) drop-shadow(0 0 2px var(--ring-glow));
-}
-.zen-ring.go .ring-fg { stroke-dashoffset: 176; }
-.zen-ring.gold   { --ring-color: #ffd54a; --ring-glow: rgba(255, 213, 74, 0.7); }
-.zen-ring.silver { --ring-color: #dde1e6; --ring-glow: rgba(221, 225, 230, 0.5); }
+.arc-cube.gold    { background: linear-gradient(135deg, #fff1a8, #ffd54a 50%, #c48c1a); }
+.arc-cube.silver  { background: linear-gradient(135deg, #f2f4f7, #b5c0cc 50%, #6d7682); }
+.arc-cube.red,
+.arc-cube.crimson { background: linear-gradient(135deg, #ff8080, #ff4d4d 50%, #8b1515); }
 
-/* "탭" 라벨 */
-.zen-tap-label {
-  position: fixed;
-  font-family: 'DM Sans', sans-serif;
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.32em;
-  text-transform: uppercase;
-  pointer-events: none;
-  z-index: 9501;
-  text-align: center;
-  width: 60px;
-  animation: zenTapPulse 1.6s ease-in-out infinite;
-  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.7), 0 0 10px var(--label-glow);
-}
-.zen-tap-label.gold   { color: rgba(255, 213, 74, 0.92); --label-glow: rgba(255, 213, 74, 0.4); }
-.zen-tap-label.silver { color: rgba(221, 225, 230, 0.85); --label-glow: rgba(221, 225, 230, 0.3); }
-@keyframes zenTapPulse {
-  0%, 100% { opacity: 0.55; transform: translateY(0); }
-  50%      { opacity: 1; transform: translateY(1px); }
-}
-.zen-tap-label.fading {
-  animation: none;
-  transition: opacity 0.3s ease, transform 0.3s ease;
-  opacity: 0;
-  transform: translateY(-3px);
+/* 포물선 — JS 가 --midX/Y (정점), --endX/Y (도착) 주입 */
+@keyframes arcThrow {
+  0%   { transform: translate(0, 0) rotate(0); opacity: 1; }
+  50%  { transform: translate(var(--midX), var(--midY)) rotate(180deg); opacity: 1; }
+  100% { transform: translate(var(--endX), var(--endY)) rotate(360deg) scale(0.7); opacity: 0.95; }
 }
 
-/* 카드 색조 tint 펄스 (A6 zen) */
+/* 도착 dot pulse — sticky 의 .sh-cube-dot 에 일시 추가 */
+.sh-cube-dot.arc-pulse {
+  animation: arcDotPulse 0.36s cubic-bezier(.32, 1.7, .42, 1);
+}
+@keyframes arcDotPulse {
+  0%   { transform: scale(1); }
+  55%  { transform: scale(1.55); box-shadow: inset 0 1px 0 rgba(255,255,255,0.5), inset 0 -1.5px 2px rgba(0,0,0,0.4), 0 0 12px currentColor; }
+  100% { transform: scale(1); }
+}
+
+/* 카드 색조 tint 펄스 — "여기서 발사됐다" 신호. Arc Throw 와 함께 작동. */
 @keyframes zenCardTintGold {
   0%, 100% { box-shadow: inherit; background: var(--card-bg-original, var(--surface)); }
   50%      { box-shadow: 0 0 0 1px rgba(255, 213, 74, 0.35), 0 0 24px rgba(255, 213, 74, 0.18); background: rgba(255, 213, 74, 0.08); }
@@ -212,8 +150,9 @@
 .s-card.zen-card-tint-red,
 .s-card.zen-card-tint-crimson  { animation: zenCardTintRed 1.1s ease; }
 
-/* Header stack 숫자 bump (zen 도착 시) */
-.cc-num.zen-bumped {
+/* Sticky counter 숫자 bump — 도착 시 +1 시각 강조.
+   selector 는 .sh-cube-num (sticky-header 패턴, cc-num 아님). */
+.sh-cube-num.zen-bumped {
   animation: zenNumBump 0.45s cubic-bezier(.32, 1.6, .42, 1);
   color: #fff;
 }
@@ -223,5 +162,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .zen-cube, .zen-ring, .zen-tap-label { animation: none !important; }
+  .arc-cube { animation: none !important; opacity: 0; }
+  .sh-cube-dot.arc-pulse { animation: none !important; }
 }

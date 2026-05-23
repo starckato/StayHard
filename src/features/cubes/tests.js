@@ -196,7 +196,7 @@ t('acc · 일반2 + 클린1 + 금지1 → s2 g1 r1', () => accEq(judgeAccumulato
 
 // 물
 t('acc · 물 1잔 → silver 1', () => accEq(judgeAccumulator({ water_cups: 1 }, { waterGoal: 6 }), { gold: 0, silver: 1, red: 0 }));
-t('acc · 물 6잔 (목표 도달) → silver 1 + gold 1', () => accEq(judgeAccumulator({ water_cups: 6 }, { waterGoal: 6 }), { gold: 1, silver: 1, red: 0 }));
+t('acc · 물 6잔 (목표 도달이어도 silver 1 — gold 제거 2026-05-23)', () => accEq(judgeAccumulator({ water_cups: 6 }, { waterGoal: 6 }), { gold: 0, silver: 1, red: 0 }));
 t('acc · 물 0잔 → 0', () => accEq(judgeAccumulator({ water_cups: 0 }, { waterGoal: 6 }), { gold: 0, silver: 0, red: 0 }));
 
 // 운동

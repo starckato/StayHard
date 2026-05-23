@@ -46,11 +46,9 @@ export function judgeAccumulator(log, ctx = {}) {
   }
 
   // ── 물 ──
-  // 최초 1회 등록 → silver +1.
-  // 목표 컵 수 도달 → gold +1.
+  // 1회 입력 시 silver +1. *목표 도달 gold 제거* (2026-05-23 사용자 결정).
   if (water > 0) {
     silver++;
-    if (waterGoal > 0 && water >= waterGoal) gold++;
   }
 
   // ── 운동 ──

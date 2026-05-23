@@ -65,51 +65,20 @@ const _CUBE_DEPART_MS = 900;  // 회전 + 비상 + fade out
 // 2. Cube event popover engine
 // ─────────────────────────────────────────────────────────────
 
-// GPU warmup — 첫 cube 렌더 시 compositor 가 3D layer 처음 구성하면서
-// 200~400ms 프레임 드랍. 앱 로드 후 1회 invisible cube 생성해 미리 컴파일.
-let _cubeWarmedUp = false;
-export function _warmupCube3D() {
-  if (_cubeWarmedUp) return;
-  _cubeWarmedUp = true;
-  try {
-    const stage = document.createElement('div');
-    stage.className = 'cube-event-stage';
-    stage.style.cssText = 'opacity:0;pointer-events:none;';
-    const outer = document.createElement('div');
-    outer.className = 'cube-event';
-    outer.setAttribute('data-color', 'gold');
-    const wrap = document.createElement('div');
-    wrap.className = 'cube-event-wrap';
-    outer.appendChild(wrap);
-    const cube = document.createElement('div');
-    cube.className = 'cube-event-cube';
-    ['f-front','f-back','f-right','f-left','f-top','f-bottom'].forEach(f => {
-      const face = document.createElement('div');
-      face.className = 'cube-face ' + f;
-      cube.appendChild(face);
-    });
-    wrap.appendChild(cube);
-    stage.appendChild(outer);
-    document.body.appendChild(stage);
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        if (stage.parentNode) stage.parentNode.removeChild(stage);
-      });
-    });
-  } catch (_) { /* silent */ }
-}
+// _warmupCube3D — Arc Throw 전환 (2026-05-23) 후 3D 큐브 사용 안 함. no-op.
+export function _warmupCube3D() { /* deprecated — Arc Throw 패턴엔 3D cube 없음 */ }
 
 // 팝오버 중첩 큐 — 동시 변경 여러 개면 짧은 텀으로 순차 노출.
 let _cubeEventQueue = [];
 let _cubeEventShowing = false;
 
-// ── A6+A18 Zen Tap (2026-05-07 prototype 통합) ──
-// 카드 위에 큐브 부유 → 사용자 탭 OR 1.8s 자동 → header cube stack 으로 glide.
-// 이전 동작 (캐릭터로 fly + label) 은 폐기. legacy CSS 일부는 cubes-ui.css 에 그대로 (호환).
+// ── Arc Throw (2026-05-23 prototype A41 통합) ──
+// 카드 중앙에서 spawn → 베지어 포물선 → counter 도착 → cleanup.
+// 이전 Zen Tap (1.8s 부유 + 탭 강제) 폐기 — 사용자 피드백 "휙 하고 날라가게".
 
-const _ZEN_SUSPEND_MS = 1800;
-const _ZEN_TAP_GLIDE_MS = 550;
-const _ZEN_AUTO_GLIDE_MS = 850;
+const _ARC_FLIGHT_MS = 420;       // 큐브 비행 시간 (animation duration)
+const _ARC_QUEUE_ADVANCE_MS = 70; // 다음 큐브 발사까지 — 4 burst 시 trajectory 자연 overlap
+const _ARC_HEIGHT_PX = 90;        // 포물선 정점 — 직선 중간보다 위로 N px
 
 const _CARD_FOR_CAT = {
   diet:     'food-card',
@@ -126,11 +95,19 @@ function _zenCardForEvent(ev) {
 }
 
 function _zenTargetForColor(color) {
-  // header cube stack 의 숫자 노드. gold/silver 둘 다 #hdr-cube-stack 안.
-  if (color === 'gold')   return document.getElementById('cc-num-gold');
-  if (color === 'silver') return document.getElementById('cc-num-silver');
-  // red 도 일단 silver 로 fallback (header 에 red counter 없음 — sticky header 도입 후 wired)
+  // sticky-header cube counter 의 숫자 노드. gold/silver/red 모두 wired.
+  if (color === 'gold')                       return document.getElementById('cc-num-gold');
+  if (color === 'silver')                     return document.getElementById('cc-num-silver');
+  if (color === 'red' || color === 'crimson') return document.getElementById('cc-num-red');
   return document.getElementById('cc-num-silver') || document.getElementById('cc-num-gold');
+}
+
+function _arcTargetDotForColor(color) {
+  // sticky-header dot — pulse 효과 대상.
+  if (color === 'gold')                       return document.getElementById('sh-dot-gold');
+  if (color === 'silver')                     return document.getElementById('sh-dot-silver');
+  if (color === 'red' || color === 'crimson') return document.getElementById('sh-dot-red');
+  return null;
 }
 
 function _tintCard(cardEl, color) {
@@ -148,6 +125,14 @@ function _bumpStackNum(numEl, color) {
   void numEl.offsetWidth;
   numEl.classList.add('zen-bumped');
   setTimeout(() => numEl.classList.remove('zen-bumped'), 480);
+}
+
+function _pulseStackDot(dotEl) {
+  if (!dotEl) return;
+  dotEl.classList.remove('arc-pulse');
+  void dotEl.offsetWidth;
+  dotEl.classList.add('arc-pulse');
+  setTimeout(() => dotEl.classList.remove('arc-pulse'), 360);
 }
 
 /**
@@ -187,101 +172,71 @@ function _playRedCollapse(ev, onDone) {
 }
 
 /**
- * Zen Tap: 카드 위 큐브 부유 → 탭 OR 1.8s 자동 → stack 으로 glide.
+ * Arc Throw: 카드 중앙 → 베지어 포물선 → counter. 사용자 인터랙션 X.
+ * onDone 은 큐 advance 용 — 비행 도중 fire 되어 다음 큐브가 자연 overlap.
+ * 도착 시 counter +1 bump + dot pulse + cleanup.
  */
 export function _playCubeEvent(ev, onDone) {
   const color = ev.color || 'gray';
-  // gray = no-op (대부분 _diffCubes 에서 안 만들지만 안전망).
+  // gray = no-op.
   if (color === 'gray') { onDone?.(); return; }
-  // red/crimson 은 collapse 시퀀스로.
+  // red/crimson 은 collapse 시퀀스 별도 (sticky shake + 캐릭터 휘청).
   if (color === 'red' || color === 'crimson') {
     _playRedCollapse(ev, onDone);
     return;
   }
 
   const cardEl = _zenCardForEvent(ev);
-  const targetEl = _zenTargetForColor(color);
+  const numEl = _zenTargetForColor(color);
+  const dotEl = _arcTargetDotForColor(color);
 
-  // 카드 tint 펄스
+  // 카드 tint 펄스 — "여기서 발사됐다" 신호
   _tintCard(cardEl, color);
 
-  // 시작 좌표 — 카드 위 ~50px (또는 화면 중앙 fallback)
+  // 시작 좌표 — 카드 중앙
   const cardRect = cardEl ? cardEl.getBoundingClientRect() : null;
-  const startCx = cardRect
-    ? cardRect.left + cardRect.width / 2
-    : window.innerWidth / 2;
-  const startCy = cardRect
-    ? Math.max(80, cardRect.top - 50)
-    : window.innerHeight * 0.4;
+  const sx = cardRect ? cardRect.left + cardRect.width / 2 : window.innerWidth / 2;
+  const sy = cardRect ? cardRect.top + cardRect.height / 2 : window.innerHeight * 0.5;
+
+  // 도착 좌표 — sticky 의 counter 숫자 노드 중앙
+  const dRect = (dotEl || numEl)?.getBoundingClientRect();
+  const tx = dRect ? dRect.left + dRect.width / 2 : window.innerWidth / 2;
+  const ty = dRect ? dRect.top  + dRect.height / 2 : 40;
+
+  const dx = tx - sx;
+  const dy = ty - sy;
+  // 포물선 정점 = 직선 중간점에서 위로 _ARC_HEIGHT_PX
+  const midX = dx / 2;
+  const midY = dy / 2 - _ARC_HEIGHT_PX;
 
   // ── 큐브 element ──
   const cube = document.createElement('div');
-  cube.className = 'zen-cube ' + color;
-  cube.style.left = (startCx - 17) + 'px';
-  cube.style.top = (startCy - 17) + 'px';
+  cube.className = 'arc-cube ' + color;
+  cube.style.left = (sx - 9) + 'px';
+  cube.style.top  = (sy - 9) + 'px';
+  cube.style.setProperty('--midX', midX + 'px');
+  cube.style.setProperty('--midY', midY + 'px');
+  cube.style.setProperty('--endX', dx + 'px');
+  cube.style.setProperty('--endY', dy + 'px');
+  cube.style.animation = `arcThrow ${_ARC_FLIGHT_MS}ms cubic-bezier(0.4, 0, 0.6, 1) forwards`;
   document.body.appendChild(cube);
 
-  // ── Countdown ring ──
-  const ring = document.createElement('div');
-  ring.className = 'zen-ring ' + color;
-  ring.style.left = (startCx - 32) + 'px';
-  ring.style.top = (startCy - 32) + 'px';
-  ring.innerHTML = '<svg viewBox="0 0 64 64"><circle class="ring-track" cx="32" cy="32" r="28"/><circle class="ring-fg" cx="32" cy="32" r="28"/></svg>';
-  document.body.appendChild(ring);
-  requestAnimationFrame(() => ring.classList.add('go'));
+  // 도착 시 — pulse + counter bump + haptic + cleanup
+  setTimeout(() => {
+    _pulseStackDot(dotEl);
+    _bumpStackNum(numEl, color);
 
-  // ── Tap label ──
-  const label = document.createElement('div');
-  label.className = 'zen-tap-label ' + color;
-  label.textContent = '탭';
-  label.style.left = (startCx - 30) + 'px';
-  label.style.top = (startCy + 38) + 'px';
-  document.body.appendChild(label);
-
-  let committed = false;
-  let autoTimer = null;
-
-  function commit(viaTap) {
-    if (committed) return;
-    committed = true;
-    if (autoTimer) { clearTimeout(autoTimer); autoTimer = null; }
-
-    label.classList.add('fading');
-    setTimeout(() => label.remove(), 320);
-    ring.remove();
-
-    // glide → header cube counter
-    if (targetEl) {
-      const tRect = targetEl.getBoundingClientRect();
-      const dx = tRect.left + tRect.width / 2 - startCx;
-      const dy = tRect.top + tRect.height / 2 - startCy;
-      cube.style.setProperty('--dx', dx + 'px');
-      cube.style.setProperty('--dy', dy + 'px');
-    } else {
-      cube.style.setProperty('--dx', '0px');
-      cube.style.setProperty('--dy', '-200px');
-    }
-    cube.classList.add(viaTap ? 'committed-tap' : 'committed-auto');
-
-    // haptic
     if (window.sh?.haptics?.tap) {
-      window.sh.haptics.tap(viaTap ? (color === 'gold' ? 'medium' : 'light') : 'light');
+      window.sh.haptics.tap(color === 'gold' ? 'medium' : 'light');
     } else if (typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function') {
-      navigator.vibrate(viaTap ? (color === 'gold' ? 25 : 18) : 12);
+      navigator.vibrate(color === 'gold' ? 22 : 14);
     }
 
-    // 도착 직전 stack 숫자 bump
-    const arriveAt = viaTap ? 320 : 600;
-    setTimeout(() => _bumpStackNum(targetEl, color), arriveAt);
+    cube.remove();
+  }, _ARC_FLIGHT_MS);
 
-    setTimeout(() => {
-      cube.remove();
-      onDone?.();
-    }, viaTap ? _ZEN_TAP_GLIDE_MS + 50 : _ZEN_AUTO_GLIDE_MS + 50);
-  }
-
-  cube.onclick = (e) => { e.stopPropagation(); commit(true); };
-  autoTimer = setTimeout(() => commit(false), _ZEN_SUSPEND_MS);
+  // 큐 advance 는 일찍 (70ms) — 후속 큐브가 trajectory 도중 overlap 하며 burst 자연스러움.
+  setTimeout(() => onDone?.(), _ARC_QUEUE_ADVANCE_MS);
 }
 
 export function _showNextCubeEvent() {
@@ -289,7 +244,8 @@ export function _showNextCubeEvent() {
   _cubeEventShowing = true;
   const ev = _cubeEventQueue.shift();
   _playCubeEvent(ev, () => {
-    setTimeout(_showNextCubeEvent, 150);
+    // 다음 큐브 즉시 — onDone 이 70ms 후 발화되므로 이미 stagger 효과.
+    _showNextCubeEvent();
   });
 }
 
