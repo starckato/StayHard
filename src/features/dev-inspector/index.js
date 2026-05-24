@@ -219,6 +219,183 @@ function _onResize() {
 
 // 사이드바 layout — 드래그 / 위치 영속 폐기 (필요 없어짐).
 
+// ── Mock challenge data (6명 합성, dev 전용) ─────────────────
+// test 계정에서 챌린지 룸 UI 시각 검증용. DB 안 건드림 — renderGroupStats 직접 호출.
+const _MOCK_MEMBERS = [
+  // [name, goal_diff_kg, diet_profile, workout_profile]
+  // diet: clean (% green) / cheat / violate per day
+  // workout: vol per day (분), 운동일 빈도
+  ['김민준', -5, { clean: 0.85, cheat: 0.05, violate: 0.02 }, { freq: 0.9, volMean: 60, volStd: 15 }],
+  ['박지영', +3, { clean: 0.55, cheat: 0.15, violate: 0.05 }, { freq: 0.5, volMean: 35, volStd: 12 }],
+  ['이준호',  0, { clean: 0.30, cheat: 0.35, violate: 0.08 }, { freq: 0.2, volMean: 20, volStd: 8 }],
+  ['최서연', -3, { clean: 0.65, cheat: 0.10, violate: 0.20 }, { freq: 0.6, volMean: 40, volStd: 10 }],
+  ['정태우', -8, { clean: 0.92, cheat: 0.04, violate: 0.00 }, { freq: 1.0, volMean: 75, volStd: 12 }],
+  ['한지호', +5, { clean: 0.45, cheat: 0.20, violate: 0.15 }, { freq: 0.85, volMean: 55, volStd: 18 }],
+];
+
+function _rand(seed) {
+  // Simple LCG so mock data is deterministic per seed
+  let s = seed;
+  return () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; };
+}
+
+function _generateMockChallenge() {
+  const today = new Date();
+  const days = 14;
+  const chStart = new Date(today); chStart.setDate(chStart.getDate() - days + 1);
+  const chEnd = new Date(today);
+  const fmtDate = d => d.toISOString().slice(0, 10);
+
+  const profiles = _MOCK_MEMBERS.map((m, i) => ({
+    id: 'mock_' + i,
+    display_name: m[0],
+    username: m[0],
+  }));
+  // 첫 멤버를 '나' 로 흉내 — renderGroupStats 가 CU.id 비교하므로 잠깐 _origCU swap
+  const mbs = profiles.map(p => p.id);
+
+  const memberWgoals = {};
+  const startWeights = {};
+  const allLogs = [];
+
+  _MOCK_MEMBERS.forEach((m, i) => {
+    const [name, goalDiff, diet, workout] = m;
+    const startW = 70 + (i * 1.5); // baseline 70~78 사이
+    const goalW = startW + goalDiff;
+    memberWgoals[profiles[i].id] = goalW;
+    startWeights[profiles[i].id] = startW;
+
+    const rand = _rand(i * 7919 + 13);
+
+    // 14 days logs
+    for (let d = 0; d < days; d++) {
+      const date = new Date(chStart); date.setDate(date.getDate() + d);
+      const dateStr = fmtDate(date);
+
+      // 체중 — start 에서 goal 방향으로 점진 (마지막에 ~80% 달성)
+      const progress = (d / (days - 1)) * 0.78 + (rand() - 0.5) * 0.04;
+      const weight = startW + (goalW - startW) * progress;
+
+      // 식단 — 3끼 시뮬레이션
+      const meals = [];
+      for (let m = 0; m < 3; m++) {
+        const r = rand();
+        let type = 'normal';
+        let category = null;
+        if (r < diet.clean) type = 'green';
+        else if (r < diet.clean + diet.cheat) type = 'cheat';
+        else if (r > 1 - diet.violate) {
+          if (rand() < 0.5) { type = 'red'; }
+          else { category = 'alcohol'; type = 'normal'; }
+        }
+        meals.push({ type, category, time: ['아침','점심','저녁'][m] });
+      }
+
+      // 운동 — 빈도 따라 sometimes 없음
+      const workouts = [];
+      if (rand() < workout.freq) {
+        const mins = Math.max(10, workout.volMean + (rand() - 0.5) * workout.volStd * 2);
+        // Simplified gym workout w/ minutes-equivalent volume
+        workouts.push({
+          type: 'gym',
+          status: 'done',
+          exercises: [{
+            name: 'Squat',
+            sets: [
+              { weight: 60, reps: 10, completed: true },
+              { weight: 60, reps: 10, completed: true },
+              { weight: 60, reps: 8, completed: true },
+            ],
+          }],
+          totalVolume: Math.round(mins * 30), // proxy
+          totalMinutes: Math.round(mins),
+        });
+      }
+
+      allLogs.push({
+        user_id: profiles[i].id,
+        log_date: dateStr,
+        weight: Math.round(weight * 10) / 10,
+        meals,
+        workouts,
+      });
+    }
+  });
+
+  return { profiles, mbs, allLogs, memberWgoals, chStart: fmtDate(chStart), chEnd: fmtDate(chEnd), dayNum: days, startWeights };
+}
+
+export function mockChallengeRoom() {
+  // 임시 CU swap (renderGroupStats 가 'mock_0' 을 '나' 로 인식하도록)
+  const origCU = window.CU;
+  const data = _generateMockChallenge();
+  window.CU = { id: data.profiles[0].id };
+
+  // Overlay 강제 표시
+  const room = document.getElementById('challenge-room');
+  if (room) room.style.display = 'flex';
+  // Header
+  const tEl = document.getElementById('room-title');
+  if (tEl) tEl.textContent = '🎭 Mock 챌린지 (6명, 14일)';
+  const sEl = document.getElementById('room-subtitle');
+  if (sEl) sEl.textContent = 'dev inspector 합성 데이터';
+  // D-Day
+  const ddEl = document.getElementById('room-dday');
+  if (ddEl) ddEl.textContent = 'D-DAY';
+  const pdEl = document.getElementById('room-period');
+  if (pdEl) pdEl.textContent = data.chStart + ' ~ ' + data.chEnd;
+  // Progress
+  const pb = document.getElementById('room-progress-bar');
+  if (pb) pb.style.width = '100%';
+  const pl = document.getElementById('room-progress-label');
+  if (pl) pl.textContent = data.dayNum + '일 / ' + data.dayNum + '일';
+  const pp = document.getElementById('room-progress-pct');
+  if (pp) pp.textContent = '100%';
+  // group-stats-section 열기
+  const gsBody = document.getElementById('group-stats-body');
+  if (gsBody) gsBody.style.display = 'block';
+  const gsChev = document.getElementById('group-stats-chevron');
+  if (gsChev) gsChev.style.transform = 'rotate(0deg)';
+
+  // renderGroupStats 직접 호출
+  if (typeof window.renderGroupStats === 'function') {
+    window.renderGroupStats(
+      data.profiles, data.mbs, data.allLogs,
+      data.memberWgoals, data.chStart, data.chEnd,
+      data.dayNum, data.startWeights
+    );
+  }
+
+  // 멤버 list 도 mock 으로 채워주기 (room-members)
+  const membersEl = document.getElementById('room-members');
+  if (membersEl) {
+    membersEl.innerHTML = data.profiles.map((p, i) => {
+      const startW = data.startWeights[p.id];
+      const goalW = data.memberWgoals[p.id];
+      const curLogs = data.allLogs.filter(l => l.user_id === p.id);
+      const curW = curLogs.length ? curLogs[curLogs.length - 1].weight : startW;
+      const isMe = i === 0;
+      return `<div style="background:${isMe?'var(--accent-bg)':'var(--surface2)'};border:1px solid ${isMe?'var(--accent-bd)':'var(--border)'};border-radius:var(--radius-lg);padding:12px 14px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div style="font-weight:700;">${p.display_name}${isMe?' (나)':''}</div>
+          <div style="font-family:'DM Mono',monospace;font-size:var(--text-sm);color:var(--text2);">${curW}kg → ${goalW}kg</div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  // Note: CU 는 복원하되 dev 세션 동안만 mock 으로 유지하면 다른 곳에서 충돌.
+  // 단순화: 호출 후 CU 즉시 복원 — renderGroupStats 가 sync 라 OK.
+  window.CU = origCU;
+
+  console.log('[mock-challenge] 6명 14일 합성 데이터 렌더 완료', data);
+}
+
+// 콘솔에서도 호출 가능
+if (typeof window !== 'undefined') {
+  window.mockChallengeRoom = mockChallengeRoom;
+}
+
 function _buildPanel() {
   const p = document.createElement('div');
   p.id = 'qrok-dev';
@@ -255,6 +432,12 @@ function _buildPanel() {
         <button class="qd-btn" data-qd-btn="copy" style="flex:1;">📋 Copy Context</button>
         <button class="qd-btn is-secondary" data-qd-btn="clear">초기화</button>
       </div>
+      <div class="qd-section">
+        <div class="qd-label">🎭 Mock 데이터</div>
+        <button class="qd-btn is-secondary" data-qd-btn="mock-challenge" style="width:100%;">
+          챌린지 룸 — 6명 14일 합성
+        </button>
+      </div>
     </div>
     <div class="qd-toast"></div>
   `;
@@ -278,6 +461,11 @@ function _buildPanel() {
   // '_' 버튼 — 좁은 viewport 에서만 토글 사용 (넓은 화면은 사이드바라 항상 펼침).
   p.querySelector('[data-qd-btn="min"]').addEventListener('click', () => {
     p.classList.toggle('is-open');
+  });
+  // 🎭 Mock 챌린지
+  p.querySelector('[data-qd-btn="mock-challenge"]').addEventListener('click', () => {
+    try { mockChallengeRoom(); _showToast('✓ Mock 챌린지 룸 열림'); }
+    catch (e) { _showToast('Mock 실패'); console.warn(e); }
   });
 
   // Capture phase so we beat normal click handlers
