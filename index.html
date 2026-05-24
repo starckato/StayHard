@@ -2916,10 +2916,10 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
         <div id="ob-s4" style="display:none;padding:28px 22px 24px;">
           <div style="text-align:center;margin-bottom:20px;">
             <div style="display:flex;justify-content:center;gap:6px;margin-bottom:12px;">
-              <div style="width:22px;height:22px;border-radius:var(--radius-sm);background:linear-gradient(135deg,#fff1a8 0%,#ffd54a 45%,#c48c1a 100%);border:1px solid rgba(255,233,128,0.70);box-shadow:0 0 4px rgba(255,213,74,0.55),inset 0 1px 0 rgba(255,255,255,0.45),inset 0 -1px 0 rgba(0,0,0,0.25);"></div>
-              <div style="width:22px;height:22px;border-radius:var(--radius-sm);background:linear-gradient(135deg,#fff1a8 0%,#ffd54a 45%,#c48c1a 100%);border:1px solid rgba(255,233,128,0.70);box-shadow:0 0 4px rgba(255,213,74,0.55),inset 0 1px 0 rgba(255,255,255,0.45),inset 0 -1px 0 rgba(0,0,0,0.25);"></div>
-              <div style="width:22px;height:22px;border-radius:var(--radius-sm);background:linear-gradient(135deg,#fff1a8 0%,#ffd54a 45%,#c48c1a 100%);border:1px solid rgba(255,233,128,0.70);box-shadow:0 0 4px rgba(255,213,74,0.55),inset 0 1px 0 rgba(255,255,255,0.45),inset 0 -1px 0 rgba(0,0,0,0.25);"></div>
-              <div style="width:22px;height:22px;border-radius:var(--radius-sm);background:linear-gradient(135deg,#fff1a8 0%,#ffd54a 45%,#c48c1a 100%);border:1px solid rgba(255,233,128,0.70);box-shadow:0 0 4px rgba(255,213,74,0.55),inset 0 1px 0 rgba(255,255,255,0.45),inset 0 -1px 0 rgba(0,0,0,0.25);"></div>
+              <div class="cube-deco is-md is-gold"></div>
+              <div class="cube-deco is-md is-gold"></div>
+              <div class="cube-deco is-md is-gold"></div>
+              <div class="cube-deco is-md is-gold"></div>
             </div>
             <div style="font-family:'Archivo Black',sans-serif;font-size:var(--text-xl);letter-spacing:-.02em;margin-bottom:6px;color:var(--text);">하루를 꽉 채우는 법</div>
             <div style="font-size:var(--text-md);color:var(--text);line-height:1.55;">네 가지를 모두 완수하면<br>황금 큐브. 하루 최대 4개.</div>
@@ -6184,7 +6184,10 @@ function goToYesterdayFromBanner(){
 }
 let _loadingTimeout=null;
 function show(id){
-  document.getElementById(id).style.display='block';
+  // 2026-05-25 fix: 'loading' 은 .loading-overlay 가 display:flex 로 중앙 정렬됨.
+  // display:'block' 강제하면 flex 가 깨져 spinner 가 top-left 로 튐.
+  // 'loading' 만 flex, 나머지는 그대로 block.
+  document.getElementById(id).style.display = (id==='loading') ? 'flex' : 'block';
   if(id==='loading'){
     clearTimeout(_loadingTimeout);
     const rb=document.getElementById('loading-retry');if(rb)rb.style.display='none';
@@ -9085,10 +9088,10 @@ const _TOUR_SLIDES=[
     subtitle:'네 가지 모두 완수하면 황금 큐브',
     body:`
       <div style="display:flex;justify-content:center;gap:6px;margin:6px 0 18px;">
-        <div style="width:22px;height:22px;border-radius:var(--radius-sm);background:linear-gradient(135deg,#fff1a8 0%,#ffd54a 45%,#c48c1a 100%);border:1px solid rgba(255,233,128,0.70);box-shadow:0 0 4px rgba(255,213,74,0.55),inset 0 1px 0 rgba(255,255,255,0.45),inset 0 -1px 0 rgba(0,0,0,0.25);"></div>
-        <div style="width:22px;height:22px;border-radius:var(--radius-sm);background:linear-gradient(135deg,#fff1a8 0%,#ffd54a 45%,#c48c1a 100%);border:1px solid rgba(255,233,128,0.70);box-shadow:0 0 4px rgba(255,213,74,0.55),inset 0 1px 0 rgba(255,255,255,0.45),inset 0 -1px 0 rgba(0,0,0,0.25);"></div>
-        <div style="width:22px;height:22px;border-radius:var(--radius-sm);background:linear-gradient(135deg,#fff1a8 0%,#ffd54a 45%,#c48c1a 100%);border:1px solid rgba(255,233,128,0.70);box-shadow:0 0 4px rgba(255,213,74,0.55),inset 0 1px 0 rgba(255,255,255,0.45),inset 0 -1px 0 rgba(0,0,0,0.25);"></div>
-        <div style="width:22px;height:22px;border-radius:var(--radius-sm);background:linear-gradient(135deg,#fff1a8 0%,#ffd54a 45%,#c48c1a 100%);border:1px solid rgba(255,233,128,0.70);box-shadow:0 0 4px rgba(255,213,74,0.55),inset 0 1px 0 rgba(255,255,255,0.45),inset 0 -1px 0 rgba(0,0,0,0.25);"></div>
+        <div class="cube-deco is-md is-gold"></div>
+        <div class="cube-deco is-md is-gold"></div>
+        <div class="cube-deco is-md is-gold"></div>
+        <div class="cube-deco is-md is-gold"></div>
       </div>
       <div style="font-size:var(--text-md);color:var(--text);line-height:1.65;text-align:center;margin-bottom:14px;">
         식단 · 운동 · 루틴 · 할일<br>

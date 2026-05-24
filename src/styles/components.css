@@ -272,6 +272,7 @@
   flex-shrink: 0;
 }
 .cube-deco.is-sm { width: 14px; height: 14px; }
+.cube-deco.is-md { width: 22px; height: 22px; }
 .cube-deco.is-lg { width: 28px; height: 28px; border-radius: 3px; }
 .cube-deco.is-gold {
   background: linear-gradient(135deg, #fff1a8 0%, #ffd54a 45%, #c48c1a 100%);

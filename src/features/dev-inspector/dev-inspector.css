@@ -11,6 +11,13 @@ body.qrok-dev-on {
   transition: margin 0.2s ease;
 }
 
+/* 데브 모드에선 fixed-position .bnav 가 viewport 중앙이 아니라 body (앱) 와 같이 좌측 정렬 */
+body.qrok-dev-on .bnav {
+  left: 16px;
+  transform: none;
+  width: min(430px, calc(100vw - 388px - 16px));
+}
+
 #qrok-dev {
   position: fixed;
   top: 0;
