@@ -1,0 +1,189 @@
+/* 큐록 디자인 시스템 — Atom + Molecule 컴포넌트.
+   2026-05-25 시작 — Step 1 (P0 5종).
+   참고: document-private/DESIGN_SYSTEM.md (계층/스펙/마이그레이션 계획).
+
+   원칙:
+     - inline style 5+ 인스턴스 = class 추출.
+     - 동적 값은 CSS custom property 로만 (--ic-size, --ic-bg 등).
+     - variant 는 .is-<name> modifier class.
+*/
+
+/* ── ATOM · btn-close ──────────────────────────────────
+   ✕ 닫기 버튼. promo 카드 / 모달 / 패널 등 10+ 인스턴스. */
+.btn-close {
+  background: none;
+  border: none;
+  color: var(--text3);
+  font-size: var(--text-base);
+  cursor: pointer;
+  padding: 4px 6px;
+  margin: 0;
+  line-height: 1;
+  touch-action: manipulation;
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+.btn-close:hover { color: var(--text); }
+.btn-close:active { background: rgba(255, 255, 255, 0.05); }
+/* Variant — slightly bigger close (큰 모달용) */
+.btn-close.is-lg {
+  font-size: var(--text-lg);
+  padding: 6px 10px;
+}
+
+/* ── ATOM · btn-cta ────────────────────────────────────
+   주 CTA 버튼. accent gradient, 흰 글씨. 15+ 인스턴스. */
+.btn-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border: none;
+  border-radius: var(--radius-md);
+  background: var(--accent-grad);
+  color: #fff;
+  font-family: 'DM Sans', sans-serif;
+  font-size: var(--text-xs);
+  font-weight: 800;
+  cursor: pointer;
+  touch-action: manipulation;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: transform 0.1s ease, filter 0.15s ease;
+}
+.btn-cta:active { transform: scale(0.97); }
+.btn-cta:disabled { opacity: 0.4; cursor: not-allowed; }
+/* Size variants */
+.btn-cta.is-lg {
+  padding: 12px 18px;
+  font-size: var(--text-md);
+  border-radius: var(--radius-lg);
+}
+/* Color variants */
+.btn-cta.is-purple { background: linear-gradient(135deg, #a855f7, #8b5cf6); }
+.btn-cta.is-red    { background: linear-gradient(135deg, #ff4d4d, #b71c1c); }
+.btn-cta.is-amber  { background: linear-gradient(135deg, #fbbf24, #d97706); color: #1a1310; }
+/* Layout */
+.btn-cta.is-block { width: 100%; }
+
+/* ── ATOM · btn-ghost ───────────────────────────────────
+   보조 CTA — surface2 bg + border + dim text. 모달 cancel 류 10+. */
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-md);
+  color: var(--text2);
+  font-family: 'DM Sans', sans-serif;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  cursor: pointer;
+  touch-action: manipulation;
+  flex-shrink: 0;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.btn-ghost:active { background: var(--surface); }
+.btn-ghost:hover { border-color: var(--accent); color: var(--text); }
+.btn-ghost.is-block { width: 100%; }
+.btn-ghost.is-lg { padding: 12px 18px; font-size: var(--text-md); border-radius: var(--radius-lg); }
+
+/* ── ATOM · ic-circle ───────────────────────────────────
+   원형 아이콘 박스. promo 카드 좌측 등 5+ 인스턴스. */
+.ic-circle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--ic-size, 36px);
+  height: var(--ic-size, 36px);
+  border-radius: var(--radius-lg);
+  background: var(--ic-bg, var(--surface2));
+  color: var(--ic-fg, var(--text));
+  flex-shrink: 0;
+  font-size: var(--text-xl);
+  line-height: 1;
+}
+.ic-circle.is-sm { --ic-size: 28px; font-size: var(--text-md); }
+.ic-circle.is-lg { --ic-size: 48px; font-size: var(--text-2xl); }
+.ic-circle.is-accent { --ic-bg: var(--accent-tint-2); --ic-fg: var(--accent); }
+.ic-circle.is-purple { --ic-bg: rgba(168, 85, 247, 0.18); --ic-fg: #c084fc; }
+.ic-circle.is-amber  { --ic-bg: rgba(251, 191, 36, 0.15); --ic-fg: #fbbf24; }
+.ic-circle.is-grad-accent {
+  --ic-fg: #fff;
+  background: linear-gradient(135deg, var(--accent-tint-3), rgba(255, 107, 53, 0.12));
+}
+
+/* ── MOLECULE · promo-card ──────────────────────────────
+   홈 하단 안내 / 미션 / 친구초대 카드. 5+ 인스턴스 (yesterday-ribbon 제외).
+   구조: [ic-circle] [eyebrow + title + body] [btn-cta] [btn-close] */
+.promo-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 14px 10px;
+  padding: 12px 14px;
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-lg);
+}
+.promo-card-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.promo-card-eyebrow {
+  font-size: var(--text-2xs);
+  color: var(--text3);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.promo-card-title {
+  font-size: var(--text-md);
+  font-weight: 800;
+  color: var(--text);
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+.promo-card-body {
+  font-size: var(--text-xs);
+  color: var(--text3);
+  line-height: 1.35;
+}
+/* Top-aligned variant — 큰 사이즈 (e.g. 첫 주 미션 진행 리스트 포함) */
+.promo-card.is-stack {
+  align-items: stretch;
+  flex-direction: column;
+  padding: 14px;
+}
+/* Child of .promo-card.is-stack — 헤더 행 (제목 + close) */
+.promo-card.is-stack > .is-stack-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  width: 100%;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+/* Background tints */
+.promo-card.is-accent  {
+  background: linear-gradient(135deg, var(--accent-tint-2) 0%, rgba(255, 107, 53, 0.04) 100%);
+  border-color: var(--accent-tint-3);
+}
+.promo-card.is-accent-strong {
+  background: linear-gradient(135deg, var(--accent-tint-2) 0%, rgba(255, 107, 53, 0.05) 100%);
+  border-color: var(--accent-tint-4);
+  border-width: 1.5px;
+}
+.promo-card.is-purple {
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.08), rgba(168, 85, 247, 0.04));
+  border-color: rgba(168, 85, 247, 0.25);
+}
