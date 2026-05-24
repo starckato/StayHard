@@ -912,7 +912,8 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
 .wo-status.in_progress{background:rgba(245,158,11,.15);color:#f59e0b;border:1px solid rgba(245,158,11,.3);}
 .wo-status.skip{background:var(--red-bg);color:var(--red);border:1px solid var(--red-bd);}
 .wo-empty{font-size:var(--text-sm);color:var(--text3);font-style:italic;padding:8px 0;}
-.add-row{display:flex;align-items:center;gap:8px;padding:14px 16px;cursor:pointer;color:var(--text3);font-size:var(--text-base);border-top:1px solid var(--border);min-height:44px;touch-action:manipulation;}
+.add-row{display:flex;align-items:center;gap:8px;padding:14px 16px;cursor:pointer;color:var(--accent);font-weight:500;font-size:var(--text-base);border-top:1px solid var(--border);min-height:44px;touch-action:manipulation;}
+.add-row .plus,.add-tgt .plus{font-size:var(--text-lg);margin-right:6px;line-height:1;}
 
 /* CHECKLIST */
 .check-rows{padding:4px 16px 4px;}
@@ -941,7 +942,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
 .routine-pill{font-size:var(--text-2xs);font-weight:700;padding:2px 6px;border-radius:var(--radius-sm);background:var(--accent-tint-2);color:var(--accent-red);border:0.5px solid var(--accent-tint-4);margin-left:6px;vertical-align:middle;letter-spacing:.04em;text-transform:uppercase;}
 .routine-pill.auto{background:var(--accent-tint-2);color:var(--accent);border-color:var(--accent-bd);}
 /* .tgt-text / .tgt-empty / .add-tgt-input* / .add-tgt-go → src/features/targets/targets.css */
-.add-tgt{display:flex;align-items:center;gap:8px;padding:10px 14px;cursor:pointer;color:var(--text3);font-size:var(--text-sm);border-top:1px solid var(--border);}
+.add-tgt{display:flex;align-items:center;gap:8px;padding:10px 14px;cursor:pointer;color:var(--accent);font-weight:500;font-size:var(--text-sm);border-top:1px solid var(--border);}
 /* ─── COMPETITION TAB ─── */
 #view-competition{padding:0;padding-bottom:20px;}
 .setup-screen{display:none;padding:0 16px;}.setup-screen.active{display:block;padding:0 16px 40px;}
@@ -1690,14 +1691,14 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
         <div id="homework-rows"></div>
         <div class="workout-rows" id="workout-rows"></div>
         <div style="display:flex;gap:8px;margin:8px 12px 12px;">
-          <div id="wo-add-cta" onclick="event.stopPropagation(); openWorkoutStartScreen();" style="flex:1;display:flex;align-items:center;justify-content:center;gap:8px;padding:12px;background:linear-gradient(135deg,var(--accent-tint-2),var(--accent-tint-2));border:1px solid var(--accent-tint-3);border-radius:var(--radius-lg);cursor:pointer;touch-action:manipulation;">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            <span id="wo-add-cta-lbl" style="font-size:var(--text-md);font-weight:700;color:var(--accent);">운동 추가</span>
-          </div>
-          <div onclick="event.stopPropagation(); openMuscleMap();" style="display:flex;align-items:center;justify-content:center;gap:6px;padding:12px 14px;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius-lg);cursor:pointer;touch-action:manipulation;">
-            <span style="font-size:var(--text-md);">💥</span>
-            <span style="font-size:var(--text-sm);font-weight:600;color:var(--text2);">자극 부위</span>
-          </div>
+          <button id="wo-add-cta" class="btn-cta is-soft is-lg is-block" onclick="event.stopPropagation(); openWorkoutStartScreen();">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            <span id="wo-add-cta-lbl">운동 추가</span>
+          </button>
+          <button class="btn-ghost is-lg" onclick="event.stopPropagation(); openMuscleMap();">
+            <span>💥</span>
+            <span>자극 부위</span>
+          </button>
         </div>
         <!-- Volume Delta mini-chart — 운동 카드 펼친 영역 안 (사용자 결정 Q3) -->
         <div id="vd-card" class="vd-card" hidden style="margin:0 12px 12px;"></div>
@@ -1719,7 +1720,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
       </div>
       <div class="card-body">
         <div class="check-rows" id="check-rows" style="padding-top:6px;"></div>
-        <div class="add-row" onclick="event.stopPropagation(); openAddMandatoryModal();" style="color:var(--accent);font-weight:500;"><span style="font-size:var(--text-lg);margin-right:6px;">＋</span> 루틴 추가</div>
+        <div class="add-row" onclick="event.stopPropagation(); openAddMandatoryModal();"><span class="plus">＋</span>루틴 추가</div>
         <span id="mand-badge" style="display:none;" aria-hidden="true"></span>
       </div>
     </div>
@@ -1739,7 +1740,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
       </div>
       <div class="card-body">
         <div class="check-rows" id="tgt-rows" style="padding-top:6px;"></div>
-        <div class="add-tgt" onclick="event.stopPropagation(); toggleAddTgt();" style="color:var(--accent);font-weight:500;"><span style="font-size:var(--text-lg);margin-right:6px;">＋</span> 할일 추가</div>
+        <div class="add-tgt" onclick="event.stopPropagation(); toggleAddTgt();"><span class="plus">＋</span>할일 추가</div>
         <div class="add-tgt-input" id="add-tgt-input">
           <input type="text" id="tgt-inp" placeholder="오늘 무엇을 하고 싶나요?" onclick="event.stopPropagation();"/>
           <button class="add-tgt-go" onclick="event.stopPropagation(); addTarget();">추가</button>

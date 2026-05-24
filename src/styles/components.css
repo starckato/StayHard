@@ -69,6 +69,16 @@
 /* Layout */
 .btn-cta.is-block { width: 100%; }
 
+/* Soft variant — 강조 부드러움 (tint bg + accent text + accent border).
+   '운동 추가' / '+ 루틴 추가' 같이 카드 안의 inline-add 류. */
+.btn-cta.is-soft {
+  background: var(--accent-tint-2);
+  color: var(--accent);
+  border: 1px solid var(--accent-tint-3);
+  font-weight: 700;
+}
+.btn-cta.is-soft:active { background: var(--accent-tint-3); transform: scale(0.97); }
+
 /* ── ATOM · btn-ghost ───────────────────────────────────
    보조 CTA — surface2 bg + border + dim text. 모달 cancel 류 10+. */
 .btn-ghost {
