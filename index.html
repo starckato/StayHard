@@ -525,17 +525,17 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 }
 
 /* ═════ YESTERDAY RIBBON — 어제 미완료/이월 할일 통합 ═════ */
-.yr{margin:8px 14px 0;border-radius:var(--radius-lg);overflow:hidden;animation:yrSlideIn .35s cubic-bezier(.2,.9,.3,1);}
-.yr-inner{background:linear-gradient(135deg,var(--accent) 0%,rgba(255,107,53,.94) 100%);padding:13px 14px 14px;box-shadow:0 6px 20px var(--accent-tint-3);}
-.yr-head{display:flex;align-items:flex-start;gap:10px;}
+.yr{margin:var(--space-2) var(--space-3h) 0;border-radius:var(--radius-lg);overflow:hidden;animation:yrSlideIn .35s cubic-bezier(.2,.9,.3,1);}
+.yr-inner{background:linear-gradient(135deg,var(--accent) 0%,rgba(255,107,53,.94) 100%);padding:var(--space-3) var(--space-3h) var(--space-3h);box-shadow:0 6px 20px var(--accent-tint-3);}
+.yr-head{display:flex;align-items:flex-start;gap:var(--space-2h);}
 .yr-icon{font-size:var(--text-2xl);flex-shrink:0;line-height:1;padding-top:1px;}
 .yr-head-txt{flex:1;min-width:0;}
 .yr-title{font-size:var(--text-md);font-weight:800;color:#fff;margin-bottom:2px;letter-spacing:-.01em;}
-.yr-sub{font-size:11.5px;color:rgba(255,255,255,.85);line-height:1.45;word-break:keep-all;}
+.yr-sub{font-size:var(--text-xs);color:rgba(255,255,255,.85);line-height:1.45;word-break:keep-all;}
 .yr-close{background:rgba(255,255,255,.18);border:none;color:#fff;border-radius:var(--radius-md);width:26px;height:26px;font-size:var(--text-xs);cursor:pointer;flex-shrink:0;touch-action:manipulation;font-weight:800;display:flex;align-items:center;justify-content:center;line-height:1;padding:0;}
 .yr-close:active{background:rgba(255,255,255,.32);}
-.yr-task-list{margin-top:12px;flex-direction:column;gap:5px;max-height:180px;overflow-y:auto;}
-.yr-task-item{display:flex;align-items:center;gap:10px;padding:9px 11px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.24);border-radius:var(--radius-md);cursor:pointer;touch-action:manipulation;transition:all .15s;}
+.yr-task-list{margin-top:var(--space-3);flex-direction:column;gap:var(--space-1h);max-height:180px;overflow-y:auto;}
+.yr-task-item{display:flex;align-items:center;gap:var(--space-2h);padding:var(--space-2) var(--space-3);background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.24);border-radius:var(--radius-md);cursor:pointer;touch-action:manipulation;transition:all .15s;}
 .yr-task-item[data-selected="false"]{background:rgba(0,0,0,.18);border-color:rgba(255,255,255,.12);opacity:.72;}
 .yr-task-chk{width:17px;height:17px;border-radius:var(--radius-sm);background:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:var(--text-xs);color:var(--accent);font-weight:900;line-height:1;}
 .yr-task-item[data-selected="false"] .yr-task-chk{background:transparent;color:transparent;border:2px solid rgba(255,255,255,.45);width:17px;height:17px;}
@@ -1043,14 +1043,15 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
 .mhandle:active{cursor:grabbing;opacity:.8;}
 .num-slider{touch-action:none;user-select:none;-webkit-user-select:none;}
 .mhandle-zone{width:100%;padding:10px 0 0;touch-action:none;}
-.mtitle{font-size:var(--text-base);font-weight:700;margin-bottom:14px;letter-spacing:-.01em;}
-.mfield{margin-bottom:13px;}
+.mtitle{font-size:var(--text-base);font-weight:700;margin-bottom:var(--space-3h);letter-spacing:-.01em;}
+.mfield{margin-bottom:var(--space-3);}
 .mlabel{font-size:var(--text-sm);color:var(--text2);margin-bottom:7px;text-transform:uppercase;letter-spacing:.06em;display:block;font-weight:500;}
 .minput{width:100%;background:var(--surface2);border:1.5px solid var(--border2);border-radius:var(--radius-sm);color:var(--text);font-family:'DM Sans',sans-serif;font-size:var(--text-lg);padding:13px 14px;outline:none;min-height:48px;box-sizing:border-box;transition:border-color .15s;}
 .minput:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-tint-2);}
-.mbtn{width:100%;padding:15px;border-radius:var(--radius-sm);border:none;background:var(--accent);color:#fff;font-family:'DM Sans',sans-serif;font-size:var(--text-lg);font-weight:700;cursor:pointer;margin-top:8px;min-height:50px;touch-action:manipulation;letter-spacing:.01em;}
+/* mbtn / mbtn-ghost: 모달 footer 버튼 통일된 vertical rhythm (15→16, 13→12). */
+.mbtn{width:100%;padding:var(--space-4);border-radius:var(--radius-sm);border:none;background:var(--accent);color:#fff;font-family:'DM Sans',sans-serif;font-size:var(--text-lg);font-weight:700;cursor:pointer;margin-top:var(--space-2);min-height:50px;touch-action:manipulation;letter-spacing:.01em;}
 .mbtn:disabled{opacity:.4;cursor:not-allowed;}
-.mbtn-ghost{width:100%;padding:13px;border-radius:var(--radius-sm);border:none;background:transparent;color:var(--text3);font-family:'DM Sans',sans-serif;font-size:var(--text-base);font-weight:500;cursor:pointer;margin-top:4px;min-height:44px;touch-action:manipulation;}
+.mbtn-ghost{width:100%;padding:var(--space-3);border-radius:var(--radius-sm);border:none;background:transparent;color:var(--text3);font-family:'DM Sans',sans-serif;font-size:var(--text-base);font-weight:500;cursor:pointer;margin-top:var(--space-1);min-height:44px;touch-action:manipulation;}
 .food-types{display:flex;gap:7px;flex-wrap:wrap;}
 .ftbtn{padding:10px 16px;border-radius:var(--radius-lg);font-size:var(--text-base);font-weight:600;cursor:pointer;border:1.5px solid var(--border);color:var(--text3);background:var(--surface2);transition:all .12s;min-height:44px;touch-action:manipulation;}
 .ftbtn.time-sel{background:var(--accent-bg);border-color:var(--accent);color:var(--accent);}
@@ -1342,7 +1343,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
 <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-<script src="/dist/app.js?v=e39c55da"></script>
+<script src="/dist/app.js?v=15149cb9"></script>
 
 <script>
   // QROK Splash — 앱 ready 까지 대기 후 fade out. 좌측 상단/중앙 loading 스피너 가림.
