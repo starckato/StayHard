@@ -1454,7 +1454,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
 <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-<script src="/dist/app.js?v=02c54703"></script>
+<script src="/dist/app.js?v=0d9390c5"></script>
 
 <script>
   // QROK Splash — 앱 ready 까지 대기 후 fade out. 좌측 상단/중앙 loading 스피너 가림.
@@ -1489,12 +1489,12 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
 
 <!-- ══ AUTH ══ -->
 <div id="auth-screen">
-  <!-- 4 큐브 — 날짜 슬라이더 indicatorStyle 와 동일 -->
-  <div style="display:flex;gap:6px;justify-content:center;margin-bottom:14px;">
-    <div style="width:18px;height:18px;border-radius:var(--radius-sm);box-sizing:border-box;background:linear-gradient(135deg,#fff1a8 0%,#ffd54a 45%,#c48c1a 100%);border:1px solid rgba(255,233,128,0.70);box-shadow:0 0 4px rgba(255,213,74,0.55),inset 0 1px 0 rgba(255,255,255,0.45),inset 0 -1px 0 rgba(0,0,0,0.25);"></div>
-    <div style="width:18px;height:18px;border-radius:var(--radius-sm);box-sizing:border-box;background:linear-gradient(135deg,#f2f4f7 0%,#b5c0cc 45%,#6d7682 100%);border:1px solid rgba(210,218,228,0.55);box-shadow:0 0 3px rgba(181,192,204,0.40),inset 0 1px 0 rgba(255,255,255,0.32),inset 0 -1px 0 rgba(0,0,0,0.22);"></div>
-    <div style="width:18px;height:18px;border-radius:var(--radius-sm);box-sizing:border-box;background:transparent;border:1px solid rgba(255,255,255,0.10);"></div>
-    <div style="width:18px;height:18px;border-radius:var(--radius-sm);box-sizing:border-box;background:var(--accent-tint-4);border:1px solid var(--accent-tint-4);"></div>
+  <!-- 4 큐브 데코 — sharper border (2px radius) + 3D inset shadow (.cube-deco atom 사용) -->
+  <div class="cube-deco-row">
+    <div class="cube-deco is-gold"></div>
+    <div class="cube-deco is-silver"></div>
+    <div class="cube-deco is-empty"></div>
+    <div class="cube-deco is-red"></div>
   </div>
   <div class="auth-sub">루틴을 기록하고, 함께 성장하세요.</div>
   <div class="auth-tabs">

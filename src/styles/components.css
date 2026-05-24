@@ -254,3 +254,46 @@
   background: linear-gradient(135deg, rgba(139, 92, 246, 0.08), rgba(168, 85, 247, 0.04));
   border-color: rgba(168, 85, 247, 0.25);
 }
+
+/* ── ATOM · cube-deco ──────────────────────────────────
+   장식용 입체 큐브 박스. auth 화면 cube row / onboarding / 가이드 등에 재사용.
+   실제 점수/상태 representation 이 아니라 *비주얼 데코*. */
+.cube-deco {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border-radius: 2px;
+  box-sizing: border-box;
+  border: 1px solid;
+  box-shadow:
+    inset 0 1.5px 0 rgba(255, 255, 255, 0.42),
+    inset 0 -2px 3px rgba(0, 0, 0, 0.32),
+    0 1px 2px rgba(0, 0, 0, 0.25);
+  flex-shrink: 0;
+}
+.cube-deco.is-sm { width: 14px; height: 14px; }
+.cube-deco.is-lg { width: 28px; height: 28px; border-radius: 3px; }
+.cube-deco.is-gold {
+  background: linear-gradient(135deg, #fff1a8 0%, #ffd54a 45%, #c48c1a 100%);
+  border-color: rgba(255, 233, 128, 0.7);
+}
+.cube-deco.is-silver {
+  background: linear-gradient(135deg, #f2f4f7 0%, #b5c0cc 45%, #6d7682 100%);
+  border-color: rgba(210, 218, 228, 0.55);
+}
+.cube-deco.is-red {
+  background: linear-gradient(135deg, #ff8080 0%, #ff4d4d 50%, #8b1515 100%);
+  border-color: rgba(255, 77, 77, 0.7);
+}
+.cube-deco.is-empty {
+  background: transparent;
+  border-color: rgba(255, 255, 255, 0.14);
+  box-shadow: none;
+}
+/* 행 wrapper */
+.cube-deco-row {
+  display: flex;
+  gap: var(--space-1h);
+  justify-content: center;
+  margin-bottom: var(--space-3h);
+}
