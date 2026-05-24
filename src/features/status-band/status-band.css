@@ -16,8 +16,8 @@
   position: relative;
   /* sticky-header 와 시각적으로 한 카드 — bottom corners flat, 좌우 14px margin */
   margin: 6px 14px 0;
-  /* 2026-05-24 — 과한 height 축소: 14/16/14 → 8/14/10 */
-  padding: 8px 14px 10px;
+  /* 2026-05-24 — height 압축: 14/16/14 → 8/14/2 (캐릭터-하단 여백 20%) */
+  padding: 8px 14px 2px;
   background: linear-gradient(135deg, var(--surface) 0%, var(--surface2) 100%);
   border: 1px solid var(--border);
   border-bottom: 1px solid var(--border2);
@@ -31,8 +31,8 @@
   content: '';
   position: absolute;
   left: 0;
-  top: 10px;
-  bottom: 10px;
+  top: 8px;
+  bottom: 4px;
   width: 2px;
   background: var(--sb-accent, var(--text3));
   opacity: 0.55;
@@ -46,12 +46,12 @@
   gap: 12px;
 }
 
-/* Character column — 말풍선 + 캐릭터를 세로 stack */
+/* Character column — 말풍선 + 캐릭터를 세로 stack. gap 4→1 (말풍선-캐릭터 20%). */
 .sb-char-col {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 1px;
   flex-shrink: 0;
   width: 120px;
 }
