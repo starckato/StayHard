@@ -1,0 +1,94 @@
+/* 큐록 · features/date-heatmap/date-heatmap.css
+   히트맵 (날짜 가로 스크롤 + 날짜 셀 내부 4 cube indicator) 룰.
+   2026-05-25 — 이전엔 buildHeatmapGrid 의 markup 에 inline style 이 모든 cube/cell 마다
+   복제 (365일 × 4 cube = ~1460개 동일 스타일 인스턴스). 그걸 class 로 일괄 추출.
+
+   유일하게 dynamic 한 값 (cube size, today/selected 상태) 만 CSS variable 로 주입. */
+
+/* dh-scroll / dh-grid 는 index.html 인라인 룰에 이미 있음. */
+
+/* ── Cube indicator (날짜 셀 안의 4 small square — 식단/운동/루틴/할일) ── */
+.dh-cube {
+  display: inline-block;
+  width: var(--dh-cube-size, 10px);
+  height: var(--dh-cube-size, 10px);
+  border-radius: 2px;
+  box-sizing: border-box;
+  cursor: pointer;
+  touch-action: manipulation;
+  /* Status 별 색은 .is-* class 로 결정 */
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.10);
+}
+/* Pass (gold) — 통과 / 완수 */
+.dh-cube.is-pass {
+  background: linear-gradient(135deg, #fff1a8 0%, #ffd54a 45%, #c48c1a 100%);
+  border: 1px solid rgba(255, 233, 128, 0.70);
+  box-shadow:
+    0 0 4px rgba(255, 213, 74, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.45),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.25);
+}
+/* Partial (silver) — 부분 완수 */
+.dh-cube.is-partial {
+  background: linear-gradient(135deg, #f2f4f7 0%, #b5c0cc 45%, #6d7682 100%);
+  border: 1px solid rgba(210, 218, 228, 0.55);
+  box-shadow:
+    0 0 3px rgba(181, 192, 204, 0.40),
+    inset 0 1px 0 rgba(255, 255, 255, 0.32),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.22);
+}
+/* Fail (crimson) — 실패 / 음주 */
+.dh-cube.is-fail {
+  background: rgba(255, 77, 77, 0.32);
+  border: 1px solid rgba(255, 77, 77, 0.45);
+}
+/* Future — dashed outline */
+.dh-cube.is-future {
+  background: transparent;
+  border: 1px dashed rgba(255, 255, 255, 0.08);
+  cursor: default;
+}
+/* Empty — solid outline only (default state on .dh-cube) */
+
+/* ── Double cube (운동 — 헬스 + 카디오 둘 다 완료 시) ── */
+.dh-cube-double {
+  display: inline-block;
+  position: relative;
+  /* width = size + overlap (3px). overlap 도 변수화. */
+  width: calc(var(--dh-cube-size, 10px) + 3px);
+  height: var(--dh-cube-size, 10px);
+  flex-shrink: 0;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.dh-cube-double .dh-cube {
+  position: absolute;
+  top: 0;
+  /* border, cursor 등은 .dh-cube 기본 룰이 이미 처리 */
+}
+.dh-cube-double .dh-cube-back {
+  left: 3px;
+  opacity: 0.6;
+}
+.dh-cube-double .dh-cube-front {
+  left: 0;
+}
+
+/* ── Bonus star badge (tile 우상단 보너스 ★) ── */
+.dh-bonus-star {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 14px;
+  height: 14px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  touch-action: manipulation;
+  line-height: 0;
+}
+.dh-bonus-star svg {
+  filter: drop-shadow(0 0 2px rgba(255, 213, 74, 0.6));
+}

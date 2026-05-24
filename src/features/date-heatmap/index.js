@@ -119,6 +119,23 @@ function cellStatus(dl, cat, isFuture) {
   return 'empty';
 }
 
+// ── 2026-05-25 refactor: inline style 폭증 → class 기반 (.dh-cube[.is-*]).
+// 365일 × 4 cube ≈ 1460 instances 의 동일 inline style 제거.
+// 동적 값 (cube size) 만 CSS variable --dh-cube-size 로 인라인 주입.
+
+const _DH_STATUS_CLASS = {
+  pass: 'is-pass',
+  partial: 'is-partial',
+  fail: 'is-fail',
+  future: 'is-future',
+  empty: '', // .dh-cube 기본 룰이 empty (border-only)
+};
+
+function _cubeClass(status) {
+  const mod = _DH_STATUS_CLASS[status] || '';
+  return mod ? `dh-cube ${mod}` : 'dh-cube';
+}
+
 // 운동 슬롯에 exercise_bonus gold 가 있으면 2개 겹친 double-cube 로 렌더.
 // 없으면 단일 사각형. dateKey 받아서 tooltip 트리거 바인딩.
 function workoutIndicator(dl, isFuture, size, dateKey) {
@@ -133,33 +150,29 @@ function workoutIndicator(dl, isFuture, size, dateKey) {
     }
   }
   const hasBonus = gymDone && cardioDone;
-  const tapHandler = isFuture
+  const tap = isFuture
     ? ''
     : `onclick="event.stopPropagation();window.dhShowCubeTooltip&&window.dhShowCubeTooltip(event,'${dateKey}','workout')"`;
+  const sizeStyle = `style="--dh-cube-size:${size}px;"`;
   if (!hasBonus) {
-    return `<span ${tapHandler} style="display:inline-block;width:${size}px;height:${size}px;border-radius:2px;box-sizing:border-box;cursor:pointer;touch-action:manipulation;${indicatorStyle(status)}"></span>`;
+    return `<span ${tap} class="${_cubeClass(status)}" ${sizeStyle}></span>`;
   }
-  // Double-cube: back square (offset) + front square — 3px overlap.
-  const overlap = 3;
-  const totalW = size + overlap;
+  // Double-cube — back (offset, dim) + front. CSS 가 leftshift / opacity 처리.
   return (
-    `<span ${tapHandler} style="display:inline-block;position:relative;width:${totalW}px;height:${size}px;flex-shrink:0;cursor:pointer;touch-action:manipulation;">` +
-      `<span style="position:absolute;left:${overlap}px;top:0;width:${size}px;height:${size}px;border-radius:2px;box-sizing:border-box;${indicatorStyle(status)}opacity:0.6;"></span>` +
-      `<span style="position:absolute;left:0;top:0;width:${size}px;height:${size}px;border-radius:2px;box-sizing:border-box;${indicatorStyle(status)}"></span>` +
+    `<span ${tap} class="dh-cube-double" ${sizeStyle}>` +
+      `<span class="${_cubeClass(status)} dh-cube-back"></span>` +
+      `<span class="${_cubeClass(status)} dh-cube-front"></span>` +
     `</span>`
   );
 }
 
 // bonus 배열이 비어있지 않으면 tile 우상단에 작은 황금 ★ 표시.
-// 탭 시 dhOpenBonusPopover(dateKey) 로 breakdown 팝오버 오픈.
 function bonusStarBadge(dl, isFuture, dateKey) {
   if (isFuture || !dl || !dl.cubes || !Array.isArray(dl.cubes.bonus) || dl.cubes.bonus.length === 0) return '';
   return (
     `<button onclick="event.stopPropagation();window.dhOpenBonusPopover&&window.dhOpenBonusPopover('${dateKey}')" ` +
-    `aria-label="보너스 내역" ` +
-    `style="position:absolute;top:2px;right:2px;width:14px;height:14px;padding:0;background:transparent;border:none;cursor:pointer;touch-action:manipulation;line-height:0;">` +
-      `<svg width="10" height="10" viewBox="0 0 24 24" fill="url(#dh-gold-grad)" ` +
-      `style="filter:drop-shadow(0 0 2px rgba(255,213,74,0.6));">` +
+    `aria-label="보너스 내역" class="dh-bonus-star">` +
+      `<svg width="10" height="10" viewBox="0 0 24 24" fill="url(#dh-gold-grad)">` +
         `<polygon points="12,2 15,9 22,9 17,14 19,22 12,18 5,22 7,14 2,9 9,9"/>` +
       `</svg>` +
     `</button>`
@@ -168,33 +181,6 @@ function bonusStarBadge(dl, isFuture, dateKey) {
 
 // 헤드리스 SVG gradient 정의 — tile 전체에서 한 번만 선언. buildHeatmapGrid 진입시 삽입.
 const DH_SVG_DEFS = `<svg width="0" height="0" style="position:absolute;" aria-hidden="true"><defs><linearGradient id="dh-gold-grad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#fff1a8"/><stop offset="45%" stop-color="#ffd54a"/><stop offset="100%" stop-color="#c48c1a"/></linearGradient></defs></svg>`;
-
-// Palette v10 — metal medal ladder.
-//   pass    = 황금 gold leaf gradient + warm halo (gold medal)
-//   partial = 은 silver gradient + cool halo (silver medal — 금 직전)
-//   fail    = brand red (식단 금지와 같은 언어)
-//   empty   = solid outline only
-//   future  = dashed outline only
-function indicatorStyle(status) {
-  if (status === 'pass')
-    return (
-      'background:linear-gradient(135deg,#fff1a8 0%,#ffd54a 45%,#c48c1a 100%);' +
-      'border:1px solid rgba(255,233,128,0.70);' +
-      'box-shadow:0 0 4px rgba(255,213,74,0.55),inset 0 1px 0 rgba(255,255,255,0.45),inset 0 -1px 0 rgba(0,0,0,0.25);'
-    );
-  if (status === 'partial')
-    return (
-      'background:linear-gradient(135deg,#f2f4f7 0%,#b5c0cc 45%,#6d7682 100%);' +
-      'border:1px solid rgba(210,218,228,0.55);' +
-      'box-shadow:0 0 3px rgba(181,192,204,0.40),inset 0 1px 0 rgba(255,255,255,0.32),inset 0 -1px 0 rgba(0,0,0,0.22);'
-    );
-  if (status === 'fail')
-    return 'background:rgba(255,77,77,0.32);border:1px solid rgba(255,77,77,0.45);';
-  if (status === 'future')
-    return 'background:transparent;border:1px dashed rgba(255,255,255,0.08);';
-  // empty
-  return 'background:transparent;border:1px solid rgba(255,255,255,0.10);';
-}
 
 function taskPreview(dl) {
   const tgts = (dl && dl.targets) || [];
@@ -239,10 +225,10 @@ export function buildHeatmapGrid() {
     const indicators = DH_ROWS.map(cat => {
       if (cat.key === 'workout') return workoutIndicator(dl, isFuture, indicatorSize, k);
       const status = cellStatus(dl, cat.key, isFuture);
-      const tapHandler = isFuture
+      const tap = isFuture
         ? ''
         : `onclick="event.stopPropagation();window.dhShowCubeTooltip&&window.dhShowCubeTooltip(event,'${k}','${cat.key}')"`;
-      return `<span ${tapHandler} style="display:inline-block;width:${indicatorSize}px;height:${indicatorSize}px;border-radius:2px;box-sizing:border-box;cursor:pointer;touch-action:manipulation;${indicatorStyle(status)}"></span>`;
+      return `<span ${tap} class="${_cubeClass(status)}" style="--dh-cube-size:${indicatorSize}px;"></span>`;
     }).join('');
     const bonusStar = bonusStarBadge(dl, isFuture, k);
 
