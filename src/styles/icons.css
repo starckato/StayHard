@@ -1,0 +1,31 @@
+/* 큐록 아이콘 시스템.
+   sprite block (<symbol> 정의) 은 index.html body 최상단.
+   사용: <svg class="ic"><use href="#i-leaf"/></svg>
+
+   동적 색은 currentColor (.ic 의 stroke = currentColor → 부모 .color 따라감).
+   size 는 inline width/height 또는 CSS variable --ic-size 로 override.
+*/
+
+.ic {
+  display: inline-flex;
+  vertical-align: middle;
+  width: var(--ic-w, 16px);
+  height: var(--ic-h, 16px);
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  flex-shrink: 0;
+}
+.ic.is-sm { --ic-w: 13px; --ic-h: 13px; }
+.ic.is-md { --ic-w: 18px; --ic-h: 18px; }
+.ic.is-lg { --ic-w: 22px; --ic-h: 22px; }
+.ic.is-xl { --ic-w: 26px; --ic-h: 26px; }
+.ic.is-2xl { --ic-w: 32px; --ic-h: 32px; }
+
+/* 일부 아이콘은 fill 필요 (예: today-dot circle). 명시 시 클래스 변경. */
+.ic.is-filled {
+  fill: currentColor;
+  stroke: none;
+}
