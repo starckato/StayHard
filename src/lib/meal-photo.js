@@ -49,9 +49,8 @@ export async function _hydrateMealPhotos(){
     const cached=p?_mealPhotoSignedCache[p]:null;
     if(cached){
       img.src=cached.url;
-      img.style.opacity='1';
     }
-    img.setAttribute('data-hydrated','1');
+    img.setAttribute('data-hydrated','1'); // CSS .slot-thumb img[data-hydrated="1"] 가 opacity 처리.
   });
 }
 export function compressImage(file,maxPx,quality){
