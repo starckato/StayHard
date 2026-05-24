@@ -926,6 +926,11 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
 .ck-row.tgt-type{border-left:3px solid var(--border2);padding-left:10px;margin-left:-13px;}
 .ck-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);touch-action:manipulation;-webkit-tap-highlight-color:transparent;min-height:48px;}
 .ck-row:last-child{border-bottom:none;}
+.ck-row.is-fail{background:var(--accent-tint-1);}
+.tgt-row.is-fail{background:var(--accent-tint-1);}
+/* row 안의 큰 checkbox tap zone — 44×44 인라인 패턴 통일 */
+.ck-tap{min-width:44px;min-height:44px;display:flex;align-items:center;justify-content:center;cursor:pointer;touch-action:manipulation;}
+.ck-namebox{flex:1;cursor:pointer;padding:12px 0;touch-action:manipulation;}
 .ck-box{width:26px;height:26px;border-radius:var(--radius-sm);border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:var(--text-md);cursor:pointer;flex-shrink:0;transition:all .15s;background:transparent;touch-action:manipulation;-webkit-user-select:none;user-select:none;}
 .ck-box.done{background:var(--green);border-color:var(--green);box-shadow:0 0 8px rgba(52,211,153,.25);}
 .ck-box.fail{background:var(--red-bg);border-color:var(--red);}
@@ -933,8 +938,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
 .ck-box.done::after{content:'✓';color:#fff;font-weight:700;font-size:var(--text-xs);}
 .ck-name{font-size:var(--text-base);flex:1;cursor:pointer;font-weight:500;}
 .ck-name.done{text-decoration:line-through;color:var(--text3);}
-.ck-edit{background:none;border:none;color:var(--text3);cursor:pointer;font-size:var(--text-md);padding:3px 5px;}
-.ck-del{background:none;border:none;color:var(--text3);cursor:pointer;font-size:var(--text-sm);padding:3px;}
+/* .ck-edit / .ck-del 폐기 (2026-05-25) → .btn-icon.is-md / .btn-icon.is-sm */
 
 /* TARGETS */
 /* targets card CSS → src/features/targets/targets.css (2026-05-07 추출) */
@@ -1270,7 +1274,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
 <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-<script src="/dist/app.js?v=0cda4406"></script>
+<script src="/dist/app.js?v=0dc7335a"></script>
 
 <script>
   // QROK Splash — 앱 ready 까지 대기 후 fade out. 좌측 상단/중앙 loading 스피너 가림.
@@ -12176,22 +12180,24 @@ function renderCustomMandRow(t,i,state,dow){
   const endBadge=t.end_date?`<span style="font-size:var(--text-2xs);color:var(--text3);margin-left:4px;">~${t.end_date.slice(5).replace('-','/')}</span>`:'';
   const isFail=!!state.fail;
   const isDone=!!state.done;
-  return`<div class="ck-row custom" data-ridx="${i}" style="${isFail?'background:var(--accent-tint-1);':''}">
-    <div style="min-width:44px;min-height:44px;display:flex;align-items:center;justify-content:center;cursor:pointer;touch-action:manipulation;"
+  const rowCls = 'ck-row custom' + (isFail ? ' is-fail' : '');
+  const failBtnCls = 'btn-fail' + (isFail ? ' is-active' : '');
+  return `<div class="${rowCls}" data-ridx="${i}">
+    <div class="ck-tap"
       onclick="togMand(${i})"
       ontouchstart="mandTouchStart()"
       ontouchend="event.preventDefault();mandTouchEnd(${i})">
       <div class="ck-box ${isDone?'done':isFail?'fail':''}"></div>
     </div>
-    <div style="flex:1;cursor:pointer;padding:12px 0;touch-action:manipulation;"
+    <div class="ck-namebox"
       onclick="togMand(${i})"
       ontouchstart="mandTouchStart()"
       ontouchend="event.preventDefault();mandTouchEnd(${i})">
       <div class="ck-name ${isDone?'done':isFail?'fail':''}">${t.name||''}<span class="routine-pill">${pillText}</span>${isFail?' ❌':''}${endBadge}</div>
     </div>
-    ${!isDone?`<button onclick="markMandFail(${i})" style="font-size:var(--text-xs);padding:5px 10px;border-radius:var(--radius-md);border:1px solid ${isFail?'var(--red)':'var(--border2)'};background:${isFail?'var(--red-bg)':'transparent'};color:${isFail?'var(--red)':'var(--text3)'};cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;white-space:nowrap;flex-shrink:0;">${isFail?'취소':'실패'}</button>`:''}
-    <button class="ck-edit" onclick="editMandatory(${i})">✎</button>
-    <button class="ck-del" onclick="delMand(${i})">✕</button>
+    ${!isDone?`<button class="${failBtnCls}" onclick="markMandFail(${i})">${isFail?'취소':'실패'}</button>`:''}
+    <button class="btn-icon is-md" onclick="editMandatory(${i})" aria-label="수정">✎</button>
+    <button class="btn-icon is-sm" onclick="delMand(${i})" aria-label="삭제">✕</button>
   </div>`;
 }
 

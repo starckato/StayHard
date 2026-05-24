@@ -63,22 +63,20 @@ function rowHtml(t, i) {
   const carriedBadge = t._carried
     ? ` <span style="font-size:var(--text-2xs);font-weight:600;padding:1px 5px;border-radius:var(--radius-sm);background:var(--accent-bg);color:var(--accent);border:0.5px solid var(--accent-bd);vertical-align:middle;">이월</span>`
     : '';
+  const failBtnCls = 'btn-fail' + (isFail ? ' is-active' : '');
   const failBtn = !isDone
-    ? `<button onclick="markFail(${i})" style="font-size:var(--text-xs);padding:5px 10px;border-radius:var(--radius-md);border:1px solid ${isFail ? 'var(--red)' : 'var(--border2)'};background:${isFail ? 'var(--red-bg)' : 'transparent'};color:${isFail ? 'var(--red)' : 'var(--text3)'};cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;white-space:nowrap;flex-shrink:0;">${isFail ? '취소' : '실패'}</button>`
+    ? `<button class="${failBtnCls}" onclick="markFail(${i})">${isFail ? '취소' : '실패'}</button>`
     : '';
-  return `<div class="tgt-row" style="${isFail ? 'background:var(--accent-tint-1);' : ''}">
-    <div class="tgt-btn ${t.st || ''}"
-      onclick="togTgt(${i})"
-      style="cursor:pointer;-webkit-user-select:none;user-select:none;flex-shrink:0;">
+  const rowCls = 'tgt-row' + (isFail ? ' is-fail' : '');
+  return `<div class="${rowCls}">
+    <div class="tgt-btn ${t.st || ''}" onclick="togTgt(${i})">
       ${checkContent}
     </div>
-    <div class="tgt-text ${isDone ? 'done' : isFail ? 'fail' : ''}"
-      onclick="togTgt(${i})"
-      style="cursor:pointer;flex:1;padding:12px 4px;-webkit-user-select:none;user-select:none;">${escFn(t.text || '')}${carriedBadge}
+    <div class="tgt-text ${isDone ? 'done' : isFail ? 'fail' : ''}" onclick="togTgt(${i})">${escFn(t.text || '')}${carriedBadge}
     </div>
     ${failBtn}
-    <button onclick="openPromoteTodoModal(${i})" title="매일 반복하는 필수 루틴으로 변환" style="background:none;border:none;color:var(--accent);cursor:pointer;font-size:var(--text-base);padding:6px 8px;min-width:36px;touch-action:manipulation;">↻</button>
-    <button onclick="delTgt(${i})" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:var(--text-xl);padding:6px 8px;min-width:36px;touch-action:manipulation;">✕</button>
+    <button class="btn-icon is-accent" onclick="openPromoteTodoModal(${i})" title="매일 반복하는 필수 루틴으로 변환" aria-label="루틴으로 변환">↻</button>
+    <button class="btn-icon" onclick="delTgt(${i})" aria-label="삭제">✕</button>
   </div>`;
 }
 

@@ -79,6 +79,63 @@
 }
 .btn-cta.is-soft:active { background: var(--accent-tint-3); transform: scale(0.97); }
 
+/* ── ATOM · btn-fail ────────────────────────────────────
+   실패 / 취소 토글 버튼 (루틴·할일 row 의 우측 액션).
+   default = outline + dim. is-active (실패 누른 후) = red 강조. */
+.btn-fail {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px 10px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border2);
+  background: transparent;
+  color: var(--text3);
+  font-family: 'DM Sans', sans-serif;
+  font-size: var(--text-xs);
+  font-weight: 500;
+  cursor: pointer;
+  touch-action: manipulation;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+}
+.btn-fail:active { transform: scale(0.97); }
+.btn-fail.is-active {
+  border-color: var(--red);
+  background: var(--red-bg);
+  color: var(--red);
+}
+
+/* ── ATOM · btn-icon ────────────────────────────────────
+   ✎ 수정 / ↻ 변환 / ✕ 삭제 같은 아이콘 단독 버튼.
+   row 의 끝쪽 액션 영역에 다수 등장. */
+.btn-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: var(--text3);
+  cursor: pointer;
+  touch-action: manipulation;
+  font-size: var(--text-base);
+  padding: 6px 8px;
+  min-width: 36px;
+  flex-shrink: 0;
+  border-radius: var(--radius-sm);
+  transition: color 0.15s ease, background 0.15s ease;
+}
+.btn-icon:active { background: rgba(255, 255, 255, 0.05); }
+.btn-icon:hover { color: var(--text); }
+/* Size variants */
+.btn-icon.is-sm { font-size: var(--text-sm); padding: 3px; min-width: 0; }
+.btn-icon.is-md { font-size: var(--text-md); padding: 3px 5px; min-width: 0; }
+/* Color variants */
+.btn-icon.is-accent { color: var(--accent); }
+.btn-icon.is-accent:hover { color: var(--accent); filter: brightness(1.15); }
+.btn-icon.is-danger { color: var(--red); }
+
 /* ── ATOM · btn-ghost ───────────────────────────────────
    보조 CTA — surface2 bg + border + dim text. 모달 cancel 류 10+. */
 .btn-ghost {

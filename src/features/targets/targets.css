@@ -37,6 +37,10 @@
 .tgt-text {
   font-size: var(--text-lg);
   flex: 1;
+  cursor: pointer;
+  padding: 12px 4px;
+  -webkit-user-select: none;
+  user-select: none;
 }
 .tgt-text.done { text-decoration: line-through; color: var(--text2); }
 .tgt-text.fail { text-decoration: line-through; color: var(--text3); }
