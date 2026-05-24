@@ -18,6 +18,13 @@ body.qrok-dev-on .bnav {
   width: min(430px, calc(100vw - 388px - 16px));
 }
 
+/* 모달 overlay 들도 inset:0 (viewport 전체) — dev 모드에선 앱 frame 안으로 제한 */
+body.qrok-dev-on .modal-overlay,
+body.qrok-dev-on .exempt-modal-overlay {
+  left: 16px;
+  right: 388px;
+}
+
 #qrok-dev {
   position: fixed;
   top: 0;
