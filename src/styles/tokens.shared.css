@@ -9,13 +9,17 @@
  */
 
 :root {
-  /* ── Spacing (5단계) ─────────────────────────────────────── */
-  --space-1: 4px;
-  --space-2: 8px;
-  --space-3: 12px;
-  --space-4: 16px;
-  --space-5: 24px;
-  --space-6: 32px;
+  /* ── Spacing (9단계 — 2026-05-25 half-step 확장) ──────────
+     base 6 + half-step 3 = 9. half-step 은 row gap / 카드 padding 에서 필요. */
+  --space-1:   4px;   /* base — micro gap */
+  --space-1h:  6px;   /* half — list item gap */
+  --space-2:   8px;   /* base — default gap */
+  --space-2h: 10px;   /* half — comfortable gap */
+  --space-3:  12px;   /* base — card inner padding (vertical) */
+  --space-3h: 14px;   /* half — card outer (horizontal) */
+  --space-4:  16px;   /* base — card inner padding (horizontal) */
+  --space-5:  24px;   /* section gap */
+  --space-6:  32px;   /* large section / hero */
 
   /* ── Radius (4단계) ─────────────────────────────────────── */
   --radius-sm: 4px;
