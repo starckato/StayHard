@@ -2,23 +2,33 @@
    ?dev=1 로 활성. production 빌드 시엔 markup 만 생성, JS 가 cssText 추가.
    keep CSS scope 좁게 — 앱 다른 영역과 격리.  */
 
+/* dev 모드 켜졌을 때 body 가 더 이상 중앙 정렬 X — 앱 좌측, 패널 우측 사이드바.
+   JS 가 body.qrok-dev-on 추가. */
+body.qrok-dev-on {
+  margin-left: 16px;
+  margin-right: 388px; /* 패널 360 + gap 28 */
+  max-width: 430px;
+  transition: margin 0.2s ease;
+}
+
 #qrok-dev {
   position: fixed;
-  /* 기본 위치: 앱 프레임 (max-width 430px center) 우측 바깥. JS 가 더 정확히 보정. */
-  top: 12px;
-  left: calc(50% + 235px);
-  right: auto;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: auto;
   width: 360px;
-  max-height: calc(100vh - 24px);
+  height: 100vh;
+  max-height: 100vh;
   display: flex;
   flex-direction: column;
   background: rgba(15, 15, 20, 0.96);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 12px;
+  border-left: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 0;
   z-index: 99999;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+  box-shadow: -4px 0 24px rgba(0, 0, 0, 0.5);
   font-family: 'DM Sans', system-ui, sans-serif;
   font-size: 13px;
   color: #eaeaf0;
@@ -33,11 +43,8 @@
   padding: 10px 12px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   background: rgba(0, 0, 0, 0.25);
-  cursor: grab;
   user-select: none;
 }
-#qrok-dev .qd-hdr:active { cursor: grabbing; }
-#qrok-dev.is-dragging { transition: none !important; opacity: 0.85; }
 #qrok-dev .qd-title {
   font-family: 'Archivo Black', sans-serif;
   font-size: 11px;
@@ -165,14 +172,20 @@ body.qrok-dev-armed * { cursor: crosshair !important; }
 }
 #qrok-dev.is-min .qd-body { display: none; }
 
-/* 좁은 viewport (앱이 풀폭 차지) — 패널 우상단 미니 모드 + 사용자가 펼침 */
+/* 좁은 viewport — 사이드바 layout 불가 (앱 너무 좁아짐). 패널 사라지고 mini toggle 만 */
 @media (max-width: 830px) {
+  body.qrok-dev-on { margin-left: 0; margin-right: 0; max-width: 430px; }
+  body.qrok-dev-on:not(.qrok-dev-fullside) { /* 자동 미니 */ }
   #qrok-dev {
     width: auto;
     left: auto;
     right: 12px;
     top: 12px;
+    bottom: auto;
+    height: auto;
     max-height: none;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
   }
   #qrok-dev .qd-body { display: none; }
   #qrok-dev.is-open {

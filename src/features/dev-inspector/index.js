@@ -217,54 +217,7 @@ function _onResize() {
   if (_picked && _lockedOutline) _ensureOutline(_picked, true);
 }
 
-// ── Drag (헤더 잡고 이동) ───────────────────────────────
-let _dragOff = null;
-function _onHdrMouseDown(e) {
-  // 버튼 클릭은 드래그 시작 X
-  if (e.target.closest('button')) return;
-  if (!_panel) return;
-  const r = _panel.getBoundingClientRect();
-  _dragOff = { x: e.clientX - r.left, y: e.clientY - r.top };
-  _panel.classList.add('is-dragging');
-  // top:0; left:현재; right:auto; 로 잠가서 드래그 자유롭게
-  _panel.style.top = r.top + 'px';
-  _panel.style.left = r.left + 'px';
-  _panel.style.right = 'auto';
-  document.addEventListener('mousemove', _onDragMove);
-  document.addEventListener('mouseup', _onDragEnd, { once: true });
-  e.preventDefault();
-}
-function _onDragMove(e) {
-  if (!_dragOff || !_panel) return;
-  const nx = Math.max(4, Math.min(window.innerWidth - 60, e.clientX - _dragOff.x));
-  const ny = Math.max(4, Math.min(window.innerHeight - 40, e.clientY - _dragOff.y));
-  _panel.style.left = nx + 'px';
-  _panel.style.top = ny + 'px';
-}
-function _onDragEnd() {
-  if (!_panel) return;
-  _panel.classList.remove('is-dragging');
-  try {
-    localStorage.setItem('qrok_dev_pos', JSON.stringify({
-      left: _panel.style.left,
-      top: _panel.style.top,
-    }));
-  } catch (_) {}
-  document.removeEventListener('mousemove', _onDragMove);
-  _dragOff = null;
-}
-function _restorePosition() {
-  try {
-    const s = localStorage.getItem('qrok_dev_pos');
-    if (!s) return;
-    const p = JSON.parse(s);
-    if (p && p.left && p.top && _panel) {
-      _panel.style.top = p.top;
-      _panel.style.left = p.left;
-      _panel.style.right = 'auto';
-    }
-  } catch (_) {}
-}
+// 사이드바 layout — 드래그 / 위치 영속 폐기 (필요 없어짐).
 
 function _buildPanel() {
   const p = document.createElement('div');
@@ -322,16 +275,10 @@ function _buildPanel() {
   p.querySelector('[data-qd-btn="arm"]').addEventListener('click', _onArmClick);
   p.querySelector('[data-qd-btn="copy"]').addEventListener('click', _onCopyClick);
   p.querySelector('[data-qd-btn="clear"]').addEventListener('click', _onClearClick);
-  // 좁은 viewport: '_' 버튼이 미니 ↔ 펼침 토글. 넓은 viewport: 미니화 (body hidden).
+  // '_' 버튼 — 좁은 viewport 에서만 토글 사용 (넓은 화면은 사이드바라 항상 펼침).
   p.querySelector('[data-qd-btn="min"]').addEventListener('click', () => {
-    if (window.matchMedia('(max-width: 830px)').matches) {
-      p.classList.toggle('is-open');
-    } else {
-      p.classList.toggle('is-min');
-    }
+    p.classList.toggle('is-open');
   });
-  // 헤더 드래그
-  p.querySelector('.qd-hdr').addEventListener('mousedown', _onHdrMouseDown);
 
   // Capture phase so we beat normal click handlers
   document.addEventListener('mousemove', _handleMove, true);
@@ -346,8 +293,9 @@ export function activateDevInspector() {
   if (typeof window === 'undefined') return;
   if (!_isDevMode()) return;
   if (document.getElementById('qrok-dev')) return;
+  // body shift — 앱이 좌측으로 가고 패널이 우측 사이드바.
+  document.body.classList.add('qrok-dev-on');
   _panel = _buildPanel();
-  _restorePosition();
   _renderPicked();
 }
 
