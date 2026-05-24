@@ -16,7 +16,7 @@
        stuck — 풀 너비로 *확장* (margin 0, corners 0, 강한 그림자) */
   position: sticky;
   top: 0;
-  margin: 0 14px 12px;
+  margin: 0 var(--space-3h) var(--space-3);
   background: linear-gradient(180deg, rgba(15, 15, 20, 0.94), rgba(15, 15, 20, 0.88));
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
@@ -37,7 +37,7 @@
 
 /* Stuck 상태 — viewport 상단 도달 시. 풀-블리드 + sharp corners + 강 그림자. */
 .sticky-header.is-stuck {
-  margin: 0 0 12px;
+  margin: 0 0 var(--space-3);
   border-radius: 0;
   border-left-color: transparent;
   border-right-color: transparent;
@@ -48,14 +48,14 @@
 .sh-top {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px 14px 8px;
+  gap: var(--space-2h);
+  padding: var(--space-2h) var(--space-3h) var(--space-2);
 }
 
 .sh-tier {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--space-1);
   flex-shrink: 0;
   cursor: pointer;
   touch-action: manipulation;

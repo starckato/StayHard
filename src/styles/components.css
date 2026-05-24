@@ -16,7 +16,7 @@
   color: var(--text3);
   font-size: var(--text-base);
   cursor: pointer;
-  padding: 4px 6px;
+  padding: var(--space-1) var(--space-1h);
   margin: 0;
   line-height: 1;
   touch-action: manipulation;
@@ -29,7 +29,7 @@
 /* Variant — slightly bigger close (큰 모달용) */
 .btn-close.is-lg {
   font-size: var(--text-lg);
-  padding: 6px 10px;
+  padding: var(--space-1h) var(--space-2h);
 }
 
 /* ── ATOM · btn-cta ────────────────────────────────────
@@ -38,8 +38,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  padding: 8px 14px;
+  gap: var(--space-1h);
+  padding: var(--space-2) var(--space-3h);
   border: none;
   border-radius: var(--radius-md);
   background: var(--accent-grad);
@@ -58,7 +58,7 @@
 .btn-cta:disabled { opacity: 0.4; cursor: not-allowed; }
 /* Size variants */
 .btn-cta.is-lg {
-  padding: 12px 18px;
+  padding: var(--space-3) var(--space-4);
   font-size: var(--text-md);
   border-radius: var(--radius-lg);
 }
@@ -86,7 +86,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 5px 10px;
+  padding: var(--space-1) var(--space-2h);
   border-radius: var(--radius-md);
   border: 1px solid var(--border2);
   background: transparent;
@@ -120,7 +120,7 @@
   cursor: pointer;
   touch-action: manipulation;
   font-size: var(--text-base);
-  padding: 6px 8px;
+  padding: var(--space-1h) var(--space-2);
   min-width: 36px;
   flex-shrink: 0;
   border-radius: var(--radius-sm);
@@ -128,7 +128,7 @@
 }
 .btn-icon:active { background: rgba(255, 255, 255, 0.05); }
 .btn-icon:hover { color: var(--text); }
-/* Size variants */
+/* Size variants — sub-token micro padding 유지 (3-5px = atomic UI detail) */
 .btn-icon.is-sm { font-size: var(--text-sm); padding: 3px; min-width: 0; }
 .btn-icon.is-md { font-size: var(--text-md); padding: 3px 5px; min-width: 0; }
 /* Color variants */
@@ -142,8 +142,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  padding: 8px 14px;
+  gap: var(--space-1h);
+  padding: var(--space-2) var(--space-3h);
   background: var(--surface2);
   border: 1px solid var(--border2);
   border-radius: var(--radius-md);
@@ -159,7 +159,7 @@
 .btn-ghost:active { background: var(--surface); }
 .btn-ghost:hover { border-color: var(--accent); color: var(--text); }
 .btn-ghost.is-block { width: 100%; }
-.btn-ghost.is-lg { padding: 12px 18px; font-size: var(--text-md); border-radius: var(--radius-lg); }
+.btn-ghost.is-lg { padding: var(--space-3) var(--space-4); font-size: var(--text-md); border-radius: var(--radius-lg); }
 
 /* ── ATOM · ic-circle ───────────────────────────────────
    원형 아이콘 박스. promo 카드 좌측 등 5+ 인스턴스. */
@@ -192,9 +192,9 @@
 .promo-card {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin: 0 14px 10px;
-  padding: 12px 14px;
+  gap: var(--space-3);
+  margin: 0 var(--space-3h) var(--space-2h);
+  padding: var(--space-3) var(--space-3h);
   background: var(--surface);
   border: 1px solid var(--border2);
   border-radius: var(--radius-lg);
@@ -229,7 +229,7 @@
 .promo-card.is-stack {
   align-items: stretch;
   flex-direction: column;
-  padding: 14px;
+  padding: var(--space-3h);
 }
 /* Child of .promo-card.is-stack — 헤더 행 (제목 + close) */
 .promo-card.is-stack > .is-stack-header {
@@ -237,8 +237,8 @@
   align-items: flex-start;
   justify-content: space-between;
   width: 100%;
-  gap: 12px;
-  margin-bottom: 10px;
+  gap: var(--space-3);
+  margin-bottom: var(--space-2h);
 }
 /* Background tints */
 .promo-card.is-accent  {

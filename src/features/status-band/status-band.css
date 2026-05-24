@@ -16,8 +16,8 @@
   position: relative;
   /* sticky-header 와 시각적으로 한 카드 — bottom corners flat, 좌우 14px margin */
   margin: 6px 14px 0;
-  /* 2026-05-24 — height 압축: 14/16/14 → 8/14/2 (캐릭터-하단 여백 20%) */
-  padding: 8px 14px 2px;
+  /* 2026-05-25 — token: space-2/space-3h/2px (bottom 2 = micro detail 유지) */
+  padding: var(--space-2) var(--space-3h) 2px;
   background: linear-gradient(135deg, var(--surface) 0%, var(--surface2) 100%);
   border: 1px solid var(--border);
   border-bottom: 1px solid var(--border2);
