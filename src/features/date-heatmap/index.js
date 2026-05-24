@@ -232,44 +232,30 @@ export function buildHeatmapGrid() {
     }).join('');
     const bonusStar = bonusStarBadge(dl, isFuture, k);
 
-    // Tile container — selected lifts via ivory outline + subtle surface
-    // wash (stays in the neutral family so it doesn't collide with the
-    // fail indicator's red). Brand red remains solely on the 'today' dot.
-    const tileBg = isSel
-      ? 'rgba(255,255,255,0.05)'
-      : isFuture ? 'transparent' : 'var(--surface)';
-    const tileBorder = isSel
-      ? 'border:1px solid rgba(234,234,240,0.38);'
-      : isFuture ? 'border:1px dashed rgba(255,255,255,0.08);'
-      : 'border:1px solid rgba(255,255,255,0.06);';
-    const tileOpacity = isFuture ? 0.55 : 1;
-    const tileShadow = isSel ? 'box-shadow:0 0 0 1px rgba(234,234,240,0.10);' : '';
+    // 2026-05-25 — tile inline style 전면 class 화 (.dh-tile + is-*).
+    // 365 tile × ~240 char inline = ~87KB DOM 절감.
+    let tileCls = 'dh-tile';
+    if (isSel) tileCls += ' is-selected';
+    else if (isFuture) tileCls += ' is-future';
 
-    const monthLabel = showMonth
-      ? `<div style="position:absolute;top:-18px;left:0;font-size:9px;font-weight:700;color:var(--text3);letter-spacing:.05em;white-space:nowrap;">${d.getMonth() + 1}월</div>`
-      : '';
+    const monthLabel = showMonth ? `<div class="dh-tile-month">${d.getMonth() + 1}월</div>` : '';
+    const todayMark = isT
+      ? '<div class="dh-tile-today-dot"></div>'
+      : '<div class="dh-tile-today-spacer"></div>';
 
-    const todayDot = isT
-      ? '<div style="width:4px;height:4px;border-radius:50%;background:var(--accent);"></div>'
-      : '<div style="width:4px;height:4px;"></div>';
-
-    const dayColor = isSel ? 'var(--text)' : 'var(--text3)';
-    const numColor = isSel ? '#fff' : isFuture ? 'var(--text3)' : 'var(--text)';
-
-    return `
-      <div onclick="dhSelectDate('${k}',${d.getTime()})"
-           style="position:relative;flex-shrink:0;width:${DH_TILE_W}px;height:${DH_TILE_H}px;background:${tileBg};${tileBorder}${tileShadow}border-radius:10px;display:flex;flex-direction:column;align-items:center;padding:7px 5px 8px;cursor:pointer;opacity:${tileOpacity};box-sizing:border-box;touch-action:manipulation;">
-        ${monthLabel}
-        ${bonusStar}
-        ${todayDot}
-        <div style="font-size:9px;font-weight:700;letter-spacing:.06em;color:${dayColor};margin-top:3px;">${DAY_NAMES[dayIdx]}</div>
-        <div style="font-size:18px;font-weight:700;color:${numColor};font-family:'DM Mono',monospace;line-height:1;margin-top:2px;margin-bottom:auto;">${d.getDate()}</div>
-        <div style="display:flex;gap:3px;align-items:center;justify-content:center;">${indicators}</div>
-      </div>
-    `;
+    return (
+      `<div class="${tileCls}" onclick="dhSelectDate('${k}',${d.getTime()})">` +
+        monthLabel +
+        bonusStar +
+        todayMark +
+        `<div class="dh-tile-day">${DAY_NAMES[dayIdx]}</div>` +
+        `<div class="dh-tile-num">${d.getDate()}</div>` +
+        `<div class="dh-tile-cubes">${indicators}</div>` +
+      `</div>`
+    );
   }).join('');
 
-  grid.innerHTML = `${DH_SVG_DEFS}<div style="display:flex;gap:${DH_GAP}px;padding:22px 14px 8px;">${tiles}</div>`;
+  grid.innerHTML = `${DH_SVG_DEFS}<div class="dh-row">${tiles}</div>`;
 }
 
 async function fetchHeatmapRange(dates) {

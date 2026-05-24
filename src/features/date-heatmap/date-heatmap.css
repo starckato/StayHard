@@ -7,6 +7,98 @@
 
 /* dh-scroll / dh-grid 는 index.html 인라인 룰에 이미 있음. */
 
+/* ── Grid row (date 슬라이더의 inner flex container) ── */
+.dh-row {
+  display: flex;
+  gap: 5px;
+  padding: 22px 14px 8px;
+}
+
+/* ── Tile (날짜 셀 — 365개 인스턴스, 인라인 ~240 char 였음) ── */
+.dh-tile {
+  position: relative;
+  flex-shrink: 0;
+  width: 56px;
+  height: 78px;
+  background: var(--surface);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 7px 5px 8px;
+  cursor: pointer;
+  box-sizing: border-box;
+  touch-action: manipulation;
+}
+/* 선택된 날 — ivory outline + subtle wash */
+.dh-tile.is-selected {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(234, 234, 240, 0.38);
+  box-shadow: 0 0 0 1px rgba(234, 234, 240, 0.10);
+}
+/* 미래 날짜 — dashed outline + 투명 */
+.dh-tile.is-future {
+  background: transparent;
+  border: 1px dashed rgba(255, 255, 255, 0.08);
+  opacity: 0.55;
+  cursor: default;
+}
+
+/* Month label — 셀 위에 부유 ("11월" 같은 월 표시) */
+.dh-tile-month {
+  position: absolute;
+  top: -18px;
+  left: 0;
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--text3);
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+/* Today dot — 오늘만 보이는 빨간 점, 그 외엔 자리만 차지하는 spacer */
+.dh-tile-today-dot,
+.dh-tile-today-spacer {
+  width: 4px;
+  height: 4px;
+}
+.dh-tile-today-dot {
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+/* Day name (월/화/수…) */
+.dh-tile-day {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--text3);
+  margin-top: 3px;
+}
+.dh-tile.is-selected .dh-tile-day { color: var(--text); }
+
+/* Day number (1~31) */
+.dh-tile-num {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+  font-family: 'DM Mono', monospace;
+  line-height: 1;
+  margin-top: 2px;
+  margin-bottom: auto;
+}
+.dh-tile.is-selected .dh-tile-num { color: #fff; }
+.dh-tile.is-future .dh-tile-num { color: var(--text3); }
+
+/* Cube indicator row (4 cube + double cube optional) */
+.dh-tile-cubes {
+  display: flex;
+  gap: 3px;
+  align-items: center;
+  justify-content: center;
+}
+
 /* ── Cube indicator (날짜 셀 안의 4 small square — 식단/운동/루틴/할일) ── */
 .dh-cube {
   display: inline-block;
