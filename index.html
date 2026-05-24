@@ -2428,7 +2428,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
 </div>
 
 <!-- CHALLENGE ROOM OVERLAY -->
-  <div id="challenge-room" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;width:100%;background:var(--bg);z-index:700;flex-direction:column;overflow-y:auto;-webkit-overflow-scrolling:touch;">
+  <div id="challenge-room" class="app-fullscreen-overlay">
     <!-- Room Header -->
     <div style="display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--border);flex-shrink:0;background:var(--surface);">
       <button onclick="closeChallengeRoom()" style="background:none;border:none;color:var(--text2);font-size:var(--text-xl);cursor:pointer;padding:0;touch-action:manipulation;">←</button>
@@ -2521,7 +2521,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
     </div>
   </div>
   <!-- CHALLENGE CREATE OVERLAY -->
-  <div id="ch-create-overlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;width:100%;background:var(--bg);z-index:700;flex-direction:column;overflow-y:auto;-webkit-overflow-scrolling:touch;">
+  <div id="ch-create-overlay" class="app-fullscreen-overlay">
     <div style="display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--border);flex-shrink:0;">
       <button onclick="hideChallengeCreate()" style="background:none;border:none;color:var(--text2);font-size:var(--text-xl);cursor:pointer;touch-action:manipulation;">←</button>
       <div style="font-size:var(--text-base);font-weight:700;">챌린지 만들기</div>
@@ -2611,7 +2611,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
   </div>
 
   <!-- CHALLENGE JOIN OVERLAY -->
-  <div id="ch-join-overlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;width:100%;background:var(--bg);z-index:700;flex-direction:column;overflow-y:auto;-webkit-overflow-scrolling:touch;">
+  <div id="ch-join-overlay" class="app-fullscreen-overlay">
     <div style="display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--border);flex-shrink:0;">
       <button onclick="hideChallengeJoin()" style="background:none;border:none;color:var(--text2);font-size:var(--text-xl);cursor:pointer;touch-action:manipulation;">←</button>
       <div style="font-size:var(--text-base);font-weight:700;">코드로 참여</div>

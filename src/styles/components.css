@@ -298,3 +298,29 @@
   justify-content: center;
   margin-bottom: var(--space-3h);
 }
+
+/* ── ORGANISM · app-fullscreen-overlay ─────────────────
+   풀-스크린 모달 overlay. 앱 프레임 (max-width:430px center) 안에서만 펼쳐짐.
+   기존 position:fixed left:0 right:0 width:100% 는 viewport 전체로 펼쳐져
+   데스크탑/dev 모드에서 어색. */
+.app-fullscreen-overlay {
+  display: none; /* JS toggle */
+  position: fixed;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 0;
+  width: 100%;
+  max-width: 430px;
+  background: var(--bg);
+  z-index: 700;
+  flex-direction: column;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+/* dev 모드: 앱 좌측 정렬 따라감 */
+body.qrok-dev-on .app-fullscreen-overlay {
+  left: 16px;
+  transform: none;
+  width: min(430px, calc(100vw - 388px - 16px));
+}
