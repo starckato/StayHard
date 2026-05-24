@@ -464,3 +464,166 @@ body.qrok-dev-on .app-fullscreen-overlay {
 .diet-legend-dot.is-normal  { background: var(--text3); opacity: 0.5; }
 .diet-legend-dot.is-cheat   { background: var(--amber); opacity: 0.8; }
 .diet-legend-dot.is-violate { background: var(--red); }
+
+/* ── MOLECULE · gs-leaderboard ──────────────────────────
+   목표 근접 순 ranking. 체중 / 운동 / 식단 panel 모두 사용 가능. */
+.gs-leaderboard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+.gs-rank-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1h) var(--space-2);
+  background: var(--surface2);
+  border-radius: var(--radius-md);
+}
+.gs-rank-row.is-me {
+  background: var(--accent-bg);
+  border: 1px solid var(--accent-bd);
+}
+.gs-rank-num {
+  font-family: 'Archivo Black', sans-serif;
+  font-size: var(--text-xs);
+  width: 22px;
+  text-align: center;
+  color: var(--text3);
+  flex-shrink: 0;
+}
+.gs-rank-row.is-1 .gs-rank-num { color: #ffd54a; }
+.gs-rank-row.is-2 .gs-rank-num { color: #b5c0cc; }
+.gs-rank-row.is-3 .gs-rank-num { color: #c48c1a; }
+.gs-rank-name {
+  flex: 1;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.gs-rank-row.is-me .gs-rank-name { color: var(--accent); }
+.gs-rank-stat {
+  font-family: 'DM Mono', monospace;
+  font-size: var(--text-xs);
+  font-weight: 700;
+  color: var(--text2);
+  flex-shrink: 0;
+}
+.gs-rank-stat.is-positive { color: var(--green); }
+.gs-rank-stat.is-reached { color: var(--green); }
+
+/* ── MOLECULE · dot grid (운동 완료일자) ──────────────── */
+.wo-dotgrid-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1h) 0;
+  border-bottom: 1px solid var(--border2);
+}
+.wo-dotgrid-row:last-child { border-bottom: none; }
+.wo-dotgrid-name {
+  flex: 0 0 60px;
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--text2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.wo-dotgrid-row.is-me .wo-dotgrid-name { color: var(--accent); }
+.wo-dotgrid-dots {
+  flex: 1;
+  display: flex;
+  gap: 3px;
+  flex-wrap: wrap;
+}
+.wo-dot {
+  width: 11px;
+  height: 11px;
+  border-radius: 2px;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  flex-shrink: 0;
+}
+.wo-dot.is-done {
+  background: var(--accent-tint-4);
+  border-color: var(--accent);
+  box-shadow: 0 0 4px var(--accent-tint-3);
+}
+.wo-dot.is-today {
+  outline: 1px solid var(--accent);
+  outline-offset: 1px;
+}
+.wo-dotgrid-count {
+  flex: 0 0 auto;
+  font-family: 'DM Mono', monospace;
+  font-size: var(--text-xs);
+  font-weight: 700;
+  color: var(--text);
+  min-width: 38px;
+  text-align: right;
+}
+
+/* ── MOLECULE · 오늘 끼니 grid (식단 panel) ─────────────
+   멤버별 row — 좌측 이름, 우측 3 meal slot (아침/점심/저녁) + 추가 슬롯. */
+.diet-today-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--border2);
+}
+.diet-today-row:last-child { border-bottom: none; }
+.diet-today-name {
+  flex: 0 0 60px;
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--text2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.diet-today-row.is-me .diet-today-name { color: var(--accent); }
+.diet-today-slots {
+  flex: 1;
+  display: flex;
+  gap: var(--space-1h);
+  flex-wrap: wrap;
+}
+.diet-slot {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-md);
+  background: var(--surface3);
+  border: 2px solid var(--border2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 9px;
+  color: var(--text3);
+  font-family: 'DM Mono', monospace;
+  font-weight: 700;
+  position: relative;
+  overflow: hidden;
+}
+.diet-slot img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.diet-slot.is-empty { color: var(--text3); opacity: 0.4; }
+.diet-slot.is-clean { border-color: var(--green); background: rgba(52, 211, 153, 0.12); color: var(--green); }
+.diet-slot.is-normal { border-color: var(--text3); background: rgba(255, 255, 255, 0.04); color: var(--text2); }
+.diet-slot.is-cheat { border-color: var(--amber); background: rgba(245, 158, 11, 0.14); color: var(--amber); }
+.diet-slot.is-violate { border-color: var(--red); background: rgba(255, 77, 77, 0.14); color: var(--red); }
+.diet-slot-label {
+  position: absolute;
+  bottom: 2px;
+  font-size: 7px;
+  letter-spacing: 0.05em;
+}
