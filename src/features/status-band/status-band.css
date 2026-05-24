@@ -16,7 +16,8 @@
   position: relative;
   /* sticky-header 와 시각적으로 한 카드 — bottom corners flat, 좌우 14px margin */
   margin: 6px 14px 0;
-  padding: 14px 16px 14px;
+  /* 2026-05-24 — 과한 height 축소: 14/16/14 → 8/14/10 */
+  padding: 8px 14px 10px;
   background: linear-gradient(135deg, var(--surface) 0%, var(--surface2) 100%);
   border: 1px solid var(--border);
   border-bottom: 1px solid var(--border2);
@@ -25,13 +26,13 @@
   transition: padding 0.3s cubic-bezier(.32, 1, .42, 1);
 }
 
-/* 좌측 tier color accent stripe — 정체성 표식. inline style 로 색 주입. */
+/* 좌측 tier color accent stripe */
 .sb::before {
   content: '';
   position: absolute;
   left: 0;
-  top: 14px;
-  bottom: 14px;
+  top: 10px;
+  bottom: 10px;
   width: 2px;
   background: var(--sb-accent, var(--text3));
   opacity: 0.55;
@@ -42,7 +43,7 @@
 .sb-stage {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
 }
 
 /* Character column — 말풍선 + 캐릭터를 세로 stack */
@@ -50,56 +51,50 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
   flex-shrink: 0;
-  width: 110px;
+  width: 120px;
 }
 
-/* 말풍선 — 캐릭터 머리 위, 꼬리는 아래쪽 향함 */
+/* 말풍선 — 캐릭터 머리 위, 꼬리는 아래쪽 향함.
+   min-height 제거 + width: fit-content → 짧은 대사는 작게, 긴 대사는 col 폭까지 자동 wrap. */
 .sb-speech {
   position: relative;
-  width: 100%;
-  min-height: 48px;
-  padding: 8px 10px 9px;
+  width: fit-content;
+  max-width: 100%;
+  padding: 5px 9px 6px;
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid var(--border2);
-  border-radius: 12px;
+  border-radius: 10px;
   cursor: pointer;
   touch-action: manipulation;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: block;
   text-align: center;
-  /* 꼬리 (캐릭터 머리 가리키는 ▼) */
 }
-/* 꼬리 — 두 겹 (border outer + bg inner) 으로 보더 연속성 확보 */
+/* 꼬리 — 두 겹 (border outer + bg inner) 으로 보더 연속성 확보. 크기 약간 축소. */
 .sb-speech::before {
-  /* 외곽 보더 라인 */
   content: '';
   position: absolute;
-  bottom: -7px;
+  bottom: -6px;
   left: 50%;
   transform: translateX(-50%);
   width: 0;
   height: 0;
-  border-left: 8px solid transparent;
-  border-right: 8px solid transparent;
-  border-top: 8px solid var(--border2);
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 6px solid var(--border2);
 }
 .sb-speech::after {
-  /* 내부 채움 — 보더 위에 살짝 작게 얹어서 보더 라인이 V 자로 남음 */
   content: '';
   position: absolute;
-  bottom: -5px;
+  bottom: -4px;
   left: 50%;
   transform: translateX(-50%);
   width: 0;
   height: 0;
-  border-left: 7px solid transparent;
-  border-right: 7px solid transparent;
-  border-top: 7px solid rgba(255, 255, 255, 0.06);
-  /* 부모 surface gradient 위에 올라가므로 약간 boost */
-  background: transparent;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 5px solid rgba(255, 255, 255, 0.06);
   filter: brightness(1.05);
 }
 .sb-speech:active { opacity: 0.7; }
