@@ -21,15 +21,14 @@
 <link rel="icon" type="image/png" sizes="16x16" href="/icons/qrok-16.png">
 <link rel="shortcut icon" href="/icons/qrok-32.png">
 <title>큐록 QROK</title>
-<script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-<!-- v3.0 · Modular bundle (esbuild IIFE). MUST load before inline body scripts
-     so window globals (dkey, normKey, ...) are set before inline code runs.
-     Query version bumps cache when bundle content changes. Bump manually or
-     via build script when shipping a new bundle. See MIGRATION_PLAN.md. -->
-<script src="/dist/app.js?v=ae80d677"></script>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Archivo+Black&display=swap" rel="stylesheet">
+<!-- ⚡ Splash paint 최적화 (2026-05-25):
+     blocking <script> 들은 <body> 의 splash markup *바로 뒤*로 이동.
+     이래야 모바일에서 splash 가 즉시 paint 됨 (~500ms vs 5s+).
+     Google Fonts 는 비동기 — print 미디어로 시작해 onload 시 all 로 swap. -->
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Archivo+Black&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 <!-- Phase 0: 디자인 토큰 (shared 먼저, palette 가 override). -->
 <link href="/src/styles/tokens.shared.css" rel="stylesheet">
 <link href="/src/styles/tokens.dark.css" rel="stylesheet">
@@ -1240,7 +1239,9 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
 </head>
 <body>
 
-<!-- QROK Splash — 페이드인 300ms → 정지 1300ms (글로우 1 cycle) → 페이드아웃 400ms. DOM 제거 2000ms. -->
+<!-- QROK Splash — 페이드인 300ms → 정지 1300ms (글로우 1 cycle) → 페이드아웃 400ms. DOM 제거 2000ms.
+     ⚡ Body 최상단 위치 — head 의 blocking script 들이 *splash 다음*으로 이동했기 때문에
+     이 markup 이 가장 먼저 paint 됨 (모바일 흰 화면 5초 → ~500ms 단축). -->
 <div id="qrok-splash" role="img" aria-label="큐록 로딩 중" style="position:fixed;inset:0;background:#0f0f11;z-index:10000;display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:1;transition:opacity 400ms cubic-bezier(0.4,0,0.2,1);pointer-events:auto;">
   <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
     <div style="font-family:'Pretendard','Noto Sans KR','Apple SD Gothic Neo',sans-serif;font-weight:800;font-size:var(--text-3xl);color:var(--accent);line-height:1;letter-spacing:-0.01em;">큐록</div>
@@ -1255,6 +1256,17 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
     <div class="qrok-splash-dot gray"></div>
   </div>
 </div>
+
+<!-- ⚡ Splash paint 후 로드되는 blocking scripts.
+     Chart.js → defer (stats 탭 진입 후 사용).
+     supabase UMD → app.js 가 의존, sync.
+     html2canvas → defer (공유 핸들러에서만 사용).
+     app.js bundle → inline body scripts 가 의존, sync. -->
+<script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script src="/dist/app.js?v=1282b4ac"></script>
+
 <script>
   // QROK Splash — 앱 ready 까지 대기 후 fade out. 좌측 상단/중앙 loading 스피너 가림.
   // ready 조건: _initDone (로그인 후 onLogin) OR auth-screen/app-screen 가시 OR 5s timeout.
