@@ -180,24 +180,35 @@
 }
 .cm-cell:active { background: rgba(255, 255, 255, 0.04); }
 
-/* SVG icon */
-.cm-icon {
-  width: 22px;
-  height: 22px;
+/* Progress Ring (wireframe v4, 2026-05-24) — 카테고리별 오늘 진행도 %.
+   .cm-cell 에 --ring-dash CSS 변수 주입 (renderCompletion 의 _applyRing). */
+.cm-ring {
+  width: 26px;
+  height: 26px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   color: var(--text3);
-  opacity: 0.5;
-  transition:
-    opacity 0.3s ease,
-    transform 0.35s cubic-bezier(.32, 1.5, .42, 1),
-    filter 0.3s ease,
-    color 0.3s ease;
+  transition: color 0.3s ease, filter 0.3s ease, transform 0.35s cubic-bezier(.32, 1.5, .42, 1);
 }
-.cm-icon svg {
+.cm-ring svg {
   width: 100%;
   height: 100%;
+  transform: rotate(-90deg); /* 12시 방향 시작 */
+}
+.cm-ring .ring-bg {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.10);
+  stroke-width: 2.5;
+}
+.cm-ring .ring-fg {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  /* dasharray = "fill rest" — fill 만 보이고 rest 는 빈 공간. */
+  stroke-dasharray: var(--ring-dash, 0) var(--ring-rest, 75.4);
+  transition: stroke-dasharray 0.55s cubic-bezier(.4, 0, .2, 1), stroke 0.3s ease;
 }
 .cm-label {
   font-family: 'DM Mono', monospace;
@@ -208,31 +219,29 @@
   transition: color 0.3s ease;
 }
 
-.cm-cell.is-done .cm-icon {
-  opacity: 1;
+/* 상태별 ring 색 — cube color system 그대로 (gold/silver/red/dim) */
+.cm-cell.is-done .cm-ring {
   color: #ffd54a;
-  transform: scale(1.08);
-  filter: drop-shadow(0 0 8px rgba(255, 213, 74, 0.55));
+  transform: scale(1.05);
+  filter: drop-shadow(0 0 6px rgba(255, 213, 74, 0.5));
 }
 .cm-cell.is-done .cm-label {
   color: #ffd54a;
   font-weight: 800;
 }
 
-.cm-cell.is-partial .cm-icon {
-  opacity: 0.85;
+.cm-cell.is-partial .cm-ring {
   color: #d8dfe7;
-  filter: drop-shadow(0 0 4px rgba(216, 223, 231, 0.3));
+  filter: drop-shadow(0 0 4px rgba(216, 223, 231, 0.28));
 }
 .cm-cell.is-partial .cm-label {
   color: #d8dfe7;
   font-weight: 700;
 }
 
-.cm-cell.is-fail .cm-icon {
-  opacity: 0.95;
+.cm-cell.is-fail .cm-ring {
   color: #ff6b6b;
-  filter: drop-shadow(0 0 6px rgba(255, 77, 77, 0.45));
+  filter: drop-shadow(0 0 5px rgba(255, 77, 77, 0.4));
 }
 .cm-cell.is-fail .cm-label {
   color: #ff6b6b;

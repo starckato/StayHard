@@ -115,6 +115,57 @@ export function setYrActive(active) {
  *
  * renderCharCard 가 호출 — 모든 액션 후 자동 갱신.
  */
+// ── Progress ring 진행도 % 계산 (v4 wireframe 채택, 2026-05-24) ──
+// "rings encode progress, not just presence" — gray/silver/gold binary 가 아니라
+// 카테고리별 *오늘 % 완수도* 를 ring fill 로 표현.
+const _RING_C = 75.39822368615503; // 2π × 12 = 둘레 길이 (CSS dasharray)
+
+function _pctForCat(log, cat, wd) {
+  if (cat === 'diet') {
+    const meals = (log.meals || []).filter(m => m && m.type && m.type !== 'skip');
+    if (meals.length === 0) return 0;
+    // 끼니 단위 — 3끼 기준. green 1+ 시 +bonus, 2+ 시 100%.
+    const greens = meals.filter(m => m.type === 'green').length;
+    if (greens >= 2) return 100;
+    const base = Math.min(100, (meals.length / 3) * 100);
+    return greens >= 1 ? Math.min(100, base + 15) : base;
+  }
+  if (cat === 'exercise') {
+    const done = (log.workouts || []).filter(w => w && w.status === 'done').length;
+    return done > 0 ? 100 : 0;
+  }
+  if (cat === 'routine') {
+    const today = (log.mandatory || []).filter(m => {
+      if (!m || m.type !== 'custom') return false;
+      if (m.days && !m.days.includes(wd)) return false;
+      return true;
+    });
+    if (today.length === 0) return 0;
+    const done = today.filter(m => m.done).length;
+    return (done / today.length) * 100;
+  }
+  if (cat === 'tasks') {
+    const real = (log.targets || []).filter(t => t && !t._meta && t.text);
+    if (real.length === 0) return 0;
+    const done = real.filter(t => t.st === 'done').length;
+    return (done / real.length) * 100;
+  }
+  return 0;
+}
+
+function _applyRing(cell, pct) {
+  // pct 0~100 → stroke-dasharray (filled portion length / total circumference)
+  const fill = Math.max(0, Math.min(100, pct)) / 100 * _RING_C;
+  cell.style.setProperty('--ring-dash', fill.toFixed(2));
+  cell.style.setProperty('--ring-rest', (_RING_C - fill).toFixed(2));
+}
+
+/**
+ * .sb-completion 4 cells 의 *progress ring* + 상태 + N/4 stat 갱신.
+ *   - ring fill = 카테고리별 오늘 진행도 %
+ *   - color class (is-done/partial/fail) = cube judgment 결과 (스트로크 색)
+ *   - N/4 = gold 도달한 카테고리 갯수
+ */
 export function renderCompletion() {
   const log = window.log;
   if (!log) return;
@@ -124,7 +175,6 @@ export function renderCompletion() {
   const judgeRoutine  = Cubes.judgeRoutine  || (() => 'gray');
   const judgeTasks    = Cubes.judgeTasks    || (() => null);
 
-  // 오늘 요일 (Mon-based) — judgeRoutine 패턴.
   const wd = (new Date().getDay() + 6) % 7;
 
   const states = {
@@ -148,6 +198,10 @@ export function renderCompletion() {
       cell.classList.add('is-fail');
     }
     // gray / null = no class → dim default
+
+    // Progress ring fill (state 와 별개로 always 진행도 표시)
+    const pct = _pctForCat(log, cat, wd);
+    _applyRing(cell, pct);
   });
 
   const num = document.getElementById('cm-stat-num');
