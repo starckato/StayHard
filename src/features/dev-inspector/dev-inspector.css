@@ -4,8 +4,10 @@
 
 #qrok-dev {
   position: fixed;
+  /* 기본 위치: 앱 프레임 (max-width 430px center) 우측 바깥. JS 가 더 정확히 보정. */
   top: 12px;
-  right: 12px;
+  left: calc(50% + 235px);
+  right: auto;
   width: 360px;
   max-height: calc(100vh - 24px);
   display: flex;
@@ -31,7 +33,11 @@
   padding: 10px 12px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   background: rgba(0, 0, 0, 0.25);
+  cursor: grab;
+  user-select: none;
 }
+#qrok-dev .qd-hdr:active { cursor: grabbing; }
+#qrok-dev.is-dragging { transition: none !important; opacity: 0.85; }
 #qrok-dev .qd-title {
   font-family: 'Archivo Black', sans-serif;
   font-size: 11px;
@@ -159,12 +165,19 @@ body.qrok-dev-armed * { cursor: crosshair !important; }
 }
 #qrok-dev.is-min .qd-body { display: none; }
 
-@media (max-width: 600px) {
+/* 좁은 viewport (앱이 풀폭 차지) — 패널 우상단 미니 모드 + 사용자가 펼침 */
+@media (max-width: 830px) {
   #qrok-dev {
-    width: calc(100vw - 24px);
-    top: auto;
-    bottom: 12px;
+    width: auto;
+    left: auto;
     right: 12px;
-    max-height: 50vh;
+    top: 12px;
+    max-height: none;
   }
+  #qrok-dev .qd-body { display: none; }
+  #qrok-dev.is-open {
+    width: min(360px, calc(100vw - 24px));
+    max-height: calc(100vh - 24px);
+  }
+  #qrok-dev.is-open .qd-body { display: block; }
 }
