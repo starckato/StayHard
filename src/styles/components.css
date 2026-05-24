@@ -324,3 +324,143 @@ body.qrok-dev-on .app-fullscreen-overlay {
   transform: none;
   width: min(430px, calc(100vw - 388px - 16px));
 }
+
+/* ── MOLECULE · group-stats tab pill ────────────────────
+   챌린지 룸의 그룹 통계 탭 (체중/식단/운동) — 통일된 segmented control */
+.gs-tab {
+  padding: var(--space-1h) var(--space-3h);
+  border-radius: var(--radius-xl);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  border: 0.5px solid var(--border2);
+  background: transparent;
+  color: var(--text3);
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer;
+  touch-action: manipulation;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+.gs-tab.is-active {
+  border-color: var(--accent-bd);
+  background: var(--accent-bg);
+  color: var(--accent);
+}
+.gs-tab-row { display: flex; gap: var(--space-1h); margin-bottom: var(--space-3); }
+
+/* ── MOLECULE · diet stacked bar (식단 quality 100% 정규화) ──
+   참여자별 한 줄. 좌 → 우 = clean (green) / normal / cheat / red (위반).
+   길이 통일 → 한눈 비교. 우측 끝에 % + violation 카운트. */
+.diet-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2h);
+  padding: var(--space-2) var(--space-1);
+  border-bottom: 1px solid var(--border2);
+}
+.diet-row:last-child { border-bottom: none; }
+.diet-row-name {
+  flex: 0 0 64px;
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--text2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.diet-row-name.is-me { color: var(--accent); }
+.diet-stacked-bar {
+  flex: 1;
+  height: 14px;
+  display: flex;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.04);
+}
+.diet-stacked-bar > * {
+  height: 100%;
+  transition: width 0.45s cubic-bezier(.32, 1, .42, 1);
+}
+.diet-stacked-bar .is-clean   { background: var(--green); }
+.diet-stacked-bar .is-normal  { background: var(--text3); opacity: 0.5; }
+.diet-stacked-bar .is-cheat   { background: var(--amber); opacity: 0.8; }
+.diet-stacked-bar .is-violate { background: var(--red); }
+.diet-row-stat {
+  flex: 0 0 auto;
+  font-family: 'DM Mono', monospace;
+  font-size: var(--text-xs);
+  font-weight: 700;
+  color: var(--text2);
+  text-align: right;
+  min-width: 36px;
+}
+.diet-row-stat.is-pct { color: var(--green); }
+.diet-row-stat.is-red { color: var(--red); margin-left: var(--space-1); }
+
+/* ── ATOM · streak-pill (클린 streak leaderboard) ────── */
+.streak-pill-row {
+  display: flex;
+  gap: var(--space-1h);
+  margin-bottom: var(--space-3);
+  flex-wrap: wrap;
+}
+.streak-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-2);
+  background: var(--accent-tint-2);
+  border: 1px solid var(--accent-tint-3);
+  border-radius: var(--radius-pill);
+  font-size: var(--text-2xs);
+  font-weight: 700;
+  color: var(--accent);
+}
+.streak-pill-rank {
+  font-family: 'Archivo Black', sans-serif;
+  font-size: var(--text-2xs);
+  letter-spacing: -0.02em;
+}
+.streak-pill-name {
+  color: var(--text2);
+  font-weight: 600;
+}
+.streak-pill-days {
+  font-family: 'DM Mono', monospace;
+  color: var(--accent);
+}
+
+/* 식단 패널 sub-section header */
+.diet-section-label {
+  font-size: var(--text-2xs);
+  color: var(--text3);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: var(--space-2);
+  display: flex;
+  align-items: center;
+  gap: var(--space-1h);
+}
+/* 색 dot legend */
+.diet-legend {
+  display: flex;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  margin-top: var(--space-2h);
+}
+.diet-legend-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--text-2xs);
+  color: var(--text3);
+}
+.diet-legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+}
+.diet-legend-dot.is-clean   { background: var(--green); }
+.diet-legend-dot.is-normal  { background: var(--text3); opacity: 0.5; }
+.diet-legend-dot.is-cheat   { background: var(--amber); opacity: 0.8; }
+.diet-legend-dot.is-violate { background: var(--red); }

@@ -2481,9 +2481,10 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
           <span id="group-stats-chevron" style="font-size:var(--text-sm);color:var(--text3);transition:transform 0.2s;">▾</span>
         </div>
         <div id="group-stats-body">
-          <div style="display:flex;gap:6px;margin-bottom:12px;">
-            <button id="gs-tab-weight" onclick="switchGroupStatsTab('weight')" style="padding:5px 14px;border-radius:var(--radius-xl);font-size:var(--text-sm);font-weight:500;border:0.5px solid var(--accent-bd);background:var(--accent-bg);color:var(--accent);font-family:'DM Sans',sans-serif;cursor:pointer;touch-action:manipulation;">⚖️ 체중 추세</button>
-            <button id="gs-tab-volume" onclick="switchGroupStatsTab('volume')" style="padding:5px 14px;border-radius:var(--radius-xl);font-size:var(--text-sm);font-weight:500;border:0.5px solid var(--border2);background:transparent;color:var(--text3);font-family:'DM Sans',sans-serif;cursor:pointer;touch-action:manipulation;">💪 운동 볼륨</button>
+          <div class="gs-tab-row">
+            <button id="gs-tab-weight" class="gs-tab is-active" onclick="switchGroupStatsTab('weight')">⚖️ 체중</button>
+            <button id="gs-tab-diet" class="gs-tab" onclick="switchGroupStatsTab('diet')">🥗 식단</button>
+            <button id="gs-tab-volume" class="gs-tab" onclick="switchGroupStatsTab('volume')">💪 운동</button>
           </div>
           <div id="gs-weight-panel">
             <div id="gs-legend" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px;"></div>
@@ -2506,6 +2507,22 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
             <div style="background:var(--surface2);border-radius:var(--radius-lg);padding:12px 14px;">
               <div style="font-size:var(--text-2xs);color:var(--text3);letter-spacing:0.06em;margin-bottom:10px;">운동 완료 일수</div>
               <div id="gs-workout-day-bars"></div>
+            </div>
+          </div>
+          <!-- Phase 1 (2026-05-25): 식단 quality 패널.
+               멤버별 stacked bar (clean/normal/cheat/violate 100% 정규화) + 클린 streak top3. -->
+          <div id="gs-diet-panel" style="display:none;">
+            <div style="background:var(--surface2);border-radius:var(--radius-lg);padding:12px 14px;margin-bottom:8px;">
+              <div class="diet-section-label">🔥 클린 streak top 3</div>
+              <div id="gs-diet-streaks" class="streak-pill-row"></div>
+              <div class="diet-section-label" style="margin-top:6px;">멤버별 식단 비율</div>
+              <div id="gs-diet-rows"></div>
+              <div class="diet-legend">
+                <div class="diet-legend-item"><div class="diet-legend-dot is-clean"></div>클린</div>
+                <div class="diet-legend-item"><div class="diet-legend-dot is-normal"></div>일반</div>
+                <div class="diet-legend-item"><div class="diet-legend-dot is-cheat"></div>치팅</div>
+                <div class="diet-legend-item"><div class="diet-legend-dot is-violate"></div>위반 (음주/금지)</div>
+              </div>
             </div>
           </div>
         </div>
@@ -13060,21 +13077,17 @@ function toggleGroupStats(){
 }
 let _groupStatsTab='weight';
 function switchGroupStatsTab(tab){
+  if(!['weight','diet','volume'].includes(tab))return;
   _groupStatsTab=tab;
-  const wPanel=document.getElementById('gs-weight-panel');
-  const vPanel=document.getElementById('gs-volume-panel');
-  if(wPanel)wPanel.style.display=tab==='weight'?'block':'none';
-  if(vPanel)vPanel.style.display=tab==='volume'?'block':'none';
-  const wBtn=document.getElementById('gs-tab-weight');
-  const vBtn=document.getElementById('gs-tab-volume');
-  if(!wBtn||!vBtn)return;
-  if(tab==='weight'){
-    wBtn.style.background='var(--accent-bg)';wBtn.style.borderColor='var(--accent-bd)';wBtn.style.color='var(--accent)';
-    vBtn.style.background='transparent';vBtn.style.borderColor='var(--border2)';vBtn.style.color='var(--text3)';
-  }else{
-    vBtn.style.background='var(--accent-bg)';vBtn.style.borderColor='var(--accent-bd)';vBtn.style.color='var(--accent)';
-    wBtn.style.background='transparent';wBtn.style.borderColor='var(--border2)';wBtn.style.color='var(--text3)';
-  }
+  const panels={weight:'gs-weight-panel',diet:'gs-diet-panel',volume:'gs-volume-panel'};
+  const tabs={weight:'gs-tab-weight',diet:'gs-tab-diet',volume:'gs-tab-volume'};
+  Object.entries(panels).forEach(([k,id])=>{
+    const el=document.getElementById(id);if(el)el.style.display=(k===tab)?'block':'none';
+  });
+  Object.entries(tabs).forEach(([k,id])=>{
+    const btn=document.getElementById(id);if(!btn)return;
+    btn.classList.toggle('is-active',k===tab);
+  });
 }
 // v2: Y축 모드 (kg / pct / delta) — 시작 체중이 다른 멤버 비교 가능. 기본 pct.
 let _gsYMode='pct';
@@ -13380,7 +13393,106 @@ function renderGroupStats(profiles,mbs,allLogs,memberWgoals,chStart,chEnd,dayNum
       </div>`;
     }).join('');
   }
+
+  // Phase 1 (2026-05-25): 식단 quality 패널 렌더 — 멤버별 stacked bar + 클린 streak top3.
+  try{renderGsDiet(sortedProfiles,allLogs,chStart,chEnd);}catch(e){console.warn('[gs-diet]',e);}
 }
+
+// 식단 quality 분류 — 음주(category)는 type 보다 우선 (red 보다 음주가 강한 violation).
+function _classifyMealQuality(meal){
+  if(!meal)return null;
+  if(meal.category==='alcohol')return 'violate';
+  if(meal.type==='red')return 'violate';
+  if(meal.type==='green')return 'clean';
+  if(meal.type==='cheat')return 'cheat';
+  if(meal.type==='normal')return 'normal';
+  // skip / drink 등은 미분류 — 비율 계산에서 제외
+  return null;
+}
+
+function renderGsDiet(sortedProfiles,allLogs,chStart,chEnd){
+  if(!sortedProfiles||!allLogs)return;
+  // 멤버별 식단 집계
+  const memberStats={};
+  sortedProfiles.forEach(p=>{
+    memberStats[p.id]={clean:0,normal:0,cheat:0,violate:0,total:0,_logs:{}};
+  });
+  allLogs.forEach(l=>{
+    const stats=memberStats[l.user_id];
+    if(!stats)return;
+    const dk=l.log_date?l.log_date.slice(0,10):'';
+    const meals=Array.isArray(l.meals)?l.meals:[];
+    let dayHasClean=false,dayHasViolate=false;
+    meals.forEach(m=>{
+      const q=_classifyMealQuality(m);
+      if(!q)return;
+      stats[q]++;
+      stats.total++;
+      if(q==='clean')dayHasClean=true;
+      if(q==='violate')dayHasViolate=true;
+    });
+    if(dk)stats._logs[dk]={hasClean:dayHasClean,hasViolate:dayHasViolate};
+  });
+
+  // 멤버별 stacked bar
+  const rowsEl=document.getElementById('gs-diet-rows');
+  if(rowsEl){
+    rowsEl.innerHTML=sortedProfiles.map(p=>{
+      const s=memberStats[p.id];
+      const name=(p.display_name&&p.display_name.trim())?p.display_name:(p.username||'유저');
+      const isMe=p.id===CU.id;
+      if(!s||s.total===0){
+        return`<div class="diet-row">
+          <div class="diet-row-name${isMe?' is-me':''}">${name}${isMe?' (나)':''}</div>
+          <div class="diet-stacked-bar"></div>
+          <div class="diet-row-stat" style="color:var(--text3);">—</div>
+        </div>`;
+      }
+      const pct=k=>(s[k]/s.total*100).toFixed(1);
+      const cleanPct=Math.round(s.clean/s.total*100);
+      return`<div class="diet-row">
+        <div class="diet-row-name${isMe?' is-me':''}">${name}${isMe?' (나)':''}</div>
+        <div class="diet-stacked-bar">
+          ${s.clean>0?`<div class="is-clean" style="width:${pct('clean')}%;"></div>`:''}
+          ${s.normal>0?`<div class="is-normal" style="width:${pct('normal')}%;"></div>`:''}
+          ${s.cheat>0?`<div class="is-cheat" style="width:${pct('cheat')}%;"></div>`:''}
+          ${s.violate>0?`<div class="is-violate" style="width:${pct('violate')}%;"></div>`:''}
+        </div>
+        <div class="diet-row-stat is-pct">${cleanPct}%</div>
+        ${s.violate>0?`<div class="diet-row-stat is-red">−${s.violate}</div>`:''}
+      </div>`;
+    }).join('');
+  }
+
+  // 클린 streak top 3 — 챌린지 기간 내 clean 끼니가 있는 연속 일수 최대값.
+  const streaks=sortedProfiles.map(p=>{
+    const s=memberStats[p.id];
+    const dates=Object.keys(s._logs).sort();
+    let best=0,cur=0;
+    dates.forEach((dk,i)=>{
+      const day=s._logs[dk];
+      if(day.hasClean&&!day.hasViolate){cur++;best=Math.max(best,cur);}else{cur=0;}
+    });
+    const name=(p.display_name&&p.display_name.trim())?p.display_name:(p.username||'유저');
+    return{id:p.id,name,isMe:p.id===CU.id,streak:best};
+  }).filter(x=>x.streak>0).sort((a,b)=>b.streak-a.streak).slice(0,3);
+  const streaksEl=document.getElementById('gs-diet-streaks');
+  if(streaksEl){
+    if(streaks.length===0){
+      streaksEl.innerHTML=`<div style="font-size:var(--text-xs);color:var(--text3);font-style:italic;">아직 streak 기록 없음</div>`;
+    } else {
+      const medals=['🥇','🥈','🥉'];
+      streaksEl.innerHTML=streaks.map((s,i)=>`
+        <div class="streak-pill">
+          <span class="streak-pill-rank">${medals[i]||''}</span>
+          <span class="streak-pill-name">${s.name}${s.isMe?' (나)':''}</span>
+          <span class="streak-pill-days">${s.streak}일</span>
+        </div>
+      `).join('');
+    }
+  }
+}
+
 function closeChallengeRoom(){
   document.getElementById('challenge-room').style.display='none';
   document.body.style.overflow='';
@@ -14242,9 +14354,9 @@ async function renderChallengeRoom(){
       .select('user_id,log_date,weight,muscle_mass,body_fat_pct')
       .in('user_id',mbs).not('weight','is',null)
       .order('log_date',{ascending:true});
-    // 볼륨/운동일수용 — workouts 포함 별도 fetch
+    // 볼륨/운동일수/식단용 — workouts + meals 포함 별도 fetch (Phase 1: 식단 패널)
     const{data:allLogsForStats}=await sb.from('daily_logs')
-      .select('user_id,log_date,weight,workouts')
+      .select('user_id,log_date,weight,workouts,meals')
       .in('user_id',mbs).gte('log_date',chStart).lte('log_date',chEnd);
 
     const startWeights={};
