@@ -55,6 +55,8 @@ import * as water from './features/water/index.js';
 import * as stickyHeader from './features/sticky-header/index.js';
 import * as statusBand from './features/status-band/index.js';
 import './features/status-band/tests.js'; // window.runStatusBandTests() 노출
+// Dev inspector — self-activates on ?dev=1 (production 빌드에선 early-return).
+import './features/dev-inspector/index.js';
 
 Object.assign(
   window,

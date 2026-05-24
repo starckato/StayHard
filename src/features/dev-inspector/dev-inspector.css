@@ -1,0 +1,170 @@
+/* 큐록 · features/dev-inspector — AI-native dev workflow.
+   ?dev=1 로 활성. production 빌드 시엔 markup 만 생성, JS 가 cssText 추가.
+   keep CSS scope 좁게 — 앱 다른 영역과 격리.  */
+
+#qrok-dev {
+  position: fixed;
+  top: 12px;
+  right: 12px;
+  width: 360px;
+  max-height: calc(100vh - 24px);
+  display: flex;
+  flex-direction: column;
+  background: rgba(15, 15, 20, 0.96);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  z-index: 99999;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 13px;
+  color: #eaeaf0;
+  overflow: hidden;
+}
+
+#qrok-dev .qd-hdr {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(0, 0, 0, 0.25);
+}
+#qrok-dev .qd-title {
+  font-family: 'Archivo Black', sans-serif;
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  color: #ff7a3e;
+}
+#qrok-dev .qd-actions { display: flex; gap: 6px; }
+#qrok-dev .qd-btn {
+  background: rgba(255, 122, 62, 0.15);
+  border: 1px solid rgba(255, 122, 62, 0.4);
+  color: #ff7a3e;
+  padding: 5px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+}
+#qrok-dev .qd-btn:hover { background: rgba(255, 122, 62, 0.25); }
+#qrok-dev .qd-btn.is-armed {
+  background: rgba(255, 77, 77, 0.4);
+  border-color: rgba(255, 77, 77, 0.7);
+  color: #fff;
+}
+#qrok-dev .qd-btn.is-secondary {
+  background: transparent;
+  border-color: rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.7);
+}
+#qrok-dev .qd-btn.is-secondary:hover { background: rgba(255, 255, 255, 0.05); }
+
+#qrok-dev .qd-body {
+  padding: 12px;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+}
+
+#qrok-dev .qd-section { margin-bottom: 14px; }
+#qrok-dev .qd-section:last-child { margin-bottom: 0; }
+#qrok-dev .qd-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: rgba(255, 255, 255, 0.55);
+  margin-bottom: 4px;
+}
+#qrok-dev .qd-value {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: #eaeaf0;
+  padding: 6px 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  word-break: break-all;
+  line-height: 1.45;
+  max-height: 120px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+}
+#qrok-dev .qd-value.is-empty {
+  color: rgba(255, 255, 255, 0.3);
+  font-style: italic;
+}
+
+#qrok-dev .qd-textarea {
+  width: 100%;
+  min-height: 80px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  padding: 8px;
+  color: #eaeaf0;
+  font-family: inherit;
+  font-size: 12px;
+  resize: vertical;
+  box-sizing: border-box;
+}
+#qrok-dev .qd-textarea:focus {
+  outline: none;
+  border-color: rgba(255, 122, 62, 0.5);
+}
+
+#qrok-dev .qd-toast {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 200, 100, 0.9);
+  color: #fff;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+  white-space: nowrap;
+}
+#qrok-dev .qd-toast.is-on { opacity: 1; }
+
+/* 선택된 요소 outline (페이지 위에 그림) */
+.qrok-dev-outline {
+  position: fixed;
+  pointer-events: none;
+  z-index: 99998;
+  border: 2px dashed #ff7a3e;
+  background: rgba(255, 122, 62, 0.08);
+  transition: all 0.1s ease;
+  border-radius: 2px;
+}
+.qrok-dev-outline.is-locked {
+  border-style: solid;
+  border-color: #ff4d4d;
+  background: rgba(255, 77, 77, 0.12);
+}
+
+/* armed 상태 — 모든 요소에 hover cursor */
+body.qrok-dev-armed * { cursor: crosshair !important; }
+
+/* 콜랩스 (mobile) */
+#qrok-dev.is-min {
+  width: auto;
+  max-height: none;
+}
+#qrok-dev.is-min .qd-body { display: none; }
+
+@media (max-width: 600px) {
+  #qrok-dev {
+    width: calc(100vw - 24px);
+    top: auto;
+    bottom: 12px;
+    right: 12px;
+    max-height: 50vh;
+  }
+}
