@@ -917,7 +917,87 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
 /* WATER → src/features/water/water.css (2026-05-07 추출) */
 
 /* WORKOUTS */
-.workout-rows{padding:4px 16px 4px;}
+.workout-rows{padding:var(--space-1) var(--space-4);}
+
+/* ── 운동 카드 row variants (renderWorkouts JS 가 사용) ──
+   3 variants:
+     .wo-card                  — 기본 (gym session / activity row)
+     .wo-card.is-pending       — 트레이너 숙제 미완료 (accent bg)
+     .wo-card.is-penalty-*     — 유산소 추가 (done/escaped/pending) */
+.wo-card{overflow:hidden;border-bottom:1px solid var(--border);}
+.wo-card.is-pending{background:var(--accent-tint-1);}
+.wo-card.is-penalty-done{background:linear-gradient(135deg,rgba(52,211,153,0.14),rgba(52,211,153,0.04));border-left:3px solid #34d399;}
+.wo-card.is-penalty-escaped{background:linear-gradient(135deg,rgba(122,122,134,0.18),rgba(0,0,0,0.06));border-left:3px solid var(--text3);}
+.wo-card.is-penalty-pending{background:linear-gradient(135deg,var(--accent-tint-2),rgba(255,107,53,0.06));border-left:3px solid #ff4d4d;}
+
+.wo-row{display:flex;align-items:center;gap:var(--space-2h);padding:var(--space-3) var(--space-3);cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:var(--accent-tint-3);}
+.wo-row.is-top{align-items:flex-start;}
+.wo-row.is-sm{gap:var(--space-2);padding:var(--space-2) var(--space-3);}
+
+/* Icon box — 28 (기본) / 32 (penalty larger) */
+.wo-ic{width:28px;height:28px;border-radius:var(--radius-md);background:var(--accent-tint-2);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.wo-ic.is-lg{width:32px;height:32px;font-size:var(--text-lg);}
+.wo-ic.is-cardio{background:var(--blue-bg);font-size:var(--text-base);}
+.wo-ic.is-green{background:rgba(52,211,153,0.32);}
+.wo-ic.is-gray{background:rgba(122,122,134,0.32);}
+.wo-ic.is-red{background:var(--accent-tint-4);}
+
+.wo-body{flex:1;min-width:0;}
+.wo-title{font-size:var(--text-base);font-weight:600;display:flex;align-items:center;flex-wrap:wrap;letter-spacing:-.005em;}
+.wo-title.is-strong{font-weight:800;}
+.wo-title.is-dim{color:var(--text2);}
+.wo-sub{font-size:var(--text-sm);color:var(--text2);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+
+/* Inline badge */
+.wo-badge{font-size:var(--text-2xs);font-weight:800;letter-spacing:.04em;padding:2px 7px;border-radius:var(--radius-sm);margin-left:var(--space-1h);}
+.wo-badge.is-pending{background:var(--accent-tint-3);color:#ff6b6b;}
+.wo-badge.is-done{background:rgba(52,211,153,0.18);color:var(--green);}
+.wo-badge.is-warn{background:var(--accent-tint-4);color:#fff;}
+
+/* Mini text button (수정 / ↺ 되돌리기) */
+.btn-mini{padding:3px var(--space-2);background:var(--surface3);border:1px solid var(--border2);border-radius:var(--radius-md);font-size:var(--text-2xs);color:var(--text2);cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;flex-shrink:0;white-space:nowrap;}
+
+/* Delete icon button (22×22 ✕) */
+.btn-del-mini{width:22px;height:22px;background:var(--red-bg);border:1px solid var(--red-bd);border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;touch-action:manipulation;color:var(--red);}
+
+/* 3-column stats grid (vol/sets/exercises or distance/time/pace) */
+.wo-stats{display:grid;grid-template-columns:1fr 1fr 1fr;border-top:1px solid var(--border);}
+.wo-stats-cell{text-align:center;padding:var(--space-1h) 0;border-right:1px solid var(--border);}
+.wo-stats-cell:last-child{border-right:none;}
+.wo-stats-val{font-size:var(--text-base);font-weight:700;font-family:'DM Mono',monospace;color:var(--accent);}
+.wo-stats-val.is-green{color:var(--green);}
+.wo-stats-val.is-blue{color:var(--blue);}
+.wo-stats-val.is-text{color:var(--text);font-family:'DM Sans',sans-serif;}
+.wo-stats-val.is-sm{font-size:var(--text-sm);}
+.wo-stats-lbl{font-size:var(--text-2xs);color:var(--text3);text-transform:uppercase;letter-spacing:.04em;}
+.wo-stats-unit{font-size:var(--text-2xs);font-weight:400;color:var(--text3);}
+
+/* Plan-mode actions (계획된 활동의 ✓완료/✎수정 row) */
+.wo-plan-acts{display:flex;gap:var(--space-2);padding:var(--space-2h) var(--space-3h);border-top:1px solid var(--border);}
+.wo-plan-btn{flex:1;padding:var(--space-2h);border-radius:var(--radius-lg);font-size:var(--text-md);font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;}
+.wo-plan-btn.is-done{background:rgba(52,211,153,.15);border:1px solid rgba(52,211,153,.3);color:#34d399;}
+.wo-plan-btn.is-edit{background:var(--surface2);border:1px solid var(--border2);color:var(--text2);}
+
+/* Penalty card inner pieces */
+.wo-penalty-inner{padding:var(--space-3) var(--space-3h);}
+.wo-penalty-reason{font-size:var(--text-xs);color:var(--text2);margin-top:var(--space-1);}
+.wo-penalty-reason b{color:var(--text);font-weight:500;}
+.wo-penalty-notes{font-size:var(--text-xs);color:var(--text);margin-top:var(--space-1h);padding:var(--space-1h) var(--space-2h);background:rgba(0,0,0,0.2);border-left:2px solid #ff7a7a;border-radius:var(--radius-sm);line-height:1.5;}
+.wo-penalty-rec{margin-top:var(--space-2);padding:var(--space-2) var(--space-2h);background:rgba(0,0,0,0.2);border-radius:var(--radius-md);font-size:var(--text-xs);color:var(--text3);}
+.wo-penalty-rec.is-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-1h);}
+.wo-penalty-rec .val{font-family:'DM Mono',monospace;font-size:var(--text-md);}
+.wo-penalty-rec .val.is-green{color:#34d399;font-weight:800;}
+.wo-penalty-rec .val.is-dim{color:var(--text2);font-weight:600;}
+.wo-penalty-hint{font-size:var(--text-xs);color:var(--accent);margin-top:var(--space-2);font-weight:700;}
+.wo-penalty-revert{margin-top:var(--space-2h);padding:var(--space-2) var(--space-3);background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius-md);color:var(--text2);font-size:var(--text-xs);font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;}
+
+/* Empty state */
+.wo-empty-state{padding:var(--space-3h) 0 var(--space-1h);text-align:center;}
+.wo-empty-state-icon{font-size:var(--text-2xl);margin-bottom:var(--space-1h);}
+.wo-empty-state-msg{font-size:var(--text-sm);color:var(--text3);line-height:1.5;}
+
+/* workout-rows wrapper background (운동이 있을 때만 적용) */
+.workout-rows.has-items{background:var(--surface2);border-radius:var(--radius-lg);margin:var(--space-2) var(--space-3) 0;overflow:hidden;padding:0;}
 .wo-row:last-child{border-bottom:none;}
 .wo-status.in_progress{background:rgba(245,158,11,.15);color:#f59e0b;border:1px solid rgba(245,158,11,.3);}
 .wo-status.skip{background:var(--red-bg);color:var(--red);border:1px solid var(--red-bd);}
@@ -10748,17 +10828,18 @@ function renderWorkouts(){
 
   if(workouts.length===0){
     const wr=document.getElementById('workout-rows');
-    // Empty-state prompt without the +30/+30 reward chip (dropped per design)
-    wr.innerHTML=`<div style="padding:14px 0 6px;text-align:center;">
-      <div style="font-size:var(--text-2xl);margin-bottom:6px;">💪</div>
-      <div style="font-size:var(--text-sm);color:var(--text3);line-height:1.5;">아직 오늘 운동 기록이 없어요<br>근력 · 유산소 · 활동 중 뭐든 OK</div>
+    wr.classList.remove('has-items');
+    wr.innerHTML=`<div class="wo-empty-state">
+      <div class="wo-empty-state-icon">💪</div>
+      <div class="wo-empty-state-msg">아직 오늘 운동 기록이 없어요<br>근력 · 유산소 · 활동 중 뭐든 OK</div>
     </div>`;
-    wr.style.cssText='';
     try{renderWorkoutSummary();}catch(e){}
     return;
   }
 
-  document.getElementById('workout-rows').style.cssText='background:var(--surface2);border-radius:var(--radius-lg);margin:8px 12px 0;overflow:hidden;'; document.getElementById('workout-rows').innerHTML=workouts.map((w,i)=>{
+  const wrEl=document.getElementById('workout-rows');
+  wrEl.classList.add('has-items');
+  wrEl.innerHTML=workouts.map((w,i)=>{
     if(w.type==='gym'){
       // ─── 유산소 추가 entry — 별도 카드. 완료 후에도 운동 섹션에 기록 유지 ───
       if(w._isPenalty || w.sessionName === '유산소 추가'){
@@ -10773,55 +10854,51 @@ function renderWorkouts(){
         // 실제 한 시간/종류 — cpmRespond 가 채워줌 (완료 시)
         const actualMin = (typeof w._actualMinutes === 'number') ? w._actualMinutes : (w.exercises?.[0]?.sets?.[0]?.time || 0);
         const actualType = w._actualType || ptype;
-        const reasonHtml = reason ? `<div style="font-size:var(--text-xs);color:var(--text2);margin-top:4px;">사유: <span style="color:var(--text);">${esc(reason)}</span></div>` : '';
-        const notesHtml = notes ? `<div style="font-size:var(--text-xs);color:var(--text);margin-top:6px;padding:6px 10px;background:rgba(0,0,0,0.2);border-left:2px solid #ff7a7a;border-radius:var(--radius-sm);line-height:1.5;">${esc(notes)}</div>` : '';
+        const reasonHtml = reason ? `<div class="wo-penalty-reason">사유: <b>${esc(reason)}</b></div>` : '';
+        const notesHtml = notes ? `<div class="wo-penalty-notes">${esc(notes)}</div>` : '';
 
-        // 상태별 시각 차별화
-        let cardBg, borderLeft, iconBg, iconChar, titleHtml, recordHtml='';
+        // 상태별 시각 차별화 — class modifier 로 전환 (이전 inline cardBg/borderLeft/iconBg 폐기)
+        let stateCls, iconExtra, iconChar, titleHtml, recordHtml='';
         if(isDone){
-          cardBg = 'linear-gradient(135deg,rgba(52,211,153,0.14),rgba(52,211,153,0.04))';
-          borderLeft = '3px solid #34d399';
-          iconBg = 'rgba(52,211,153,0.32)';
+          stateCls = 'is-penalty-done';
+          iconExtra = 'is-green';
           iconChar = '✓';
-          titleHtml = `<div style="font-size:var(--text-base);font-weight:800;letter-spacing:-.005em;color:var(--text);">${esc(actualType)} ${actualMin}분 — 수행 완료</div>`;
-          recordHtml = `<div style="margin-top:8px;padding:8px 10px;background:rgba(0,0,0,0.2);border-radius:var(--radius-md);display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:var(--text-xs);">
-            <div><span style="color:var(--text3);">실제 진행</span><br><span style="font-family:'DM Mono',monospace;font-weight:800;color:#34d399;font-size:var(--text-md);">${esc(actualType)} · ${actualMin}분</span></div>
-            <div><span style="color:var(--text3);">트레이너 부여</span><br><span style="font-family:'DM Mono',monospace;font-weight:600;color:var(--text2);font-size:var(--text-md);">${esc(ptype)} · ${minutes}분</span></div>
+          titleHtml = `<div class="wo-title is-strong">${esc(actualType)} ${actualMin}분 — 수행 완료</div>`;
+          recordHtml = `<div class="wo-penalty-rec is-grid">
+            <div><span>실제 진행</span><br><span class="val is-green">${esc(actualType)} · ${actualMin}분</span></div>
+            <div><span>트레이너 부여</span><br><span class="val is-dim">${esc(ptype)} · ${minutes}분</span></div>
           </div>`;
         } else if(isEscaped){
-          cardBg = 'linear-gradient(135deg,rgba(122,122,134,0.18),rgba(0,0,0,0.06))';
-          borderLeft = '3px solid var(--text3)';
-          iconBg = 'rgba(122,122,134,0.32)';
+          stateCls = 'is-penalty-escaped';
+          iconExtra = 'is-gray';
           iconChar = '🏃';
-          titleHtml = `<div style="font-size:var(--text-base);font-weight:800;letter-spacing:-.005em;color:var(--text2);">유산소 추가 ${esc(ptype)} ${minutes}분형 — 탈주</div>`;
-          recordHtml = `<div style="margin-top:8px;padding:8px 10px;background:rgba(0,0,0,0.2);border-radius:var(--radius-md);font-size:var(--text-xs);color:var(--text3);">
-            트레이너 부여: <span style="color:var(--text2);font-weight:600;">${esc(ptype)} · ${minutes}분</span>
+          titleHtml = `<div class="wo-title is-strong is-dim">유산소 추가 ${esc(ptype)} ${minutes}분형 — 탈주</div>`;
+          recordHtml = `<div class="wo-penalty-rec">
+            트레이너 부여: <span class="val is-dim">${esc(ptype)} · ${minutes}분</span>
           </div>`;
         } else {
-          cardBg = 'linear-gradient(135deg,var(--accent-tint-2),rgba(255,107,53,0.06))';
-          borderLeft = '3px solid #ff4d4d';
-          iconBg = 'var(--accent-tint-4)';
+          stateCls = 'is-penalty-pending';
+          iconExtra = 'is-red';
           iconChar = '⏱';
-          const stateBadge = '<span style="font-size:var(--text-2xs);font-weight:800;letter-spacing:.04em;padding:2px 7px;border-radius:var(--radius-sm);background:var(--accent-tint-4);color:#fff;margin-left:6px;">⏱ 미수행</span>';
-          titleHtml = `<div style="font-size:var(--text-base);font-weight:800;display:flex;align-items:center;flex-wrap:wrap;letter-spacing:-.005em;">유산소 추가 ${esc(ptype)} ${minutes}분형${stateBadge}</div>`;
+          const stateBadge = '<span class="wo-badge is-warn">⏱ 미수행</span>';
+          titleHtml = `<div class="wo-title is-strong">유산소 추가 ${esc(ptype)} ${minutes}분형${stateBadge}</div>`;
         }
 
-        const cursorStyle = canTap ? 'cursor:pointer;-webkit-tap-highlight-color:var(--accent-tint-3);' : '';
-        const revertBtn = (isDone || isEscaped) ? `<button data-penalty-revert="${i}" style="margin-top:10px;padding:8px 12px;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius-md);color:var(--text2);font-size:var(--text-xs);font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">↺ 미수행으로 되돌리기</button>` : '';
+        const revertBtn = (isDone || isEscaped) ? `<button class="wo-penalty-revert" data-penalty-revert="${i}">↺ 미수행으로 되돌리기</button>` : '';
 
-        return `<div data-penalty-idx="${i}" data-penalty-tap="${canTap?'1':'0'}" style="overflow:hidden;border-bottom:1px solid var(--border);background:${cardBg};border-left:${borderLeft};${cursorStyle}touch-action:manipulation;">
-          <div style="padding:13px 14px;">
-            <div style="display:flex;align-items:flex-start;gap:10px;">
-              <div style="width:32px;height:32px;border-radius:var(--radius-md);background:${iconBg};display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:var(--text-lg);">${iconChar}</div>
-              <div style="flex:1;min-width:0;">
+        return `<div class="wo-card ${stateCls}" data-penalty-idx="${i}" data-penalty-tap="${canTap?'1':'0'}">
+          <div class="wo-penalty-inner">
+            <div class="wo-row is-top" style="padding:0;cursor:auto;">
+              <div class="wo-ic is-lg ${iconExtra}">${iconChar}</div>
+              <div class="wo-body">
                 ${titleHtml}
                 ${reasonHtml}
                 ${notesHtml}
                 ${recordHtml}
-                ${canTap?'<div style="font-size:var(--text-xs);color:var(--accent);margin-top:8px;font-weight:700;">탭 → 수행 처리</div>':''}
+                ${canTap?'<div class="wo-penalty-hint">탭 → 수행 처리</div>':''}
                 ${revertBtn}
               </div>
-              <button data-penalty-cancel="${i}" style="width:22px;height:22px;background:var(--red-bg);border:1px solid var(--red-bd);border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;touch-action:manipulation;" title="삭제"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+              <button class="btn-del-mini" data-penalty-cancel="${i}" title="삭제"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
             </div>
           </div>
         </div>`;
@@ -10840,54 +10917,59 @@ function renderWorkouts(){
       // 클릭 핸들러: 미완료 숙제는 openHomeworkStart, 그 외는 openSessionSummary
       const clickFn = isPending ? `openHomeworkStart(${i})` : `openSessionSummary(${i})`;
       const sessionTitle = isHomework ? (w.sessionName||'오늘의 운동 (트레이너)') : (w.sessionName||'헬스 세션');
-      const badge = isPending ? `<span style="font-size:var(--text-2xs);font-weight:800;letter-spacing:.04em;padding:2px 7px;border-radius:var(--radius-sm);background:var(--accent-tint-3);color:#ff6b6b;margin-left:6px;">예정 ${totalSets}/${totalSetsAll}</span>` : (isHomework ? `<span style="font-size:var(--text-2xs);font-weight:800;letter-spacing:.04em;padding:2px 7px;border-radius:var(--radius-sm);background:rgba(52,211,153,0.18);color:var(--green);margin-left:6px;">완료</span>` : '');
-      const cardBg = isPending ? 'var(--accent-tint-1)' : 'transparent';
+      const badge = isPending
+        ? `<span class="wo-badge is-pending">예정 ${totalSets}/${totalSetsAll}</span>`
+        : (isHomework ? `<span class="wo-badge is-done">완료</span>` : '');
+      const cardCls = 'wo-card' + (isPending ? ' is-pending' : '');
       // 트레이너 운동 완료 (status='done') 시 되돌리기 버튼 노출
       const isHomeworkDone = isHomework && w.status === 'done';
       const revertBtn = isHomeworkDone
-        ? `<button onclick="event.stopPropagation();revertAssignment(${i})" style="padding:3px 8px;background:var(--surface3);border:1px solid var(--border2);border-radius:var(--radius-md);font-size:var(--text-2xs);color:var(--text2);cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;flex-shrink:0;" title="미완료로 되돌리기">↺ 되돌리기</button>`
+        ? `<button class="btn-mini" onclick="event.stopPropagation();revertAssignment(${i})" title="미완료로 되돌리기">↺ 되돌리기</button>`
         : '';
-      return`<div style="overflow:hidden;border-bottom:1px solid var(--border);background:${cardBg};">
-        <div style="display:flex;align-items:center;gap:10px;padding:12px 13px;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:var(--accent-tint-3);" onclick="${clickFn}">
-          <div style="width:28px;height:28px;border-radius:var(--radius-md);background:var(--accent-tint-2);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+      const editBtn = isHomework ? '' : `<button class="btn-mini" onclick="event.stopPropagation();editGymSession(${i})">수정</button>`;
+      const delTitle = isHomework ? '트레이너 배정 취소' : '삭제';
+      const delAction = isHomework ? `cancelHomeworkAssignment(${i})` : `delWO(${i})`;
+      return `<div class="${cardCls}">
+        <div class="wo-row" onclick="${clickFn}">
+          <div class="wo-ic">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4v16M18 4v16M6 12h12"/><rect x="2" y="9" width="4" height="6" rx="1"/><rect x="18" y="9" width="4" height="6" rx="1"/></svg>
           </div>
-          <div style="flex:1;min-width:0;">
-            <div style="font-size:var(--text-base);font-weight:600;display:flex;align-items:center;flex-wrap:wrap;">${esc(sessionTitle)}${badge}</div>
-            <div style="font-size:var(--text-sm);color:var(--text2);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${preview}${volStr?' · '+volStr:''}</div>
+          <div class="wo-body">
+            <div class="wo-title">${esc(sessionTitle)}${badge}</div>
+            <div class="wo-sub">${preview}${volStr?' · '+volStr:''}</div>
           </div>
           ${revertBtn}
-          ${isHomework ? '' : `<button onclick="event.stopPropagation();editGymSession(${i})" style="padding:3px 8px;background:var(--surface3);border:1px solid var(--border2);border-radius:var(--radius-md);font-size:var(--text-2xs);color:var(--text2);cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;flex-shrink:0;">수정</button>`}
-          <button onclick="event.stopPropagation();${isHomework?`cancelHomeworkAssignment(${i})`:`delWO(${i})`}" style="width:22px;height:22px;background:var(--red-bg);border:1px solid var(--red-bd);border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;touch-action:manipulation;" title="${isHomework?'트레이너 배정 취소':'삭제'}"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+          ${editBtn}
+          <button class="btn-del-mini" onclick="event.stopPropagation();${delAction}" title="${delTitle}"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
         </div>
-        ${(vol>0||(isHomework&&totalSetsAll>0))?`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;border-top:1px solid var(--border);">
-          <div style="text-align:center;padding:5px 0;border-right:1px solid var(--border);"><div style="font-size:var(--text-base);font-weight:700;color:var(--accent);font-family:'DM Mono',monospace;">${volStr||'—'}</div><div style="font-size:var(--text-2xs);color:var(--text3);text-transform:uppercase;letter-spacing:.04em;">볼륨</div></div>
-          <div style="text-align:center;padding:5px 0;border-right:1px solid var(--border);"><div style="font-size:var(--text-base);font-weight:700;color:var(--green);">${totalSets}${isHomework?'/'+totalSetsAll:''}</div><div style="font-size:var(--text-2xs);color:var(--text3);text-transform:uppercase;letter-spacing:.04em;">세트</div></div>
-          <div style="text-align:center;padding:5px 0;"><div style="font-size:var(--text-base);font-weight:700;color:var(--text);">${(w.exercises||[]).length}</div><div style="font-size:var(--text-2xs);color:var(--text3);text-transform:uppercase;letter-spacing:.04em;">종목</div></div>
+        ${(vol>0||(isHomework&&totalSetsAll>0))?`<div class="wo-stats">
+          <div class="wo-stats-cell"><div class="wo-stats-val">${volStr||'—'}</div><div class="wo-stats-lbl">볼륨</div></div>
+          <div class="wo-stats-cell"><div class="wo-stats-val is-green is-text">${totalSets}${isHomework?'/'+totalSetsAll:''}</div><div class="wo-stats-lbl">세트</div></div>
+          <div class="wo-stats-cell"><div class="wo-stats-val is-text">${(w.exercises||[]).length}</div><div class="wo-stats-lbl">종목</div></div>
         </div>`:''}
       </div>`;
     } else {
       // Single activity row
       const isChaek = !!w._isChaek;
       const isPlanned = w.status !== 'done';
-      return`<div style="overflow:hidden;border-bottom:1px solid var(--border);">
-        <div style="display:flex;align-items:center;gap:8px;padding:9px 12px;cursor:pointer;" onclick="editActivity(${i})">
-          <div style="width:28px;height:28px;border-radius:var(--radius-md);background:var(--blue-bg);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:var(--text-base);">${w.icon||'🏃'}</div>
-          <div style="flex:1;min-width:0;">
-            <div style="font-size:var(--text-base);font-weight:600;">${w.name}${isChaek?' <span style="font-size:var(--text-2xs);color:var(--red);font-weight:600;">⚖️추가운동</span>':''}</div>
-            <div style="font-size:var(--text-sm);color:var(--text2);margin-top:2px;">${w.meta||'기록됨'}</div>
+      return `<div class="wo-card">
+        <div class="wo-row is-sm" onclick="editActivity(${i})">
+          <div class="wo-ic is-cardio">${w.icon||'🏃'}</div>
+          <div class="wo-body">
+            <div class="wo-title">${w.name}${isChaek?' <span style="font-size:var(--text-2xs);color:var(--red);font-weight:600;">⚖️추가운동</span>':''}</div>
+            <div class="wo-sub">${w.meta||'기록됨'}</div>
           </div>
-          <button onclick="event.stopPropagation();editActivity(${i})" style="padding:3px 8px;background:var(--surface3);border:1px solid var(--border2);border-radius:var(--radius-md);font-size:var(--text-2xs);color:var(--text2);cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;flex-shrink:0;">수정</button>
-          <button onclick="event.stopPropagation();delWO(${i})" style="width:22px;height:22px;background:var(--red-bg);border:1px solid var(--red-bd);border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;touch-action:manipulation;"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+          <button class="btn-mini" onclick="event.stopPropagation();editActivity(${i})">수정</button>
+          <button class="btn-del-mini" onclick="event.stopPropagation();delWO(${i})"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
         </div>
-        ${w.distance&&w.time&&w.status==='done'?`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;border-top:1px solid var(--border);">
-          <div style="text-align:center;padding:6px 0;border-right:1px solid var(--border);"><div style="font-size:var(--text-sm);font-weight:700;color:var(--blue);font-family:'DM Mono',monospace;">${w.distance}<span style="font-size:var(--text-2xs);font-weight:400;color:var(--text3);"> km</span></div><div style="font-size:var(--text-2xs);color:var(--text3);text-transform:uppercase;letter-spacing:.04em;">거리</div></div>
-          <div style="text-align:center;padding:6px 0;border-right:1px solid var(--border);"><div style="font-size:var(--text-sm);font-weight:700;color:var(--blue);font-family:'DM Mono',monospace;">${w.time}<span style="font-size:var(--text-2xs);font-weight:400;color:var(--text3);"> 분</span></div><div style="font-size:var(--text-2xs);color:var(--text3);text-transform:uppercase;letter-spacing:.04em;">시간</div></div>
-          <div style="text-align:center;padding:6px 0;"><div style="font-size:var(--text-sm);font-weight:700;color:var(--blue);font-family:'DM Mono',monospace;">${w.pace||'—'}</div><div style="font-size:var(--text-2xs);color:var(--text3);text-transform:uppercase;letter-spacing:.04em;">페이스</div></div>
+        ${w.distance&&w.time&&w.status==='done'?`<div class="wo-stats">
+          <div class="wo-stats-cell"><div class="wo-stats-val is-blue is-sm">${w.distance}<span class="wo-stats-unit"> km</span></div><div class="wo-stats-lbl">거리</div></div>
+          <div class="wo-stats-cell"><div class="wo-stats-val is-blue is-sm">${w.time}<span class="wo-stats-unit"> 분</span></div><div class="wo-stats-lbl">시간</div></div>
+          <div class="wo-stats-cell"><div class="wo-stats-val is-blue is-sm">${w.pace||'—'}</div><div class="wo-stats-lbl">페이스</div></div>
         </div>`:''}
-        ${isPlanned?`<div style="display:flex;gap:8px;padding:10px 14px;border-top:1px solid var(--border);">
-          <button onclick="event.stopPropagation();markActivityDone(${i})" style="flex:1;padding:10px;background:rgba(52,211,153,.15);border:1px solid rgba(52,211,153,.3);border-radius:var(--radius-lg);color:#34d399;font-size:var(--text-md);font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">✓ 완료했어요</button>
-          <button onclick="event.stopPropagation();editActivity(${i})" style="flex:1;padding:10px;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius-lg);color:var(--text2);font-size:var(--text-md);font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">✎ 수정</button>
+        ${isPlanned?`<div class="wo-plan-acts">
+          <button class="wo-plan-btn is-done" onclick="event.stopPropagation();markActivityDone(${i})">✓ 완료했어요</button>
+          <button class="wo-plan-btn is-edit" onclick="event.stopPropagation();editActivity(${i})">✎ 수정</button>
         </div>`:''}
       </div>`;
     }
