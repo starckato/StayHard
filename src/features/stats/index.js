@@ -22,6 +22,7 @@ export let stPeriod=7;  // stats 탭 전용 — 기본 1주
 export let statsCharts={weight:null,vol:null,routine:null,score:null};
 export let stCharts={weight:null,vol:null,routine:null,score:null};
 export let _stData=null;  // 캐시
+export let _stDataDays=0;  // 캐시된 기간 (일수) — 사용자가 더 긴 기간 요청 시 비교용
 
 // ── 기존 weekly 탭 stats (하위 호환) ──
 export function setStatsPeriod(days,btn){
@@ -67,9 +68,11 @@ export async function loadStatsTab(){
   });
 
   try{
-    // 캐시가 있으면 재사용
+    // 캐시가 있으면 재사용. Perf (2026-05-25): 첫 fetch 는 90일만 — 5초+ 로딩 단축.
+    //   1년 데이터 필요 시 (stPeriod>90): 백그라운드에서 추가 fetch.
     if(!_stData){
-      const from=new Date(now);from.setDate(from.getDate()-364);
+      const fetchDays=Math.max(stPeriod||7, 90);
+      const from=new Date(now);from.setDate(from.getDate()-(fetchDays-1));
       const fromKey=dkey(from);
       const{data,error}=await sb.from('daily_logs')
         .select('log_date,weight,muscle_mass,body_fat_pct,water_cups,meals,workouts,mandatory,targets,points_log')
@@ -79,6 +82,20 @@ export async function loadStatsTab(){
 
       if(error)throw error;
       _stData=(data||[]).map(d=>({...d,_key:normKey(d.log_date)}));
+      _stDataDays=fetchDays;
+    } else if (stPeriod && stPeriod > (_stDataDays||0)) {
+      // 사용자가 더 긴 기간 요청 — 추가 fetch
+      const from=new Date(now);from.setDate(from.getDate()-(stPeriod-1));
+      const fromKey=dkey(from);
+      const{data,error}=await sb.from('daily_logs')
+        .select('log_date,weight,muscle_mass,body_fat_pct,water_cups,meals,workouts,mandatory,targets,points_log')
+        .eq('user_id',window.CU.id)
+        .gte('log_date',fromKey)
+        .order('log_date',{ascending:true});
+      if(!error && data){
+        _stData=data.map(d=>({...d,_key:normKey(d.log_date)}));
+        _stDataDays=stPeriod;
+      }
     }
   }catch(e){
     console.warn('[loadStatsTab] fetch error:', e.message);
@@ -127,16 +144,24 @@ export function stRenderAll(rows){
   // shown because stLoadStats used to hide it during loading.
   if(nav)nav.style.display='';
 
+  // Perf (2026-05-25): 분석 탭 5초+ → 즉시 응답.
+  //   첫 paint 빠르게: hero/KPI/insights/scores 만 동기.
+  //   무거운 chart 와 list 는 requestAnimationFrame 으로 yield → 메인 스레드 풀어줌.
   try{stRenderHero(filtered);}catch(e){console.warn('stRenderHero error:',e);}
   try{stRenderKPI(filtered);}catch(e){console.warn('stRenderKPI error:',e);}
   try{stRenderInsights(filtered);}catch(e){console.warn('stRenderInsights error:',e);}
   try{stRenderScoreSources();}catch(e){console.warn('stRenderScoreSources error:',e);}
-  try{stRenderReportCard(filtered);}catch(e){console.warn('stRenderReportCard error:',e);}
-  // stRenderPtsBreakdown 은 이제 오늘의 요약 모달에서 담당 — 분석 탭에서 호출 X
-  try{stRenderMealQuality(filtered);}catch(e){console.warn('stRenderMealQuality error:',e);}
-  try{stRenderWeightChart(filtered);}catch(e){console.warn('stRenderWeightChart error:',e);}
-  try{stRenderVolChart(filtered);}catch(e){console.warn('stRenderVolChart error:',e);}
-  try{stRenderExerciseList(filtered);}catch(e){console.warn('stRenderExerciseList error:',e);}
+  // 다음 frame 에서 — report + meal quality (DOM 중간 작업)
+  requestAnimationFrame(()=>{
+    try{stRenderReportCard(filtered);}catch(e){console.warn('stRenderReportCard error:',e);}
+    try{stRenderMealQuality(filtered);}catch(e){console.warn('stRenderMealQuality error:',e);}
+    // 그 다음 frame 에서 — 무거운 chart 2개
+    requestAnimationFrame(()=>{
+      try{stRenderWeightChart(filtered);}catch(e){console.warn('stRenderWeightChart error:',e);}
+      try{stRenderVolChart(filtered);}catch(e){console.warn('stRenderVolChart error:',e);}
+      try{stRenderExerciseList(filtered);}catch(e){console.warn('stRenderExerciseList error:',e);}
+    });
+  });
   try{stRenderMuscleDist(filtered);}catch(e){console.warn('stRenderMuscleDist error:',e);}
   try{stRenderPRDashboard(filtered);}catch(e){console.warn('stRenderPRDashboard error:',e);}
   try{stRenderRoutineChart(filtered);}catch(e){console.warn('stRenderRoutineChart error:',e);}
