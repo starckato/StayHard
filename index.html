@@ -2,9 +2,8 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<meta http-equiv="Pragma" content="no-cache">
-<meta http-equiv="Expires" content="0">
+<!-- no-cache 메타태그 제거 (2026-05-25, perf fix): index.html 은 ?v= cache-bust 로 갱신,
+     /dist/app.js · /dist/app.css 는 동일 ?v= 로 long-cache 가능. 재방문 사용자 다운로드 절감. -->
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -8642,7 +8641,13 @@ function switchTab(name,idx){
   try{window.scrollTo({top:0,behavior:'instant'});}catch(e){window.scrollTo(0,0);}
   if(name==='routine'){try{if(typeof window.renderDateHeatmap==='function')window.renderDateHeatmap();}catch(e){console.warn('renderDateHeatmap on tab switch',e);}}
   if(name==='stats'){loadStatsTab();try{consumeNavBadge('stats');}catch(e){}}
-  if(name==='competition'){try{renderChallengeHome();}catch(e){console.warn('[switchTab]',e);}try{loadPushupChallenge();}catch(e){console.warn('[switchTab]',e);}}
+  if(name==='competition'){
+    // Perf fix (2026-05-25): 순차 → 병렬. 두 RPC 독립적이라 더 느린 쪽 시간만 기다림.
+    Promise.allSettled([
+      Promise.resolve().then(()=>renderChallengeHome()),
+      Promise.resolve().then(()=>loadPushupChallenge()),
+    ]).then(rs=>rs.forEach(r=>{if(r.status==='rejected')console.warn('[switchTab]',r.reason);}));
+  }
   // Safety: release any stale scroll lock on tab change
   _forceUnlockScroll();
 }
@@ -12685,11 +12690,27 @@ const RECOMMENDED_CHALLENGES = [
   {icon:'🌅',name:'새벽 기상 챌린지',desc:'매일 5시 기상. 세상이 달라 보인다.', days:30},
 ];
 
+// Perf fix (2026-05-25): competitions 테이블 전체 fetch 가 비싸서 60초 캐시.
+// challenge 생성/가입/탈퇴 시 window._invalidateChallengeCache() 호출하면 즉시 갱신.
+let _challengeCache = null;
+let _challengeCacheTs = 0;
+const _CHALLENGE_TTL_MS = 60_000;
+window._invalidateChallengeCache = function(){ _challengeCache = null; _challengeCacheTs = 0; };
+
 async function renderChallengeHome(){
   if(!CU)return;
 
-  // Fetch user's challenges
-  const{data:allComps_raw}=await sb.from('competitions').select('id,code,name,creator_id,members,sections,challenge_type,status,max_members,start_date,duration_days,weight_goal,member_wgoals,measure_type,member_inbody_goals,daily_goal').in('status',['waiting','active','failed','completed']);
+  // Fetch user's challenges (60s 캐시)
+  let allComps_raw;
+  const _now = Date.now();
+  if (_challengeCache && (_now - _challengeCacheTs) < _CHALLENGE_TTL_MS) {
+    allComps_raw = _challengeCache;
+  } else {
+    const fetched = await sb.from('competitions').select('id,code,name,creator_id,members,sections,challenge_type,status,max_members,start_date,duration_days,weight_goal,member_wgoals,measure_type,member_inbody_goals,daily_goal').in('status',['waiting','active','failed','completed']);
+    allComps_raw = fetched.data;
+    _challengeCache = allComps_raw;
+    _challengeCacheTs = _now;
+  }
   const myComps=(allComps_raw||[]).filter(c=>{
     if(c.creator_id===CU.id)return true;
     try{const mbs=Array.isArray(c.members)?c.members:JSON.parse(c.members||'[]');return mbs.includes(CU.id);}
