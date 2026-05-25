@@ -205,22 +205,25 @@ export function renderMountain(sortedProfiles, memberWeightMaps, memberWgoals, c
   //   같은 progress 그룹은 y 도 살짝 stagger 해서 겹치지 않게.
 
   // rank index 별 slot — % within mountain x-range (좌단 0 ~ 우단 1)
-  // 좌우 wide spread 로 겹침 방지. side 도 분산.
-  const slotX    = [0.50, 0.75, 0.25, 0.88, 0.12, 0.62, 0.38, 0.80, 0.20];
+  // 좌우 wide spread 로 겹침 방지. side 도 strict alternate.
+  const slotX    = [0.50, 0.80, 0.20, 0.92, 0.08, 0.65, 0.35, 0.85, 0.15];
   const slotSide = ['right', 'right', 'left', 'right', 'left', 'right', 'left', 'right', 'left'];
 
   const placed = ranked.map((c, i) => {
     const pctClamped = c.pct == null ? 0 : Math.max(0, Math.min(100, c.pct));
     let yFeet = 80 + (100 - pctClamped) * 5.2;
 
-    // 비슷한 progress (3%p 이내) 인 이전 climber 마다 y 를 12px 씩 stagger.
+    // 비슷한 progress (5%p 이내) 인 이전 climber 마다 y 를 24px 씩 stagger.
+    // tag height ~17px 라 24px 이상 stagger 해야 vertical 겹침 없음.
     let nudgePx = 0;
     for (let j = 0; j < i; j++) {
-      if (ranked[j].pct != null && c.pct != null && Math.abs(ranked[j].pct - c.pct) < 3) {
-        nudgePx += 12;
+      if (ranked[j].pct != null && c.pct != null && Math.abs(ranked[j].pct - c.pct) < 5) {
+        nudgePx += 24;
       }
     }
     yFeet += nudgePx;
+    // mountain bottom 넘어가지 않게 clamp
+    yFeet = Math.min(yFeet, 590);
 
     const top = (yFeet - 20) / 600 * 100;
     const range = _mtXRangeAt(yFeet);
