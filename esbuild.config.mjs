@@ -1,7 +1,22 @@
 import * as esbuild from 'esbuild';
 import { createHash } from 'node:crypto';
-import { readFileSync, writeFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { readFileSync, writeFileSync, readdirSync, statSync } from 'node:fs';
+import { resolve, join } from 'node:path';
+
+// 디렉토리 하위의 모든 .css 파일 재귀 수집 (해시에 포함시킬 source CSS).
+function _collectCssFiles(dir) {
+  const out = [];
+  let entries;
+  try { entries = readdirSync(dir); } catch { return out; }
+  for (const e of entries) {
+    const p = join(dir, e);
+    let s;
+    try { s = statSync(p); } catch { continue; }
+    if (s.isDirectory()) out.push(..._collectCssFiles(p));
+    else if (p.endsWith('.css')) out.push(p);
+  }
+  return out;
+}
 
 const isWatch = process.argv.includes('--watch');
 const isServe = process.argv.includes('--serve');
@@ -52,10 +67,19 @@ if (isServe) {
     const cssPath = resolve('dist/app.css');
     const indexPath = resolve('index.html');
 
-    // JS + CSS 둘 다 영향 받는 통합 hash (한쪽만 바뀌어도 ?v= 갱신).
+    // dist/app.js + dist/app.css + 모든 source CSS 통합 hash.
+    // (components.css 같은 source CSS 가 변경되어도 ?v= 자동 갱신되어 캐시 미스 안 남.)
     const h = createHash('sha256');
     h.update(readFileSync(bundlePath));
     try { h.update(readFileSync(cssPath)); } catch { /* CSS missing — JS only */ }
+    // Source CSS 들도 hash 에 포함
+    const sourceCss = [
+      ..._collectCssFiles(resolve('src/styles')),
+      ..._collectCssFiles(resolve('src/features')),
+    ];
+    for (const p of sourceCss) {
+      try { h.update(readFileSync(p)); } catch {}
+    }
     const versionSlug = h.digest('hex').slice(0, 8);
 
     let html = readFileSync(indexPath, 'utf8');
@@ -65,10 +89,17 @@ if (isServe) {
     if (!SCRIPT_RE.test(html)) {
       console.warn('[esbuild] WARN: index.html 의 <script src="/dist/app.js?v=..."> 태그를 찾지 못함. 수동 확인 필요.');
     } else {
-      const updated = html.replace(SCRIPT_RE, newTag);
+      let updated = html.replace(SCRIPT_RE, newTag);
+      // ── 2026-05-25 확장: 로컬 CSS link 도 cache-bust 동기화.
+      // /src/styles/* + /src/features/*/*.css 를 same hash 로 ?v= 갱신.
+      // (이전엔 dist/app.js 만 갱신 — components.css 등은 영구 캐시 문제 생김.)
+      const CSS_RE = /(<link[^>]+href="\/(?:src\/styles|src\/features)\/[^"?]+\.css)(\?v=[^"]+)?(")/g;
+      const beforeCss = updated;
+      updated = updated.replace(CSS_RE, `$1?v=${versionSlug}$3`);
+      const cssCount = (beforeCss.match(CSS_RE) || []).length;
       if (updated !== html) {
         writeFileSync(indexPath, updated);
-        console.log(`[esbuild] cache-bust → ?v=${versionSlug} (index.html 갱신)`);
+        console.log(`[esbuild] cache-bust → ?v=${versionSlug} (index.html 갱신: JS 1 + CSS ${cssCount})`);
       } else {
         console.log(`[esbuild] cache-bust → ?v=${versionSlug} (변경 없음)`);
       }
