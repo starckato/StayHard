@@ -2487,13 +2487,12 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
             <button id="gs-tab-volume" class="gs-tab" onclick="switchGroupStatsTab('volume')">💪 운동</button>
           </div>
           <div id="gs-weight-panel">
-            <div id="gs-legend" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px;"></div>
-            <!-- v3 (2026-05-25): 절대 kg 모드만. 멤버별 실선 (현재) + 점선 (목표) 같은 색. -->
-            <div style="background:var(--surface2);border-radius:var(--radius-lg);padding:12px 10px 8px;">
-              <svg id="gs-weight-svg" width="100%" viewBox="0 0 300 160" style="display:block;overflow:visible;height:160px;"></svg>
+            <!-- v4 (2026-05-25): SVG 라인 6개 겹침 → 멤버별 bullet bar 1행씩. -->
+            <div style="background:var(--surface2);border-radius:var(--radius-lg);padding:8px 12px;">
+              <div id="gs-weight-bullet"></div>
             </div>
-            <!-- goal leaderboard (목표 근접 순) — 기존 gs-goal-bars 대체 -->
-            <div id="gs-goal-board" class="gs-leaderboard" style="margin-top:10px;"></div>
+            <!-- goal leaderboard (목표 근접 순) — 보조 ranking -->
+            <div id="gs-goal-board" class="gs-leaderboard" style="margin-top:10px;display:none;"></div>
           </div>
           <div id="gs-volume-panel" style="display:none;">
             <!-- v3 (2026-05-25): 누적 볼륨 + bar 폐기. dot grid 만 — 멤버별 일자 dot row. -->
@@ -13119,94 +13118,64 @@ function renderGroupStats(profiles,mbs,allLogs,memberWgoals,chStart,chEnd,dayNum
     memberWeightMaps[p.id]=map;
   });
 
-  // SVG 체중 차트 (v3, 2026-05-25): 절대 kg 모드만. 멤버별 실선 + 점선 (목표) 같은 색.
-  const svg=document.getElementById('gs-weight-svg');
-  if(svg){
-    const dates=[];
-    const startD=new Date(chStart);
-    for(let i=0;i<=Math.min(dayNum,90);i++){
-      const d=new Date(startD);d.setDate(d.getDate()+i);
-      dates.push(d.toISOString().slice(0,10));
-    }
-    if(dates.length>0){
-      // 멤버별 series (kg)
-      const memberSeries={};
-      sortedProfiles.forEach(p=>{
-        const wgoal=memberWgoals[p.id]?parseFloat(memberWgoals[p.id]):null;
-        const wmap=memberWeightMaps[p.id]||{};
-        const series=[];
-        dates.forEach((date,i)=>{if(wmap[date]!=null)series.push({i,v:wmap[date]});});
-        memberSeries[p.id]={series,goalLine:wgoal};
-      });
-
-      // Y axis 범위 — 모든 멤버 + 목표 포함
-      const allWV=[];
-      sortedProfiles.forEach(p=>{
-        memberSeries[p.id].series.forEach(s=>allWV.push(s.v));
-        const g=memberSeries[p.id].goalLine;if(g!=null)allWV.push(g);
-      });
-      let YMIN,YMAX;
-      if(allWV.length>=2){
-        const dMin=Math.min(...allWV),dMax=Math.max(...allWV);
-        const spread=Math.max(dMax-dMin,2);const pad=Math.max(spread*0.35,1.5);
-        YMIN=Math.floor(dMin-pad);YMAX=Math.ceil(dMax+pad);
-      } else {YMIN=40;YMAX=120;}
-      const range=YMAX-YMIN;
-      const step=range<=5?0.5:range<=10?1:range<=20?2:range<=50?5:10;
-
-      const W=300,H=160;
-      const padL=32,padR=8,padT=10,padB=28;
-      const chartW=W-padL-padR,chartH=H-padT-padB;
-      const toX=i=>padL+(i/Math.max(dates.length-1,1))*chartW;
-      const toY=v=>padT+chartH-((Math.min(Math.max(v,YMIN),YMAX)-YMIN)/(YMAX-YMIN))*chartH;
-      let svgContent='';
-
-      // Y축 grid + label
-      const firstTick=Math.ceil(YMIN/step)*step;
-      for(let v=firstTick;v<=YMAX;v+=step){
-        const y=toY(v);if(y<padT||y>padT+chartH)continue;
-        svgContent+=`<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="rgba(255,255,255,0.07)" stroke-width="0.5" stroke-dasharray="3 4"/>`;
-        svgContent+=`<text x="${padL-4}" y="${y+3}" font-size="7" fill="rgba(255,255,255,0.3)" font-family="'DM Mono',monospace" text-anchor="end">${Number.isInteger(v)?v:v.toFixed(1)}</text>`;
+  // 체중 bullet bar (v4, 2026-05-25): SVG 라인 6개 겹침 → 멤버별 1행 bullet.
+  const bulletEl=document.getElementById('gs-weight-bullet');
+  if(bulletEl){
+    bulletEl.innerHTML=sortedProfiles.map(p=>{
+      const name=(p.display_name&&p.display_name.trim())?p.display_name:(p.username||'유저');
+      const isMe=p.id===CU.id;
+      const col=colorMap[p.id];
+      const goal=memberWgoals[p.id]?parseFloat(memberWgoals[p.id]):null;
+      const wmap=memberWeightMaps[p.id]||{};
+      const wArr=Object.entries(wmap).sort((a,b)=>a[0].localeCompare(b[0]));
+      const startW=wArr.length>0?wArr[0][1]:null;
+      const curW=wArr.length>0?wArr[wArr.length-1][1]:null;
+      if(goal==null||startW==null||curW==null){
+        return`<div class="wb-row${isMe?' is-me':''}" style="--wb-color:${col};">
+          <div class="wb-row-head">
+            <div class="wb-name">${name}${isMe?' (나)':''}</div>
+            <div class="wb-stat">목표 미설정</div>
+          </div>
+        </div>`;
       }
-
-      // X축 — 날짜 라벨
-      const labelInterval=dates.length<=14?2:dates.length<=30?5:7;
-      dates.forEach((date,i)=>{
-        if(i===0||i===dates.length-1||i%labelInterval===0){
-          const x=toX(i);
-          const mo=(new Date(date).getMonth()+1),dy=new Date(date).getDate();
-          svgContent+=`<text x="${x}" y="${H-14}" font-size="6" fill="rgba(255,255,255,0.22)" font-family="'DM Mono',monospace" text-anchor="middle">${mo}/${dy}</text>`;
-        }
-      });
-
-      // 멤버별 목표선 (점선) — 라인 그리기 전에 (아래 깔리도록)
-      sortedProfiles.forEach(p=>{
-        const gl=memberSeries[p.id].goalLine;
-        if(gl==null)return;
-        const gy=toY(gl);
-        const col=colorMap[p.id];
-        svgContent+=`<line x1="${padL}" y1="${gy}" x2="${W-padR}" y2="${gy}" stroke="${col}" stroke-width="1" stroke-dasharray="3 4" opacity="0.55"/>`;
-      });
-
-      // 멤버별 실선 (현재 추이) + 점
-      sortedProfiles.forEach(p=>{
-        const col=colorMap[p.id];
-        const series=memberSeries[p.id].series;
-        if(!series||series.length<1)return;
-        const segments=series.map(s=>({x:toX(s.i),y:toY(s.v)}));
-        if(segments.length>=2){
-          const pts=segments.map(s=>`${s.x},${s.y}`).join(' ');
-          svgContent+=`<polyline points="${pts}" fill="none" stroke="${col}" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>`;
-        }
-        segments.forEach(s=>{
-          svgContent+=`<circle cx="${s.x}" cy="${s.y}" r="2.5" fill="${col}" stroke="rgba(0,0,0,0.4)" stroke-width="0.5"/>`;
-        });
-      });
-
-      svg.setAttribute('viewBox',`0 0 ${W} ${H}`);
-      svg.style.height='160px';
-      svg.innerHTML=svgContent;
-    }
+      // 방향 — 감량 / 증량 / 유지
+      const diff=goal-startW;
+      const dir=diff<-0.1?'down':diff>0.1?'up':'flat';
+      const dirSym=dir==='down'?'↓':dir==='up'?'↑':'=';
+      const dirLbl=dir==='down'?'감량':dir==='up'?'증량':'유지';
+      // 진척률: 0% 시작 → 100% 목표
+      let pct,reached;
+      if(dir==='flat'){
+        // 유지 — 시작 = 목표. ±1kg 안이면 100%.
+        const drift=Math.abs(curW-startW);
+        pct=Math.max(0,Math.min(100,Math.round(100-drift*50)));
+        reached=drift<=1;
+      } else {
+        const totalNeeded=Math.abs(startW-goal);
+        const achieved=(dir==='down')?(startW-curW):(curW-startW);
+        pct=totalNeeded>0?Math.round(achieved/totalNeeded*100):100;
+        reached=(dir==='down'?curW<=goal:curW>=goal);
+      }
+      const remain=Math.abs(curW-goal).toFixed(1);
+      const fillCls='wb-bar-fill'+(pct>100?' is-overshoot':'');
+      const widthPct=Math.max(0,Math.min(110,pct));
+      const pctTxt=reached?'🎉 달성':pct+'%';
+      const pctCls='pct'+(reached?' is-reached':'');
+      return`<div class="wb-row${isMe?' is-me':''}" style="--wb-color:${col};">
+        <div class="wb-row-head">
+          <div class="wb-name">${name}${isMe?' (나)':''} <span class="wb-direction">${dirSym} ${dirLbl}</span></div>
+          <div class="wb-stat"><span class="${pctCls}">${pctTxt}</span></div>
+        </div>
+        <div class="wb-bar">
+          <div class="${fillCls}" style="width:${widthPct}%;"></div>
+          <div class="wb-bar-goal"></div>
+        </div>
+        <div class="wb-meta">
+          <span class="start">시작 ${startW.toFixed(1)}kg → 현재 ${curW.toFixed(1)}kg</span>
+          <span class="goal">목표 ${goal}kg${reached?'':' · '+remain+'kg 남음'}</span>
+        </div>
+      </div>`;
+    }).join('');
   }
 
   // 목표 근접 순 leaderboard (v3, 2026-05-25) — 기존 progress bar 폐기, ranking 만.
