@@ -32,26 +32,26 @@
 <link rel="dns-prefetch" href="https://uvaosxhsjscigheyymus.supabase.co">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Archivo+Black&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 <!-- Phase 0: 디자인 토큰 (shared 먼저, palette 가 override). -->
-<link href="/src/styles/tokens.shared.css?v=75410fcc" rel="stylesheet">
-<link href="/src/styles/tokens.dark.css?v=75410fcc" rel="stylesheet">
+<link href="/src/styles/tokens.shared.css?v=05d16094" rel="stylesheet">
+<link href="/src/styles/tokens.dark.css?v=05d16094" rel="stylesheet">
 <!-- Phase B-app: tap feedback + state 컴포넌트 + skeleton. -->
-<link href="/src/styles/states.css?v=75410fcc" rel="stylesheet">
+<link href="/src/styles/states.css?v=05d16094" rel="stylesheet">
 <!-- 디자인 시스템 — atom (btn-close, btn-cta, btn-ghost, ic-circle) + molecule (promo-card).
      스펙: document-private/DESIGN_SYSTEM.md (2026-05-25 시작). -->
-<link href="/src/styles/components.css?v=75410fcc" rel="stylesheet">
+<link href="/src/styles/components.css?v=05d16094" rel="stylesheet">
 <!-- 아이콘 sprite — .ic class + <symbol> defs (body 최상단의 #qrok-icons). lucide/heroicons 패턴. -->
-<link href="/src/styles/icons.css?v=75410fcc" rel="stylesheet">
+<link href="/src/styles/icons.css?v=05d16094" rel="stylesheet">
 <!-- Feature folder CSS — 한 폴더 = 한 기능 컨벤션 (ARCHITECTURE.md).
      Perf (2026-05-25): media="print" + onload swap 으로 async 로딩 → 초기 paint 차단 X.
      splash 가 1.6s+ 표시되므로 그 사이 모두 로드되어 FOUC 위험 거의 없음. -->
-<link href="/src/features/targets/targets.css?v=75410fcc" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/cubes/cubes-ui.css?v=75410fcc" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/date-heatmap/date-heatmap.css?v=75410fcc" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/dev-inspector/dev-inspector.css?v=75410fcc" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/water/water.css?v=75410fcc" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/sticky-header/sticky-header.css?v=75410fcc" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/status-band/status-band.css?v=75410fcc" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/mountain/mountain.css?v=75410fcc" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/targets/targets.css?v=05d16094" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/cubes/cubes-ui.css?v=05d16094" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/date-heatmap/date-heatmap.css?v=05d16094" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/dev-inspector/dev-inspector.css?v=05d16094" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/water/water.css?v=05d16094" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/sticky-header/sticky-header.css?v=05d16094" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/status-band/status-band.css?v=05d16094" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/mountain/mountain.css?v=05d16094" rel="stylesheet" media="print" onload="this.media='all'">
 <style>
 /* :root 토큰은 src/styles/tokens.{shared,dark}.css 로 이전됨 (Phase 0).
    index.html 은 다크 팔레트 사용. 추가 sub-palette (--radius-sm 등 legacy) 가
@@ -1457,7 +1457,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
      app.js bundle → supabase ESM 포함 (2026-05-25 perf), inline body scripts 가 의존하므로 sync. -->
 <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-<script src="/dist/app.js?v=75410fcc"></script>
+<script src="/dist/app.js?v=05d16094"></script>
 
 <script>
   // QROK Splash — 앱 ready 까지 대기 후 fade out. 좌측 상단/중앙 loading 스피너 가림.
