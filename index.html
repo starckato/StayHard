@@ -9,7 +9,32 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#0a0a0c">
 <meta name="mobile-web-app-capable" content="yes">
-<style>html,body{background:#0a0a0c;}</style>
+<style>html,body{background:#0a0a0c;}
+/* Critical tokens inline (2026-05-25 perf): tokens.shared+tokens.dark render-blocking 요청 제거.
+   src/styles/tokens.{shared,dark}.css 미러 — 수정 시 동기화. */
+:root{
+--space-1:4px;--space-1h:6px;--space-2:8px;--space-2h:10px;--space-3:12px;--space-3h:14px;--space-4:16px;--space-5:24px;--space-6:32px;
+--radius-sm:4px;--radius-md:8px;--radius-lg:12px;--radius-xl:16px;--radius-pill:999px;--radius:12px;
+--text-2xs:10px;--text-xs:11px;--text-sm:12px;--text-md:13px;--text-base:14px;--text-lg:16px;--text-xl:20px;--text-2xl:24px;--text-3xl:36px;--text-4xl:64px;--text-5xl:92px;
+--weight-regular:400;--weight-medium:500;--weight-semi:600;--weight-bold:700;--weight-black:800;
+--leading-tight:1.15;--leading-snug:1.35;--leading-normal:1.55;
+--tracking-tight:-.01em;--tracking-normal:0;--tracking-wide:.04em;--tracking-wider:.06em;
+--duration-fast:120ms;--duration-normal:180ms;--duration-slow:280ms;--ease-out:cubic-bezier(0.16,1,0.3,1);
+--z-base:1;--z-dropdown:10;--z-sticky:20;--z-overlay:100;--z-modal:500;--z-toast:1000;
+--bg:#0a0a0c;--surface:#141418;--surface2:#1c1c22;--surface3:#24242c;
+--border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.10);
+--text:#eaeaea;--text2:#a8a8b4;--text3:#7a7a86;
+--accent:#ff4d4d;--accent-tint-1:rgba(255,77,77,0.06);--accent-tint-2:rgba(255,77,77,0.12);--accent-tint-3:rgba(255,77,77,0.20);--accent-tint-4:rgba(255,77,77,0.35);--accent-tint-5:rgba(255,77,77,0.55);
+--accent-strong:#ff6b35;--accent-grad:linear-gradient(135deg,#ff4d4d 0%,#ff6b35 100%);
+--accent-bg:var(--accent-tint-2);--accent-bd:var(--accent-tint-4);--accent-red:var(--accent);
+--green:#34d399;--green-bg:rgba(52,211,153,0.12);--green-bd:rgba(52,211,153,0.28);
+--red:#ff4d4d;--red-bg:rgba(255,77,77,0.12);--red-bd:rgba(255,77,77,0.28);
+--amber:#f59e0b;--amber-bg:rgba(245,158,11,0.12);--amber-bd:rgba(245,158,11,0.30);
+--blue:#38bdf8;--blue-bg:rgba(56,189,248,0.12);
+--glow:0 0 20px rgba(255,77,77,0.15);
+--share-bg:#0A0A0A;--share-surface:#1A1A1A;--share-text:#F5F1EA;--share-text-2:#A0A0A0;--share-text-3:#5a5a66;--share-accent:#B91C1C;--share-gold:#C9A34E;
+}
+</style>
 <link rel="manifest" href="/manifest.json">
 <link rel="apple-touch-icon" sizes="180x180" href="/icons/qrok-180.png">
 <link rel="apple-touch-icon" sizes="120x120" href="/icons/qrok-120.png">
@@ -31,9 +56,8 @@
 <link rel="preconnect" href="https://uvaosxhsjscigheyymus.supabase.co" crossorigin>
 <link rel="dns-prefetch" href="https://uvaosxhsjscigheyymus.supabase.co">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Archivo+Black&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
-<!-- Phase 0: 디자인 토큰 (shared 먼저, palette 가 override). -->
-<link href="/src/styles/tokens.shared.css?v=05d16094" rel="stylesheet">
-<link href="/src/styles/tokens.dark.css?v=05d16094" rel="stylesheet">
+<!-- Phase 0: 디자인 토큰 — Perf (2026-05-25): head 상단 <style> 에 inline (위 line 12-).
+     외부 link 2개 제거 → render-blocking CSS 요청 -2. trainer.html 등은 여전히 link. -->
 <!-- Phase B-app: tap feedback + state 컴포넌트 + skeleton. -->
 <link href="/src/styles/states.css?v=05d16094" rel="stylesheet">
 <!-- 디자인 시스템 — atom (btn-close, btn-cta, btn-ghost, ic-circle) + molecule (promo-card).
