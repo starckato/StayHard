@@ -63,21 +63,21 @@
      외부 link 2개 제거 → render-blocking CSS 요청 -2. trainer.html 등은 여전히 link. -->
 <!-- Perf (2026-05-25): 남은 sync CSS 도 모두 async — splash 가 1.6s 가리는 동안 모두 로드 완료.
      FOUC 위험 거의 없음 + render-blocking 0 → splash 즉시 paint. -->
-<link href="/src/styles/states.css?v=9d4bb705" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/styles/components.css?v=9d4bb705" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/styles/icons.css?v=9d4bb705" rel="stylesheet" media="print" onload="this.media='all'">
-<noscript><link href="/src/styles/states.css?v=9d4bb705" rel="stylesheet"><link href="/src/styles/components.css?v=9d4bb705" rel="stylesheet"><link href="/src/styles/icons.css?v=9d4bb705" rel="stylesheet"></noscript>
+<link href="/src/styles/states.css?v=b01d3a63" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/styles/components.css?v=b01d3a63" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/styles/icons.css?v=b01d3a63" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link href="/src/styles/states.css?v=b01d3a63" rel="stylesheet"><link href="/src/styles/components.css?v=b01d3a63" rel="stylesheet"><link href="/src/styles/icons.css?v=b01d3a63" rel="stylesheet"></noscript>
 <!-- Feature folder CSS — 한 폴더 = 한 기능 컨벤션 (ARCHITECTURE.md).
      Perf (2026-05-25): media="print" + onload swap 으로 async 로딩 → 초기 paint 차단 X.
      splash 가 1.6s+ 표시되므로 그 사이 모두 로드되어 FOUC 위험 거의 없음. -->
-<link href="/src/features/targets/targets.css?v=9d4bb705" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/cubes/cubes-ui.css?v=9d4bb705" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/date-heatmap/date-heatmap.css?v=9d4bb705" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/dev-inspector/dev-inspector.css?v=9d4bb705" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/water/water.css?v=9d4bb705" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/sticky-header/sticky-header.css?v=9d4bb705" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/status-band/status-band.css?v=9d4bb705" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/mountain/mountain.css?v=9d4bb705" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/targets/targets.css?v=b01d3a63" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/cubes/cubes-ui.css?v=b01d3a63" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/date-heatmap/date-heatmap.css?v=b01d3a63" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/dev-inspector/dev-inspector.css?v=b01d3a63" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/water/water.css?v=b01d3a63" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/sticky-header/sticky-header.css?v=b01d3a63" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/status-band/status-band.css?v=b01d3a63" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/mountain/mountain.css?v=b01d3a63" rel="stylesheet" media="print" onload="this.media='all'">
 <style>
 /* :root 토큰은 src/styles/tokens.{shared,dark}.css 로 이전됨 (Phase 0).
    index.html 은 다크 팔레트 사용. 추가 sub-palette (--radius-sm 등 legacy) 가
@@ -1483,7 +1483,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
      app.js bundle → supabase ESM 포함 (2026-05-25 perf), inline body scripts 가 의존하므로 sync. -->
 <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-<script src="/dist/app.js?v=9d4bb705"></script>
+<script src="/dist/app.js?v=b01d3a63"></script>
 
 <script>
   // QROK Splash — 앱 ready 까지 대기 후 fade out. 좌측 상단/중앙 loading 스피너 가림.
@@ -3794,7 +3794,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
 </div>
 
 <!-- WORKOUT START SCREEN -->
-<div id="workout-start-screen" style="display:none;position:fixed;top:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;height:100%;z-index:490;background:var(--bg);flex-direction:column;">
+<div id="workout-start-screen" class="app-fullscreen-overlay" style="z-index:490;">
   <div style="display:flex;align-items:center;gap:10px;padding:14px 16px 12px;border-bottom:1px solid var(--border);flex-shrink:0;">
     <button onclick="closeWorkoutStartScreen()" style="width:28px;height:28px;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;font-size:var(--text-lg);color:var(--text2);cursor:pointer;flex-shrink:0;">←</button>
     <div style="font-size:var(--text-lg);font-weight:700;flex:1;">운동 시작</div>

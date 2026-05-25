@@ -25,6 +25,22 @@ body.qrok-dev-on .exempt-modal-overlay {
   right: 388px;
 }
 
+/* Fullscreen overlay 들 (position:fixed; left:50%; transform:translateX(-50%) 패턴) —
+   dev 모드에선 viewport 중앙이 아닌 app frame 안으로 정렬. */
+body.qrok-dev-on #workout-start-screen,
+body.qrok-dev-on #workout-session-overlay,
+body.qrok-dev-on #ex-library-overlay,
+body.qrok-dev-on #routine-modal-overlay,
+body.qrok-dev-on #cv-overlay,
+body.qrok-dev-on #muscle-map-overlay,
+body.qrok-dev-on #inbody-popup,
+body.qrok-dev-on #inbody-edit-popup,
+body.qrok-dev-on #qrok-share-overlay {
+  left: 16px !important;
+  transform: none !important;
+  max-width: min(430px, calc(100vw - 388px - 16px)) !important;
+}
+
 #qrok-dev {
   position: fixed;
   top: 0;
