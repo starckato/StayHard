@@ -201,33 +201,39 @@ export function renderMountain(sortedProfiles, memberWeightMaps, memberWgoals, c
   // 각 climber 의 mountain 위 위치 계산.
   //   y_feet = 80 + (100 - pct) * 5.2  (정상 y=80, 베이스 y=600)
   //   top % = (y_feet - 20) / 600 * 100  (climber 높이 20px 빼서 feet 가 y_feet 에 닿게)
-  //   x 는 mountain x-range 내에서 분배 (좌우 alternate).
+  //   x 는 mountain x-range 내 분산 slot 분배 (1위 가운데, 좌우 wide spread).
+  //   같은 progress 그룹은 y 도 살짝 stagger 해서 겹치지 않게.
+
+  // rank index 별 slot — % within mountain x-range (좌단 0 ~ 우단 1)
+  // 좌우 wide spread 로 겹침 방지. side 도 분산.
+  const slotX    = [0.50, 0.75, 0.25, 0.88, 0.12, 0.62, 0.38, 0.80, 0.20];
+  const slotSide = ['right', 'right', 'left', 'right', 'left', 'right', 'left', 'right', 'left'];
+
   const placed = ranked.map((c, i) => {
     const pctClamped = c.pct == null ? 0 : Math.max(0, Math.min(100, c.pct));
-    const yFeet = 80 + (100 - pctClamped) * 5.2;
-    const top = (yFeet - 20) / 600 * 100;
-    const range = _mtXRangeAt(yFeet);
-    // 가운데 기준으로 좌우 분배 (alternate)
-    const rangeWidthPct = (range.xRight - range.xLeft) / 400 * 100;
-    const centerPct = (range.xLeft + range.xRight) / 2 / 400 * 100;
-    // 가장 첫번째 (1위) 는 정상 가운데. 그 이후 alternate offset.
-    let left;
-    let side;
-    if (i === 0) {
-      left = centerPct;
-      side = 'name-right';
-    } else {
-      const offset = Math.min(rangeWidthPct * 0.35, 12); // 좌우 offset
-      if (i % 2 === 1) {
-        left = centerPct + offset;
-        side = 'name-right';
-      } else {
-        left = centerPct - offset;
-        side = 'name-left';
+    let yFeet = 80 + (100 - pctClamped) * 5.2;
+
+    // 비슷한 progress (3%p 이내) 인 이전 climber 마다 y 를 12px 씩 stagger.
+    let nudgePx = 0;
+    for (let j = 0; j < i; j++) {
+      if (ranked[j].pct != null && c.pct != null && Math.abs(ranked[j].pct - c.pct) < 3) {
+        nudgePx += 12;
       }
     }
-    // mountain x-range 안에 보장
-    left = Math.max(range.xLeft / 400 * 100, Math.min(range.xRight / 400 * 100, left));
+    yFeet += nudgePx;
+
+    const top = (yFeet - 20) / 600 * 100;
+    const range = _mtXRangeAt(yFeet);
+    const rangeStartPct = range.xLeft / 400 * 100;
+    const rangeEndPct   = range.xRight / 400 * 100;
+    const rangeWidthPct = rangeEndPct - rangeStartPct;
+
+    const slot = slotX[i % slotX.length];
+    let left = rangeStartPct + rangeWidthPct * slot;
+    // mountain x-range 안에 보장 (±1% 여유)
+    left = Math.max(rangeStartPct + 1, Math.min(rangeEndPct - 1, left));
+
+    const side = `name-${slotSide[i % slotSide.length]}`;
     return { ...c, top, left, side, rank: i };
   });
 
