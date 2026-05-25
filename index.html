@@ -35,6 +35,9 @@
 --share-bg:#0A0A0A;--share-surface:#1A1A1A;--share-text:#F5F1EA;--share-text-2:#A0A0A0;--share-text-3:#5a5a66;--share-accent:#B91C1C;--share-gold:#C9A34E;
 }
 </style>
+<!-- Perf (2026-05-25): app.js bundle 다운로드를 HTML parse 와 병렬 시작.
+     parser 가 <script src="/dist/app.js"> 에 도달했을 때 이미 캐시에서 즉시 실행 → wait 0. -->
+<link rel="preload" href="/dist/app.js?v=05d16094" as="script" fetchpriority="high">
 <link rel="manifest" href="/manifest.json">
 <link rel="apple-touch-icon" sizes="180x180" href="/icons/qrok-180.png">
 <link rel="apple-touch-icon" sizes="120x120" href="/icons/qrok-120.png">
