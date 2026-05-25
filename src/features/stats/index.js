@@ -55,34 +55,83 @@ export function stSetPeriod(days, btn){
   else loadStatsTab();
 }
 
+// SWR 캐시 helper — localStorage 기반. 앱 재시작 후에도 즉시 표시.
+const _STATS_CACHE_KEY = 'qrok:cache:stats';
+const _STATS_CACHE_TTL_MS = 5 * 60 * 1000;  // 5분 — 그 후 stale 로 표시
+
+function _readStatsCache(){
+  try {
+    const raw = localStorage.getItem(_STATS_CACHE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (!parsed || !parsed.data || !parsed.userId || parsed.userId !== window.CU?.id) return null;
+    return parsed;  // { ts, data, userId, days }
+  } catch(e) { return null; }
+}
+function _writeStatsCache(data, days){
+  try {
+    localStorage.setItem(_STATS_CACHE_KEY, JSON.stringify({
+      ts: Date.now(), userId: window.CU?.id, data, days
+    }));
+  } catch(e) { /* quota / private mode 등 */ }
+}
+
+// App start 후 백그라운드 prefetch — 사용자가 분석 탭 진입 시 캐시 즉시 사용.
+export async function _prefetchStats(){
+  if (!window.CU) return;
+  try {
+    const data = await _fetchStatsData(90);
+    _writeStatsCache(data, 90);
+    // memory 에도 caching — 같은 세션에서 탭 진입 시 fetch 안 함
+    if (!_stData) {
+      _stData = data.map(d => ({...d, _key: normKey(d.log_date)}));
+      _stDataDays = 90;
+    }
+  } catch(e) { /* silent — 실패해도 정상 flow 동작 */ }
+}
+
+async function _fetchStatsData(days){
+  const from=new Date(now);from.setDate(from.getDate()-(days-1));
+  const fromKey=dkey(from);
+  const{data,error}=await sb.from('daily_logs')
+    .select('log_date,weight,muscle_mass,body_fat_pct,water_cups,meals,workouts,mandatory,targets,points_log')
+    .eq('user_id',window.CU.id)
+    .gte('log_date',fromKey)
+    .order('log_date',{ascending:true});
+  if(error) throw error;
+  return data || [];
+}
+
 // ── stats 탭 데이터 로드 ──
 export async function loadStatsTab(){
   if(!window.CU)return;
 
   // 로딩 표시
   const loadEl=document.getElementById('st-loading');
-  if(loadEl)loadEl.style.display='block';
   // hero/empty 는 일시적으로 숨기고, sec-nav (분석 카테고리 탭) 는 유지.
   ['st-hero','st-empty'].forEach(id=>{
     const el=document.getElementById(id);if(el)el.style.display='none';
   });
 
-  try{
-    // 캐시가 있으면 재사용. Perf (2026-05-25): 첫 fetch 는 90일만 — 5초+ 로딩 단축.
-    //   1년 데이터 필요 시 (stPeriod>90): 백그라운드에서 추가 fetch.
-    if(!_stData){
-      const fetchDays=Math.max(stPeriod||7, 90);
-      const from=new Date(now);from.setDate(from.getDate()-(fetchDays-1));
-      const fromKey=dkey(from);
-      const{data,error}=await sb.from('daily_logs')
-        .select('log_date,weight,muscle_mass,body_fat_pct,water_cups,meals,workouts,mandatory,targets,points_log')
-        .eq('user_id',window.CU.id)
-        .gte('log_date',fromKey)
-        .order('log_date',{ascending:true});
+  // SWR 1단계: localStorage 캐시 즉시 표시 (앱 재시작 후에도 즉시 보임)
+  const cached = _readStatsCache();
+  if (cached && !_stData) {
+    _stData = cached.data.map(d => ({...d, _key: normKey(d.log_date)}));
+    _stDataDays = cached.days;
+    if(loadEl)loadEl.style.display='none';
+    stRenderAll(_stData);  // 즉시 차트 그림
+  } else if (!cached && !_stData && loadEl) {
+    loadEl.style.display='block';  // 캐시 없을 때만 로딩 표시
+  }
 
-      if(error)throw error;
-      _stData=(data||[]).map(d=>({...d,_key:normKey(d.log_date)}));
-      _stDataDays=fetchDays;
+  try{
+    // SWR 2단계: 백그라운드 fresh fetch + 캐시 갱신
+    const fetchDays = Math.max(stPeriod||7, 90);
+    if(!_stData || (Date.now() - (cached?.ts || 0)) > _STATS_CACHE_TTL_MS){
+      const data = await _fetchStatsData(fetchDays);
+      _stData = data.map(d => ({...d, _key: normKey(d.log_date)}));
+      _stDataDays = fetchDays;
+      _writeStatsCache(data, fetchDays);
     } else if (stPeriod && stPeriod > (_stDataDays||0)) {
       // 사용자가 더 긴 기간 요청 — 추가 fetch
       const from=new Date(now);from.setDate(from.getDate()-(stPeriod-1));
@@ -95,6 +144,7 @@ export async function loadStatsTab(){
       if(!error && data){
         _stData=data.map(d=>({...d,_key:normKey(d.log_date)}));
         _stDataDays=stPeriod;
+        _writeStatsCache(data, stPeriod);
       }
     }
   }catch(e){

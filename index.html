@@ -63,21 +63,21 @@
      외부 link 2개 제거 → render-blocking CSS 요청 -2. trainer.html 등은 여전히 link. -->
 <!-- Perf (2026-05-25): 남은 sync CSS 도 모두 async — splash 가 1.6s 가리는 동안 모두 로드 완료.
      FOUC 위험 거의 없음 + render-blocking 0 → splash 즉시 paint. -->
-<link href="/src/styles/states.css?v=05d16094" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/styles/components.css?v=05d16094" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/styles/icons.css?v=05d16094" rel="stylesheet" media="print" onload="this.media='all'">
-<noscript><link href="/src/styles/states.css?v=05d16094" rel="stylesheet"><link href="/src/styles/components.css?v=05d16094" rel="stylesheet"><link href="/src/styles/icons.css?v=05d16094" rel="stylesheet"></noscript>
+<link href="/src/styles/states.css?v=846f1a1d" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/styles/components.css?v=846f1a1d" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/styles/icons.css?v=846f1a1d" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link href="/src/styles/states.css?v=846f1a1d" rel="stylesheet"><link href="/src/styles/components.css?v=846f1a1d" rel="stylesheet"><link href="/src/styles/icons.css?v=846f1a1d" rel="stylesheet"></noscript>
 <!-- Feature folder CSS — 한 폴더 = 한 기능 컨벤션 (ARCHITECTURE.md).
      Perf (2026-05-25): media="print" + onload swap 으로 async 로딩 → 초기 paint 차단 X.
      splash 가 1.6s+ 표시되므로 그 사이 모두 로드되어 FOUC 위험 거의 없음. -->
-<link href="/src/features/targets/targets.css?v=05d16094" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/cubes/cubes-ui.css?v=05d16094" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/date-heatmap/date-heatmap.css?v=05d16094" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/dev-inspector/dev-inspector.css?v=05d16094" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/water/water.css?v=05d16094" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/sticky-header/sticky-header.css?v=05d16094" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/status-band/status-band.css?v=05d16094" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/mountain/mountain.css?v=05d16094" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/targets/targets.css?v=846f1a1d" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/cubes/cubes-ui.css?v=846f1a1d" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/date-heatmap/date-heatmap.css?v=846f1a1d" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/dev-inspector/dev-inspector.css?v=846f1a1d" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/water/water.css?v=846f1a1d" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/sticky-header/sticky-header.css?v=846f1a1d" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/status-band/status-band.css?v=846f1a1d" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/mountain/mountain.css?v=846f1a1d" rel="stylesheet" media="print" onload="this.media='all'">
 <style>
 /* :root 토큰은 src/styles/tokens.{shared,dark}.css 로 이전됨 (Phase 0).
    index.html 은 다크 팔레트 사용. 추가 sub-palette (--radius-sm 등 legacy) 가
@@ -1483,7 +1483,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
      app.js bundle → supabase ESM 포함 (2026-05-25 perf), inline body scripts 가 의존하므로 sync. -->
 <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-<script src="/dist/app.js?v=05d16094"></script>
+<script src="/dist/app.js?v=846f1a1d"></script>
 
 <script>
   // QROK Splash — 앱 ready 까지 대기 후 fade out. 좌측 상단/중앙 loading 스피너 가림.
@@ -6444,6 +6444,28 @@ async function onLogin(user){
   setTimeout(checkBonusGrants, 2200);
   // Day-1 저녁 nudge (empty-log 유저에게 gentle 부스트) — 3초 뒤 체크
   setTimeout(()=>{try{checkDay1EveningNudge();}catch(e){}},3000);
+  // Perf (2026-05-25): 분석/챌린지 탭 데이터 백그라운드 prefetch — 사용자가 탭 진입 시 즉시 표시.
+  //   2초 후 (다른 critical init 끝난 뒤) low-priority 로 실행.
+  setTimeout(()=>{
+    try{
+      // stats prefetch
+      if(typeof window._prefetchStats==='function'){
+        window._prefetchStats();
+      }
+      // challenges prefetch — renderChallengeHome 의 fetch 만 트리거 (DOM 렌더 X)
+      if(CU&&typeof sb!=='undefined'){
+        sb.from('competitions').select('id,code,name,creator_id,members,sections,challenge_type,status,max_members,start_date,duration_days,weight_goal,member_wgoals,measure_type,member_inbody_goals,daily_goal').in('status',['waiting','active','failed','completed'])
+          .then(({data})=>{
+            if(data){
+              _challengeCache = data;
+              _challengeCacheTs = Date.now();
+              _writeChallengeLS(data);
+            }
+          })
+          .catch(()=>{});
+      }
+    }catch(e){console.warn('[prefetch]',e);}
+  }, 2000);
 }
 
 // ── INITIAL UI PAINT HELPER ──
@@ -12719,26 +12741,61 @@ const RECOMMENDED_CHALLENGES = [
   {icon:'🌅',name:'새벽 기상 챌린지',desc:'매일 5시 기상. 세상이 달라 보인다.', days:30},
 ];
 
-// Perf fix (2026-05-25): competitions 테이블 전체 fetch 가 비싸서 60초 캐시.
-// challenge 생성/가입/탈퇴 시 window._invalidateChallengeCache() 호출하면 즉시 갱신.
+// Perf fix (2026-05-25): SWR 패턴.
+//   - memory cache (60s)
+//   - localStorage cache (5min) — 앱 재시작 후에도 즉시 표시
+//   - challenge 생성/가입/탈퇴 시 window._invalidateChallengeCache() 호출하면 양쪽 무효화.
 let _challengeCache = null;
 let _challengeCacheTs = 0;
 const _CHALLENGE_TTL_MS = 60_000;
-window._invalidateChallengeCache = function(){ _challengeCache = null; _challengeCacheTs = 0; };
+const _CHALLENGE_LS_KEY = 'qrok:cache:comps';
+const _CHALLENGE_LS_TTL_MS = 5 * 60 * 1000;
+window._invalidateChallengeCache = function(){
+  _challengeCache = null; _challengeCacheTs = 0;
+  try { localStorage.removeItem(_CHALLENGE_LS_KEY); } catch(e){}
+};
+function _readChallengeLS(){
+  try {
+    const raw = localStorage.getItem(_CHALLENGE_LS_KEY);
+    if (!raw) return null;
+    const p = JSON.parse(raw);
+    if (!p || !p.userId || p.userId !== CU?.id) return null;
+    if ((Date.now() - p.ts) > _CHALLENGE_LS_TTL_MS) return null;
+    return p.data;
+  } catch(e) { return null; }
+}
+function _writeChallengeLS(data){
+  try { localStorage.setItem(_CHALLENGE_LS_KEY, JSON.stringify({ts: Date.now(), userId: CU?.id, data})); } catch(e){}
+}
 
 async function renderChallengeHome(){
   if(!CU)return;
 
-  // Fetch user's challenges (60s 캐시)
+  // Fetch user's challenges (memory → localStorage → network)
   let allComps_raw;
   const _now = Date.now();
   if (_challengeCache && (_now - _challengeCacheTs) < _CHALLENGE_TTL_MS) {
     allComps_raw = _challengeCache;
   } else {
-    const fetched = await sb.from('competitions').select('id,code,name,creator_id,members,sections,challenge_type,status,max_members,start_date,duration_days,weight_goal,member_wgoals,measure_type,member_inbody_goals,daily_goal').in('status',['waiting','active','failed','completed']);
-    allComps_raw = fetched.data;
-    _challengeCache = allComps_raw;
-    _challengeCacheTs = _now;
+    // localStorage 캐시 즉시 사용 (있으면)
+    const lsData = _readChallengeLS();
+    if (lsData) {
+      _challengeCache = lsData;
+      _challengeCacheTs = _now;
+      allComps_raw = lsData;
+      // 백그라운드 fresh fetch (await X) — 데이터가 stale 일 수 있으므로
+      sb.from('competitions').select('id,code,name,creator_id,members,sections,challenge_type,status,max_members,start_date,duration_days,weight_goal,member_wgoals,measure_type,member_inbody_goals,daily_goal').in('status',['waiting','active','failed','completed'])
+        .then(({data})=>{
+          if(data){ _challengeCache = data; _challengeCacheTs = Date.now(); _writeChallengeLS(data); }
+        })
+        .catch(()=>{});
+    } else {
+      const fetched = await sb.from('competitions').select('id,code,name,creator_id,members,sections,challenge_type,status,max_members,start_date,duration_days,weight_goal,member_wgoals,measure_type,member_inbody_goals,daily_goal').in('status',['waiting','active','failed','completed']);
+      allComps_raw = fetched.data;
+      _challengeCache = allComps_raw;
+      _challengeCacheTs = _now;
+      _writeChallengeLS(allComps_raw);
+    }
   }
   const myComps=(allComps_raw||[]).filter(c=>{
     if(c.creator_id===CU.id)return true;
