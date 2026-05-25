@@ -58,13 +58,12 @@
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Archivo+Black&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 <!-- Phase 0: 디자인 토큰 — Perf (2026-05-25): head 상단 <style> 에 inline (위 line 12-).
      외부 link 2개 제거 → render-blocking CSS 요청 -2. trainer.html 등은 여전히 link. -->
-<!-- Phase B-app: tap feedback + state 컴포넌트 + skeleton. -->
-<link href="/src/styles/states.css?v=05d16094" rel="stylesheet">
-<!-- 디자인 시스템 — atom (btn-close, btn-cta, btn-ghost, ic-circle) + molecule (promo-card).
-     스펙: document-private/DESIGN_SYSTEM.md (2026-05-25 시작). -->
-<link href="/src/styles/components.css?v=05d16094" rel="stylesheet">
-<!-- 아이콘 sprite — .ic class + <symbol> defs (body 최상단의 #qrok-icons). lucide/heroicons 패턴. -->
-<link href="/src/styles/icons.css?v=05d16094" rel="stylesheet">
+<!-- Perf (2026-05-25): 남은 sync CSS 도 모두 async — splash 가 1.6s 가리는 동안 모두 로드 완료.
+     FOUC 위험 거의 없음 + render-blocking 0 → splash 즉시 paint. -->
+<link href="/src/styles/states.css?v=05d16094" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/styles/components.css?v=05d16094" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/styles/icons.css?v=05d16094" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link href="/src/styles/states.css?v=05d16094" rel="stylesheet"><link href="/src/styles/components.css?v=05d16094" rel="stylesheet"><link href="/src/styles/icons.css?v=05d16094" rel="stylesheet"></noscript>
 <!-- Feature folder CSS — 한 폴더 = 한 기능 컨벤션 (ARCHITECTURE.md).
      Perf (2026-05-25): media="print" + onload swap 으로 async 로딩 → 초기 paint 차단 X.
      splash 가 1.6s+ 표시되므로 그 사이 모두 로드되어 FOUC 위험 거의 없음. -->
