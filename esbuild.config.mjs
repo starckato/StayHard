@@ -2,6 +2,7 @@ import * as esbuild from 'esbuild';
 import { createHash } from 'node:crypto';
 import { readFileSync, writeFileSync, readdirSync, statSync } from 'node:fs';
 import { resolve, join } from 'node:path';
+import { minify as minifyHtml } from 'html-minifier-terser';
 
 // 디렉토리 하위의 모든 .css 파일 재귀 수집 (해시에 포함시킬 source CSS).
 function _collectCssFiles(dir) {
@@ -102,6 +103,39 @@ if (isServe) {
         console.log(`[esbuild] cache-bust → ?v=${versionSlug} (index.html 갱신: JS 1 + CSS ${cssCount})`);
       } else {
         console.log(`[esbuild] cache-bust → ?v=${versionSlug} (변경 없음)`);
+      }
+
+      // ── HTML minify (vercel 빌드에서만) ──
+      // 957KB → ~600KB 예상. Brotli 후 transfer 비슷하지만 모바일 CPU parse 시간 단축.
+      // VERCEL=1 env 가 vercel build 시 자동 set. 로컬 npm run build 는 minify X (diff noise 회피).
+      if (process.env.VERCEL === '1' || process.env.MINIFY_HTML === '1') {
+        try {
+          const beforeSize = updated.length;
+          const minified = await minifyHtml(updated, {
+            collapseWhitespace: true,
+            removeComments: true,
+            removeRedundantAttributes: true,
+            collapseBooleanAttributes: true,
+            // Inline JS/CSS 도 minify — 14000줄 inline JS 의 공백/주석/식별자 단축.
+            // terser 가 syntax 보존하므로 안전.
+            minifyJS: {
+              compress: { drop_console: true, drop_debugger: true, passes: 2 },
+              // mangle: top-level 안 건드림이 default → onclick="globalFn()" 안전.
+              // 로컬 변수만 단축.
+              mangle: { toplevel: false, reserved: ['CU', 'CP', 'sb', 'log', 'logCache'] },
+              format: { comments: false }
+            },
+            minifyCSS: true,
+            // <pre>, <textarea> 안 공백 보존
+            conservativeCollapse: false,
+            // 따옴표 제거 (?v=hash 등 보존)
+            removeAttributeQuotes: false,
+          });
+          writeFileSync(indexPath, minified);
+          console.log(`[esbuild] HTML minify: ${beforeSize} → ${minified.length} bytes (${Math.round((1 - minified.length/beforeSize) * 100)}% 감소)`);
+        } catch (e) {
+          console.warn('[esbuild] HTML minify 실패 — 원본 유지:', e?.message || e);
+        }
       }
     }
   } catch (e) {
