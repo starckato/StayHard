@@ -1,0 +1,402 @@
+/* 큐록 · features/mountain — 챌린지 룸 산 메타포 leaderboard.
+ *
+ * v1 production (2026-05-25): 6 인 멤버까지 동적 배치.
+ *   - SVG 산 배경 + zone deco (눈/숲/풀)
+ *   - 4 체크포인트 (캠프1/2/3/정상) + 보상 + First ★ + 개인 깃발 자국
+ *   - climber 졸라맨 + 캐릭터별 색 + aura 단계 (lv-0~4)
+ *   - 라벨 좌/우 absolute
+ *
+ * 외부 의존성: prototype `ch-D-mountain-climb.html` v9 디자인 참조. */
+
+.mt-wrap {
+  position: relative;
+  height: 600px;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background:
+    radial-gradient(1px 1px at 20% 8%, #fff, transparent),
+    radial-gradient(1px 1px at 60% 4%, #fff, transparent),
+    radial-gradient(1px 1px at 80% 12%, #ffb84d, transparent),
+    radial-gradient(1px 1px at 35% 22%, #fff, transparent),
+    radial-gradient(1.5px 1.5px at 50% 2%, #fff, transparent),
+    linear-gradient(180deg, #0a0a14 0%, #14142a 25%, #1f1f3a 50%, #2a2a3c 75%, #1a1a1f 100%);
+  border: 1px solid var(--border);
+}
+.mt-svg { position: absolute; bottom: 0; left: 0; width: 100%; height: 100%; z-index: 0; }
+
+/* 구간 지형 deco */
+.mt-zone { position: absolute; left: 0; right: 0; pointer-events: none; z-index: 1; }
+.mt-zone-peak {
+  top: 0; bottom: 65%;
+  background-image:
+    radial-gradient(1.5px 1.5px at 15% 30%, rgba(255,255,255,0.6), transparent),
+    radial-gradient(1px 1px at 65% 50%, rgba(255,255,255,0.5), transparent),
+    radial-gradient(1.5px 1.5px at 85% 20%, rgba(255,255,255,0.7), transparent),
+    radial-gradient(1px 1px at 30% 70%, rgba(255,255,255,0.5), transparent),
+    radial-gradient(2px 2px at 50% 80%, rgba(255,255,255,0.4), transparent);
+  animation: mtSnow 6s linear infinite;
+  opacity: 0.7;
+}
+@keyframes mtSnow {
+  0%   { background-position: 0 0, 0 0, 0 0, 0 0, 0 0; }
+  100% { background-position: 8px 40px, -10px 50px, 6px 60px, -8px 30px, 10px 45px; }
+}
+.mt-zone-chase {
+  top: 35%; bottom: 43.3%;
+  background-image:
+    linear-gradient(135deg, transparent 48%, rgba(120,180,220,0.05) 50%, transparent 52%),
+    linear-gradient(45deg, transparent 48%, rgba(120,180,220,0.05) 50%, transparent 52%);
+  background-size: 20px 20px;
+}
+.mt-zone-stall {
+  top: 56.7%; bottom: 21.7%;
+  background-image:
+    radial-gradient(3px 6px at 12% 60%, rgba(58,82,52,0.5), transparent),
+    radial-gradient(3px 5px at 28% 80%, rgba(48,72,42,0.4), transparent),
+    radial-gradient(3px 6px at 78% 70%, rgba(58,82,52,0.4), transparent),
+    radial-gradient(2px 4px at 92% 88%, rgba(48,72,42,0.4), transparent);
+}
+.mt-zone-start {
+  top: 78.3%; bottom: 0;
+  background-image:
+    radial-gradient(1px 1px at 12% 50%, rgba(80,120,70,0.4), transparent),
+    radial-gradient(1px 1px at 38% 70%, rgba(80,120,70,0.3), transparent),
+    radial-gradient(1px 1px at 70% 60%, rgba(80,120,70,0.4), transparent),
+    radial-gradient(1px 1px at 88% 80%, rgba(80,120,70,0.3), transparent);
+}
+
+/* 구간 이름 */
+.mt-zone-label {
+  position: absolute;
+  right: 6px;
+  z-index: 2;
+  font-family: 'DM Mono', monospace;
+  font-size: 8.5px;
+  letter-spacing: 0.06em;
+  text-align: right;
+  pointer-events: none;
+  line-height: 1.3;
+}
+.mt-zone-label .nm {
+  display: block;
+  font-family: 'Archivo Black', sans-serif;
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.45);
+}
+.mt-zone-label .sub { color: rgba(255,255,255,0.3); font-style: italic; }
+.mt-zone-label.is-peak .nm { color: rgba(255,213,74,0.55); }
+
+/* 체크포인트 */
+.mt-cp {
+  position: absolute; left: 6px; right: 6px; height: 0;
+  border-top: 1px dashed rgba(255,255,255,0.13);
+  z-index: 3;
+  pointer-events: none;
+}
+.mt-cp.is-peak { border-top-color: rgba(255,213,74,0.4); }
+.mt-cp-row {
+  position: absolute; left: 0; right: 0; top: -9px;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.mt-cp-name {
+  font-family: 'DM Mono', monospace; font-size: 8.5px; color: rgba(255,255,255,0.55);
+  letter-spacing: 0.1em; text-transform: uppercase;
+  background: rgba(10,10,12,0.78); padding: 1px 5px; border-radius: 3px; white-space: nowrap;
+  display: inline-flex; align-items: center; gap: 4px;
+}
+.mt-cp.is-peak .mt-cp-name { color: var(--gold, #ffd54a); }
+.mt-cp-pct {
+  font-family: 'DM Mono', monospace; font-size: 8.5px; color: rgba(255,255,255,0.35);
+  background: rgba(10,10,12,0.78); padding: 1px 5px; border-radius: 3px;
+}
+.mt-cube {
+  display: inline-block; width: 8px; height: 8px; border-radius: 1px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.5), inset 0 -1px 0 rgba(0,0,0,0.3);
+}
+.mt-cube.is-silver { background: linear-gradient(135deg, #d8d8d8, #888); }
+.mt-cube.is-gold   { background: linear-gradient(135deg, #ffd54a, #b88820); }
+.mt-trophy { width: 10px; height: 10px; color: var(--gold, #ffd54a); fill: var(--gold, #ffd54a); }
+
+.mt-cp-first {
+  position: absolute; left: 0; bottom: 4px;
+  font-family: 'DM Mono', monospace; font-size: 8px;
+  background: rgba(10,10,12,0.78); padding: 1px 5px; border-radius: 3px;
+  display: flex; align-items: center; gap: 3px;
+}
+.mt-cp-first .star { color: var(--gold, #ffd54a); font-size: 9px; }
+.mt-cp-first .nm { font-weight: 700; }
+.mt-cp-flags {
+  position: absolute; right: 4px; bottom: 4px;
+  display: flex; gap: 2px;
+}
+.mt-cp-flag {
+  width: 6px; height: 8px; background: var(--c);
+  clip-path: polygon(0 0, 100% 0, 100% 60%, 50% 100%, 0 60%);
+  filter: drop-shadow(0 0 2px var(--c));
+}
+
+/* 정상 깃발 */
+.mt-peak-flag {
+  position: absolute; left: 50%; transform: translateX(-50%);
+  top: 42px; height: 38px; width: 18px; z-index: 5;
+}
+.mt-peak-flag .pole {
+  position: absolute; top: 0; bottom: 0; left: 8px; width: 2px;
+  background: linear-gradient(to bottom, #e8b840, #5a3a0a);
+  box-shadow: 0 0 4px rgba(255,213,74,0.5);
+}
+.mt-peak-flag .banner {
+  position: absolute; top: 0; left: 10px; width: 16px; height: 11px;
+  background: linear-gradient(135deg, #ff4d4d, #a8302a);
+  clip-path: polygon(0 0, 100% 50%, 0 100%);
+  filter: drop-shadow(0 0 6px rgba(255,77,77,0.5));
+}
+.mt-peak-flag .info { position: absolute; top: -1px; left: 28px; white-space: nowrap; }
+.mt-peak-flag .info-num {
+  font-family: 'Archivo Black', sans-serif; font-size: 11px;
+  color: var(--gold, #ffd54a); letter-spacing: 0.04em; line-height: 1.1;
+}
+.mt-peak-flag .info-day {
+  font-family: 'DM Mono', monospace; font-size: 9px;
+  color: var(--text2, #a8a8b4); line-height: 1.2;
+}
+
+/* 등반자 */
+.mt-climber {
+  position: absolute; width: 14px; height: 20px; z-index: 4;
+}
+.mt-climber.is-leader, .mt-climber.is-me { z-index: 6; }
+
+.mt-pwrap { position: relative; width: 14px; height: 20px; z-index: 5; }
+.mt-pfig {
+  width: 14px; height: 20px; display: block; overflow: visible;
+}
+.mt-pfig .stroke {
+  stroke: var(--char); stroke-width: 1.6;
+  stroke-linecap: round; stroke-linejoin: round; fill: none;
+}
+.mt-pfig .head { fill: var(--char); stroke: var(--char); stroke-width: 1; }
+
+.mt-pwrap::after {
+  content: '';
+  position: absolute; bottom: -3px; left: 50%; transform: translateX(-50%);
+  width: 10px; height: 2px;
+  background: rgba(0,0,0,0.5); border-radius: 50%; filter: blur(1.5px);
+}
+
+.mt-climber.is-me .mt-pwrap::before {
+  content: '▼'; position: absolute; top: -14px; left: 50%; transform: translateX(-50%);
+  font-size: 10px; color: var(--accent, #ff4d4d);
+  text-shadow: 0 0 4px var(--accent, #ff4d4d);
+  animation: mtMeArrow 1s ease-in-out infinite; line-height: 1;
+  z-index: 10;
+}
+
+/* 캐릭터 색 */
+.mt-climber.mt-c0 { --char: #ff4d4d; }
+.mt-climber.mt-c1 { --char: #ffd54a; }
+.mt-climber.mt-c2 { --char: #38bdf8; }
+.mt-climber.mt-c3 { --char: #ec4899; }
+.mt-climber.mt-c4 { --char: #a855f7; }
+.mt-climber.mt-c5 { --char: #f97316; }
+
+/* AURA 단계 */
+.mt-climber.is-leader .mt-pfig {
+  filter: drop-shadow(0 0 6px var(--char)) drop-shadow(0 0 14px #ffd54a);
+}
+.mt-climber.is-me .mt-pfig { animation: mtMeBreath 1.6s ease-in-out infinite; }
+.mt-climber.is-out .mt-pfig {
+  opacity: 0.45;
+  filter: saturate(0.3) brightness(0.85) drop-shadow(0 0 2px rgba(0,0,0,0.4));
+}
+
+.mt-climber.mt-lv-1 .mt-pfig {
+  filter: drop-shadow(0 0 5px var(--char));
+}
+.mt-climber.mt-lv-2 .mt-pfig {
+  filter: drop-shadow(0 0 7px var(--char)) drop-shadow(0 0 14px var(--char));
+}
+.mt-climber.mt-lv-2 .mt-aura-disc {
+  position: absolute;
+  bottom: -6px; left: 50%; transform: translateX(-50%);
+  width: 38px; height: 12px; border-radius: 50%;
+  background: radial-gradient(ellipse at center,
+    var(--char) 0%,
+    color-mix(in srgb, var(--char) 70%, transparent) 22%,
+    color-mix(in srgb, var(--char) 25%, transparent) 55%,
+    transparent 82%);
+  opacity: 0.9; filter: blur(2px);
+  animation: mtLv2Disc 1.4s ease-in-out infinite;
+  pointer-events: none; z-index: 0;
+  mix-blend-mode: screen;
+  box-shadow: 0 0 18px color-mix(in srgb, var(--char) 70%, transparent);
+}
+.mt-climber.mt-lv-2 .mt-aura-disc::after {
+  content: '';
+  position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
+  width: 6px; height: 26px;
+  background: linear-gradient(to top,
+    color-mix(in srgb, var(--char) 90%, transparent),
+    transparent 80%);
+  filter: blur(1.5px); opacity: 0.7;
+  animation: mtLv2Streak 0.6s ease-in-out infinite alternate;
+  border-radius: 50% 50% 30% 30% / 80% 80% 30% 30%;
+}
+
+.mt-climber.mt-lv-3 .mt-pfig {
+  filter:
+    drop-shadow(0 0 8px var(--char))
+    drop-shadow(0 0 16px var(--char))
+    drop-shadow(0 0 26px var(--char));
+  animation: mtLv3Bob 1.2s ease-in-out infinite;
+}
+.mt-climber.mt-lv-3 .mt-aura-flame {
+  position: absolute;
+  bottom: -4px; left: 50%; transform: translateX(-50%);
+  width: 36px; height: 52px;
+  background: radial-gradient(ellipse at 50% 100%, var(--char) 0%,
+    color-mix(in srgb, var(--char) 80%, transparent) 25%,
+    color-mix(in srgb, var(--char) 30%, transparent) 55%,
+    transparent 80%);
+  opacity: 0.85; filter: blur(2.5px);
+  animation: mtLv3Flame 0.38s ease-in-out infinite alternate;
+  pointer-events: none; z-index: 1;
+  border-radius: 50% 50% 30% 30% / 65% 65% 40% 40%;
+  mix-blend-mode: screen;
+}
+.mt-climber.mt-lv-3 .mt-aura-spark {
+  position: absolute; inset: -16px;
+  pointer-events: none; z-index: 1;
+}
+.mt-climber.mt-lv-3 .mt-aura-spark::before,
+.mt-climber.mt-lv-3 .mt-aura-spark::after {
+  content: ''; position: absolute;
+  width: 4px; height: 4px;
+  background: var(--char); border-radius: 50%;
+  box-shadow: 0 0 8px var(--char), 0 0 16px var(--char);
+  animation: mtLv3Spark 1.3s ease-out infinite;
+}
+.mt-climber.mt-lv-3 .mt-aura-spark::before { top: 30%; left: -2px;  animation-delay: 0s; }
+.mt-climber.mt-lv-3 .mt-aura-spark::after  { top: 55%; right: -2px; animation-delay: 0.45s; }
+
+.mt-climber.mt-lv-4 .mt-pfig {
+  filter:
+    drop-shadow(0 0 10px var(--char))
+    drop-shadow(0 0 22px var(--char))
+    drop-shadow(0 0 36px #ffd54a)
+    drop-shadow(0 0 56px #ffd54a);
+  animation: mtLv4Bob 1s ease-in-out infinite;
+}
+.mt-climber.mt-lv-4 .mt-aura-flame {
+  position: absolute;
+  bottom: -6px; left: 50%; transform: translateX(-50%);
+  width: 54px; height: 76px;
+  background: radial-gradient(ellipse at 50% 100%, white 0%,
+    var(--char) 12%,
+    color-mix(in srgb, var(--char) 70%, transparent) 35%,
+    color-mix(in srgb, #ffd54a 50%, transparent) 60%,
+    transparent 85%);
+  opacity: 0.95; filter: blur(3px);
+  animation: mtLv4Flame 0.28s ease-in-out infinite alternate;
+  pointer-events: none; z-index: 1;
+  border-radius: 50% 50% 30% 30% / 70% 70% 40% 40%;
+  mix-blend-mode: screen;
+}
+.mt-climber.mt-lv-4 .mt-aura-beams {
+  position: absolute; inset: -28px;
+  background: conic-gradient(from 0deg,
+    transparent 0deg,    var(--char) 8deg,  transparent 16deg,
+    transparent 55deg,   #ffd54a 63deg, transparent 71deg,
+    transparent 115deg,  var(--char) 123deg, transparent 131deg,
+    transparent 175deg,  #ffd54a 183deg, transparent 191deg,
+    transparent 235deg,  var(--char) 243deg, transparent 251deg,
+    transparent 295deg,  #ffd54a 303deg, transparent 311deg);
+  opacity: 0.7; filter: blur(1.5px);
+  animation: mtLv4Rotate 3s linear infinite;
+  border-radius: 50%;
+  pointer-events: none; z-index: 0;
+  mix-blend-mode: screen;
+}
+.mt-climber.mt-lv-4 .mt-aura-pulse {
+  position: absolute; inset: -22px; border-radius: 50%;
+  background: radial-gradient(circle,
+    color-mix(in srgb, #ffd54a 80%, transparent) 0%,
+    transparent 65%);
+  opacity: 0;
+  animation: mtLv4Pulse 1.2s ease-in-out infinite;
+  pointer-events: none; z-index: 0;
+}
+
+@keyframes mtMeBreath { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-1.5px); } }
+@keyframes mtMeArrow {
+  0%, 100% { transform: translateX(-50%) translateY(0); opacity: 0.9; }
+  50%      { transform: translateX(-50%) translateY(-2px); opacity: 1; }
+}
+@keyframes mtLv2Disc {
+  0%, 100% { transform: translateX(-50%) scale(1);    opacity: 0.65; }
+  50%      { transform: translateX(-50%) scale(1.25); opacity: 1; }
+}
+@keyframes mtLv2Streak {
+  from { transform: translateX(-50%) scaleY(0.9) skewX(-3deg); opacity: 0.55; }
+  to   { transform: translateX(-50%) scaleY(1.15) skewX(3deg); opacity: 0.85; }
+}
+@keyframes mtLv3Bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
+@keyframes mtLv3Flame {
+  from { transform: translateX(-50%) scale(1)    skewX(-5deg); opacity: 0.7;  }
+  to   { transform: translateX(-50%) scale(1.18) skewX(5deg);  opacity: 0.95; }
+}
+@keyframes mtLv3Spark {
+  0%   { transform: translateY(0)    scale(0); opacity: 0; }
+  25%  { transform: translateY(-4px) scale(1); opacity: 1; }
+  100% { transform: translateY(-28px) scale(0); opacity: 0; }
+}
+@keyframes mtLv4Bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+@keyframes mtLv4Flame {
+  from { transform: translateX(-50%) scale(1)    skewX(-6deg); opacity: 0.8; }
+  to   { transform: translateX(-50%) scale(1.22) skewX(6deg);  opacity: 1;   }
+}
+@keyframes mtLv4Rotate { to { transform: rotate(360deg); } }
+@keyframes mtLv4Pulse {
+  0%, 100% { transform: scale(0.7); opacity: 0; }
+  50%      { transform: scale(1.4); opacity: 0.7; }
+}
+
+/* 라벨 */
+.mt-tag {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  display: inline-flex; align-items: center; gap: 3px;
+  background: rgba(10,10,12,0.88);
+  border: 1px solid var(--char);
+  border-radius: 3px;
+  padding: 2px 5px;
+  font-size: 9.5px; color: var(--text, #eaeaea); font-weight: 700;
+  white-space: nowrap; backdrop-filter: blur(4px); line-height: 1.2;
+  z-index: 5;
+}
+.mt-climber.name-right .mt-tag { left: calc(100% + 5px); }
+.mt-climber.name-left  .mt-tag { right: calc(100% + 5px); }
+.mt-tag .nm { font-weight: 700; }
+.mt-tag .pct {
+  font-family: 'DM Mono', monospace; font-size: 9px;
+  color: var(--char); font-weight: 700;
+}
+.mt-tag .lv-badge {
+  display: inline-flex; align-items: center;
+  background: var(--char); color: #0a0a0a;
+  font-family: 'Archivo Black', sans-serif; font-size: 7.5px;
+  padding: 1px 3px; border-radius: 2px; letter-spacing: 0.04em;
+  margin-left: 3px;
+}
+.mt-climber.mt-lv-0 .lv-badge { background: var(--text3, #6b6b78); color: rgba(0,0,0,0.5); }
+.mt-climber.is-leader .mt-tag { border-color: var(--gold, #ffd54a); color: var(--gold, #ffd54a); }
+.mt-climber.is-leader .mt-tag .nm,
+.mt-climber.is-leader .mt-tag .pct { color: var(--gold, #ffd54a); }
+.mt-climber.is-me .mt-tag {
+  border-color: var(--accent, #ff4d4d);
+  color: var(--accent, #ff4d4d);
+  background: rgba(255,77,77,0.2);
+}
+
+/* 본인 ETA 가이드 (선택) — 멤버 카드 하단에 둘 수도 있고 별도 cell. v1 미사용. */

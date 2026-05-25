@@ -30,24 +30,24 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Archivo+Black&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 <!-- Phase 0: 디자인 토큰 (shared 먼저, palette 가 override). -->
-<link href="/src/styles/tokens.shared.css?v=5a3316df" rel="stylesheet">
-<link href="/src/styles/tokens.dark.css?v=5a3316df" rel="stylesheet">
+<link href="/src/styles/tokens.shared.css?v=f27f1d07" rel="stylesheet">
+<link href="/src/styles/tokens.dark.css?v=f27f1d07" rel="stylesheet">
 <!-- Phase B-app: tap feedback + state 컴포넌트 + skeleton. -->
-<link href="/src/styles/states.css?v=5a3316df" rel="stylesheet">
+<link href="/src/styles/states.css?v=f27f1d07" rel="stylesheet">
 <!-- 디자인 시스템 — atom (btn-close, btn-cta, btn-ghost, ic-circle) + molecule (promo-card).
      스펙: document-private/DESIGN_SYSTEM.md (2026-05-25 시작). -->
-<link href="/src/styles/components.css?v=5a3316df" rel="stylesheet">
+<link href="/src/styles/components.css?v=f27f1d07" rel="stylesheet">
 <!-- 아이콘 sprite — .ic class + <symbol> defs (body 최상단의 #qrok-icons). lucide/heroicons 패턴. -->
-<link href="/src/styles/icons.css?v=5a3316df" rel="stylesheet">
+<link href="/src/styles/icons.css?v=f27f1d07" rel="stylesheet">
 <!-- Feature folder CSS — 한 폴더 = 한 기능 컨벤션 (ARCHITECTURE.md). -->
-<link href="/src/features/targets/targets.css?v=5a3316df" rel="stylesheet">
-<link href="/src/features/cubes/cubes-ui.css?v=5a3316df" rel="stylesheet">
-<link href="/src/features/date-heatmap/date-heatmap.css?v=5a3316df" rel="stylesheet">
+<link href="/src/features/targets/targets.css?v=f27f1d07" rel="stylesheet">
+<link href="/src/features/cubes/cubes-ui.css?v=f27f1d07" rel="stylesheet">
+<link href="/src/features/date-heatmap/date-heatmap.css?v=f27f1d07" rel="stylesheet">
 <!-- Dev inspector — ?dev=1 로만 활성, production 부담 0. -->
-<link href="/src/features/dev-inspector/dev-inspector.css?v=5a3316df" rel="stylesheet">
-<link href="/src/features/water/water.css?v=5a3316df" rel="stylesheet">
-<link href="/src/features/sticky-header/sticky-header.css?v=5a3316df" rel="stylesheet">
-<link href="/src/features/status-band/status-band.css?v=5a3316df" rel="stylesheet">
+<link href="/src/features/dev-inspector/dev-inspector.css?v=f27f1d07" rel="stylesheet">
+<link href="/src/features/water/water.css?v=f27f1d07" rel="stylesheet">
+<link href="/src/features/sticky-header/sticky-header.css?v=f27f1d07" rel="stylesheet">
+<link href="/src/features/status-band/status-band.css?v=f27f1d07" rel="stylesheet">
 <style>
 /* :root 토큰은 src/styles/tokens.{shared,dark}.css 로 이전됨 (Phase 0).
    index.html 은 다크 팔레트 사용. 추가 sub-palette (--radius-sm 등 legacy) 가
@@ -1454,7 +1454,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
 <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-<script src="/dist/app.js?v=5a3316df"></script>
+<script src="/dist/app.js?v=f27f1d07"></script>
 
 <script>
   // QROK Splash — 앱 ready 까지 대기 후 fade out. 좌측 상단/중앙 loading 스피너 가림.
@@ -2485,6 +2485,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
             <button id="gs-tab-weight" class="gs-tab is-active" onclick="switchGroupStatsTab('weight')">⚖️ 체중</button>
             <button id="gs-tab-diet" class="gs-tab" onclick="switchGroupStatsTab('diet')">🥗 식단</button>
             <button id="gs-tab-volume" class="gs-tab" onclick="switchGroupStatsTab('volume')">💪 운동</button>
+            <button id="gs-tab-mountain" class="gs-tab" onclick="switchGroupStatsTab('mountain')">🏔 산</button>
           </div>
           <div id="gs-weight-panel">
             <!-- v4 (2026-05-25): SVG 라인 6개 겹침 → 멤버별 bullet bar 1행씩. -->
@@ -2501,6 +2502,8 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
               <div id="gs-workout-dotgrid"></div>
             </div>
           </div>
+          <!-- Mountain leaderboard panel (2026-05-25): 산 메타포 progress view. -->
+          <div id="gs-mountain-panel" style="display:none;"></div>
           <!-- Phase 1 (2026-05-25): 식단 quality 패널.
                멤버별 stacked bar (clean/normal/cheat/violate 100% 정규화) + 클린 streak top3. -->
           <div id="gs-diet-panel" style="display:none;">
@@ -13069,10 +13072,10 @@ function toggleGroupStats(){
 }
 let _groupStatsTab='weight';
 function switchGroupStatsTab(tab){
-  if(!['weight','diet','volume'].includes(tab))return;
+  if(!['weight','diet','volume','mountain'].includes(tab))return;
   _groupStatsTab=tab;
-  const panels={weight:'gs-weight-panel',diet:'gs-diet-panel',volume:'gs-volume-panel'};
-  const tabs={weight:'gs-tab-weight',diet:'gs-tab-diet',volume:'gs-tab-volume'};
+  const panels={weight:'gs-weight-panel',diet:'gs-diet-panel',volume:'gs-volume-panel',mountain:'gs-mountain-panel'};
+  const tabs={weight:'gs-tab-weight',diet:'gs-tab-diet',volume:'gs-tab-volume',mountain:'gs-tab-mountain'};
   Object.entries(panels).forEach(([k,id])=>{
     const el=document.getElementById(id);if(el)el.style.display=(k===tab)?'block':'none';
   });
@@ -13263,6 +13266,13 @@ function renderGroupStats(profiles,mbs,allLogs,memberWgoals,chStart,chEnd,dayNum
 
   // Phase 1 (2026-05-25): 식단 quality 패널 렌더 — 멤버별 stacked bar + 클린 streak top3.
   try{renderGsDiet(sortedProfiles,allLogs,chStart,chEnd);}catch(e){console.warn('[gs-diet]',e);}
+
+  // Mountain leaderboard (2026-05-25): 산 메타포 progress view (캠프1/2/3/정상 + aura).
+  try{
+    if(window.renderMountain){
+      window.renderMountain(sortedProfiles,memberWeightMaps,memberWgoals,chStart,chEnd,dayNum,(CU&&CU.id)||null);
+    }
+  }catch(e){console.warn('[mountain]',e);}
 }
 
 // 식단 quality 분류 — 음주(category)는 type 보다 우선 (red 보다 음주가 강한 violation).

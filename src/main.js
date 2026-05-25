@@ -38,6 +38,7 @@ import * as pLocalNotifications from './platform/local-notifications.js';
 
 // Friends feature (phase 1: MVP) — 친구 코드 + nudge inbox.
 import * as friends from './features/friends/index.js';
+import * as mountain from './features/mountain/index.js';
 
 // Retention Phase 2 infra — feature flags + metric events (SERVICE_EVALUATION §6).
 import * as flags from './features/flags/index.js';
@@ -101,6 +102,8 @@ window.sh.haptics = pHaptics;
 window.sh.notifications = pNotifications;
 window.sh.localNotifications = pLocalNotifications;
 window.sh.friends = friends;
+window.sh.mountain = mountain;
+window.renderMountain = mountain.renderMountain;
 window.sh.flags = flags;
 window.sh.metrics = metrics;
 window.sh.firstCube = firstCube;
