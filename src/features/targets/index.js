@@ -45,10 +45,7 @@ export function renderTargetsSummary() {
 const EMPTY_HTML = `<div style="padding:16px 0;text-align:center;">
   <div style="font-size:var(--text-2xl);margin-bottom:6px;">🎯</div>
   <div style="font-size:var(--text-md);color:var(--text3);margin-bottom:4px;">오늘의 할일을 설정하세요</div>
-  <div style="font-size:var(--text-xs);color:var(--text3);margin-bottom:10px;">예: 링크드인 연락 · 보고서 작성 · 병원 예약</div>
-  <div style="display:inline-flex;align-items:center;gap:6px;font-size:var(--text-2xs);font-weight:600;padding:5px 10px;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius-pill);color:var(--text3);letter-spacing:-.01em;">
-    <span style="color:var(--green);">+2pt</span>완료 · <span style="color:var(--red);">-2pt</span>실패
-  </div>
+  <div style="font-size:var(--text-xs);color:var(--text3);">예: 링크드인 연락 · 보고서 작성 · 병원 예약</div>
 </div>`;
 
 function rowHtml(t, i) {
