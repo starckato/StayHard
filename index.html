@@ -1904,11 +1904,11 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
         <div id="homework-rows"></div>
         <div class="workout-rows" id="workout-rows"></div>
         <div style="display:flex;gap:8px;margin:8px 12px 12px;">
-          <button id="wo-add-cta" class="btn-cta is-soft is-lg is-block" onclick="event.stopPropagation(); openWorkoutStartScreen();">
+          <button id="wo-add-cta" class="btn-cta is-soft is-lg" style="flex:1;min-width:0;" onclick="event.stopPropagation(); openWorkoutStartScreen();">
             <svg class="ic is-sm"><use href="#i-plus"/></svg>
             <span id="wo-add-cta-lbl">운동 추가</span>
           </button>
-          <button class="btn-ghost is-lg" onclick="event.stopPropagation(); openMuscleMap();">
+          <button class="btn-ghost is-lg" style="flex:0 0 auto;white-space:nowrap;" onclick="event.stopPropagation(); openMuscleMap();">
             <span>💥</span>
             <span>자극 부위</span>
           </button>
