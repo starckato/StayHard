@@ -41,16 +41,17 @@
 <link href="/src/styles/components.css?v=75410fcc" rel="stylesheet">
 <!-- 아이콘 sprite — .ic class + <symbol> defs (body 최상단의 #qrok-icons). lucide/heroicons 패턴. -->
 <link href="/src/styles/icons.css?v=75410fcc" rel="stylesheet">
-<!-- Feature folder CSS — 한 폴더 = 한 기능 컨벤션 (ARCHITECTURE.md). -->
-<link href="/src/features/targets/targets.css?v=75410fcc" rel="stylesheet">
-<link href="/src/features/cubes/cubes-ui.css?v=75410fcc" rel="stylesheet">
-<link href="/src/features/date-heatmap/date-heatmap.css?v=75410fcc" rel="stylesheet">
-<!-- Dev inspector — ?dev=1 로만 활성, production 부담 0. -->
-<link href="/src/features/dev-inspector/dev-inspector.css?v=75410fcc" rel="stylesheet">
-<link href="/src/features/water/water.css?v=75410fcc" rel="stylesheet">
-<link href="/src/features/sticky-header/sticky-header.css?v=75410fcc" rel="stylesheet">
-<link href="/src/features/status-band/status-band.css?v=75410fcc" rel="stylesheet">
-<link href="/src/features/mountain/mountain.css?v=75410fcc" rel="stylesheet">
+<!-- Feature folder CSS — 한 폴더 = 한 기능 컨벤션 (ARCHITECTURE.md).
+     Perf (2026-05-25): media="print" + onload swap 으로 async 로딩 → 초기 paint 차단 X.
+     splash 가 1.6s+ 표시되므로 그 사이 모두 로드되어 FOUC 위험 거의 없음. -->
+<link href="/src/features/targets/targets.css?v=75410fcc" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/cubes/cubes-ui.css?v=75410fcc" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/date-heatmap/date-heatmap.css?v=75410fcc" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/dev-inspector/dev-inspector.css?v=75410fcc" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/water/water.css?v=75410fcc" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/sticky-header/sticky-header.css?v=75410fcc" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/status-band/status-band.css?v=75410fcc" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/mountain/mountain.css?v=75410fcc" rel="stylesheet" media="print" onload="this.media='all'">
 <style>
 /* :root 토큰은 src/styles/tokens.{shared,dark}.css 로 이전됨 (Phase 0).
    index.html 은 다크 팔레트 사용. 추가 sub-palette (--radius-sm 등 legacy) 가
@@ -1363,7 +1364,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
 .qrok-splash-dot{width:6px;height:6px;display:inline-block;will-change:transform,box-shadow,opacity;animation:qrok-splash-dot-glow 1.6s ease-in-out infinite;}
 .qrok-splash-dot.gold   {background:#ffd54a;color:#ffd54a;animation-delay:0s;}
 .qrok-splash-dot.silver {background:#b5c0cc;color:#b5c0cc;animation-delay:0.3s;}
-.qrok-splash-dot.crimson{background:var(--accent);color:var(--accent);animation-delay:0.6s;}
+.qrok-splash-dot.crimson{background:#ff4d4d;color:#ff4d4d;animation-delay:0.6s;}
 .qrok-splash-dot.gray   {background:#6b6b78;color:#6b6b78;animation-delay:0.9s;}
 @keyframes qrok-splash-dot-glow{
   0%,60%,100%{transform:scale(1);box-shadow:0 0 0 transparent;opacity:0.5;}
@@ -1436,10 +1437,11 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
      이 markup 이 가장 먼저 paint 됨 (모바일 흰 화면 5초 → ~500ms 단축). -->
 <div id="qrok-splash" role="img" aria-label="큐록 로딩 중" style="position:fixed;inset:0;background:#0f0f11;z-index:10000;display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:1;transition:opacity 400ms cubic-bezier(0.4,0,0.2,1);pointer-events:auto;">
   <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
-    <div style="font-family:'Pretendard','Noto Sans KR','Apple SD Gothic Neo',sans-serif;font-weight:800;font-size:var(--text-3xl);color:var(--accent);line-height:1;letter-spacing:-0.01em;">큐록</div>
-    <div style="font-family:'Archivo Black','DM Sans','Helvetica Neue',sans-serif;font-weight:900;font-size:var(--text-md);color:#f5f1ea;letter-spacing:0.22em;opacity:0.85;">QROK</div>
+    <!-- Perf (2026-05-25): var(--...) 의존 제거 — CSS 토큰 로드 전에도 정확히 paint 되도록 hardcode. -->
+    <div style="font-family:'Pretendard','Noto Sans KR','Apple SD Gothic Neo',sans-serif;font-weight:800;font-size:28px;color:#ff4d4d;line-height:1;letter-spacing:-0.01em;">큐록</div>
+    <div style="font-family:'Archivo Black','DM Sans','Helvetica Neue',sans-serif;font-weight:900;font-size:14px;color:#f5f1ea;letter-spacing:0.22em;opacity:0.85;">QROK</div>
   </div>
-  <div style="margin-top:22px;font-family:'DM Sans',sans-serif;font-size:var(--text-sm);color:#6b6b78;letter-spacing:0;text-align:center;padding:0 24px;">전부 기록하고, 전부 책임진다.</div>
+  <div style="margin-top:22px;font-family:'DM Sans',sans-serif;font-size:13px;color:#6b6b78;letter-spacing:0;text-align:center;padding:0 24px;">전부 기록하고, 전부 책임진다.</div>
   <!-- 4 dots: gold → silver → crimson → gray 순차 글로우 (Will Cube 정체성). 중앙 정렬, 슬로건 아래. -->
   <div style="margin-top:20px;display:flex;justify-content:center;gap:10px;">
     <div class="qrok-splash-dot gold"></div>
