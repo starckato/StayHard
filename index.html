@@ -5134,12 +5134,7 @@ function toggleSet(ei,si){
   const s=currentSession[ei].sets[si];
   s.done=!s.done;
   if(s.done){
-    // auto-copy weight to next undone set — only to EMPTY fields, never overwrite user input
-    const nextSet=currentSession[ei].sets[si+1];
-    if(nextSet&&!nextSet.done){
-      if(s.kg && !nextSet.kg)nextSet.kg=s.kg;
-      if(s.reps && !nextSet.reps)nextSet.reps=s.reps;
-    }
+    // 2026-05-25 ux fix: 체크 시 다음 set 빈칸 auto-fill 제거 — 사용자가 버그로 인지함.
     saveSessionToLog();
     // start rest timer
     _wsStartRest();
