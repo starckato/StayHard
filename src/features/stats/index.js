@@ -838,8 +838,8 @@ export function stRenderInsights(rows){
   const wPts=rows.filter(r=>r.weight!=null).map(r=>parseFloat(r.weight));
   if(wPts.length>=7){
     const diff=wPts[wPts.length-1]-wPts[0];
-    if(diff<=-1)insights.push({icon:'⬇️',text:'체중이 '+Math.abs(diff).toFixed(1)+'kg 감량됐어요. 꾸준히 유지해요!',color:'var(--green)'});
-    else if(diff>=2)insights.push({icon:'⬆️',text:'체중이 '+diff.toFixed(1)+'kg 증가했어요. 식단을 점검해보세요.',color:'var(--red)'});
+    if(diff<=-1)insights.push({icon:'',text:'체중이 '+Math.abs(diff).toFixed(1)+'kg 감량됐어요. 꾸준히 유지해요!',color:'var(--green)'});
+    else if(diff>=2)insights.push({icon:'',text:'체중이 '+diff.toFixed(1)+'kg 증가했어요. 식단을 점검해보세요.',color:'var(--red)'});
   }
 
   // 음주

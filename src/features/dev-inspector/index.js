@@ -3,11 +3,11 @@
 // 활성: URL 에 ?dev=1
 // 작동:
 //   1. 우측 floating panel 출현
-//   2. 🎯 Pick Element 버튼 클릭 → armed 상태 (cursor crosshair)
+//   2.  Pick Element 버튼 클릭 → armed 상태 (cursor crosshair)
 //   3. 페이지의 어떤 요소든 클릭 → 선택 + outline 강조
 //   4. 패널에 선택 요소 컨텍스트 (selector / class / id / outer HTML / 핵심 styles)
 //   5. 텍스트박스에 요청 입력 ("이 카드 padding 줄여줘" 등)
-//   6. 📋 Copy 버튼 → 구조화 markdown 클립보드
+//   6.  Copy 버튼 → 구조화 markdown 클립보드
 //   7. 사용자가 Claude 채팅에 paste → 정확한 컨텍스트와 함께 작업 요청
 //
 // production 빌드에는 *영향 없음* — ?dev=1 없으면 init 함수 자체가 early-return.
@@ -87,7 +87,7 @@ function _renderPicked() {
 
   if (empty) {
     [valSel, valHtml, valStyle, valChain].forEach(el => {
-      if (el) { el.textContent = '아직 선택된 요소 없음 — 🎯 누르고 클릭하세요'; el.classList.add('is-empty'); }
+      if (el) { el.textContent = '아직 선택된 요소 없음 —  누르고 클릭하세요'; el.classList.add('is-empty'); }
     });
     return;
   }
@@ -114,7 +114,7 @@ function _buildMarkdown(userMsg) {
   const stylesLines = Object.entries(ks).map(([k, v]) => `- ${k}: ${v}`).join('\n');
 
   return [
-    '## 🎯 선택된 요소',
+    '##  선택된 요소',
     `**Selector**: \`${sel}\``,
     `**Parents**: \`${chain}\``,
     '',
@@ -126,7 +126,7 @@ function _buildMarkdown(userMsg) {
     '**Computed Styles**:',
     stylesLines || '(키 스타일 추출 0)',
     '',
-    userMsg ? `## ✏️ 작업 요청\n\n${userMsg}` : '',
+    userMsg ? `##  작업 요청\n\n${userMsg}` : '',
   ].filter(Boolean).join('\n');
 }
 
@@ -163,7 +163,7 @@ function _handlePick(e) {
   _armed = false;
   document.body.classList.remove('qrok-dev-armed');
   const armBtn = _panel?.querySelector('[data-qd-btn="arm"]');
-  if (armBtn) { armBtn.classList.remove('is-armed'); armBtn.textContent = '🎯 Pick Element'; }
+  if (armBtn) { armBtn.classList.remove('is-armed'); armBtn.textContent = ' Pick Element'; }
   if (_hoverOutline) _hoverOutline.style.display = 'none';
   _ensureOutline(el, true);
   _renderPicked();
@@ -177,7 +177,7 @@ function _onArmClick() {
     if (armBtn) { armBtn.classList.add('is-armed'); armBtn.textContent = '… 클릭하세요'; }
   } else {
     document.body.classList.remove('qrok-dev-armed');
-    if (armBtn) { armBtn.classList.remove('is-armed'); armBtn.textContent = '🎯 Pick Element'; }
+    if (armBtn) { armBtn.classList.remove('is-armed'); armBtn.textContent = ' Pick Element'; }
     if (_hoverOutline) _hoverOutline.style.display = 'none';
   }
 }
@@ -188,7 +188,7 @@ async function _onCopyClick() {
   const md = _buildMarkdown(userMsg);
   try {
     await navigator.clipboard.writeText(md);
-    _showToast('✓ 복사됨 — 클로드 채팅에 paste');
+    _showToast(' 복사됨 — 클로드 채팅에 paste');
   } catch (_) {
     // fallback — execCommand
     try {
@@ -198,7 +198,7 @@ async function _onCopyClick() {
       textArea.select();
       document.execCommand('copy');
       document.body.removeChild(textArea);
-      _showToast('✓ 복사됨');
+      _showToast(' 복사됨');
     } catch (e) {
       _showToast('복사 실패');
     }
@@ -336,7 +336,7 @@ export function mockChallengeRoom() {
   if (room) room.style.display = 'flex';
   // Header
   const tEl = document.getElementById('room-title');
-  if (tEl) tEl.textContent = '🎭 Mock 챌린지 (6명, 14일)';
+  if (tEl) tEl.textContent = ' Mock 챌린지 (6명, 14일)';
   const sEl = document.getElementById('room-subtitle');
   if (sEl) sEl.textContent = 'dev inspector 합성 데이터';
   // D-Day
@@ -403,7 +403,7 @@ function _buildPanel() {
     <div class="qd-hdr">
       <div class="qd-title">QROK · DEV</div>
       <div class="qd-actions">
-        <button class="qd-btn" data-qd-btn="arm">🎯 Pick Element</button>
+        <button class="qd-btn" data-qd-btn="arm"> Pick Element</button>
         <button class="qd-btn is-secondary" data-qd-btn="min" title="접기">_</button>
       </div>
     </div>
@@ -429,11 +429,11 @@ function _buildPanel() {
         <textarea class="qd-textarea" placeholder="이 카드 padding 더 줄여줘 / 색 바꿔줘 ..."></textarea>
       </div>
       <div class="qd-section" style="display:flex;gap:6px;">
-        <button class="qd-btn" data-qd-btn="copy" style="flex:1;">📋 Copy Context</button>
+        <button class="qd-btn" data-qd-btn="copy" style="flex:1;"> Copy Context</button>
         <button class="qd-btn is-secondary" data-qd-btn="clear">초기화</button>
       </div>
       <div class="qd-section">
-        <div class="qd-label">🎭 Mock 데이터</div>
+        <div class="qd-label"> Mock 데이터</div>
         <button class="qd-btn is-secondary" data-qd-btn="mock-challenge" style="width:100%;">
           챌린지 룸 — 6명 14일 합성
         </button>
@@ -462,9 +462,9 @@ function _buildPanel() {
   p.querySelector('[data-qd-btn="min"]').addEventListener('click', () => {
     p.classList.toggle('is-open');
   });
-  // 🎭 Mock 챌린지
+  //  Mock 챌린지
   p.querySelector('[data-qd-btn="mock-challenge"]').addEventListener('click', () => {
-    try { mockChallengeRoom(); _showToast('✓ Mock 챌린지 룸 열림'); }
+    try { mockChallengeRoom(); _showToast(' Mock 챌린지 룸 열림'); }
     catch (e) { _showToast('Mock 실패'); console.warn(e); }
   });
 
