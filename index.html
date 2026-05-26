@@ -1996,7 +1996,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
 
       <!-- 친구 초대 카드 — 항상 노출 (dismiss 가능). 바이럴 루프 진입점 -->
       <div id="invite-card" class="promo-card" style="display:none;">
-        <span class="ic-circle is-grad-accent">🙌</span>
+        <span class="ic-circle is-grad-accent" style="color:#fff;"><svg class="ic is-md"><use href="#i-user"/></svg></span>
         <div class="promo-card-text">
           <div class="promo-card-title">친구랑 같이 큐록</div>
           <div class="promo-card-body">초대장 보내서 같이 기록하자</div>
@@ -2252,7 +2252,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
     <!-- 푸쉬업 챌린지 (최상단 — 사용자 선호) -->
     <div id="puc-card" style="margin-top:16px;background:linear-gradient(135deg,var(--accent-tint-2) 0%,var(--accent-tint-2) 100%);border:1px solid var(--accent-bd);border-radius:var(--radius-xl);padding:18px;display:none;">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
-        <div style="font-size:var(--text-xl);">💪</div>
+        <div style="color:var(--accent);display:flex;"><svg class="ic is-lg"><use href="#i-dumbbell"/></svg></div>
         <div style="font-size:var(--text-base);font-weight:800;letter-spacing:-.2px;flex:1;">푸쉬업 챌린지</div>
       </div>
 
@@ -2360,7 +2360,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
 
       <!-- 티어 목록 -->
       <div style="margin-top:16px;margin-bottom:20px;">
-        <div style="font-size:var(--text-xs);font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;">🏆 티어</div>
+        <div style="font-size:var(--text-xs);font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;">티어</div>
         <div id="sg-tiers" style="display:flex;flex-direction:column;gap:6px;"></div>
       </div>
 
@@ -2379,12 +2379,12 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
             <span style="font-size:var(--text-base);font-weight:700;color:var(--green);">+5</span>
           </div>
           <div style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--surface2);border-radius:var(--radius-lg);">
-            <span style="font-size:var(--text-lg);width:24px;text-align:center;">🎯</span>
+            <span style="width:24px;text-align:center;color:var(--accent);"><svg class="ic is-md"><use href="#i-check-square"/></svg></span>
             <span style="flex:1;font-size:var(--text-base);color:var(--text);">목표 체중 달성</span>
             <span style="font-size:var(--text-base);font-weight:700;color:var(--green);">+30</span>
           </div>
           <div style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--surface2);border-radius:var(--radius-lg);">
-            <span style="font-size:var(--text-lg);width:24px;text-align:center;">🥗</span>
+            <span style="width:24px;text-align:center;color:var(--green);"><svg class="ic is-md"><use href="#i-leaf"/></svg></span>
             <span style="flex:1;font-size:var(--text-base);color:var(--text);">식단 등록</span>
             <span style="font-size:var(--text-base);font-weight:700;color:var(--green);">+1</span>
           </div>
@@ -2394,7 +2394,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
             <span style="font-size:var(--text-base);font-weight:700;color:var(--green);">+10</span>
           </div>
           <div style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--surface2);border-radius:var(--radius-lg);">
-            <span style="font-size:var(--text-lg);width:24px;text-align:center;">💪</span>
+            <span style="width:24px;text-align:center;color:var(--accent);"><svg class="ic is-md"><use href="#i-dumbbell"/></svg></span>
             <span style="flex:1;font-size:var(--text-base);color:var(--text);">운동 완료</span>
             <span style="font-size:var(--text-base);font-weight:700;color:var(--green);">+20</span>
           </div>
@@ -2515,8 +2515,8 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
           <div class="gs-tab-row">
             <button id="gs-tab-mountain" class="gs-tab is-active" onclick="switchGroupStatsTab('mountain')">🏔 산</button>
             <button id="gs-tab-weight" class="gs-tab" onclick="switchGroupStatsTab('weight')">⚖️ 체중</button>
-            <button id="gs-tab-diet" class="gs-tab" onclick="switchGroupStatsTab('diet')">🥗 식단</button>
-            <button id="gs-tab-volume" class="gs-tab" onclick="switchGroupStatsTab('volume')">💪 운동</button>
+            <button id="gs-tab-diet" class="gs-tab" onclick="switchGroupStatsTab('diet')">식단</button>
+            <button id="gs-tab-volume" class="gs-tab" onclick="switchGroupStatsTab('volume')">운동</button>
           </div>
           <div id="gs-weight-panel" style="display:none;">
             <!-- v4 (2026-05-25): SVG 라인 6개 겹침 → 멤버별 bullet bar 1행씩. -->
@@ -2686,7 +2686,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
         <div style="height:0.5px;background:var(--border);margin-bottom:14px;"></div>
         <div style="font-size:var(--text-sm);font-weight:600;color:var(--text2);margin-bottom:10px;">📊 인바디 목표 <span style="font-size:var(--text-2xs);font-weight:400;color:var(--text3);">선택 · 나중에 설정 가능</span></div>
         <div style="margin-bottom:12px;">
-          <div style="font-size:var(--text-xs);font-weight:600;color:var(--green);margin-bottom:6px;">💪 골격근량</div>
+          <div style="font-size:var(--text-xs);font-weight:600;color:var(--green);margin-bottom:6px;">골격근량</div>
           <div style="display:flex;gap:8px;">
             <div style="flex:1;">
               <div style="font-size:var(--text-2xs);color:var(--text3);margin-bottom:4px;">현재 (kg)</div>
@@ -3469,7 +3469,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
 
       <!-- 골격근량 행 -->
       <div id="ibp-muscle-row" style="display:none;margin-bottom:8px;">
-        <div style="font-size:var(--text-xs);font-weight:600;color:var(--green);margin-bottom:6px;letter-spacing:.04em;">💪 골격근량</div>
+        <div style="font-size:var(--text-xs);font-weight:600;color:var(--green);margin-bottom:6px;letter-spacing:.04em;">골격근량</div>
         <div style="display:flex;gap:8px;">
           <div style="flex:1;background:var(--surface2);border-radius:var(--radius-lg);padding:10px;text-align:center;">
             <div style="font-size:var(--text-2xs);color:var(--text3);margin-bottom:3px;">시작</div>
@@ -3534,7 +3534,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
       <div style="height:0.5px;background:var(--border);margin-bottom:14px;"></div>
       <!-- 골격근량 (선택) -->
       <div style="margin-bottom:14px;">
-        <div style="font-size:var(--text-sm);font-weight:600;color:var(--green);margin-bottom:8px;">💪 골격근량 <span style="font-size:var(--text-2xs);font-weight:400;color:var(--text3);">선택</span></div>
+        <div style="font-size:var(--text-sm);font-weight:600;color:var(--green);margin-bottom:8px;">골격근량 <span style="font-size:var(--text-2xs);font-weight:400;color:var(--text3);">선택</span></div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
           <div>
             <div style="font-size:var(--text-2xs);color:var(--text3);margin-bottom:4px;">현재</div>
@@ -4954,7 +4954,7 @@ function renderSession(){
   // 트레이너 자세 메모 (이 운동에 대해 부여된 게 있으면 노란 박스로 표시)
   const trainerNote = _wsTrainerNotes[ex.name];
   const trainerNoteHtml = trainerNote ? `<div class="ws-trainer-note">
-    <div class="ws-tn-icon">📌</div>
+    <div class="ws-tn-icon" style="color:var(--amber);"><svg class="ic is-md"><use href="#i-info"/></svg></div>
     <div class="ws-tn-body">
       <div class="ws-tn-label">트레이너 메모</div>
       <div class="ws-tn-text">${esc(trainerNote)}</div>
