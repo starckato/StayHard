@@ -83,10 +83,10 @@ export function snapshot() {
 export const DEFAULT_FLAGS = {
   first_cube_card:  true,   // Phase 1C — 2026-05-26 enable (P0-#2 activation funnel)
   returner_grace:   true,   // Phase 1D — 2026-05-26 enable (P1 returner protection)
-  exempt_tap:       false,  // Phase 2A
-  layout_v2:        false,  // Phase 2B (Status Band 축소)
+  exempt_tap:       true,   // Phase 2A — 2026-05-26 enable (P1 회식/여행/아픔 1-tap 면제)
+  layout_v2:        false,  // Phase 2B (Status Band 축소) — index.html .sb 인라인 룰로 대체됨
   deeplink:         false,  // Phase 2C
-  opt_in_d3:        false,  // Phase 2D
+  opt_in_d3:        true,   // Phase 2D — 2026-05-26 enable (P1 D3 streak 알림 opt-in 프롬프트)
   volume_delta_card: false, // Phase 3A
   accent_picker:    false,  // Phase 3B
 };
