@@ -63,22 +63,22 @@
      외부 link 2개 제거 → render-blocking CSS 요청 -2. trainer.html 등은 여전히 link. -->
 <!-- Perf (2026-05-25): 남은 sync CSS 도 모두 async — splash 가 1.6s 가리는 동안 모두 로드 완료.
      FOUC 위험 거의 없음 + render-blocking 0 → splash 즉시 paint. -->
-<link href="/src/styles/states.css?v=05d6a188" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/styles/components.css?v=05d6a188" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/styles/icons.css?v=05d6a188" rel="stylesheet" media="print" onload="this.media='all'">
-<noscript><link href="/src/styles/states.css?v=05d6a188" rel="stylesheet"><link href="/src/styles/components.css?v=05d6a188" rel="stylesheet"><link href="/src/styles/icons.css?v=05d6a188" rel="stylesheet"></noscript>
+<link href="/src/styles/states.css?v=9d846f9e" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/styles/components.css?v=9d846f9e" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/styles/icons.css?v=9d846f9e" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link href="/src/styles/states.css?v=9d846f9e" rel="stylesheet"><link href="/src/styles/components.css?v=9d846f9e" rel="stylesheet"><link href="/src/styles/icons.css?v=9d846f9e" rel="stylesheet"></noscript>
 <!-- Feature folder CSS — 한 폴더 = 한 기능 컨벤션 (ARCHITECTURE.md).
      Perf (2026-05-25): media="print" + onload swap 으로 async 로딩 → 초기 paint 차단 X.
      splash 가 1.6s+ 표시되므로 그 사이 모두 로드되어 FOUC 위험 거의 없음. -->
-<link href="/src/features/targets/targets.css?v=05d6a188" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/cubes/cubes-ui.css?v=05d6a188" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/date-heatmap/date-heatmap.css?v=05d6a188" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/dev-inspector/dev-inspector.css?v=05d6a188" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/water/water.css?v=05d6a188" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/sticky-header/sticky-header.css?v=05d6a188" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/status-band/status-band.css?v=05d6a188" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/mountain/mountain.css?v=05d6a188" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/workout-session/workout-session.css?v=05d6a188" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/targets/targets.css?v=9d846f9e" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/cubes/cubes-ui.css?v=9d846f9e" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/date-heatmap/date-heatmap.css?v=9d846f9e" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/dev-inspector/dev-inspector.css?v=9d846f9e" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/water/water.css?v=9d846f9e" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/sticky-header/sticky-header.css?v=9d846f9e" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/status-band/status-band.css?v=9d846f9e" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/mountain/mountain.css?v=9d846f9e" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/workout-session/workout-session.css?v=9d846f9e" rel="stylesheet" media="print" onload="this.media='all'">
 <style>
 /* :root 토큰은 src/styles/tokens.{shared,dark}.css 로 이전됨 (Phase 0).
    index.html 은 다크 팔레트 사용. 추가 sub-palette (--radius-sm 등 legacy) 가
@@ -1470,7 +1470,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
      app.js bundle → supabase ESM 포함 (2026-05-25 perf), inline body scripts 가 의존하므로 sync. -->
 <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-<script src="/dist/app.js?v=05d6a188"></script>
+<script src="/dist/app.js?v=9d846f9e"></script>
 
 <script>
   // QROK Splash — 앱 ready 까지 대기 후 fade out. 좌측 상단/중앙 loading 스피너 가림.
@@ -12652,12 +12652,58 @@ function saveMandatory(){
   }
   closeModal('mand-modal');renderMandatory();
   queueSave();
-  propagateMandatoryDefs(log.mandatory);
+  // 2026-05-26 BUG FIX: 기존 전체 교체 → ADDITIVE merge (사용자 starckato 의 5/9 데이터 손실 원인).
+  // saveMandatory 는 add/edit 의도이므로 미래의 기존 customs 보존하면서 새 def 만 union.
+  propagateMandatoryDefsAdditive(log.mandatory);
 }
 
-// Propagate routine DEFINITIONS to all cached + nearby days
-// Each day gets the definition with done=false (preserving existing done status)
-// Propagate routine DEFINITIONS to current week + next 14 days (DB upsert)
+// ADD/EDIT propagate — 미래 14일 daily_logs.mandatory 에 새 def union (기존 보존).
+// 2026-05-26 신규: saveMandatory 가 호출. 기존 customs 손실 방지 (starckato 5/9 데이터 손실 사례).
+async function propagateMandatoryDefsAdditive(defs){
+  if(!defs||!defs.length||!CU)return;
+  const customDefs=defs.filter(d=>d&&d.type==='custom'&&d.name);
+  if(!customDefs.length)return;
+  const today=new Date();today.setHours(0,0,0,0);
+  const dates=[];
+  for(let i=0;i<=14;i++){
+    const d=new Date(today);d.setDate(today.getDate()+i);
+    dates.push(dkey(d));
+  }
+  for(const k of dates){
+    if(k===selectedKey)continue;
+    try{
+      const{data:existing}=await sb.from('daily_logs')
+        .select('mandatory')
+        .eq('user_id',CU.id)
+        .eq('log_date',k)
+        .maybeSingle();
+      const existingCustoms=(existing?.mandatory||[]).filter(m=>m&&m.type==='custom');
+      const existingDerived=(existing?.mandatory||[]).filter(m=>m&&m.type&&m.type!=='custom');
+      const seenNames=new Set();
+      const mergedCustoms=[];
+      // 1) 새 defs (편집된 경우 기존 done/fail state preserve)
+      customDefs.forEach(def=>{
+        seenNames.add(def.name);
+        const et=existingCustoms.find(m=>m.name===def.name);
+        mergedCustoms.push({type:'custom',name:def.name,done:et?.done||false,fail:et?.fail||false,days:def.days||[0,1,2,3,4,5,6],_scoreType:def._scoreType||null,end_date:def.end_date||null});
+      });
+      // 2) 기존 customs 중 이름 충돌 안 하는 것 그대로 preserve (← 핵심 fix)
+      existingCustoms.forEach(ec=>{
+        if(!seenNames.has(ec.name))mergedCustoms.push(ec);
+      });
+      const mergedMandatory=[...existingDerived,...mergedCustoms];
+      // 메모리 캐시 업데이트
+      if(logCache[k])logCache[k].mandatory=mergedMandatory;
+      await sb.from('daily_logs').upsert(
+        {user_id:CU.id,log_date:k,mandatory:mergedMandatory},
+        {onConflict:'user_id,log_date'}
+      );
+    }catch(e){console.warn('[propagateAdditive]',k,e?.message||e);}
+  }
+}
+
+// DELETE propagate — 미래 14일 mandatory 를 현재 defs 로 전체 교체 (의도된 destructive).
+// '이후 일정 모두 삭제' 옵션이 호출. saveMandatory 는 사용하지 말 것 (additive 사용).
 async function propagateMandatoryDefs(defs){
   if(!defs||!defs.length||!CU)return;
   // Only propagate custom routines — derived (diet/workout/todos) are seeded automatically
