@@ -81,7 +81,7 @@ export function snapshot() {
 // Default flag values — Phase 1/2/3 기능 기본 off.
 // 내 계정에서 true 로 켜서 테스트 후 전원 롤아웃.
 export const DEFAULT_FLAGS = {
-  first_cube_card:  false,  // Phase 1C
+  first_cube_card:  true,   // Phase 1C — 2026-05-26 enable (P0-#2 activation funnel)
   returner_grace:   false,  // Phase 1D
   exempt_tap:       false,  // Phase 2A
   layout_v2:        false,  // Phase 2B (Status Band 축소)

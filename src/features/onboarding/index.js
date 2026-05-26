@@ -223,6 +223,15 @@ export async function obFinish(){
   // 사용자가 헤더 ? 버튼으로 능동 진입. 첫 1초의 권한이 시스템 → 사용자.
   track('onboard_complete',{path:'full',goal:_obGoal,routines:obSelectedRoutines?.length||0});
   queueSave();
+  // 2026-05-26 P0-#2: 온보딩 완료 → 기록탭 자동 전환 + 첫 큐브 카드 노출.
+  //   이전: 사용자가 직접 기록탭 클릭해야 함 → Activation funnel 단절 (Time-to-first-cube ~15분).
+  //   변경: 즉시 기록탭으로 + first_cube_card flag 가 첫 큐브 가이드 노출 → ~3분 가능.
+  try {
+    if (typeof window.switchTab === 'function') {
+      // 미세 delay — onboarding modal 의 fade-out animation 안 충돌
+      setTimeout(() => { try { window.switchTab('routine', 0); } catch (e) { /* silent */ } }, 250);
+    }
+  } catch (e) { /* silent */ }
 }
 
 
