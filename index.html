@@ -11592,7 +11592,7 @@ function markActivityDone(i){
     const msgEl=document.getElementById('rage-msg');
     const closeBtn=document.querySelector('#rage-overlay .rage-close');
     const escBtn=document.getElementById('chaek-escape-btn');
-    if(faceEl)faceEl.textContent='💪';
+    if(faceEl)faceEl.textContent='';
     if(msgEl)msgEl.textContent=msg;
     if(closeBtn){closeBtn.textContent='계속 간다';closeBtn.onclick=closeRage;}
     if(escBtn)escBtn.style.display='none';
@@ -12856,13 +12856,6 @@ document.addEventListener('touchmove',()=>{_mandMoved=true;},{passive:true});
 // WEEKLY VIEW — moved to src/features/weekly-view/index.js (Phase 3.9). window.* via bundle.
 // ── COMPETITION ──
 // ── CHALLENGE HOME ──
-const RECOMMENDED_CHALLENGES = [
-  {icon:'🌊',name:'찬물 샤워 30일',desc:'매일 아침 냉수 샤워. 의지력의 시작.', days:30},
-  {icon:'📚',name:'독서 100일 챌린지',desc:'하루 30분. 100일 후 달라진 너.', days:100},
-  {icon:'💪',name:'운동 30일 연속',desc:'단 하루도 빠지지 마. 예외 없어.', days:30},
-  {icon:'🥗',name:'클린 식단 21일',desc:'21일이면 습관이 된다. 해봐.', days:21},
-  {icon:'🌅',name:'새벽 기상 챌린지',desc:'매일 5시 기상. 세상이 달라 보인다.', days:30},
-];
 
 // Perf fix (2026-05-25): SWR 패턴.
 //   - memory cache (60s)
@@ -14086,7 +14079,7 @@ async function quitChallenge(){
   document.getElementById('challenge-room').style.display='none';
   // Show rage
   const el=document.getElementById('rage-overlay');
-  document.getElementById('rage-face').textContent='💀';
+  document.getElementById('rage-face').textContent='';
   document.getElementById('rage-msg').textContent='포기로 기록됐다.\n챌린지를 포기했어.\n누적 점수에 남는다.';
   el.style.display='flex';
   if(navigator.vibrate)navigator.vibrate([200,100,200,100,400]);
