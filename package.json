@@ -8,6 +8,7 @@
     "dev": "node esbuild.config.mjs --watch --serve",
     "build": "node esbuild.config.mjs",
     "check": "node --check src/main.js",
+    "test": "node src/tests/node-runner.mjs",
     "cap:prepare": "bash scripts/cap-prepare.sh",
     "cap:sync": "npm run cap:prepare && cap sync",
     "cap:open:ios": "cap open ios",

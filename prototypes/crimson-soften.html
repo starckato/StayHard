@@ -1,0 +1,403 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
+<title>큐록 · T1-3 Crimson 무게감 완화</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  body{
+    background:#0a0a0c;
+    color:#f5f1ea;
+    font-family:'Pretendard','Apple SD Gothic Neo','DM Sans',sans-serif;
+    min-height:100vh;
+    padding:40px 20px 80px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    --text:#f5f1ea;
+    --text2:#a8a8b4;
+    --text3:#7a7a86;
+    --surface:#16161a;
+    --surface2:#1c1c22;
+    --surface3:#232328;
+    --border:rgba(255,255,255,.08);
+    --border2:rgba(255,255,255,.12);
+    --accent:#ff4d4d;
+    --green:#34d399;
+    --gold:#ffd54a;
+    --silver:#d8dfe7;
+    --radius-md:8px;
+    --radius-lg:12px;
+    --radius-xl:16px;
+    /* CURRENT crimson tokens (production) */
+    --red-current:#ef4444;
+    --red-current-bg:rgba(239,68,68,.14);
+    --red-current-bd:rgba(239,68,68,.42);
+    /* PROPOSED crimson tokens — muted but still 직면 */
+    --red-soft:#c14b54;
+    --red-soft-bg:rgba(193,75,84,.10);
+    --red-soft-bd:rgba(193,75,84,.32);
+  }
+  .page{max-width:430px;width:100%;}
+  .head{
+    margin-bottom:32px;
+    padding-bottom:16px;
+    border-bottom:1px solid var(--border);
+  }
+  .head .badge{
+    display:inline-block;
+    font-size:10px;
+    font-weight:700;
+    letter-spacing:.12em;
+    color:var(--accent);
+    margin-bottom:8px;
+  }
+  .head h1{
+    font-family:'Archivo Black','DM Sans',sans-serif;
+    font-size:20px;
+    letter-spacing:-.02em;
+    margin-bottom:6px;
+  }
+  .head p{font-size:13px;color:var(--text2);line-height:1.55;}
+
+  .section{margin-bottom:36px;}
+  .section-title{
+    font-family:'DM Mono',monospace;
+    font-size:10px;
+    font-weight:700;
+    letter-spacing:.16em;
+    text-transform:uppercase;
+    color:var(--text3);
+    margin-bottom:14px;
+  }
+  .demo{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:var(--radius-lg);
+    padding:18px 14px;
+    margin-bottom:8px;
+  }
+  .demo .label{
+    font-family:'DM Mono',monospace;
+    font-size:9px;
+    font-weight:700;
+    letter-spacing:.08em;
+    color:var(--text3);
+    margin-bottom:10px;
+  }
+
+  /* ───── Cube chip — 카드 헤더용 ───────────────── */
+  .cc{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    padding:3px 8px;
+    border-radius:6px;
+    font-family:'DM Mono',monospace;
+    font-size:10px;
+    font-weight:700;
+    letter-spacing:.04em;
+  }
+  .cc-dot{width:8px;height:8px;border-radius:1.5px;}
+
+  .cc.cur-crimson{background:var(--red-current-bg);border:1px solid var(--red-current-bd);color:var(--red-current);}
+  .cc.cur-crimson .cc-dot{background:var(--red-current);}
+  .cc.new-crimson{background:var(--red-soft-bg);border:1px solid var(--red-soft-bd);color:var(--red-soft);}
+  .cc.new-crimson .cc-dot{background:var(--red-soft);}
+
+  /* ───── 카드 (식단/운동/루틴/할일) ─────────── */
+  .card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:var(--radius-lg);
+    padding:12px 14px;
+    margin-bottom:10px;
+  }
+  .card-head{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin-bottom:6px;
+  }
+  .card-title{font-size:13px;font-weight:700;color:var(--text);flex:1;}
+  .card-body{font-size:11.5px;color:var(--text2);line-height:1.5;}
+
+  /* 현재 — bright crimson 영향 (card border + accent left stripe) */
+  .card.cur-crimson{
+    border-color:var(--red-current-bd);
+    background:linear-gradient(90deg,rgba(239,68,68,.06) 0%,var(--surface) 18%);
+    box-shadow:inset 3px 0 0 var(--red-current);
+  }
+  /* 신규 — muted crimson */
+  .card.new-crimson{
+    border-color:var(--red-soft-bd);
+    background:linear-gradient(90deg,rgba(193,75,84,.05) 0%,var(--surface) 18%);
+    box-shadow:inset 2px 0 0 var(--red-soft);
+  }
+
+  /* ───── Recovery hint card (NEW) ───────────── */
+  .recovery{
+    background:linear-gradient(135deg,rgba(216,223,231,.08) 0%,var(--surface2) 60%);
+    border:1px solid var(--border2);
+    border-left:2px solid var(--silver);
+    border-radius:var(--radius-md);
+    padding:12px 14px;
+    margin-top:6px;
+    margin-bottom:10px;
+  }
+  .recovery-kicker{
+    font-family:'DM Mono',monospace;
+    font-size:9px;
+    font-weight:700;
+    letter-spacing:.1em;
+    text-transform:uppercase;
+    color:var(--silver);
+    margin-bottom:4px;
+  }
+  .recovery-title{
+    font-size:13px;
+    font-weight:700;
+    color:var(--text);
+    margin-bottom:3px;
+  }
+  .recovery-body{
+    font-size:11.5px;
+    color:var(--text2);
+    line-height:1.5;
+  }
+  .recovery-cta{
+    display:inline-block;
+    margin-top:8px;
+    font-size:11.5px;
+    font-weight:700;
+    color:var(--silver);
+    padding:5px 10px;
+    background:rgba(216,223,231,.10);
+    border:1px solid rgba(216,223,231,.22);
+    border-radius:var(--radius-md);
+    cursor:pointer;
+  }
+
+  /* ───── Cube counter (#hdr-cube-stack 시뮬) ── */
+  .cube-stack{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    background:var(--surface2);
+    padding:6px 10px;
+    border-radius:6px;
+    font-family:'DM Mono',monospace;
+    font-size:11px;
+    font-weight:800;
+    color:var(--text);
+  }
+  .cube-stack span.s{color:var(--silver);}
+  .cube-stack span.g{color:var(--gold);}
+  .cube-stack span.r{color:var(--red-current);}
+  .cube-stack.new span.r{color:var(--red-soft);}
+
+  /* ───── Side-by-side compare ───────────────── */
+  .compare{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+    margin-bottom:14px;
+  }
+  @media(max-width:480px){.compare{grid-template-columns:1fr;}}
+  .compare .demo{margin:0;}
+
+  .note{
+    font-size:11.5px;
+    color:var(--text3);
+    line-height:1.65;
+    padding:10px 14px;
+    background:rgba(255,255,255,.025);
+    border:1px solid var(--border);
+    border-radius:var(--radius-md);
+  }
+  .note b{color:var(--text);}
+
+  .spec{
+    display:grid;
+    grid-template-columns:max-content 1fr;
+    gap:6px 14px;
+    font-size:11.5px;
+    line-height:1.5;
+    color:var(--text2);
+    padding:12px 14px;
+    background:var(--surface2);
+    border:1px solid var(--border);
+    border-radius:var(--radius-md);
+  }
+  .spec dt{
+    font-family:'DM Mono',monospace;
+    font-weight:700;
+    color:var(--text3);
+    letter-spacing:.02em;
+  }
+  .spec dd{color:var(--text);}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="head">
+    <div class="badge">T1-3 PROTOTYPE</div>
+    <h1>Crimson 무게감 완화</h1>
+    <p>첫 violation 직후 -24h 이탈 가설 직접 해결. 색·카피 부드럽게 + 회복 경로 카드 자동 노출.</p>
+  </div>
+
+  <!-- ① Cube chip 비교 ─────────────────────────────── -->
+  <div class="section">
+    <div class="section-title">① Cube chip — bright vs muted</div>
+    <div class="compare">
+      <div class="demo">
+        <div class="label">BEFORE — #ef4444</div>
+        <div class="cc cur-crimson"><span class="cc-dot"></span>RED</div>
+      </div>
+      <div class="demo">
+        <div class="label">AFTER — #c14b54</div>
+        <div class="cc new-crimson"><span class="cc-dot"></span>RED</div>
+      </div>
+    </div>
+    <div class="note">
+      <b>의도:</b> "빨강" 정체성 유지 (포기 X) 하되 채도 ↓. var(--red) #ef4444 → muted #c14b54. 첫 위반의 시각 충격 ~30% 완화. brand 톤 (직면) 은 카피로 유지.
+    </div>
+  </div>
+
+  <!-- ② 카드 헤더 비교 ─────────────────────────────── -->
+  <div class="section">
+    <div class="section-title">② 식단 카드 — crimson 발생 직후</div>
+    <div class="compare">
+      <div class="demo">
+        <div class="label">BEFORE</div>
+        <div class="card cur-crimson">
+          <div class="card-head">
+            <div class="card-title">식단</div>
+            <div class="cc cur-crimson"><span class="cc-dot"></span>RED</div>
+          </div>
+          <div class="card-body">금지 식단 1회 · -30점</div>
+        </div>
+      </div>
+      <div class="demo">
+        <div class="label">AFTER</div>
+        <div class="card new-crimson">
+          <div class="card-head">
+            <div class="card-title">식단</div>
+            <div class="cc new-crimson"><span class="cc-dot"></span>RED</div>
+          </div>
+          <div class="card-body">금지 식단 1회 · -30점</div>
+        </div>
+      </div>
+    </div>
+    <div class="note">
+      <b>변화:</b> card border 3px → 2px / 배경 그라디언트 채도 ↓ / chip 색 통일. 헤더 카피는 동일 — "직면" 정체성 유지.
+    </div>
+  </div>
+
+  <!-- ③ Recovery hint card (신규) ───────────────────── -->
+  <div class="section">
+    <div class="section-title">③ 회복 경로 카드 (신규)</div>
+    <div class="demo">
+      <div class="label">crimson 직후 자동 노출 (today only, dismissable)</div>
+
+      <!-- crimson card (변경된 muted 톤) -->
+      <div class="card new-crimson">
+        <div class="card-head">
+          <div class="card-title">식단</div>
+          <div class="cc new-crimson"><span class="cc-dot"></span>RED</div>
+        </div>
+        <div class="card-body">금지 식단 1회 · -30점</div>
+      </div>
+
+      <!-- recovery hint -->
+      <div class="recovery">
+        <div class="recovery-kicker">오늘 회복 가능</div>
+        <div class="recovery-title">silver 3칸 채우면 -30 만회</div>
+        <div class="recovery-body">
+          오늘 운동 / 루틴 / 할일 중 silver 3개 = +6점. <br>
+          + diet_clean (+10) 만 하나 받아도 -14 까지 회복.
+        </div>
+        <span class="recovery-cta">루틴 체크하기 →</span>
+      </div>
+    </div>
+    <div class="note">
+      <b>핵심:</b> "오늘은 망했다" 가 아니라 "오늘 안에 회복 가능" 메시지. <b>구체적 경로 제시</b> — silver N칸 = +N점 = 만회량. CTA 는 가장 가까운 액션 (루틴/물/체중) 으로 deep link.
+    </div>
+  </div>
+
+  <!-- ④ Trigger 조건 ─────────────────────────────── -->
+  <div class="section">
+    <div class="section-title">④ Trigger / 노출 조건</div>
+    <dl class="spec">
+      <dt>발생 트리거</dt><dd>오늘 처음으로 crimson cube 가 발생한 카테고리 (diet/routine/target/exercise)</dd>
+      <dt>일일 1회</dt><dd>같은 날 같은 카테고리에 다시 crimson 추가돼도 카드 재노출 X (피로 방지)</dd>
+      <dt>위치</dt><dd>해당 카드 직하단 — sticky-header 와 무관</dd>
+      <dt>dismiss</dt><dd>(a) CTA 클릭 → 해당 액션 deep link · (b) 카드 외 영역 탭 → 5분간 숨김 · (c) 그날 자정에 자동 dismiss</dd>
+      <dt>다음날</dt><dd>새 날 = 새 cube = 새 trigger 가능 (peer-fatigue 우려 시 weekly cap 추가)</dd>
+      <dt>제외</dt><dd>회식 면제 사용 중 · returner grace 활성 중 (이미 crimson 무효화됨)</dd>
+    </dl>
+  </div>
+
+  <!-- ⑤ Cube counter 표시 ──────────────────────────── -->
+  <div class="section">
+    <div class="section-title">⑤ 헤더 큐브 카운터 — red 색만 변경</div>
+    <div class="compare">
+      <div class="demo">
+        <div class="label">BEFORE</div>
+        <div class="cube-stack">
+          <span class="g">2</span> · <span class="s">5</span> · <span class="r">1</span>
+        </div>
+      </div>
+      <div class="demo">
+        <div class="label">AFTER</div>
+        <div class="cube-stack new">
+          <span class="g">2</span> · <span class="s">5</span> · <span class="r">1</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ⑥ 카피 옵션 — recovery title ──────────────────── -->
+  <div class="section">
+    <div class="section-title">⑥ recovery title 카피 후보</div>
+    <div class="demo" style="padding:14px;">
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <div style="padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-md);">
+          <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:3px;">옵션 A — 수치 중심</div>
+          <div style="font-size:13px;font-weight:700;">silver 3칸 채우면 -30 만회</div>
+        </div>
+        <div style="padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-md);">
+          <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:3px;">옵션 B — 시간 중심</div>
+          <div style="font-size:13px;font-weight:700;">오늘 8시간 남았어. 회복 가능.</div>
+        </div>
+        <div style="padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-md);">
+          <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:3px;">옵션 C — 단단한 만회</div>
+          <div style="font-size:13px;font-weight:700;">한 칸이라도 더 채우자.</div>
+        </div>
+        <div style="padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-md);">
+          <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:3px;">옵션 D — 정직 톤</div>
+          <div style="font-size:13px;font-weight:700;">졌어. 그래도 오늘은 끝나지 않았어.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ⑦ 검토 포인트 ─────────────────────────────── -->
+  <div class="section">
+    <div class="section-title">⑦ 검토 포인트</div>
+    <div class="note" style="line-height:1.85;">
+      • crimson 색 무드 — #c14b54 (제안) vs 더 darker/desaturated 선호?<br>
+      • Recovery 카드 자체 — 너무 친절한지 / 적당히 단단한지?<br>
+      • recovery title 카피 옵션 (⑥) 중 선호 — A/B/C/D?<br>
+      • CTA 라벨 — "루틴 체크하기 →" vs "회복 시작" vs "한 칸 더"?<br>
+      • dismiss UX — (b) 5분 숨김 OK 인가, 한 번 보면 그날 끝?<br>
+      • 점수 표시 (-30점) 같이 유지 vs 숨김?
+    </div>
+  </div>
+
+</div>
+<script src="_workspace-selector.js"></script>
+</body>
+</html>

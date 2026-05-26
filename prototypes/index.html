@@ -3,112 +3,1017 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Prototypes · 큐록</title>
+<title>큐록 Prototype Workspace</title>
 <style>
-*{margin:0;padding:0;box-sizing:border-box;}
-body{background:#0a0a0c;color:#f5f1ea;font-family:'DM Sans','Apple SD Gothic Neo',sans-serif;padding:40px 20px;min-height:100vh;}
-.wrap{max-width:720px;margin:0 auto;}
-h1{font-family:'Archivo Black',sans-serif;font-size:24px;color:#ff4d4d;margin-bottom:6px;}
-.lead{font-size:13px;color:#a8a8b4;margin-bottom:28px;}
-.row{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;}
-a.card{background:#16161a;border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:20px;text-decoration:none;color:#f5f1ea;transition:border .2s,transform .2s;display:block;}
-a.card:hover{border-color:#ff4d4d;transform:translateY(-2px);}
-.opt{font-size:10px;color:#ff4d4d;font-weight:800;letter-spacing:0.14em;margin-bottom:6px;}
-.t{font-family:'Archivo Black',sans-serif;font-size:18px;margin-bottom:6px;}
-.d{font-size:12px;color:#a8a8b4;line-height:1.55;}
-.compare{margin-top:24px;display:inline-block;font-size:12px;color:#7a7a86;text-decoration:underline;}
-</style></head>
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  :root{
+    --bg:#0a0a0c;
+    --panel:#0f0f12;
+    --panel2:#16161a;
+    --surface:#1c1c22;
+    --border:rgba(255,255,255,0.08);
+    --border2:rgba(255,255,255,0.14);
+    --text:#f5f1ea;
+    --text2:#a8a8b4;
+    --text3:#7a7a86;
+    --accent:#ff4d4d;
+    --green:#34d399;
+    --gold:#ffd54a;
+    --purple:#a855f7;
+    --blue:#38bdf8;
+    --orange:#ffb84d;
+  }
+  html,body{height:100%;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Pretendard','Apple SD Gothic Neo','DM Sans',sans-serif;
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+  }
+
+  /* ───── Top bar ──────────────────────────────────── */
+  .topbar{
+    flex-shrink:0;
+    display:flex;
+    align-items:center;
+    gap:14px;
+    padding:10px 16px;
+    background:var(--panel);
+    border-bottom:1px solid var(--border);
+    height:48px;
+  }
+  .topbar .brand{
+    font-family:'Archivo Black',sans-serif;
+    font-size:14px;
+    color:var(--accent);
+    letter-spacing:-.01em;
+  }
+  .topbar .crumb{
+    flex:1;
+    font-family:'DM Mono',monospace;
+    font-size:11px;
+    color:var(--text3);
+    letter-spacing:.04em;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+  .topbar .crumb b{color:var(--text);font-weight:700;}
+  .topbar .btn{
+    background:var(--surface);
+    border:1px solid var(--border2);
+    border-radius:6px;
+    color:var(--text);
+    font-family:inherit;
+    font-size:11px;
+    font-weight:700;
+    padding:6px 12px;
+    cursor:pointer;
+    transition:background .15s,border-color .15s;
+  }
+  .topbar .btn:hover{background:var(--panel2);border-color:var(--accent);}
+  .topbar .btn.is-active{background:var(--accent);border-color:var(--accent);color:#fff;}
+
+  /* ───── Main grid ────────────────────────────────── */
+  .grid{
+    flex:1;
+    display:grid;
+    grid-template-columns:240px 1fr 340px;
+    min-height:0;
+  }
+
+  /* ───── Sidebar (GNB) ────────────────────────────── */
+  .gnb{
+    background:var(--panel);
+    border-right:1px solid var(--border);
+    overflow-y:auto;
+    padding:14px 0 24px;
+  }
+  .gnb-group{margin-bottom:14px;}
+  .gnb-group-head{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    padding:6px 14px;
+    font-family:'DM Mono',monospace;
+    font-size:9.5px;
+    font-weight:800;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    cursor:pointer;
+    user-select:none;
+  }
+  .gnb-group-head .dot{width:6px;height:6px;border-radius:1.5px;background:var(--text3);flex-shrink:0;}
+  .gnb-group-head .name{flex:1;color:var(--text3);}
+  .gnb-group-head .caret{color:var(--text3);font-size:9px;transition:transform .15s;}
+  .gnb-group.is-collapsed .caret{transform:rotate(-90deg);}
+  .gnb-group.is-collapsed .gnb-items{display:none;}
+
+  .gnb-group.review .dot{background:var(--green);}
+  .gnb-group.review .name{color:var(--green);}
+  .gnb-group.challenge .dot{background:var(--purple);}
+  .gnb-group.challenge .name{color:var(--purple);}
+  .gnb-group.reward .dot{background:var(--orange);}
+  .gnb-group.reward .name{color:var(--orange);}
+  .gnb-group.sb .dot{background:var(--gold);}
+  .gnb-group.sb .name{color:var(--gold);}
+  .gnb-group.tier .dot{background:var(--blue);}
+  .gnb-group.tier .name{color:var(--blue);}
+  .gnb-group.room .dot{background:var(--accent);}
+  .gnb-group.room .name{color:var(--accent);}
+
+  .gnb-items{display:flex;flex-direction:column;padding:2px 0;}
+  .gnb-item{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding:7px 14px 7px 22px;
+    font-size:12px;
+    color:var(--text2);
+    cursor:pointer;
+    border-left:2px solid transparent;
+    transition:background .12s,color .12s,border-color .12s;
+  }
+  .gnb-item:hover{background:rgba(255,255,255,.025);color:var(--text);}
+  .gnb-item.is-active{
+    background:rgba(255,77,77,.07);
+    color:var(--text);
+    border-left-color:var(--accent);
+    font-weight:600;
+  }
+  .gnb-item .code{
+    font-family:'DM Mono',monospace;
+    font-size:9.5px;
+    font-weight:700;
+    color:var(--text3);
+    flex-shrink:0;
+    width:32px;
+  }
+  .gnb-item.is-active .code{color:var(--accent);}
+  .gnb-item .label{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .gnb-item .tag-new{font-size:8.5px;font-weight:800;color:var(--green);letter-spacing:.06em;flex-shrink:0;}
+  .gnb-item .tag-skip{font-size:8.5px;font-weight:800;color:var(--text3);letter-spacing:.06em;flex-shrink:0;}
+
+  /* ───── Main viewer ──────────────────────────────── */
+  .main{background:var(--bg);overflow:hidden;display:flex;flex-direction:column;min-height:0;}
+  .viewer-bar{
+    flex-shrink:0;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:8px 14px;
+    background:var(--panel2);
+    border-bottom:1px solid var(--border);
+    font-family:'DM Mono',monospace;
+    font-size:11px;
+  }
+  .viewer-bar .url{flex:1;color:var(--text3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .viewer-bar .url b{color:var(--text);}
+  .viewer-bar .ctrl-btn{
+    background:transparent;
+    border:1px solid var(--border2);
+    color:var(--text2);
+    font-family:inherit;
+    font-size:10px;
+    font-weight:700;
+    padding:4px 9px;
+    border-radius:5px;
+    cursor:pointer;
+  }
+  .viewer-bar .ctrl-btn:hover{border-color:var(--accent);color:var(--text);}
+  .viewer-bar .ctrl-btn.is-active{background:var(--accent);border-color:var(--accent);color:#fff;}
+
+  .viewer{flex:1;background:#000;position:relative;min-height:0;}
+  .viewer iframe{width:100%;height:100%;border:none;display:block;}
+
+  /* selection overlay highlight (injected via parent) */
+  .viewer.is-selecting iframe{cursor:crosshair;}
+  .sel-flash{
+    position:absolute;
+    pointer-events:none;
+    border:2px solid var(--accent);
+    box-shadow:0 0 0 9999px rgba(255,77,77,.06);
+    border-radius:4px;
+    z-index:10;
+    transition:opacity .25s;
+    opacity:0;
+  }
+  .sel-flash.show{opacity:1;}
+
+  /* ───── Welcome ──────────────────────────────────── */
+  .welcome{
+    height:100%;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    padding:40px;
+    text-align:center;
+    color:var(--text2);
+  }
+  .welcome h2{font-family:'Archivo Black',sans-serif;font-size:24px;color:var(--text);margin-bottom:10px;letter-spacing:-.02em;}
+  .welcome p{font-size:13px;color:var(--text3);line-height:1.7;max-width:480px;margin-bottom:14px;}
+  .welcome .tag{display:inline-block;font-family:'DM Mono',monospace;font-size:10px;color:var(--green);background:rgba(52,211,153,.08);border:1px solid rgba(52,211,153,.28);padding:5px 11px;border-radius:4px;letter-spacing:.08em;}
+
+  /* ═════ CHAT PANEL (right) ════════════════════════ */
+  .chat{
+    background:var(--panel);
+    border-left:1px solid var(--border);
+    display:flex;
+    flex-direction:column;
+    min-height:0;
+  }
+  .chat-head{
+    flex-shrink:0;
+    padding:14px 16px 12px;
+    border-bottom:1px solid var(--border);
+  }
+  .chat-head h3{
+    font-family:'DM Mono',monospace;
+    font-size:11px;
+    font-weight:800;
+    letter-spacing:.12em;
+    color:var(--text);
+    text-transform:uppercase;
+    margin-bottom:4px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+  }
+  .chat-head .pending-pill{
+    font-size:9.5px;
+    color:#fff;
+    background:var(--accent);
+    padding:2px 7px;
+    border-radius:3px;
+    font-weight:800;
+    letter-spacing:.04em;
+  }
+  .chat-head .pending-pill.zero{background:var(--surface);color:var(--text3);}
+  .chat-head .sub{font-size:10.5px;color:var(--text3);line-height:1.55;}
+
+  /* SELECTED CONTEXT */
+  .ctx{
+    flex-shrink:0;
+    padding:12px 16px;
+    border-bottom:1px solid var(--border);
+  }
+  .ctx-label{
+    font-family:'DM Mono',monospace;
+    font-size:9.5px;
+    font-weight:800;
+    letter-spacing:.10em;
+    color:var(--text3);
+    text-transform:uppercase;
+    margin-bottom:6px;
+  }
+  .ctx-empty{
+    font-size:11px;
+    color:var(--text3);
+    line-height:1.5;
+    font-style:italic;
+  }
+  .ctx-body{
+    font-family:'DM Mono',monospace;
+    font-size:10.5px;
+    color:var(--text);
+    line-height:1.6;
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:6px;
+    padding:8px 10px;
+    word-break:break-all;
+    max-height:120px;
+    overflow-y:auto;
+    display:none;
+  }
+  .ctx-body.is-on{display:block;}
+  .ctx-body .ctx-sel{color:var(--accent);font-weight:700;display:block;margin-bottom:4px;font-size:10px;}
+  .ctx-body .ctx-html{color:var(--text2);font-size:10px;}
+  .ctx-clear{
+    display:none;
+    margin-top:6px;
+    font-size:10px;
+    color:var(--text3);
+    background:transparent;
+    border:none;
+    cursor:pointer;
+    text-decoration:underline;
+    font-family:inherit;
+  }
+  .ctx-body.is-on + .ctx-clear{display:inline-block;}
+
+  /* HISTORY */
+  .history{
+    flex:1;
+    overflow-y:auto;
+    padding:12px 16px;
+    min-height:0;
+  }
+  .history-label{
+    font-family:'DM Mono',monospace;
+    font-size:9.5px;
+    font-weight:800;
+    letter-spacing:.10em;
+    color:var(--text3);
+    text-transform:uppercase;
+    margin-bottom:8px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+  }
+  .history-label .count{color:var(--text2);}
+  .history-empty{
+    font-size:11px;
+    color:var(--text3);
+    line-height:1.5;
+    font-style:italic;
+    padding:8px 0;
+  }
+  .hist-item{
+    display:flex;
+    align-items:flex-start;
+    gap:8px;
+    padding:8px 10px;
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:6px;
+    margin-bottom:6px;
+    cursor:pointer;
+    transition:border-color .12s;
+  }
+  .hist-item:hover{border-color:var(--border2);}
+  .hist-status{
+    width:6px;
+    height:6px;
+    border-radius:50%;
+    background:var(--accent);
+    margin-top:5px;
+    flex-shrink:0;
+    cursor:pointer;
+  }
+  .hist-status.pending{background:var(--accent);}
+  .hist-status.doing{background:var(--orange);}
+  .hist-status.done{background:var(--green);}
+  .hist-body{flex:1;min-width:0;}
+  .hist-meta{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    font-family:'DM Mono',monospace;
+    font-size:9px;
+    color:var(--text3);
+    letter-spacing:.04em;
+    margin-bottom:2px;
+  }
+  .hist-meta .file{color:var(--text2);}
+  .hist-meta .status-label{font-weight:700;}
+  .hist-meta .status-label.pending{color:var(--accent);}
+  .hist-meta .status-label.doing{color:var(--orange);}
+  .hist-meta .status-label.done{color:var(--green);}
+  .hist-meta .age{margin-left:auto;color:var(--text3);}
+  .hist-text{
+    font-size:11px;
+    color:var(--text);
+    line-height:1.45;
+    word-break:keep-all;
+    display:-webkit-box;
+    -webkit-line-clamp:2;
+    -webkit-box-orient:vertical;
+    overflow:hidden;
+  }
+  .hist-actions{
+    display:none;
+    gap:6px;
+    margin-top:6px;
+  }
+  .hist-item.is-expanded .hist-actions{display:flex;}
+  .hist-item.is-expanded .hist-text{-webkit-line-clamp:unset;display:block;}
+  .hist-btn{
+    background:transparent;
+    border:1px solid var(--border2);
+    color:var(--text2);
+    font-size:9.5px;
+    font-weight:700;
+    padding:3px 7px;
+    border-radius:4px;
+    cursor:pointer;
+    font-family:inherit;
+  }
+  .hist-btn:hover{border-color:var(--accent);color:var(--text);}
+  .hist-btn.danger:hover{border-color:#ef4444;color:#ef4444;}
+
+  /* NEW REQUEST */
+  .compose{
+    flex-shrink:0;
+    border-top:1px solid var(--border);
+    padding:12px 16px 14px;
+    background:var(--panel2);
+  }
+  .compose-label{
+    font-family:'DM Mono',monospace;
+    font-size:9.5px;
+    font-weight:800;
+    letter-spacing:.10em;
+    color:var(--text3);
+    text-transform:uppercase;
+    margin-bottom:6px;
+  }
+  .compose textarea{
+    width:100%;
+    min-height:80px;
+    background:var(--bg);
+    border:1px solid var(--border2);
+    border-radius:6px;
+    color:var(--text);
+    font-family:inherit;
+    font-size:12px;
+    line-height:1.55;
+    padding:10px 12px;
+    resize:vertical;
+    outline:none;
+    margin-bottom:8px;
+  }
+  .compose textarea:focus{border-color:var(--accent);}
+  .compose textarea::placeholder{color:var(--text3);}
+  .compose-actions{display:flex;gap:6px;}
+  .copy-btn{
+    flex:1;
+    background:var(--accent);
+    border:none;
+    border-radius:6px;
+    color:#fff;
+    font-family:inherit;
+    font-size:12px;
+    font-weight:800;
+    padding:10px 14px;
+    cursor:pointer;
+    letter-spacing:.02em;
+  }
+  .copy-btn:hover{background:#ff6868;}
+  .copy-btn.copied{background:var(--green);}
+  .compose-status{
+    font-size:10px;
+    color:var(--green);
+    margin-top:6px;
+    text-align:center;
+    opacity:0;
+    transition:opacity .2s;
+  }
+  .compose-status.is-on{opacity:1;}
+
+  /* ───── Mobile responsive ────────────────────────── */
+  @media(max-width:1024px){
+    .grid{grid-template-columns:200px 1fr 300px;}
+  }
+  @media(max-width:880px){
+    .grid{grid-template-columns:1fr;}
+    .gnb,.chat{
+      position:fixed;
+      top:48px;
+      width:280px;
+      max-width:85%;
+      height:calc(100% - 48px);
+      z-index:100;
+      transform:translateX(-100%);
+      transition:transform .25s;
+      box-shadow:4px 0 24px rgba(0,0,0,.5);
+    }
+    .gnb{left:0;}
+    .chat{right:0;left:auto;transform:translateX(100%);box-shadow:-4px 0 24px rgba(0,0,0,.5);width:320px;}
+    .gnb.is-open{transform:translateX(0);}
+    .chat.is-open{transform:translateX(0);}
+    .topbar .menu-btn,.topbar .chat-btn{display:flex;align-items:center;justify-content:center;width:32px;height:32px;background:var(--surface);border:1px solid var(--border2);border-radius:5px;cursor:pointer;color:var(--text);font-size:16px;flex-shrink:0;}
+  }
+  @media(min-width:881px){
+    .topbar .menu-btn,.topbar .chat-btn{display:none;}
+  }
+</style>
+</head>
 <body>
-<div class="wrap">
-  <h1>보상 인터랙션 — Reward Loop</h1>
-  <div class="lead">B 공식 (gold + silver/3) 확정 후 보상 인터랙션 prototype. A 모먼트 (액션 → 큐브) 13 변형 + B/C/D 각 1개.<br>사용자 keep: <b>A3 / A4 / A6</b>. 추가 ideation: 캐릭터·격자·탑·2단계 (A9/A11/A15/A18) → metaphor 확장 (A21 정원 / A22 별자리 / A24 일지 / A25 도가니).</div>
 
-  <h2 style="font-size:14px;color:#a8a8b4;margin:16px 0 10px;font-family:'DM Mono',monospace;letter-spacing:.06em;text-transform:uppercase;">Status Band — Filler 5 옵션 (NEW · 사용자 비교용)</h2>
-  <div class="lead">.sb 의 ladder 제거 후 빈 자리 채울 콘텐츠. 5종 직접 보고 결정.</div>
-  <div class="row">
-    <a class="card" href="sb-A-heatmap.html" style="border-color:rgba(255,213,74,0.3);"><div class="opt" style="color:#ffd54a;">A · 추천</div><div class="t">7일 Heatmap 🟨</div><div class="d">최근 7일 큐브 색 dot. "꾸준함" 컨셉 직결. 빈 칸이 동기.</div></a>
-    <a class="card" href="sb-B-last-cube.html"><div class="opt">B</div><div class="t">마지막 한 칸</div><div class="d">방금 받은 cube event 1줄. 빈 상태 prompt. 즉각적 만족감.</div></a>
-    <a class="card" href="sb-C-intent.html"><div class="opt">C</div><div class="t">오늘의 의도</div><div class="d">"오늘 ___ 한다." 1줄 입력. 단련 톤.</div></a>
-    <a class="card" href="sb-D-sparkline.html"><div class="opt">D</div><div class="t">7일 Sparkline 📈</div><div class="d">미니 line chart + 평균 대비. 데코적.</div></a>
-    <a class="card" href="sb-E-completion.html"><div class="opt">E</div><div class="t">4 카테고리 완수</div><div class="d">식·운·루·할 완수 N/4. cc-cube chip 과 정보 중복 위험.</div></a>
-  </div>
-
-  <h2 style="font-size:14px;color:#ffb84d;margin:24px 0 10px;font-family:'DM Mono',monospace;letter-spacing:.06em;text-transform:uppercase;">★ 신규 — 휙 (Whoosh) 3종 [2026-05-23]</h2>
-  <div style="font-size:11px;color:#a8a8b4;margin-bottom:10px;line-height:1.55;">사용자 피드백: Zen Tap 의 1.8s 부유 + 탭 강제가 무겁다. *그냥 휙 하고 날라가는* 가벼운 패턴.</div>
-  <div class="row">
-    <a class="card" href="reward-A40-whoosh-trace.html" style="border:2px solid #ffb84d;background:linear-gradient(135deg,rgba(255,184,77,0.08),rgba(255,184,77,0.02));"><div class="opt" style="color:#ffb84d;">A40 NEW ★</div><div class="t">Whoosh Trace</div><div class="d">~250ms 직선 streak. motion-blur 로 빨려가는 느낌. 가장 ambient.</div></a>
-    <a class="card" href="reward-A41-whoosh-arc.html" style="border:2px solid #ffb84d;background:linear-gradient(135deg,rgba(255,184,77,0.08),rgba(255,184,77,0.02));"><div class="opt" style="color:#ffb84d;">A41 NEW ★</div><div class="t">Whoosh Arc</div><div class="d">~420ms 포물선 + rotate 360°. 동전 던지는 직관적 인과.</div></a>
-    <a class="card" href="reward-A42-whoosh-vacuum.html" style="border:2px solid #ffb84d;background:linear-gradient(135deg,rgba(255,184,77,0.08),rgba(255,184,77,0.02));"><div class="opt" style="color:#ffb84d;">A42 NEW ★</div><div class="t">Whoosh Vacuum</div><div class="d">~200ms 큐브 element 0. dot 자체가 흡입 + 펄스. 가장 미니멀.</div></a>
-  </div>
-
-  <h2 style="font-size:14px;color:#34d399;margin:24px 0 10px;font-family:'DM Mono',monospace;letter-spacing:.06em;text-transform:uppercase;">이전 채택 — A6 + A18 결합 (Zen Tap) — 폐기 후보</h2>
-  <div class="row">
-    <a class="card" href="reward-A6-A18-zen-tap.html" style="border:1px solid rgba(168,168,180,0.3);opacity:0.55;"><div class="opt" style="color:#a8a8b4;">A6 + A18 (이전)</div><div class="t">Zen Tap</div><div class="d">1.8s 부유 + 탭/대기 강제. 무거움 — 사용자 피드백으로 폐기 후보.</div></a>
-  </div>
-
-  <h2 style="font-size:14px;color:#a8a8b4;margin:24px 0 10px;font-family:'DM Mono',monospace;letter-spacing:.06em;text-transform:uppercase;">결합 재료 (단독 prototype)</h2>
-  <div class="row">
-    <a class="card" href="reward-A3-origin.html" style="border-color:rgba(52,211,153,0.35);"><div class="opt" style="color:#34d399;">A3 ✓ KEEP</div><div class="t">Card Origin</div><div class="d">큐브가 카드 칩에서 *태어남*. 인과 또렷.</div></a>
-    <a class="card" href="reward-A4-stamp.html" style="border-color:rgba(52,211,153,0.35);"><div class="opt" style="color:#34d399;">A4 ✓ KEEP</div><div class="t">Stamp Imprint</div><div class="d">큐브가 카드 안에 *각인*. 카드 = 오늘 결과물.</div></a>
-    <a class="card" href="reward-A6-zen.html" style="border-color:rgba(52,211,153,0.35);"><div class="opt" style="color:#34d399;">A6 ✓ KEEP</div><div class="t">Zen Numerical</div><div class="d">날아가는 큐브 없음. 색조 tint + odometer-tween.</div></a>
-  </div>
-
-  <h2 style="font-size:14px;color:#a8a8b4;margin:24px 0 10px;font-family:'DM Mono',monospace;letter-spacing:.06em;text-transform:uppercase;">A · 다른 차원 (캐릭터·공간·인터랙션)</h2>
-  <div class="row">
-    <a class="card" href="reward-A9-character.html"><div class="opt">A9</div><div class="t">Character Consumes</div><div class="d">큐브 → 캐릭터가 *먹음*. red 는 *맞고* 휘청. "큐브 = 너를 만든다".</div></a>
-    <a class="card" href="reward-A11-slot-grid.html"><div class="opt">A11</div><div class="t">Slot Ripple</div><div class="d">progress = 12 슬롯 격자. 다음 슬롯 ripple 채움.</div></a>
-    <a class="card" href="reward-A15-tower.html"><div class="opt">A15</div><div class="t">Tower Builder</div><div class="d">score = 수직 *탑*. red = 위 2층 무너짐.</div></a>
-    <a class="card" href="reward-A18-anticipation.html"><div class="opt">A18</div><div class="t">Anticipation Tap</div><div class="d">큐브 0.5s 부유 → 탭으로 commit. 의식적 *수확*.</div></a>
-  </div>
-
-  <h2 style="font-size:14px;color:#a8a8b4;margin:24px 0 10px;font-family:'DM Mono',monospace;letter-spacing:.06em;text-transform:uppercase;">A · Game UI 차용 (NEW · 사용자 요청)</h2>
-  <div class="row">
-    <a class="card" href="reward-A30-crystal-drop.html" style="border-color:rgba(255,213,74,0.4);"><div class="opt" style="color:#ffd54a;">A30 NEW</div><div class="t">Crystal Drop 💎</div><div class="d">Diablo · PoE 스타일. 큐브가 *루트 크리스탈* 처럼 떨어져 임팩트 + 희귀도 텍스트.</div></a>
-    <a class="card" href="reward-A31-persona-burst.html" style="border-color:rgba(255,77,77,0.4);"><div class="opt" style="color:#ff4d4d;">A31 NEW ★</div><div class="t">Persona Burst ⚡</div><div class="d">Persona 5 스타일. 대각선 슬래시 + 각도 타이포 burst + 그레인 flash. 가장 시그니처.</div></a>
-    <a class="card" href="reward-A34-card-flip.html" style="border-color:rgba(255,213,74,0.4);"><div class="opt" style="color:#ffd54a;">A34 NEW</div><div class="t">Card Flip 🃏</div><div class="d">Hearthstone TCG 스타일. 큐브 = *수집 카드*. 360° 플립 + 홀로그래픽 shimmer.</div></a>
-    <a class="card" href="reward-A35-combo.html" style="border-color:rgba(255,139,80,0.4);"><div class="opt" style="color:#ff8b50;">A35 NEW</div><div class="t">Combo Counter 💢</div><div class="d">DMC · SF · Bayonetta. 5초 안에 연타 → ×2 GOOD → ×8 SAVAGE!! + 화면 흔들림.</div></a>
-  </div>
-
-  <details style="margin-top:18px;color:#7a7a86;font-size:11px;"><summary style="cursor:pointer;">↓ Metaphor ideation (사용자 비선호 — 정원/별자리/일지/도가니)</summary>
-    <div class="row" style="margin-top:10px;opacity:0.55;">
-      <a class="card" href="reward-A21-garden.html"><div class="opt">A21</div><div class="t">Garden 🌱</div><div class="d">룸이 정원으로.</div></a>
-      <a class="card" href="reward-A22-constellation.html"><div class="opt">A22</div><div class="t">Constellation ✨</div><div class="d">밤하늘 별자리.</div></a>
-      <a class="card" href="reward-A24-ledger.html"><div class="opt">A24</div><div class="t">Ledger 📜</div><div class="d">영수증 일지.</div></a>
-      <a class="card" href="reward-A25-forge.html"><div class="opt">A25</div><div class="t">Forge 🔥</div><div class="d">B 공식 도가니.</div></a>
-    </div>
-  </details>
-
-  <details style="margin-top:8px;color:#7a7a86;font-size:11px;"><summary style="cursor:pointer;">↓ 이전 motion ideation (A1 Physics / A8 Combo)</summary>
-    <div class="row" style="margin-top:10px;opacity:0.55;">
-      <a class="card" href="reward-A1-physics.html"><div class="opt">A1</div><div class="t">Physics</div><div class="d">색마다 다른 motion.</div></a>
-      <a class="card" href="reward-A8-combo.html"><div class="opt">A8</div><div class="t">Combo Cascade</div><div class="d">다중 큐브 시 리듬 chain.</div></a>
-    </div>
-  </details>
-
-  <h2 style="font-size:14px;color:#a8a8b4;margin:24px 0 10px;font-family:'DM Mono',monospace;letter-spacing:.06em;text-transform:uppercase;">B / C / D 모먼트</h2>
-  <div class="row">
-    <a class="card" href="reward-B2-collapse.html"><div class="opt">B2</div><div class="t">Stack Collapse (red)</div><div class="d">red 등록 시 stack 균열 + 토큰 추락. flash + crack + toast.</div></a>
-    <a class="card" href="reward-C-transform.html"><div class="opt">C</div><div class="t">Transform (티어업)</div><div class="d">임박감 (C2) → 변신 시퀀스 (C3). orb 응축 + 캐릭터 + 룸 morph.</div></a>
-    <a class="card" href="reward-D2-wrap.html"><div class="opt">D2</div><div class="t">Daily Wrap</div><div class="d">홈 최상단 어제 결산 카드. 평균 비교 + 공유.</div></a>
-  </div>
-
-  <hr style="margin:32px 0;border:none;border-top:1px solid rgba(255,255,255,0.06);">
-  <h1 style="font-size:18px;color:#7a7a86;">티어 시스템 — 3 옵션 (B 확정)</h1>
-  <div class="lead">점수제 → 큐브제 전환. gold + silver + red 가 어떻게 티어를 결정할지 결정. 각 옵션 직접 눌러보고 느낌 비교.<br>공통: 1 red = gold 2 + silver 2 즉시 차감. 임계는 약간 빡세게.</div>
-  <div class="row">
-    <a class="card" href="tier-A-pure-gold.html"><div class="opt">A</div><div class="t">Pure Gold</div><div class="d">티어는 <b>gold 만</b> 결정. silver 는 활동 기록 (스트릭/뱃지 용). 모호함 없음. silver 가 헐거워짐.</div></a>
-    <a class="card" href="tier-B-conversion.html"><div class="opt">B</div><div class="t">Conversion</div><div class="d">3 silver = 1 gold 환산. 통합 점수로 티어. 모든 행동 기여. 큐브 색은 시각화일 뿐 — "결국 점수?" 의문 남음.</div></a>
-    <a class="card" href="tier-C-dual-gate.html"><div class="opt">C</div><div class="t">Dual Gate</div><div class="d">gold AND silver 둘 다 충족. 균형 강제. 두 숫자 추적 인지 부하. 한 axis 멈추면 답답.</div></a>
-  </div>
-
-  <hr style="margin:32px 0;border:none;border-top:1px solid rgba(255,255,255,0.06);">
-  <h1 style="font-size:18px;color:#7a7a86;">캐릭터룸 — 4 옵션 (이전 작업)</h1>
-  <div class="row" style="margin-top:14px;">
-    <a class="card" href="option-a.html"><div class="opt">A</div><div class="t">바닥 더미</div><div class="d">한 코너에 stack 으로 쌓임.</div></a>
-    <a class="card" href="option-b.html"><div class="opt">B</div><div class="t">진열장</div><div class="d">격자 선반 100칸.</div></a>
-    <a class="card" href="option-c.html"><div class="opt">C</div><div class="t">흩어짐</div><div class="d">바닥에 organic 배치.</div></a>
-    <a class="card" href="option-d.html"><div class="opt">D</div><div class="t">인벤토리 패널</div><div class="d">룸 + 하단 카운터.</div></a>
-  </div>
-  <a class="compare" href="character-room-cubes.html">↗ 캐릭터룸 4옵션 정적 비교</a>
+<!-- ═════ TOP BAR ═════ -->
+<div class="topbar">
+  <button class="menu-btn" onclick="toggleGnb()">☰</button>
+  <div class="brand">큐록 PROTOTYPES</div>
+  <div class="crumb" id="crumb">no prototype loaded</div>
+  <button class="btn" id="selectBtn" onclick="toggleSelect()">셀 클릭 모드</button>
+  <button class="chat-btn" onclick="toggleChat()">💬</button>
 </div>
-</body></html>
+
+<!-- ═════ MAIN GRID ═════ -->
+<div class="grid">
+
+  <!-- ─── GNB (Left) ────────────────────────────── -->
+  <nav class="gnb" id="gnb">
+
+    <div class="gnb-group review">
+      <div class="gnb-group-head" onclick="toggleGroup(this)">
+        <span class="dot"></span><span class="name">★ 검토 중</span><span class="caret">▾</span>
+      </div>
+      <div class="gnb-items">
+        <a class="gnb-item" data-href="crimson-soften.html" data-name="T1-3 · Crimson 무게감 완화" onclick="loadProto(event,this)">
+          <span class="code">T1-3</span><span class="label">Crimson 완화</span><span class="tag-new">NEW</span>
+        </a>
+        <a class="gnb-item" data-href="first-week-guide.html" data-name="T1-2 · 첫 7일 가이드" onclick="loadProto(event,this)">
+          <span class="code">T1-2</span><span class="label">첫 7일 가이드</span><span class="tag-new">NEW</span>
+        </a>
+        <a class="gnb-item" data-href="toast-undo.html" data-name="T1-4 · Toast Undo (스킵)" onclick="loadProto(event,this)">
+          <span class="code">T1-4</span><span class="label">Toast Undo</span><span class="tag-skip">SKIP</span>
+        </a>
+      </div>
+    </div>
+
+    <div class="gnb-group challenge is-collapsed">
+      <div class="gnb-group-head" onclick="toggleGroup(this)">
+        <span class="dot"></span><span class="name">챌린지 룸</span><span class="caret">▾</span>
+      </div>
+      <div class="gnb-items">
+        <a class="gnb-item" data-href="ch-D-mountain-climb.html" data-name="CH-D · Mountain Climb (채택)" onclick="loadProto(event,this)"><span class="code">D ★</span><span class="label">Mountain Climb</span></a>
+        <a class="gnb-item" data-href="ch-E-battle.html" data-name="CH-E · Battle Screen" onclick="loadProto(event,this)"><span class="code">E</span><span class="label">Battle Screen</span></a>
+        <a class="gnb-item" data-href="ch-F-pixel-quest.html" data-name="CH-F · Pixel Quest" onclick="loadProto(event,this)"><span class="code">F</span><span class="label">Pixel Quest</span></a>
+        <a class="gnb-item" data-href="ch-A-stack-line.html" data-name="CH-A · Stack + Line" onclick="loadProto(event,this)"><span class="code">A</span><span class="label">Stack + Line</span></a>
+        <a class="gnb-item" data-href="ch-B-bento-grid.html" data-name="CH-B · Bento Grid" onclick="loadProto(event,this)"><span class="code">B</span><span class="label">Bento Grid</span></a>
+        <a class="gnb-item" data-href="ch-C-boat-race.html" data-name="CH-C · Boat Race" onclick="loadProto(event,this)"><span class="code">C</span><span class="label">Boat Race</span></a>
+      </div>
+    </div>
+
+    <div class="gnb-group sb is-collapsed">
+      <div class="gnb-group-head" onclick="toggleGroup(this)">
+        <span class="dot"></span><span class="name">Status Band</span><span class="caret">▾</span>
+      </div>
+      <div class="gnb-items">
+        <a class="gnb-item" data-href="sb-A-heatmap.html" data-name="SB-A · 7일 Heatmap" onclick="loadProto(event,this)"><span class="code">A</span><span class="label">7일 Heatmap</span></a>
+        <a class="gnb-item" data-href="sb-B-last-cube.html" data-name="SB-B · 마지막 한 칸" onclick="loadProto(event,this)"><span class="code">B</span><span class="label">마지막 한 칸</span></a>
+        <a class="gnb-item" data-href="sb-C-intent.html" data-name="SB-C · 오늘의 의도" onclick="loadProto(event,this)"><span class="code">C</span><span class="label">오늘의 의도</span></a>
+        <a class="gnb-item" data-href="sb-D-sparkline.html" data-name="SB-D · 7일 Sparkline" onclick="loadProto(event,this)"><span class="code">D</span><span class="label">7일 Sparkline</span></a>
+        <a class="gnb-item" data-href="sb-E-completion.html" data-name="SB-E · 4 카테고리" onclick="loadProto(event,this)"><span class="code">E</span><span class="label">4 카테고리</span></a>
+      </div>
+    </div>
+
+    <div class="gnb-group reward is-collapsed">
+      <div class="gnb-group-head" onclick="toggleGroup(this)">
+        <span class="dot"></span><span class="name">Reward (24)</span><span class="caret">▾</span>
+      </div>
+      <div class="gnb-items">
+        <a class="gnb-item" data-href="reward-A40-whoosh-trace.html" data-name="A40 · Whoosh Trace" onclick="loadProto(event,this)"><span class="code">A40</span><span class="label">Whoosh Trace</span></a>
+        <a class="gnb-item" data-href="reward-A41-whoosh-arc.html" data-name="A41 · Whoosh Arc" onclick="loadProto(event,this)"><span class="code">A41</span><span class="label">Whoosh Arc</span></a>
+        <a class="gnb-item" data-href="reward-A42-whoosh-vacuum.html" data-name="A42 · Whoosh Vacuum" onclick="loadProto(event,this)"><span class="code">A42</span><span class="label">Whoosh Vacuum</span></a>
+        <a class="gnb-item" data-href="reward-A6-A18-zen-tap.html" data-name="A6+A18 · Zen Tap" onclick="loadProto(event,this)"><span class="code">A6/18</span><span class="label">Zen Tap</span></a>
+        <a class="gnb-item" data-href="reward-A1-physics.html" data-name="A1 · Physics" onclick="loadProto(event,this)"><span class="code">A1</span><span class="label">Physics</span></a>
+        <a class="gnb-item" data-href="reward-A3-origin.html" data-name="A3 · Origin" onclick="loadProto(event,this)"><span class="code">A3</span><span class="label">Origin</span></a>
+        <a class="gnb-item" data-href="reward-A4-stamp.html" data-name="A4 · Stamp" onclick="loadProto(event,this)"><span class="code">A4</span><span class="label">Stamp</span></a>
+        <a class="gnb-item" data-href="reward-A6-zen.html" data-name="A6 · Zen" onclick="loadProto(event,this)"><span class="code">A6</span><span class="label">Zen</span></a>
+        <a class="gnb-item" data-href="reward-A8-combo.html" data-name="A8 · Combo" onclick="loadProto(event,this)"><span class="code">A8</span><span class="label">Combo</span></a>
+        <a class="gnb-item" data-href="reward-A9-character.html" data-name="A9 · Character" onclick="loadProto(event,this)"><span class="code">A9</span><span class="label">Character</span></a>
+        <a class="gnb-item" data-href="reward-A11-slot-grid.html" data-name="A11 · Slot Grid" onclick="loadProto(event,this)"><span class="code">A11</span><span class="label">Slot Grid</span></a>
+        <a class="gnb-item" data-href="reward-A15-tower.html" data-name="A15 · Tower" onclick="loadProto(event,this)"><span class="code">A15</span><span class="label">Tower</span></a>
+        <a class="gnb-item" data-href="reward-A18-anticipation.html" data-name="A18 · Anticipation" onclick="loadProto(event,this)"><span class="code">A18</span><span class="label">Anticipation</span></a>
+        <a class="gnb-item" data-href="reward-A21-garden.html" data-name="A21 · Garden" onclick="loadProto(event,this)"><span class="code">A21</span><span class="label">Garden</span></a>
+        <a class="gnb-item" data-href="reward-A22-constellation.html" data-name="A22 · Constellation" onclick="loadProto(event,this)"><span class="code">A22</span><span class="label">Constellation</span></a>
+        <a class="gnb-item" data-href="reward-A24-ledger.html" data-name="A24 · Ledger" onclick="loadProto(event,this)"><span class="code">A24</span><span class="label">Ledger</span></a>
+        <a class="gnb-item" data-href="reward-A25-forge.html" data-name="A25 · Forge" onclick="loadProto(event,this)"><span class="code">A25</span><span class="label">Forge</span></a>
+        <a class="gnb-item" data-href="reward-A30-crystal-drop.html" data-name="A30 · Crystal Drop" onclick="loadProto(event,this)"><span class="code">A30</span><span class="label">Crystal Drop</span></a>
+        <a class="gnb-item" data-href="reward-A31-persona-burst.html" data-name="A31 · Persona Burst" onclick="loadProto(event,this)"><span class="code">A31</span><span class="label">Persona Burst</span></a>
+        <a class="gnb-item" data-href="reward-A34-card-flip.html" data-name="A34 · Card Flip" onclick="loadProto(event,this)"><span class="code">A34</span><span class="label">Card Flip</span></a>
+        <a class="gnb-item" data-href="reward-A35-combo.html" data-name="A35 · Combo" onclick="loadProto(event,this)"><span class="code">A35</span><span class="label">Combo</span></a>
+        <a class="gnb-item" data-href="reward-B2-collapse.html" data-name="B2 · Collapse" onclick="loadProto(event,this)"><span class="code">B2</span><span class="label">Collapse</span></a>
+        <a class="gnb-item" data-href="reward-C-transform.html" data-name="C · Transform" onclick="loadProto(event,this)"><span class="code">C</span><span class="label">Transform</span></a>
+        <a class="gnb-item" data-href="reward-D2-wrap.html" data-name="D2 · Wrap" onclick="loadProto(event,this)"><span class="code">D2</span><span class="label">Wrap</span></a>
+      </div>
+    </div>
+
+    <div class="gnb-group tier is-collapsed">
+      <div class="gnb-group-head" onclick="toggleGroup(this)">
+        <span class="dot"></span><span class="name">Tier System</span><span class="caret">▾</span>
+      </div>
+      <div class="gnb-items">
+        <a class="gnb-item" data-href="tier-A-pure-gold.html" data-name="Tier-A · Pure Gold" onclick="loadProto(event,this)"><span class="code">A</span><span class="label">Pure Gold</span></a>
+        <a class="gnb-item" data-href="tier-B-conversion.html" data-name="Tier-B · Conversion" onclick="loadProto(event,this)"><span class="code">B</span><span class="label">Conversion</span></a>
+        <a class="gnb-item" data-href="tier-C-dual-gate.html" data-name="Tier-C · Dual Gate" onclick="loadProto(event,this)"><span class="code">C</span><span class="label">Dual Gate</span></a>
+      </div>
+    </div>
+
+    <div class="gnb-group room is-collapsed">
+      <div class="gnb-group-head" onclick="toggleGroup(this)">
+        <span class="dot"></span><span class="name">Character Room</span><span class="caret">▾</span>
+      </div>
+      <div class="gnb-items">
+        <a class="gnb-item" data-href="character-room-cubes.html" data-name="Character Room · Cubes" onclick="loadProto(event,this)"><span class="code">★</span><span class="label">Cube 진열장</span></a>
+        <a class="gnb-item" data-href="option-a.html" data-name="Option A" onclick="loadProto(event,this)"><span class="code">A</span><span class="label">Option A</span></a>
+        <a class="gnb-item" data-href="option-b.html" data-name="Option B (채택)" onclick="loadProto(event,this)"><span class="code">B ★</span><span class="label">Option B</span></a>
+        <a class="gnb-item" data-href="option-c.html" data-name="Option C" onclick="loadProto(event,this)"><span class="code">C</span><span class="label">Option C</span></a>
+        <a class="gnb-item" data-href="option-d.html" data-name="Option D" onclick="loadProto(event,this)"><span class="code">D</span><span class="label">Option D</span></a>
+      </div>
+    </div>
+
+  </nav>
+
+  <!-- ─── MAIN VIEWER ────────────────────────────── -->
+  <div class="main">
+    <div class="viewer-bar">
+      <span class="url" id="viewerUrl"><b>welcome</b></span>
+      <button class="ctrl-btn" onclick="openInNewTab()" title="새 탭에서 열기">↗ 새 탭</button>
+      <button class="ctrl-btn" onclick="reloadViewer()" title="새로고침">↻</button>
+    </div>
+    <div class="viewer" id="viewer">
+      <div class="welcome" id="welcome">
+        <div class="tag">UX SPRINT TIER 1 — IN REVIEW</div>
+        <h2 style="margin-top:14px;">큐록 Prototype Workspace</h2>
+        <p>좌측 GNB 에서 prototype 선택. 셀 클릭 모드 켜고 영역 클릭 → 우측 컨텍스트 캡처 → 요청 작성 → Copy → 터미널에 붙여넣기.</p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:14px;">
+          <button class="btn" style="background:var(--surface);border:1px solid var(--border2);color:var(--text);font-family:inherit;font-size:12px;font-weight:700;padding:8px 14px;border-radius:6px;cursor:pointer;" onclick="loadDirect('crimson-soften.html','T1-3 · Crimson 무게감 완화')">→ T1-3</button>
+          <button class="btn" style="background:var(--surface);border:1px solid var(--border2);color:var(--text);font-family:inherit;font-size:12px;font-weight:700;padding:8px 14px;border-radius:6px;cursor:pointer;" onclick="loadDirect('first-week-guide.html','T1-2 · 첫 7일 가이드')">→ T1-2</button>
+        </div>
+      </div>
+      <iframe id="viewerFrame" style="display:none;" title="prototype viewer"></iframe>
+      <div class="sel-flash" id="selFlash"></div>
+    </div>
+  </div>
+
+  <!-- ─── CHAT (Right) ───────────────────────────── -->
+  <aside class="chat" id="chat">
+    <div class="chat-head">
+      <h3>
+        <span>CHAT WITH CLAUDE (TERMINAL)</span>
+        <span class="pending-pill zero" id="pendingPill">0</span>
+      </h3>
+      <div class="sub">셀 클릭 모드 ON → 영역 클릭 → 요청 작성 → Copy → 터미널에 붙여넣기</div>
+    </div>
+
+    <div class="ctx">
+      <div class="ctx-label">SELECTED CONTEXT</div>
+      <div class="ctx-empty" id="ctxEmpty">셀이 선택되지 않음 — 전체 화면 요청이면 그냥 NEW REQUEST 에 적기.</div>
+      <div class="ctx-body" id="ctxBody"></div>
+      <button class="ctx-clear" onclick="clearContext()">선택 지우기</button>
+    </div>
+
+    <div class="history">
+      <div class="history-label">
+        <span>HISTORY <span class="count" id="histCount">(0)</span></span>
+        <button class="hist-btn danger" onclick="clearAllHistory()" style="font-size:9px;">전체 삭제</button>
+      </div>
+      <div class="history-empty" id="histEmpty">아직 요청 없음. 아래에서 작성해봐.</div>
+      <div id="histList"></div>
+    </div>
+
+    <div class="compose">
+      <div class="compose-label">NEW REQUEST</div>
+      <textarea id="composeText" placeholder="예: 이 카드의 카피 ' 한 칸이 시작이야' 를 더 짧게 줄여줘. 또는 crimson 색을 더 어둡게 — #a93542 로 시도."></textarea>
+      <div class="compose-actions">
+        <button class="copy-btn" id="copyBtn" onclick="copyForClaude()">Copy for Claude</button>
+      </div>
+      <div class="compose-status" id="composeStatus">✓ 클립보드에 복사 + history 에 추가됨</div>
+    </div>
+  </aside>
+
+</div>
+
+<script>
+'use strict';
+
+const LS_LAST='qrok_workspace_last';
+const LS_HIST='qrok_workspace_history_v1';
+
+// ───── State ──────────────────────────────────────
+let selectMode=false;
+let selectedCtx=null;  // {selector,html,prototype}
+let currentProto=null; // {href,name}
+let history=[];
+
+// ───── GNB ────────────────────────────────────────
+function toggleGroup(head){head.parentElement.classList.toggle('is-collapsed');}
+function toggleGnb(){document.getElementById('gnb').classList.toggle('is-open');}
+function toggleChat(){document.getElementById('chat').classList.toggle('is-open');}
+
+function loadProto(ev,el){
+  ev.preventDefault();
+  const href=el.getAttribute('data-href');
+  const name=el.getAttribute('data-name');
+  document.querySelectorAll('.gnb-item').forEach(x=>x.classList.remove('is-active'));
+  el.classList.add('is-active');
+  el.closest('.gnb-group')?.classList.remove('is-collapsed');
+  loadDirect(href,name);
+  if(window.innerWidth<=880)document.getElementById('gnb').classList.remove('is-open');
+}
+
+function loadDirect(href,name){
+  document.getElementById('welcome').style.display='none';
+  const f=document.getElementById('viewerFrame');
+  f.style.display='block';
+  f.src=href;
+  document.getElementById('crumb').innerHTML='<b>'+escapeHtml(name)+'</b>';
+  document.getElementById('viewerUrl').innerHTML='<b>'+escapeHtml(href)+'</b>';
+  currentProto={href,name};
+  // GNB 활성화
+  const items=document.querySelectorAll('.gnb-item');
+  items.forEach(x=>{
+    if(x.getAttribute('data-href')===href){
+      items.forEach(y=>y.classList.remove('is-active'));
+      x.classList.add('is-active');
+      x.closest('.gnb-group')?.classList.remove('is-collapsed');
+    }
+  });
+  try{localStorage.setItem(LS_LAST,JSON.stringify(currentProto));}catch{}
+}
+
+function reloadViewer(){
+  const f=document.getElementById('viewerFrame');
+  if(f.src)f.src=f.src;
+}
+function openInNewTab(){
+  const f=document.getElementById('viewerFrame');
+  if(f.src)window.open(f.src,'_blank');
+}
+
+// ───── Selection mode (postMessage 기반) ──────────
+// 각 prototype 의 _workspace-selector.js 가 iframe 내부에서
+// 'wks.ready'/'wks.selected' 보내고 'wks.enableSelect'/'wks.disableSelect' 받음.
+let iframeReady=false;
+
+function sendToIframe(msg){
+  const f=document.getElementById('viewerFrame');
+  if(!f||!f.contentWindow)return false;
+  try{f.contentWindow.postMessage(msg,'*');return true;}
+  catch{return false;}
+}
+
+function toggleSelect(){
+  selectMode=!selectMode;
+  document.getElementById('selectBtn').classList.toggle('is-active',selectMode);
+  document.getElementById('viewer').classList.toggle('is-selecting',selectMode);
+  const sent=sendToIframe({type:selectMode?'wks.enableSelect':'wks.disableSelect'});
+  if(!sent && selectMode){
+    showComposeStatus('iframe 통신 실패 — prototype 새로고침 후 다시 시도',true);
+  }
+}
+
+// iframe 에서 message 수신
+window.addEventListener('message',(e)=>{
+  const d=e.data;
+  if(!d||typeof d!=='object')return;
+  if(d.type==='wks.ready'){
+    iframeReady=true;
+    // 만약 selectMode 가 켜진 상태로 prototype 전환됐다면 즉시 활성화
+    if(selectMode){
+      sendToIframe({type:'wks.enableSelect'});
+    }
+    return;
+  }
+  if(d.type==='wks.selected'){
+    selectedCtx={
+      selector:d.selector||'',
+      html:(d.html||'').slice(0,500),
+      text:(d.text||'').slice(0,200)
+    };
+    updateContextPanel();
+    flashSelectionBox();
+    // 셀 모드 자동 해제
+    selectMode=false;
+    document.getElementById('selectBtn').classList.remove('is-active');
+    document.getElementById('viewer').classList.remove('is-selecting');
+    // 모바일에서 chat 패널 열기
+    if(window.innerWidth<=880)document.getElementById('chat').classList.add('is-open');
+    setTimeout(()=>document.getElementById('composeText').focus(),100);
+  }
+});
+
+function flashSelectionBox(){
+  // iframe 외부 시각 피드백 — 짧은 펄스
+  const v=document.getElementById('viewer');
+  v.style.boxShadow='inset 0 0 0 3px var(--accent)';
+  setTimeout(()=>{v.style.boxShadow='';},400);
+}
+
+function updateContextPanel(){
+  const empty=document.getElementById('ctxEmpty');
+  const body=document.getElementById('ctxBody');
+  if(selectedCtx){
+    empty.style.display='none';
+    body.classList.add('is-on');
+    body.innerHTML=
+      '<span class="ctx-sel">'+escapeHtml(selectedCtx.selector)+'</span>'+
+      '<span class="ctx-html">'+escapeHtml(selectedCtx.html.slice(0,200))+(selectedCtx.html.length>200?'…':'')+'</span>';
+  } else {
+    empty.style.display='block';
+    body.classList.remove('is-on');
+    body.innerHTML='';
+  }
+}
+
+function clearContext(){
+  selectedCtx=null;
+  updateContextPanel();
+}
+
+// ───── Compose / Copy ─────────────────────────────
+function buildShareMessage(text){
+  const lines=[];
+  lines.push('[QROK Workspace]');
+  if(currentProto){
+    lines.push('Prototype: '+currentProto.name);
+    lines.push('File: prototypes/'+currentProto.href);
+  } else {
+    lines.push('Prototype: (workspace 메인)');
+  }
+  if(selectedCtx){
+    lines.push('');
+    lines.push('Selected: '+selectedCtx.selector);
+    if(selectedCtx.text)lines.push('Text: "'+selectedCtx.text.slice(0,120)+'"');
+    if(selectedCtx.html)lines.push('HTML snippet: '+selectedCtx.html.slice(0,200).replace(/\n/g,' '));
+  }
+  lines.push('');
+  lines.push('Request:');
+  lines.push(text);
+  return lines.join('\n');
+}
+
+async function copyForClaude(){
+  const ta=document.getElementById('composeText');
+  const text=ta.value.trim();
+  if(!text){
+    ta.focus();
+    showComposeStatus('요청 내용을 적어줘',true);
+    return;
+  }
+  const msg=buildShareMessage(text);
+  try{
+    await navigator.clipboard.writeText(msg);
+  }catch{
+    // Fallback
+    const tmp=document.createElement('textarea');
+    tmp.value=msg;
+    document.body.appendChild(tmp);
+    tmp.select();
+    document.execCommand('copy');
+    tmp.remove();
+  }
+  // history 추가
+  addHistory({
+    id:'h'+Date.now(),
+    proto:currentProto?currentProto.href:'(workspace)',
+    protoName:currentProto?currentProto.name:'workspace',
+    selector:selectedCtx?selectedCtx.selector:null,
+    text,
+    status:'pending',
+    ts:Date.now()
+  });
+  // UI feedback
+  ta.value='';
+  const btn=document.getElementById('copyBtn');
+  btn.classList.add('copied');
+  btn.textContent='✓ 복사됨';
+  setTimeout(()=>{btn.classList.remove('copied');btn.textContent='Copy for Claude';},1600);
+  showComposeStatus('클립보드 복사 + history 추가 — 터미널에 붙여넣기',false);
+  clearContext();
+}
+
+function showComposeStatus(msg,isError){
+  const el=document.getElementById('composeStatus');
+  el.textContent=msg;
+  el.style.color=isError?'#ff8888':'';
+  el.classList.add('is-on');
+  setTimeout(()=>el.classList.remove('is-on'),2400);
+}
+
+// ───── History ────────────────────────────────────
+function loadHistory(){
+  try{history=JSON.parse(localStorage.getItem(LS_HIST)||'[]');}catch{history=[];}
+}
+function saveHistory(){
+  try{localStorage.setItem(LS_HIST,JSON.stringify(history));}catch{}
+}
+function addHistory(item){
+  history.unshift(item);
+  if(history.length>50)history=history.slice(0,50);
+  saveHistory();
+  renderHistory();
+}
+function setStatus(id,status){
+  const it=history.find(x=>x.id===id);
+  if(!it)return;
+  it.status=status;
+  saveHistory();
+  renderHistory();
+}
+function cycleStatus(id){
+  const it=history.find(x=>x.id===id);
+  if(!it)return;
+  const order=['pending','doing','done'];
+  it.status=order[(order.indexOf(it.status)+1)%order.length];
+  saveHistory();
+  renderHistory();
+}
+function delHistItem(id){
+  history=history.filter(x=>x.id!==id);
+  saveHistory();
+  renderHistory();
+}
+function recopyItem(id){
+  const it=history.find(x=>x.id===id);
+  if(!it)return;
+  // 재구성
+  const lines=[];
+  lines.push('[QROK Workspace · re-copy]');
+  lines.push('Prototype: '+it.protoName);
+  if(it.selector)lines.push('Selected: '+it.selector);
+  lines.push('');
+  lines.push('Request:');
+  lines.push(it.text);
+  navigator.clipboard.writeText(lines.join('\n')).then(()=>{
+    showComposeStatus('다시 클립보드 복사',false);
+  });
+}
+function clearAllHistory(){
+  if(!confirm('history 전체 삭제? localStorage 만 영향, 코드/파일 X.'))return;
+  history=[];
+  saveHistory();
+  renderHistory();
+}
+
+function renderHistory(){
+  const list=document.getElementById('histList');
+  const empty=document.getElementById('histEmpty');
+  const count=document.getElementById('histCount');
+  const pending=document.getElementById('pendingPill');
+  count.textContent='('+history.length+')';
+  const pendingN=history.filter(h=>h.status==='pending').length;
+  pending.textContent=pendingN;
+  pending.classList.toggle('zero',pendingN===0);
+  if(!history.length){
+    empty.style.display='block';
+    list.innerHTML='';
+    return;
+  }
+  empty.style.display='none';
+  list.innerHTML=history.map(it=>{
+    const ageMin=Math.floor((Date.now()-it.ts)/60000);
+    const ageTxt=ageMin<1?'방금':ageMin<60?ageMin+'분 전':Math.floor(ageMin/60)+'시간 전';
+    const protoShort=(it.protoName||'').split('·')[0].trim().slice(0,12);
+    return `<div class="hist-item" data-id="${it.id}" onclick="toggleHistItem('${it.id}',event)">
+      <span class="hist-status ${it.status}" onclick="event.stopPropagation();cycleStatus('${it.id}')" title="클릭으로 상태 변경"></span>
+      <div class="hist-body">
+        <div class="hist-meta">
+          <span class="file">${escapeHtml(protoShort)}</span>
+          <span class="status-label ${it.status}">${it.status}</span>
+          <span class="age">${ageTxt}</span>
+        </div>
+        <div class="hist-text">${escapeHtml(it.text)}</div>
+        <div class="hist-actions">
+          <button class="hist-btn" onclick="event.stopPropagation();recopyItem('${it.id}')">다시 복사</button>
+          <button class="hist-btn" onclick="event.stopPropagation();setStatus('${it.id}','doing')">→ doing</button>
+          <button class="hist-btn" onclick="event.stopPropagation();setStatus('${it.id}','done')">→ done</button>
+          <button class="hist-btn danger" onclick="event.stopPropagation();delHistItem('${it.id}')">삭제</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleHistItem(id,ev){
+  const el=ev.currentTarget;
+  el.classList.toggle('is-expanded');
+}
+
+// ───── Utils ──────────────────────────────────────
+function escapeHtml(s){
+  if(s==null)return '';
+  return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
+}
+
+// ───── Boot ───────────────────────────────────────
+loadHistory();
+renderHistory();
+// 마지막 본 prototype 복원
+try{
+  const saved=JSON.parse(localStorage.getItem(LS_LAST)||'null');
+  if(saved&&saved.href){
+    setTimeout(()=>loadDirect(saved.href,saved.name),100);
+  }
+}catch{}
+
+// iframe load 시 — 새 prototype 의 _workspace-selector.js 가 wks.ready 보내면 재활성화됨.
+document.getElementById('viewerFrame').addEventListener('load',()=>{
+  iframeReady=false;
+});
+
+// 단축키
+window.addEventListener('keydown',(e)=>{
+  if((e.metaKey||e.ctrlKey)&&e.key==='Enter'){
+    e.preventDefault();
+    copyForClaude();
+  }
+  if((e.metaKey||e.ctrlKey)&&e.key==='/'){
+    e.preventDefault();
+    toggleSelect();
+  }
+});
+
+// 1분마다 history age 갱신
+setInterval(()=>{if(history.length)renderHistory();},60000);
+</script>
+
+</body>
+</html>

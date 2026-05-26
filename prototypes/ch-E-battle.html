@@ -1,0 +1,422 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Challenge Room E · Battle Screen</title>
+<link rel="stylesheet" href="_challenge-shared.css">
+<style>
+/* Pokemon Battle Screen — 1v1 면대면. 본인 vs 추월 대상 (3위).
+   상단=라이벌, 중앙=VS, 하단=나 + 파티 strip. 가장 게임스러운 옵션. */
+.battle-arena {
+  position: relative;
+  background:
+    radial-gradient(circle at 50% 30%, #2a2235 0%, #14141a 60%, #0a0a0c 100%);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 16px;
+  overflow: hidden;
+}
+
+/* 라이벌 (상단) — 추월 대상 */
+.rival-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 0;
+  position: relative;
+  z-index: 2;
+}
+.rival-portrait {
+  width: 72px;
+  height: 72px;
+  border-radius: 12px;
+  background:
+    radial-gradient(circle at 30% 25%, rgba(255,255,255,0.35), transparent 50%),
+    linear-gradient(160deg, var(--tier-color), color-mix(in srgb, var(--tier-color) 45%, #000));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Archivo Black', sans-serif;
+  font-size: 26px;
+  color: rgba(0,0,0,0.55);
+  text-shadow: 0 1px 0 rgba(255,255,255,0.3);
+  box-shadow:
+    inset 0 2px 0 rgba(255,255,255,0.35),
+    inset 0 -2px 0 rgba(0,0,0,0.35),
+    0 6px 20px color-mix(in srgb, var(--tier-color) 30%, transparent);
+  flex-shrink: 0;
+}
+.rival-info { flex: 1; min-width: 0; }
+.rival-meta {
+  font-family: 'DM Mono', monospace;
+  font-size: 9.5px;
+  color: var(--text3);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.rival-name {
+  font-family: 'Archivo Black', sans-serif;
+  font-size: 18px;
+  color: var(--text);
+  margin: 2px 0 4px;
+  letter-spacing: -0.01em;
+}
+.rival-tag {
+  display: inline-block;
+  background: var(--tier-color);
+  color: #000;
+  font-size: 9.5px;
+  font-weight: 800;
+  padding: 2px 7px;
+  border-radius: 4px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+/* HP 바 */
+.hp-bar {
+  position: relative;
+  height: 12px;
+  background:
+    linear-gradient(180deg, rgba(0,0,0,0.6), rgba(0,0,0,0.3));
+  border-radius: 6px;
+  border: 1px solid rgba(255,255,255,0.1);
+  overflow: hidden;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.5);
+}
+.hp-bar-fill {
+  height: 100%;
+  background: linear-gradient(180deg,
+    color-mix(in srgb, var(--tier-color) 80%, white),
+    var(--tier-color),
+    color-mix(in srgb, var(--tier-color) 50%, #000));
+  border-radius: inherit;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.4);
+  transition: width 0.6s cubic-bezier(.32,1,.42,1);
+}
+.hp-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-top: 4px;
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  color: var(--text3);
+}
+.hp-label b {
+  color: var(--text);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+/* VS 디바이더 */
+.vs-divider {
+  position: relative;
+  margin: 16px -16px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    linear-gradient(90deg,
+      transparent,
+      rgba(255,77,77,0.15) 30%,
+      rgba(255,77,77,0.25) 50%,
+      rgba(255,77,77,0.15) 70%,
+      transparent);
+  border-top: 1px solid rgba(255,77,77,0.2);
+  border-bottom: 1px solid rgba(255,77,77,0.2);
+}
+.vs-divider .vs {
+  font-family: 'Archivo Black', sans-serif;
+  font-size: 24px;
+  color: var(--accent);
+  letter-spacing: 0.05em;
+  text-shadow:
+    0 0 8px rgba(255,77,77,0.6),
+    0 0 16px rgba(255,77,77,0.3);
+  position: relative;
+}
+.vs-divider .vs::before,
+.vs-divider .vs::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: 50px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--accent));
+}
+.vs-divider .vs::before { right: 100%; margin-right: 12px; }
+.vs-divider .vs::after {
+  left: 100%;
+  margin-left: 12px;
+  background: linear-gradient(90deg, var(--accent), transparent);
+}
+.vs-divider .gap {
+  position: absolute;
+  bottom: -16px;
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  color: var(--text3);
+  background: var(--bg);
+  padding: 0 10px;
+  letter-spacing: 0.05em;
+}
+
+/* 본인 카드 (하단 - 더 크게) */
+.me-card {
+  position: relative;
+  z-index: 2;
+  background: linear-gradient(135deg,
+    var(--accent-bg),
+    rgba(255,77,77,0.04));
+  border: 1.5px solid var(--accent-bd);
+  border-radius: 12px;
+  padding: 12px;
+  margin-top: 8px;
+}
+.me-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  flex-direction: row-reverse; /* 본인은 우측 (Pokemon player side) */
+}
+.me-portrait {
+  width: 80px;
+  height: 80px;
+  border-radius: 12px;
+  background:
+    radial-gradient(circle at 30% 25%, rgba(255,255,255,0.35), transparent 50%),
+    linear-gradient(160deg, var(--tier-color), color-mix(in srgb, var(--tier-color) 45%, #000));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Archivo Black', sans-serif;
+  font-size: 28px;
+  color: rgba(0,0,0,0.55);
+  text-shadow: 0 1px 0 rgba(255,255,255,0.3);
+  box-shadow:
+    inset 0 2px 0 rgba(255,255,255,0.35),
+    inset 0 -2px 0 rgba(0,0,0,0.35),
+    0 0 18px var(--accent),
+    0 8px 24px rgba(255,77,77,0.25);
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  flex-shrink: 0;
+}
+.me-info { flex: 1; min-width: 0; text-align: right; }
+.me-meta {
+  font-family: 'DM Mono', monospace;
+  font-size: 9.5px;
+  color: var(--accent);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.me-name {
+  font-family: 'Archivo Black', sans-serif;
+  font-size: 20px;
+  color: var(--text);
+  margin: 2px 0 4px;
+}
+.me-tag {
+  display: inline-block;
+  background: var(--accent);
+  color: #fff;
+  font-size: 9.5px;
+  font-weight: 800;
+  padding: 2px 7px;
+  border-radius: 4px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+/* MOVES (액션 버튼 grid) */
+.moves-grid {
+  margin-top: 12px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+.move-btn {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,77,77,0.25);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 11px;
+  color: var(--text2);
+  text-align: left;
+  font-family: 'DM Mono', monospace;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.move-btn:hover {
+  background: rgba(255,77,77,0.08);
+  border-color: var(--accent);
+  color: var(--text);
+}
+.move-btn b {
+  color: var(--accent);
+  font-family: 'Archivo Black', sans-serif;
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  display: block;
+  margin-bottom: 2px;
+  font-weight: normal;
+}
+
+/* 파티 strip (하단 — 다른 멤버) */
+.party-strip {
+  margin-top: 14px;
+  padding: 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+.party-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  color: var(--text3);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.party-row {
+  display: flex;
+  gap: 6px;
+}
+.party-slot {
+  flex: 1;
+  text-align: center;
+  position: relative;
+}
+.party-slot .ball {
+  width: 28px;
+  height: 28px;
+  margin: 0 auto;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--tier-color), color-mix(in srgb, var(--tier-color) 50%, #000));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Archivo Black', sans-serif;
+  font-size: 10px;
+  color: rgba(0,0,0,0.5);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.3), inset 0 -1px 0 rgba(0,0,0,0.3);
+}
+.party-slot.is-out .ball { opacity: 0.4; filter: saturate(0.4); }
+.party-slot .nm {
+  font-size: 9px;
+  color: var(--text3);
+  margin-top: 3px;
+  font-weight: 700;
+}
+.party-slot .pct {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  color: var(--tier-color);
+  font-weight: 700;
+  margin-top: 1px;
+}
+.party-slot.is-out .nm,
+.party-slot.is-out .pct { opacity: 0.5; }
+</style>
+</head>
+<body>
+<div class="phone">
+  <div class="head">
+    <span class="head-back">◀</span>
+    <div style="flex:1;text-align:center;">
+      <div class="head-title">챌린지 룸 · 14일 감량</div>
+      <div class="head-sub">D-5 · 9/14일</div>
+    </div>
+    <span style="width:20px;"></span>
+  </div>
+
+  <div class="opt-bar">
+    <div class="opt-bar-title">OPTION E · BATTLE SCREEN</div>
+    <div class="opt-bar-desc">Pokemon battle layout. 추월 대상 (3위 수아) vs 나. 1v1 면대면 + MOVES + 파티 strip. 가장 게임스럽고 액션 유도 강함.</div>
+  </div>
+
+  <div class="body">
+    <div class="status-band">"수아가 7%p 앞서 있다. 다음 행동을 선택해라."</div>
+
+    <div class="battle-arena">
+      <!-- 상단: 추월 대상 (3위 수아) -->
+      <div class="rival-card tier-4">
+        <div class="rival-info">
+          <div class="rival-meta">3위 · 추월 대상</div>
+          <div class="rival-name">수아</div>
+          <span class="rival-tag">수련자 · 유지</span>
+          <div class="hp-bar"><div class="hp-bar-fill" style="width:78%;"></div></div>
+          <div class="hp-label"><b>±0.4 / ±1kg</b><span>78%</span></div>
+        </div>
+        <div class="rival-portrait">수</div>
+      </div>
+
+      <!-- VS 디바이더 -->
+      <div class="vs-divider">
+        <span class="vs">VS</span>
+        <span class="gap">−0.6kg 갭</span>
+      </div>
+
+      <!-- 본인 -->
+      <div class="me-card tier-3">
+        <div class="me-row">
+          <div class="me-portrait">나</div>
+          <div class="me-info">
+            <div class="me-meta">4위 · 너의 차례</div>
+            <div class="me-name">나</div>
+            <span class="me-tag">저항자 · 감량</span>
+            <div class="hp-bar"><div class="hp-bar-fill" style="width:71%; background: linear-gradient(180deg, #ff8a8a, var(--accent), #a8302a);"></div></div>
+            <div class="hp-label"><span>71%</span><b style="color:var(--accent);">−1.8 / −3kg</b></div>
+          </div>
+        </div>
+
+        <div class="moves-grid">
+          <div class="move-btn"><b>FOOD</b>오늘 식단 기록</div>
+          <div class="move-btn"><b>TRAIN</b>운동 완료</div>
+          <div class="move-btn"><b>WATER</b>물 한 잔</div>
+          <div class="move-btn"><b>WEIGHT</b>체중 입력</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 파티 strip -->
+    <div class="party-strip">
+      <div class="party-label">파티 · 5명</div>
+      <div class="party-row">
+        <div class="party-slot tier-4">
+          <div class="ball">민</div>
+          <div class="nm">민지</div>
+          <div class="pct">92%</div>
+        </div>
+        <div class="party-slot tier-3">
+          <div class="ball">준</div>
+          <div class="nm">준호</div>
+          <div class="pct">84%</div>
+        </div>
+        <div class="party-slot tier-4">
+          <div class="ball">수</div>
+          <div class="nm" style="color:var(--text);">수아</div>
+          <div class="pct">78%</div>
+        </div>
+        <div class="party-slot is-out tier-2">
+          <div class="ball">태</div>
+          <div class="nm">태형</div>
+          <div class="pct">52%</div>
+        </div>
+        <div class="party-slot is-out tier-1">
+          <div class="ball">지</div>
+          <div class="nm">지유</div>
+          <div class="pct">31%</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="_workspace-selector.js"></script>
+</body>
+</html>

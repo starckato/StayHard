@@ -1,0 +1,399 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Challenge Room C · Boat Race</title>
+<link rel="stylesheet" href="_challenge-shared.css">
+<style>
+/* Boat Race — Clash Royale 보트 레이스 + Mario Party 트랙. 수평 lane 경주. */
+.race-track {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.2)),
+    var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 16px 12px 12px;
+  position: relative;
+  overflow: hidden;
+}
+.race-track::before {
+  /* 트랙 라인 가이드 */
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    repeating-linear-gradient(90deg,
+      rgba(255,255,255,0.04) 0px,
+      rgba(255,255,255,0.04) 1px,
+      transparent 1px,
+      transparent 10%);
+  pointer-events: none;
+}
+
+/* 결승선 (오른쪽 끝) */
+.race-finish {
+  position: absolute;
+  top: 38px;
+  bottom: 0;
+  right: 12px;
+  width: 16px;
+  background:
+    repeating-linear-gradient(45deg,
+      var(--gold) 0px,
+      var(--gold) 4px,
+      #000 4px,
+      #000 8px);
+  border-radius: 2px;
+  opacity: 0.85;
+  pointer-events: none;
+}
+.race-finish::before {
+  content: 'GOAL';
+  position: absolute;
+  top: -18px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: 'Archivo Black', sans-serif;
+  font-size: 9px;
+  color: var(--gold);
+  letter-spacing: 0.12em;
+}
+
+/* 본인 라인 마커 (4위 현재 위치 가이드) */
+.race-pace-line {
+  position: absolute;
+  top: 38px;
+  bottom: 12px;
+  left: 0;
+  width: 1px;
+  background: var(--accent);
+  opacity: 0.4;
+  pointer-events: none;
+  z-index: 1;
+}
+.race-pace-line::after {
+  content: '나';
+  position: absolute;
+  top: -16px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 9px;
+  color: var(--accent);
+  font-weight: 700;
+  background: var(--bg);
+  padding: 0 4px;
+}
+
+/* 헤더 라벨 */
+.race-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  color: var(--text3);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.race-header b {
+  color: var(--text);
+  font-family: 'Archivo Black', sans-serif;
+  letter-spacing: 0.15em;
+}
+
+/* 라인 한 줄 */
+.lane {
+  position: relative;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  border-top: 1px dashed rgba(255,255,255,0.06);
+  padding: 0 22px 0 36px; /* right padding = finish band width */
+}
+.lane:last-child { border-bottom: 1px dashed rgba(255,255,255,0.06); }
+
+/* 라인 좌측 — rank 번호 */
+.lane-rank {
+  position: absolute;
+  left: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.04);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Archivo Black', sans-serif;
+  font-size: 11px;
+  color: var(--text3);
+  z-index: 2;
+}
+.lane.is-1 .lane-rank {
+  background: var(--gold);
+  color: #000;
+  box-shadow: 0 0 12px var(--gold);
+}
+.lane.is-me .lane-rank {
+  background: var(--accent);
+  color: #fff;
+}
+
+/* 보트 (sprite + 이름 한 묶음) */
+.boat {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  z-index: 3;
+  transition: left 0.6s cubic-bezier(.32,1,.42,1);
+}
+.boat-sprite {
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  background: linear-gradient(135deg, var(--tier-color), color-mix(in srgb, var(--tier-color) 55%, #000));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Archivo Black', sans-serif;
+  font-size: 10px;
+  color: rgba(0,0,0,0.5);
+  text-shadow: 0 1px 0 rgba(255,255,255,0.25);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.3),
+    inset 0 -1px 0 rgba(0,0,0,0.3),
+    0 4px 8px color-mix(in srgb, var(--tier-color) 30%, transparent);
+}
+.boat-name {
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--text2);
+  white-space: nowrap;
+  background: var(--bg);
+  padding: 1px 4px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+}
+.lane.is-1 .boat-sprite {
+  width: 30px;
+  height: 30px;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.4),
+    inset 0 -1px 0 rgba(0,0,0,0.3),
+    0 0 14px var(--gold);
+}
+.lane.is-1 .boat-name {
+  color: var(--gold);
+  border-color: var(--gold);
+}
+.lane.is-me .boat-sprite {
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.4),
+    inset 0 -1px 0 rgba(0,0,0,0.3),
+    0 0 12px var(--accent);
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+.lane.is-me .boat-name {
+  color: var(--accent);
+  border-color: var(--accent-bd);
+  background: var(--accent-bg);
+}
+.lane.is-out .boat-sprite { opacity: 0.45; filter: saturate(0.4); }
+.lane.is-out .boat-name { opacity: 0.5; }
+
+/* 트레일 (지나온 흔적) */
+.lane-trail {
+  position: absolute;
+  top: 50%;
+  left: 36px;
+  height: 2px;
+  background: linear-gradient(90deg,
+    transparent,
+    color-mix(in srgb, var(--tier-color) 40%, transparent),
+    var(--tier-color));
+  border-radius: 999px;
+  transform: translateY(-50%);
+  opacity: 0.5;
+  z-index: 1;
+}
+.lane.is-1 .lane-trail { opacity: 0.85; height: 3px; }
+.lane.is-me .lane-trail {
+  background: linear-gradient(90deg,
+    transparent,
+    color-mix(in srgb, var(--accent) 40%, transparent),
+    var(--accent));
+  opacity: 0.7;
+  height: 3px;
+}
+
+/* 백분율 표시 (보트 옆) */
+.lane-pct {
+  position: absolute;
+  right: 28px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--tier-color);
+  z-index: 2;
+}
+.lane.is-me .lane-pct { color: var(--accent); }
+
+/* 본인 강조 카드 (트랙 아래) */
+.me-summary {
+  margin-top: 14px;
+  padding: 12px 14px;
+  background: var(--accent-bg);
+  border: 1px solid var(--accent-bd);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.me-summary-left {
+  font-family: 'Archivo Black', sans-serif;
+  font-size: 20px;
+  color: var(--accent);
+  letter-spacing: -0.02em;
+}
+.me-summary-mid {
+  flex: 1;
+}
+.me-summary-title {
+  font-size: 12px;
+  color: var(--text);
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+.me-summary-sub {
+  font-family: 'DM Mono', monospace;
+  font-size: 10.5px;
+  color: var(--text3);
+}
+.me-summary-right {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: var(--accent);
+  font-weight: 700;
+  text-align: right;
+}
+</style>
+</head>
+<body>
+<div class="phone">
+  <div class="head">
+    <span class="head-back">◀</span>
+    <div style="flex:1;text-align:center;">
+      <div class="head-title">챌린지 룸 · 14일 감량</div>
+      <div class="head-sub">D-5 · 9/14일</div>
+    </div>
+    <span style="width:20px;"></span>
+  </div>
+
+  <div class="opt-bar">
+    <div class="opt-bar-title">OPTION C · BOAT RACE</div>
+    <div class="opt-bar-desc">Clash Royale 보트 레이스 + Mario Party 트랙. 수평 lane 6개, 결승선 우측. 본인 페이스 라인 가이드, 1위 광채 + 본인 outline.</div>
+  </div>
+
+  <div class="body">
+    <div class="status-band">"민지는 결승선 코앞. 너는 70% 지점."</div>
+
+    <div class="race-track">
+      <div class="race-header">
+        <span>0%</span>
+        <b>WEIGHT GOAL RACE</b>
+        <span>100%</span>
+      </div>
+
+      <div class="race-finish"></div>
+      <div class="race-pace-line" style="left:calc(36px + (100% - 58px) * 0.71);"></div>
+
+      <!-- 1st: 민지 92% -->
+      <div class="lane is-1 tier-4">
+        <div class="lane-rank">1</div>
+        <div class="lane-trail" style="width:calc((100% - 58px) * 0.92);"></div>
+        <div class="lane-pct">92%</div>
+        <div class="boat" style="left:calc(36px + (100% - 58px) * 0.92);">
+          <div class="boat-sprite">민</div>
+          <div class="boat-name">민지</div>
+        </div>
+      </div>
+
+      <!-- 2nd: 준호 84% -->
+      <div class="lane tier-3">
+        <div class="lane-rank">2</div>
+        <div class="lane-trail" style="width:calc((100% - 58px) * 0.84);"></div>
+        <div class="lane-pct">84%</div>
+        <div class="boat" style="left:calc(36px + (100% - 58px) * 0.84);">
+          <div class="boat-sprite">준</div>
+          <div class="boat-name">준호</div>
+        </div>
+      </div>
+
+      <!-- 3rd: 수아 78% -->
+      <div class="lane tier-4">
+        <div class="lane-rank">3</div>
+        <div class="lane-trail" style="width:calc((100% - 58px) * 0.78);"></div>
+        <div class="lane-pct">78%</div>
+        <div class="boat" style="left:calc(36px + (100% - 58px) * 0.78);">
+          <div class="boat-sprite">수</div>
+          <div class="boat-name">수아</div>
+        </div>
+      </div>
+
+      <!-- 4th: 나 71% -->
+      <div class="lane is-me tier-3">
+        <div class="lane-rank">4</div>
+        <div class="lane-trail" style="width:calc((100% - 58px) * 0.71);"></div>
+        <div class="lane-pct">71%</div>
+        <div class="boat" style="left:calc(36px + (100% - 58px) * 0.71);">
+          <div class="boat-sprite">나</div>
+          <div class="boat-name">나</div>
+        </div>
+      </div>
+
+      <!-- 5th: 태형 52% -->
+      <div class="lane is-out tier-2">
+        <div class="lane-rank">5</div>
+        <div class="lane-trail" style="width:calc((100% - 58px) * 0.52);"></div>
+        <div class="lane-pct">52%</div>
+        <div class="boat" style="left:calc(36px + (100% - 58px) * 0.52);">
+          <div class="boat-sprite">태</div>
+          <div class="boat-name">태형</div>
+        </div>
+      </div>
+
+      <!-- 6th: 지유 31% -->
+      <div class="lane is-out tier-1">
+        <div class="lane-rank">6</div>
+        <div class="lane-trail" style="width:calc((100% - 58px) * 0.31);"></div>
+        <div class="lane-pct">31%</div>
+        <div class="boat" style="left:calc(36px + (100% - 58px) * 0.31);">
+          <div class="boat-sprite">지</div>
+          <div class="boat-name">지유</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="me-summary">
+      <div class="me-summary-left">4<span style="font-size:11px;color:var(--text3);">위</span></div>
+      <div class="me-summary-mid">
+        <div class="me-summary-title">결승까지 −1.2kg, 남은 5일</div>
+        <div class="me-summary-sub">3위(수아) 까지 7%p · 추월 가능</div>
+      </div>
+      <div class="me-summary-right">+4%<br><span style="color:var(--text3);font-weight:400;">필요</span></div>
+    </div>
+  </div>
+</div>
+<script src="_workspace-selector.js"></script>
+</body>
+</html>

@@ -45,12 +45,25 @@ import * as flags from './features/flags/index.js';
 import * as metrics from './features/metrics/index.js';
 import * as firstCube from './features/activation/first-cube.js';
 import * as returnerGrace from './features/returner/grace.js';
+import './features/returner/tests.js'; // window.runReturnerTests() 노출
 import * as exempt from './features/exempt/index.js';
+import './features/exempt/tests.js'; // window.runExemptTests() 노출
 import * as deeplink from './features/deeplink/index.js';
 import * as notifOptIn from './features/notif/opt-in-scheduler.js';
 import * as volumeDelta from './features/volume-delta/index.js';
 import * as targets from './features/targets/index.js';
 import './features/targets/tests.js'; // window.runTargetsTests() 노출
+import './data/score-events.tests.js'; // window.runScoreEventsTests() 노출
+import './lib/cheat.tests.js'; // window.runCheatTests() 노출
+import './lib/tier.tests.js'; // window.runTierTests() 노출
+import './lib/date.tests.js'; // window.runDateTests() 노출
+import './features/activation/first-cube.tests.js'; // window.runFirstCubeTests() 노출
+import './features/notif/opt-in-scheduler.tests.js'; // window.runOptInTests() 노출
+import './features/volume-delta/tests.js'; // window.runVolumeDeltaTests() 노출
+import './features/metrics/tests.js'; // window.runMetricsTests() 노출
+import * as mandatoryMerge from './features/mandatory/merge.js';
+import './features/mandatory/tests.js'; // window.runMandatoryTests() 노출 — 5/9 사태 방어
+import './tests/run-all.js'; // window.runAllTests() 통합 runner
 import * as cubesUiEvents from './features/cubes/ui-events.js';
 import * as water from './features/water/index.js';
 import * as stickyHeader from './features/sticky-header/index.js';
@@ -112,6 +125,7 @@ window.sh.exempt = exempt;
 window.sh.deeplink = deeplink;
 window.sh.notifOptIn = notifOptIn;
 window.sh.volumeDelta = volumeDelta;
+window.sh.mandatory = mandatoryMerge;
 // Shortcut globals for inline use
 window.FF = flags;
 window.logEvent = metrics.logEvent;

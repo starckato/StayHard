@@ -1,0 +1,333 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
+<title>큐록 · Toast Undo Prototype</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  body{
+    background:#0a0a0c;
+    color:#f5f1ea;
+    font-family:'Pretendard','Apple SD Gothic Neo','DM Sans',sans-serif;
+    min-height:100vh;
+    padding:40px 20px 80px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    --text:#f5f1ea;
+    --text2:#a8a8b4;
+    --text3:#7a7a86;
+    --surface:#16161a;
+    --surface2:#1c1c22;
+    --border:rgba(255,255,255,.08);
+    --border2:rgba(255,255,255,.12);
+    --accent:#ff4d4d;
+    --green:#34d399;
+    --amber:#f59e0b;
+    --red:#ef4444;
+    --radius-md:8px;
+    --radius-lg:12px;
+  }
+  .page{max-width:430px;width:100%;}
+  .head{
+    margin-bottom:32px;
+    padding-bottom:16px;
+    border-bottom:1px solid var(--border);
+  }
+  .head h1{
+    font-family:'Archivo Black','DM Sans',sans-serif;
+    font-size:20px;
+    letter-spacing:-.02em;
+    margin-bottom:6px;
+  }
+  .head p{font-size:13px;color:var(--text2);line-height:1.55;}
+  .head .badge{
+    display:inline-block;
+    font-size:10px;
+    font-weight:700;
+    letter-spacing:.12em;
+    color:var(--accent);
+    margin-bottom:8px;
+  }
+
+  .section{
+    margin-bottom:36px;
+  }
+  .section-title{
+    font-family:'DM Mono',monospace;
+    font-size:10px;
+    font-weight:700;
+    letter-spacing:.16em;
+    text-transform:uppercase;
+    color:var(--text3);
+    margin-bottom:14px;
+  }
+  .demo{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:var(--radius-lg);
+    padding:24px 18px;
+    margin-bottom:8px;
+    position:relative;
+    min-height:120px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .demo .label{
+    position:absolute;
+    top:8px;
+    left:12px;
+    font-family:'DM Mono',monospace;
+    font-size:9px;
+    font-weight:700;
+    letter-spacing:.08em;
+    color:var(--text3);
+  }
+
+  /* ───── 현재 (Before) ────────────────────────────────── */
+  .toast-current{
+    background:rgba(20,20,24,.92);
+    backdrop-filter:blur(16px);
+    -webkit-backdrop-filter:blur(16px);
+    border:1px solid var(--border2);
+    border-radius:var(--radius-lg);
+    padding:8px 16px;
+    font-size:13px;
+    font-weight:500;
+    color:var(--text);
+    box-shadow:0 4px 20px rgba(0,0,0,.4);
+    white-space:nowrap;
+  }
+
+  /* ───── 신규 — undo 버튼 포함 (After) ───────────────── */
+  .toast-undo{
+    display:inline-flex;
+    align-items:stretch;
+    background:rgba(20,20,24,.94);
+    backdrop-filter:blur(16px);
+    -webkit-backdrop-filter:blur(16px);
+    border:1px solid var(--border2);
+    border-radius:var(--radius-lg);
+    box-shadow:0 4px 20px rgba(0,0,0,.4);
+    overflow:hidden;
+  }
+  .toast-undo-msg{
+    padding:8px 12px 8px 16px;
+    font-size:13px;
+    font-weight:500;
+    color:var(--text);
+    line-height:1.4;
+    display:flex;
+    align-items:center;
+    max-width:240px;
+  }
+  .toast-undo-sep{
+    width:1px;
+    background:rgba(255,255,255,.10);
+    flex-shrink:0;
+  }
+  .toast-undo-btn{
+    background:transparent;
+    border:none;
+    color:var(--accent);
+    font-family:inherit;
+    font-size:13px;
+    font-weight:700;
+    letter-spacing:-.01em;
+    padding:8px 14px;
+    cursor:pointer;
+    display:inline-flex;
+    align-items:center;
+    gap:5px;
+    transition:background .15s ease;
+  }
+  .toast-undo-btn:hover{background:rgba(255,77,77,.08);}
+  .toast-undo-btn:active{background:rgba(255,77,77,.14);}
+  /* 카운트다운 progress bar (4px 하단) */
+  .toast-undo-progress{
+    position:absolute;
+    bottom:0;
+    left:0;
+    height:2px;
+    background:var(--accent);
+    opacity:.55;
+    animation:progress 5s linear forwards;
+  }
+  @keyframes progress{from{width:100%;}to{width:0%;}}
+
+  /* 변형: 에러 — undo 없음 */
+  .toast-error{
+    background:rgba(28,12,12,.92);
+    border-color:rgba(239,68,68,.35);
+    box-shadow:0 4px 20px rgba(239,68,68,.18);
+  }
+  .toast-error .toast-undo-msg{color:#ffbcbc;}
+
+  /* 변형: 긴 메시지 wrap */
+  .toast-wrap .toast-undo-msg{
+    max-width:260px;
+    white-space:normal;
+    line-height:1.45;
+  }
+
+  /* Demo positioning relative inside box */
+  .demo .toast-current,
+  .demo .toast-undo,
+  .demo .toast-error{position:relative;}
+
+  /* Compare grid */
+  .compare{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+    margin-bottom:20px;
+  }
+  @media(max-width:480px){
+    .compare{grid-template-columns:1fr;}
+  }
+  .compare .demo{margin-bottom:0;}
+
+  .note{
+    font-size:11.5px;
+    color:var(--text3);
+    line-height:1.65;
+    padding:10px 14px;
+    background:rgba(255,255,255,.025);
+    border:1px solid var(--border);
+    border-radius:var(--radius-md);
+  }
+  .note b{color:var(--text);}
+
+  .spec{
+    display:grid;
+    grid-template-columns:max-content 1fr;
+    gap:6px 14px;
+    font-size:11.5px;
+    line-height:1.5;
+    color:var(--text2);
+    padding:12px 14px;
+    background:var(--surface2);
+    border:1px solid var(--border);
+    border-radius:var(--radius-md);
+  }
+  .spec dt{
+    font-family:'DM Mono',monospace;
+    font-weight:700;
+    color:var(--text3);
+    letter-spacing:.02em;
+  }
+  .spec dd{color:var(--text);}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="head">
+    <div class="badge">T1-4 PROTOTYPE</div>
+    <h1>Toast Undo 버튼</h1>
+    <p>실수 되돌리기 — 식단/운동/루틴 체크 직후 5초 안에 undo. 인프라 (score-events cancel 액션) 는 이미 완비, UI 만 추가.</p>
+  </div>
+
+  <!-- ① 현재 vs 신규 ─────────────────────────────────── -->
+  <div class="section">
+    <div class="section-title">① 현재 → 신규</div>
+    <div class="compare">
+      <div class="demo">
+        <span class="label">BEFORE</span>
+        <div class="toast-current">근력 운동 완료 +30</div>
+      </div>
+      <div class="demo">
+        <span class="label">AFTER</span>
+        <div class="toast-undo">
+          <div class="toast-undo-msg">근력 운동 완료 +30</div>
+          <div class="toast-undo-sep"></div>
+          <button class="toast-undo-btn">되돌리기</button>
+          <div class="toast-undo-progress"></div>
+        </div>
+      </div>
+    </div>
+    <div class="note">
+      <b>차이:</b> 우측에 1px 디바이더 + 빨강 강조 텍스트 버튼. 하단 2px progress bar 가 5초 카운트다운. 시각 무게는 거의 동일, 너비만 약 60px 증가.
+    </div>
+  </div>
+
+  <!-- ② 짧은 메시지 ─────────────────────────────────── -->
+  <div class="section">
+    <div class="section-title">② 짧은 메시지 — 식단 체크</div>
+    <div class="demo">
+      <div class="toast-undo">
+        <div class="toast-undo-msg">클린 식단 +10</div>
+        <div class="toast-undo-sep"></div>
+        <button class="toast-undo-btn">되돌리기</button>
+        <div class="toast-undo-progress"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ③ 긴 메시지 (wrap) ───────────────────────────── -->
+  <div class="section">
+    <div class="section-title">③ 긴 메시지 — wrap</div>
+    <div class="demo">
+      <div class="toast-undo toast-wrap">
+        <div class="toast-undo-msg">3일 연속 기록 달성. 흐름을 지키는 중.</div>
+        <div class="toast-undo-sep"></div>
+        <button class="toast-undo-btn">되돌리기</button>
+        <div class="toast-undo-progress"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ④ 에러 — undo 없음 ─────────────────────────── -->
+  <div class="section">
+    <div class="section-title">④ 에러 / 정보성 — undo 없음 (현재 그대로)</div>
+    <div class="demo">
+      <div class="toast-current toast-error" style="background:rgba(28,12,12,.92);border-color:rgba(239,68,68,.35);color:#ffbcbc;">저장 실패 — 네트워크 확인</div>
+    </div>
+    <div class="note">
+      <b>원칙:</b> undo 버튼은 <b>되돌릴 수 있는 액션</b> 에만. 저장 실패 / 정보성 ("3일 연속") / 다음 단계 안내 는 기존 단순 toast 유지.
+    </div>
+  </div>
+
+  <!-- ⑤ Spec ────────────────────────────────────────── -->
+  <div class="section">
+    <div class="section-title">⑤ 동작 사양</div>
+    <dl class="spec">
+      <dt>표시 기간</dt><dd>5000ms (현재 2000ms 의 2.5배 — undo 누를 시간 충분)</dd>
+      <dt>버튼 클릭</dt><dd>해당 액션의 <code>_cancel</code> score event 실행 + toast 즉시 dismiss</dd>
+      <dt>자동 dismiss</dt><dd>5초 후 자동 사라짐 — undo 안 누르면 액션 확정</dd>
+      <dt>큐 처리</dt><dd>다음 toast 가 오면 현재 undo 가능 toast 는 즉시 dismiss + 확정</dd>
+      <dt>적용 대상</dt><dd>workout/cardio done · diet 추가 · routine done · target done · cheat 사용</dd>
+      <dt>제외 대상</dt><dd>저장 실패 · 권한 거부 · 정보성 메시지 · 점수 차감 알림</dd>
+      <dt>API</dt><dd><code>showToast(msg, {undo: () => addScore('workout_done_cancel')})</code></dd>
+    </dl>
+  </div>
+
+  <!-- ⑥ 적용 예시 ──────────────────────────────────── -->
+  <div class="section">
+    <div class="section-title">⑥ 적용 예시 (호출부)</div>
+    <pre style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-md);padding:14px;font-size:11px;line-height:1.6;color:var(--text);font-family:'DM Mono',monospace;overflow-x:auto;">// Before
+addScore('workout_done', '근력 운동 완료');
+
+// After — 5초 안에 되돌리기 가능
+addScore('workout_done', '근력 운동 완료', {
+  undo: () =&gt; addScore('workout_done_cancel', '근력 운동 취소')
+});</pre>
+  </div>
+
+  <!-- ⑦ 검토 포인트 ────────────────────────────────── -->
+  <div class="section">
+    <div class="section-title">⑦ 검토 포인트</div>
+    <div class="note" style="line-height:1.85;">
+      • 버튼 카피: <b>"되돌리기"</b> vs "취소" vs "다시" — 선택?<br>
+      • Progress bar 표시 여부 — 부담스럽지 않은지?<br>
+      • 5초 충분한지? 7초로 더 길게? 3초로 더 짧게?<br>
+      • Undo 후 보낼 토스트 — 별도 "취소됨" toast vs 무음?<br>
+      • 빨강 (var(--accent)) 버튼 톤 OK 인지, 아니면 무채색이 더 단단한지?<br>
+      • 점수 차감 액션 (식단_금지 -30 등) 도 undo 가능하게 할지?
+    </div>
+  </div>
+</div>
+<script src="_workspace-selector.js"></script>
+</body>
+</html>

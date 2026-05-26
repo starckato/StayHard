@@ -1,0 +1,1278 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Challenge Room D · Mountain Climb v8</title>
+<link rel="stylesheet" href="_challenge-shared.css">
+<style>
+/* v8 — 장비 제거 + 초싸이어인급 aura 단계.
+   캠프1 (25%) 통과 → lv-1 아우라 / 캠프2 (50%) → lv-2 / 캠프3 (75%) → lv-3 / 정상 (100%) → lv-4 풀파워. */
+
+.phone { position: relative; }
+
+.mountain-wrap {
+  position: relative;
+  height: 640px;
+  border-radius: 16px;
+  overflow: hidden;
+  background:
+    radial-gradient(1px 1px at 20% 8%, #fff, transparent),
+    radial-gradient(1px 1px at 60% 4%, #fff, transparent),
+    radial-gradient(1px 1px at 80% 12%, #ffb84d, transparent),
+    radial-gradient(1px 1px at 35% 22%, #fff, transparent),
+    radial-gradient(1.5px 1.5px at 50% 2%, #fff, transparent),
+    linear-gradient(180deg, #0a0a14 0%, #14142a 25%, #1f1f3a 50%, #2a2a3c 75%, #1a1a1f 100%);
+  border: 1px solid var(--border);
+}
+.mountain-svg { position: absolute; bottom: 0; left: 0; width: 100%; height: 100%; z-index: 0; }
+
+/* 구간 지형 */
+.zone-deco { position: absolute; left: 0; right: 0; pointer-events: none; z-index: 1; }
+.zone-deco.z-peak {
+  top: 0; bottom: 65%;
+  background-image:
+    radial-gradient(1.5px 1.5px at 15% 30%, rgba(255,255,255,0.6), transparent),
+    radial-gradient(1px 1px at 65% 50%, rgba(255,255,255,0.5), transparent),
+    radial-gradient(1.5px 1.5px at 85% 20%, rgba(255,255,255,0.7), transparent),
+    radial-gradient(1px 1px at 30% 70%, rgba(255,255,255,0.5), transparent),
+    radial-gradient(2px 2px at 50% 80%, rgba(255,255,255,0.4), transparent);
+  animation: snowDrift 6s linear infinite;
+  opacity: 0.7;
+}
+@keyframes snowDrift {
+  0% { background-position: 0 0, 0 0, 0 0, 0 0, 0 0; }
+  100% { background-position: 8px 40px, -10px 50px, 6px 60px, -8px 30px, 10px 45px; }
+}
+.zone-deco.z-chase {
+  top: 35%; bottom: 43.3%;
+  background-image:
+    linear-gradient(135deg, transparent 48%, rgba(120,180,220,0.05) 50%, transparent 52%),
+    linear-gradient(45deg, transparent 48%, rgba(120,180,220,0.05) 50%, transparent 52%);
+  background-size: 20px 20px;
+}
+.zone-deco.z-stall {
+  top: 56.7%; bottom: 21.7%;
+  background-image:
+    radial-gradient(3px 6px at 12% 60%, rgba(58,82,52,0.5), transparent),
+    radial-gradient(3px 5px at 28% 80%, rgba(48,72,42,0.4), transparent),
+    radial-gradient(3px 6px at 78% 70%, rgba(58,82,52,0.4), transparent),
+    radial-gradient(2px 4px at 92% 88%, rgba(48,72,42,0.4), transparent);
+}
+.zone-deco.z-start {
+  top: 78.3%; bottom: 0;
+  background-image:
+    radial-gradient(1px 1px at 12% 50%, rgba(80,120,70,0.4), transparent),
+    radial-gradient(1px 1px at 38% 70%, rgba(80,120,70,0.3), transparent),
+    radial-gradient(1px 1px at 70% 60%, rgba(80,120,70,0.4), transparent),
+    radial-gradient(1px 1px at 88% 80%, rgba(80,120,70,0.3), transparent);
+}
+
+/* 구간 이름 */
+.zone-label {
+  position: absolute;
+  right: 6px;
+  z-index: 2;
+  font-family: 'DM Mono', monospace;
+  font-size: 8.5px;
+  letter-spacing: 0.06em;
+  text-align: right;
+  pointer-events: none;
+  line-height: 1.3;
+}
+.zone-label .nm {
+  display: block;
+  font-family: 'Archivo Black', sans-serif;
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.45);
+}
+.zone-label .sub { color: rgba(255,255,255,0.3); font-style: italic; }
+.zone-label.z-peak .nm { color: rgba(255,213,74,0.55); }
+
+/* 체크포인트 */
+.checkpoint {
+  position: absolute; left: 6px; right: 6px; height: 0;
+  border-top: 1px dashed rgba(255,255,255,0.13);
+  z-index: 3;
+  cursor: pointer;
+  transition: border-top-color 0.3s ease, box-shadow 0.3s ease;
+}
+.checkpoint:hover { border-top-color: rgba(255,255,255,0.35); }
+.checkpoint.is-peak { border-top-color: rgba(255,213,74,0.4); }
+.cp-row-top {
+  position: absolute; left: 0; right: 0; top: -9px;
+  display: flex; justify-content: space-between; align-items: center;
+  pointer-events: none;
+}
+.cp-name {
+  font-family: 'DM Mono', monospace; font-size: 8.5px; color: rgba(255,255,255,0.55);
+  letter-spacing: 0.1em; text-transform: uppercase;
+  background: rgba(10,10,12,0.78); padding: 1px 5px; border-radius: 3px; white-space: nowrap;
+}
+.checkpoint.is-peak .cp-name { color: var(--gold); }
+.cp-pct {
+  font-family: 'DM Mono', monospace; font-size: 8.5px; color: rgba(255,255,255,0.35);
+  background: rgba(10,10,12,0.78); padding: 1px 5px; border-radius: 3px;
+}
+.cp-reward {
+  display: inline-flex; align-items: center; gap: 2px;
+  margin-left: 4px;
+}
+.cp-reward .cube {
+  display: inline-block; width: 8px; height: 8px; border-radius: 1px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.5), inset 0 -1px 0 rgba(0,0,0,0.3);
+}
+.cp-reward .cube.silver { background: linear-gradient(135deg, #d8d8d8, #888); }
+.cp-reward .cube.gold   { background: linear-gradient(135deg, #ffd54a, #b88820); }
+.cp-reward .trophy-mini { width: 10px; height: 10px; color: var(--gold); fill: var(--gold); }
+
+.cp-first {
+  position: absolute; left: 0; bottom: 4px;
+  font-family: 'DM Mono', monospace; font-size: 8px;
+  background: rgba(10,10,12,0.78); padding: 1px 5px; border-radius: 3px;
+  pointer-events: none; display: flex; align-items: center; gap: 3px;
+}
+.cp-first .star { color: var(--gold); font-size: 9px; }
+.cp-first .nm { font-weight: 700; }
+
+/* 개인 깃발 자국 */
+.cp-flags {
+  position: absolute; right: 4px; bottom: 4px;
+  display: flex; gap: 2px; pointer-events: none;
+}
+.cp-flag {
+  width: 6px; height: 8px; background: var(--c);
+  clip-path: polygon(0 0, 100% 0, 100% 60%, 50% 100%, 0 60%);
+  filter: drop-shadow(0 0 2px var(--c));
+}
+
+/* 통과 발광 */
+.checkpoint.is-firing {
+  border-top-color: rgba(255,255,255,0.9);
+  box-shadow: 0 -2px 16px rgba(255,255,255,0.4), 0 2px 16px rgba(255,255,255,0.4);
+  animation: cpFire 1.6s ease-out;
+}
+@keyframes cpFire {
+  0% { border-top-color: rgba(255,255,255,1); box-shadow: 0 -2px 24px rgba(255,255,255,0.7), 0 2px 24px rgba(255,255,255,0.7); }
+  100% { border-top-color: rgba(255,255,255,0.13); box-shadow: none; }
+}
+.cp-burst {
+  position: absolute; width: 4px; height: 4px; border-radius: 50%;
+  background: var(--c);
+  animation: burstFly 1.2s ease-out forwards;
+  pointer-events: none;
+}
+@keyframes burstFly {
+  0% { transform: translate(0, 0) scale(1); opacity: 1; }
+  100% { transform: translate(var(--dx, 20px), var(--dy, -20px)) scale(0); opacity: 0; }
+}
+
+/* 깃발 */
+.peak-flag {
+  position: absolute; left: 50%; transform: translateX(-50%);
+  top: 42px; height: 38px; width: 18px; z-index: 5;
+}
+.peak-flag .pole { position: absolute; top: 0; bottom: 0; left: 8px; width: 2px;
+  background: linear-gradient(to bottom, #e8b840, #5a3a0a); box-shadow: 0 0 4px rgba(255,213,74,0.5);
+}
+.peak-flag .banner { position: absolute; top: 0; left: 10px; width: 16px; height: 11px;
+  background: linear-gradient(135deg, var(--red), #a8302a);
+  clip-path: polygon(0 0, 100% 50%, 0 100%);
+  filter: drop-shadow(0 0 6px rgba(255,77,77,0.5));
+}
+.peak-flag .info { position: absolute; top: -1px; left: 28px; white-space: nowrap; }
+.peak-flag .info-num { font-family: 'Archivo Black', sans-serif; font-size: 11px; color: var(--gold); letter-spacing: 0.04em; line-height: 1.1; }
+.peak-flag .info-day { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--text2); line-height: 1.2; }
+
+/* === 등반자 + AURA 단계 (super saiyan style) === */
+.climber {
+  position: absolute; width: 14px; height: 20px; z-index: 4;
+}
+.climber.is-leader, .climber.is-me { z-index: 6; }
+.climber:not(.is-me) { cursor: pointer; }
+.climber:not(.is-me) .pfig { transition: filter 0.2s ease, transform 0.15s ease; }
+.climber:not(.is-me):hover .pfig { filter: drop-shadow(0 0 10px var(--char)) brightness(1.2); transform: translateY(-1px); }
+.climber:not(.is-me):hover .climber-tag { border-width: 1.5px; background: rgba(20,20,28,0.95); }
+
+.pfig-wrap { position: relative; width: 14px; height: 20px; z-index: 5; }
+.pfig {
+  width: 14px; height: 20px; display: block; overflow: visible;
+  position: relative; z-index: 2;
+}
+.pfig .stroke { stroke: var(--char); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; fill: none; }
+.pfig .head { fill: var(--char); stroke: var(--char); stroke-width: 1; }
+
+.pfig-wrap::after {
+  content: ''; position: absolute; bottom: -3px; left: 50%; transform: translateX(-50%);
+  width: 10px; height: 2px; background: rgba(0,0,0,0.5); border-radius: 50%; filter: blur(1.5px);
+}
+
+.climber.is-me .pfig-wrap::before {
+  content: '▼'; position: absolute; top: -14px; left: 50%; transform: translateX(-50%);
+  font-size: 10px; color: var(--accent); text-shadow: 0 0 4px var(--accent);
+  animation: meArrow 1s ease-in-out infinite; line-height: 1;
+  z-index: 10;
+}
+
+/* --char 를 .climber 에 정의 → aura 형제 element 들도 inherit */
+.c-minji, .climber.c-minji       { --char: #ffd54a; }
+.c-junho, .climber.c-junho       { --char: #38bdf8; }
+.c-suah,  .climber.c-suah        { --char: #ec4899; }
+.c-me,    .climber.c-me          { --char: #ff4d4d; }
+.c-taehyung, .climber.c-taehyung { --char: #a855f7; }
+.c-jiyu,  .climber.c-jiyu        { --char: #f97316; }
+
+/* === AURA 레벨 (4단계) — v9 visibility boost === */
+
+/* lv-1: 캠프1 통과 — 발광 */
+.climber.lv-1 .pfig {
+  filter: drop-shadow(0 0 5px var(--char));
+}
+
+/* lv-2: 캠프2 통과 — ki 디스크 (발 아래 에너지) + 펄스 streak */
+.climber.lv-2 .pfig {
+  filter: drop-shadow(0 0 7px var(--char)) drop-shadow(0 0 14px var(--char));
+}
+.climber.lv-2 .aura-ring {
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 38px;
+  height: 12px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center,
+    var(--char) 0%,
+    color-mix(in srgb, var(--char) 70%, transparent) 22%,
+    color-mix(in srgb, var(--char) 25%, transparent) 55%,
+    transparent 82%);
+  opacity: 0.9;
+  filter: blur(2px);
+  animation: lv2Disc 1.4s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 0;
+  mix-blend-mode: screen;
+  box-shadow: 0 0 18px color-mix(in srgb, var(--char) 70%, transparent);
+}
+.climber.lv-2 .aura-ring::after {
+  /* 캐릭터 뒤 수직 streak (얇은 에너지 라인) */
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 6px;
+  height: 26px;
+  background: linear-gradient(to top,
+    color-mix(in srgb, var(--char) 90%, transparent),
+    transparent 80%);
+  filter: blur(1.5px);
+  opacity: 0.7;
+  animation: lv2Streak 0.6s ease-in-out infinite alternate;
+  border-radius: 50% 50% 30% 30% / 80% 80% 30% 30%;
+}
+@keyframes lv2Disc {
+  0%, 100% { transform: translateX(-50%) scale(1) ;   opacity: 0.65; }
+  50%      { transform: translateX(-50%) scale(1.25); opacity: 1; }
+}
+@keyframes lv2Streak {
+  from { transform: translateX(-50%) scaleY(0.9) skewX(-3deg); opacity: 0.55; }
+  to   { transform: translateX(-50%) scaleY(1.15) skewX(3deg); opacity: 0.85; }
+}
+
+/* lv-3: 캠프3 통과 — 불꽃 column + spark (super saiyan 1) */
+.climber.lv-3 .pfig {
+  filter:
+    drop-shadow(0 0 8px var(--char))
+    drop-shadow(0 0 16px var(--char))
+    drop-shadow(0 0 26px var(--char));
+  animation: lv3Bob 1.2s ease-in-out infinite;
+}
+.climber.lv-3 .aura-flame {
+  position: absolute;
+  bottom: -4px; left: 50%; transform: translateX(-50%);
+  width: 36px; height: 52px;
+  background:
+    radial-gradient(ellipse at 50% 100%, var(--char) 0%,
+      color-mix(in srgb, var(--char) 80%, transparent) 25%,
+      color-mix(in srgb, var(--char) 30%, transparent) 55%,
+      transparent 80%);
+  opacity: 0.85;
+  filter: blur(2.5px);
+  animation: lv3Flame 0.38s ease-in-out infinite alternate;
+  pointer-events: none;
+  z-index: 1;
+  border-radius: 50% 50% 30% 30% / 65% 65% 40% 40%;
+  mix-blend-mode: screen;
+}
+.climber.lv-3 .aura-spark {
+  position: absolute; inset: -16px;
+  pointer-events: none; z-index: 1;
+}
+.climber.lv-3 .aura-spark::before,
+.climber.lv-3 .aura-spark::after {
+  content: ''; position: absolute;
+  width: 4px; height: 4px;
+  background: var(--char);
+  border-radius: 50%;
+  box-shadow: 0 0 8px var(--char), 0 0 16px var(--char);
+  animation: lv3Spark 1.3s ease-out infinite;
+}
+.climber.lv-3 .aura-spark::before { top: 30%; left: -2px;  animation-delay: 0s; }
+.climber.lv-3 .aura-spark::after  { top: 55%; right: -2px; animation-delay: 0.45s; }
+@keyframes lv3Bob {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-2px); }
+}
+@keyframes lv3Flame {
+  from { transform: translateX(-50%) scale(1)    skewX(-5deg); opacity: 0.7;  }
+  to   { transform: translateX(-50%) scale(1.18) skewX(5deg);  opacity: 0.95; }
+}
+@keyframes lv3Spark {
+  0%   { transform: translateY(0)    scale(0); opacity: 0; }
+  25%  { transform: translateY(-4px) scale(1); opacity: 1; }
+  100% { transform: translateY(-28px) scale(0); opacity: 0; }
+}
+
+/* lv-4: 정상 — FULL POWER (super saiyan max) */
+.climber.lv-4 .pfig {
+  filter:
+    drop-shadow(0 0 10px var(--char))
+    drop-shadow(0 0 22px var(--char))
+    drop-shadow(0 0 36px var(--gold))
+    drop-shadow(0 0 56px var(--gold));
+  animation: lv4Bob 1s ease-in-out infinite;
+}
+.climber.lv-4 .aura-flame {
+  position: absolute;
+  bottom: -6px; left: 50%; transform: translateX(-50%);
+  width: 54px; height: 76px;
+  background:
+    radial-gradient(ellipse at 50% 100%, white 0%,
+      var(--char) 12%,
+      color-mix(in srgb, var(--char) 70%, transparent) 35%,
+      color-mix(in srgb, var(--gold) 50%, transparent) 60%,
+      transparent 85%);
+  opacity: 0.95;
+  filter: blur(3px);
+  animation: lv4Flame 0.28s ease-in-out infinite alternate;
+  pointer-events: none;
+  z-index: 1;
+  border-radius: 50% 50% 30% 30% / 70% 70% 40% 40%;
+  mix-blend-mode: screen;
+}
+.climber.lv-4 .aura-beams {
+  position: absolute; inset: -28px;
+  background: conic-gradient(from 0deg,
+    transparent 0deg,    var(--char) 8deg,  transparent 16deg,
+    transparent 55deg,   var(--gold) 63deg, transparent 71deg,
+    transparent 115deg,  var(--char) 123deg, transparent 131deg,
+    transparent 175deg,  var(--gold) 183deg, transparent 191deg,
+    transparent 235deg,  var(--char) 243deg, transparent 251deg,
+    transparent 295deg,  var(--gold) 303deg, transparent 311deg);
+  opacity: 0.7;
+  filter: blur(1.5px);
+  animation: lv4Rotate 3s linear infinite;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+  mix-blend-mode: screen;
+}
+.climber.lv-4 .aura-pulse {
+  position: absolute; inset: -22px;
+  border-radius: 50%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--gold) 80%, transparent) 0%, transparent 65%);
+  opacity: 0;
+  animation: lv4Pulse 1.2s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+@keyframes lv4Bob {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-3px); }
+}
+@keyframes lv4Flame {
+  from { transform: translateX(-50%) scale(1)    skewX(-6deg); opacity: 0.8;  }
+  to   { transform: translateX(-50%) scale(1.22) skewX(6deg);  opacity: 1;    }
+}
+@keyframes lv4Rotate { to { transform: rotate(360deg); } }
+@keyframes lv4Pulse {
+  0%, 100% { transform: scale(0.7); opacity: 0; }
+  50%      { transform: scale(1.4); opacity: 0.7; }
+}
+
+/* 본인 (.is-me) breath 효과 */
+.climber.is-me .pfig { animation: meBreath 1.6s ease-in-out infinite; }
+.climber.is-me.lv-2 .pfig { animation: meBreath 1.6s ease-in-out infinite, none; }
+@keyframes meBreath { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-1.5px); } }
+@keyframes meArrow {
+  0%, 100% { transform: translateX(-50%) translateY(0); opacity: 0.9; }
+  50%      { transform: translateX(-50%) translateY(-2px); opacity: 1; }
+}
+
+/* 탈락권 dim — aura 도 dim */
+.climber.is-out .pfig { opacity: 0.45; filter: saturate(0.3) brightness(0.85); }
+.climber.is-out .aura-ring, .climber.is-out .aura-flame, .climber.is-out .aura-spark { opacity: 0.2; }
+
+/* === 레벨업 트랜지션 (데모 시) === */
+.climber.is-leveling .pfig {
+  animation: levelUpPop 0.7s ease-out;
+}
+.climber.is-leveling::before {
+  content: '';
+  position: absolute; inset: -4px;
+  border: 2.5px solid var(--char);
+  border-radius: 50%;
+  animation: levelRing 0.9s ease-out;
+  pointer-events: none;
+  z-index: 8;
+}
+.climber.is-leveling::after {
+  content: 'LEVEL UP';
+  position: absolute; top: -28px; left: 50%; transform: translateX(-50%);
+  font-family: 'Archivo Black', sans-serif; font-size: 9px;
+  color: var(--gold);
+  letter-spacing: 0.1em;
+  text-shadow: 0 0 6px var(--gold), 0 0 12px var(--char);
+  animation: levelLabel 1.2s ease-out;
+  white-space: nowrap;
+  z-index: 8;
+}
+@keyframes levelUpPop {
+  0%   { transform: scale(1); filter: drop-shadow(0 0 0 var(--char)); }
+  30%  { transform: scale(1.6); filter: drop-shadow(0 0 30px white) drop-shadow(0 0 40px var(--char)); }
+  60%  { transform: scale(1.2); filter: drop-shadow(0 0 20px var(--char)); }
+  100% { transform: scale(1); filter: drop-shadow(0 0 8px var(--char)); }
+}
+@keyframes levelRing {
+  from { transform: scale(0.6); opacity: 1; border-width: 3px; }
+  to   { transform: scale(5); opacity: 0; border-width: 0.5px; }
+}
+@keyframes levelLabel {
+  0%   { transform: translateX(-50%) translateY(8px); opacity: 0; }
+  30%  { transform: translateX(-50%) translateY(0); opacity: 1; }
+  80%  { transform: translateX(-50%) translateY(-2px); opacity: 1; }
+  100% { transform: translateX(-50%) translateY(-8px); opacity: 0; }
+}
+
+/* 라벨 */
+.climber-tag {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  display: inline-flex; align-items: center; gap: 3px;
+  background: rgba(10,10,12,0.88); border: 1px solid var(--char); border-radius: 3px;
+  padding: 2px 5px; font-size: 9.5px; color: var(--text); font-weight: 700;
+  white-space: nowrap; backdrop-filter: blur(4px); line-height: 1.2;
+  z-index: 5;
+}
+.climber.name-right .climber-tag { left: calc(100% + 5px); }
+.climber.name-left .climber-tag { right: calc(100% + 5px); }
+.climber-tag .nm { font-weight: 700; }
+.climber-tag .alt { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--char); font-weight: 700; }
+.climber-tag .pace { font-family: 'Archivo Black', sans-serif; font-size: 10px; line-height: 1; margin-left: 1px; }
+.climber-tag .pace.up   { color: var(--green); }
+.climber-tag .pace.flat { color: var(--text3); }
+.climber-tag .pace.down { color: var(--red); }
+.climber-tag .streak {
+  display: inline-flex; align-items: center; gap: 1px;
+  color: var(--amber); font-family: 'DM Mono', monospace; font-size: 8.5px; font-weight: 700;
+  padding-left: 4px; margin-left: 2px; border-left: 1px solid rgba(255,255,255,0.12);
+}
+.climber-tag .streak svg { width: 7px; height: 9px; fill: var(--amber); }
+.climber-tag .streak.is-zero { color: var(--text3); opacity: 0.6; }
+.climber-tag .streak.is-zero svg { fill: var(--text3); }
+.climber-tag .lv-badge {
+  display: inline-flex; align-items: center;
+  background: var(--char);
+  color: #0a0a0a;
+  font-family: 'Archivo Black', sans-serif;
+  font-size: 7.5px;
+  padding: 1px 3px;
+  border-radius: 2px;
+  letter-spacing: 0.04em;
+  margin-left: 3px;
+}
+.climber.lv-0 .lv-badge { background: var(--text3); color: rgba(0,0,0,0.5); }
+.climber.is-leader .climber-tag { border-color: var(--gold); color: var(--gold); }
+.climber.is-leader .climber-tag .nm, .climber.is-leader .climber-tag .alt { color: var(--gold); }
+.climber.is-me .climber-tag { border-color: var(--accent); color: var(--accent); background: rgba(255,77,77,0.2); }
+
+/* ETA + 액션 카드 */
+.me-action-card {
+  margin-top: 14px; padding: 14px;
+  background: var(--accent-bg); border: 1px solid var(--accent-bd); border-radius: 12px;
+}
+.me-eta-grid {
+  display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;
+  margin-bottom: 10px;
+}
+.me-eta-cell {
+  background: rgba(0,0,0,0.25); border-radius: 8px; padding: 8px; text-align: center;
+}
+.me-eta-cell .lbl { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--text3); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 2px; }
+.me-eta-cell .val { font-family: 'Archivo Black', sans-serif; font-size: 15px; color: var(--accent); letter-spacing: -0.02em; }
+.me-eta-cell .sub { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--text2); margin-top: 1px; }
+.me-action-bottom {
+  display: flex; gap: 12px; align-items: center;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+}
+.me-action-bottom .body-txt { flex: 1; font-size: 12px; color: var(--text); line-height: 1.45; }
+.me-action-bottom .body-txt b { color: var(--accent); }
+.me-action-bottom .body-txt .sub { display: block; font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text3); margin-top: 2px; }
+
+/* Demo */
+.demo-bar { display: flex; gap: 6px; margin-top: 8px; }
+.demo-btn {
+  flex: 1; background: rgba(255,255,255,0.06); border: 1px solid var(--border2);
+  border-radius: 8px; padding: 7px 10px; font-size: 11px; color: var(--text2);
+  font-family: 'DM Mono', monospace; letter-spacing: 0.05em; cursor: pointer;
+}
+.demo-btn:hover { background: rgba(255,255,255,0.1); color: var(--text); border-color: var(--accent); }
+.demo-btn b { color: var(--accent); font-family: 'Archivo Black', sans-serif; }
+
+/* Action sheet */
+.action-overlay {
+  position: absolute; inset: 0; background: rgba(0,0,0,0.65); backdrop-filter: blur(3px);
+  z-index: 100; display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none; transition: opacity 0.25s ease;
+}
+.action-overlay.is-open { opacity: 1; pointer-events: auto; }
+.action-sheet {
+  background: var(--surface); border: 1px solid var(--border2); border-radius: 16px;
+  padding: 18px; width: 86%; max-width: 340px;
+  transform: translateY(20px); transition: transform 0.25s cubic-bezier(.32,1,.42,1);
+}
+.action-overlay.is-open .action-sheet { transform: translateY(0); }
+.action-head { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; padding-bottom: 14px; border-bottom: 1px solid var(--border); }
+.act-ava {
+  width: 38px; height: 38px; border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Archivo Black', sans-serif; font-size: 15px;
+  color: rgba(0,0,0,0.65); flex-shrink: 0;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.35), inset 0 -1px 0 rgba(0,0,0,0.35);
+}
+.act-text { flex: 1; min-width: 0; }
+.act-name { font-family: 'Archivo Black', sans-serif; font-size: 15px; color: var(--text); }
+.act-meta { font-family: 'DM Mono', monospace; font-size: 10.5px; color: var(--text3); margin-top: 2px; }
+.act-close { background: rgba(255,255,255,0.08); border: 0; color: var(--text2); width: 28px; height: 28px; border-radius: 6px; cursor: pointer; font-size: 13px; font-family: inherit; }
+.action-list { display: flex; flex-direction: column; gap: 8px; }
+.action-item {
+  display: block; width: 100%; background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px;
+  text-align: left; color: var(--text); cursor: pointer; font-family: inherit;
+}
+.action-item:hover { background: rgba(255,255,255,0.08); }
+.action-item .lbl { display: flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 700; color: var(--text); }
+.action-item.cheer .lbl { color: var(--green); }
+.action-item.taunt .lbl { color: var(--accent); }
+.action-item .preview { font-size: 11px; color: var(--text3); margin-top: 4px; font-style: italic; }
+.action-custom { margin-top: 4px; display: flex; gap: 6px; }
+.action-custom input {
+  flex: 1; background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 8px;
+  padding: 9px 11px; font-size: 12px; color: var(--text); font-family: inherit;
+}
+.action-custom input:focus { outline: 1px solid var(--accent); border-color: var(--accent); }
+.action-custom button {
+  background: var(--accent); border: 0; border-radius: 8px;
+  padding: 0 16px; color: #fff; font-weight: 800; font-size: 12px;
+  cursor: pointer; font-family: inherit;
+}
+
+/* Notifications */
+.phone-bcast, .phone-notif {
+  position: absolute; top: 10px; left: 10px; right: 10px;
+  z-index: 200;
+  background: rgba(28,28,32,0.94); backdrop-filter: blur(20px);
+  border-radius: 16px; padding: 12px 14px;
+  display: flex; align-items: flex-start; gap: 10px;
+  box-shadow: 0 12px 32px rgba(0,0,0,0.6);
+  border: 1px solid rgba(255,255,255,0.08);
+  transform: translateY(-200%); opacity: 0;
+  transition: transform 0.45s cubic-bezier(.32,1,.42,1), opacity 0.3s ease;
+}
+.phone-bcast.is-show, .phone-notif.is-show { transform: translateY(0); opacity: 1; }
+.phone-bcast {
+  border-color: rgba(255,213,74,0.35);
+  box-shadow: 0 12px 32px rgba(0,0,0,0.6), 0 0 24px rgba(255,213,74,0.15);
+  flex-direction: column;
+}
+.bcast-row { display: flex; align-items: flex-start; gap: 10px; width: 100%; }
+.bcast-ic, .notif-ic {
+  width: 32px; height: 32px; border-radius: 7px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Archivo Black', sans-serif; font-size: 13px;
+  color: rgba(0,0,0,0.65); flex-shrink: 0;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.3), inset 0 -1px 0 rgba(0,0,0,0.3);
+}
+.bcast-body, .notif-body { flex: 1; min-width: 0; }
+.bcast-head { display: flex; justify-content: space-between; align-items: baseline; font-size: 10px; color: var(--gold); }
+.bcast-head .src { font-weight: 700; }
+.bcast-head .time { font-family: 'DM Mono', monospace; color: var(--text3); }
+.bcast-title { font-size: 12.5px; font-weight: 700; color: var(--text); margin-top: 1px; }
+.bcast-msg { font-size: 12px; color: var(--text2); margin-top: 2px; line-height: 1.35; }
+.bcast-actions { display: flex; gap: 6px; margin-top: 10px; width: 100%; }
+.bcast-actions button {
+  flex: 1; padding: 7px 10px; border-radius: 8px;
+  font-size: 11px; font-weight: 700; cursor: pointer; font-family: inherit;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.05); color: var(--text);
+}
+.bcast-actions button.cheer { color: var(--green); border-color: rgba(52,211,153,0.4); }
+.bcast-actions button.taunt { color: var(--accent); border-color: rgba(255,77,77,0.4); }
+.bcast-actions button.dismiss { color: var(--text3); }
+.bcast-actions button:hover { background: rgba(255,255,255,0.1); }
+
+.notif-head { display: flex; justify-content: space-between; align-items: baseline; font-size: 10px; color: var(--text3); }
+.notif-head .src { font-weight: 700; color: var(--text); }
+.notif-head .time { font-family: 'DM Mono', monospace; }
+.notif-title { font-size: 12.5px; font-weight: 700; color: var(--text); margin-top: 1px; }
+.notif-msg { font-size: 12.5px; color: var(--text2); margin-top: 2px; line-height: 1.35;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.sim-tag {
+  position: absolute; top: -10px; left: 16px;
+  font-family: 'DM Mono', monospace; font-size: 9px; color: var(--text3);
+  letter-spacing: 0.06em; background: var(--bg); padding: 1px 6px; border-radius: 4px;
+  border: 1px dashed var(--border2); white-space: nowrap; text-transform: uppercase;
+}
+
+/* History popup */
+.history-overlay {
+  position: absolute; inset: 0; background: rgba(0,0,0,0.72); backdrop-filter: blur(4px);
+  z-index: 150; display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none; transition: opacity 0.25s ease;
+}
+.history-overlay.is-open { opacity: 1; pointer-events: auto; }
+.history-card {
+  background: var(--surface); border: 1px solid var(--border2); border-radius: 16px;
+  padding: 18px; width: 86%; max-width: 320px;
+  transform: scale(0.95); transition: transform 0.25s cubic-bezier(.32,1,.42,1);
+}
+.history-overlay.is-open .history-card { transform: scale(1); }
+.history-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+.history-title { font-family: 'Archivo Black', sans-serif; font-size: 14px; color: var(--text); letter-spacing: -0.01em; }
+.history-title .pct { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text3); margin-left: 6px; font-weight: normal; letter-spacing: 0; }
+.history-reward { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--gold); display: flex; align-items: center; gap: 4px; }
+.history-list { display: flex; flex-direction: column; gap: 8px; }
+.history-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 10px; background: rgba(255,255,255,0.03); border-radius: 8px;
+  border-left: 2px solid var(--c);
+}
+.history-item.is-first { background: rgba(255,213,74,0.07); border-left-color: var(--gold); }
+.history-item .ava { width: 24px; height: 24px; border-radius: 5px; background: var(--c);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Archivo Black', sans-serif; font-size: 11px; color: rgba(0,0,0,0.6);
+}
+.history-item .nm { font-weight: 700; flex: 1; font-size: 13px; color: var(--text); }
+.history-item .first-tag { font-family: 'DM Mono', monospace; font-size: 8.5px;
+  background: rgba(255,213,74,0.18); color: var(--gold);
+  padding: 1px 5px; border-radius: 3px; letter-spacing: 0.08em;
+}
+.history-item .time { font-family: 'DM Mono', monospace; font-size: 10.5px; color: var(--text3); }
+.history-empty { padding: 18px; text-align: center; font-size: 12px; color: var(--text3); font-style: italic; }
+
+/* In-app popup */
+.msg-popup-overlay {
+  position: absolute; inset: 0;
+  background: rgba(0,0,0,0.72); backdrop-filter: blur(4px);
+  z-index: 300; display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
+}
+.msg-popup-overlay.is-show { opacity: 1; pointer-events: auto; }
+.msg-popup {
+  position: relative; background: var(--surface);
+  border: 1.5px solid var(--char-from, var(--accent)); border-radius: 18px;
+  padding: 22px; width: 86%; max-width: 320px; text-align: center;
+  transform: scale(0.92); transition: transform 0.3s cubic-bezier(.32,1,.42,1);
+  box-shadow: 0 16px 40px rgba(0,0,0,0.6), 0 0 40px color-mix(in srgb, var(--char-from, var(--accent)) 30%, transparent);
+}
+.msg-popup-overlay.is-show .msg-popup { transform: scale(1); }
+.msg-popup .from-ava {
+  width: 56px; height: 56px; border-radius: 12px; margin: 0 auto 10px;
+  background: var(--char-from);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Archivo Black', sans-serif; font-size: 22px;
+  color: rgba(0,0,0,0.65);
+  box-shadow: inset 0 2px 0 rgba(255,255,255,0.35), inset 0 -2px 0 rgba(0,0,0,0.35), 0 0 24px color-mix(in srgb, var(--char-from) 50%, transparent);
+}
+.popup-from-row { font-size: 11px; color: var(--text3); font-family: 'DM Mono', monospace; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 4px; }
+.popup-from-row b { color: var(--text); font-family: 'Archivo Black', sans-serif; font-size: 14px; letter-spacing: 0; text-transform: none; }
+.type-badge { display: inline-block; font-size: 10px; font-weight: 800; padding: 3px 9px; border-radius: 4px; letter-spacing: 0.08em; margin-bottom: 10px; }
+.type-badge.cheer  { background: rgba(52,211,153,0.18); color: var(--green); }
+.type-badge.taunt  { background: rgba(255,77,77,0.18);  color: var(--accent); }
+.type-badge.custom { background: rgba(168,168,180,0.18); color: var(--text2); }
+.msg-body {
+  font-size: 15px; color: var(--text); line-height: 1.45; font-weight: 600;
+  margin: 6px 0 14px; padding: 14px;
+  background: rgba(255,255,255,0.04); border-radius: 12px;
+  border-left: 3px solid var(--char-from); text-align: left;
+}
+.popup-actions { display: flex; gap: 8px; margin-top: 14px; }
+.popup-actions button {
+  flex: 1; background: rgba(255,255,255,0.06); border: 1px solid var(--border);
+  color: var(--text); border-radius: 10px; padding: 11px;
+  font-size: 12.5px; font-weight: 700; cursor: pointer; font-family: inherit;
+}
+.popup-actions button.primary {
+  background: var(--char-from); border-color: var(--char-from); color: rgba(0,0,0,0.85);
+}
+
+.toast {
+  position: absolute; bottom: 20px; left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: rgba(28,28,32,0.95); backdrop-filter: blur(12px);
+  border: 1px solid var(--border2); border-radius: 999px;
+  padding: 9px 16px; font-size: 12px; color: var(--text); font-weight: 700;
+  white-space: nowrap; z-index: 350;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+.toast.is-show { opacity: 1; transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute;" aria-hidden="true">
+  <defs>
+    <symbol id="ic-fire" viewBox="0 0 10 12">
+      <path d="M5 0 C 6 3, 8.5 4, 7.5 7 C 7 9.5, 6 11, 5 11.5 C 4 11, 3 9.5, 2.5 7 C 1.5 4, 4 3, 5 0 Z M5 5 C 5.6 6.5, 5.6 8.5, 5 9.5 C 4.4 8.5, 4.4 6.5, 5 5 Z"/>
+    </symbol>
+    <symbol id="ic-trophy" viewBox="0 0 12 12">
+      <path d="M3 1 L9 1 L9 4 C 9 6, 8 7, 6 7 C 4 7, 3 6, 3 4 Z M5 7 L7 7 L7 9 L5 9 Z M3 9 L9 9 L9 10.5 L3 10.5 Z"/>
+    </symbol>
+  </defs>
+</svg>
+
+<div class="phone">
+  <div class="phone-notif" id="phoneNotif">
+    <div class="sim-tag">받는 사람 폰</div>
+    <div class="notif-ic" id="notifIc">큐</div>
+    <div class="notif-body">
+      <div class="notif-head"><span class="src">큐록 · <span id="notifSrc">메시지</span></span><span class="time">방금</span></div>
+      <div class="notif-title" id="notifTitle">새 메시지</div>
+      <div class="notif-msg" id="notifMsg">...</div>
+    </div>
+  </div>
+
+  <div class="phone-bcast" id="phoneBcast">
+    <div class="sim-tag" style="border-color:rgba(255,213,74,0.4); color:var(--gold);">그룹 broadcast</div>
+    <div class="bcast-row">
+      <div class="bcast-ic" id="bcastIc">민</div>
+      <div class="bcast-body">
+        <div class="bcast-head"><span class="src" id="bcastSrc">큐록 · 챌린지 룸</span><span class="time">방금</span></div>
+        <div class="bcast-title" id="bcastTitle">민지가 캠프3 도달!</div>
+        <div class="bcast-msg" id="bcastMsg">75% 통과 · aura 강화 → lv-3</div>
+      </div>
+    </div>
+    <div class="bcast-actions">
+      <button class="cheer" onclick="reactBroadcast('cheer')">↑ 응원</button>
+      <button class="taunt" onclick="reactBroadcast('taunt')">⚡ 도발</button>
+      <button class="dismiss" onclick="dismissBcast()">닫기</button>
+    </div>
+  </div>
+
+  <div class="head">
+    <span class="head-back">◀</span>
+    <div style="flex:1;text-align:center;">
+      <div class="head-title">챌린지 룸 · 14일 감량</div>
+      <div class="head-sub">D-5 · 9/14일</div>
+    </div>
+    <span style="width:20px;"></span>
+  </div>
+
+  <div class="opt-bar">
+    <div class="opt-bar-title">OPTION D · MOUNTAIN v8 — AURA</div>
+    <div class="opt-bar-desc">캠프1/2/3 통과시 초싸이어인급 aura 강화: lv-1 발광 → lv-2 회전링 → lv-3 불꽃 + 스파크 → lv-4 정상 풀파워.</div>
+    <div class="demo-bar">
+      <button class="demo-btn" onclick="demoCrossing('camp3','나')"><b>데모1</b> 나 → 캠프3 (lv-2→3)</button>
+      <button class="demo-btn" onclick="demoCrossing('peak','민지')"><b>데모2</b> 민지 → 정상 (lv-3→4)</button>
+    </div>
+  </div>
+
+  <div class="body">
+    <div class="status-band">"캠프 통과 = aura 강화. 정상 = 풀파워. 데모 버튼 클릭."</div>
+
+    <div class="mountain-wrap" id="mountainWrap">
+      <svg class="mountain-svg" viewBox="0 0 400 600" preserveAspectRatio="none">
+        <defs>
+          <linearGradient id="mtn1" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#3a3a55" stop-opacity="0.5"/><stop offset="100%" stop-color="#1a1a25" stop-opacity="0.95"/></linearGradient>
+          <linearGradient id="mtn2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#4a4a6a" stop-opacity="0.65"/><stop offset="100%" stop-color="#252535" stop-opacity="1"/></linearGradient>
+          <linearGradient id="snow" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#e8e8f5"/><stop offset="100%" stop-color="#a8a8c8"/></linearGradient>
+        </defs>
+        <polygon points="0,600 0,260 80,180 160,240 240,160 320,220 400,180 400,600" fill="url(#mtn1)"/>
+        <polygon points="0,600 0,400 100,300 200,80 300,260 400,360 400,600" fill="url(#mtn2)"/>
+        <polygon points="170,140 200,80 230,140 215,135 200,100 185,135" fill="url(#snow)" opacity="0.7"/>
+        <path d="M 60,520 Q 100,440 140,400 T 180,300 T 200,80" stroke="rgba(255,255,255,0.08)" stroke-width="1" stroke-dasharray="2,4" fill="none"/>
+      </svg>
+
+      <div class="zone-deco z-peak"></div>
+      <div class="zone-deco z-chase"></div>
+      <div class="zone-deco z-stall"></div>
+      <div class="zone-deco z-start"></div>
+
+      <div class="zone-label z-peak" style="top:21%;"><span class="nm">정상구간</span><span class="sub">마지막 사력</span></div>
+      <div class="zone-label" style="top:43%;"><span class="nm">추격구간</span><span class="sub">결정구간</span></div>
+      <div class="zone-label" style="top:64%;"><span class="nm">정체구간</span><span class="sub">지치기 쉽다</span></div>
+      <div class="zone-label" style="top:86%;"><span class="nm">출발구간</span><span class="sub">발걸음 시작</span></div>
+
+      <!-- 체크포인트 4단 (캠프1/2/3/정상) -->
+      <div class="checkpoint is-peak" data-cp="peak" style="top:13.3%;" onclick="showHistory('peak')">
+        <div class="cp-row-top">
+          <span class="cp-name">정상 <span class="cp-reward"><svg class="trophy-mini" viewBox="0 0 12 12"><use href="#ic-trophy"/></svg></span></span>
+          <span class="cp-pct">100% · lv4</span>
+        </div>
+        <div class="cp-first"><span class="nm">아직 0명</span></div>
+        <div class="cp-flags" id="flags-peak"></div>
+      </div>
+
+      <div class="checkpoint" data-cp="camp3" style="top:35%;" onclick="showHistory('camp3')">
+        <div class="cp-row-top">
+          <span class="cp-name">캠프3 <span class="cp-reward"><span class="cube gold"></span><span class="cube gold"></span></span></span>
+          <span class="cp-pct">75% · lv3</span>
+        </div>
+        <div class="cp-first"><span class="star">★</span><span class="nm" style="color:#ffd54a;">민지</span><span style="color:var(--text3);">· 어제</span></div>
+        <div class="cp-flags" id="flags-camp3">
+          <span class="cp-flag" style="--c:#ffd54a;"></span>
+          <span class="cp-flag" style="--c:#38bdf8;"></span>
+          <span class="cp-flag" style="--c:#ec4899;"></span>
+        </div>
+      </div>
+
+      <div class="checkpoint" data-cp="camp2" style="top:56.7%;" onclick="showHistory('camp2')">
+        <div class="cp-row-top">
+          <span class="cp-name">캠프2 <span class="cp-reward"><span class="cube gold"></span></span></span>
+          <span class="cp-pct">50% · lv2</span>
+        </div>
+        <div class="cp-first"><span class="star">★</span><span class="nm" style="color:#ffd54a;">민지</span><span style="color:var(--text3);">· 3일 전</span></div>
+        <div class="cp-flags" id="flags-camp2">
+          <span class="cp-flag" style="--c:#ffd54a;"></span>
+          <span class="cp-flag" style="--c:#38bdf8;"></span>
+          <span class="cp-flag" style="--c:#ec4899;"></span>
+          <span class="cp-flag" style="--c:#ff4d4d;"></span>
+          <span class="cp-flag" style="--c:#a855f7;"></span>
+        </div>
+      </div>
+
+      <div class="checkpoint" data-cp="camp1" style="top:78.3%;" onclick="showHistory('camp1')">
+        <div class="cp-row-top">
+          <span class="cp-name">캠프1 <span class="cp-reward"><span class="cube silver"></span></span></span>
+          <span class="cp-pct">25% · lv1</span>
+        </div>
+        <div class="cp-first"><span class="star">★</span><span class="nm" style="color:#38bdf8;">준호</span><span style="color:var(--text3);">· 5일 전</span></div>
+        <div class="cp-flags" id="flags-camp1">
+          <span class="cp-flag" style="--c:#38bdf8;"></span>
+          <span class="cp-flag" style="--c:#ffd54a;"></span>
+          <span class="cp-flag" style="--c:#ec4899;"></span>
+          <span class="cp-flag" style="--c:#ff4d4d;"></span>
+          <span class="cp-flag" style="--c:#a855f7;"></span>
+          <span class="cp-flag" style="--c:#f97316;"></span>
+        </div>
+      </div>
+
+      <div class="peak-flag">
+        <div class="pole"></div>
+        <div class="banner"></div>
+        <div class="info"><div class="info-num">−4kg</div><div class="info-day">D-5</div></div>
+      </div>
+
+      <!-- 등반자 + AURA -->
+      <!-- 민지 92%: lv-3 (캠프3 통과) -->
+      <div class="climber is-leader lv-3 name-right" style="top:10%; left:calc(50% - 7px);" data-name="민지">
+        <div class="aura-flame"></div>
+        <div class="aura-spark"></div>
+        <div class="pfig-wrap">
+          <svg class="pfig c-minji" viewBox="0 0 16 22">
+            <circle class="head" cx="8" cy="4" r="2.4"/>
+            <path class="stroke" d="M8 6.5 L8 13 M8 7.5 L3 3 M8 7.5 L13 3 M8 13 L4 21 M8 13 L12 21"/>
+          </svg>
+        </div>
+        <div class="climber-tag"><span class="nm">민지</span><span class="alt">92%</span><span class="pace up">↑</span><span class="streak"><svg><use href="#ic-fire"/></svg>9</span><span class="lv-badge">lv3</span></div>
+      </div>
+
+      <!-- 준호 84%: lv-3 -->
+      <div class="climber lv-3 name-right" style="top:18%; left:calc(53% - 7px);" data-name="준호">
+        <div class="aura-flame"></div>
+        <div class="aura-spark"></div>
+        <div class="pfig-wrap">
+          <svg class="pfig c-junho" viewBox="0 0 16 22">
+            <circle class="head" cx="8" cy="4" r="2.4"/>
+            <path class="stroke" d="M8 6.5 L8 13 M8 7.5 L13 3 M8 9 L3 13 M8 13 L11 21 M8 13 L4 19"/>
+          </svg>
+        </div>
+        <div class="climber-tag"><span class="nm">준호</span><span class="alt">84%</span><span class="pace flat">→</span><span class="streak"><svg><use href="#ic-fire"/></svg>12</span><span class="lv-badge">lv3</span></div>
+      </div>
+
+      <!-- 수아 78%: lv-3 -->
+      <div class="climber lv-3 name-left" style="top:24%; left:calc(45% - 7px);" data-name="수아">
+        <div class="aura-flame"></div>
+        <div class="aura-spark"></div>
+        <div class="pfig-wrap">
+          <svg class="pfig c-suah" viewBox="0 0 16 22">
+            <circle class="head" cx="8" cy="4" r="2.4"/>
+            <path class="stroke" d="M8 6.5 L8 13 M8 7.5 L3 3 M8 9 L13 13 M8 13 L5 21 M8 13 L12 19"/>
+          </svg>
+        </div>
+        <div class="climber-tag"><span class="nm">수아</span><span class="alt">78%</span><span class="pace flat">→</span><span class="streak"><svg><use href="#ic-fire"/></svg>7</span><span class="lv-badge">lv3</span></div>
+      </div>
+
+      <!-- 나 71%: lv-2 (캠프2 통과, 캠프3 미통과) -->
+      <div class="climber is-me lv-2 name-right" style="top:31%; left:calc(58% - 7px);" data-name="나">
+        <div class="aura-ring"></div>
+        <div class="pfig-wrap">
+          <svg class="pfig c-me" viewBox="0 0 16 22">
+            <circle class="head" cx="8" cy="4" r="2.4"/>
+            <path class="stroke" d="M8 6.5 L8 13 M8 7.5 L13 3 M8 9 L3 13 M8 13 L11 21 M8 13 L4 19"/>
+          </svg>
+        </div>
+        <div class="climber-tag"><span class="nm">나</span><span class="alt">71%</span><span class="pace down">↓</span><span class="streak"><svg><use href="#ic-fire"/></svg>4</span><span class="lv-badge">lv2</span></div>
+      </div>
+
+      <!-- 태형 52%: lv-2 -->
+      <div class="climber is-out lv-2 name-left" style="top:47%; left:calc(35% - 7px);" data-name="태형">
+        <div class="aura-ring"></div>
+        <div class="pfig-wrap">
+          <svg class="pfig c-taehyung" viewBox="0 0 16 22">
+            <circle class="head" cx="9" cy="5" r="2.4"/>
+            <path class="stroke" d="M9 7.5 L7 14 M8 9 L4 13 M8 9 L11 13 M7 14 L4 21 M7 14 L10 21"/>
+          </svg>
+        </div>
+        <div class="climber-tag"><span class="nm">태형</span><span class="alt">52%</span><span class="pace down">↓</span><span class="streak is-zero"><svg><use href="#ic-fire"/></svg>0</span><span class="lv-badge">lv2</span></div>
+      </div>
+
+      <!-- 지유 31%: lv-1 (캠프1 통과만) -->
+      <div class="climber is-out lv-1 name-right" style="top:67%; left:calc(52% - 7px);" data-name="지유">
+        <div class="pfig-wrap">
+          <svg class="pfig c-jiyu" viewBox="0 0 16 22">
+            <circle class="head" cx="8" cy="8" r="2.4"/>
+            <path class="stroke" d="M8 10.5 L8 14 M8 11 L5 13 M8 11 L11 13 M8 14 L4 17 L4 21 M8 14 L12 17 L12 21"/>
+          </svg>
+        </div>
+        <div class="climber-tag"><span class="nm">지유</span><span class="alt">31%</span><span class="pace flat">→</span><span class="streak is-zero"><svg><use href="#ic-fire"/></svg>0</span><span class="lv-badge">lv1</span></div>
+      </div>
+    </div>
+
+    <div class="me-action-card">
+      <div class="me-eta-grid">
+        <div class="me-eta-cell">
+          <div class="lbl">캠프3</div>
+          <div class="val">+4%p</div>
+          <div class="sub">aura lv-3</div>
+        </div>
+        <div class="me-eta-cell">
+          <div class="lbl">수아 추월</div>
+          <div class="val">+7%p</div>
+          <div class="sub">3위 진입</div>
+        </div>
+        <div class="me-eta-cell">
+          <div class="lbl">정상</div>
+          <div class="val">+29%p</div>
+          <div class="sub">풀파워</div>
+        </div>
+      </div>
+      <div class="me-action-bottom">
+        <div class="body-txt">
+          <b>일일 −0.24kg 페이스 필요</b><span class="sub">현재 페이스 ↓ — 캠프3 통과 시 aura 강화</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="action-overlay" id="actionOverlay">
+    <div class="action-sheet">
+      <div class="action-head">
+        <div class="act-ava" id="actAva">M</div>
+        <div class="act-text">
+          <div class="act-name" id="actName">민지</div>
+          <div class="act-meta" id="actMeta">1위 · 92%</div>
+        </div>
+        <button class="act-close" onclick="closeActionSheet()">✕</button>
+      </div>
+      <div class="action-list">
+        <button class="action-item cheer" onclick="sendMessage('cheer')"><div class="lbl">↑ 응원 보내기</div><div class="preview" id="cheerPreview">"끝까지 가즈아!"</div></button>
+        <button class="action-item taunt" onclick="sendMessage('taunt')"><div class="lbl">⚡ 도발 보내기</div><div class="preview" id="tauntPreview">"정상은 내 거다"</div></button>
+        <div class="action-custom">
+          <input id="customInput" type="text" placeholder="직접 메시지 쓰기..." maxlength="60">
+          <button onclick="sendMessage('custom')">전송</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="history-overlay" id="historyOverlay">
+    <div class="history-card">
+      <div class="history-head">
+        <div class="history-title" id="histTitle">캠프3 통과 기록<span class="pct" id="histPct">· 75%</span></div>
+        <div class="history-reward" id="histReward">→ gold ×2</div>
+      </div>
+      <div class="history-list" id="histList"></div>
+      <button class="action-item" style="margin-top:14px; text-align:center;" onclick="closeHistory()">닫기</button>
+    </div>
+  </div>
+
+  <div class="msg-popup-overlay" id="msgPopupOverlay">
+    <div class="msg-popup" id="msgPopup">
+      <div class="sim-tag" style="top:-10px; left:50%; transform:translateX(-50%);">받는 사람 앱 화면</div>
+      <div class="from-ava" id="popupAva">N</div>
+      <div class="popup-from-row"><b id="popupFrom">나</b> 으로부터</div>
+      <span class="type-badge" id="popupType">응원</span>
+      <div class="msg-body" id="popupMsg">...</div>
+      <div class="popup-actions">
+        <button onclick="closePopup()">나중에 보기</button>
+        <button class="primary" onclick="closePopup()">확인</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast">전송됨</div>
+</div>
+
+<script>
+const CHAR_COLORS = {
+  '민지': '#ffd54a', '준호': '#38bdf8', '수아': '#ec4899',
+  '나':   '#ff4d4d', '태형': '#a855f7', '지유': '#f97316',
+};
+const PRESETS_CHEER = {
+  '민지': '정상까지 한 걸음! 멋있다', '준호': '페이스 좋다, 가즈아',
+  '수아': '수아 안정적이다 굿', '태형': '다시 일어나자, 아직 안 끝났어', '지유': '지유 천천히라도 한 걸음',
+};
+const PRESETS_TAUNT = {
+  '민지': '정상은 내 거다, 마음 비워라', '준호': '준호 너 곧 따라잡힌다',
+  '수아': '수아 내가 추월할 거야, 준비해', '태형': '뒤로 더 갈 거 같은데?', '지유': '바닥 잘 어울리네',
+};
+
+const CHECKPOINTS = {
+  peak:  { name: '정상',  pct: '100%', reward: '트로피',  level: 4, crossings: [] },
+  camp3: { name: '캠프3', pct: '75%',  reward: 'gold ×2', level: 3, crossings: [
+    { name: '민지', date: '어제', isFirst: true },
+    { name: '준호', date: '오늘 11:32' },
+    { name: '수아', date: '1시간 전' },
+  ]},
+  camp2: { name: '캠프2', pct: '50%',  reward: 'gold',    level: 2, crossings: [
+    { name: '민지', date: '3일 전', isFirst: true },
+    { name: '준호', date: '2일 전' },
+    { name: '수아', date: '어제' },
+    { name: '나',   date: '어제' },
+    { name: '태형', date: '오늘 09:14' },
+  ]},
+  camp1: { name: '캠프1', pct: '25%',  reward: 'silver',  level: 1, crossings: [
+    { name: '준호', date: '5일 전', isFirst: true },
+    { name: '민지', date: '5일 전' },
+    { name: '수아', date: '4일 전' },
+    { name: '나',   date: '3일 전' },
+    { name: '태형', date: '어제' },
+    { name: '지유', date: '오늘' },
+  ]},
+};
+
+// .climber 에 캐릭터 색 클래스 (c-*) 카피 → --char 가 aura 형제까지 inherit
+document.querySelectorAll('.climber').forEach(c => {
+  const svg = c.querySelector('.pfig');
+  if (!svg) return;
+  [...svg.classList].forEach(cl => { if (cl.startsWith('c-')) c.classList.add(cl); });
+});
+
+const overlay     = document.getElementById('actionOverlay');
+const popupOverlay= document.getElementById('msgPopupOverlay');
+const histOverlay = document.getElementById('historyOverlay');
+const notif       = document.getElementById('phoneNotif');
+const bcast       = document.getElementById('phoneBcast');
+const toastEl     = document.getElementById('toast');
+
+document.getElementById('mountainWrap').addEventListener('click', e => {
+  const climber = e.target.closest('.climber');
+  if (!climber) return;
+  if (climber.classList.contains('is-me')) {
+    showToast('자신에게는 보낼 수 없어');
+    return;
+  }
+  openActionSheet(climber);
+});
+
+overlay.addEventListener('click', e => { if (e.target === overlay) closeActionSheet(); });
+popupOverlay.addEventListener('click', e => { if (e.target === popupOverlay) closePopup(); });
+histOverlay.addEventListener('click', e => { if (e.target === histOverlay) closeHistory(); });
+
+function openActionSheet(climber) {
+  const name = climber.querySelector('.nm').textContent;
+  const pct = climber.querySelector('.alt').textContent;
+  const isLeader = climber.classList.contains('is-leader');
+  const isOut = climber.classList.contains('is-out');
+  const tier = isLeader ? '1위 · 정상' : isOut ? '뒤처짐' : '경쟁자';
+  const color = CHAR_COLORS[name];
+  document.getElementById('actAva').textContent = name[0];
+  document.getElementById('actAva').style.background = `linear-gradient(135deg, ${color}, ${color}88)`;
+  document.getElementById('actName').textContent = name;
+  document.getElementById('actMeta').textContent = `${tier} · ${pct}`;
+  document.getElementById('cheerPreview').textContent = `"${PRESETS_CHEER[name]}"`;
+  document.getElementById('tauntPreview').textContent = `"${PRESETS_TAUNT[name]}"`;
+  overlay.dataset.target = name;
+  overlay.classList.add('is-open');
+  setTimeout(() => document.getElementById('customInput').focus(), 250);
+}
+function closeActionSheet() {
+  overlay.classList.remove('is-open');
+  document.getElementById('customInput').value = '';
+}
+function sendMessage(type) {
+  const target = overlay.dataset.target;
+  if (!target) return;
+  let msg = '';
+  if (type === 'cheer') msg = PRESETS_CHEER[target];
+  else if (type === 'taunt') msg = PRESETS_TAUNT[target];
+  else if (type === 'custom') {
+    msg = document.getElementById('customInput').value.trim();
+    if (!msg) { document.getElementById('customInput').focus(); return; }
+  }
+  closeActionSheet();
+  const tLabel = type === 'cheer' ? '응원' : type === 'taunt' ? '도발' : '메시지';
+  showToast(`${target}에게 ${tLabel} 전송됨`);
+  setTimeout(() => showRecipientNotif(target, msg, type), 700);
+}
+function showToast(text) {
+  toastEl.textContent = text;
+  toastEl.classList.add('is-show');
+  setTimeout(() => toastEl.classList.remove('is-show'), 1400);
+}
+function showRecipientNotif(target, msg, type) {
+  const color = CHAR_COLORS[target];
+  const tLabel = type === 'cheer' ? '응원' : type === 'taunt' ? '도발' : '메시지';
+  const notifIc = document.getElementById('notifIc');
+  notifIc.textContent = target[0];
+  notifIc.style.background = `linear-gradient(135deg, ${color}, ${color}88)`;
+  document.getElementById('notifSrc').textContent = tLabel;
+  document.getElementById('notifTitle').textContent = `나로부터 ${tLabel} 도착`;
+  document.getElementById('notifMsg').textContent = msg;
+  notif.classList.add('is-show');
+  setTimeout(() => {
+    notif.classList.remove('is-show');
+    setTimeout(() => showInAppPopup(target, msg, type), 350);
+  }, 2600);
+}
+function showInAppPopup(target, msg, type) {
+  const popup = document.getElementById('msgPopup');
+  popup.style.setProperty('--char-from', '#ff4d4d');
+  const popupAva = document.getElementById('popupAva');
+  popupAva.textContent = '나';
+  popupAva.style.background = `linear-gradient(135deg, #ff4d4d, #a8302a)`;
+  document.getElementById('popupFrom').textContent = '나';
+  const typeEl = document.getElementById('popupType');
+  typeEl.className = 'type-badge ' + type;
+  typeEl.textContent = type === 'cheer' ? '응원' : type === 'taunt' ? '도발' : '메시지';
+  document.getElementById('popupMsg').textContent = msg;
+  popupOverlay.classList.add('is-show');
+}
+function closePopup() { popupOverlay.classList.remove('is-show'); }
+
+document.getElementById('customInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') sendMessage('custom');
+});
+
+function showHistory(cpKey) {
+  const cp = CHECKPOINTS[cpKey];
+  document.getElementById('histTitle').innerHTML = `${cp.name} 통과 기록<span class="pct" id="histPct">· ${cp.pct}</span>`;
+  document.getElementById('histReward').textContent = `→ ${cp.reward} · lv${cp.level}`;
+  const list = document.getElementById('histList');
+  list.innerHTML = '';
+  if (!cp.crossings.length) {
+    list.innerHTML = '<div class="history-empty">아직 통과자 없음.<br>먼저 도달 시 ★ FIRST + 풀파워 aura.</div>';
+  } else {
+    cp.crossings.forEach(c => {
+      const color = CHAR_COLORS[c.name];
+      const el = document.createElement('div');
+      el.className = 'history-item' + (c.isFirst ? ' is-first' : '');
+      el.style.setProperty('--c', color);
+      el.innerHTML = `
+        <div class="ava" style="background:${color};">${c.name[0]}</div>
+        <div class="nm">${c.name}</div>
+        ${c.isFirst ? '<span class="first-tag">★ FIRST</span>' : ''}
+        <div class="time">${c.date}</div>
+      `;
+      list.appendChild(el);
+    });
+  }
+  histOverlay.classList.add('is-open');
+}
+function closeHistory() { histOverlay.classList.remove('is-open'); }
+
+// 통과 데모: line glow + burst + level-up + broadcast
+function demoCrossing(cpKey, charName) {
+  const cpEl = document.querySelector(`.checkpoint[data-cp="${cpKey}"]`);
+  const climber = document.querySelector(`.climber[data-name="${charName}"]`);
+  const color = CHAR_COLORS[charName];
+  // 1. line fires
+  cpEl.classList.add('is-firing');
+  for (let i = 0; i < 8; i++) {
+    const b = document.createElement('span');
+    b.className = 'cp-burst';
+    b.style.setProperty('--c', color);
+    const angle = (Math.PI * 2 * i) / 8;
+    const dist = 30 + Math.random() * 16;
+    b.style.setProperty('--dx', `${Math.cos(angle) * dist}px`);
+    b.style.setProperty('--dy', `${Math.sin(angle) * dist}px`);
+    b.style.left = `${20 + Math.random() * 60}%`;
+    b.style.top = '-2px';
+    cpEl.appendChild(b);
+    setTimeout(() => b.remove(), 1300);
+  }
+  setTimeout(() => cpEl.classList.remove('is-firing'), 1700);
+
+  // 2. level-up on climber (after line glow)
+  setTimeout(() => {
+    const targetLv = CHECKPOINTS[cpKey].level;
+    climber.classList.add('is-leveling');
+    setTimeout(() => {
+      // remove old aura children
+      climber.querySelectorAll('.aura-ring, .aura-flame, .aura-spark, .aura-beams, .aura-pulse').forEach(el => el.remove());
+      // remove old lv class
+      climber.className = climber.className.replace(/\blv-\d\b/g, '').trim();
+      // add new lv
+      climber.classList.add(`lv-${targetLv}`);
+      // insert correct aura elements
+      const pfigWrap = climber.querySelector('.pfig-wrap');
+      if (targetLv === 2) {
+        pfigWrap.insertAdjacentHTML('beforebegin', '<div class="aura-ring"></div>');
+      } else if (targetLv === 3) {
+        pfigWrap.insertAdjacentHTML('beforebegin', '<div class="aura-flame"></div><div class="aura-spark"></div>');
+      } else if (targetLv === 4) {
+        pfigWrap.insertAdjacentHTML('beforebegin', '<div class="aura-beams"></div><div class="aura-pulse"></div><div class="aura-flame"></div>');
+      }
+      // update lv-badge
+      const badge = climber.querySelector('.lv-badge');
+      if (badge) badge.textContent = `lv${targetLv}`;
+    }, 350);
+    setTimeout(() => climber.classList.remove('is-leveling'), 1200);
+  }, 700);
+
+  // 3. broadcast
+  setTimeout(() => showBroadcast(charName, cpKey), 1500);
+}
+
+function showBroadcast(charName, cpKey) {
+  const cp = CHECKPOINTS[cpKey];
+  const color = CHAR_COLORS[charName];
+  const bIc = document.getElementById('bcastIc');
+  bIc.textContent = charName[0];
+  bIc.style.background = `linear-gradient(135deg, ${color}, ${color}88)`;
+  document.getElementById('bcastTitle').textContent = `${charName}가 ${cp.name} 도달! aura → lv${cp.level}`;
+  document.getElementById('bcastMsg').textContent = `${cp.pct} 통과 · ${cp.reward} 보너스 + 파워업`;
+  bcast.dataset.target = charName;
+  bcast.classList.add('is-show');
+}
+function dismissBcast() { bcast.classList.remove('is-show'); }
+function reactBroadcast(type) {
+  const target = bcast.dataset.target;
+  const msg = type === 'cheer' ? PRESETS_CHEER[target] : PRESETS_TAUNT[target];
+  dismissBcast();
+  showToast(`${target}에게 ${type === 'cheer' ? '응원' : '도발'} 전송됨`);
+  setTimeout(() => showRecipientNotif(target, msg, type), 600);
+}
+
+setTimeout(() => {
+  showToast('데모 버튼 클릭 → 캠프 통과 + aura 강화');
+}, 600);
+</script>
+<script src="_workspace-selector.js"></script>
+</body>
+</html>

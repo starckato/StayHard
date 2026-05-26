@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Challenge Room A · Stack + Line</title>
+<link rel="stylesheet" href="_challenge-shared.css">
+<style>
+.member-card {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  margin-bottom: 8px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  transition: transform 0.25s cubic-bezier(.32,1,.42,1);
+}
+.member-card.is-top {
+  transform: scale(1.04);
+  padding: 14px 16px;
+  border-color: var(--tier-color);
+  box-shadow: 0 0 0 1px var(--tier-color), 0 0 20px color-mix(in srgb, var(--tier-color) 30%, transparent);
+}
+.member-card.is-me {
+  background: var(--accent-bg);
+  border-color: var(--accent-bd);
+}
+.member-card.is-below {
+  opacity: 0.45;
+  filter: saturate(0.4);
+}
+.rank-num {
+  font-family: 'Archivo Black', sans-serif;
+  font-size: 14px;
+  color: var(--text3);
+  width: 22px;
+  text-align: center;
+  flex-shrink: 0;
+}
+.is-top .rank-num { color: var(--gold); font-size: 16px; }
+.member-card.is-me .rank-num { color: var(--accent); }
+.member-info {
+  flex: 1;
+  min-width: 0;
+}
+.member-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 2px;
+}
+.is-me .member-name { color: var(--accent); }
+.member-meta {
+  font-size: 11.5px;
+  color: var(--text3);
+  font-family: 'DM Mono', monospace;
+}
+.member-meta b { color: var(--text2); font-weight: 600; }
+.member-progress {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+}
+.member-bar {
+  flex: 1;
+  height: 6px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.member-bar-fill {
+  height: 100%;
+  background: var(--tier-color);
+  border-radius: inherit;
+  box-shadow: 0 0 6px var(--tier-color);
+  transition: width 0.6s cubic-bezier(.32,1,.42,1);
+}
+.member-pct {
+  font-family: 'DM Mono', monospace;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--tier-color);
+  min-width: 36px;
+  text-align: right;
+}
+.member-tier-tag {
+  font-size: 9.5px;
+  color: var(--tier-color);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-top: 2px;
+}
+.me-action {
+  font-size: 11px;
+  color: var(--accent);
+  font-weight: 600;
+  margin-top: 6px;
+  font-style: italic;
+}
+
+/* Completion line — Duolingo PROMOTION ZONE 식 */
+.completion-line {
+  position: relative;
+  margin: 14px 0;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.completion-line .lbl {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  color: var(--red);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  padding: 0 4px;
+}
+.completion-line::before,
+.completion-line::after {
+  content: '';
+  flex: 1;
+  height: 0;
+  border-top: 1.5px dashed var(--red);
+  opacity: 0.55;
+}
+.completion-hint {
+  font-size: 11px;
+  color: var(--red);
+  font-style: italic;
+  text-align: center;
+  margin-top: -4px;
+  margin-bottom: 14px;
+  opacity: 0.7;
+}
+</style>
+</head>
+<body>
+<div class="phone">
+  <div class="head">
+    <span class="head-back">◀</span>
+    <div style="flex:1;text-align:center;">
+      <div class="head-title">챌린지 룸 · 14일 감량</div>
+      <div class="head-sub">D-5 · 9/14일</div>
+    </div>
+    <span style="width:20px;"></span>
+  </div>
+
+  <div class="opt-bar">
+    <div class="opt-bar-title">OPTION A · STACK + LINE</div>
+    <div class="opt-bar-desc">HS BG 사이드바 + Duolingo 완수 라인 + 큐록 tier sprite 하이브리드. 1위 카드 강조, 본인 카드 ring, 완수 라인 아래는 dim.</div>
+  </div>
+
+  <div class="body">
+    <div class="status-band">"너는 4위. 추격당하고 있다."</div>
+
+    <!-- 1st -->
+    <div class="member-card is-top tier-4">
+      <div class="rank-num">1</div>
+      <div class="sprite is-lg">민</div>
+      <div class="member-info">
+        <div class="member-name">민지</div>
+        <div class="member-tier-tag">수련자 · 감량</div>
+        <div class="member-progress">
+          <div class="member-bar"><div class="member-bar-fill" style="width:92%;"></div></div>
+          <div class="member-pct">92%</div>
+        </div>
+        <div class="member-meta" style="margin-top:4px;">−3.2kg / 목표 −4kg · 남은 <b>0.8kg</b></div>
+      </div>
+    </div>
+
+    <!-- 2nd -->
+    <div class="member-card tier-3">
+      <div class="rank-num">2</div>
+      <div class="sprite">준</div>
+      <div class="member-info">
+        <div class="member-name">준호</div>
+        <div class="member-tier-tag">저항자 · 증량</div>
+        <div class="member-progress">
+          <div class="member-bar"><div class="member-bar-fill" style="width:84%;"></div></div>
+          <div class="member-pct">84%</div>
+        </div>
+        <div class="member-meta" style="margin-top:4px;">+2.1kg / 목표 +3kg · 남은 <b>0.9kg</b></div>
+      </div>
+    </div>
+
+    <!-- 3rd -->
+    <div class="member-card tier-4">
+      <div class="rank-num">3</div>
+      <div class="sprite">수</div>
+      <div class="member-info">
+        <div class="member-name">수아</div>
+        <div class="member-tier-tag">수련자 · 유지</div>
+        <div class="member-progress">
+          <div class="member-bar"><div class="member-bar-fill" style="width:78%;"></div></div>
+          <div class="member-pct">78%</div>
+        </div>
+        <div class="member-meta" style="margin-top:4px;">±0.4kg / 허용 ±1kg · 안정</div>
+      </div>
+    </div>
+
+    <!-- 완수 라인 -->
+    <div class="completion-line">
+      <div class="lbl">완수 라인 · 75%</div>
+    </div>
+    <div class="completion-hint">↓ 여기 아래는 챌린지 미완수 ↓</div>
+
+    <!-- 4th (나) -->
+    <div class="member-card is-me tier-3">
+      <div class="rank-num">4</div>
+      <div class="sprite">YOU</div>
+      <div class="member-info">
+        <div class="member-name">나</div>
+        <div class="member-tier-tag">저항자 · 감량</div>
+        <div class="member-progress">
+          <div class="member-bar"><div class="member-bar-fill" style="width:71%;"></div></div>
+          <div class="member-pct">71%</div>
+        </div>
+        <div class="member-meta" style="margin-top:4px;">−1.8kg / 목표 −3kg · 남은 <b>1.2kg</b></div>
+        <div class="me-action">남은 5일, 4% 더 필요</div>
+      </div>
+    </div>
+
+    <!-- 5th -->
+    <div class="member-card is-below tier-2">
+      <div class="rank-num">5</div>
+      <div class="sprite">태</div>
+      <div class="member-info">
+        <div class="member-name">태형</div>
+        <div class="member-tier-tag">각성자 · 감량</div>
+        <div class="member-progress">
+          <div class="member-bar"><div class="member-bar-fill" style="width:52%;"></div></div>
+          <div class="member-pct">52%</div>
+        </div>
+        <div class="member-meta" style="margin-top:4px;">−1.2kg / 목표 −5kg</div>
+      </div>
+    </div>
+
+    <!-- 6th -->
+    <div class="member-card is-below tier-1">
+      <div class="rank-num">6</div>
+      <div class="sprite">지</div>
+      <div class="member-info">
+        <div class="member-name">지유</div>
+        <div class="member-tier-tag">방관자 · 감량</div>
+        <div class="member-progress">
+          <div class="member-bar"><div class="member-bar-fill" style="width:31%;"></div></div>
+          <div class="member-pct">31%</div>
+        </div>
+        <div class="member-meta" style="margin-top:4px;">−0.5kg / 목표 −4kg</div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="_workspace-selector.js"></script>
+</body>
+</html>

@@ -1,0 +1,371 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
+<title>큐록 · T1-2 첫 7일 가이드</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  body{
+    background:#0a0a0c;
+    color:#f5f1ea;
+    font-family:'Pretendard','Apple SD Gothic Neo','DM Sans',sans-serif;
+    min-height:100vh;
+    padding:40px 20px 80px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    --text:#f5f1ea;
+    --text2:#a8a8b4;
+    --text3:#7a7a86;
+    --surface:#16161a;
+    --surface2:#1c1c22;
+    --surface3:#232328;
+    --border:rgba(255,255,255,.08);
+    --border2:rgba(255,255,255,.12);
+    --accent:#ff4d4d;
+    --green:#34d399;
+    --gold:#ffd54a;
+    --silver:#d8dfe7;
+    --radius-md:8px;
+    --radius-lg:12px;
+    --radius-xl:16px;
+  }
+  .page{max-width:430px;width:100%;}
+  .head{
+    margin-bottom:32px;
+    padding-bottom:16px;
+    border-bottom:1px solid var(--border);
+  }
+  .head .badge{
+    display:inline-block;
+    font-size:10px;
+    font-weight:700;
+    letter-spacing:.12em;
+    color:var(--accent);
+    margin-bottom:8px;
+  }
+  .head h1{
+    font-family:'Archivo Black','DM Sans',sans-serif;
+    font-size:20px;
+    letter-spacing:-.02em;
+    margin-bottom:6px;
+  }
+  .head p{font-size:13px;color:var(--text2);line-height:1.55;}
+
+  .section{margin-bottom:36px;}
+  .section-title{
+    font-family:'DM Mono',monospace;
+    font-size:10px;
+    font-weight:700;
+    letter-spacing:.16em;
+    text-transform:uppercase;
+    color:var(--text3);
+    margin-bottom:14px;
+  }
+
+  /* ───── 가이드 카드 ───────────────────────────── */
+  .gc{
+    position:relative;
+    background:linear-gradient(135deg,var(--surface) 0%,var(--surface2) 100%);
+    border:1px solid var(--border);
+    border-left:3px solid var(--gold);
+    border-radius:var(--radius-lg);
+    padding:14px 16px 16px;
+    margin-bottom:10px;
+    overflow:hidden;
+  }
+  .gc-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    margin-bottom:10px;
+  }
+  .gc-day{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    font-family:'DM Mono',monospace;
+    font-size:10px;
+    font-weight:700;
+    letter-spacing:.08em;
+    color:var(--text3);
+  }
+  .gc-day b{color:var(--gold);font-size:13px;font-weight:900;}
+  .gc-close{
+    background:transparent;
+    border:none;
+    color:var(--text3);
+    cursor:pointer;
+    width:24px;
+    height:24px;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .gc-title{
+    font-family:'Noto Serif KR','Nanum Myeongjo',serif;
+    font-size:16px;
+    font-weight:600;
+    line-height:1.4;
+    margin-bottom:6px;
+    color:var(--text);
+    letter-spacing:-.01em;
+  }
+  .gc-body{
+    font-size:12.5px;
+    color:var(--text2);
+    line-height:1.65;
+    margin-bottom:10px;
+  }
+  .gc-body b{color:var(--text);font-weight:700;}
+  .gc-cta{
+    display:inline-flex;
+    align-items:center;
+    gap:5px;
+    font-family:'DM Sans',sans-serif;
+    font-size:12px;
+    font-weight:700;
+    color:var(--accent);
+    padding:6px 11px;
+    background:rgba(255,77,77,.10);
+    border:1px solid rgba(255,77,77,.30);
+    border-radius:var(--radius-md);
+    cursor:pointer;
+  }
+  /* Day 별 좌측 stripe 색상 — Gold tier 진행도 시각화 */
+  .gc.d1{border-left-color:var(--silver);}
+  .gc.d2{border-left-color:var(--silver);}
+  .gc.d3{border-left-color:var(--silver);}
+  .gc.d4{border-left-color:#88a3c4;}
+  .gc.d5{border-left-color:#88a3c4;}
+  .gc.d6{border-left-color:var(--gold);}
+  .gc.d7{border-left-color:var(--gold);}
+
+  /* Inline cube chip 미니 */
+  .cube{
+    display:inline-block;
+    width:9px;
+    height:9px;
+    border-radius:1.5px;
+    vertical-align:middle;
+    margin:0 2px;
+    transform:translateY(-1px);
+  }
+  .cube.g{background:var(--gold);}
+  .cube.s{background:var(--silver);}
+  .cube.r{background:#c14b54;}
+  .cube.x{background:#3a3a44;}
+
+  .note{
+    font-size:11.5px;
+    color:var(--text3);
+    line-height:1.65;
+    padding:10px 14px;
+    background:rgba(255,255,255,.025);
+    border:1px solid var(--border);
+    border-radius:var(--radius-md);
+  }
+  .note b{color:var(--text);}
+
+  .spec{
+    display:grid;
+    grid-template-columns:max-content 1fr;
+    gap:6px 14px;
+    font-size:11.5px;
+    line-height:1.5;
+    color:var(--text2);
+    padding:12px 14px;
+    background:var(--surface2);
+    border:1px solid var(--border);
+    border-radius:var(--radius-md);
+  }
+  .spec dt{
+    font-family:'DM Mono',monospace;
+    font-weight:700;
+    color:var(--text3);
+    letter-spacing:.02em;
+  }
+  .spec dd{color:var(--text);}
+
+  .copy-alt{
+    margin-top:6px;
+    padding:8px 11px;
+    background:rgba(255,255,255,.02);
+    border:1px dashed rgba(255,255,255,.10);
+    border-radius:var(--radius-md);
+    font-size:11px;
+    color:var(--text3);
+    line-height:1.5;
+  }
+  .copy-alt b{color:var(--text2);}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="head">
+    <div class="badge">T1-2 PROTOTYPE</div>
+    <h1>첫 7일 가이드 카드</h1>
+    <p>가입 → 첫 큐브 → 흐름이 끊기는 P2 진지녀 / 신규 유저 retention 직격. 매일 1개 카드, Manifesto 톤, 1탭이면 사라짐.</p>
+  </div>
+
+  <!-- ① 7 카드 시안 ───────────────────────────────── -->
+  <div class="section">
+    <div class="section-title">① Day 1~7 카드 — 노출 순서 그대로</div>
+
+    <!-- Day 1 — 2026-05-26 사용자 피드백 v2: "부담없이 아무거나, 가장 작은 일 하나" -->
+    <div class="gc d1">
+      <div class="gc-head">
+        <span class="gc-day"><b>DAY 01</b> · 시작</span>
+        <button class="gc-close">×</button>
+      </div>
+      <div class="gc-title">오늘 가장 작은 한 가지만.</div>
+      <div class="gc-body">
+        <b>식단 · 운동 · 루틴 · 할일</b> — 뭐든 좋아.<br>
+        부담 없는 1개를 정해. 그게 첫 칸이야.
+      </div>
+      <span class="gc-cta">한 가지 정하러 →</span>
+    </div>
+
+    <!-- Day 2 -->
+    <div class="gc d2">
+      <div class="gc-head">
+        <span class="gc-day"><b>DAY 02</b> · 색의 의미</span>
+        <button class="gc-close">×</button>
+      </div>
+      <div class="gc-title">"색이 곧 증거다."</div>
+      <div class="gc-body">
+        <span class="cube g"></span> <b>Gold</b> — 완수<br>
+        <span class="cube s"></span> <b>Silver</b> — 부분 완수<br>
+        <span class="cube r"></span> <b>Red</b> — 위반<br>
+        <span class="cube x"></span> <b>Gray</b> — 미시작
+      </div>
+    </div>
+
+    <!-- Day 3 -->
+    <div class="gc d3">
+      <div class="gc-head">
+        <span class="gc-day"><b>DAY 03</b> · 보너스</span>
+        <button class="gc-close">×</button>
+      </div>
+      <div class="gc-title">"4칸 다 채우면 한 칸 더."</div>
+      <div class="gc-body">
+        오늘 4 카테고리 모두 <span class="cube s"></span> silver 이상 → 보너스 <span class="cube g"></span> gold 1개.<br>
+        쌓이는 건 작아도, 쌓이는 게 전부다.
+      </div>
+    </div>
+
+    <!-- Day 4 — 2026-05-26 v2: "오늘은 못 한다. 그것도 정직이다" 어색 → 자연스럽게 -->
+    <div class="gc d4">
+      <div class="gc-head">
+        <span class="gc-day"><b>DAY 04</b> · 면제</span>
+        <button class="gc-close">×</button>
+      </div>
+      <div class="gc-title">오늘 못 하면 면제 한 번.</div>
+      <div class="gc-body">
+        회식 · 여행 · 아픔 — <b>1-tap 면제</b>로 점수·큐브 무효.<br>
+        주 2회까지, 연속 기록은 유지된다.
+      </div>
+      <span class="gc-cta">면제 버튼 위치 보기 →</span>
+    </div>
+
+    <!-- Day 5 — 2026-05-26 v2: 캐릭터 룸 (v1 hold) → 통계 탭 활용으로 대체 -->
+    <div class="gc d5">
+      <div class="gc-head">
+        <span class="gc-day"><b>DAY 05</b> · 패턴</span>
+        <button class="gc-close">×</button>
+      </div>
+      <div class="gc-title">5일이면 패턴이 보인다.</div>
+      <div class="gc-body">
+        통계 탭에서 <b>요일별·카테고리별 분포</b> 확인.<br>
+        너의 약한 날·약한 영역을 알면 다음 주가 달라진다.
+      </div>
+      <span class="gc-cta">통계 탭 보기 →</span>
+    </div>
+
+    <!-- Day 6 — 2026-05-26 v2: 챌린지 (v1 hold) → streak 유지로 대체 -->
+    <div class="gc d6">
+      <div class="gc-head">
+        <span class="gc-day"><b>DAY 06</b> · 흐름</span>
+        <button class="gc-close">×</button>
+      </div>
+      <div class="gc-title">끊지 마. 한 칸이면 흐름 유지.</div>
+      <div class="gc-body">
+        매일 1개라도 <span class="cube s"></span> silver+ → <b>streak 유지</b>.<br>
+        6일이면 7일도 자연스럽다.
+      </div>
+    </div>
+
+    <!-- Day 7 -->
+    <div class="gc d7">
+      <div class="gc-head">
+        <span class="gc-day"><b>DAY 07</b> · 첫 주 끝</span>
+        <button class="gc-close">×</button>
+      </div>
+      <div class="gc-title">"여기까지 왔으면, 이제 시작이다."</div>
+      <div class="gc-body">
+        7일 동안 모은 <span class="cube g"></span>·<span class="cube s"></span>·<span class="cube r"></span> 합계 = 너의 첫 증거.<br>
+        오늘부터의 streak 이 진짜 streak 이다.
+      </div>
+      <span class="gc-cta">7일 리포트 보기 →</span>
+    </div>
+  </div>
+
+  <!-- ② 카피 톤 가이드 ─────────────────────────────── -->
+  <div class="section">
+    <div class="section-title">② 카피 톤 가이드</div>
+    <div class="note">
+      <b>Manifesto (해라체)</b> 단일 톤. 강한 짧은 문장 + 인용부호 (") — 큐록 quote 시스템 (Tier Hero) 와 일관.<br>
+      • <b>피하기:</b> "추천드려요" / "팁:" / "알고 계셨나요?" / 이모지<br>
+      • <b>OK:</b> 도구 명령 (해라체 단어 후 마침표) · 인용문 · 짧은 비유 (산/칸/증거/책임)
+    </div>
+  </div>
+
+  <!-- ③ 동작 사양 ─────────────────────────────────── -->
+  <div class="section">
+    <div class="section-title">③ 동작 사양</div>
+    <dl class="spec">
+      <dt>위치</dt><dd>Status Band 직하단 (sticky-header 아래) · first-cube-card 자리</dd>
+      <dt>노출 조건</dt><dd>가입일 (onboarded_at) + N-1일 차 (Day 1 = 가입 당일)</dd>
+      <dt>dismiss</dt><dd>× 버튼 / CTA 클릭 / 5분간 화면 보고 자동 dismiss</dd>
+      <dt>저장</dt><dd>localStorage <code>fwg_day_{n}_dismissed</code> + 서버 <code>onboarding_state.fwg_progress</code></dd>
+      <dt>다음 카드</dt><dd>다음 날 자정 이후 첫 방문 시 자동 표시 (강제 X)</dd>
+      <dt>건너뜀</dt><dd>이전 N-1 카드 못 봤어도 그날 카드만 노출 (catch-up X — 부담 ↓)</dd>
+      <dt>8일 차+</dt><dd>전부 자동 종료. 다시 보고 싶으면 설정에서 reset</dd>
+    </dl>
+  </div>
+
+  <!-- ④ 카피 대안 ─────────────────────────────────── -->
+  <div class="section">
+    <div class="section-title">④ Day 별 카피 — 대안 후보</div>
+    <div class="note">
+      <div class="copy-alt"><b>Day 1</b><br>제안: "오늘이 첫 칸이다."<br>대안 A: "첫 칸은 의지로 시작된다."<br>대안 B: "한 칸이면 충분하다."</div>
+      <div class="copy-alt"><b>Day 2</b><br>제안: "색이 곧 증거다."<br>대안 A: "네 하루의 모양은 이 네 색이다."<br>대안 B: "기록은 색으로 남는다."</div>
+      <div class="copy-alt"><b>Day 3</b><br>제안: "4칸 다 채우면 한 칸 더."<br>대안 A: "넷이 모이면 다섯이 된다."<br>대안 B: "꾸준함은 누적된다."</div>
+      <div class="copy-alt"><b>Day 4</b><br>제안: "오늘은 못 한다. 그것도 정직이다."<br>대안 A: "쉬는 것도 기록이다."<br>대안 B: "정직한 면제는 약함이 아니다."</div>
+      <div class="copy-alt"><b>Day 5</b><br>제안: "네가 모은 칸은 어디에?"<br>대안 A: "쌓인 시간은 시각화된다."<br>대안 B: "한 달 뒤, 너의 한 달이 그림이 된다."</div>
+      <div class="copy-alt"><b>Day 6</b><br>제안: "혼자 가면 빠르다. 같이 가면 멀리 간다."<br>대안 A: "옆에 누군가 있어야 진짜 단련이다."<br>대안 B: "코드 한 줄 = 동료 한 명."</div>
+      <div class="copy-alt"><b>Day 7</b><br>제안: "여기까지 왔으면, 이제 시작이다."<br>대안 A: "첫 주는 워밍업이었다."<br>대안 B: "이제부터의 streak 이 진짜다."</div>
+    </div>
+  </div>
+
+  <!-- ⑤ 검토 포인트 ───────────────────────────────── -->
+  <div class="section">
+    <div class="section-title">⑤ 검토 포인트</div>
+    <div class="note" style="line-height:1.85;">
+      • Day 별 카피 — 제안 vs 대안 A/B 중 선호?<br>
+      • 7개 카드 모두 표시 vs 일부 (5개) 만?<br>
+      • CTA 버튼 — 일부 카드만 (Day 1/4/5/6/7) vs 전부?<br>
+      • dismiss 후 다시 안 보임 vs 그날 안에 재노출 가능?<br>
+      • "한 달 뒤 그림" (Day 5) — 캐릭터 룸 진열장 무드 부합?<br>
+      • Day 6 "친구" — 챌린지가 v1 에 포함되는지 (memory: v1.0 보류 영역)? 빼야 할 수도?<br>
+      • Day 7 마지막 — "리포트" 카드 vs 단순 dismiss?
+    </div>
+  </div>
+
+</div>
+<script src="_workspace-selector.js"></script>
+</body>
+</html>

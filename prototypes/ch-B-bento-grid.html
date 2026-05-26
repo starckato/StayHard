@@ -1,0 +1,317 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Challenge Room B · Bento Grid</title>
+<link rel="stylesheet" href="_challenge-shared.css">
+<style>
+/* Bento — Among Us crewmate card 격자. 사이즈 변주 + 큰 sprite 중심. */
+.bento {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.bento-card {
+  position: relative;
+  padding: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow: hidden;
+  transition: transform 0.2s ease;
+}
+.bento-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 0%, color-mix(in srgb, var(--tier-color) 18%, transparent), transparent 70%);
+  pointer-events: none;
+  opacity: 0.6;
+}
+.bento-card.is-leader {
+  grid-column: 1 / -1;
+  background: linear-gradient(135deg, var(--surface), color-mix(in srgb, var(--tier-color) 8%, var(--surface)));
+  border-color: var(--tier-color);
+  box-shadow: 0 0 0 1px var(--tier-color), 0 8px 24px color-mix(in srgb, var(--tier-color) 20%, transparent);
+  flex-direction: row;
+  align-items: center;
+  padding: 16px;
+}
+.bento-card.is-me {
+  background: linear-gradient(135deg, var(--surface), var(--accent-bg));
+  border-color: var(--accent-bd);
+  box-shadow: 0 0 0 1.5px var(--accent-bd), inset 0 0 30px rgba(255,77,77,0.06);
+}
+.bento-card.is-me::before {
+  background: radial-gradient(circle at 50% 0%, rgba(255,77,77,0.2), transparent 70%);
+}
+.bento-card.is-out {
+  opacity: 0.5;
+  filter: saturate(0.45) brightness(0.9);
+}
+
+/* Rank badge — top-left corner */
+.bento-rank {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  font-family: 'Archivo Black', sans-serif;
+  font-size: 11px;
+  color: var(--text3);
+  background: rgba(0,0,0,0.4);
+  padding: 2px 6px;
+  border-radius: 4px;
+  letter-spacing: 0.05em;
+}
+.is-leader .bento-rank { background: var(--gold); color: #000; font-size: 13px; }
+.is-me .bento-rank { background: var(--accent); color: #fff; }
+
+/* Sprite zone — Among Us crewmate-like big block */
+.bento-sprite {
+  width: 72px;
+  height: 72px;
+  margin: 4px auto 0;
+  border-radius: 14px;
+  background:
+    radial-gradient(ellipse at 50% 30%, rgba(255,255,255,0.4), transparent 50%),
+    linear-gradient(160deg, var(--tier-color), color-mix(in srgb, var(--tier-color) 50%, #000));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Archivo Black', sans-serif;
+  font-size: 22px;
+  color: rgba(0,0,0,0.6);
+  text-shadow: 0 1px 0 rgba(255,255,255,0.4);
+  box-shadow:
+    inset 0 2px 0 rgba(255,255,255,0.3),
+    inset 0 -3px 0 rgba(0,0,0,0.35),
+    0 4px 12px color-mix(in srgb, var(--tier-color) 25%, transparent);
+  position: relative;
+  z-index: 1;
+}
+.is-leader .bento-sprite {
+  width: 88px;
+  height: 88px;
+  font-size: 28px;
+  margin: 0;
+  flex-shrink: 0;
+}
+
+/* Name + meta */
+.bento-name {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--text);
+  text-align: center;
+  position: relative;
+  z-index: 1;
+}
+.is-leader .bento-name { font-size: 16px; text-align: left; }
+.is-me .bento-name { color: var(--accent); }
+
+.bento-tag {
+  font-size: 9px;
+  color: var(--tier-color);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-align: center;
+  margin-top: -4px;
+  position: relative;
+  z-index: 1;
+}
+.is-leader .bento-tag { text-align: left; }
+
+/* Progress ring on leader, bar on others */
+.bento-progress {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  position: relative;
+  z-index: 1;
+}
+.bento-bar {
+  flex: 1;
+  height: 5px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.bento-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg,
+    color-mix(in srgb, var(--tier-color) 70%, transparent),
+    var(--tier-color));
+  border-radius: inherit;
+  box-shadow: 0 0 8px var(--tier-color);
+}
+.bento-pct {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--tier-color);
+  min-width: 32px;
+  text-align: right;
+}
+
+.bento-leader-info {
+  flex: 1;
+  margin-left: 14px;
+}
+.bento-leader-info .bento-progress { margin-top: 8px; }
+.bento-meta {
+  font-family: 'DM Mono', monospace;
+  font-size: 10.5px;
+  color: var(--text3);
+  margin-top: 4px;
+  text-align: center;
+  position: relative;
+  z-index: 1;
+}
+.is-leader .bento-meta { text-align: left; }
+.bento-meta b { color: var(--text2); font-weight: 600; }
+
+.me-hint {
+  margin-top: 6px;
+  font-size: 11px;
+  color: var(--accent);
+  font-style: italic;
+  text-align: center;
+  position: relative;
+  z-index: 1;
+}
+
+/* Status crown for #1 */
+.crown-mark {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--gold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Archivo Black', sans-serif;
+  font-size: 13px;
+  color: #000;
+  box-shadow: 0 2px 8px rgba(255,213,74,0.6);
+  z-index: 2;
+}
+</style>
+</head>
+<body>
+<div class="phone">
+  <div class="head">
+    <span class="head-back">◀</span>
+    <div style="flex:1;text-align:center;">
+      <div class="head-title">챌린지 룸 · 14일 감량</div>
+      <div class="head-sub">D-5 · 9/14일</div>
+    </div>
+    <span style="width:20px;"></span>
+  </div>
+
+  <div class="opt-bar">
+    <div class="opt-bar-title">OPTION B · BENTO GRID</div>
+    <div class="opt-bar-desc">Among Us 진열장 풍. 1위 wide card + 5명 격자. 큰 sprite 중심, 캐릭터 personality 강조. 본인은 accent 카드, 탈락 위험은 dim.</div>
+  </div>
+
+  <div class="body">
+    <div class="status-band">"4위. 진열장 절반에 멈춰 있다."</div>
+
+    <div class="bento">
+      <!-- 1st (leader, wide) -->
+      <div class="bento-card is-leader tier-4">
+        <div class="bento-rank">1ST</div>
+        <div class="crown-mark">★</div>
+        <div class="sprite-wrap">
+          <div class="bento-sprite">민</div>
+        </div>
+        <div class="bento-leader-info">
+          <div class="bento-name">민지</div>
+          <div class="bento-tag" style="text-align:left;">수련자 · 감량</div>
+          <div class="bento-progress">
+            <div class="bento-bar"><div class="bento-bar-fill" style="width:92%;"></div></div>
+            <div class="bento-pct">92%</div>
+          </div>
+          <div class="bento-meta" style="text-align:left;">−3.2kg / −4kg · 남은 <b>0.8kg</b></div>
+        </div>
+      </div>
+
+      <!-- 2nd -->
+      <div class="bento-card tier-3">
+        <div class="bento-rank">2</div>
+        <div class="bento-sprite">준</div>
+        <div class="bento-name">준호</div>
+        <div class="bento-tag">저항자</div>
+        <div class="bento-progress">
+          <div class="bento-bar"><div class="bento-bar-fill" style="width:84%;"></div></div>
+          <div class="bento-pct">84%</div>
+        </div>
+        <div class="bento-meta">+2.1 / +3kg</div>
+      </div>
+
+      <!-- 3rd -->
+      <div class="bento-card tier-4">
+        <div class="bento-rank">3</div>
+        <div class="bento-sprite">수</div>
+        <div class="bento-name">수아</div>
+        <div class="bento-tag">수련자</div>
+        <div class="bento-progress">
+          <div class="bento-bar"><div class="bento-bar-fill" style="width:78%;"></div></div>
+          <div class="bento-pct">78%</div>
+        </div>
+        <div class="bento-meta">±0.4 / ±1kg</div>
+      </div>
+
+      <!-- 4th (me) -->
+      <div class="bento-card is-me tier-3">
+        <div class="bento-rank">4</div>
+        <div class="bento-sprite">나</div>
+        <div class="bento-name">나</div>
+        <div class="bento-tag" style="color:var(--accent);">저항자 · 감량</div>
+        <div class="bento-progress">
+          <div class="bento-bar"><div class="bento-bar-fill" style="width:71%;"></div></div>
+          <div class="bento-pct">71%</div>
+        </div>
+        <div class="bento-meta">−1.8 / −3kg</div>
+        <div class="me-hint">5일 · 4% 더</div>
+      </div>
+
+      <!-- 5th -->
+      <div class="bento-card is-out tier-2">
+        <div class="bento-rank">5</div>
+        <div class="bento-sprite">태</div>
+        <div class="bento-name">태형</div>
+        <div class="bento-tag">각성자</div>
+        <div class="bento-progress">
+          <div class="bento-bar"><div class="bento-bar-fill" style="width:52%;"></div></div>
+          <div class="bento-pct">52%</div>
+        </div>
+        <div class="bento-meta">−1.2 / −5kg</div>
+      </div>
+
+      <!-- 6th -->
+      <div class="bento-card is-out tier-1">
+        <div class="bento-rank">6</div>
+        <div class="bento-sprite">지</div>
+        <div class="bento-name">지유</div>
+        <div class="bento-tag">방관자</div>
+        <div class="bento-progress">
+          <div class="bento-bar"><div class="bento-bar-fill" style="width:31%;"></div></div>
+          <div class="bento-pct">31%</div>
+        </div>
+        <div class="bento-meta">−0.5 / −4kg</div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="_workspace-selector.js"></script>
+</body>
+</html>

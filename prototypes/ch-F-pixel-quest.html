@@ -1,0 +1,445 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Challenge Room F · Pixel Quest</title>
+<link rel="stylesheet" href="_challenge-shared.css">
+<style>
+/* Pixel RPG Quest Map — Dragon Quest / Zelda overworld 스타일.
+   길 따라 6명이 보스성 (목표) 으로 향함. 풀/숲/강 deco. */
+body { font-family: 'DM Mono', monospace; }
+
+.quest-wrap {
+  position: relative;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 2px solid #5a4a2a;
+  box-shadow:
+    inset 0 0 0 1px #2a1a0a,
+    0 4px 12px rgba(0,0,0,0.5);
+  image-rendering: pixelated;
+}
+
+/* 지도 SVG */
+.quest-map {
+  display: block;
+  width: 100%;
+  height: 540px;
+  background:
+    /* 풀밭 도트 패턴 */
+    radial-gradient(1px 1px at 25% 30%, #3d6e3d, transparent),
+    radial-gradient(1px 1px at 75% 60%, #4d7e4d, transparent),
+    radial-gradient(1px 1px at 50% 80%, #3d6e3d, transparent),
+    radial-gradient(1px 1px at 15% 70%, #4d7e4d, transparent),
+    radial-gradient(1px 1px at 85% 25%, #3d6e3d, transparent),
+    linear-gradient(180deg, #5a8a4a 0%, #4a7a3a 50%, #3a6a2a 100%);
+  image-rendering: pixelated;
+}
+
+/* 길 (path) - 캐릭터가 다니는 길 */
+.path {
+  fill: none;
+  stroke: #b8946a;
+  stroke-width: 12;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.path-shadow {
+  fill: none;
+  stroke: #8a6a4a;
+  stroke-width: 14;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.path-dot {
+  fill: none;
+  stroke: #d8b48a;
+  stroke-width: 8;
+  stroke-dasharray: 4 6;
+  stroke-linecap: round;
+  opacity: 0.6;
+}
+
+/* 캐릭터 sprite (픽셀 풍) */
+.q-char {
+  position: absolute;
+  width: 24px;
+  height: 28px;
+  transform: translate(-50%, -100%);
+  z-index: 3;
+  image-rendering: pixelated;
+}
+.q-char .body {
+  position: absolute;
+  bottom: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 18px;
+  height: 18px;
+  background: var(--tier-color);
+  border: 2px solid #000;
+  box-shadow:
+    inset 2px 2px 0 rgba(255,255,255,0.3),
+    inset -2px -2px 0 rgba(0,0,0,0.4);
+}
+.q-char .body::before {
+  /* 머리 (둥근 모자) */
+  content: '';
+  position: absolute;
+  top: -6px;
+  left: -1px;
+  right: -1px;
+  height: 4px;
+  background: color-mix(in srgb, var(--tier-color) 50%, #000);
+  border: 2px solid #000;
+  border-bottom: 0;
+}
+.q-char .shadow {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 20px;
+  height: 4px;
+  background: rgba(0,0,0,0.4);
+  border-radius: 50%;
+  filter: blur(1px);
+}
+.q-char .label {
+  position: absolute;
+  top: -16px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  color: #fff;
+  background: rgba(0,0,0,0.85);
+  border: 1px solid var(--tier-color);
+  padding: 1px 4px;
+  white-space: nowrap;
+  font-weight: 700;
+}
+.q-char.is-leader .label {
+  border-color: var(--gold);
+  color: var(--gold);
+}
+.q-char.is-leader .body {
+  box-shadow:
+    inset 2px 2px 0 rgba(255,255,255,0.4),
+    inset -2px -2px 0 rgba(0,0,0,0.4),
+    0 0 0 1px var(--gold),
+    0 0 8px var(--gold);
+}
+.q-char.is-me .label {
+  border-color: var(--accent);
+  color: var(--accent);
+  animation: blink 1.2s steps(2) infinite;
+}
+.q-char.is-me::after {
+  content: '▼';
+  position: absolute;
+  top: -28px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: var(--accent);
+  font-size: 12px;
+  animation: bounce 0.8s ease-in-out infinite;
+}
+@keyframes blink {
+  50% { opacity: 0.5; }
+}
+@keyframes bounce {
+  0%, 100% { transform: translate(-50%, 0); }
+  50% { transform: translate(-50%, -4px); }
+}
+.q-char.is-out { opacity: 0.55; }
+.q-char.is-out .body { filter: saturate(0.4); }
+
+/* 보스 성 (목표) */
+.castle {
+  position: absolute;
+  top: 30px;
+  right: 24px;
+  z-index: 2;
+  width: 60px;
+  height: 70px;
+}
+.castle .tower {
+  position: absolute;
+  bottom: 0;
+  background: #6a6a7a;
+  border: 2px solid #000;
+  box-shadow: inset 2px 2px 0 rgba(255,255,255,0.15), inset -2px -2px 0 rgba(0,0,0,0.4);
+}
+.castle .tower.t1 { left: 0; width: 18px; height: 50px; }
+.castle .tower.t2 { left: 50%; transform: translateX(-50%); width: 24px; height: 64px; }
+.castle .tower.t3 { right: 0; width: 18px; height: 50px; }
+.castle .roof {
+  position: absolute;
+  width: 0;
+  height: 0;
+  border-left: 12px solid transparent;
+  border-right: 12px solid transparent;
+  border-bottom: 14px solid var(--red);
+  filter: drop-shadow(0 0 6px rgba(255,77,77,0.5));
+}
+.castle .roof.r1 { bottom: 50px; left: -3px; }
+.castle .roof.r2 { bottom: 64px; left: 50%; transform: translateX(-50%); }
+.castle .roof.r3 { bottom: 50px; right: -3px; }
+.castle .door {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 10px;
+  height: 14px;
+  background: #2a1a0a;
+  border: 2px solid #000;
+  border-bottom: 0;
+}
+.castle-label {
+  position: absolute;
+  top: 100px;
+  right: 12px;
+  z-index: 2;
+  font-family: 'Archivo Black', sans-serif;
+  font-size: 9px;
+  color: var(--gold);
+  background: rgba(0,0,0,0.7);
+  border: 1px solid var(--gold);
+  padding: 3px 6px;
+  letter-spacing: 0.1em;
+  text-align: center;
+  white-space: nowrap;
+}
+.castle-label .sub {
+  display: block;
+  font-family: 'DM Mono', monospace;
+  font-size: 8px;
+  color: var(--text2);
+  margin-top: 1px;
+  letter-spacing: 0;
+}
+
+/* 데코 (나무, 바위) */
+.deco {
+  position: absolute;
+  image-rendering: pixelated;
+}
+.tree {
+  width: 14px;
+  height: 18px;
+}
+.tree::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 3px;
+  width: 8px;
+  height: 12px;
+  background: #2a5a2a;
+  border: 1.5px solid #000;
+  border-radius: 50% 50% 30% 30%;
+}
+.tree::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 5px;
+  width: 4px;
+  height: 6px;
+  background: #5a3a1a;
+  border: 1.5px solid #000;
+  border-top: 0;
+}
+
+/* HUD 박스 (RPG 다이얼로그 스타일) */
+.hud-box {
+  margin-top: 12px;
+  background: #1a1a25;
+  border: 2px solid #fff;
+  border-radius: 4px;
+  padding: 10px 12px;
+  position: relative;
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: var(--text);
+  line-height: 1.5;
+  box-shadow: inset 0 0 0 1px #000;
+}
+.hud-box::before {
+  content: '';
+  position: absolute;
+  top: -2px; left: -2px; right: -2px; bottom: -2px;
+  border: 1px solid #888;
+  pointer-events: none;
+}
+.hud-box b { color: var(--accent); }
+.hud-box .arrow {
+  display: inline-block;
+  margin-right: 4px;
+  color: var(--gold);
+  animation: blink 0.8s steps(2) infinite;
+}
+.hud-stats {
+  display: flex;
+  gap: 14px;
+  margin-top: 8px;
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  color: var(--text3);
+  border-top: 1px solid rgba(255,255,255,0.1);
+  padding-top: 8px;
+}
+.hud-stats span { color: var(--text); }
+.hud-stats b {
+  display: inline-block;
+  font-family: 'Archivo Black', sans-serif;
+  font-size: 9px;
+  color: var(--accent);
+  margin-right: 4px;
+  letter-spacing: 0.08em;
+}
+</style>
+</head>
+<body>
+<div class="phone">
+  <div class="head">
+    <span class="head-back">◀</span>
+    <div style="flex:1;text-align:center;">
+      <div class="head-title">챌린지 룸 · 14일 감량</div>
+      <div class="head-sub">D-5 · 9/14일</div>
+    </div>
+    <span style="width:20px;"></span>
+  </div>
+
+  <div class="opt-bar">
+    <div class="opt-bar-title">OPTION F · PIXEL QUEST</div>
+    <div class="opt-bar-desc">Dragon Quest / Zelda overworld. 풀밭 길 + 보스성 (목표). 6명 픽셀 sprite 가 길따라 진행. RPG 모험감 + 픽셀 nostalgia.</div>
+  </div>
+
+  <div class="body">
+    <div class="status-band">"민지는 성문 앞. 너는 숲의 절반에 있다."</div>
+
+    <div class="quest-wrap">
+      <svg class="quest-map" viewBox="0 0 400 540" preserveAspectRatio="none">
+        <!-- 강 / 호수 deco -->
+        <ellipse cx="80" cy="420" rx="55" ry="22" fill="#4a8acc" opacity="0.6"/>
+        <ellipse cx="80" cy="420" rx="50" ry="18" fill="#5a9add" opacity="0.5"/>
+        <!-- 숲 영역 (어두운 톤) -->
+        <rect x="180" y="200" width="100" height="120" fill="#2a4a2a" opacity="0.4" rx="20"/>
+        <!-- 산 deco (배경) -->
+        <polygon points="280,100 320,40 360,100" fill="#5a5a6a" opacity="0.5"/>
+        <polygon points="320,110 350,60 380,110" fill="#6a6a7a" opacity="0.5"/>
+
+        <!-- 길: bottom-left (start) → top-right (boss castle) -->
+        <path class="path-shadow"
+              d="M 40,510
+                 Q 80,470 60,420
+                 Q 50,360 120,320
+                 Q 180,290 160,240
+                 Q 140,180 220,150
+                 Q 280,130 300,90
+                 Q 330,60 360,70"
+              />
+        <path class="path"
+              d="M 40,510
+                 Q 80,470 60,420
+                 Q 50,360 120,320
+                 Q 180,290 160,240
+                 Q 140,180 220,150
+                 Q 280,130 300,90
+                 Q 330,60 360,70"
+              />
+        <path class="path-dot"
+              d="M 40,510
+                 Q 80,470 60,420
+                 Q 50,360 120,320
+                 Q 180,290 160,240
+                 Q 140,180 220,150
+                 Q 280,130 300,90
+                 Q 330,60 360,70"
+              />
+      </svg>
+
+      <!-- 보스 성 (오른쪽 위) -->
+      <div class="castle">
+        <div class="roof r1"></div>
+        <div class="roof r2"></div>
+        <div class="roof r3"></div>
+        <div class="tower t1"></div>
+        <div class="tower t2"></div>
+        <div class="tower t3"></div>
+        <div class="door"></div>
+      </div>
+      <div class="castle-label">
+        목표성 −4kg<span class="sub">D-5 남음</span>
+      </div>
+
+      <!-- 데코 나무 -->
+      <div class="deco tree" style="top:230px; left:200px;"></div>
+      <div class="deco tree" style="top:210px; left:230px;"></div>
+      <div class="deco tree" style="top:260px; left:185px;"></div>
+      <div class="deco tree" style="top:280px; left:240px;"></div>
+
+      <!-- 캐릭터 sprite (길 위 위치) -->
+      <!-- 1st: 민지 92% — 성 코앞 -->
+      <div class="q-char is-leader tier-4" style="top:80px; left:340px;">
+        <div class="shadow"></div>
+        <div class="body"></div>
+        <div class="label">민지 92%</div>
+      </div>
+
+      <!-- 2nd: 준호 84% — 산 아래 -->
+      <div class="q-char tier-3" style="top:130px; left:290px;">
+        <div class="shadow"></div>
+        <div class="body"></div>
+        <div class="label">준호 84%</div>
+      </div>
+
+      <!-- 3rd: 수아 78% — 숲 끝 -->
+      <div class="q-char tier-4" style="top:175px; left:220px;">
+        <div class="shadow"></div>
+        <div class="body"></div>
+        <div class="label">수아 78%</div>
+      </div>
+
+      <!-- 4th: 나 71% — 숲 입구 -->
+      <div class="q-char is-me tier-3" style="top:230px; left:170px;">
+        <div class="shadow"></div>
+        <div class="body"></div>
+        <div class="label">나 71%</div>
+      </div>
+
+      <!-- 5th: 태형 52% — 호수 옆 -->
+      <div class="q-char is-out tier-2" style="top:380px; left:115px;">
+        <div class="shadow"></div>
+        <div class="body"></div>
+        <div class="label">태형 52%</div>
+      </div>
+
+      <!-- 6th: 지유 31% — 출발선 근처 -->
+      <div class="q-char is-out tier-1" style="top:480px; left:55px;">
+        <div class="shadow"></div>
+        <div class="body"></div>
+        <div class="label">지유 31%</div>
+      </div>
+    </div>
+
+    <!-- HUD 다이얼로그 박스 (RPG 풍) -->
+    <div class="hud-box">
+      <span class="arrow">▶</span><b>나</b>의 차례. 수아와의 거리: 7%p.<br>
+      성문까지 남은 거리: <b>29%</b> · 일일 페이스 <b>+5.8%/일</b> 필요.
+      <div class="hud-stats">
+        <span><b>HP</b>71%</span>
+        <span><b>WGT</b>−1.8kg</span>
+        <span><b>D</b>5일</span>
+        <span><b>RANK</b>4/6</span>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="_workspace-selector.js"></script>
+</body>
+</html>

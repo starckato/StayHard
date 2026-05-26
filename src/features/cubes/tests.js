@@ -12,6 +12,7 @@ import {
   judgeTasks,
   judgeCubes,
   judgeAccumulator,
+  judgeWeight,
   scoreFromCubes,
   detectPRs,
   detectStreakMilestones,
@@ -241,6 +242,37 @@ t('judgeCubes · 빈 로그 → 카운트 0', () => {
   const c = judgeCubes({}, { weekday: 3 });
   return c.gold === 0 && c.silver === 0 && c.red === 0 && Array.isArray(c.bonus);
 });
+
+// ── judgeWeight (체중 카드 chip 색) ────────────────────
+t('judgeWeight · log 없음 → gray', () => judgeWeight(null) === 'gray');
+t('judgeWeight · 체중 미입력 → gray', () => judgeWeight({}) === 'gray');
+t('judgeWeight · weight=0 → gray', () => judgeWeight({ weight: 0 }) === 'gray');
+t('judgeWeight · weight=NaN → gray', () => judgeWeight({ weight: 'abc' }) === 'gray');
+t('judgeWeight · 음수 → gray', () => judgeWeight({ weight: -5 }) === 'gray');
+t('judgeWeight · 입력만, 어제/목표 없음 → silver',
+  () => judgeWeight({ weight: 70.5 }) === 'silver');
+t('judgeWeight · 입력 + 어제만 (목표 X) → silver',
+  () => judgeWeight({ weight: 70.0 }, { prevWeight: 70.5 }) === 'silver');
+t('judgeWeight · 입력 + 목표만 (어제 X) → silver',
+  () => judgeWeight({ weight: 70.5 }, { weightGoal: 65 }) === 'silver');
+t('judgeWeight · 감량모드 + 어제대비 감소 → gold',
+  () => judgeWeight({ weight: 70.0 }, { prevWeight: 70.5, weightGoal: 65 }) === 'gold');
+t('judgeWeight · 감량모드 + 어제대비 증가 → silver',
+  () => judgeWeight({ weight: 71.0 }, { prevWeight: 70.5, weightGoal: 65 }) === 'silver');
+t('judgeWeight · 감량모드 + 어제와 동일 → silver',
+  () => judgeWeight({ weight: 70.5 }, { prevWeight: 70.5, weightGoal: 65 }) === 'silver');
+t('judgeWeight · 증량모드 + 어제대비 증가 → gold',
+  () => judgeWeight({ weight: 65.5 }, { prevWeight: 65.0, weightGoal: 70 }) === 'gold');
+t('judgeWeight · 증량모드 + 어제대비 감소 → silver',
+  () => judgeWeight({ weight: 64.5 }, { prevWeight: 65.0, weightGoal: 70 }) === 'silver');
+t('judgeWeight · 목표=현재 (도달 시) → silver (둘 다 같은 방향 아님)',
+  () => judgeWeight({ weight: 65.0 }, { prevWeight: 65.0, weightGoal: 65.0 }) === 'silver');
+t('judgeWeight · 목표 음수/0 → 무시 (silver)',
+  () => judgeWeight({ weight: 70 }, { prevWeight: 70.5, weightGoal: 0 }) === 'silver');
+t('judgeWeight · prevWeight number 가 아님 (string) → silver',
+  () => judgeWeight({ weight: 70 }, { prevWeight: '70.5', weightGoal: 65 }) === 'silver');
+t('judgeWeight · 문자열 weight coerce',
+  () => judgeWeight({ weight: '70.5' }) === 'silver');
 
 export function runCubeTests() {
   let pass = 0, fail = 0;
