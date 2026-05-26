@@ -1525,7 +1525,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
 </script>
 
 <div class="loading-overlay" id="loading"><div class="spinner"></div><div class="loading-txt">로딩 중…</div><button id="loading-retry" onclick="location.reload()" style="display:none;margin-top:16px;padding:10px 24px;background:var(--accent-grad);border:none;border-radius:var(--radius-sm);color:#fff;font-size:var(--text-md);font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;">다시 시도</button></div>
-<div class="toast" id="toast">저장됨 ✓</div>
+<div class="toast" id="toast">저장됨</div>
 
 <!-- ══ AUTH ══ -->
 <div id="auth-screen">
@@ -1576,7 +1576,6 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
   </div>
   <!-- 이메일 인증 대기 화면 — Supabase confirm-email 활성 시 노출. doSignup 후 session 없을 때 표시. -->
   <div class="aform" id="auth-verify" style="display:none;text-align:center;">
-    <div style="font-size:var(--text-3xl);margin-bottom:8px;">📨</div>
     <div style="font-family:'Noto Serif KR',serif;font-size:var(--text-xl);font-weight:700;color:var(--text);margin-bottom:8px;">메일을 확인해주세요</div>
     <div style="font-size:var(--text-md);color:var(--text2);line-height:1.6;margin-bottom:16px;">
       <span id="verify-email-addr" style="color:var(--text);font-weight:600;"></span> 로<br>
@@ -1624,7 +1623,6 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
   </div>
 
   <div id="offline-banner" style="display:none;margin:0 14px 6px;padding:8px 14px;background:var(--amber-bg);border:1px solid var(--amber-bd);border-radius:var(--radius-sm);display:none;align-items:center;gap:8px;">
-    <span style="font-size:var(--text-base);">📡</span>
     <span style="flex:1;font-size:var(--text-xs);font-weight:600;color:var(--amber);">오프라인 — 변경사항 저장 대기 중</span>
     <button onclick="_retrySync()" style="padding:4px 10px;background:var(--amber);border:none;border-radius:var(--radius-md);color:#000;font-size:var(--text-2xs);font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;">재시도</button>
   </div>
@@ -1636,12 +1634,12 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
     <div id="yesterday-ribbon" class="yr" style="display:none;">
       <div class="yr-inner">
         <div class="yr-head">
-          <span class="yr-icon" id="yr-icon">😤</span>
+          <span class="yr-icon" id="yr-icon"></span>
           <div class="yr-head-txt">
             <div class="yr-title" id="yr-title">어제 못 끝낸 게 있어</div>
             <div class="yr-sub" id="yr-sub"></div>
           </div>
-          <button class="yr-close" onclick="dismissYesterdayRibbon()" aria-label="닫기">✕</button>
+          <button class="yr-close" onclick="dismissYesterdayRibbon()" aria-label="닫기"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><use href="#i-x"/></svg></button>
         </div>
         <div class="yr-task-list" id="co-task-list" style="display:none;"></div>
         <div class="yr-hint" id="co-selection-hint" style="display:none;"></div>
@@ -6038,10 +6036,8 @@ function showYesterdayRibbon(tasks, missing){
     '어제의 너는 약했어. 오늘의 너는 달라.',
     '놓친 게 있어. 오늘은 완벽하게.',
   ];
-  const icons=['😤','🤬','💀','😡','🔥'];
-  const idx=Math.floor(Math.random()*msgs.length);
-
-  document.getElementById('yr-icon').textContent=hasTasks?(tasks.length>2?'😤':'📋'):icons[idx];
+  const yrIcon=document.getElementById('yr-icon');
+  if(yrIcon)yrIcon.textContent='';
   document.getElementById('yr-title').textContent=hasTasks
     ?`어제 못 끝낸 할일 ${tasks.length}개`
     :'어제 못 끝낸 게 있어';
@@ -6102,7 +6098,7 @@ function showReturnerRibbon(gapDays){
     [14,`${gapDays}일 공백. 천천히, 하지만 매일.`]
   ];
   const pick=(map)=>{for(const[d,t]of map){if(gapDays<=d||d===map[map.length-1][0])return t;}return map[0][1];};
-  document.getElementById('yr-icon').textContent='🌱';
+  document.getElementById('yr-icon').textContent='';
   document.getElementById('yr-title').textContent=pick(titleMap);
   document.getElementById('yr-sub').textContent=pick(subMap);
 
