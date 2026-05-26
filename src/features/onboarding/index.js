@@ -10,27 +10,29 @@ import { track } from '../../lib/analytics.js';
 export let obSelectedRoutines=[]; // [{name, scoreType}]
 
 // 목표별 추천 루틴 — 현실적·점진적 bodyweight 중심. 광기(찬물샤워/새벽기상) 보다 매일 이기는 쪽.
+// 2026-05-26: routine name 의 emoji 제거 (P0-#1 / 메모리: 'UI 에 이모지 절대 금지').
+// 기존 유저 DB 의 routine 은 그대로 유지 (이주 작업 X). 신규 가입자만 emoji 없는 이름 사용.
 export const OB_GOAL_ROUTINES={
   diet:[
-    {name:'💧 물 2L 마시기', scoreType:null},
-    {name:'🚶 30분 걷기', scoreType:null},
-    {name:'⚖️ 공복 체중 측정', scoreType:null},
-    {name:'🌙 저녁 9시 이후 금식', scoreType:null},
-    {name:'💪 팔굽혀펴기 10개', scoreType:null},
+    {name:'물 2L 마시기', scoreType:null},
+    {name:'30분 걷기', scoreType:null},
+    {name:'공복 체중 측정', scoreType:null},
+    {name:'저녁 9시 이후 금식', scoreType:null},
+    {name:'팔굽혀펴기 10개', scoreType:null},
   ],
   muscle:[
-    {name:'💪 팔굽혀펴기 10개', scoreType:null},
-    {name:'🦵 맨몸 스쿼트 50개', scoreType:null},
-    {name:'🔥 헬스 (주 4회)', scoreType:null, days:[1,2,4,5]}, // Mon/Tue/Thu/Fri 기본
-    {name:'🥩 단백질 1g/체중 챙기기', scoreType:null},
-    {name:'💧 물 2L 마시기', scoreType:null},
+    {name:'팔굽혀펴기 10개', scoreType:null},
+    {name:'맨몸 스쿼트 50개', scoreType:null},
+    {name:'헬스 (주 4회)', scoreType:null, days:[1,2,4,5]}, // Mon/Tue/Thu/Fri 기본
+    {name:'단백질 1g/체중 챙기기', scoreType:null},
+    {name:'물 2L 마시기', scoreType:null},
   ],
   habit:[
-    {name:'💪 팔굽혀펴기 10개', scoreType:null},
-    {name:'🚶 30분 걷기', scoreType:null},
-    {name:'💧 물 2L 마시기', scoreType:null},
-    {name:'🔥 운동 (주 3회)', scoreType:null, days:[1,3,5]}, // 월/수/금 기본
-    {name:'😴 11시 전 취침', scoreType:null},
+    {name:'팔굽혀펴기 10개', scoreType:null},
+    {name:'30분 걷기', scoreType:null},
+    {name:'물 2L 마시기', scoreType:null},
+    {name:'운동 (주 3회)', scoreType:null, days:[1,3,5]}, // 월/수/금 기본
+    {name:'11시 전 취침', scoreType:null},
   ],
 };
 export let _obGoal=null;
