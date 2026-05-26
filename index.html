@@ -63,22 +63,22 @@
      외부 link 2개 제거 → render-blocking CSS 요청 -2. trainer.html 등은 여전히 link. -->
 <!-- Perf (2026-05-25): 남은 sync CSS 도 모두 async — splash 가 1.6s 가리는 동안 모두 로드 완료.
      FOUC 위험 거의 없음 + render-blocking 0 → splash 즉시 paint. -->
-<link href="/src/styles/states.css?v=62c7fe75" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/styles/components.css?v=62c7fe75" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/styles/icons.css?v=62c7fe75" rel="stylesheet" media="print" onload="this.media='all'">
-<noscript><link href="/src/styles/states.css?v=62c7fe75" rel="stylesheet"><link href="/src/styles/components.css?v=62c7fe75" rel="stylesheet"><link href="/src/styles/icons.css?v=62c7fe75" rel="stylesheet"></noscript>
+<link href="/src/styles/states.css?v=fd83740f" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/styles/components.css?v=fd83740f" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/styles/icons.css?v=fd83740f" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link href="/src/styles/states.css?v=fd83740f" rel="stylesheet"><link href="/src/styles/components.css?v=fd83740f" rel="stylesheet"><link href="/src/styles/icons.css?v=fd83740f" rel="stylesheet"></noscript>
 <!-- Feature folder CSS — 한 폴더 = 한 기능 컨벤션 (ARCHITECTURE.md).
      Perf (2026-05-25): media="print" + onload swap 으로 async 로딩 → 초기 paint 차단 X.
      splash 가 1.6s+ 표시되므로 그 사이 모두 로드되어 FOUC 위험 거의 없음. -->
-<link href="/src/features/targets/targets.css?v=62c7fe75" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/cubes/cubes-ui.css?v=62c7fe75" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/date-heatmap/date-heatmap.css?v=62c7fe75" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/dev-inspector/dev-inspector.css?v=62c7fe75" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/water/water.css?v=62c7fe75" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/sticky-header/sticky-header.css?v=62c7fe75" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/status-band/status-band.css?v=62c7fe75" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/mountain/mountain.css?v=62c7fe75" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/workout-session/workout-session.css?v=62c7fe75" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/targets/targets.css?v=fd83740f" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/cubes/cubes-ui.css?v=fd83740f" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/date-heatmap/date-heatmap.css?v=fd83740f" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/dev-inspector/dev-inspector.css?v=fd83740f" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/water/water.css?v=fd83740f" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/sticky-header/sticky-header.css?v=fd83740f" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/status-band/status-band.css?v=fd83740f" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/mountain/mountain.css?v=fd83740f" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/workout-session/workout-session.css?v=fd83740f" rel="stylesheet" media="print" onload="this.media='all'">
 <style>
 /* :root 토큰은 src/styles/tokens.{shared,dark}.css 로 이전됨 (Phase 0).
    index.html 은 다크 팔레트 사용. 추가 sub-palette (--radius-sm 등 legacy) 가
@@ -1494,7 +1494,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
      app.js bundle → supabase ESM 포함 (2026-05-25 perf), inline body scripts 가 의존하므로 sync. -->
 <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-<script src="/dist/app.js?v=62c7fe75"></script>
+<script src="/dist/app.js?v=fd83740f"></script>
 
 <script>
   // QROK Splash — 앱 ready 까지 대기 후 fade out. 좌측 상단/중앙 loading 스피너 가림.
@@ -6100,7 +6100,18 @@ function showReturnerRibbon(gapDays){
   const pick=(map)=>{for(const[d,t]of map){if(gapDays<=d||d===map[map.length-1][0])return t;}return map[0][1];};
   document.getElementById('yr-icon').textContent='';
   document.getElementById('yr-title').textContent=pick(titleMap);
-  document.getElementById('yr-sub').textContent=pick(subMap);
+  // Grace hint: FF 활성 + return_state.grace_until 살아있을 때만 노출
+  let graceHint='';
+  try{
+    if(window.FF&&window.FF.get('returner_grace',false)&&window.sh&&window.sh.returnerGrace&&CP&&CP.return_state){
+      if(window.sh.returnerGrace.isWithinGrace(CP.return_state)){
+        const until=new Date(CP.return_state.grace_until).getTime();
+        const hrsLeft=Math.max(0,Math.round((until-Date.now())/3600000));
+        graceHint=` · 72시간 보호 (${hrsLeft}h 남음)`;
+      }
+    }
+  }catch(_){}
+  document.getElementById('yr-sub').textContent=pick(subMap)+graceHint;
 
   const list=document.getElementById('co-task-list');
   const hint=document.getElementById('co-selection-hint');
@@ -7198,6 +7209,21 @@ function recomputeCubesHook(key,opts){
     renderCardCubes();
     // 히트맵도 재렌더 — tile 의 4개 cube 가 새 판정 색으로 전환되도록.
     try{if(typeof window.buildHeatmapGrid==='function')window.buildHeatmapGrid();}catch(e){}
+    // ── Returner Grace · return_streak bump ──
+    // 오늘 gold/silver 가 1개라도 있고 grace 활성 중이면 return_streak +1 (1일 1회).
+    try{
+      if(!silent&&k===TODAY&&window.FF&&window.FF.get('returner_grace',false)
+         &&window.sh&&window.sh.returnerGrace&&CP&&CP.return_state){
+        const rg=window.sh.returnerGrace;
+        if(rg.isWithinGrace(CP.return_state)){
+          const next=rg.bumpReturnStreak(CP.return_state,l.cubes,TODAY);
+          if(next!==CP.return_state){
+            CP.return_state=next;
+            rg.persist(sb,CU.id,next).catch(()=>{});
+          }
+        }
+      }
+    }catch(_){}
     // ── Phase 5: cube 점수 delta 를 CP.total_score 에 적용 ───────────
     // hdr 는 delta (new_cube - old_cube) 로 점진 업데이트. 누적 값은 항상
     // scoreFromCubes(cubes) 와 일치 → 팝오버가 절대값을 표시해도 hdr 는 정확.

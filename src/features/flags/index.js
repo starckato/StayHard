@@ -82,7 +82,7 @@ export function snapshot() {
 // 내 계정에서 true 로 켜서 테스트 후 전원 롤아웃.
 export const DEFAULT_FLAGS = {
   first_cube_card:  true,   // Phase 1C — 2026-05-26 enable (P0-#2 activation funnel)
-  returner_grace:   false,  // Phase 1D
+  returner_grace:   true,   // Phase 1D — 2026-05-26 enable (P1 returner protection)
   exempt_tap:       false,  // Phase 2A
   layout_v2:        false,  // Phase 2B (Status Band 축소)
   deeplink:         false,  // Phase 2C
