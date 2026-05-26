@@ -609,7 +609,7 @@ export function dhOpenBonusPopover(dateKey) {
             `<div style="font-size:10px;color:var(--text3);font-weight:700;letter-spacing:0.06em;text-transform:uppercase;">${mo}월 ${dd}일 (${wk})</div>` +
             `<div style="font-size:14px;color:var(--text);font-weight:800;letter-spacing:-0.01em;margin-top:2px;">보너스 ×${totalCount}</div>` +
           `</div>` +
-          `<button onclick="window.dhCloseBonusPopover&&window.dhCloseBonusPopover()" aria-label="닫기" style="background:transparent;border:none;color:var(--text3);font-size:18px;cursor:pointer;padding:6px 8px;line-height:1;touch-action:manipulation;">✕</button>` +
+          `<button onclick="window.dhCloseBonusPopover&&window.dhCloseBonusPopover()" aria-label="닫기" style="background:transparent;border:none;color:var(--text3);cursor:pointer;padding:6px 8px;line-height:1;touch-action:manipulation;display:inline-flex;align-items:center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><use href="#i-x"/></svg></button>` +
         `</div>` +
         `<div>${rows}</div>` +
       `</div>`;

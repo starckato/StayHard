@@ -35,7 +35,7 @@ export function renderTargetsSummary() {
   }
   const done = tgts.filter(t => t.st === 'done').length;
   if (done === tgts.length) {
-    sum.innerHTML = '<span style="color:var(--green);font-weight:600;">✓ 완료</span>';
+    sum.innerHTML = '<span style="color:var(--green);font-weight:600;display:inline-flex;align-items:center;gap:4px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><use href="#i-check"/></svg>완료</span>';
     return;
   }
   sum.innerHTML = `<span class="q-chip normal">할일 <span class="n">${done}/${tgts.length}</span></span>`;
@@ -51,9 +51,9 @@ function rowHtml(t, i) {
   const isDone = t.st === 'done';
   const isFail = t.st === 'fail';
   const checkContent = isDone
-    ? '<span style="color:var(--green);font-size:var(--text-base);">✓</span>'
+    ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="3" stroke-linecap="round"><use href="#i-check"/></svg>'
     : isFail
-      ? '<span style="color:var(--red);font-size:var(--text-sm);">✕</span>'
+      ? '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2.5" stroke-linecap="round"><use href="#i-x"/></svg>'
       : '';
   const escFn = window.esc || ((s) => String(s ?? ''));
   const carriedBadge = t._carried
@@ -72,7 +72,7 @@ function rowHtml(t, i) {
     </div>
     ${failBtn}
     <button class="btn-icon is-accent" onclick="openPromoteTodoModal(${i})" title="매일 반복하는 필수 루틴으로 변환" aria-label="루틴으로 변환">↻</button>
-    <button class="btn-icon" onclick="delTgt(${i})" aria-label="삭제">✕</button>
+    <button class="btn-icon" onclick="delTgt(${i})" aria-label="삭제"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><use href="#i-x"/></svg></button>
   </div>`;
 }
 

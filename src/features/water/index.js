@@ -84,7 +84,7 @@ export function renderWater() {
   const curL = (log.water_cups * .5).toFixed(1);
   const goalL = (goal * .5).toFixed(1);
   if (val) {
-    val.textContent = curL + ' / ' + goalL + 'L' + (met ? ' ✓' : '');
+    val.textContent = curL + ' / ' + goalL + 'L';
     val.style.color = met ? 'var(--blue)' : 'var(--text2)';
   }
   // Tint the gear button when goal is met

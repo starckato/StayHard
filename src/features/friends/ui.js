@@ -405,7 +405,7 @@ function openNudgeSheet(friendId, friendName) {
     <div class="fr-nudge-sheet">
       <div class="fr-nudge-head">
         <div class="fr-nudge-title">${escapeHTML(friendName)}에게 nudge</div>
-        <button class="fr-btn-icon" id="fr-nudge-close" type="button">✕</button>
+        <button class="fr-btn-icon" id="fr-nudge-close" type="button" aria-label="닫기"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><use href="#i-x"/></svg></button>
       </div>
       <div class="fr-nudge-list">
         ${NUDGE_PRESETS.map(p => `

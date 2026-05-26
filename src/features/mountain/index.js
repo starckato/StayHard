@@ -148,7 +148,7 @@ function _renderCheckpoint(cp, climbedColors, firstClimber) {
   const isPeak = cp.isPeak;
   const flagsHtml = climbedColors.map(c => `<span class="mt-cp-flag" style="--c:${c};"></span>`).join('');
   const firstHtml = firstClimber
-    ? `<span class="star">★</span><span class="nm" style="color:${firstClimber.color};">${escapeHtml(firstClimber.name)}</span>`
+    ? `<svg class="star" width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><use href="#i-star"/></svg><span class="nm" style="color:${firstClimber.color};">${escapeHtml(firstClimber.name)}</span>`
     : `<span class="nm">아직 0명</span>`;
   return `<div class="mt-cp${isPeak ? ' is-peak' : ''}" style="top:${cp.top}%;">
     <div class="mt-cp-row">

@@ -148,7 +148,7 @@ export function obBuildRoutineChips(){
   });
   document.getElementById('ob-selected-routines').innerHTML=obSelectedRoutines.length>0
     ?`<div style="font-size:11px;color:var(--text3);margin-bottom:4px;">선택된 루틴 ${obSelectedRoutines.length}개 · 탭하면 해제</div>`
-    +obSelectedRoutines.map(r=>`<div style="font-size:13px;color:var(--text2);padding:3px 0;">✓ ${r.name}</div>`).join(''):'';
+    +obSelectedRoutines.map(r=>`<div style="font-size:13px;color:var(--text2);padding:3px 0;display:flex;align-items:center;gap:6px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="3" stroke-linecap="round"><use href="#i-check"/></svg>${r.name}</div>`).join(''):'';
 }
 export function obSelectWfreq(n,silent){
   _obWorkoutFreq=n;
@@ -184,7 +184,7 @@ export function obToggleRoutine(el,idx){
   }
   document.getElementById('ob-selected-routines').innerHTML=obSelectedRoutines.length>0
     ?`<div style="font-size:11px;color:var(--text3);margin-bottom:4px;">선택된 루틴 ${obSelectedRoutines.length}개</div>`
-    +obSelectedRoutines.map(r=>`<div style="font-size:13px;color:var(--text2);padding:3px 0;">✓ ${r.name}</div>`).join(''):'';
+    +obSelectedRoutines.map(r=>`<div style="font-size:13px;color:var(--text2);padding:3px 0;display:flex;align-items:center;gap:6px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="3" stroke-linecap="round"><use href="#i-check"/></svg>${r.name}</div>`).join(''):'';
 }
 export async function obFinish(){
   document.getElementById('onboarding-modal').style.display='none';
