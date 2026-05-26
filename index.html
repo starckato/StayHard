@@ -1442,6 +1442,21 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
       <line x1="12" y1="5" x2="12" y2="19"/>
       <line x1="5" y1="12" x2="19" y2="12"/>
     </symbol>
+    <symbol id="i-camera" viewBox="0 0 24 24">
+      <path d="M3 8h4l2-3h6l2 3h4v11H3z"/>
+      <circle cx="12" cy="13" r="3.5"/>
+    </symbol>
+    <symbol id="i-image" viewBox="0 0 24 24">
+      <rect x="3" y="4" width="18" height="16" rx="2"/>
+      <circle cx="8.5" cy="9" r="1.5"/>
+      <path d="M21 16l-5-5-9 9"/>
+    </symbol>
+    <symbol id="i-share" viewBox="0 0 24 24">
+      <circle cx="18" cy="5" r="3"/>
+      <circle cx="6" cy="12" r="3"/>
+      <circle cx="18" cy="19" r="3"/>
+      <path d="M8.5 10.5l7-4M8.5 13.5l7 4"/>
+    </symbol>
   </defs>
 </svg>
 
@@ -2263,7 +2278,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
       </div>
 
       <button class="btn-primary" onclick="cvOpenPushupChallenge()" style="width:100%;padding:14px;border-radius:var(--radius-lg);font-size:var(--text-base);font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;display:flex;align-items:center;justify-content:center;gap:8px;">
-        📷 시작하기
+        시작하기
       </button>
     </div>
 
@@ -2793,7 +2808,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
     <!-- Bottom button -->
     <div style="padding:14px 18px 40px;border-top:1px solid var(--border);flex-shrink:0;display:flex;gap:10px;">
       <button id="ssm-edit-btn" style="flex:1;padding:16px;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius-lg);color:var(--text2);font-family:'DM Sans',sans-serif;font-size:var(--text-base);font-weight:600;cursor:pointer;touch-action:manipulation;">✎ 세션 수정</button>
-      <button id="ssm-share-btn" onclick="captureSessionSummary(event)" style="flex:1;padding:16px;background:var(--accent);border:none;border-radius:var(--radius-lg);color:#fff;font-family:'DM Sans',sans-serif;font-size:var(--text-base);font-weight:700;cursor:pointer;touch-action:manipulation;">📸 공유하기</button>
+      <button id="ssm-share-btn" onclick="captureSessionSummary(event)" style="flex:1;padding:16px;background:var(--accent);border:none;border-radius:var(--radius-lg);color:#fff;font-family:'DM Sans',sans-serif;font-size:var(--text-base);font-weight:700;cursor:pointer;touch-action:manipulation;display:flex;align-items:center;justify-content:center;gap:6px;"><svg class="ic is-sm"><use href="#i-share"/></svg>공유하기</button>
     </div>
   </div>
 
@@ -3055,7 +3070,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
       </div>
       <div style="display:flex;gap:10px;margin-top:16px;">
         <button onclick="closeShareModal()" style="flex:1;padding:13px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1);border-radius:var(--radius-lg);color:#888;font-family:'DM Sans',sans-serif;font-size:var(--text-md);cursor:pointer;">닫기</button>
-        <button onclick="captureShareCard()" style="flex:2;padding:13px;background:var(--accent);border:none;border-radius:var(--radius-lg);color:#fff;font-family:'DM Sans',sans-serif;font-size:var(--text-md);font-weight:600;cursor:pointer;">📸 캡쳐하기</button>
+        <button onclick="captureShareCard()" style="flex:2;padding:13px;background:var(--accent);border:none;border-radius:var(--radius-lg);color:#fff;font-family:'DM Sans',sans-serif;font-size:var(--text-md);font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;"><svg class="ic is-sm"><use href="#i-camera"/></svg>캡쳐하기</button>
       </div>
       <div style="text-align:center;margin-top:10px;font-size:var(--text-2xs);color:#444;">스크린샷을 찍거나 캡쳐 버튼을 눌러 공유하세요</div>
     </div>
@@ -3140,11 +3155,11 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
       </div>
       <div id="ms-photo-btns" style="display:flex;gap:8px;">
         <button onclick="openSilentCamera(b=>_handleSilentCamBlob('slot',b))" style="flex:1;padding:11px 8px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;font-family:'DM Sans',sans-serif;text-align:center;touch-action:manipulation;">
-          <div style="font-size:var(--text-xl);margin-bottom:3px;">📷</div>
+          <div style="margin-bottom:3px;display:flex;justify-content:center;color:var(--text2);"><svg class="ic is-lg"><use href="#i-camera"/></svg></div>
           <div style="font-size:var(--text-xs);color:var(--text2);font-weight:500;">촬영</div>
         </button>
         <button onclick="document.getElementById('ms-photo-gallery').click()" style="flex:1;padding:11px 8px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;font-family:'DM Sans',sans-serif;text-align:center;touch-action:manipulation;">
-          <div style="font-size:var(--text-xl);margin-bottom:3px;">🖼️</div>
+          <div style="margin-bottom:3px;display:flex;justify-content:center;color:var(--text2);"><svg class="ic is-lg"><use href="#i-image"/></svg></div>
           <div style="font-size:var(--text-xs);color:var(--text2);font-weight:500;">갤러리</div>
         </button>
       </div>
@@ -7408,7 +7423,7 @@ async function captureShareCard(){
   const card=document.getElementById('share-card');
   try{
     if(navigator.share){
-      showToast('공유 기능은 스크린샷을 이용해주세요 📸');
+      showToast('공유 기능은 스크린샷을 이용해주세요');
     }
     showToast('스크린샷으로 저장해주세요 📱');
   }catch(e){showToast('스크린샷으로 저장해주세요 📱');}
@@ -8029,7 +8044,7 @@ async function shareBonusGrant(){
     document.body.appendChild(a);a.click();a.remove();
     setTimeout(()=>URL.revokeObjectURL(_blobUrl),1500);
     document.body.style.overflow=prevOverflow;
-    showToast('📸 이미지 저장됨 — 카톡/인스타에 업로드');
+    showToast('이미지 저장됨 — 카톡/인스타에 업로드');
     try{track('bonus_share',{event_key:g.event_key,channel:'download'});}catch(e){}
   }catch(e){
     console.warn('[bonus-share] canvas err',e);
@@ -8361,7 +8376,7 @@ async function shareInvite(){
     document.body.appendChild(a);a.click();a.remove();
     setTimeout(()=>URL.revokeObjectURL(_blobUrl),1500);
     document.body.style.overflow=prevOverflow;
-    showToast('📸 이미지 저장됨 — 카톡에 붙여주세요');
+    showToast('이미지 저장됨 — 카톡에 붙여주세요');
     try{track('invite_share',{channel:'download'});}catch(e){}
   }catch(e){
     console.warn('[invite-share] canvas err',e);
@@ -11526,7 +11541,7 @@ function downloadImage(canvas,blob){
     document.body.appendChild(a);
     a.click();
     setTimeout(()=>{ try{ document.body.removeChild(a); }catch(_){} if(blob)URL.revokeObjectURL(a.href); },1000);
-    showToast('📸 이미지 저장됨!');
+    showToast('이미지 저장됨!');
   }catch(e){
     console.error('[share] downloadImage error',e);
     showToast('이미지 저장 실패 — 스크린샷으로 저장해주세요');
@@ -13798,7 +13813,7 @@ async function shareMuscleMap(){
   if(_mmShareBusy)return;
   _mmShareBusy=true;
   setTimeout(()=>{_mmShareBusy=false;},1500);
-  try{showToast('📸 공유 카드 만드는 중...');}catch(e){}
+  try{showToast('공유 카드 만드는 중...');}catch(e){}
   try{track('share_muscle_map',{mode:_mmMode,view:_mmView});}catch(e){}
   if(typeof html2canvas==='undefined'){showToast('공유 준비 중... 잠시 후 다시 시도해주세요');return;}
   const bodyEl=document.getElementById('mm-body');
@@ -13873,7 +13888,7 @@ async function shareMuscleMap(){
     const tasks=Array.from(svgEls).slice(0,2).map(s=>rasterizeSvg(s,150));
     const [f,b]=await Promise.all(tasks);
     svgFrontSrc=f||'';svgBackSrc=b||'';
-  }catch(e){console.error('[shareMuscleMap] svg rasterize',e);showToast('캡쳐 실패. 스크린샷을 이용해주세요 📸');return;}
+  }catch(e){console.error('[shareMuscleMap] svg rasterize',e);showToast('캡쳐 실패. 스크린샷을 이용해주세요');return;}
   const comp=document.createElement('div');
   comp.style.cssText='position:fixed;left:-9999px;top:0;width:430px;background:linear-gradient(180deg,#0a0a0c 0%,#141418 55%,#1c1c22 100%);font-family:"DM Sans",sans-serif;padding:26px 22px 22px;box-sizing:border-box;';
   comp.innerHTML=`
@@ -13928,12 +13943,12 @@ async function shareMuscleMap(){
       const url=URL.createObjectURL(blob);
       const a=document.createElement('a');a.href=url;a.download=file.name;a.click();
       URL.revokeObjectURL(url);
-      showToast('📸 이미지 저장됨! 카카오톡에 공유하세요');
+      showToast('이미지 저장됨! 카카오톡에 공유하세요');
     },'image/png');
   }catch(err){
     console.error('[shareMuscleMap]',err);
     try{document.body.removeChild(comp);}catch(e){}
-    showToast('캡쳐 실패. 스크린샷을 이용해주세요 📸');
+    showToast('캡쳐 실패. 스크린샷을 이용해주세요');
   }
 }
 // PR 2: 푸쉬업 시작 — 기존 cvOpenPushupChallenge (MediaPipe Pose + workout_uploads) 재사용.
@@ -16532,7 +16547,7 @@ function _cvDoStop(){
   if(_cvSets.length>0){
     const totalReps=_cvSets.reduce((a,s)=>a+s.reps,0);
     const cfg=CV_EXERCISES[_cvExType];
-    showToast('📷 '+(cfg&&cfg.label||'')+' '+_cvSets.length+'세트 '+totalReps+'회 기록 완료!');
+    showToast(''+(cfg&&cfg.label||'')+' '+_cvSets.length+'세트 '+totalReps+'회 기록 완료!');
     if(!_cvLockedExercise)renderSession(); // skip in challenge mode (no workout context)
   }
   // PR 2: 챌린지 룸 활성 + 푸쉬업 챌린지면 자동 갱신 (workout_uploads 합산 반영)
