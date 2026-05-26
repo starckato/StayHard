@@ -39,31 +39,36 @@
   border-radius: 0 1px 1px 0;
 }
 
-/* ── Stage row: char column + ledger ──────────────────── */
+/* ── Stage row: char column + ledger ────────────────────
+   2026-05-26: speech 를 absolute 로 빼서 stage 상단 가로지름 (한 줄, wide).
+   char 는 stage 의 아래 정렬 + 사이즈 키움. */
 .sb-stage {
+  position: relative;  /* sb-speech absolute 의 anchor */
   display: flex;
-  align-items: center;
+  align-items: flex-end;  /* char + cells 모두 아래 정렬 */
   gap: var(--space-3);
+  padding-top: 40px;  /* absolute speech 자리 */
 }
 
-/* Character column — 말풍선 + 캐릭터를 세로 stack. gap 4→1 (말풍선-캐릭터 20%). */
+/* Character column — 이제 char 만 (speech 는 absolute 분리). */
 .sb-char-col {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1px;
   flex-shrink: 0;
-  width: 120px;
+  width: 100px;
 }
 
-/* 말풍선 — 캐릭터 머리 위, 꼬리는 아래쪽 향함.
-   min-height 제거 + width: fit-content → 짧은 대사는 작게, 긴 대사는 col 폭까지 자동 wrap. */
+/* 말풍선 — stage 상단 가로지름 (캐릭터 좌측 + cells 우측 모두 위).
+   2026-05-26: absolute + wide + nowrap → 한 줄. char-col 폭 (100px) 의 중앙으로 꼬리. */
 .sb-speech {
-  position: relative;
-  width: fit-content;
-  max-width: 100%;
-  /* 토큰: space-1/space-2/space-1h (5/9/6 → 4/8/6, 어중간 9 → 8). */
-  padding: var(--space-1) var(--space-2) var(--space-1h);
+  position: absolute;
+  top: 4px;
+  left: var(--space-2);
+  right: var(--space-2);
+  width: auto;
+  max-width: none;
+  padding: var(--space-1h) var(--space-3);
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid var(--border2);
   border-radius: 10px;
@@ -71,14 +76,17 @@
   touch-action: manipulation;
   display: block;
   text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  z-index: 2;
 }
-/* 꼬리 — 두 겹 (border outer + bg inner) 으로 보더 연속성 확보. 크기 약간 축소. */
+/* 꼬리 — 캐릭터 머리 위 (char-col 중앙 = padding-left + 100/2 = ~58px). */
 .sb-speech::before {
   content: '';
   position: absolute;
   bottom: -6px;
-  left: 50%;
-  transform: translateX(-50%);
+  left: 58px;
   width: 0;
   height: 0;
   border-left: 6px solid transparent;
@@ -89,8 +97,7 @@
   content: '';
   position: absolute;
   bottom: -4px;
-  left: 50%;
-  transform: translateX(-50%);
+  left: 59px;
   width: 0;
   height: 0;
   border-left: 5px solid transparent;
@@ -123,9 +130,9 @@
    캐릭터는 *유지*, sprite 의 빈 공간만 잘라냄. (2026-05-25) */
 .sb-canvas-wrap {
   position: relative;
-  /* 박스: 캐릭터 본체 위주 (크롭 후 사이즈) */
-  width: 80px;
-  height: 100px;
+  /* 박스: 캐릭터 본체 위주 (2026-05-26: 80→100 키움 — 사용자 피드백 '작아짐') */
+  width: 100px;
+  height: 120px;
   flex-shrink: 0;
   cursor: pointer;
   touch-action: manipulation;
