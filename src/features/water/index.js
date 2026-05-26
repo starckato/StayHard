@@ -52,7 +52,7 @@ export async function setWaterGoal(cups) {
   if (panel) panel.style.display = 'none';
   const gearBtn = document.getElementById('water-gear-btn');
   if (gearBtn) gearBtn.style.color = 'var(--text3)';
-  if (window.showToast) window.showToast('물 목표: ' + (cups * .5).toFixed(1) + 'L 설정됨 💧');
+  if (window.showToast) window.showToast('물 목표: ' + (cups * .5).toFixed(1) + 'L 설정됨');
 }
 
 /** 12 컵 그리드 렌더 + 목표 대비 표시. 컵 클릭 = toggle. */

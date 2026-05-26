@@ -172,7 +172,7 @@ export function renderWeight() {
     }
   }
 
-  // Goal info merged into meta line: "목표까지 -6.4kg" / "🎯 달성" / "목표 미설정"
+  // Goal info merged into meta line: "목표까지 -6.4kg" / "목표 달성" / "목표 미설정"
   const metaGoalSep = document.getElementById('wt-meta-goal-sep');
   const metaGoal = document.getElementById('wt-meta-goal');
   if (metaGoal && metaGoalSep) {
@@ -185,7 +185,7 @@ export function renderWeight() {
       metaGoal.style.display = '';
       if (diff >= 0) {
         // Above or at goal (still gaining toward a gain target) or already reached.
-        metaGoal.textContent = '🎯 달성';
+        metaGoal.textContent = '목표 달성';
         metaGoal.className = 'wc-meta-goal achieved';
       } else {
         metaGoal.textContent = '목표까지 ' + diff.toFixed(1) + 'kg';
@@ -228,8 +228,8 @@ export function renderWeight() {
     const f = window.log?.body_fat_pct;
     if (info.state === 'recorded' && (m || f)) {
       const parts = [];
-      if (m) parts.push('💪 골격근 ' + parseFloat(m).toFixed(1) + 'kg');
-      if (f) parts.push('🔥 체지방 ' + parseFloat(f).toFixed(1) + '%');
+      if (m) parts.push('골격근 ' + parseFloat(m).toFixed(1) + 'kg');
+      if (f) parts.push('체지방 ' + parseFloat(f).toFixed(1) + '%');
       inbodyRow.textContent = parts.join('  ·  ');
       inbodyRow.style.display = 'block';
     } else {
@@ -513,7 +513,7 @@ export function calcBodyFatFromPct() {
 export function showCalcResult(msg) {
   const el = document.getElementById('wt-calc-result');
   const txt = document.getElementById('wt-calc-text');
-  if (el && txt) { el.style.display = 'block'; txt.textContent = '🤖 ' + msg; }
+  if (el && txt) { el.style.display = 'block'; txt.textContent = msg; }
 }
 
 // ── Save ──────────────────────────────────────────────────────────────
@@ -528,7 +528,7 @@ export async function saveWeight() {
       const gv = parseFloat(gi.value);
       if (!isNaN(gv) && gv > 0) {
         await saveWeightGoal(gv);
-        showToast('🎯 목표 체중 저장됨');
+        showToast('목표 체중 저장됨');
       } else {
         showToast('목표 체중을 입력해주세요'); return;
       }

@@ -151,7 +151,7 @@ export async function loadStatsTab(){
     console.warn('[loadStatsTab] fetch error:', e.message);
     if(loadEl)loadEl.style.display='none';
     const emptyEl=document.getElementById('st-empty');
-    if(emptyEl){emptyEl.style.display='block';emptyEl.innerHTML='<div style="font-size:40px;margin-bottom:12px;">⚠️</div><div style="font-size:14px;font-weight:600;color:var(--text2);margin-bottom:4px;">데이터를 불러올 수 없어요</div><div style="font-size:12px;color:var(--text3);">네트워크 상태를 확인해주세요</div>';}
+    if(emptyEl){emptyEl.style.display='block';emptyEl.innerHTML='<div style="font-size:14px;font-weight:600;color:var(--text2);margin-bottom:4px;">데이터를 불러올 수 없어요</div><div style="font-size:12px;color:var(--text3);">네트워크 상태를 확인해주세요</div>';}
     return;
   }
 
@@ -788,8 +788,8 @@ export function stRenderInsights(rows){
 
   // 스트릭
   const streak=calcStreak();
-  if(streak>=30)insights.push({icon:'🔥',text:'연속 '+streak+'일 달성. 습관이 됐어요.',color:'var(--green)'});
-  else if(streak>=7)insights.push({icon:'🔥',text:'연속 '+streak+'일 진행 중. 30일까지 가보자.',color:'var(--amber)'});
+  if(streak>=30)insights.push({icon:'',text:'연속 '+streak+'일 달성. 습관이 됐어요.',color:'var(--green)'});
+  else if(streak>=7)insights.push({icon:'',text:'연속 '+streak+'일 진행 중. 30일까지 가보자.',color:'var(--amber)'});
 
   // 볼륨 증감
   if(rows.length>=14){
@@ -802,8 +802,8 @@ export function stRenderInsights(rows){
     },0);
     if(v1>0&&v2>0){
       const pct=Math.round((v2-v1)/v1*100);
-      if(pct>=20)insights.push({icon:'💪',text:'운동 볼륨이 전반기 대비 +'+pct+'% 증가했어요. PR 경신 가능!',color:'var(--green)'});
-      else if(pct<=-20)insights.push({icon:'⚠️',text:'운동 볼륨이 전반기 대비 '+pct+'% 감소했어요. 꾸준함을 유지해보세요.',color:'var(--amber)'});
+      if(pct>=20)insights.push({icon:'',text:'운동 볼륨이 전반기 대비 +'+pct+'% 증가했어요. PR 경신 가능!',color:'var(--green)'});
+      else if(pct<=-20)insights.push({icon:'',text:'운동 볼륨이 전반기 대비 '+pct+'% 감소했어요. 꾸준함을 유지해보세요.',color:'var(--amber)'});
     }
   }
 
@@ -814,8 +814,8 @@ export function stRenderInsights(rows){
     mealAll+=ms.length;mealClean+=ms.filter(m=>m.type==='green').length;
   });
   const cleanPct=mealAll>0?Math.round(mealClean/mealAll*100):0;
-  if(cleanPct>=60)insights.push({icon:'🥗',text:'클린식 비율 '+cleanPct+'%! 식단 관리가 정말 잘 되고 있어요.',color:'var(--green)'});
-  else if(mealAll>5&&cleanPct<30)insights.push({icon:'🥗',text:'클린식 비율이 '+cleanPct+'%예요. 한 끼씩 클린하게 바꿔보세요.',color:'var(--red)'});
+  if(cleanPct>=60)insights.push({icon:'',text:'클린식 비율 '+cleanPct+'%! 식단 관리가 정말 잘 되고 있어요.',color:'var(--green)'});
+  else if(mealAll>5&&cleanPct<30)insights.push({icon:'',text:'클린식 비율이 '+cleanPct+'%예요. 한 끼씩 클린하게 바꿔보세요.',color:'var(--red)'});
 
   // 특정 요일 치팅 패턴
   const dayCheat={0:0,1:0,2:0,3:0,4:0,5:0,6:0};
@@ -826,13 +826,13 @@ export function stRenderInsights(rows){
   });
   const dayNames=['일','월','화','수','목','금','토'];
   const maxDay=Object.entries(dayCheat).sort((a,b)=>b[1]-a[1])[0];
-  if(maxDay[1]>=3)insights.push({icon:'🎉',text:dayNames[maxDay[0]]+'요일에 치팅이 집중돼요 ('+maxDay[1]+'회). 미리 계획을 세워보세요.',color:'var(--amber)'});
+  if(maxDay[1]>=3)insights.push({icon:'',text:dayNames[maxDay[0]]+'요일에 치팅이 집중돼요 ('+maxDay[1]+'회). 미리 계획을 세워보세요.',color:'var(--amber)'});
 
   // 할일 완료율 저조
   let tgtDone=0,tgtTotal=0;
   rows.forEach(r=>{const t=r.targets||[];tgtTotal+=t.length;tgtDone+=t.filter(x=>x.st==='done').length;});
   const tgtPct=tgtTotal>5?Math.round(tgtDone/tgtTotal*100):null;
-  if(tgtPct!==null&&tgtPct<40)insights.push({icon:'📋',text:'할일 완료율이 '+tgtPct+'%예요. 할일 수를 줄이거나 우선순위를 조정해보세요.',color:'var(--amber)'});
+  if(tgtPct!==null&&tgtPct<40)insights.push({icon:'',text:'할일 완료율이 '+tgtPct+'%예요. 할일 수를 줄이거나 우선순위를 조정해보세요.',color:'var(--amber)'});
 
   // 체중 추이
   const wPts=rows.filter(r=>r.weight!=null).map(r=>parseFloat(r.weight));
@@ -846,13 +846,13 @@ export function stRenderInsights(rows){
   let alcCnt=0;
   rows.forEach(r=>{alcCnt+=(r.meals||[]).filter(m=>m.category==='alcohol').length;});
   const alcPerWeek=(alcCnt/((stPeriod||rows.length)/7)).toFixed(1);
-  if(alcCnt>=3)insights.push({icon:'🍺',text:'기간 내 음주 '+alcCnt+'회 (주 평균 '+alcPerWeek+'회). 회복 식단을 챙기세요.',color:'var(--red)'});
+  if(alcCnt>=3)insights.push({icon:'',text:'기간 내 음주 '+alcCnt+'회 (주 평균 '+alcPerWeek+'회). 회복 식단을 챙기세요.',color:'var(--red)'});
 
   // 루틴 마스터
   let mandDone2=0,mandTotal2=0;
   rows.forEach(r=>{const m=r.mandatory||[];mandTotal2+=m.length;mandDone2+=m.filter(x=>x.done).length;});
   const routinePct2=mandTotal2>0?Math.round(mandDone2/mandTotal2*100):0;
-  if(routinePct2>=90&&mandTotal2>10)insights.push({icon:'🏆',text:'루틴 완료율 '+routinePct2+'%! 난이도를 올릴 때가 됐어요.',color:'var(--green)'});
+  if(routinePct2>=90&&mandTotal2>10)insights.push({icon:'',text:'루틴 완료율 '+routinePct2+'%! 난이도를 올릴 때가 됐어요.',color:'var(--green)'});
 
   const list=document.getElementById('st-insights-list');
   if(!insights.length){
@@ -861,7 +861,6 @@ export function stRenderInsights(rows){
   }
   list.innerHTML=insights.slice(0,5).map(ins=>`
     <div style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;background:var(--surface2);border-radius:10px;margin-bottom:6px;border-left:3px solid ${ins.color};">
-      <span style="font-size:16px;flex-shrink:0;">${ins.icon}</span>
       <span style="font-size:12px;color:var(--text);line-height:1.6;">${ins.text}</span>
     </div>`).join('');
 }
@@ -1133,7 +1132,7 @@ export function buildExerciseIndex(rows){
               if(e1>bestE1)bestE1=e1;
             }
           });
-          if(!idx[name])idx[name]={kind:'gym',icon:ex.icon||'💪',isStr,sessions:[],totalVol:0,sessionCount:0};
+          if(!idx[name])idx[name]={kind:'gym',icon:ex.icon||'',isStr,sessions:[],totalVol:0,sessionCount:0};
           idx[name].sessions.push({date,setCount:doneSets.length,volume,topKg,topReps,bestE1,totalReps,sets:doneSets.map(s=>({kg:parseFloat(s.kg)||0,reps:parseInt(s.reps)||0}))});
           idx[name].totalVol+=volume;
           idx[name].sessionCount++;
@@ -1143,7 +1142,7 @@ export function buildExerciseIndex(rows){
         const dist=parseFloat(w.distance)||0;
         const time=parseFloat(w.time)||0;
         if(!dist&&!time)return;
-        if(!idx[name])idx[name]={kind:'activity',icon:w.icon||'🏃',sessions:[],totalVol:0,sessionCount:0};
+        if(!idx[name])idx[name]={kind:'activity',icon:w.icon||'',sessions:[],totalVol:0,sessionCount:0};
         idx[name].sessions.push({date,distance:dist,time,pace:w.pace||null});
         idx[name].totalVol+=(dist||time);
         idx[name].sessionCount++;
@@ -1212,7 +1211,7 @@ export function edmRender(){
   const filtered=keyed.filter(r=>r._key>=cutKey);
   const idx=buildExerciseIndex(filtered);
   const ex=idx[name];
-  document.getElementById('edm-title').textContent=(ex?.icon||'💪')+' '+name;
+  document.getElementById('edm-title').textContent=name;
   const prBox=document.getElementById('edm-prs');
   const sessBox=document.getElementById('edm-sessions');
   const chartLabel=document.getElementById('edm-chart-label');
@@ -1233,15 +1232,15 @@ export function edmRender(){
     prBox.innerHTML=`
       <div style="flex:1;text-align:center;padding:14px 0;">
         <div style="font-size:18px;font-weight:800;color:var(--accent);">${prKg.topKg||0}<span style="font-size:11px;color:var(--text3);">kg</span></div>
-        <div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-top:2px;">🏆 최고 중량 ${prKg.topReps?'×'+prKg.topReps:''}</div>
+        <div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-top:2px;">최고 중량 ${prKg.topReps?'×'+prKg.topReps:''}</div>
       </div>
       <div style="flex:1;text-align:center;padding:14px 0;border-left:1px solid var(--border);">
         <div style="font-size:18px;font-weight:800;color:var(--green);">${Math.round(prE1.bestE1||0)}<span style="font-size:11px;color:var(--text3);">kg</span></div>
-        <div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-top:2px;">🏆 최고 e1RM</div>
+        <div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-top:2px;">최고 e1RM</div>
       </div>
       <div style="flex:1;text-align:center;padding:14px 0;border-left:1px solid var(--border);">
         <div style="font-size:18px;font-weight:800;color:var(--text);">${Math.round(prVol.volume||0).toLocaleString()}</div>
-        <div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-top:2px;">🏆 최고 볼륨</div>
+        <div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-top:2px;">최고 볼륨</div>
       </div>`;
     chartLabel.textContent='세션 볼륨 (kg) · 최고 세트';
   } else {
@@ -1250,11 +1249,11 @@ export function edmRender(){
     prBox.innerHTML=`
       <div style="flex:1;text-align:center;padding:14px 0;">
         <div style="font-size:18px;font-weight:800;color:var(--accent);">${prDist.distance||0}<span style="font-size:11px;color:var(--text3);">km</span></div>
-        <div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-top:2px;">🏆 최장 거리</div>
+        <div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-top:2px;">최장 거리</div>
       </div>
       <div style="flex:1;text-align:center;padding:14px 0;border-left:1px solid var(--border);">
         <div style="font-size:18px;font-weight:800;color:var(--green);">${prTime.time||0}<span style="font-size:11px;color:var(--text3);">분</span></div>
-        <div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-top:2px;">🏆 최장 시간</div>
+        <div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-top:2px;">최장 시간</div>
       </div>
       <div style="flex:1;text-align:center;padding:14px 0;border-left:1px solid var(--border);">
         <div style="font-size:18px;font-weight:800;color:var(--text);">${ex.sessionCount}</div>
@@ -1305,7 +1304,7 @@ export function edmRender(){
       return `<div style="padding:10px 12px;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;margin-bottom:6px;">
         <div style="display:flex;align-items:center;gap:8px;">
           <div style="font-size:12px;font-weight:600;color:var(--text);">${s.date}</div>
-          ${isPr?'<div style="font-size:10px;padding:2px 6px;border-radius:10px;background:rgba(245,158,11,.2);color:#f59e0b;font-weight:700;">🏆 PR</div>':''}
+          ${isPr?'<div style="font-size:10px;padding:2px 6px;border-radius:10px;background:rgba(245,158,11,.2);color:#f59e0b;font-weight:700;">PR</div>':''}
         </div>
         <div style="font-size:11px;color:var(--text2);margin-top:3px;font-family:'DM Mono',monospace;">${mainLine}</div>
         ${detail?`<div style="font-size:10px;color:var(--text3);margin-top:2px;">${detail}</div>`:''}
@@ -1365,10 +1364,10 @@ export function stRenderReportCard(rows){
   const woPerWeek=rows.length>=7?(woCnt/(rows.length/7)).toFixed(1):woCnt;
   const grade=(v,thresholds)=>{if(v===null)return{g:'-',c:'var(--text3)'};for(const[min,g,c]of thresholds)if(v>=min)return{g,c};return thresholds[thresholds.length-1]?{g:'F',c:'var(--red)'}:{g:'-',c:'var(--text3)'};};
   const cats=[
-    {name:'훈련',icon:'🏋️',val:woPerWeek>=3?'A':woPerWeek>=2?'B':woPerWeek>=1?'C':'D',...grade(woPerWeek>=3?90:woPerWeek>=2?70:woPerWeek>=1?50:20,[[80,'A','var(--green)'],[60,'B','var(--blue)'],[40,'C','var(--amber)'],[0,'D','var(--red)']]),sub:'주 '+woPerWeek+'회'},
-    {name:'식단',icon:'🥗',...grade(cleanPct,[[70,'A','var(--green)'],[50,'B','var(--blue)'],[30,'C','var(--amber)'],[0,'D','var(--red)']]),sub:cleanPct!==null?'클린 '+cleanPct+'%':'데이터 없음'},
-    {name:'루틴',icon:'✅',...grade(routinePct,[[90,'A','var(--green)'],[70,'B','var(--blue)'],[50,'C','var(--amber)'],[0,'D','var(--red)']]),sub:routinePct!==null?'완료 '+routinePct+'%':'데이터 없음'},
-    {name:'할일',icon:'🎯',...grade(targetPct,[[80,'A','var(--green)'],[60,'B','var(--blue)'],[40,'C','var(--amber)'],[0,'D','var(--red)']]),sub:targetPct!==null?'완료 '+targetPct+'%':'데이터 없음'},
+    {name:'훈련',val:woPerWeek>=3?'A':woPerWeek>=2?'B':woPerWeek>=1?'C':'D',...grade(woPerWeek>=3?90:woPerWeek>=2?70:woPerWeek>=1?50:20,[[80,'A','var(--green)'],[60,'B','var(--blue)'],[40,'C','var(--amber)'],[0,'D','var(--red)']]),sub:'주 '+woPerWeek+'회'},
+    {name:'식단',...grade(cleanPct,[[70,'A','var(--green)'],[50,'B','var(--blue)'],[30,'C','var(--amber)'],[0,'D','var(--red)']]),sub:cleanPct!==null?'클린 '+cleanPct+'%':'데이터 없음'},
+    {name:'루틴',...grade(routinePct,[[90,'A','var(--green)'],[70,'B','var(--blue)'],[50,'C','var(--amber)'],[0,'D','var(--red)']]),sub:routinePct!==null?'완료 '+routinePct+'%':'데이터 없음'},
+    {name:'할일',...grade(targetPct,[[80,'A','var(--green)'],[60,'B','var(--blue)'],[40,'C','var(--amber)'],[0,'D','var(--red)']]),sub:targetPct!==null?'완료 '+targetPct+'%':'데이터 없음'},
   ];
   const overall=cats.filter(c=>c.g!=='-');
   const avgScore=overall.length?Math.round(overall.reduce((a,c)=>a+({A:4,B:3,C:2,D:1,F:0}[c.g]||0),0)/overall.length*25):0;
@@ -1381,7 +1380,6 @@ export function stRenderReportCard(rows){
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
       ${cats.map(c=>`<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--surface2);border-radius:8px;">
-        <div style="font-size:14px;">${c.icon}</div>
         <div style="flex:1;min-width:0;"><div style="font-size:11px;font-weight:600;color:var(--text);">${c.name}</div><div style="font-size:9px;color:var(--text3);">${c.sub}</div></div>
         <div style="font-size:18px;font-weight:800;color:${c.c};font-family:'DM Mono',monospace;">${c.g}</div>
       </div>`).join('')}
@@ -1618,7 +1616,7 @@ export function stRenderRoutineBreakdown(rows){
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
         <span style="font-size:13px;font-weight:600;color:var(--text);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${name}</span>
         <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
-          <span style="font-size:11px;color:var(--text3);">🔥${maxStreak>0?maxStreak:'-'}일</span>
+          <span style="font-size:11px;color:var(--text3);">스트릭 ${maxStreak>0?maxStreak:'-'}일</span>
           <span style="font-size:12px;font-weight:700;color:${col};">${pct}%</span>
         </div>
       </div>

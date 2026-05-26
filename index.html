@@ -63,22 +63,22 @@
      외부 link 2개 제거 → render-blocking CSS 요청 -2. trainer.html 등은 여전히 link. -->
 <!-- Perf (2026-05-25): 남은 sync CSS 도 모두 async — splash 가 1.6s 가리는 동안 모두 로드 완료.
      FOUC 위험 거의 없음 + render-blocking 0 → splash 즉시 paint. -->
-<link href="/src/styles/states.css?v=842ab884" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/styles/components.css?v=842ab884" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/styles/icons.css?v=842ab884" rel="stylesheet" media="print" onload="this.media='all'">
-<noscript><link href="/src/styles/states.css?v=842ab884" rel="stylesheet"><link href="/src/styles/components.css?v=842ab884" rel="stylesheet"><link href="/src/styles/icons.css?v=842ab884" rel="stylesheet"></noscript>
+<link href="/src/styles/states.css?v=1f1c7f1e" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/styles/components.css?v=1f1c7f1e" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/styles/icons.css?v=1f1c7f1e" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link href="/src/styles/states.css?v=1f1c7f1e" rel="stylesheet"><link href="/src/styles/components.css?v=1f1c7f1e" rel="stylesheet"><link href="/src/styles/icons.css?v=1f1c7f1e" rel="stylesheet"></noscript>
 <!-- Feature folder CSS — 한 폴더 = 한 기능 컨벤션 (ARCHITECTURE.md).
      Perf (2026-05-25): media="print" + onload swap 으로 async 로딩 → 초기 paint 차단 X.
      splash 가 1.6s+ 표시되므로 그 사이 모두 로드되어 FOUC 위험 거의 없음. -->
-<link href="/src/features/targets/targets.css?v=842ab884" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/cubes/cubes-ui.css?v=842ab884" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/date-heatmap/date-heatmap.css?v=842ab884" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/dev-inspector/dev-inspector.css?v=842ab884" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/water/water.css?v=842ab884" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/sticky-header/sticky-header.css?v=842ab884" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/status-band/status-band.css?v=842ab884" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/mountain/mountain.css?v=842ab884" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/workout-session/workout-session.css?v=842ab884" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/targets/targets.css?v=1f1c7f1e" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/cubes/cubes-ui.css?v=1f1c7f1e" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/date-heatmap/date-heatmap.css?v=1f1c7f1e" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/dev-inspector/dev-inspector.css?v=1f1c7f1e" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/water/water.css?v=1f1c7f1e" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/sticky-header/sticky-header.css?v=1f1c7f1e" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/status-band/status-band.css?v=1f1c7f1e" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/mountain/mountain.css?v=1f1c7f1e" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/workout-session/workout-session.css?v=1f1c7f1e" rel="stylesheet" media="print" onload="this.media='all'">
 <style>
 /* :root 토큰은 src/styles/tokens.{shared,dark}.css 로 이전됨 (Phase 0).
    index.html 은 다크 팔레트 사용. 추가 sub-palette (--radius-sm 등 legacy) 가
@@ -471,7 +471,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 .hdr-icon-badge{position:absolute;top:-2px;right:-2px;min-width:16px;height:16px;padding:0 4px;border-radius:var(--radius-md);background:var(--accent);color:#fff;font-size:var(--text-2xs);font-weight:800;font-family:'DM Mono',monospace;display:inline-flex;align-items:center;justify-content:center;border:2px solid var(--bg);letter-spacing:-.02em;}
 
 /* ═════ STATUS BAND — 기록 탭 히어로 (점수/티어/스트릭/오늘 Δ/요약) ═════ */
-.sb{margin:8px 14px 12px;padding:16px 18px 14px;border-radius:var(--radius-xl);background:linear-gradient(140deg,var(--accent-tint-2) 0%,rgba(255,107,53,.04) 55%,var(--accent-tint-2) 100%);border:1px solid var(--accent-bd);position:relative;overflow:hidden;}
+.sb{margin:6px 14px 8px;padding:8px 18px 6px;border-radius:var(--radius-xl);background:linear-gradient(140deg,var(--accent-tint-2) 0%,rgba(255,107,53,.04) 55%,var(--accent-tint-2) 100%);border:1px solid var(--accent-bd);position:relative;overflow:hidden;}
 .sb::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 88% -10%,var(--accent-tint-3) 0%,transparent 50%);pointer-events:none;}
 .sb>*{position:relative;}
 .sb-head{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
@@ -1485,7 +1485,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
      app.js bundle → supabase ESM 포함 (2026-05-25 perf), inline body scripts 가 의존하므로 sync. -->
 <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-<script src="/dist/app.js?v=842ab884"></script>
+<script src="/dist/app.js?v=1f1c7f1e"></script>
 
 <script>
   // QROK Splash — 앱 ready 까지 대기 후 fade out. 좌측 상단/중앙 loading 스피너 가림.

@@ -107,7 +107,7 @@ function _renderClimber(opts) {
     isOut ? 'is-out' : '',
   ].filter(Boolean).join(' ');
 
-  const pctText = pct == null ? '—' : (pct >= 100 ? '🎉' : pct + '%');
+  const pctText = pct == null ? '—' : (pct >= 100 ? '정상' : pct + '%');
   return `<div class="${classes}" style="top:${top}%; left:calc(${left}% - 7px);" data-name="${escapeHtml(name)}">
     ${auraEls}
     <div class="mt-pwrap">

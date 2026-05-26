@@ -22,7 +22,7 @@ export function showChaekpipty(mealName) {
   // 오늘 이미 형량이 집행 중이면 중복 추가 방지
   const curLog=window.logCache[window.selectedKey]||log;
   if((curLog.workouts||[]).some(w=>w._isChaek&&w.status==='planned')){
-    showToast('⚖️ 이미 형량이 집행 중입니다');
+    showToast('이미 형량이 집행 중입니다');
     return;
   }
   // rage 먼저 표시
@@ -31,12 +31,12 @@ export function showChaekpipty(mealName) {
   // rage 얼굴/메시지 교체
   const faceEl = document.getElementById('rage-face');
   const msgEl = document.getElementById('rage-msg');
-  if(faceEl) faceEl.textContent = '⚖️';
+  if(faceEl) faceEl.textContent = '';
   if(msgEl) msgEl.textContent = pick.sentence;
   // 버튼: 형량 수락
   const closeBtn = document.querySelector('#rage-overlay .rage-close');
   if(closeBtn){
-    closeBtn.textContent = '💀 형량 수락 — 운동 추가';
+    closeBtn.textContent = '형량 수락 — 운동 추가';
     closeBtn.onclick = () => {
       if(!window.logCache[window.selectedKey]) window.logCache[window.selectedKey] = log;
       window.log = window.logCache[window.selectedKey];
@@ -44,7 +44,7 @@ export function showChaekpipty(mealName) {
       renderWorkouts();
       queueSave();
       closeRage();
-      showToast('⚖️ '+pick.name+' 형량이 추가됐어요');
+      showToast(pick.name+' 형량이 추가됐어요');
     };
     // 도망 버튼
     let escBtn = document.getElementById('chaek-escape-btn');
@@ -146,19 +146,12 @@ export function _showNextWin(){
   }
 }
 export function _renderWinBody({type,pts,title}){
-  const EMOJIS={
-    weight:'⚖️', weight_loss:'⬇️', weight_goal:'🎯',
-    diet:'🥗', diet_clean:'🟢', diet_junk:'🔴',
-    workout:'💥', routine:'✅', task:'📋',
-    cold_shower:'🚿', early_rise:'🌅', perfect:'🏆'
-  };
-  const emoji=EMOJIS[type]||'✅';
-
   const msgs=WIN_MSGS[type]||WIN_MSGS[type==='weight'||type==='weight_loss'||type==='weight_goal'?'routine':type]||WIN_MSGS.routine;
   const msg=msgs[Math.floor(Math.random()*msgs.length)];
 
   const el=document.getElementById('win-overlay');
-  document.getElementById('win-emoji').textContent=emoji;
+  const emojiEl=document.getElementById('win-emoji');
+  if(emojiEl)emojiEl.textContent='';
 
   // 제목
   const titleEl=document.getElementById('win-title');

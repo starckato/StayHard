@@ -43,7 +43,6 @@ export function renderTargetsSummary() {
 
 // ── Render: 할일 카드 본문 ───────────────────────────────────
 const EMPTY_HTML = `<div style="padding:16px 0;text-align:center;">
-  <div style="font-size:var(--text-2xl);margin-bottom:6px;">🎯</div>
   <div style="font-size:var(--text-md);color:var(--text3);margin-bottom:4px;">오늘의 할일을 설정하세요</div>
   <div style="font-size:var(--text-xs);color:var(--text3);">예: 링크드인 연락 · 보고서 작성 · 병원 예약</div>
 </div>`;

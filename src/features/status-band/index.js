@@ -14,7 +14,6 @@
 //   setupStatusBand()           — 이벤트 wiring (quote 클릭, ladder 클릭). 부트시 1회.
 
 const _LADDER_NAMES = ['방관자', '각성자', '저항자', '수련자', '지배자', '기록자'];
-const _LADDER_ICONS = ['😴', '⚡', '🦴', '🔥', '👑', '🏆'];
 
 /** 6단 tier ladder 마크업 렌더. tierIdx (0~5) 의 위치 highlight. */
 export function renderTierLadder(tierIdx) {
