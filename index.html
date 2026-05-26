@@ -63,22 +63,22 @@
      외부 link 2개 제거 → render-blocking CSS 요청 -2. trainer.html 등은 여전히 link. -->
 <!-- Perf (2026-05-25): 남은 sync CSS 도 모두 async — splash 가 1.6s 가리는 동안 모두 로드 완료.
      FOUC 위험 거의 없음 + render-blocking 0 → splash 즉시 paint. -->
-<link href="/src/styles/states.css?v=fd83740f" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/styles/components.css?v=fd83740f" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/styles/icons.css?v=fd83740f" rel="stylesheet" media="print" onload="this.media='all'">
-<noscript><link href="/src/styles/states.css?v=fd83740f" rel="stylesheet"><link href="/src/styles/components.css?v=fd83740f" rel="stylesheet"><link href="/src/styles/icons.css?v=fd83740f" rel="stylesheet"></noscript>
+<link href="/src/styles/states.css?v=5d439854" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/styles/components.css?v=5d439854" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/styles/icons.css?v=5d439854" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link href="/src/styles/states.css?v=5d439854" rel="stylesheet"><link href="/src/styles/components.css?v=5d439854" rel="stylesheet"><link href="/src/styles/icons.css?v=5d439854" rel="stylesheet"></noscript>
 <!-- Feature folder CSS — 한 폴더 = 한 기능 컨벤션 (ARCHITECTURE.md).
      Perf (2026-05-25): media="print" + onload swap 으로 async 로딩 → 초기 paint 차단 X.
      splash 가 1.6s+ 표시되므로 그 사이 모두 로드되어 FOUC 위험 거의 없음. -->
-<link href="/src/features/targets/targets.css?v=fd83740f" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/cubes/cubes-ui.css?v=fd83740f" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/date-heatmap/date-heatmap.css?v=fd83740f" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/dev-inspector/dev-inspector.css?v=fd83740f" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/water/water.css?v=fd83740f" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/sticky-header/sticky-header.css?v=fd83740f" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/status-band/status-band.css?v=fd83740f" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/mountain/mountain.css?v=fd83740f" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/workout-session/workout-session.css?v=fd83740f" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/targets/targets.css?v=5d439854" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/cubes/cubes-ui.css?v=5d439854" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/date-heatmap/date-heatmap.css?v=5d439854" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/dev-inspector/dev-inspector.css?v=5d439854" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/water/water.css?v=5d439854" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/sticky-header/sticky-header.css?v=5d439854" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/status-band/status-band.css?v=5d439854" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/mountain/mountain.css?v=5d439854" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/workout-session/workout-session.css?v=5d439854" rel="stylesheet" media="print" onload="this.media='all'">
 <style>
 /* :root 토큰은 src/styles/tokens.{shared,dark}.css 로 이전됨 (Phase 0).
    index.html 은 다크 팔레트 사용. 추가 sub-palette (--radius-sm 등 legacy) 가
@@ -1494,7 +1494,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
      app.js bundle → supabase ESM 포함 (2026-05-25 perf), inline body scripts 가 의존하므로 sync. -->
 <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-<script src="/dist/app.js?v=fd83740f"></script>
+<script src="/dist/app.js?v=5d439854"></script>
 
 <script>
   // QROK Splash — 앱 ready 까지 대기 후 fade out. 좌측 상단/중앙 loading 스피너 가림.
@@ -6004,8 +6004,28 @@ async function checkYesterdayReminder(){
   // custom 타입만 대상, 명시적 실패 제외, _autoSkipped 플래그로 중복 방지
   const unskipped=yMand.filter(m=>m&&m.type==='custom'&&!m.done&&!m.fail&&!m._autoSkipped);
   if(unskipped.length>0){
+    // T1-1 fix #4 (2026-05-26): mandatory column 덮어쓰기 전에 DB 의 최신 값 재확인.
+    // 메모리 yl.mandatory 가 stale 인 채로 update 하면 5/9 같은 데이터 손실 위험.
+    let safeToWrite=true;
+    try{
+      const {data:fresh}=await sb.from('daily_logs').select('mandatory').eq('user_id',CU.id).eq('log_date',yk).maybeSingle();
+      const dbLen=(fresh?.mandatory||[]).length;
+      const memLen=(yl.mandatory||[]).length;
+      // DB 가 메모리보다 많은 customs 가지고 있으면 → 메모리가 stale. DB 우선.
+      if(dbLen>memLen+1){
+        console.warn('[skip-penalty] DB has more customs than memory — refusing to overwrite',{yk,dbLen,memLen});
+        yl.mandatory=fresh.mandatory; // 메모리 동기화
+        safeToWrite=false;
+        // _autoSkipped flag 만 새 mandatory 에 다시 마킹
+        unskipped.forEach(m=>{
+          const dbItem=yl.mandatory.find(x=>x&&x.name===m.name&&x.type==='custom');
+          if(dbItem)dbItem._autoSkipped=true;
+        });
+      }
+    }catch(e){console.warn('[skip-penalty] DB precheck failed',e?.message);}
     unskipped.forEach(m=>{m._autoSkipped=true;});
     try{await sb.from('daily_logs').update({mandatory:yl.mandatory}).eq('user_id',CU.id).eq('log_date',yk);}catch(e){console.warn('[skip-penalty] save failed',e);}
+    // safeToWrite=false 였어도 _autoSkipped 갱신은 적용 — addScore 는 진행
     unskipped.forEach(m=>{try{addScore('routine_skip','어제 스킵: '+(m.name||''),null,true);}catch(e){}});
   }
 
@@ -6978,6 +6998,8 @@ async function loadLog(key,force=false){
     let mandatory=data.mandatory&&data.mandatory.length>0?data.mandatory:null;
     if(!mandatory){const defs=await loadRoutineDefinitions();mandatory=defs.length>0?defs.map(r=>({...r,done:false})):JSON.parse(JSON.stringify(DEFAULT_MAND));}
     const l={weight:data.weight!==null?parseFloat(data.weight):null,muscle_mass:data.muscle_mass!=null?parseFloat(data.muscle_mass):null,body_fat_pct:data.body_fat_pct!=null?parseFloat(data.body_fat_pct):null,water_cups:data.water_cups||0,meals,workouts:data.workouts||[],mandatory,targets:data.targets||[],_ptsLog:data.points_log||[],cubes:data.cubes||null};
+    // T1-1 fix #3: load 시 baseline snapshot — saveLog 의 shrink 감지 기준.
+    l._loadedSnap={mandatory:JSON.parse(JSON.stringify(l.mandatory||[])),meals:JSON.parse(JSON.stringify(l.meals||[])),workouts:JSON.parse(JSON.stringify(l.workouts||[])),targets:JSON.parse(JSON.stringify(l.targets||[]))};
     logCache[key]=l;log=l;
   }else{
     const routineDefs=await loadRoutineDefinitions();
@@ -7331,6 +7353,28 @@ function recomputeCubesHook(key,opts){
 async function saveLog(key,silent=false){
   if(!CU)return;
   const l=logCache[key];if(!l)return;
+  // T1-1 fix #3 (2026-05-26): sanity check — mandatory/meals/workouts 가 직전 load 대비 급감하면
+  // localStorage 에 forensic 백업 후 console.warn. save 자체는 진행 (UX 흐름 보존).
+  try{
+    const baseline=l._loadedSnap;
+    if(baseline){
+      const shrinks=[];
+      const checkShrink=(name,prev,curr)=>{
+        if(prev>=4 && curr < prev*0.5){
+          shrinks.push(`${name}: ${prev}→${curr}`);
+        }
+      };
+      checkShrink('mandatory',(baseline.mandatory||[]).length,(l.mandatory||[]).length);
+      checkShrink('meals',(baseline.meals||[]).length,(l.meals||[]).length);
+      checkShrink('workouts',(baseline.workouts||[]).length,(l.workouts||[]).length);
+      checkShrink('targets',(baseline.targets||[]).length,(l.targets||[]).length);
+      if(shrinks.length){
+        const tag='qrok_save_shrink_'+key+'_'+Date.now();
+        try{localStorage.setItem(tag,JSON.stringify({baseline,current:{mandatory:l.mandatory,meals:l.meals,workouts:l.workouts,targets:l.targets}}));}catch{}
+        console.warn('[saveLog] suspicious shrink',{key,shrinks,backupKey:tag});
+      }
+    }
+  }catch(_){}
   const p={
     user_id:CU.id,log_date:key,
     weight:l.weight,water_cups:l.water_cups,

@@ -207,7 +207,9 @@ export async function obFinish(){
       }));
     if(newRoutines.length>0){
       log.mandatory=[...existing,...newRoutines];
-      propagateMandatoryDefs(log.mandatory);
+      // T1-1 fix (2026-05-26): destructive → additive 로 교체.
+      // 첫 onboarding 은 existing=[] 이라 동작 동일, 재진입 시 기존 customs 보존.
+      (window.propagateMandatoryDefsAdditive||window.propagateMandatoryDefs)(log.mandatory);
       window.renderMandatory();
     }
   }
