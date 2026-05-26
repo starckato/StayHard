@@ -4083,13 +4083,24 @@ async function loadRoutines(force=false){
 // ── ADD EXERCISE MODAL (세션 중 운동 추가 전용) ──
 let _addExCurrentTab='search';
 
-function openAddExerciseModal(tab='search'){
+function openAddExerciseModal(tab='search', mode='session'){
+  // 2026-05-26 통합: libContext set 으로 session / routine 모드 분기.
+  libContext = mode;
   const el=document.getElementById('add-exercise-modal');
   if(!el)return;
   document.body.style.overflow='hidden';
   document.body.style.touchAction='none';
   el.style.display='flex';
   switchAddTab(tab);
+}
+// 2026-05-26 통합: + 버튼이 libContext 기반 분기 (session → addExerciseToSession, routine → addExerciseToRoutineCreate).
+function selectExerciseUnified(name,icon,muscle,equip){
+  closeAddExerciseModal();
+  if(libContext==='session'){
+    addExerciseToSession(name,icon,muscle,equip);
+  } else {
+    addExerciseToRoutineCreate(name,icon,muscle,equip);
+  }
 }
 function closeAddExerciseModal(){
   const el=document.getElementById('add-exercise-modal');
@@ -4338,22 +4349,19 @@ function renderAddSearchResults(){
           <span style="font-size:var(--text-2xs);padding:2px 6px;border-radius:var(--radius-sm);font-family:'DM Mono',monospace;background:var(--green-bg);color:var(--green);border:1px solid var(--green-bd);">${ex.e}</span>
         </div>
       </div>
-      <button onclick="addExerciseToSession('${ex.n.replace(/'/g,"\\'")}','${ex.i.replace(/'/g,"\\'")}','${ex.m.replace(/'/g,"\\'")}','${ex.e.replace(/'/g,"\\'")}');closeAddExerciseModal();" style="width:26px;height:26px;border-radius:50%;background:var(--accent-bg);border:1px solid var(--accent-bd);color:var(--accent);font-size:var(--text-base);display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer;touch-action:manipulation;line-height:1;">＋</button>
+      <button onclick="selectExerciseUnified('${ex.n.replace(/'/g,"\\'")}','${ex.i.replace(/'/g,"\\'")}','${ex.m.replace(/'/g,"\\'")}','${ex.e.replace(/'/g,"\\'")}')" style="width:26px;height:26px;border-radius:50%;background:var(--accent-bg);border:1px solid var(--accent-bd);color:var(--accent);font-size:var(--text-base);display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer;touch-action:manipulation;line-height:1;">＋</button>
     </div>`).join('');
 }
 
 // ── LIBRARY OPEN/CLOSE ──
+// 2026-05-26 통합: legacy openLibraryFor* 가 #add-exercise-modal 로 redirect.
+// 모든 운동 picker 진입점이 동일 디자인 사용 (검색/분류 · 최근 운동 · 내 루틴 3 tab).
+// #ex-library-overlay markup 자체는 일단 유지 — 다른 호출처 (filterMuscle 등) 가 있으면 깨지지 않게.
 function openLibraryForSession(){
-  libContext='session';
-  document.getElementById('ex-library-overlay').classList.add('open');
-  document.getElementById('lib-search').value='';
-  filterLibrary();
+  openAddExerciseModal('search','session');
 }
 function openLibraryForRoutine(){
-  libContext='routine';
-  document.getElementById('ex-library-overlay').classList.add('open');
-  document.getElementById('lib-search').value='';
-  filterLibrary();
+  openAddExerciseModal('search','routine');
 }
 function closeLibrary(){
   document.getElementById('ex-library-overlay').classList.remove('open');
