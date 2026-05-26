@@ -8272,10 +8272,42 @@ function showTierUpShareCTA(tier){
 
 async function shareInvite(){
   if(!CU||!CU.id){showToast('로그인이 필요해요');return;}
-  if(typeof html2canvas==='undefined'){showToast('공유 준비 중... 잠시 후 다시 시도');return;}
   try{track('invite_share_start',{});}catch(e){}
   const refId=CU.id;
   const shareUrl='https://qrok.app/?invite='+encodeURIComponent(refId);
+  const userName0=(CP&&(CP.display_name||CP.username))||'친구';
+  // 2026-05-26 fix: html2canvas 미로딩 시 silent return 하던 버그 — fallback 으로 native share / clipboard.
+  //   사용자 보고: '친구 공유 버튼 클릭해도 nothing happens'. html2canvas defer 로딩 race condition.
+  if(typeof html2canvas==='undefined'){
+    // Step 1: Web Share API try (모바일/PWA)
+    if(navigator.share){
+      try{
+        await navigator.share({
+          title:'큐록 초대',
+          text:`${userName0} 님이 너를 큐록에 초대했어`,
+          url:shareUrl,
+        });
+        try{track('invite_share_done',{fallback:'web_share'});}catch(e){}
+        return;
+      }catch(e){
+        // 사용자 cancel 또는 미지원 — clipboard fallback
+        if(e&&e.name==='AbortError')return;
+      }
+    }
+    // Step 2: clipboard fallback
+    try{
+      if(navigator.clipboard&&navigator.clipboard.writeText){
+        await navigator.clipboard.writeText(shareUrl);
+        showToast('초대 링크 복사됨: '+shareUrl);
+        try{track('invite_share_done',{fallback:'clipboard'});}catch(e){}
+        return;
+      }
+    }catch(e){}
+    // Step 3: 최후 — prompt 로라도 URL 보여줌
+    showToast('공유 링크: '+shareUrl);
+    try{prompt('이 링크를 친구에게 보내세요:', shareUrl);}catch(e){}
+    return;
+  }
   const displayUrl='qrok.app';
   const userName=(CP&&(CP.display_name||CP.username))||'친구';
   const tier=typeof getTier==='function'?getTier(+(CP?.total_score)||0):{icon:'',name:'큐록'};
