@@ -41,6 +41,14 @@ body.qrok-dev-on #qrok-share-overlay {
   max-width: min(430px, calc(100vw - 388px - 16px)) !important;
 }
 
+/* inset:0 + flex 으로 viewport 풀로 펼치는 modal — dev 모드에선 right 도 제한 */
+body.qrok-dev-on #add-exercise-modal,
+body.qrok-dev-on #ws-next-sheet,
+body.qrok-dev-on #ws-finish-sheet {
+  left: 16px !important;
+  right: 388px !important;
+}
+
 #qrok-dev {
   position: fixed;
   top: 0;
