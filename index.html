@@ -9391,12 +9391,35 @@ function _rebindPromoClone(clone, id){
   // Inline onclick buttons — cloneNode keeps the attribute, but we want our
   // own wrapper (modal-close for nav, list-remove for dismiss). Split by
   // intent: aria-label="닫기" OR function name starting with dismiss = dismiss.
+  //
+  // 2026-05-26 BUG FIX: CSP 가 'unsafe-eval' 미허용 → new Function() throw →
+  // catch 로 swallow → 사용자 'nothing happens' 보고 (친구 공유 / 챌린지 코드 등).
+  // 해결: onclick expression 을 parse 해서 window[funcName](args) 로 직접 호출.
   clone.querySelectorAll('button[onclick]').forEach(btn=>{
     const expr=btn.getAttribute('onclick');
     if(!expr)return;
     btn.removeAttribute('onclick');
     const isDismiss = btn.getAttribute('aria-label')==='닫기' || /^\s*dismiss/i.test(expr);
-    const invoke=()=>{try{(new Function(expr))();}catch(e){console.warn('[promo-clone:inline]',expr,e);}};
+    const invoke=()=>{
+      // expression parser: fn() / fn(arg1, arg2) — string/number args only
+      const m=expr.trim().match(/^(\w+)\(([^)]*)\)\s*;?\s*$/);
+      if(m){
+        const fnName=m[1];
+        const argsStr=m[2].trim();
+        const args=argsStr?argsStr.split(',').map(a=>{
+          a=a.trim();
+          if((a.startsWith("'")&&a.endsWith("'"))||(a.startsWith('"')&&a.endsWith('"')))return a.slice(1,-1);
+          const n=Number(a);return isNaN(n)?a:n;
+        }):[];
+        try{
+          const fn=window[fnName];
+          if(typeof fn==='function')fn.apply(window,args);
+          else console.warn('[promo-clone:inline] fn not found:',fnName);
+        }catch(e){console.warn('[promo-clone:inline] invoke',fnName,e);}
+      }else{
+        console.warn('[promo-clone:inline] unparsable expr (multi-statement?):',expr);
+      }
+    };
     if(isDismiss) wrapDismiss(btn, invoke);
     else wrapNav(btn, invoke);
   });
