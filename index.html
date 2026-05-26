@@ -3407,7 +3407,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
 </div>
 
 <!-- ADD EXERCISE MODAL (세션 중 운동 추가 전용) -->
-<div id="add-exercise-modal" style="display:none;position:fixed;inset:0;z-index:600;background:rgba(0,0,0,.55);align-items:flex-end;justify-content:center;overscroll-behavior:contain;">
+<div id="add-exercise-modal" style="display:none;position:fixed;inset:0;z-index:850;background:rgba(0,0,0,.55);align-items:flex-end;justify-content:center;overscroll-behavior:contain;">
   <div style="background:var(--surface);border-radius:var(--radius-xl) var(--radius-xl) 0 0;width:100%;max-width:430px;min-height:70vh;height:75vh;max-height:90vh;display:flex;flex-direction:column;border-top:.5px solid var(--border2);">
     <div style="width:32px;height:4px;background:var(--border2);border-radius:var(--radius-sm);margin:10px auto 0;flex-shrink:0;"></div>
     <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 18px 0;flex-shrink:0;">
@@ -3879,7 +3879,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
       </div>
       <div style="margin-bottom:8px;font-size:var(--text-sm);font-weight:500;color:var(--text2);">운동 목록</div>
       <div id="routine-ex-list" style="margin-bottom:10px;"></div>
-      <button onclick="openLibraryForRoutine()" class="mbtn" style="background:var(--surface2);border:2px dashed var(--border2);color:var(--accent);margin-bottom:8px;touch-action:manipulation;">＋ 운동 추가</button>
+      <button onclick="openLibraryForRoutine()" style="width:100%;padding:var(--space-3) var(--space-4);background:var(--accent-tint-2);border:1.5px dashed var(--accent-tint-4);border-radius:var(--radius-md);color:var(--accent);font-family:'DM Sans',sans-serif;font-size:var(--text-base);font-weight:700;cursor:pointer;margin-bottom:var(--space-2);min-height:50px;touch-action:manipulation;display:flex;align-items:center;justify-content:center;gap:var(--space-1h);">＋ 운동 추가</button>
       <button onclick="saveRoutine()" class="mbtn" style="touch-action:manipulation;">루틴 저장</button>
       <button onclick="cancelRoutineCreate()" class="mbtn-ghost" style="touch-action:manipulation;">취소</button>
     </div>
