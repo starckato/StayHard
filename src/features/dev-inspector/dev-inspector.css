@@ -4,9 +4,10 @@
 
 /* dev 모드 켜졌을 때 body 가 더 이상 중앙 정렬 X — 앱 좌측, 패널 우측 사이드바.
    JS 가 body.qrok-dev-on 추가.
-   2026-06-07 fix: 좁은 viewport (모바일/iframe) 에선 side-by-side 가 .bnav 를
-   26px 로 짜부시킴. 따라서 @media (min-width:820px) 이상에서만 layout shift. */
-@media (min-width: 820px) {
+   2026-06-07: PC 의 좁은 창 (1024 미만 등) 도 side-by-side 가능하도록 720px 임계.
+   720px viewport: bnav width = min(430, 720-388-16) = 316px (3 탭 약 105px 씩, OK).
+   < 720px: 기존 chip 모드 (아래 max-width: 830px 미디어쿼리) 가 처리. */
+@media (min-width: 720px) {
   body.qrok-dev-on {
     margin-left: 16px;
     margin-right: 388px; /* 패널 360 + gap 28 */
@@ -216,8 +217,8 @@ body.qrok-dev-armed * { cursor: crosshair !important; }
 }
 #qrok-dev.is-min .qd-body { display: none; }
 
-/* 좁은 viewport — 사이드바 layout 불가 (앱 너무 좁아짐). 패널 사라지고 mini toggle 만 */
-@media (max-width: 830px) {
+/* 좁은 viewport (< 720px) — 사이드바 layout 불가 (앱 너무 좁아짐). 패널 chip + toggle 만 */
+@media (max-width: 719px) {
   body.qrok-dev-on { margin-left: 0; margin-right: 0; max-width: 430px; }
   body.qrok-dev-on:not(.qrok-dev-fullside) { /* 자동 미니 */ }
   #qrok-dev {
