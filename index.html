@@ -63,22 +63,22 @@
      외부 link 2개 제거 → render-blocking CSS 요청 -2. trainer.html 등은 여전히 link. -->
 <!-- Perf (2026-05-25): 남은 sync CSS 도 모두 async — splash 가 1.6s 가리는 동안 모두 로드 완료.
      FOUC 위험 거의 없음 + render-blocking 0 → splash 즉시 paint. -->
-<link href="/src/styles/states.css?v=28767f3c" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/styles/components.css?v=28767f3c" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/styles/icons.css?v=28767f3c" rel="stylesheet" media="print" onload="this.media='all'">
-<noscript><link href="/src/styles/states.css?v=28767f3c" rel="stylesheet"><link href="/src/styles/components.css?v=28767f3c" rel="stylesheet"><link href="/src/styles/icons.css?v=28767f3c" rel="stylesheet"></noscript>
+<link href="/src/styles/states.css?v=7d3ca917" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/styles/components.css?v=7d3ca917" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/styles/icons.css?v=7d3ca917" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link href="/src/styles/states.css?v=7d3ca917" rel="stylesheet"><link href="/src/styles/components.css?v=7d3ca917" rel="stylesheet"><link href="/src/styles/icons.css?v=7d3ca917" rel="stylesheet"></noscript>
 <!-- Feature folder CSS — 한 폴더 = 한 기능 컨벤션 (ARCHITECTURE.md).
      Perf (2026-05-25): media="print" + onload swap 으로 async 로딩 → 초기 paint 차단 X.
      splash 가 1.6s+ 표시되므로 그 사이 모두 로드되어 FOUC 위험 거의 없음. -->
-<link href="/src/features/targets/targets.css?v=28767f3c" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/cubes/cubes-ui.css?v=28767f3c" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/date-heatmap/date-heatmap.css?v=28767f3c" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/dev-inspector/dev-inspector.css?v=28767f3c" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/water/water.css?v=28767f3c" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/sticky-header/sticky-header.css?v=28767f3c" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/status-band/status-band.css?v=28767f3c" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/mountain/mountain.css?v=28767f3c" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/workout-session/workout-session.css?v=28767f3c" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/targets/targets.css?v=7d3ca917" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/cubes/cubes-ui.css?v=7d3ca917" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/date-heatmap/date-heatmap.css?v=7d3ca917" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/dev-inspector/dev-inspector.css?v=7d3ca917" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/water/water.css?v=7d3ca917" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/sticky-header/sticky-header.css?v=7d3ca917" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/status-band/status-band.css?v=7d3ca917" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/mountain/mountain.css?v=7d3ca917" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/workout-session/workout-session.css?v=7d3ca917" rel="stylesheet" media="print" onload="this.media='all'">
 <style>
 /* :root 토큰은 src/styles/tokens.{shared,dark}.css 로 이전됨 (Phase 0).
    index.html 은 다크 팔레트 사용. 추가 sub-palette (--radius-sm 등 legacy) 가
@@ -1494,7 +1494,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
      app.js bundle → supabase ESM 포함 (2026-05-25 perf), inline body scripts 가 의존하므로 sync. -->
 <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-<script src="/dist/app.js?v=28767f3c"></script>
+<script src="/dist/app.js?v=7d3ca917"></script>
 
 <script>
   // QROK Splash — 앱 ready 까지 대기 후 fade out. 좌측 상단/중앙 loading 스피너 가림.
@@ -6374,7 +6374,7 @@ async function onLogin(user){
     try{ _paintInitialUI(user); _snapPainted=true; window._paintedUserId=user.id; }catch(e){console.warn('snap paint failed',e);}
   }
   // 첫 페인트 경로를 병렬화 — profile + 오늘 로그 + 루틴 + 챌린지 동시 fetch
-  const profilePromise=sb.from('profiles').select('id,username,display_name,water_goal,onboarded,total_score,weight_goal,cheat_quota,cheat_used,cheat_reset_month,cheat_reset_week,system_notice,is_admin,feature_flags,return_state,exempt_log,accent_preference,notif_opt_in_history,onboarding_state,lifetime_gold,lifetime_silver,lifetime_red').eq('id',user.id).maybeSingle();
+  const profilePromise=sb.from('profiles').select('id,username,display_name,water_goal,onboarded,total_score,weight_goal,cheat_quota,cheat_used,cheat_reset_month,cheat_reset_week,system_notice,is_admin,feature_flags,return_state,exempt_log,accent_preference,notif_opt_in_history,onboarding_state,lifetime_gold,lifetime_silver,lifetime_red,routine_defs').eq('id',user.id).maybeSingle();
   const [profileRes]=await Promise.all([
     profilePromise,
     loadLog(TODAY, _snapPainted), // 스냅샷으로 이미 그린 경우 강제 revalidate
@@ -7010,13 +7010,21 @@ async function loadLog(key,force=false){
   }
 }
 async function loadRoutineDefinitions(){
-  const cachedWithMand=Object.values(logCache).filter(l=>l.mandatory&&l.mandatory.length>0);
-  if(cachedWithMand.length>0){
-    cachedWithMand.sort((a,b)=>b.mandatory.length-a.mandatory.length);
-    return cachedWithMand[0].mandatory.map(r=>({name:r.name,done:false,days:r.days||[0,1,2,3,4,5,6]}));
+  // 2026-06-08 fix: profile.routine_defs 가 canonical source (있으면 우선 사용).
+  // 없으면 가장 최근 (longest 아닌 latest) custom routine 만 fallback.
+  // 오염된 cache 가 미래로 복제되는 self-propagation 차단.
+  if(CP&&Array.isArray(CP.routine_defs)&&CP.routine_defs.length>0){
+    return CP.routine_defs.map(r=>({name:r.name,done:false,days:r.days||[0,1,2,3,4,5,6],_scoreType:r._scoreType||null,end_date:r.end_date||null,type:'custom'}));
   }
+  // 캐시는 가장 RECENT 한 날 (가장 큰 dateKey) 로 변경. longest 는 오염 위험.
+  const cachedEntries=Object.entries(logCache).filter(([k,l])=>l&&l.mandatory&&l.mandatory.length>0);
+  if(cachedEntries.length>0){
+    cachedEntries.sort((a,b)=>a[0]<b[0]?1:-1); // dateKey desc
+    return cachedEntries[0][1].mandatory.filter(r=>r&&r.name).map(r=>({name:r.name,done:false,days:r.days||[0,1,2,3,4,5,6],_scoreType:r._scoreType||null,end_date:r.end_date||null,type:'custom'}));
+  }
+  // DB 의 가장 최근 30일 중 가장 최근 mandatory 사용.
   const{data}=await sb.from('daily_logs').select('mandatory,log_date').eq('user_id',CU.id).not('mandatory','is',null).order('log_date',{ascending:false}).limit(30);
-  if(data&&data.length>0){const recent=data.find(d=>d.mandatory&&d.mandatory.length>0);if(recent)return recent.mandatory.map(r=>({name:r.name,done:false,days:r.days||[0,1,2,3,4,5,6]}));}
+  if(data&&data.length>0){const recent=data.find(d=>d.mandatory&&d.mandatory.length>0);if(recent)return recent.mandatory.filter(r=>r&&r.name).map(r=>({name:r.name,done:false,days:r.days||[0,1,2,3,4,5,6],_scoreType:r._scoreType||null,end_date:r.end_date||null,type:'custom'}));}
   return JSON.parse(JSON.stringify(DEFAULT_MAND));
 }
 
@@ -12680,7 +12688,7 @@ function delMand(i){
     sheet.remove();
     log.mandatory.splice(i,1);
     renderMandatory();
-    saveLog(selectedKey).then(()=>propagateMandatoryDefs(log.mandatory));
+    saveLog(selectedKey).then(()=>{propagateMandatoryDefs(log.mandatory);syncProfileRoutineDefs();});
   };
   document.getElementById('del-mand-cancel').onclick=()=>sheet.remove();
   sheet.onclick=(e)=>{if(e.target===sheet)sheet.remove();};
@@ -12800,7 +12808,24 @@ function saveMandatory(){
   // 2026-05-26 BUG FIX: 기존 전체 교체 → ADDITIVE merge (사용자 starckato 의 5/9 데이터 손실 원인).
   // saveMandatory 는 add/edit 의도이므로 미래의 기존 customs 보존하면서 새 def 만 union.
   propagateMandatoryDefsAdditive(log.mandatory);
+  // 2026-06-08: profile.routine_defs canonical source 동기화.
+  // 향후 loadRoutineDefinitions 가 이걸 우선 사용 → cache self-propagation 차단.
+  syncProfileRoutineDefs();
 }
+
+// canonical routine defs 를 profile 에 sync. 메모리 log.mandatory 의 customs 만 추출.
+async function syncProfileRoutineDefs(){
+  try{
+    if(!CU||!CU.id)return;
+    const customs=(log&&Array.isArray(log.mandatory))
+      ? log.mandatory.filter(m=>m&&m.type==='custom'&&m.name)
+                      .map(m=>({name:m.name,days:m.days||[0,1,2,3,4,5,6],_scoreType:m._scoreType||null,end_date:m.end_date||null}))
+      : [];
+    if(CP)CP.routine_defs=customs;
+    await sb.from('profiles').update({routine_defs:customs}).eq('id',CU.id);
+  }catch(e){console.warn('[syncProfileRoutineDefs]',e?.message||e);}
+}
+window.syncProfileRoutineDefs=syncProfileRoutineDefs;
 
 // ADD/EDIT propagate — 미래 14일 daily_logs.mandatory 에 새 def union (기존 보존).
 // 2026-05-26 신규: saveMandatory 가 호출. 기존 customs 손실 방지 (starckato 5/9 데이터 손실 사례).
@@ -12908,6 +12933,67 @@ async function propagateMandatoryDefs(defs){
     }
   }
 }
+
+// ── 2026-06-08: orphan routine 일괄 정리 admin 도구 ──
+// 사용: window.cleanupOrphanRoutine('🐱 고양이 화장실')
+// 효과:
+//   1) 모든 daily_logs.mandatory 에서 해당 name 의 custom routine 제거
+//   2) profile.routine_defs 에서도 제거 (있다면)
+//   3) logCache 동기화
+//   4) 모든 변경된 날짜 + 영향 받은 row 개수 리포트
+// 안전:
+//   - dry-run 모드 (2번째 인자 true) → DB 변경 없이 리포트만
+//   - 실제 실행 전 confirm 필요
+//   - 매칭은 정확한 name 비교 (오작동 방지)
+window.cleanupOrphanRoutine = async function(name, dryRun=true){
+  if(!CU||!CU.id){console.error('Not logged in');return;}
+  if(!name){console.error('Name required. Usage: cleanupOrphanRoutine("이름", dryRun=true)');return;}
+  console.log('═══ Orphan Routine Cleanup ═══');
+  console.log('Target name:', name);
+  console.log('Dry run:', dryRun);
+  // 1) 전체 daily_logs 가져와서 매칭 확인
+  const {data:logs,error} = await sb.from('daily_logs')
+    .select('log_date,mandatory')
+    .eq('user_id',CU.id)
+    .not('mandatory','is',null);
+  if(error){console.error('Fetch failed:',error.message);return;}
+  const affected = [];
+  for(const row of (logs||[])){
+    if(!Array.isArray(row.mandatory))continue;
+    const hasOrphan = row.mandatory.some(m=>m&&m.name===name);
+    if(!hasOrphan)continue;
+    const newMand = row.mandatory.filter(m=>!(m&&m.name===name));
+    affected.push({date:row.log_date,before:row.mandatory.length,after:newMand.length,newMandatory:newMand});
+  }
+  console.log('Affected dates:', affected.length);
+  console.table(affected.map(a=>({date:a.date,before:a.before,after:a.after})));
+  // 2) profile.routine_defs 체크
+  const {data:prof} = await sb.from('profiles').select('routine_defs').eq('id',CU.id).maybeSingle();
+  const profHas = Array.isArray(prof?.routine_defs)&&prof.routine_defs.some(r=>r&&r.name===name);
+  console.log('Profile routine_defs contains orphan:', profHas);
+  if(dryRun){
+    console.warn('DRY RUN — no DB changes. Re-run with cleanupOrphanRoutine("'+name+'", false) to apply.');
+    return {affected:affected.length, profHas, dryRun:true};
+  }
+  // 실제 실행 confirm
+  if(!confirm(`${affected.length}일 daily_logs + ${profHas?'profile 까지':'profile 제외'} 에서 "${name}" 제거. 계속?`)){console.log('Cancelled');return;}
+  // 3) daily_logs 일괄 update
+  for(const a of affected){
+    const {error:ue} = await sb.from('daily_logs').update({mandatory:a.newMandatory}).eq('user_id',CU.id).eq('log_date',a.date);
+    if(ue){console.warn('Update failed for',a.date,ue.message);continue;}
+    // logCache 동기화
+    if(logCache[a.date])logCache[a.date].mandatory = a.newMandatory;
+  }
+  // 4) profile.routine_defs update
+  if(profHas){
+    const newDefs = prof.routine_defs.filter(r=>!(r&&r.name===name));
+    await sb.from('profiles').update({routine_defs:newDefs}).eq('id',CU.id);
+    if(CP)CP.routine_defs = newDefs;
+  }
+  console.log('✓ Cleanup complete. Refresh page to see clean state.');
+  return {affected:affected.length, profHas, dryRun:false};
+};
+
 function toggleDay(el,idx){
   if(newMandDays.includes(idx)){newMandDays=newMandDays.filter(d=>d!==idx);el.classList.remove('on');}
   else{newMandDays.push(idx);el.classList.add('on');}

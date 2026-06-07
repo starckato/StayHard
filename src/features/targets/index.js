@@ -267,6 +267,8 @@ export function confirmPromoteTodo() {
   // T1-1 fix (2026-05-26): destructive propagate → additive
   // promote 시 미래 일정에 신규 routine 만 union, 기존 customs 보존.
   try { window.propagateMandatoryDefsAdditive?.(log.mandatory); } catch {}
+  // 6/8 fix: canonical routine_defs sync.
+  try { window.syncProfileRoutineDefs?.(); } catch {}
   if (window.showToast) window.showToast('↻ 매일 반복 루틴으로 변환됐어요');
 }
 

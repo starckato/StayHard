@@ -210,6 +210,8 @@ export async function obFinish(){
       // T1-1 fix (2026-05-26): destructive → additive 로 교체.
       // 첫 onboarding 은 existing=[] 이라 동작 동일, 재진입 시 기존 customs 보존.
       (window.propagateMandatoryDefsAdditive||window.propagateMandatoryDefs)(log.mandatory);
+      // 6/8 fix: canonical routine_defs 동기화 (loadDay 의 cache self-propagation 차단).
+      try{window.syncProfileRoutineDefs?.();}catch{}
       window.renderMandatory();
     }
   }
