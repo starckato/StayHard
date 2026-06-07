@@ -3,51 +3,57 @@
    keep CSS scope 좁게 — 앱 다른 영역과 격리.  */
 
 /* dev 모드 켜졌을 때 body 가 더 이상 중앙 정렬 X — 앱 좌측, 패널 우측 사이드바.
-   JS 가 body.qrok-dev-on 추가. */
-body.qrok-dev-on {
-  margin-left: 16px;
-  margin-right: 388px; /* 패널 360 + gap 28 */
-  max-width: 430px;
-  transition: margin 0.2s ease;
+   JS 가 body.qrok-dev-on 추가.
+   2026-06-07 fix: 좁은 viewport (모바일/iframe) 에선 side-by-side 가 .bnav 를
+   26px 로 짜부시킴. 따라서 @media (min-width:820px) 이상에서만 layout shift. */
+@media (min-width: 820px) {
+  body.qrok-dev-on {
+    margin-left: 16px;
+    margin-right: 388px; /* 패널 360 + gap 28 */
+    max-width: 430px;
+    transition: margin 0.2s ease;
+  }
+
+  /* 데브 모드에선 fixed-position .bnav 가 viewport 중앙이 아니라 body (앱) 와 같이 좌측 정렬 */
+  body.qrok-dev-on .bnav {
+    left: 16px;
+    transform: none;
+    width: min(430px, calc(100vw - 388px - 16px));
+  }
+
+  /* 모달 overlay 들도 inset:0 (viewport 전체) — dev 모드에선 앱 frame 안으로 제한 */
+  body.qrok-dev-on .modal-overlay,
+  body.qrok-dev-on .exempt-modal-overlay {
+    left: 16px;
+    right: 388px;
+  }
+
+  /* Fullscreen overlay 들 (position:fixed; left:50%; transform:translateX(-50%) 패턴) —
+     dev 모드에선 viewport 중앙이 아닌 app frame 안으로 정렬. */
+  body.qrok-dev-on #workout-start-screen,
+  body.qrok-dev-on #workout-session-overlay,
+  body.qrok-dev-on #ex-library-overlay,
+  body.qrok-dev-on #routine-modal-overlay,
+  body.qrok-dev-on #cv-overlay,
+  body.qrok-dev-on #muscle-map-overlay,
+  body.qrok-dev-on #inbody-popup,
+  body.qrok-dev-on #inbody-edit-popup,
+  body.qrok-dev-on #qrok-share-overlay {
+    left: 16px !important;
+    transform: none !important;
+    max-width: min(430px, calc(100vw - 388px - 16px)) !important;
+  }
+
+  /* inset:0 + flex 으로 viewport 풀로 펼치는 modal — dev 모드에선 right 도 제한 */
+  body.qrok-dev-on #add-exercise-modal,
+  body.qrok-dev-on #ws-next-sheet,
+  body.qrok-dev-on #ws-finish-sheet {
+    left: 16px !important;
+    right: 388px !important;
+  }
 }
 
-/* 데브 모드에선 fixed-position .bnav 가 viewport 중앙이 아니라 body (앱) 와 같이 좌측 정렬 */
-body.qrok-dev-on .bnav {
-  left: 16px;
-  transform: none;
-  width: min(430px, calc(100vw - 388px - 16px));
-}
-
-/* 모달 overlay 들도 inset:0 (viewport 전체) — dev 모드에선 앱 frame 안으로 제한 */
-body.qrok-dev-on .modal-overlay,
-body.qrok-dev-on .exempt-modal-overlay {
-  left: 16px;
-  right: 388px;
-}
-
-/* Fullscreen overlay 들 (position:fixed; left:50%; transform:translateX(-50%) 패턴) —
-   dev 모드에선 viewport 중앙이 아닌 app frame 안으로 정렬. */
-body.qrok-dev-on #workout-start-screen,
-body.qrok-dev-on #workout-session-overlay,
-body.qrok-dev-on #ex-library-overlay,
-body.qrok-dev-on #routine-modal-overlay,
-body.qrok-dev-on #cv-overlay,
-body.qrok-dev-on #muscle-map-overlay,
-body.qrok-dev-on #inbody-popup,
-body.qrok-dev-on #inbody-edit-popup,
-body.qrok-dev-on #qrok-share-overlay {
-  left: 16px !important;
-  transform: none !important;
-  max-width: min(430px, calc(100vw - 388px - 16px)) !important;
-}
-
-/* inset:0 + flex 으로 viewport 풀로 펼치는 modal — dev 모드에선 right 도 제한 */
-body.qrok-dev-on #add-exercise-modal,
-body.qrok-dev-on #ws-next-sheet,
-body.qrok-dev-on #ws-finish-sheet {
-  left: 16px !important;
-  right: 388px !important;
-}
+/* 좁은 viewport 처리는 아래쪽 @media (max-width: 830px) 블록이 담당. */
 
 #qrok-dev {
   position: fixed;
