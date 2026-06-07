@@ -27,7 +27,7 @@ import * as weight from './features/weight/index.js';
 import * as rewards from './features/rewards/index.js';
 import * as dateHeatmap from './features/date-heatmap/index.js';
 import * as cubes from './features/cubes/index.js';
-import './features/cubes/tests.js'; // window.runCubeTests() 콘솔에서 호출 가능
+// 2026-06-07: tests 는 dev 전용 — production 번들에서 제외 (아래 conditional dynamic import).
 
 // Platform abstractions (web/iOS/Android unified APIs)
 import * as platform from './platform/platform.js';
@@ -45,30 +45,39 @@ import * as flags from './features/flags/index.js';
 import * as metrics from './features/metrics/index.js';
 import * as firstCube from './features/activation/first-cube.js';
 import * as returnerGrace from './features/returner/grace.js';
-import './features/returner/tests.js'; // window.runReturnerTests() 노출
 import * as exempt from './features/exempt/index.js';
-import './features/exempt/tests.js'; // window.runExemptTests() 노출
 import * as deeplink from './features/deeplink/index.js';
 import * as notifOptIn from './features/notif/opt-in-scheduler.js';
 import * as volumeDelta from './features/volume-delta/index.js';
 import * as targets from './features/targets/index.js';
-import './features/targets/tests.js'; // window.runTargetsTests() 노출
-import './data/score-events.tests.js'; // window.runScoreEventsTests() 노출
-import './lib/cheat.tests.js'; // window.runCheatTests() 노출
-import './lib/tier.tests.js'; // window.runTierTests() 노출
-import './lib/date.tests.js'; // window.runDateTests() 노출
-import './features/activation/first-cube.tests.js'; // window.runFirstCubeTests() 노출
-import './features/notif/opt-in-scheduler.tests.js'; // window.runOptInTests() 노출
-import './features/volume-delta/tests.js'; // window.runVolumeDeltaTests() 노출
-import './features/metrics/tests.js'; // window.runMetricsTests() 노출
 import * as mandatoryMerge from './features/mandatory/merge.js';
-import './features/mandatory/tests.js'; // window.runMandatoryTests() 노출 — 5/9 사태 방어
-import './tests/run-all.js'; // window.runAllTests() 통합 runner
+
+// ─── Tests — dev 전용 (build-time dead-code 제거) ───────
+// __DEV__ 는 esbuild define 으로 production 빌드시 false. `if (false) {...}` 안의
+// import 들은 죽은 코드로 제거되어 production 번들에서 완전 제외.
+// node CI 는 별도 node-runner.mjs 가 직접 import 하므로 영향 없음.
+if (__DEV__) {
+  import('./features/cubes/tests.js');
+  import('./features/returner/tests.js');
+  import('./features/exempt/tests.js');
+  import('./features/targets/tests.js');
+  import('./data/score-events.tests.js');
+  import('./lib/cheat.tests.js');
+  import('./lib/tier.tests.js');
+  import('./lib/date.tests.js');
+  import('./features/activation/first-cube.tests.js');
+  import('./features/notif/opt-in-scheduler.tests.js');
+  import('./features/volume-delta/tests.js');
+  import('./features/metrics/tests.js');
+  import('./features/mandatory/tests.js');
+  import('./features/status-band/tests.js');
+  import('./tests/run-all.js');
+}
 import * as cubesUiEvents from './features/cubes/ui-events.js';
 import * as water from './features/water/index.js';
 import * as stickyHeader from './features/sticky-header/index.js';
 import * as statusBand from './features/status-band/index.js';
-import './features/status-band/tests.js'; // window.runStatusBandTests() 노출
+// status-band/tests.js 는 위 dev-only 동적 import block 으로 이동.
 // Dev inspector — self-activates on ?dev=1 (production 빌드에선 early-return).
 import './features/dev-inspector/index.js';
 

@@ -42,6 +42,11 @@ const ctx = await esbuild.context({
   treeShaking: true,
   // Drop console.* from production builds; keep during watch for debugging.
   drop: isWatch ? [] : ['console'],
+  // __DEV__ define — dev (watch) 모드에서만 true. production 빌드에선 false 가 되어
+  // `if (__DEV__) {...}` 블록이 죽은 코드로 제거 (테스트 모듈 등 dev 전용 코드).
+  define: {
+    __DEV__: isWatch ? 'true' : 'false',
+  },
   loader: { '.png': 'file', '.svg': 'file' },
   logLevel: 'info'
 });
