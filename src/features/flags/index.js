@@ -81,12 +81,14 @@ export function snapshot() {
 // Default flag values — Phase 1/2/3 기능 기본 off.
 // 내 계정에서 true 로 켜서 테스트 후 전원 롤아웃.
 export const DEFAULT_FLAGS = {
-  first_cube_card:  true,   // Phase 1C — 2026-05-26 enable (P0-#2 activation funnel)
-  returner_grace:   true,   // Phase 1D — 2026-05-26 enable (P1 returner protection)
-  exempt_tap:       true,   // Phase 2A — 2026-05-26 enable (P1 회식/여행/아픔 1-tap 면제)
+  // 2026-06-13: 사용자 결정으로 안정성 우선 — 미점검·반복 에러 발생 기능 일괄 OFF.
+  // 향후 v1 boundary 확정 후 개별 검증하며 재오픈.
+  first_cube_card:  false,  // OFF — 첫 큐브 추천 카드 (반복 에러)
+  returner_grace:   false,  // OFF — 복귀자 보호 (반복 에러)
+  exempt_tap:       true,   // KEEP — 면제 1-tap (안정, 사용자 요구 기능)
   layout_v2:        false,  // Phase 2B (Status Band 축소) — index.html .sb 인라인 룰로 대체됨
   deeplink:         false,  // Phase 2C
-  opt_in_d3:        true,   // Phase 2D — 2026-05-26 enable (P1 D3 streak 알림 opt-in 프롬프트)
+  opt_in_d3:        false,  // OFF — D3 알림 opt-in 프롬프트 전체 비활성
   volume_delta_card: false, // Phase 3A
   accent_picker:    false,  // Phase 3B
 };

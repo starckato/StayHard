@@ -59,6 +59,14 @@ async function _load() {
 
 /** Request permission. Returns granted boolean. Web: false (no-op). */
 export async function requestPermission() {
+  // 2026-06-13: 알림 전면 비활성 — permission 요청 차단 (UI 팝업 방지).
+  console.log('[notify-perm-disabled]');
+  return 'denied';
+  // ── 이하 dead code (참고용 보존) ──
+  // eslint-disable-next-line no-unreachable
+  return _requestPermissionLegacy();
+}
+async function _requestPermissionLegacy() {
   if (!isNative()) return false;
   try {
     const { LocalNotifications } = await _load();
@@ -188,6 +196,11 @@ export async function ensureNotifPermission() {
  * @returns {Promise<boolean>}
  */
 export async function notifyClient(title, body, opts = {}) {
+  // 2026-06-13: 알림 전면 비활성 — 사용자 결정. 안정성 확보 후 재오픈.
+  // call site 가 많아 함수 자체를 no-op 으로. 콘솔 로그만 남김.
+  console.log('[notify-disabled]', title, body);
+  return false;
+  // ── 이하 dead code (참고용 보존) ──
   const tag = opts.tag || 'qrok-trainer';
   const icon = opts.icon || '/icon-192.png';
   // 1. Native (Capacitor) — at = now+0.5s

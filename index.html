@@ -63,22 +63,22 @@
      외부 link 2개 제거 → render-blocking CSS 요청 -2. trainer.html 등은 여전히 link. -->
 <!-- Perf (2026-05-25): 남은 sync CSS 도 모두 async — splash 가 1.6s 가리는 동안 모두 로드 완료.
      FOUC 위험 거의 없음 + render-blocking 0 → splash 즉시 paint. -->
-<link href="/src/styles/states.css?v=7d3ca917" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/styles/components.css?v=7d3ca917" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/styles/icons.css?v=7d3ca917" rel="stylesheet" media="print" onload="this.media='all'">
-<noscript><link href="/src/styles/states.css?v=7d3ca917" rel="stylesheet"><link href="/src/styles/components.css?v=7d3ca917" rel="stylesheet"><link href="/src/styles/icons.css?v=7d3ca917" rel="stylesheet"></noscript>
+<link href="/src/styles/states.css?v=f43f4860" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/styles/components.css?v=f43f4860" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/styles/icons.css?v=f43f4860" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link href="/src/styles/states.css?v=f43f4860" rel="stylesheet"><link href="/src/styles/components.css?v=f43f4860" rel="stylesheet"><link href="/src/styles/icons.css?v=f43f4860" rel="stylesheet"></noscript>
 <!-- Feature folder CSS — 한 폴더 = 한 기능 컨벤션 (ARCHITECTURE.md).
      Perf (2026-05-25): media="print" + onload swap 으로 async 로딩 → 초기 paint 차단 X.
      splash 가 1.6s+ 표시되므로 그 사이 모두 로드되어 FOUC 위험 거의 없음. -->
-<link href="/src/features/targets/targets.css?v=7d3ca917" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/cubes/cubes-ui.css?v=7d3ca917" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/date-heatmap/date-heatmap.css?v=7d3ca917" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/dev-inspector/dev-inspector.css?v=7d3ca917" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/water/water.css?v=7d3ca917" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/sticky-header/sticky-header.css?v=7d3ca917" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/status-band/status-band.css?v=7d3ca917" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/mountain/mountain.css?v=7d3ca917" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/workout-session/workout-session.css?v=7d3ca917" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/targets/targets.css?v=f43f4860" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/cubes/cubes-ui.css?v=f43f4860" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/date-heatmap/date-heatmap.css?v=f43f4860" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/dev-inspector/dev-inspector.css?v=f43f4860" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/water/water.css?v=f43f4860" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/sticky-header/sticky-header.css?v=f43f4860" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/status-band/status-band.css?v=f43f4860" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/mountain/mountain.css?v=f43f4860" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/workout-session/workout-session.css?v=f43f4860" rel="stylesheet" media="print" onload="this.media='all'">
 <style>
 /* :root 토큰은 src/styles/tokens.{shared,dark}.css 로 이전됨 (Phase 0).
    index.html 은 다크 팔레트 사용. 추가 sub-palette (--radius-sm 등 legacy) 가
@@ -1494,7 +1494,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
      app.js bundle → supabase ESM 포함 (2026-05-25 perf), inline body scripts 가 의존하므로 sync. -->
 <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-<script src="/dist/app.js?v=7d3ca917"></script>
+<script src="/dist/app.js?v=f43f4860"></script>
 
 <script>
   // QROK Splash — 앱 ready 까지 대기 후 fade out. 좌측 상단/중앙 loading 스피너 가림.
@@ -5972,10 +5972,13 @@ async function checkYesterdayReminder(){
   if(handled===TODAY)return;
 
   // Sprint E: 복귀 모드 감지 — 3일 이상 공백이면 soft welcome-back으로 분기
-  _returnerGap=await _daysSinceLastActivity();
-  if(_returnerGap>=3&&_returnerGap<999){
-    showReturnerRibbon(_returnerGap);
-    return;
+  // 2026-06-13: FF gate — returner_grace OFF 일 때 ribbon 도 skip.
+  if(window.FF&&window.FF.get('returner_grace',false)){
+    _returnerGap=await _daysSinceLastActivity();
+    if(_returnerGap>=3&&_returnerGap<999){
+      showReturnerRibbon(_returnerGap);
+      return;
+    }
   }
 
   // Load yesterday's log
@@ -6323,13 +6326,8 @@ async function onLogin(user){
       window.sh.notifications.registerForPush().catch(e=>console.warn('[push] register',e));
     }
   }catch(e){console.warn('[push] start failed',e);}
-  // 로컬 알림 예약 복원 — 앱 재설치/OS 재부팅 등으로 스케줄 소실된 경우 대비. 저장된 prefs 재적용.
-  try{
-    if(window.sh&&window.sh.localNotifications){
-      const prefs=window.sh.localNotifications.loadPrefs(user.id);
-      if(prefs&&prefs.enabled){window.sh.localNotifications.applyPrefs(prefs).catch(()=>{});}
-    }
-  }catch(e){console.warn('[local-notif] restore',e);}
+  // 2026-06-13: 알림 전면 비활성 — 저장된 prefs 자동 재적용 차단.
+  // 사용자 결정으로 알림 기능 일시 중단 (안정성 확보 후 재오픈).
   // Feature flags 로드 — Phase 1-3 신규 기능 gating.
   try{
     if(window.sh&&window.sh.flags){window.sh.flags.loadFlags().then(()=>{
@@ -6959,20 +6957,42 @@ async function confirmDeleteAccount(){
 }
 
 async function doSignOut(){
+  console.log('[doSignOut] start');
+  // 시각 피드백 + 중복 클릭 방지
+  const btn=document.querySelector('.signout-btn');
+  if(btn){btn.disabled=true;btn.textContent='로그아웃 중…';}
   _initDone=false;
-  await sb.auth.signOut();
-  // 반드시 모든 상태 초기화 — 다른 계정 로그인 시 데이터 혼재 방지
-  CU=null;CP=null;activeComp=null;
-  // logCache 완전 초기화
-  Object.keys(logCache).forEach(k=>delete logCache[k]);
-  log=emptyLog();
-  selectedDate=new Date();selectedKey=TODAY;
-  userRoutines=[];
-  _compLastFetch=0;
-  closeModal('profile-modal');
-  hide('app-screen');
-  showAuth();
+  // 1) 로컬 상태 즉시 초기화 — API 실패해도 로그아웃 성공해야 함.
+  try{
+    CU=null;CP=null;activeComp=null;
+    Object.keys(logCache).forEach(k=>delete logCache[k]);
+    log=emptyLog();
+    selectedDate=new Date();selectedKey=TODAY;
+    userRoutines=[];
+    _compLastFetch=0;
+  }catch(e){console.warn('[doSignOut] state reset:',e);}
+  // 2) Supabase signOut 은 timeout 가드 + 실패해도 진행.
+  try{
+    const timeout=new Promise((_,rej)=>setTimeout(()=>rej(new Error('signOut timeout 5s')),5000));
+    await Promise.race([sb.auth.signOut(),timeout]);
+    console.log('[doSignOut] sb.auth.signOut OK');
+  }catch(e){
+    console.warn('[doSignOut] sb.auth.signOut 실패 (계속 진행):',e?.message||e);
+  }
+  // 3) localStorage 의 세션 캐시 강제 정리 (Supabase v2 키 패턴).
+  try{
+    Object.keys(localStorage).forEach(k=>{
+      if(k.startsWith('sb-')||k.includes('supabase'))localStorage.removeItem(k);
+    });
+  }catch(e){console.warn('[doSignOut] localStorage clean:',e);}
+  // 4) UI 전환.
+  try{closeModal('profile-modal');}catch(e){}
+  try{hide('app-screen');}catch(e){}
+  try{showAuth();}catch(e){console.warn('[doSignOut] showAuth:',e);}
+  if(btn){btn.disabled=false;btn.textContent='로그아웃';}
+  console.log('[doSignOut] done');
 }
+window.doSignOut=doSignOut;
 
 // ── LOAD / SAVE ──
 async function loadLog(key,force=false){
@@ -8481,6 +8501,8 @@ async function shareInvite(){
 function renderFirstCubeCard(){
   try{
     const el=document.getElementById('first-cube-card');if(!el)return;
+    // 2026-06-13: FF gate — 첫 큐브 카드 OFF.
+    if(!window.FF||!window.FF.get('first_cube_card',false)){el.hidden=true;el.innerHTML='';return;}
     const fc=window.sh&&window.sh.firstCube;if(!fc){el.hidden=true;return;}
     if(!CP||fc.hasEarned(CP)){el.hidden=true;el.innerHTML='';return;}
     const completion=fc.checkAnyCompletion(log);
