@@ -1,0 +1,12 @@
+{
+  "name": "qrok-mcp",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "QROK MCP server — 외부 Claude 세션이 큐록을 읽고 편집한다",
+  "bin": { "qrok-mcp": "./index.mjs" },
+  "engines": { "node": ">=18" },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0"
+  }
+}
