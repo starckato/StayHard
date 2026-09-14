@@ -41,3 +41,20 @@ android/
 
 # npm
 node_modules/
+
+# ── 2026-09-14 repo 위생 (전면 감사 후속) ──
+# 세션 산출물·백업·스냅샷 — 커밋 금지
+android.backup-stayhard/
+.playwright-mcp/
+snap1.yml
+*.png.bak
+cube-stack-verify.png
+index-mobile-auth.png
+production-*.png
+trainer-light-auth.png
+vercel-current.jpeg
+assets/sprite_spacing_backup_362/
+assets/tier4/backup_before_walk_style_unify/
+assets/tier5/backup_before_reference_fix/
+assets/walk_backup_before_sideview_fix/
+.qrok-sb-pat

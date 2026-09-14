@@ -24,6 +24,7 @@
 //     --project-ref uvaosxhsjscigheyymus --no-verify-jwt
 
 import { createClient, SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
+import { EXERCISE_CATALOG } from './exercise-catalog.ts';
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -37,7 +38,8 @@ const VALID_SCOPES = ['read', 'assign:write', 'goals:write', 'routines:write'] a
 type Scope = typeof VALID_SCOPES[number];
 
 const CORS = {
-  'Access-Control-Allow-Origin': '*',
+  // 브라우저 컨텍스트는 앱 오리진만. 비브라우저 호출(MCP/CLI/서버)은 CORS 의 영향을 받지 않는다.
+  'Access-Control-Allow-Origin': 'https://qrok.app',
   'Access-Control-Allow-Headers': 'authorization, content-type',
   'Access-Control-Allow-Methods': 'GET, POST, PATCH, PUT, DELETE, OPTIONS',
 };
@@ -70,6 +72,57 @@ function serviceClient(): SupabaseClient {
 }
 
 const todayISO = () => new Date().toISOString().slice(0, 10);
+
+// ── 배정 payload 검증 ──────────────────────────────────────────
+// 남용 캡: 운동명에 메모를 욱여넣는 것(썸네일 매칭 파괴), 무제한 항목으로 payload 를
+// 비대화시키는 것, 제어문자/HTML 주입을 여기서 차단한다.
+const MAX_WORKOUTS = 5;
+const MAX_EXERCISES = 15;
+const MAX_SETS = 20;
+const MAX_NAME_LEN = 60;
+const MAX_NOTE_LEN = 200;
+
+function cleanText(v: string, max: number): string {
+  // 제어문자 제거 + 트림 + 길이 캡
+  return v.replace(/[\u0000-\u001f\u007f]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, max);
+}
+
+// 반환: 오류 메시지 | null. 통과 시 workouts 를 제자리에서 정규화(이름/메모 클린)한다.
+function validateWorkouts(workouts: unknown): string | null {
+  if (!Array.isArray(workouts) || !workouts.length) {
+    return 'Field "workouts" must be a non-empty array.';
+  }
+  if (workouts.length > MAX_WORKOUTS) return `Too many workouts (max ${MAX_WORKOUTS}).`;
+  for (const w of workouts) {
+    if (typeof w !== 'object' || w === null) return 'Each workout must be an object.';
+    if (typeof w.name !== 'string' || !w.name.trim()) return 'Each workout needs a "name".';
+    w.name = cleanText(w.name, MAX_NAME_LEN);
+    if (!w.name) return 'Workout "name" is empty after sanitization.';
+    if (w.note != null) {
+      if (typeof w.note !== 'string') return '"note" must be a string.';
+      w.note = cleanText(w.note, MAX_NOTE_LEN);
+    }
+    if (w.sets != null) {
+      if (!Array.isArray(w.sets)) return '"sets" must be an array.';
+      if (w.sets.length > MAX_SETS) return `Too many sets (max ${MAX_SETS}).`;
+    }
+  }
+  return null;
+}
+
+// 운동명 카탈로그 매칭 — 정확 일치 우선, 아니면 부분 일치
+function searchCatalog(qstr: string) {
+  const needle = qstr.trim().toLowerCase();
+  if (!needle) return [];
+  const exact = EXERCISE_CATALOG.filter((x) => x.n.toLowerCase() === needle);
+  if (exact.length) return exact;
+  return EXERCISE_CATALOG.filter((x) => x.n.toLowerCase().includes(needle)).slice(0, 20);
+}
+
+function unmatchedNames(workouts: { name: string }[]): string[] {
+  const known = new Set(EXERCISE_CATALOG.map((x) => x.n));
+  return [...new Set(workouts.map((w) => w.name).filter((n) => !known.has(n)))];
+}
 
 // ── PAT 인증 ───────────────────────────────────────────────────
 
@@ -161,6 +214,16 @@ async function createAgent(req: Request): Promise<Response> {
   const body = await req.json().catch(() => ({}));
   const name = typeof body.name === 'string' && body.name.trim() ? body.name.trim() : null;
   if (!name) return fail(400, 'bad_request', 'Field "name" is required.');
+
+  // 소유자당 활성 에이전트 상한 — 무제한 신원/토큰 발급 차단
+  const { count: activeCount } = await svc
+    .from('agent_tokens')
+    .select('id', { count: 'exact', head: true })
+    .eq('owner_user_id', owner.id)
+    .is('revoked_at', null);
+  if ((activeCount ?? 0) >= 10) {
+    return fail(429, 'too_many_agents', 'Active agent limit reached (10). Revoke unused tokens first.');
+  }
 
   const requested: Scope[] = Array.isArray(body.scopes) && body.scopes.length
     ? body.scopes.filter((s: string) => VALID_SCOPES.includes(s as Scope))
@@ -259,6 +322,28 @@ async function route(req: Request, path: string, auth: AgentAuth): Promise<Respo
     ? await req.json().catch(() => ({}))
     : {};
 
+  // GET /exercises?q= — 운동 카탈로그 검색.
+  // 배정 전 타이틀을 여기서 먼저 찾을 것: 카탈로그 명칭을 그대로 쓰면 앱에서 썸네일이 표시된다.
+  // 검색 결과가 없으면 신규 명칭 배정도 허용되지만 썸네일 없이 텍스트로만 렌더된다.
+  if (req.method === 'GET' && path === 'exercises') {
+    const denied = requireScope(auth, 'read'); if (denied) return denied;
+    const qstr = q.get('q') ?? '';
+    if (!qstr.trim()) {
+      return json({
+        total: EXERCISE_CATALOG.length,
+        exercises: EXERCISE_CATALOG.map((x) => ({ name: x.n, muscle: x.m, equipment: x.e, has_thumbnail: x.g })),
+      });
+    }
+    const hits = searchCatalog(qstr);
+    return json({
+      query: qstr,
+      exercises: hits.map((x) => ({ name: x.n, muscle: x.m, equipment: x.e, has_thumbnail: x.g })),
+      hint: hits.length
+        ? 'Use "name" verbatim as the exercise title so the app shows its thumbnail. Extra instructions go in "note".'
+        : 'No catalog match. You may assign a new title, but it will render without a thumbnail. Keep titles short; put details in "note".',
+    });
+  }
+
   // GET /me
   if (req.method === 'GET' && path === 'me') {
     const denied = requireScope(auth, 'read'); if (denied) return denied;
@@ -296,7 +381,9 @@ async function route(req: Request, path: string, auth: AgentAuth): Promise<Respo
   // GET /assignments?from=&to=
   if (req.method === 'GET' && path === 'assignments') {
     const denied = requireScope(auth, 'read'); if (denied) return denied;
-    let qb = auth.svc.from('workout_assignments').select('*').eq('client_id', client);
+    let qb = auth.svc.from('workout_assignments')
+      .select('id, trainer_id, client_id, assigned_for_date, payload, status, started_at, completed_at, created_at')
+      .eq('client_id', client);
     if (q.get('from')) qb = qb.gte('assigned_for_date', q.get('from')!);
     if (q.get('to')) qb = qb.lte('assigned_for_date', q.get('to')!);
     const { data, error } = await qb.order('assigned_for_date', { ascending: false });
@@ -307,23 +394,28 @@ async function route(req: Request, path: string, auth: AgentAuth): Promise<Respo
   // POST /assignments
   if (req.method === 'POST' && path === 'assignments') {
     const denied = requireScope(auth, 'assign:write'); if (denied) return denied;
-    if (!Array.isArray(body.workouts) || !body.workouts.length) {
-      return fail(400, 'bad_request', 'Field "workouts" must be a non-empty array.');
-    }
+    const verr = validateWorkouts(body.workouts);
+    if (verr) return fail(400, 'bad_request', verr);
     const r = await act(auth, 'assign', {
       assigned_for: body.assigned_for ?? todayISO(),
       payload: { workouts: body.workouts },
     });
     if (r.error) return fail(400, 'assign_failed', r.error);
-    return json(r.data, 201);
+    const unknown = unmatchedNames(body.workouts);
+    return json({
+      ...(r.data as Record<string, unknown>),
+      ...(unknown.length ? {
+        unmatched_names: unknown,
+        hint: 'These titles are not in the exercise catalog, so no thumbnail will show. Search GET /exercises?q= first and reuse the catalog name when one exists.',
+      } : {}),
+    }, 201);
   }
 
   // PATCH /assignments/:id
   if (req.method === 'PATCH' && path.startsWith('assignments/')) {
     const denied = requireScope(auth, 'assign:write'); if (denied) return denied;
-    if (!Array.isArray(body.workouts) || !body.workouts.length) {
-      return fail(400, 'bad_request', 'Field "workouts" must be a non-empty array.');
-    }
+    const verr = validateWorkouts(body.workouts);
+    if (verr) return fail(400, 'bad_request', verr);
     const r = await act(auth, 'update_assignment', {
       assignment_id: path.slice('assignments/'.length),
       payload: { workouts: body.workouts },
@@ -354,7 +446,7 @@ async function route(req: Request, path: string, auth: AgentAuth): Promise<Respo
   if (req.method === 'GET' && path === 'routines') {
     const denied = requireScope(auth, 'read'); if (denied) return denied;
     const { data, error } = await auth.svc
-      .from('user_routines').select('*').eq('user_id', client);
+      .from('user_routines').select('id, user_id, name, exercises, created_at, updated_at').eq('user_id', client);
     if (error) return fail(500, 'read_failed', error.message);
     return json({ routines: data ?? [] });
   }
@@ -362,6 +454,20 @@ async function route(req: Request, path: string, auth: AgentAuth): Promise<Respo
   // PUT /routines
   if (req.method === 'PUT' && path === 'routines') {
     const denied = requireScope(auth, 'routines:write'); if (denied) return denied;
+    if (typeof body.name === 'string') body.name = cleanText(body.name, MAX_NAME_LEN);
+    if (Array.isArray(body.exercises)) {
+      if (body.exercises.length > 30) return fail(400, 'bad_request', 'Too many exercises (max 30).');
+      for (const ex of body.exercises) {
+        if (typeof ex !== 'object' || ex === null || typeof ex.name !== 'string' || !ex.name.trim()) {
+          return fail(400, 'bad_request', 'Each routine exercise needs a "name".');
+        }
+        ex.name = cleanText(ex.name, MAX_NAME_LEN);
+        if (ex.note != null) {
+          if (typeof ex.note !== 'string') return fail(400, 'bad_request', '"note" must be a string.');
+          ex.note = cleanText(ex.note, MAX_NOTE_LEN);
+        }
+      }
+    }
     const r = await act(auth, 'upsert_routine', { routine: body });
     if (r.error) return fail(400, 'routine_failed', r.error);
     return json(r.data);

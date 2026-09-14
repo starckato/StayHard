@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <!-- no-cache 메타태그 제거 (2026-05-25, perf fix): index.html 은 ?v= cache-bust 로 갱신,
      /dist/app.js · /dist/app.css 는 동일 ?v= 로 long-cache 가능. 재방문 사용자 다운로드 절감. -->
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#0a0a0c">
@@ -1567,12 +1567,13 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
         <button type="button" onclick="suTogglePw2()" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text3);font-size:var(--text-lg);" id="su-pw2-eye"></button>
       </div>
     </div>
+    <label style="display:flex;align-items:flex-start;gap:9px;margin:2px 2px 10px;cursor:pointer;font-size:var(--text-xs);color:var(--text3);line-height:1.6;">
+      <input type="checkbox" id="su-agree" style="margin-top:2px;width:16px;height:16px;flex-shrink:0;accent-color:var(--accent);">
+      <span><a href="/terms" target="_blank" rel="noopener" style="color:var(--text2);text-decoration:underline;">이용약관</a> 및
+      <a href="/privacy" target="_blank" rel="noopener" style="color:var(--text2);text-decoration:underline;">개인정보처리방침</a>에 동의합니다. (필수)</span>
+    </label>
     <button class="abtn" id="su-btn" onclick="doSignup()">계정 만들기</button>
     <div class="aerr" id="su-err" style="min-height:18px;"></div>
-    <div style="font-size:var(--text-xs);color:var(--text3);text-align:center;margin-top:6px;line-height:1.6;">
-      계정 만들기 시 <a href="/terms" target="_blank" rel="noopener" style="color:var(--text2);text-decoration:underline;">이용약관</a> 및
-      <a href="/privacy" target="_blank" rel="noopener" style="color:var(--text2);text-decoration:underline;">개인정보처리방침</a> 에 동의한 것으로 간주됩니다.
-    </div>
   </div>
   <!-- 이메일 인증 대기 화면 — Supabase confirm-email 활성 시 노출. doSignup 후 session 없을 때 표시. -->
   <div class="aform" id="auth-verify" style="display:none;text-align:center;">
@@ -3667,11 +3668,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
 <div id="room-overlay" style="display:none;position:fixed;top:0;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;height:100%;z-index:900;flex-direction:column;background:#0a0a10;overflow:hidden;">
   <!-- 닫기 버튼 (상단 우측) -->
   <button onclick="closeRoomOverlay()" style="position:absolute;top:env(safe-area-inset-top,12px);right:12px;z-index:10;width:34px;height:34px;border-radius:50%;background:rgba(0,0,0,.5);backdrop-filter:blur(8px);border:0.5px solid rgba(255,255,255,.15);color:var(--text2);font-size:var(--text-xl);cursor:pointer;display:flex;align-items:center;justify-content:center;touch-action:manipulation;margin-top:8px;">✕</button>
-  <!-- 진화형 캐릭터 coming soon 뱃지 -->
-  <div style="position:absolute;top:env(safe-area-inset-top,12px);left:14px;z-index:10;margin-top:14px;padding:6px 12px;background:rgba(10,10,16,0.6);backdrop-filter:blur(8px);border:0.5px solid var(--accent-tint-4);border-radius:var(--radius-xl);display:inline-flex;align-items:center;gap:8px;pointer-events:none;">
-    <span style="width:6px;height:6px;background:var(--accent);border-radius:50%;box-shadow:0 0 8px #ff4d4d;"></span>
-    <span style="font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;font-weight:600;color:var(--accent);font-family:'DM Mono',monospace;">진화형 캐릭터 · Coming Soon</span>
-  </div>
+  <!-- 진화형 캐릭터 배지 제거 (2026-09-14) — 상시 "Coming Soon" 노출은 미완성 인상만 줌 -->
   <!-- 캔버스 씬 (전체 채움) -->
   <div style="position:relative;width:100%;flex:1;overflow:hidden;">
     <canvas id="room-canvas" width="520" height="520" style="display:block;width:100%;height:100%;object-fit:contain;image-rendering:pixelated;cursor:default;"></canvas>
@@ -4029,7 +4026,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
       <div style="font-size:10.5px;color:var(--text3);margin-top:8px;line-height:1.5;">앱 전체 포인트 컬러가 바뀐다. 기록은 그대로.</div>
     </div>
 
-    <div id="notif-prefs-card" style="margin:0 0 12px;padding:14px;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius-lg);">
+    <div id="notif-prefs-card" style="display:none;margin:0 0 12px;padding:14px;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius-lg);">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
         <div style="font-size:var(--text-2xs);font-weight:700;color:var(--text3);letter-spacing:0.08em;text-transform:uppercase;">알림</div>
         <label style="display:flex;align-items:center;gap:7px;cursor:pointer;">
@@ -4146,13 +4143,13 @@ function renderAddRoutineTab(){
     return;
   }
   body.innerHTML=userRoutines.map(r=>{
-    const exNames=(r.exercises||[]).map(e=>e.name);
+    const exNames=(r.exercises||[]).map(e=>esc(e.name||''));
     const preview=exNames.slice(0,3).join(' · ')+(exNames.length>3?' 외 '+(exNames.length-3)+'개':'');
     const initial=r.name?r.name[0]:'?';
     return`<div onclick="showRoutineConfirmSheet('${r.id}')" style="display:flex;align-items:center;gap:11px;padding:12px;background:var(--surface2);border-radius:var(--radius-lg);margin:0 18px 7px;border:1px solid transparent;cursor:pointer;touch-action:manipulation;">
-      <div style="width:36px;height:36px;border-radius:var(--radius-md);background:var(--accent-bg);border:1px solid var(--accent-bd);display:flex;align-items:center;justify-content:center;font-size:var(--text-base);flex-shrink:0;">💪</div>
+      <div style="width:36px;height:36px;border-radius:var(--radius-md);background:var(--accent-bg);border:1px solid var(--accent-bd);display:flex;align-items:center;justify-content:center;flex-shrink:0;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4v16M18 4v16M6 12h12"/><rect x="2" y="9" width="4" height="6" rx="1"/><rect x="18" y="9" width="4" height="6" rx="1"/></svg></div>
       <div style="flex:1;min-width:0;">
-        <div style="font-size:var(--text-md);font-weight:600;color:var(--text);">${r.name}</div>
+        <div style="font-size:var(--text-md);font-weight:600;color:var(--text);">${esc(r.name)}</div>
         <div style="font-size:var(--text-xs);color:var(--text3);font-family:'DM Mono',monospace;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${preview||'운동 없음'}</div>
       </div>
       <div style="font-size:var(--text-xs);font-weight:600;padding:3px 8px;border-radius:var(--radius-lg);background:var(--accent-bg);color:var(--accent);border:1px solid var(--accent-bd);flex-shrink:0;">${(r.exercises||[]).length}개</div>
@@ -4172,7 +4169,7 @@ function showRoutineConfirmSheet(routineId){
     (r.exercises||[]).forEach(e=>{
       const span=document.createElement('span');
       span.style.cssText='font-size:var(--text-xs);padding:4px 9px;border-radius:var(--radius-xl);background:var(--surface2);border:1px solid var(--border2);color:var(--text2);font-family:\'DM Mono\',monospace;margin-right:4px;display:inline-block;';
-      span.textContent=`${e.icon||'💪'} ${e.name||''}`;
+      span.textContent=`${e.icon?e.icon+' ':''}${e.name||''}`;
       pills.appendChild(span);
     });
   }
@@ -4687,7 +4684,7 @@ function openWorkoutSession(prefillExercises){
   const titleEl=document.getElementById('ws-title');
   if(titleEl)titleEl.textContent=currentSession.length>0?(currentSession[0]._routineName||'운동 세션'):'운동 세션';
 }
-function closeSession(){
+async function closeSession(){
   wsCloseSheets();
   if(currentSession.length===0){
     document.getElementById('workout-session-overlay').classList.remove('open');
@@ -4698,7 +4695,7 @@ function closeSession(){
   }
   const doneSets=currentSession.reduce((t,ex)=>t+ex.sets.filter(s=>s.done).length,0);
   if(doneSets===0){
-    if(confirm('완료된 세트가 없어요. 세션을 취소하시겠어요?')){
+    if(await qkConfirm('완료된 세트가 없어요.\n세션을 취소하시겠어요?',{okText:'세션 취소',danger:true})){
       document.getElementById('workout-session-overlay').classList.remove('open');
       document.body.style.overflow='';
       _wsStopTimer();
@@ -4708,7 +4705,7 @@ function closeSession(){
     }
     return;
   }
-  if(confirm('세션을 종료하시겠어요? 완료된 '+doneSets+'세트가 저장됩니다.')){
+  if(await qkConfirm('세션을 종료하시겠어요?\n완료된 '+doneSets+'세트가 저장됩니다.',{okText:'종료하고 저장'})){
     finishSession();
   }
 }
@@ -4942,9 +4939,9 @@ function renderSession(){
         <div class="ws-set-sep">×</div>
         <input class="ws-set-input is-reps ${inputState} ${repsColorState}" type="number" inputmode="numeric" pattern="[0-9]*" placeholder="0" value="${s.reps||''}" oninput="updateSet(${ei},${si},'reps',this.value)" onfocus="this.select()" min="0"/>
       `:`
-        <input class="ws-set-input is-kg" type="number" placeholder="km" value="${s.dist||''}" oninput="updateSet(${ei},${si},'dist',this.value)" step="0.1"/>
+        <input class="ws-set-input is-kg" type="number" inputmode="decimal" placeholder="km" value="${s.dist||''}" oninput="updateSet(${ei},${si},'dist',this.value)" step="0.1"/>
         <div class="ws-set-sep">km</div>
-        <input class="ws-set-input is-reps" type="number" placeholder="분" value="${s.time||''}" oninput="updateSet(${ei},${si},'time',this.value)"/>
+        <input class="ws-set-input is-reps" type="number" inputmode="numeric" pattern="[0-9]*" placeholder="분" value="${s.time||''}" oninput="updateSet(${ei},${si},'time',this.value)"/>
         <div class="ws-set-sep">분</div>
       `}
       <div class="ws-set-spacer"></div>
@@ -4968,12 +4965,23 @@ function renderSession(){
     </div>
   </div>` : '';
 
+  // 종목 메모 — AI/트레이너가 배정 시 넣거나 유저가 직접 입력. 타이틀 오염 방지의 핵심 수단.
+  const exNoteHtml = ex.note
+    ? `<div class="ws-trainer-note" onclick="wsEditExNote(${ei})" style="cursor:pointer;">
+        <div class="ws-tn-icon" style="color:var(--accent);"><svg class="ic is-md"><use href="#i-info"/></svg></div>
+        <div class="ws-tn-body">
+          <div class="ws-tn-label">메모</div>
+          <div class="ws-tn-text">${esc(ex.note)}</div>
+        </div>
+      </div>`
+    : `<div onclick="wsEditExNote(${ei})" style="font-size:var(--text-xs);color:var(--text3);padding:0 2px 8px;cursor:pointer;user-select:none;">＋ 메모</div>`;
   body.innerHTML=`
     <div class="ws-ex-head">
-      <div class="ws-ex-title">${exIcon(ex.name,48)} ${ex.name}</div>
+      <div class="ws-ex-title">${exIcon(ex.name,48)} ${esc(ex.name)}</div>
       <div onclick="removeExercise(${ei})" class="ws-ex-remove"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div>
     </div>
     ${trainerNoteHtml}
+    ${exNoteHtml}
     ${isStr?volHtml:''}
     <div class="ws-set-head">
       <div class="ws-head-spacer-num"></div>
@@ -4998,7 +5006,7 @@ function renderSession(){
       </div>
       ${isStr&&ex.sets.length>0?`<div onclick="wsCopyFirstSet(${ei})" class="ws-copy-set">첫 세트 복사</div>`:''}
     </div>
-    ${isStr&&allDone?`<div class="ws-done-banner">✓ ${ex.name} 완료!</div>`:''}
+    ${isStr&&allDone?`<div class="ws-done-banner">✓ ${esc(ex.name)} 완료!</div>`:''}
     <div id="ws-rest-block" class="ws-rest" style="display:${_wsRestTimer?'flex':'none'};">
       <div style="flex:1;">
         <div style="font-size:var(--text-2xs);color:var(--text2);margin-bottom:4px;font-weight:600;">휴식 중</div>
@@ -5152,6 +5160,13 @@ function updateSet(ei,si,field,val){
   currentSession[ei].sets[si][field]=val;
   // Sprint F: prefill 표시 해제 (사용자가 값 수정하면 "지난 기록" 상태 해제)
   if(currentSession[ei].sets[si]._prefill)delete currentSession[ei].sets[si]._prefill;
+  // 예상 볼륨 즉시 갱신 — reps 인라인 수정도 kg 모달 저장과 동일하게 반영 (재렌더 없이 숫자만 갱신해 input 포커스 유지)
+  try{
+    if(ei===_wsActiveExIdx&&currentSession[ei].isStrength){
+      const volEl=document.querySelector('#ws-body .ws-vol-num');
+      if(volEl)volEl.textContent=_wsFormatVol(_wsEstimatedVolForExercise(currentSession[ei]));
+    }
+  }catch(_){}
   // Auto-save to log if set is done
   if(currentSession[ei].sets[si].done)saveSessionToLog();
 }
@@ -5221,7 +5236,7 @@ function saveSessionToLog(){
   const sessionEntry={
     type:'gym',
     sessionName:'헬스 세션',
-    exercises:currentSession.map(ex=>({name:ex.name,icon:ex.icon,muscle:ex.muscle,equip:ex.equip,sets:ex.sets,isStrength:ex.isStrength})),
+    exercises:currentSession.map(ex=>({name:ex.name,icon:ex.icon,muscle:ex.muscle,equip:ex.equip,sets:ex.sets,isStrength:ex.isStrength,...(ex.note?{note:ex.note}:{})})),
     totalVolume,
     status:_sessionStatus||'done',
     _expanded:false
@@ -5259,11 +5274,12 @@ function showRoutineCreate(){
   document.getElementById('routine-list').style.display='none';
   document.getElementById('routine-create').style.display='block';
   document.getElementById('routine-name-inp').value='';
+  setTimeout(()=>{try{document.getElementById('routine-name-inp').focus();}catch(_){}},60);
   renderRoutineExList([]);
 }
 async function saveSessionAsRoutine(){
   if(currentSession.length===0){showToast('저장할 운동이 없어요');return;}
-  const name=prompt('루틴 이름을 입력하세요 (예: 등 데이, 상체 루틴)');
+  const name=await qkPrompt('루틴 이름을 입력하세요',{placeholder:'예: 등 데이, 상체 루틴'});
   if(!name||!name.trim())return;
   const exercises=currentSession.map(ex=>({
     name:ex.name,icon:ex.icon,muscle:ex.muscle,equip:ex.equip,
@@ -5293,9 +5309,9 @@ function renderRoutineList(){
     return;
   }
   el.innerHTML=userRoutines.map((r,i)=>{
-    const exList=(r.exercises||[]).map(e=>e.icon+' '+e.name).join(' · ');
+    const exList=(r.exercises||[]).map(e=>esc((e.icon?e.icon+' ':'')+(e.name||''))).join(' · ');
     return`<div class="rt-card">
-      <div class="rt-card-name">${r.name}</div>
+      <div class="rt-card-name">${esc(r.name)}</div>
       <div class="rt-card-meta">${(r.exercises||[]).length}개 운동</div>
       <div style="font-size:var(--text-xs);color:var(--text3);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${exList}</div>
       <div class="rt-card-actions">
@@ -5821,11 +5837,11 @@ window.logCache=logCache;
 window.now=now;        // const — safe as static value
 window.TODAY=TODAY;    // const — safe as static value
 const DEFAULT_MAND=[
-  {name:'📖 독서 30분',done:false,days:[0,1,2,3,4,5,6]},
-  {name:'🗂️ 책상 정리',done:false,days:[0,1,2,3,4,5,6]},
-  {name:'💪 운동',done:false,days:[1,2,3,4,5]},
-  {name:'🏃 러닝',done:false,days:[1,3,5,0]},
-  {name:'👕 빨래',done:false,days:[0]},
+  {name:'독서 30분',done:false,days:[0,1,2,3,4,5,6]},
+  {name:'책상 정리',done:false,days:[0,1,2,3,4,5,6]},
+  {name:'운동',done:false,days:[1,2,3,4,5]},
+  {name:'러닝',done:false,days:[1,3,5,0]},
+  {name:'빨래',done:false,days:[0]},
 ];
 function emptyLog(isNew=false){/* 2026-07-31 데이터안전: placeholder 도 항상 빈 루틴. DEFAULT_MAND 자동주입 폐지 — 실제 루틴은 loadRoutineDefinitions 가 정본/캐시/DB 에서만 채운다. */return{weight:null,water_cups:0,meals:[],workouts:[],mandatory:[],targets:[]};}
 let log=emptyLog();
@@ -6418,7 +6434,7 @@ async function onLogin(user){
       const lsScore=parseInt(localStorage.getItem('score_'+user.id)||'0');
       if(lsScore>(CP.total_score||0)){
         CP.total_score=lsScore;
-        sb.from('profiles').update({total_score:lsScore}).eq('id',user.id).then(()=>{});
+        sb.from('profiles').update({total_score:lsScore}).eq('id',user.id).then(r=>{if(r.error)console.warn('[restore-sync] total_score',r.error);},e=>console.warn('[restore-sync] total_score',e));
         console.log('[init] total_score localStorage에서 복원:',lsScore);
       }
     }catch(e){}
@@ -6431,7 +6447,7 @@ async function onLogin(user){
       if(lsVal){
         CP.weight_goal=parseFloat(lsVal);
         // DB에도 다시 쓰기 (조용히)
-        sb.from('profiles').update({weight_goal:CP.weight_goal}).eq('id',user.id).then(()=>{});
+        sb.from('profiles').update({weight_goal:CP.weight_goal}).eq('id',user.id).then(r=>{if(r.error)console.warn('[restore-sync] weight_goal',r.error);},e=>console.warn('[restore-sync] weight_goal',e));
         console.log('[init] weight_goal localStorage에서 복원:', CP.weight_goal);
       }
     }catch(e){}
@@ -6450,7 +6466,7 @@ async function onLogin(user){
     const _notice=CP.system_notice;
     setTimeout(()=>{
       showSystemNotice(_notice);
-      sb.from('profiles').update({system_notice:null}).eq('id',CU.id).then(()=>{});
+      sb.from('profiles').update({system_notice:null}).eq('id',CU.id).then(r=>{if(r.error)console.warn('[restore-sync] notice',r.error);},e=>console.warn('[restore-sync] notice',e));
       CP.system_notice=null;
     },1500);
   }
@@ -6751,6 +6767,7 @@ async function doSignup(){
   if(pw.length<6){suErr('비밀번호는 최소 6자 이상이어야 합니다.');return;}
   if(!pw2){suErr('비밀번호 확인을 입력해주세요.');document.getElementById('su-pw2').focus();return;}
   if(pw!==pw2){suErr('비밀번호가 일치하지 않습니다. 다시 확인해주세요.');document.getElementById('su-pw2').focus();return;}
+  if(!document.getElementById('su-agree')?.checked){suErr('이용약관 및 개인정보처리방침 동의가 필요합니다.');return;}
   // Auto-generate username — always English-safe regardless of input language
   const asciiBase=name.toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,8);
   const suffix=Math.floor(1000+Math.random()*9000);
@@ -7005,7 +7022,9 @@ async function loadLog(key,force=false){
     if(logCache[key])log=logCache[key];
     return;
   }
-  if(_dirtyKeys.has(key)){log=logCache[key]||log;return;}
+  // _saveInFlight 도 확인 — _flushSave 가 저장 시작 시 _dirtyKeys 를 비우므로,
+  // 저장 진행 중 도착한 fetch 가 이 체크만으로는 통과해 구식 스냅샷으로 롤백됨 (데이터 유실 경합)
+  if(_dirtyKeys.has(key)||_saveInFlight){log=logCache[key]||log;return;}
   if(data){
     let meals=data.meals||[];
     if(!meals.length){
@@ -7738,6 +7757,8 @@ function _wpAttachProxyDrag(numSliderEl){
       const d=Math.abs(cx-x);
       if(d<bestDist){bestDist=d;best=w;}
     });
+    // 직전 플릭의 관성 애니메이션이 아직 돌고 있으면 취소 — 두 물리계가 scrollTop 을 놓고 경합해 값이 튀는 원인
+    if(best._wpRaf){cancelAnimationFrame(best._wpRaf);best._wpRaf=null;}
     activeWp=best;startY=y;startScroll=best.scrollTop;
     velPts=[{y,t:performance.now()}];
   };
@@ -7782,9 +7803,11 @@ function _wpAnimateScroll(el,target,duration){
     const p=Math.min(1,(t-startT)/duration);
     const eased=1-Math.pow(1-p,3);
     el.scrollTop=start+distance*eased;
-    if(p<1)requestAnimationFrame(tick);
+    if(p<1)el._wpRaf=requestAnimationFrame(tick);
+    else el._wpRaf=null;
   }
-  requestAnimationFrame(tick);
+  if(el._wpRaf)cancelAnimationFrame(el._wpRaf);
+  el._wpRaf=requestAnimationFrame(tick);
 }
 // Scroll handler: updates active class during drag + snaps on scroll-end.
 // Touch handlers contain the scroll to the wheel (prevents parent modal from
@@ -7819,6 +7842,7 @@ function _wpAttachScroll(wp,ITEM_H,onSnap){
   let touchStartY=0;
   wp.addEventListener('touchstart',e=>{
     touchStartY=e.touches[0].clientY;
+    if(wp._wpRaf){cancelAnimationFrame(wp._wpRaf);wp._wpRaf=null;}
     e.stopPropagation();
     // If scroll is near exact 0 or max, nudge 1px inward so the browser
     // decides we're "inside" the scrollable region and won't chain to parent.
@@ -10151,7 +10175,7 @@ function _handleSilentCamBlob(scope,blob){
 // 식단 스킵 — 끼니를 명시적으로 안 먹음 표시 (entry type='skip', 큐브 보상 없음)
 async function skipSlotMeal(){
   if(_slotSaving) return;
-  if(!confirm('이번 끼니를 스킵으로 기록할까?\n("안 먹음" 으로 표시되며, 큐브 보상 X)')) return;
+  if(!(await qkConfirm('이번 끼니를 스킵으로 기록할까?\n"안 먹음" 으로 표시되며, 큐브 보상은 없어요.',{okText:'스킵으로 기록'}))) return;
   if(!logCache[selectedKey]) logCache[selectedKey] = log;
   log = logCache[selectedKey];
   const entry = {name:'', type:'skip', photo:null, time:mealTime, category:'meal'};
@@ -11010,6 +11034,7 @@ function openHomeworkStart(idx){
       icon: ex.icon,
       muscle: ex.muscle || '근력',
       equip: ex.equip || ex.equipment || '바벨',
+      note: ex.note || '',
       isStrength: ex.isStrength !== false,
       sets: (ex.sets || []).map(s => ({kg: s.kg, reps: s.reps, done: !!s.done})),
       status: 'done'
@@ -11184,7 +11209,7 @@ function renderWorkouts(){
           </div>
         </div>`;
       }
-      const exNames=(w.exercises||[]).map(e=>e.name);
+      const exNames=(w.exercises||[]).map(e=>esc(e.name||''));
       const preview=exNames.slice(0,2).join(' · ')+(exNames.length>2?' 외 '+(exNames.length-2)+'개':'');
       // 트레이너 숙제 — sets 합산해서 vol 계산 (homework totalVolume 안 저장됨)
       const isHomework = !!w._trainerAssignmentId;
@@ -11237,7 +11262,7 @@ function renderWorkouts(){
         <div class="wo-row is-sm" onclick="editActivity(${i})">
           <div class="wo-ic is-cardio">${w.icon||''}</div>
           <div class="wo-body">
-            <div class="wo-title">${w.name}${isChaek?' <span style="font-size:var(--text-2xs);color:var(--red);font-weight:600;">추가운동</span>':''}</div>
+            <div class="wo-title">${esc(w.name)}${isChaek?' <span style="font-size:var(--text-2xs);color:var(--red);font-weight:600;">추가운동</span>':''}</div>
             <div class="wo-sub">${w.meta||'기록됨'}</div>
           </div>
           <button class="btn-mini" onclick="event.stopPropagation();editActivity(${i})">수정</button>
@@ -16766,6 +16791,141 @@ if('serviceWorker' in navigator){
   caches.keys().then(keys=>Promise.all(keys.map(k=>caches.delete(k))));
 }
 // STATS feature — moved to src/features/stats/index.js (Phase 3.1). window.* via bundle.
+</script>
+<script>
+// ═══════════════════════════════════════════════════════════════
+// 커스텀 다이얼로그 (qkConfirm / qkPrompt)
+// 브라우저 네이티브 confirm()/prompt() 대체 — 앱 톤 유지, 스타일링 가능.
+// Promise 기반: const ok = await qkConfirm('...'); const v = await qkPrompt('...');
+// ═══════════════════════════════════════════════════════════════
+function _qkDialog(opts){
+  return new Promise(resolve=>{
+    const prev=document.getElementById('qk-dialog-backdrop');
+    if(prev)prev.remove();
+    const bd=document.createElement('div');
+    bd.id='qk-dialog-backdrop';
+    bd.style.cssText='position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,.55);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;padding:24px;';
+    const card=document.createElement('div');
+    card.style.cssText='width:100%;max-width:320px;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius-lg);padding:20px 18px 14px;box-shadow:0 12px 40px rgba(0,0,0,.45);';
+    const msg=document.createElement('div');
+    msg.style.cssText='font-size:var(--text-md);color:var(--text);line-height:1.55;white-space:pre-line;margin-bottom:14px;font-weight:600;';
+    msg.textContent=opts.msg||'';
+    card.appendChild(msg);
+    let inp=null;
+    if(opts.input){
+      inp=document.createElement('input');
+      inp.type='text';
+      inp.placeholder=opts.placeholder||'';
+      inp.value=opts.value||'';
+      inp.maxLength=opts.maxLength||100;
+      inp.style.cssText='width:100%;box-sizing:border-box;padding:11px 12px;margin-bottom:14px;background:var(--surface3);border:1px solid var(--border2);border-radius:var(--radius-md);color:var(--text);font-size:var(--text-md);font-family:inherit;outline:none;';
+      inp.addEventListener('focus',()=>{inp.style.borderColor='var(--accent)';});
+      inp.addEventListener('blur',()=>{inp.style.borderColor='var(--border2)';});
+      card.appendChild(inp);
+    }
+    const row=document.createElement('div');
+    row.style.cssText='display:flex;gap:8px;';
+    const done=val=>{bd.remove();resolve(val);};
+    bd._qkCancel=()=>done(opts.input?null:false);
+    if(opts.cancelText!==null){
+      const cancel=document.createElement('button');
+      cancel.textContent=opts.cancelText||'취소';
+      cancel.style.cssText='flex:1;padding:12px;background:var(--surface3);border:1px solid var(--border2);border-radius:var(--radius-md);color:var(--text2);font-size:var(--text-sm);font-weight:600;cursor:pointer;font-family:inherit;touch-action:manipulation;';
+      cancel.onclick=()=>bd._qkCancel();
+      row.appendChild(cancel);
+    }
+    const ok=document.createElement('button');
+    ok.textContent=opts.okText||'확인';
+    ok.style.cssText='flex:1.4;padding:12px;border:none;border-radius:var(--radius-md);color:#fff;font-size:var(--text-sm);font-weight:700;cursor:pointer;font-family:inherit;touch-action:manipulation;background:'+(opts.danger?'var(--red)':'var(--accent)')+';';
+    ok.onclick=()=>done(opts.input?(inp?inp.value:''):true);
+    row.appendChild(ok);
+    card.appendChild(row);
+    bd.appendChild(card);
+    bd.addEventListener('click',e=>{if(e.target===bd)bd._qkCancel();});
+    document.body.appendChild(bd);
+    if(inp){setTimeout(()=>{try{inp.focus();if(opts.value)inp.select();}catch(_){}},60);
+      inp.addEventListener('keydown',e=>{if(e.key==='Enter')ok.click();});}
+  });
+}
+function qkConfirm(msg,opts){opts=opts||{};return _qkDialog({msg,okText:opts.okText,cancelText:opts.cancelText,danger:opts.danger});}
+function qkPrompt(msg,opts){opts=opts||{};return _qkDialog({msg,input:true,placeholder:opts.placeholder,value:opts.value,maxLength:opts.maxLength,okText:opts.okText,cancelText:opts.cancelText});}
+window.qkConfirm=qkConfirm;window.qkPrompt=qkPrompt;
+
+// ── 종목 메모 편집 — 세션 화면 메모 칸 (AI 배정 메모도 여기 표시됨) ──
+async function wsEditExNote(ei){
+  const ex=currentSession[ei];
+  if(!ex)return;
+  const v=await qkPrompt('운동 메모',{value:ex.note||'',placeholder:'예: 마지막 세트 드롭세트, 어깨 조심',maxLength:200});
+  if(v===null)return;
+  ex.note=v.trim().slice(0,200);
+  renderSession();
+  if(ex.sets&&ex.sets.some(s=>s.done))saveSessionToLog();
+}
+window.wsEditExNote=wsEditExNote;
+
+// ═══════════════════════════════════════════════════════════════
+// Android 하드웨어 뒤로가기 — 열린 UI 를 위에서부터 닫는다. 닫을 게 없으면 앱 종료.
+// (기존: 리스너 0개 → 세트 입력 중 뒤로가기 = 앱 종료)
+// ═══════════════════════════════════════════════════════════════
+function _handleBackButton(){
+  try{
+    // 0) 커스텀 다이얼로그
+    const qk=document.getElementById('qk-dialog-backdrop');
+    if(qk){qk._qkCancel&&qk._qkCancel();return true;}
+    // 1) 운동 세션 내부 시트
+    const sheetBd=document.getElementById('ws-sheet-backdrop');
+    if(sheetBd&&sheetBd.classList.contains('open')){wsCloseSheets();return true;}
+    // 2) 운동 세션 오버레이 — closeSession 이 자체 확인 다이얼로그를 띄움
+    const ws=document.getElementById('workout-session-overlay');
+    if(ws&&ws.classList.contains('open')){closeSession();return true;}
+    // 3) 캐릭터 룸
+    const room=document.getElementById('room-overlay');
+    if(room&&room.style.display&&room.style.display!=='none'){try{closeRoomOverlay();}catch(_){room.style.display='none';}return true;}
+    // 4) 루틴 모달
+    const rt=document.getElementById('routine-modal-overlay');
+    if(rt&&rt.classList.contains('open')){closeRoutineModal();return true;}
+    // 5) 일반 open 상태 모달/오버레이 (id 있는 것)
+    const openEl=document.querySelector('.modal-overlay.open,.modal.open,[id$="-overlay"].open');
+    if(openEl&&openEl.id){try{closeModal(openEl.id);return true;}catch(_){openEl.classList.remove('open');document.body.style.overflow='';return true;}}
+    // 6) 홈(routine) 탭이 아니면 홈으로
+    const homeView=document.getElementById('view-routine');
+    if(homeView&&!homeView.classList.contains('active')){switchTab('routine',0);return true;}
+  }catch(e){console.warn('[backButton]',e);}
+  return false;
+}
+try{
+  const _capApp=window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.App;
+  if(_capApp&&_capApp.addListener){
+    _capApp.addListener('backButton',()=>{
+      if(!_handleBackButton()){
+        if(_capApp.exitApp)_capApp.exitApp();
+      }
+    });
+  }
+}catch(e){console.warn('[backButton:init]',e);}
+
+// ═══════════════════════════════════════════════════════════════
+// 전역 에러 수집 (최소) — metric_events 로 전송. 세션당 10건 캡.
+// 크래시 가시성 0 → 최소한의 창구. 본격 트래킹은 출시 게이트에서 별도.
+// ═══════════════════════════════════════════════════════════════
+(function(){
+  let _errSent=0;
+  function _reportErr(kind,message,src,line){
+    if(_errSent>=10)return;
+    _errSent++;
+    try{
+      if(window.CU&&window.CU.id&&window.sb){
+        sb.from('metric_events').insert({
+          user_id:CU.id,
+          event_key:'js_error',
+          meta:{kind,msg:String(message||'').slice(0,300),src:String(src||'').slice(0,120),line:line||0,ua:(navigator.userAgent||'').slice(0,80)}
+        }).then(()=>{},()=>{});
+      }
+    }catch(_){}
+  }
+  window.addEventListener('error',e=>_reportErr('error',e.message,e.filename,e.lineno));
+  window.addEventListener('unhandledrejection',e=>_reportErr('rejection',(e.reason&&e.reason.message)||String(e.reason||'')));
+})();
 </script>
 <script>
 // ─── Lazy-load sprites.js (5.96 MB base64) — 앱 첫 페인트 후 백그라운드 로드 ───

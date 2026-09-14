@@ -71,13 +71,37 @@ Deno.serve(async (req) => {
     return new Response('bad_json', { status: 400 });
   }
 
-  const body = PRESET_BODY[payload.preset_id];
-  if (!body) return new Response('bad_preset', { status: 400 });
-
   const supabase = createClient(
     Deno.env.get('SUPABASE_URL') ?? '',
     Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
   );
+
+  // ── 무결성 검증 (2026-09-14) ─────────────────────────────────
+  // 요청 페이로드를 신뢰하지 않는다. nudge_id 로 실제 nudges 행을 재조회해
+  // sender/recipient/preset 을 서버 값으로 덮어쓴다. 행이 없으면 발송 거부.
+  // send_nudge RPC 의 친구관계·쿨다운·일일한도 게이트를 우회한 직접 호출
+  // (공개 anon key 로 가능)로 사칭 푸시를 보내는 경로를 차단한다.
+  if (!payload?.nudge_id) return new Response('missing_nudge_id', { status: 400 });
+  const { data: nudgeRow, error: nudgeErr } = await supabase
+    .from('nudges')
+    .select('id, sender_id, recipient_id, preset_id, created_at')
+    .eq('id', payload.nudge_id)
+    .maybeSingle();
+  if (nudgeErr) return new Response('lookup_failed', { status: 500 });
+  if (!nudgeRow) return new Response('unknown_nudge', { status: 404 });
+  // 오래된 행 재전송(리플레이) 차단 — 생성 10분 이내만 발송
+  if (Date.now() - new Date(nudgeRow.created_at).getTime() > 10 * 60_000) {
+    return new Response('stale_nudge', { status: 409 });
+  }
+  payload = {
+    nudge_id: nudgeRow.id,
+    sender_id: nudgeRow.sender_id,
+    recipient_id: nudgeRow.recipient_id,
+    preset_id: nudgeRow.preset_id,
+  };
+
+  const body = PRESET_BODY[payload.preset_id];
+  if (!body) return new Response('bad_preset', { status: 400 });
 
   // Sender display_name (for notification title)
   const { data: sender } = await supabase

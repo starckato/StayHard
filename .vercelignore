@@ -1,0 +1,11 @@
+# 배포 제외 — 내부 자료·마이그레이션·테스트 페이지는 프로덕션에 서빙하지 않는다 (2026-09-14)
+# (git 배포는 tracked 파일만 올라가므로, 여기는 tracked 인데 공개되면 안 되는 것들)
+migrations
+supabase
+mcp
+scripts
+document-private
+document
+preview.html
+rep-counter-test.html
+node_modules

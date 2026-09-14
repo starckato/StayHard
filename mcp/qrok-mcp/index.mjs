@@ -81,7 +81,21 @@ const WORKOUTS = {
     type: 'object',
     required: ['name', 'sets'],
     properties: {
-      name: { type: 'string', description: '종목명. 예: 벤치프레스' },
+      name: {
+        type: 'string',
+        maxLength: 60,
+        description:
+          '종목명 (최대 60자). 반드시 qrok_search_exercises 로 먼저 검색해서 카탈로그 명칭을 ' +
+          '그대로 쓸 것 — 그래야 앱에 운동 썸네일이 표시된다. 카탈로그에 없으면 짧은 신규 명칭 ' +
+          '허용(썸네일 없음). 지시·메모를 종목명에 붙이지 말 것 — 그건 note 필드에.',
+      },
+      note: {
+        type: 'string',
+        maxLength: 200,
+        description:
+          '이 종목에 대한 메모 (최대 200자). 앱의 세트 입력 화면에 메모 칸으로 표시된다. ' +
+          '예: "마지막 세트 드롭세트", "어깨 통증 시 인클라인으로 대체". 지시사항은 전부 여기에.',
+      },
       muscle: { type: 'string', description: '주동근. 예: chest, back, legs' },
       equipment: { type: 'string', description: '기구. 예: barbell, dumbbell, bodyweight' },
       icon: { type: 'string', description: '아이콘 키 (선택)' },
@@ -102,6 +116,20 @@ const WORKOUTS = {
 };
 
 const TOOLS = [
+  {
+    name: 'qrok_search_exercises',
+    description:
+      '운동 카탈로그(158종)를 검색한다. 운동을 배정하기 전 반드시 이걸로 종목명을 먼저 찾을 것 — ' +
+      '카탈로그 명칭을 그대로 쓰면 앱에 운동 썸네일(동작 GIF)이 표시된다. ' +
+      '검색 결과가 없으면 신규 명칭으로 배정해도 되지만 썸네일 없이 텍스트로만 나온다. ' +
+      'q 를 생략하면 전체 카탈로그를 반환한다.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        q: { type: 'string', description: '검색어. 예: "벤치", "스쿼트", "숄더"' },
+      },
+    },
+  },
   {
     name: 'qrok_get_today',
     description:
@@ -143,7 +171,9 @@ const TOOLS = [
     description:
       '큐록에 운동을 배정한다. 배정하면 앱의 해당 날짜 "오늘의 운동" 카드에 "예정" 뱃지로 ' +
       '나타나고, 유저가 시작·완료하면 상태가 자동으로 갱신된다. ' +
-      '같은 날짜에 또 배정하면 별도 항목으로 추가된다(덮어쓰지 않는다).',
+      '같은 날짜에 또 배정하면 별도 항목으로 추가된다(덮어쓰지 않는다). ' +
+      '종목명은 qrok_search_exercises 의 카탈로그 명칭을 그대로 쓸 것(썸네일 표시). ' +
+      '메모·지시사항은 종목명이 아니라 각 종목의 note 필드에 넣을 것.',
     inputSchema: {
       type: 'object',
       required: ['workouts'],
@@ -213,6 +243,8 @@ const TOOLS = [
 
 async function runTool(name, args = {}) {
   switch (name) {
+    case 'qrok_search_exercises':
+      return api('GET', `/exercises${qs({ q: args.q })}`);
     case 'qrok_get_today':
       return api('GET', `/today${qs({ date: args.date })}`);
     case 'qrok_get_history':
