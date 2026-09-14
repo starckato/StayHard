@@ -378,6 +378,20 @@ async function route(req: Request, path: string, auth: AgentAuth): Promise<Respo
     return json({ logs: data ?? [] });
   }
 
+  // GET /activities?from=&to= — 종목 중립 활동 테이블 (Strava/가민 임포트 포함).
+  // 러닝 페이스·HR·케이던스·고도 등 rich 데이터. daily_logs 표시 엔트리의 원본.
+  if (req.method === 'GET' && path === 'activities') {
+    const denied = requireScope(auth, 'read'); if (denied) return denied;
+    let qb = auth.svc.from('activities')
+      .select('id, source, sport, name, started_at, local_date, distance_m, duration_s, moving_s, elev_gain_m, avg_hr, max_hr, avg_cadence, calories, avg_pace_s_km')
+      .eq('user_id', client);
+    if (q.get('from')) qb = qb.gte('local_date', q.get('from')!);
+    if (q.get('to')) qb = qb.lte('local_date', q.get('to')!);
+    const { data, error } = await qb.order('started_at', { ascending: false }).limit(100);
+    if (error) return fail(500, 'read_failed', error.message);
+    return json({ activities: data ?? [] });
+  }
+
   // GET /assignments?from=&to=
   if (req.method === 'GET' && path === 'assignments') {
     const denied = requireScope(auth, 'read'); if (denied) return denied;

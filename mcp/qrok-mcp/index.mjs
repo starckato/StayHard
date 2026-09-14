@@ -156,6 +156,17 @@ const TOOLS = [
     inputSchema: { type: 'object', properties: {} },
   },
   {
+    name: 'qrok_get_activities',
+    description:
+      '활동 테이블을 읽는다 (러닝·라이딩·수영 등 — Strava/가민 자동 임포트 포함). ' +
+      '거리·시간·평균 페이스(초/km)·심박·케이던스·고도까지 rich 데이터. ' +
+      '러닝 훈련 분석·상담에는 qrok_get_history 보다 이걸 쓸 것.',
+    inputSchema: {
+      type: 'object',
+      properties: { from: DATE, to: DATE },
+    },
+  },
+  {
     name: 'qrok_get_assignments',
     description:
       '배정된 운동 목록과 수행 상태를 읽는다. 내가 배정한 운동을 실제로 했는지 확인할 때 쓴다. ' +
@@ -251,6 +262,8 @@ async function runTool(name, args = {}) {
       return api('GET', `/history${qs({ from: args.from, to: args.to })}`);
     case 'qrok_get_profile':
       return api('GET', '/me');
+    case 'qrok_get_activities':
+      return api('GET', `/activities${qs({ from: args.from, to: args.to })}`);
     case 'qrok_get_assignments':
       return api('GET', `/assignments${qs({ from: args.from, to: args.to })}`);
     case 'qrok_assign_workout':

@@ -4017,6 +4017,22 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
       <div style="font-size:10.5px;color:var(--text3);margin-top:8px;line-height:1.5;">앱 전체 포인트 컬러가 바뀐다. 기록은 그대로.</div>
     </div>
 
+    <!-- 외부 연동 — 러닝 앱 자동 임포트 (2026-09-14) -->
+    <div id="ext-sync-card" style="margin:0 0 12px;padding:14px;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius-lg);">
+      <div style="font-size:var(--text-2xs);font-weight:700;color:var(--text3);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:10px;">러닝 앱 연동</div>
+      <div style="display:flex;align-items:center;gap:11px;">
+        <span style="width:34px;height:34px;border-radius:var(--radius-md);background:var(--accent-bg);border:1px solid var(--accent-bd);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L6 14h5l-1 8 7-12h-5l1-8z"/></svg>
+        </span>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:var(--text-md);font-weight:600;">Strava</div>
+          <div id="strava-status" style="font-size:var(--text-xs);color:var(--text3);margin-top:2px;">확인 중…</div>
+        </div>
+        <button class="btn-cta" id="strava-btn" style="display:none;" onclick="connectStrava()">연결</button>
+      </div>
+      <div style="font-size:10.5px;color:var(--text3);margin-top:10px;line-height:1.5;">연결하면 앱 실행 시 러닝·라이딩·수영 기록을 자동으로 가져온다.<br>가민 워치는 가민 커넥트 앱에서 Strava 연동을 켜두면 함께 들어온다.</div>
+    </div>
+
     <div id="notif-prefs-card" style="display:none;margin:0 0 12px;padding:14px;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius-lg);">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
         <div style="font-size:var(--text-2xs);font-weight:700;color:var(--text3);letter-spacing:0.08em;text-transform:uppercase;">알림</div>
@@ -6407,6 +6423,9 @@ async function onLogin(user){
         window._prefetchStats();
       }
       // [기능 제거 2026-09-14] challenges prefetch 제거
+      // Strava 자동 동기화 (30분 스로틀) + 연동 카드 상태
+      try{if(window.stravaSyncOnBoot)window.stravaSyncOnBoot();}catch(e){console.warn('[strava-boot]',e);}
+      try{if(window.renderStravaCard)window.renderStravaCard();}catch(_){}
     }catch(e){console.warn('[prefetch]',e);}
   }, 2000);
 }
@@ -16729,6 +16748,119 @@ async function wsEditExNote(ei){
   if(ex.sets&&ex.sets.some(s=>s.done))saveSessionToLog();
 }
 window.wsEditExNote=wsEditExNote;
+
+// ═══════════════════════════════════════════════════════════════
+// Strava 연동 — 앱 실행 시 자동 임포트 (2026-09-14)
+// 가민런은 가민 커넥트의 Strava 공식 자동 동기화를 통해 함께 유입된다.
+// 임포트는 서버측 append-only (053 RPC) — 기존 기록 수정·삭제 없음.
+// ═══════════════════════════════════════════════════════════════
+const STRAVA_FN='https://uvaosxhsjscigheyymus.supabase.co/functions/v1/strava-sync';
+const STRAVA_SYNC_THROTTLE_MIN=30;
+
+async function _stravaAuthHeader(){
+  try{
+    const {data}=await sb.auth.getSession();
+    const t=data&&data.session&&data.session.access_token;
+    return t?{'Authorization':'Bearer '+t,'Content-Type':'application/json'}:null;
+  }catch(_){return null;}
+}
+
+async function renderStravaCard(){
+  const st=document.getElementById('strava-status');
+  const btn=document.getElementById('strava-btn');
+  if(!st||!btn||!CU)return;
+  try{
+    const cfg=await fetch(STRAVA_FN+'/config').then(r=>r.json()).catch(()=>({configured:false}));
+    if(!cfg.configured){
+      st.textContent='연동 준비 중 (서버 설정 대기)';
+      btn.style.display='none';
+      return;
+    }
+    const {data:conn}=await sb.from('external_connections')
+      .select('provider,athlete_id,last_sync_at').eq('provider','strava').maybeSingle();
+    if(conn){
+      const last=conn.last_sync_at?new Date(conn.last_sync_at):null;
+      st.textContent='연결됨'+(last?' · 마지막 동기화 '+(last.getMonth()+1)+'/'+last.getDate()+' '+String(last.getHours()).padStart(2,'0')+':'+String(last.getMinutes()).padStart(2,'0'):'');
+      btn.textContent='해제';
+      btn.onclick=disconnectStrava;
+    }else{
+      st.textContent='연결 안 됨';
+      btn.textContent='연결';
+      btn.onclick=connectStrava;
+    }
+    btn.style.display='';
+  }catch(e){st.textContent='상태 확인 실패';}
+}
+
+async function connectStrava(){
+  const h=await _stravaAuthHeader();
+  if(!h){showToast('로그인이 필요해요');return;}
+  try{
+    const r=await fetch(STRAVA_FN+'/start',{method:'POST',headers:h}).then(r=>r.json());
+    if(r&&r.url){window.location.href=r.url;}
+    else if(r&&r.error&&r.error.code==='not_configured'){showToast('연동 준비 중이에요');}
+    else showToast('연결 시작 실패');
+  }catch(e){showToast('연결 시작 실패');}
+}
+
+async function disconnectStrava(){
+  if(!(await qkConfirm('Strava 연결을 해제할까요?\n이미 가져온 기록은 그대로 남아요.',{okText:'해제',danger:true})))return;
+  const h=await _stravaAuthHeader();
+  if(!h)return;
+  try{
+    await fetch(STRAVA_FN+'/disconnect',{method:'POST',headers:h});
+    showToast('Strava 연결 해제됨');
+    renderStravaCard();
+  }catch(e){showToast('해제 실패');}
+}
+
+// 앱 실행 시 자동 동기화 — 30분 스로틀, 실패는 조용히
+async function stravaSyncOnBoot(force){
+  if(!CU||!CU.id)return;
+  try{
+    const key='strava_last_sync_call_'+CU.id;
+    if(!force){
+      const last=parseInt(localStorage.getItem(key)||'0');
+      if(Date.now()-last<STRAVA_SYNC_THROTTLE_MIN*60000)return;
+    }
+    const h=await _stravaAuthHeader();
+    if(!h)return;
+    localStorage.setItem(key,String(Date.now()));
+    const r=await fetch(STRAVA_FN+'/sync',{method:'POST',headers:h}).then(r=>r.json()).catch(()=>null);
+    if(r&&r.connected&&r.imported>0){
+      // 오늘 캐시 무효화 후 재로드 — 표시 엔트리가 서버에서 append 됨
+      try{
+        delete logCache[TODAY];
+        await loadLog(TODAY,true);
+        renderWorkouts();
+        recomputeCubesHook();
+      }catch(_){}
+      showToast('Strava에서 활동 '+r.imported+'건 가져왔어요');
+      try{renderStravaCard();}catch(_){}
+    }
+  }catch(e){console.warn('[strava-sync]',e);}
+}
+window.connectStrava=connectStrava;
+window.disconnectStrava=disconnectStrava;
+window.renderStravaCard=renderStravaCard;
+window.stravaSyncOnBoot=stravaSyncOnBoot;
+
+// OAuth 복귀 처리 (?strava=connected|denied|error)
+try{
+  const _sp=new URLSearchParams(location.search);
+  if(_sp.has('strava')){
+    const v=_sp.get('strava');
+    history.replaceState(null,'',location.pathname);
+    window.addEventListener('load',()=>{
+      setTimeout(()=>{
+        if(v==='connected'){showToast('Strava 연결 완료! 기록을 가져오는 중…');stravaSyncOnBoot(true);}
+        else if(v==='denied'){showToast('Strava 연결이 취소됐어요');}
+        else{showToast('Strava 연결에 실패했어요. 다시 시도해주세요');}
+        try{renderStravaCard();}catch(_){}
+      },1200);
+    });
+  }
+}catch(_){}
 
 // ═══════════════════════════════════════════════════════════════
 // Android 하드웨어 뒤로가기 — 열린 UI 를 위에서부터 닫는다. 닫을 게 없으면 앱 종료.
