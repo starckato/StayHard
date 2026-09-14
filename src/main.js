@@ -44,7 +44,8 @@ import * as mountain from './features/mountain/index.js';
 import * as flags from './features/flags/index.js';
 import * as metrics from './features/metrics/index.js';
 import * as firstCube from './features/activation/first-cube.js';
-import * as returnerGrace from './features/returner/grace.js';
+// [정책 폐지 2026-09-14] returnerGrace 모듈 언와이어 — 파일은 형상관리 목적 보존
+// import * as returnerGrace from './features/returner/grace.js';
 import * as exempt from './features/exempt/index.js';
 import * as deeplink from './features/deeplink/index.js';
 import * as notifOptIn from './features/notif/opt-in-scheduler.js';
@@ -129,7 +130,7 @@ window.renderMountain = mountain.renderMountain;
 window.sh.flags = flags;
 window.sh.metrics = metrics;
 window.sh.firstCube = firstCube;
-window.sh.returnerGrace = returnerGrace;
+// window.sh.returnerGrace = returnerGrace; // [정책 폐지 2026-09-14]
 window.sh.exempt = exempt;
 window.sh.deeplink = deeplink;
 window.sh.notifOptIn = notifOptIn;

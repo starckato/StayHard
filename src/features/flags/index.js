@@ -84,7 +84,7 @@ export const DEFAULT_FLAGS = {
   // 2026-06-13: 사용자 결정으로 안정성 우선 — 미점검·반복 에러 발생 기능 일괄 OFF.
   // 향후 v1 boundary 확정 후 개별 검증하며 재오픈.
   first_cube_card:  false,  // OFF — 첫 큐브 추천 카드 (반복 에러)
-  returner_grace:   false,  // OFF — 복귀자 보호 (반복 에러)
+  returner_grace:   false,  // [정책 폐지 2026-09-14] 복귀자 보호·복귀 루틴 제안 — 코드 경로 제거됨
   exempt_tap:       true,   // KEEP — 면제 1-tap (안정, 사용자 요구 기능)
   layout_v2:        false,  // Phase 2B (Status Band 축소) — index.html .sb 인라인 룰로 대체됨
   deeplink:         false,  // Phase 2C

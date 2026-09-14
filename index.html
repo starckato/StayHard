@@ -63,22 +63,22 @@
      외부 link 2개 제거 → render-blocking CSS 요청 -2. trainer.html 등은 여전히 link. -->
 <!-- Perf (2026-05-25): 남은 sync CSS 도 모두 async — splash 가 1.6s 가리는 동안 모두 로드 완료.
      FOUC 위험 거의 없음 + render-blocking 0 → splash 즉시 paint. -->
-<link href="/src/styles/states.css?v=f43f4860" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/styles/components.css?v=f43f4860" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/styles/icons.css?v=f43f4860" rel="stylesheet" media="print" onload="this.media='all'">
-<noscript><link href="/src/styles/states.css?v=f43f4860" rel="stylesheet"><link href="/src/styles/components.css?v=f43f4860" rel="stylesheet"><link href="/src/styles/icons.css?v=f43f4860" rel="stylesheet"></noscript>
+<link href="/src/styles/states.css?v=a5fce458" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/styles/components.css?v=a5fce458" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/styles/icons.css?v=a5fce458" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link href="/src/styles/states.css?v=a5fce458" rel="stylesheet"><link href="/src/styles/components.css?v=a5fce458" rel="stylesheet"><link href="/src/styles/icons.css?v=a5fce458" rel="stylesheet"></noscript>
 <!-- Feature folder CSS — 한 폴더 = 한 기능 컨벤션 (ARCHITECTURE.md).
      Perf (2026-05-25): media="print" + onload swap 으로 async 로딩 → 초기 paint 차단 X.
      splash 가 1.6s+ 표시되므로 그 사이 모두 로드되어 FOUC 위험 거의 없음. -->
-<link href="/src/features/targets/targets.css?v=f43f4860" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/cubes/cubes-ui.css?v=f43f4860" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/date-heatmap/date-heatmap.css?v=f43f4860" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/dev-inspector/dev-inspector.css?v=f43f4860" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/water/water.css?v=f43f4860" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/sticky-header/sticky-header.css?v=f43f4860" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/status-band/status-band.css?v=f43f4860" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/mountain/mountain.css?v=f43f4860" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/workout-session/workout-session.css?v=f43f4860" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/targets/targets.css?v=a5fce458" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/cubes/cubes-ui.css?v=a5fce458" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/date-heatmap/date-heatmap.css?v=a5fce458" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/dev-inspector/dev-inspector.css?v=a5fce458" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/water/water.css?v=a5fce458" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/sticky-header/sticky-header.css?v=a5fce458" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/status-band/status-band.css?v=a5fce458" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/mountain/mountain.css?v=a5fce458" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/workout-session/workout-session.css?v=a5fce458" rel="stylesheet" media="print" onload="this.media='all'">
 <style>
 /* :root 토큰은 src/styles/tokens.{shared,dark}.css 로 이전됨 (Phase 0).
    index.html 은 다크 팔레트 사용. 추가 sub-palette (--radius-sm 등 legacy) 가
@@ -1494,7 +1494,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
      app.js bundle → supabase ESM 포함 (2026-05-25 perf), inline body scripts 가 의존하므로 sync. -->
 <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-<script src="/dist/app.js?v=f43f4860"></script>
+<script src="/dist/app.js?v=a5fce458"></script>
 
 <script>
   // QROK Splash — 앱 ready 까지 대기 후 fade out. 좌측 상단/중앙 loading 스피너 가림.
@@ -3106,16 +3106,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
       <div>분석</div>
       <span id="nav-badge-stats" class="nav-badge-dot" style="display:none;"></span>
     </div>
-    <div class="bni" onclick="switchTab('competition',2)">
-      <svg class="bni-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <path d="M7 4h10v6a5 5 0 0 1-10 0V4z"/>
-        <path d="M7 7H4v1a3 3 0 0 0 3 3"/>
-        <path d="M17 7h3v1a3 3 0 0 1-3 3"/>
-        <path d="M10.5 15h3v3h-3z"/>
-        <path d="M8 20h8"/>
-      </svg>
-      <div>챌린지</div>
-    </div>
+    <!-- [기능 제거 2026-09-14] 챌린지 탭 — 사용자 결정으로 제품에서 제외. 코드는 dormant (형상관리). -->
   </div>
 </div>
 
@@ -5987,15 +5978,7 @@ async function checkYesterdayReminder(){
   const handled=localStorage.getItem('carryover_handled');
   if(handled===TODAY)return;
 
-  // Sprint E: 복귀 모드 감지 — 3일 이상 공백이면 soft welcome-back으로 분기
-  // 2026-06-13: FF gate — returner_grace OFF 일 때 ribbon 도 skip.
-  if(window.FF&&window.FF.get('returner_grace',false)){
-    _returnerGap=await _daysSinceLastActivity();
-    if(_returnerGap>=3&&_returnerGap<999){
-      showReturnerRibbon(_returnerGap);
-      return;
-    }
-  }
+  // [정책 폐지 2026-09-14] 복귀 모드 감지·복귀 루틴 제안 제거 (사용자 결정).
 
   // Load yesterday's log
   let yl=logCache[yk];
@@ -6122,66 +6105,7 @@ function dismissYesterdayRibbon(){
 
 // Sprint E2: 복귀 사용자 전용 soft ribbon (rage 대신 warmth)
 // N일 공백 감지 시 호출. 쉬운 루틴 1개 스포트라이트 + 완만한 manifesto 톤.
-function showReturnerRibbon(gapDays){
-  const ribbon=document.getElementById('yesterday-ribbon');
-  if(!ribbon)return;
-  // gap 기반 문구 (3-6일: 가벼움 / 7-13일: 중간 / 14+: 진지)
-  const titleMap=[
-    [3,'다시 왔네. 오늘은 하나만.'],
-    [7,'일주일만이야. 가볍게 시작하자.'],
-    [14,'돌아와줘서 고마워. 다시 쌓자.']
-  ];
-  const subMap=[
-    [3,`${gapDays}일 쉬었어. 꾸준함은 재시작에서 다시 시작돼.`],
-    [7,`${gapDays}일 만에 복귀. 완벽할 필요 없어.`],
-    [14,`${gapDays}일 공백. 천천히, 하지만 매일.`]
-  ];
-  const pick=(map)=>{for(const[d,t]of map){if(gapDays<=d||d===map[map.length-1][0])return t;}return map[0][1];};
-  document.getElementById('yr-icon').textContent='';
-  document.getElementById('yr-title').textContent=pick(titleMap);
-  // Grace hint: FF 활성 + return_state.grace_until 살아있을 때만 노출
-  let graceHint='';
-  try{
-    if(window.FF&&window.FF.get('returner_grace',false)&&window.sh&&window.sh.returnerGrace&&CP&&CP.return_state){
-      if(window.sh.returnerGrace.isWithinGrace(CP.return_state)){
-        const until=new Date(CP.return_state.grace_until).getTime();
-        const hrsLeft=Math.max(0,Math.round((until-Date.now())/3600000));
-        graceHint=` · 72시간 보호 (${hrsLeft}h 남음)`;
-      }
-    }
-  }catch(_){}
-  document.getElementById('yr-sub').textContent=pick(subMap)+graceHint;
-
-  const list=document.getElementById('co-task-list');
-  const hint=document.getElementById('co-selection-hint');
-  const actions=document.getElementById('yr-actions');
-  list.style.display='none';
-  hint.style.display='none';
-
-  // 가장 쉬운 루틴 한 개 스포트라이트 — 오늘 해당 요일에 적용되는 매일 루틴 중
-  // 이름이 짧은 것(부담 낮음) 우선. 없으면 그냥 '물 2잔' 제안.
-  const dow=(new Date(now).getDay()+6)%7;
-  const todayMand=(logCache[TODAY]?.mandatory||log.mandatory||[])
-    .filter(m=>!m.done&&!(m.days&&!m.days.includes(dow)))
-    .sort((a,b)=>(a.name||'').length-(b.name||'').length);
-  const suggestion=todayMand[0]?.name||'물 2잔 마시기';
-  const hasRoutineSuggestion=!!todayMand[0];
-
-  actions.innerHTML=`
-    <div style="padding:12px 14px;background:rgba(255,255,255,.08);border-radius:var(--radius-lg);margin-bottom:2px;display:flex;align-items:center;gap:10px;">
-      <span style="font-size:var(--text-xl);flex-shrink:0;">✦</span>
-      <div style="flex:1;min-width:0;">
-        <div style="font-size:var(--text-2xs);font-weight:700;color:rgba(255,255,255,.65);text-transform:uppercase;letter-spacing:.08em;margin-bottom:2px;">오늘 이것만</div>
-        <div style="font-size:var(--text-base);font-weight:700;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${suggestion}</div>
-      </div>
-    </div>
-    <button class="yr-btn yr-btn-primary" onclick="dismissYesterdayRibbon()">다시 시작 →</button>
-  `;
-  ribbon.style.display='block';
-
-  // 복귀 모드 플래그 (첫 액션 amp용)
-  try{sessionStorage.setItem('returner_mode',String(gapDays));}catch(e){}
-}
+function showReturnerRibbon(){/* [정책 폐지 2026-09-14] 복귀 리본·루틴 제안 제거 */}
 
 // Sprint E3: 복귀 후 첫 액션에서 부드러운 반응 (rage 차단 + 환영 토스트 1회)
 function _consumeReturnerFirstAction(){
@@ -6357,25 +6281,7 @@ async function onLogin(user){
       }catch(_){}
     }).catch(()=>{});}
   }catch(e){console.warn('[FF] load',e);}
-  // Deep link 처리 — URL 에 invite 코드 있으면 친구 탭 오픈 + prefill.
-  try{
-    if(window.sh&&window.sh.deeplink){
-      const code=window.sh.deeplink.consumeInviteFromUrl();
-      if(code){
-        setTimeout(()=>{
-          try{switchTab('competition',2);}catch(_){}
-          setTimeout(()=>{
-            try{switchSubTab&&switchSubTab('friends');}catch(_){}
-            setTimeout(()=>{
-              const inp=document.getElementById('fr-add-input');
-              if(inp){inp.value=code;inp.focus();}
-              try{window.sh.deeplink.trackInviteSource(code,'deeplink');}catch(_){}
-            },400);
-          },300);
-        },600);
-      }
-    }
-  }catch(e){console.warn('[deeplink] consume',e);}
+  // [기능 제거 2026-09-14] 초대 딥링크 → 챌린지/친구 탭 이동 제거 (탭 자체가 제거됨).
 
   // Returner Grace activation 은 profile 로드 후 (CP 세팅 후) 실행. 변수 p TDZ 회피.
   // ── 스냅샷 즉시 복원 (init에서 이미 paint 했으면 skip, 다른 유저 전환 시에는 paint) ──
@@ -6412,22 +6318,7 @@ async function onLogin(user){
   }
   if(p&&p.total_score===null)p.total_score=0;
   CP=p;
-  // Returner Grace activation — profile 로드 후 실행. CP 가 세팅된 시점.
-  try{
-    if(window.sh&&window.sh.returnerGrace&&window.FF&&window.FF.get('returner_grace',false)&&CP){
-      const rg=window.sh.returnerGrace;
-      const prevState=CP.return_state||null;
-      const next=rg.computeActivation(prevState);
-      if(next&&JSON.stringify(next)!==JSON.stringify(prevState)){
-        CP.return_state=next;
-        rg.persist(sb,user.id,next).then(()=>{
-          if(window.logEvent&&window.EVT&&rg.isWithinGrace(next)&&!rg.isWithinGrace(prevState)){
-            window.logEvent(window.EVT.RETURNER_GRACE_ACTIVATED,{hours:72});
-          }
-        }).catch(()=>{});
-      }
-    }
-  }catch(e){console.warn('[returner] activation',e);}
+  // [정책 폐지 2026-09-14] Returner Grace 활성화 제거 (사용자 결정).
   // total_score: localStorage 백업이 DB값보다 높으면 복원 (저장 실패 대비)
   if(CP){
     try{
@@ -6515,18 +6406,7 @@ async function onLogin(user){
       if(typeof window._prefetchStats==='function'){
         window._prefetchStats();
       }
-      // challenges prefetch — renderChallengeHome 의 fetch 만 트리거 (DOM 렌더 X)
-      if(CU&&typeof sb!=='undefined'){
-        sb.from('competitions').select('id,code,name,creator_id,members,sections,challenge_type,status,max_members,start_date,duration_days,weight_goal,member_wgoals,measure_type,member_inbody_goals,daily_goal').in('status',['waiting','active','failed','completed'])
-          .then(({data})=>{
-            if(data){
-              _challengeCache = data;
-              _challengeCacheTs = Date.now();
-              _writeChallengeLS(data);
-            }
-          })
-          .catch(()=>{});
-      }
+      // [기능 제거 2026-09-14] challenges prefetch 제거
     }catch(e){console.warn('[prefetch]',e);}
   }, 2000);
 }
@@ -7160,16 +7040,7 @@ function renderCardCubes(){
     const key=selectedKey||TODAY;
     const l=(window.logCache&&window.logCache[key])||null;
     let cubes=l&&l.cubes;
-    // Returner Grace postprocess — 오늘 날짜 + grace 활성 + FF on 조건 하에 crimson → gray.
-    // 원본 log.cubes 는 변경하지 않음.
-    try{
-      if(cubes&&key===TODAY&&window.FF&&window.FF.get('returner_grace',false)&&window.sh&&window.sh.returnerGrace){
-        const rs=CP&&CP.return_state;
-        if(rs&&window.sh.returnerGrace.isWithinGrace(rs)){
-          cubes=window.sh.returnerGrace.applyGraceToCubes(cubes,rs);
-        }
-      }
-    }catch(_){}
+    // [정책 폐지 2026-09-14] Returner Grace 큐브 다운그레이드 제거.
     // Exempt postprocess — 오늘 면제 시 전 축 gray 강제. FF + today only.
     try{
       if(cubes&&key===TODAY&&window.FF&&window.FF.get('exempt_tap',false)&&window.sh&&window.sh.exempt){
@@ -8262,6 +8133,8 @@ function _currentWeekFeature(){
 }
 function renderWeeklyFeatureRibbon(){
   const card=document.getElementById('weekly-feature-card');
+  if(card){card.style.display='none';card.dataset.active='';}
+  return; // [기능 제거 2026-09-14] 이번 주 배울 기능 리본 — 사용자 결정으로 제거
   if(!card)return;
   if(!CU||!CU.id){card.style.display='none';return;}
   const feat=_currentWeekFeature();
@@ -8370,14 +8243,13 @@ function _showDay1NudgeModal(msg){
   document.body.appendChild(el);
 }
 
-function gotoChallengeTab(){
-  try{track('challenge_tab_cta',{src:'wf'});}catch(e){}
-  try{switchTab('competition');}catch(e){try{switchTab('challenge');}catch(e){}}
-}
+function gotoChallengeTab(){/* [기능 제거 2026-09-14] 챌린지 탭 제거 */}
 
 // ── 친구 초대 카드 — 홈 표시/숨김 + 공유 플로우 ──
 function renderInviteCard(){
   const card=document.getElementById('invite-card');
+  if(card){card.style.display='none';card.dataset.active='';}
+  return; // [기능 제거 2026-09-14] "친구랑 같이 큐록" 초대 카드 — 사용자 결정으로 제거
   if(!card)return;
   if(!CU){card.style.display='none';card.dataset.active='';return;}
   try{if(localStorage.getItem('invite_dismissed_'+CU.id)==='1'){card.style.display='none';card.dataset.active='';return;}}catch(e){}
@@ -8855,7 +8727,7 @@ if(typeof window!=='undefined'){
 
 function switchTab(name,idx){
   // Dead tab guard — view-status 제거됨 (2026-04-25 Phase 1B). 혹시 호출되면 routine 으로 fallback.
-  if(name==='status'||name==='goggins'){name='routine';idx=0;}
+  if(name==='status'||name==='goggins'||name==='competition'||name==='challenge'){name='routine';idx=0;}
   // M10: TAB_VISIT
   try{window.logEvent&&window.EVT&&window.logEvent(window.EVT.TAB_VISIT,{tab:name});}catch(_){}
   // 탭 전환 시 body 스크롤 잠금 해제 — 모달/오버레이에서 닫기 경로가 누락돼도 복구
@@ -8871,13 +8743,7 @@ function switchTab(name,idx){
   try{window.scrollTo({top:0,behavior:'instant'});}catch(e){window.scrollTo(0,0);}
   if(name==='routine'){try{if(typeof window.renderDateHeatmap==='function')window.renderDateHeatmap();}catch(e){console.warn('renderDateHeatmap on tab switch',e);}}
   if(name==='stats'){loadStatsTab();try{consumeNavBadge('stats');}catch(e){}}
-  if(name==='competition'){
-    // Perf fix (2026-05-25): 순차 → 병렬. 두 RPC 독립적이라 더 느린 쪽 시간만 기다림.
-    Promise.allSettled([
-      Promise.resolve().then(()=>renderChallengeHome()),
-      Promise.resolve().then(()=>loadPushupChallenge()),
-    ]).then(rs=>rs.forEach(r=>{if(r.status==='rejected')console.warn('[switchTab]',r.reason);}));
-  }
+  // [기능 제거 2026-09-14] competition 탭 로딩 제거 — guard 가 routine 으로 리다이렉트
   // Safety: release any stale scroll lock on tab change
   _forceUnlockScroll();
 }
@@ -9240,8 +9106,7 @@ function renderRoutine(){try{recomputeCubesHook(null,{silent:true});}catch(e){}r
 const PROMO_ORDER=[
   {id:'yesterday-ribbon',  title:'어제 미완료',      kind:'carryover'},
   {id:'first-week-card',   title:'첫 주 미션',        kind:'onboarding'},
-  {id:'weekly-feature-card',title:'이번 주 기능',     kind:'weekly'},
-  {id:'invite-card',       title:'친구 초대',         kind:'invite'},
+  // [기능 제거 2026-09-14] weekly-feature-card('이번 주 기능')·invite-card('친구 초대') 제외
 ];
 
 // 정책 변경 (사용자 결정 2026-04-25):
@@ -13093,6 +12958,8 @@ function _writeChallengeLS(data){
 }
 
 async function renderChallengeHome(){
+  return; // [기능 제거 2026-09-14] 챌린지 — 사용자 결정으로 제품에서 제외
+  // eslint-disable-next-line no-unreachable
   if(!CU)return;
 
   // Fetch user's challenges (memory → localStorage → network)
