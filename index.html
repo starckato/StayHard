@@ -4030,7 +4030,19 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
         </div>
         <button class="btn-cta" id="strava-btn" style="display:none;" onclick="connectStrava()">연결</button>
       </div>
-      <div style="font-size:10.5px;color:var(--text3);margin-top:10px;line-height:1.5;">연결하면 앱 실행 시 러닝·라이딩·수영 기록을 자동으로 가져온다.<br>가민 워치는 가민 커넥트 앱에서 Strava 연동을 켜두면 함께 들어온다.</div>
+      <div style="font-size:10.5px;color:var(--text3);margin:6px 0 10px;line-height:1.5;">연결하면 앱 실행 시 러닝·라이딩·수영 기록을 자동으로 가져온다.</div>
+      <div style="border-top:1px solid var(--border2);padding-top:10px;display:flex;align-items:center;gap:11px;">
+        <span style="width:34px;height:34px;border-radius:var(--radius-md);background:var(--surface3);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--text2)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7 8l5-5 5 5"/><path d="M4 21h16"/><path d="M4 17v4M20 17v4"/></svg>
+        </span>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:var(--text-md);font-weight:600;">활동 파일 가져오기</div>
+          <div id="actfile-status" style="font-size:var(--text-xs);color:var(--text3);margin-top:2px;">.fit · .tcx · .gpx · .zip</div>
+        </div>
+        <button class="btn-cta" onclick="document.getElementById('actfile-input').click()" id="actfile-btn">파일 선택</button>
+        <input type="file" id="actfile-input" accept=".fit,.tcx,.gpx,.zip" multiple style="display:none;" onchange="importActivityFiles(this.files)">
+      </div>
+      <div style="font-size:10.5px;color:var(--text3);margin-top:10px;line-height:1.5;">Strava 를 안 쓰는 가민·코로스·순토·폴라 워치도 OK — 각 앱에서 활동을 내보내 그대로 올리면 된다. (가민 커넥트: 활동 → ⚙ → 내보내기)</div>
     </div>
 
     <div id="notif-prefs-card" style="display:none;margin:0 0 12px;padding:14px;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius-lg);">
@@ -16840,6 +16852,50 @@ async function stravaSyncOnBoot(force){
     }
   }catch(e){console.warn('[strava-sync]',e);}
 }
+// ── 활동 파일 임포트 (.fit/.tcx/.gpx/.zip) — 스트라바 안 쓰는 워치 유저 경로 ──
+async function importActivityFiles(fileList){
+  const files=[...(fileList||[])];
+  if(!files.length)return;
+  const h=await _stravaAuthHeader();
+  if(!h){showToast('로그인이 필요해요');return;}
+  const st=document.getElementById('actfile-status');
+  const btn=document.getElementById('actfile-btn');
+  if(btn)btn.disabled=true;
+  let totalImported=0,totalSkipped=0,failed=0;
+  for(let i=0;i<files.length;i++){
+    const f=files[i];
+    if(st)st.textContent='가져오는 중… ('+(i+1)+'/'+files.length+') '+f.name;
+    try{
+      if(f.size>15*1024*1024){failed++;continue;}
+      const buf=await f.arrayBuffer();
+      let bin='';const u8=new Uint8Array(buf);const CH=0x8000;
+      for(let o=0;o<u8.length;o+=CH)bin+=String.fromCharCode.apply(null,u8.subarray(o,o+CH));
+      const r=await fetch('https://uvaosxhsjscigheyymus.supabase.co/functions/v1/activity-import',{
+        method:'POST',headers:h,
+        body:JSON.stringify({filename:f.name,data_b64:btoa(bin)})
+      }).then(r=>r.json());
+      if(r&&typeof r.imported==='number'){totalImported+=r.imported;totalSkipped+=r.skipped||0;}
+      else failed++;
+    }catch(e){failed++;}
+  }
+  if(btn)btn.disabled=false;
+  if(st)st.textContent='.fit · .tcx · .gpx · .zip';
+  const inp=document.getElementById('actfile-input');if(inp)inp.value='';
+  if(totalImported>0){
+    try{
+      delete logCache[TODAY];
+      await loadLog(TODAY,true);
+      renderWorkouts();
+      recomputeCubesHook();
+    }catch(_){}
+    showToast('활동 '+totalImported+'건 가져왔어요'+(totalSkipped?' (중복 '+totalSkipped+'건 제외)':''));
+  }else if(totalSkipped>0){
+    showToast('이미 가져온 기록이에요 (중복 '+totalSkipped+'건)');
+  }else{
+    showToast('가져올 활동을 찾지 못했어요'+(failed?' — 파일 '+failed+'개 실패':''));
+  }
+}
+window.importActivityFiles=importActivityFiles;
 window.connectStrava=connectStrava;
 window.disconnectStrava=disconnectStrava;
 window.renderStravaCard=renderStravaCard;
