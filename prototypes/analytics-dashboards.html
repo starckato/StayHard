@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AN-1 · 분석 탭 대시보드 — 헬스 / 러닝</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&family=Noto+Sans+KR:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+/* 앱 실토큰 (index.html :root 동일) */
+:root{
+--radius-sm:4px;--radius-md:8px;--radius-lg:12px;--radius-xl:16px;--radius-pill:999px;
+--text-2xs:10px;--text-xs:11px;--text-sm:12px;--text-md:13px;--text-base:14px;--text-lg:16px;--text-xl:20px;--text-2xl:24px;--text-3xl:36px;
+--bg:#0a0a0c;--surface:#141418;--surface2:#1c1c22;--surface3:#24242c;
+--border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.10);
+--text:#eaeaea;--text2:#a8a8b4;--text3:#7a7a86;
+--accent:#ff4d4d;--accent-tint-2:rgba(255,77,77,0.12);--accent-tint-4:rgba(255,77,77,0.35);
+--accent-grad:linear-gradient(135deg,#ff4d4d 0%,#ff6b35 100%);
+--green:#34d399;--green-bg:rgba(52,211,153,0.12);--green-bd:rgba(52,211,153,0.28);
+--amber:#f59e0b;--amber-bg:rgba(245,158,11,0.12);
+--blue:#38bdf8;--blue-bg:rgba(56,189,248,0.12);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{background:#000;display:flex;justify-content:center;font-family:'DM Sans','Noto Sans KR',sans-serif;color:var(--text)}
+.phone{width:390px;min-height:100vh;background:var(--bg);padding:18px 16px 90px}
+.mono{font-family:'DM Mono',monospace}
+
+/* 헤더 + 세그먼트 */
+.hd{font-size:var(--text-xl);font-weight:800;margin:4px 2px 14px}
+.seg{display:flex;background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius-lg);padding:3px;margin-bottom:16px}
+.seg button{flex:1;padding:9px 0;border:none;border-radius:9px;background:transparent;color:var(--text3);font-family:inherit;font-size:var(--text-md);font-weight:700;cursor:pointer}
+.seg button.on{background:var(--surface3);color:var(--text);box-shadow:0 2px 8px rgba(0,0,0,.4)}
+
+.card{background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius-lg);padding:14px;margin-bottom:10px}
+.lbl{font-size:var(--text-2xs);font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.lbl svg{flex-shrink:0}
+.sub{font-size:var(--text-xs);color:var(--text3)}
+
+/* 러닝 히어로 */
+.hero-num{font-size:44px;font-weight:800;line-height:1;letter-spacing:-.02em}
+.hero-num small{font-size:var(--text-lg);font-weight:600;color:var(--text2);margin-left:4px}
+.hero-row{display:flex;gap:8px;margin-top:12px}
+.hero-cell{flex:1;background:var(--surface3);border-radius:var(--radius-md);padding:8px 10px}
+.hero-cell .v{font-size:var(--text-lg);font-weight:700}
+.hero-cell .k{font-size:var(--text-2xs);color:var(--text3);margin-top:2px}
+
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.tile{background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius-lg);padding:14px}
+.tile .v{font-size:var(--text-2xl);font-weight:800;letter-spacing:-.01em}
+.tile .v small{font-size:var(--text-sm);color:var(--text2);font-weight:600}
+.tile .k{font-size:var(--text-2xs);color:var(--text3);margin-top:4px}
+
+/* Zone2 */
+.z2{display:flex;align-items:center;gap:14px}
+.z2-ring{width:58px;height:58px;border-radius:50%;background:conic-gradient(var(--green) 0 65%,var(--surface3) 65% 100%);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.z2-ring>div{width:44px;height:44px;border-radius:50%;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:var(--text-lg)}
+.z2-body{flex:1}
+.z2-nums{display:flex;gap:16px}
+.z2-nums .v{font-size:var(--text-xl);font-weight:800}
+.z2-nums .k{font-size:var(--text-2xs);color:var(--text3)}
+
+/* 기록 테이블 */
+table{width:100%;border-collapse:collapse}
+th{font-size:var(--text-2xs);color:var(--text3);font-weight:600;text-align:right;padding:4px 0 8px;letter-spacing:.04em}
+th:first-child{text-align:left}
+td{padding:9px 0;border-top:1px solid var(--border);font-size:var(--text-base);text-align:right}
+td:first-child{text-align:left;font-weight:700}
+td .dist-sub{display:block;font-size:var(--text-2xs);color:var(--text3);font-weight:400}
+.pb{font-weight:700}
+.pb .date{display:block;font-size:var(--text-2xs);color:var(--text3);font-weight:400}
+.est{color:var(--text2)}
+.none{color:var(--text3);font-size:var(--text-sm)}
+
+/* 헬스 체중 헤더 */
+.wt{display:flex;align-items:center;gap:12px}
+.wt .cur{font-size:var(--text-3xl);font-weight:800;letter-spacing:-.02em}
+.wt .cur small{font-size:var(--text-base);color:var(--text2);font-weight:600}
+.wt-arrow{color:var(--text3)}
+.wt .goal{font-size:var(--text-xl);font-weight:700;color:var(--text2)}
+.wt-badge{margin-left:auto;background:var(--amber-bg);color:var(--amber);border-radius:var(--radius-pill);padding:5px 11px;font-size:var(--text-sm);font-weight:700}
+
+/* 주간 바 */
+.wk-total{display:flex;align-items:baseline;gap:8px;margin-bottom:12px}
+.wk-total .v{font-size:var(--text-2xl);font-weight:800}
+.wk-total .k{font-size:var(--text-xs);color:var(--text3)}
+.bars{display:flex;gap:6px;align-items:flex-end;height:96px}
+.bar{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;height:100%;justify-content:flex-end}
+.bar .m{font-size:9px;color:var(--text3);white-space:nowrap}
+.bar .b{width:100%;border-radius:5px 5px 2px 2px;background:var(--surface3)}
+.bar.hot .b{background:var(--accent-grad);box-shadow:0 0 14px rgba(255,77,77,.25)}
+.bar .d{font-size:var(--text-2xs);color:var(--text3)}
+.bar.hot .d{color:var(--accent);font-weight:700}
+.bar .t{font-size:9px;color:var(--text2);min-height:12px}
+.wk-best{margin-top:10px;font-size:var(--text-xs);color:var(--text2)}
+.wk-best b{color:var(--accent)}
+
+/* 3대 */
+.big3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.big3 .c{background:var(--surface3);border-radius:var(--radius-md);padding:10px;text-align:center}
+.big3 .v{font-size:var(--text-xl);font-weight:800}
+.big3 .v small{font-size:var(--text-2xs);color:var(--text2)}
+.big3 .k{font-size:var(--text-2xs);color:var(--text3);margin-top:3px}
+.big3 .tag{display:inline-block;font-size:8.5px;color:var(--blue);background:var(--blue-bg);border-radius:3px;padding:1px 4px;margin-top:3px}
+.big3-sum{margin-top:10px;text-align:center;font-size:var(--text-sm);color:var(--text2)}
+.big3-sum b{color:var(--text);font-size:var(--text-lg)}
+
+/* 최근 세션 종목 볼륨 */
+.exrow{display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--border)}
+.exrow:first-of-type{border-top:none}
+.exrow .nm{font-size:var(--text-base);font-weight:600;flex:1}
+.exrow .vb{height:5px;border-radius:3px;background:var(--accent-tint-4);min-width:8px}
+.exrow .vv{font-size:var(--text-sm);color:var(--text2);width:44px;text-align:right}
+
+/* 부위별 빈도 */
+.mrow{display:flex;align-items:center;gap:10px;padding:6px 0}
+.mrow .nm{width:40px;font-size:var(--text-sm);font-weight:600;color:var(--text2)}
+.mrow .track{flex:1;height:8px;background:var(--surface3);border-radius:4px;overflow:hidden}
+.mrow .fill{height:100%;border-radius:4px;background:var(--accent-grad)}
+.mrow.dim .fill{background:var(--surface3);border:1px solid var(--border2)}
+.mrow .vv{width:34px;text-align:right;font-size:var(--text-sm);color:var(--text2)}
+</style>
+</head>
+<body>
+<div class="phone">
+  <div class="hd">분석</div>
+  <div class="seg">
+    <button id="seg-h" class="on" onclick="show('h')">헬스</button>
+    <button id="seg-r" onclick="show('r')">러닝</button>
+  </div>
+
+  <!-- ═══════════ 헬스 대시보드 ═══════════ -->
+  <div id="view-h">
+
+    <!-- ① 체중 -->
+    <div class="card">
+      <div class="lbl"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3v3M5.6 5.6l2.1 2.1M3 12h3M18 12h3M18.4 5.6l-2.1 2.1"/><circle cx="12" cy="14" r="7"/></svg>체중</div>
+      <div class="wt">
+        <div class="cur mono">78.4<small> kg</small></div>
+        <svg class="wt-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        <div class="goal mono">74.0</div>
+        <div class="wt-badge">−4.4 kg 남음</div>
+      </div>
+    </div>
+
+    <!-- ② 지난주 볼륨 + 요일별 타겟 + 최고일 -->
+    <div class="card">
+      <div class="lbl"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 4v16M18 4v16M6 12h12"/><rect x="2" y="9" width="4" height="6" rx="1"/><rect x="18" y="9" width="4" height="6" rx="1"/></svg>지난주 <span class="sub" style="text-transform:none;letter-spacing:0;">9/8 – 9/14 (월–일)</span></div>
+      <div class="wk-total"><div class="v mono">24.3<span style="font-size:14px;color:var(--text2);"> t</span></div><div class="k">Total 볼륨</div></div>
+      <div class="bars">
+        <div class="bar"><span class="m">5.2t</span><div class="b" style="height:52%"></div><span class="t">가슴</span><span class="d">월</span></div>
+        <div class="bar"><span class="m"></span><div class="b" style="height:3%"></div><span class="t"></span><span class="d">화</span></div>
+        <div class="bar"><span class="m">6.8t</span><div class="b" style="height:70%"></div><span class="t">등</span><span class="d">수</span></div>
+        <div class="bar"><span class="m">4.1t</span><div class="b" style="height:42%"></div><span class="t">하체</span><span class="d">목</span></div>
+        <div class="bar"><span class="m"></span><div class="b" style="height:3%"></div><span class="t"></span><span class="d">금</span></div>
+        <div class="bar hot"><span class="m">8.2t</span><div class="b" style="height:88%"></div><span class="t">어깨·팔</span><span class="d">토</span></div>
+        <div class="bar"><span class="m"></span><div class="b" style="height:3%"></div><span class="t"></span><span class="d">일</span></div>
+      </div>
+      <div class="wk-best">일별 최고 <b>토요일 8.2t</b></div>
+    </div>
+
+    <!-- ③ 3대 -->
+    <div class="card">
+      <div class="lbl"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21l4-9 4 9M12 3v9M7 6.5C8.5 5 10 4.2 12 4.2s3.5.8 5 2.3"/></svg>3대 최고 기록 <span class="sub" style="text-transform:none;letter-spacing:0;">추정 1RM</span></div>
+      <div class="big3">
+        <div class="c"><div class="v mono">142<small> kg</small></div><div class="k">스쿼트</div></div>
+        <div class="c"><div class="v mono">108<small> kg</small></div><div class="k">벤치프레스</div></div>
+        <div class="c"><div class="v mono">171<small> kg</small></div><div class="k">데드리프트</div><span class="tag">실중량</span></div>
+      </div>
+      <div class="big3-sum">합계 <b class="mono">421 kg</b></div>
+    </div>
+
+    <!-- ④ 최근 세션 종목별 볼륨 -->
+    <div class="card">
+      <div class="lbl"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>최근 운동 <span class="sub" style="text-transform:none;letter-spacing:0;">9/16 화 · 등 데이</span></div>
+      <div class="exrow"><span class="nm">데드리프트</span><div class="vb" style="width:96px"></div><span class="vv mono">3.2t</span></div>
+      <div class="exrow"><span class="nm">랫풀다운</span><div class="vb" style="width:54px"></div><span class="vv mono">1.8t</span></div>
+      <div class="exrow"><span class="nm">바벨 로우</span><div class="vb" style="width:48px"></div><span class="vv mono">1.6t</span></div>
+      <div class="exrow"><span class="nm">페이스풀</span><div class="vb" style="width:18px"></div><span class="vv mono">0.6t</span></div>
+    </div>
+
+    <!-- ⑤ 부위별 빈도 -->
+    <div class="card">
+      <div class="lbl"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 20h16M7 20v-9M12 20V5M17 20v-6"/></svg>부위별 빈도 <span class="sub" style="text-transform:none;letter-spacing:0;">최근 4주 · 종목 수행 횟수</span></div>
+      <div class="mrow"><span class="nm">가슴</span><div class="track"><div class="fill" style="width:100%"></div></div><span class="vv mono">12</span></div>
+      <div class="mrow"><span class="nm">등</span><div class="track"><div class="fill" style="width:92%"></div></div><span class="vv mono">11</span></div>
+      <div class="mrow"><span class="nm">하체</span><div class="track"><div class="fill" style="width:67%"></div></div><span class="vv mono">8</span></div>
+      <div class="mrow"><span class="nm">어깨</span><div class="track"><div class="fill" style="width:50%"></div></div><span class="vv mono">6</span></div>
+      <div class="mrow"><span class="nm">팔</span><div class="track"><div class="fill" style="width:42%"></div></div><span class="vv mono">5</span></div>
+      <div class="mrow dim"><span class="nm">코어</span><div class="track"><div class="fill" style="width:25%"></div></div><span class="vv mono">3</span></div>
+    </div>
+  </div>
+
+  <!-- ═══════════ 러닝 대시보드 ═══════════ -->
+  <div id="view-r" style="display:none;">
+
+    <!-- ① 마일리지 -->
+    <div class="card">
+      <div class="lbl"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L6 14h5l-1 8 7-12h-5l1-8z"/></svg>마일리지 · 이번 주</div>
+      <div class="hero-num mono">24.5<small>km</small></div>
+      <div class="hero-row">
+        <div class="hero-cell"><div class="v mono">86.2 <span style="font-size:11px;color:var(--text3);">km</span></div><div class="k">이번 달</div></div>
+        <div class="hero-cell"><div class="v mono">512 <span style="font-size:11px;color:var(--text3);">km</span></div><div class="k">올해</div></div>
+      </div>
+    </div>
+
+    <!-- ② 페이스 -->
+    <div class="grid2">
+      <div class="tile"><div class="v mono">5'42"<small>/km</small></div><div class="k">평균 페이스 · 최근 30일</div></div>
+      <div class="tile"><div class="v mono" style="color:var(--accent);">4'58"<small>/km</small></div><div class="k">최고 페이스 · 3km+ 러닝</div></div>
+    </div>
+
+    <!-- ③ Zone2 -->
+    <div class="card">
+      <div class="lbl"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 8.6a5.5 5.5 0 0 0-9.8-3.4A5.5 5.5 0 0 0 3.2 12c0 1.6.7 3 1.8 4l7 6 7-6c1.1-1 1.8-2.4 1.8-4"/></svg>Zone 2 러닝 <span class="sub" style="text-transform:none;letter-spacing:0;">최근 30일 · 108–126 bpm</span></div>
+      <div class="z2">
+        <div class="z2-ring"><div class="mono">65%</div></div>
+        <div class="z2-body">
+          <div class="z2-nums">
+            <div><div class="v mono">6<span style="font-size:12px;color:var(--text2);font-weight:600;"> 회</span></div><div class="k">Z2 러닝</div></div>
+            <div><div class="v mono">312<span style="font-size:12px;color:var(--text2);font-weight:600;"> 분</span></div><div class="k">누적 시간</div></div>
+          </div>
+          <div class="sub" style="margin-top:6px;">전체 러닝 중 65%가 Zone 2 · 최대심박 180 기준</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ④ 기록 테이블 -->
+    <div class="card">
+      <div class="lbl"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4h10v5a5 5 0 0 1-10 0V4z"/><path d="M7 6H4v1a3 3 0 0 0 3 3M17 6h3v1a3 3 0 0 1-3 3M10.5 14h3v3h-3zM8 19h8"/></svg>거리별 기록</div>
+      <table>
+        <tr><th>거리</th><th>PB</th><th>예상 기록</th></tr>
+        <tr>
+          <td>5K<span class="dist-sub">5.0 km</span></td>
+          <td class="pb mono">24:31<span class="date">8/30 · 5.1km</span></td>
+          <td class="est mono">24:10</td>
+        </tr>
+        <tr>
+          <td>10K<span class="dist-sub">10.0 km</span></td>
+          <td class="pb mono">52:04<span class="date">6/14 · 10.3km</span></td>
+          <td class="est mono">50:22</td>
+        </tr>
+        <tr>
+          <td>하프<span class="dist-sub">21.1 km</span></td>
+          <td class="none">기록 없음</td>
+          <td class="est mono">1:51:39</td>
+        </tr>
+        <tr>
+          <td>풀<span class="dist-sub">42.2 km</span></td>
+          <td class="none">기록 없음</td>
+          <td class="est mono">3:52:47</td>
+        </tr>
+      </table>
+      <div class="sub" style="margin-top:10px;">PB = 해당 거리(~+10%)를 실제로 뛴 기록 · 예상 = 최근 90일 최고 퍼포먼스 기반 (Riegel)</div>
+    </div>
+  </div>
+</div>
+<script>
+function show(v){
+  document.getElementById('view-h').style.display=v==='h'?'':'none';
+  document.getElementById('view-r').style.display=v==='r'?'':'none';
+  document.getElementById('seg-h').classList.toggle('on',v==='h');
+  document.getElementById('seg-r').classList.toggle('on',v==='r');
+}
+</script>
+</body>
+</html>

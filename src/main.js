@@ -22,6 +22,7 @@ import * as pushupChallenge from './data/pushup-challenge.js';
 import * as pushupCounter from './features/pushup/counter-modal.js';
 
 import * as stats from './features/stats/index.js';
+import * as dashboards from './features/dashboards/index.js';
 import * as onboarding from './features/onboarding/index.js';
 import * as weight from './features/weight/index.js';
 import * as rewards from './features/rewards/index.js';
@@ -128,6 +129,10 @@ window.sh.friends = friends;
 window.sh.mountain = mountain;
 window.renderMountain = mountain.renderMountain;
 window.sh.flags = flags;
+window.sh.dashboards = dashboards;
+window.renderDashboards = dashboards.renderDashboards;
+window.dashMode = dashboards.dashMode;
+window.dashSetMaxHr = dashboards.dashSetMaxHr;
 window.sh.metrics = metrics;
 window.sh.firstCube = firstCube;
 // window.sh.returnerGrace = returnerGrace; // [정책 폐지 2026-09-14]

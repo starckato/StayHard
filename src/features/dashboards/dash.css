@@ -1,0 +1,102 @@
+/* 큐록 · 분석 탭 대시보드 (헬스/러닝) — dsh- 네임스페이스
+   스펙: document-private/DASHBOARD_SPEC_v1.md · 토큰만 사용 (hex 직접 사용 금지) */
+
+.dash-seg{display:flex;background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius-lg);padding:3px;margin:0 16px 14px}
+.dash-seg button{flex:1;padding:9px 0;border:none;border-radius:9px;background:transparent;color:var(--text3);font-family:inherit;font-size:var(--text-md);font-weight:700;cursor:pointer;touch-action:manipulation}
+.dash-seg button.on{background:var(--surface3);color:var(--text);box-shadow:0 2px 8px rgba(0,0,0,.4)}
+
+#dash-health,#dash-running{padding:0 16px}
+.dsh-card{background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius-lg);padding:14px;margin-bottom:10px}
+.dsh-lbl{font-size:var(--text-2xs);font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.dsh-lbl svg{flex-shrink:0}
+.dsh-sub{font-size:var(--text-xs);color:var(--text3)}
+.dsh-sub-inline{font-size:var(--text-xs);color:var(--text3);text-transform:none;letter-spacing:0;font-weight:400}
+.dsh-link{color:var(--accent);cursor:pointer;text-decoration:underline}
+.dsh-btn{padding:9px 16px;background:var(--accent);border:none;border-radius:var(--radius-md);color:#fff;font-size:var(--text-sm);font-weight:700;cursor:pointer;font-family:inherit;touch-action:manipulation}
+
+/* 체중 */
+.dsh-wt{display:flex;align-items:center;gap:12px}
+.dsh-wt-cur{font-size:var(--text-3xl);font-weight:800;letter-spacing:-.02em;font-family:'DM Mono',monospace}
+.dsh-wt-cur small{font-size:var(--text-base);color:var(--text2);font-weight:600}
+.dsh-wt-arrow{color:var(--text3);flex-shrink:0}
+.dsh-wt-goal{font-size:var(--text-xl);font-weight:700;color:var(--text2);font-family:'DM Mono',monospace}
+.dsh-wt-badge{margin-left:auto;background:var(--amber-bg);color:var(--amber);border-radius:var(--radius-pill);padding:5px 11px;font-size:var(--text-sm);font-weight:700;white-space:nowrap}
+
+/* 지난주 */
+.dsh-wk-total{display:flex;align-items:baseline;gap:8px;margin-bottom:12px}
+.dsh-wk-v{font-size:var(--text-2xl);font-weight:800;font-family:'DM Mono',monospace}
+.dsh-wk-u{font-size:var(--text-base);color:var(--text2)}
+.dsh-wk-k{font-size:var(--text-xs);color:var(--text3)}
+.dsh-bars{display:flex;gap:6px;align-items:flex-end;height:96px}
+.dsh-bar{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;height:100%;justify-content:flex-end;min-width:0}
+.dsh-bar-m{font-size:9px;color:var(--text3);white-space:nowrap;font-family:'DM Mono',monospace}
+.dsh-bar-b{width:100%;border-radius:5px 5px 2px 2px;background:var(--surface3)}
+.dsh-bar.hot .dsh-bar-b{background:var(--accent-grad);box-shadow:0 0 14px var(--accent-tint-3)}
+.dsh-bar-d{font-size:var(--text-2xs);color:var(--text3)}
+.dsh-bar.hot .dsh-bar-d{color:var(--accent);font-weight:700}
+.dsh-bar-t{font-size:9px;color:var(--text2);min-height:12px;white-space:nowrap;overflow:hidden;max-width:100%}
+.dsh-wk-best{margin-top:10px;font-size:var(--text-xs);color:var(--text2)}
+.dsh-wk-best b{color:var(--accent)}
+
+/* 3대 */
+.dsh-big3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.dsh-big3-c{background:var(--surface3);border-radius:var(--radius-md);padding:10px;text-align:center}
+.dsh-big3-v{font-size:var(--text-xl);font-weight:800;font-family:'DM Mono',monospace}
+.dsh-big3-v small{font-size:var(--text-2xs);color:var(--text2)}
+.dsh-big3-k{font-size:var(--text-2xs);color:var(--text3);margin-top:3px}
+.dsh-big3-tag{display:inline-block;font-size:8.5px;color:var(--blue);background:var(--blue-bg);border-radius:3px;padding:1px 4px;margin-top:3px}
+.dsh-big3-sum{margin-top:10px;text-align:center;font-size:var(--text-sm);color:var(--text2)}
+.dsh-big3-sum b{color:var(--text);font-size:var(--text-lg);font-family:'DM Mono',monospace}
+
+/* 최근 세션 종목 볼륨 */
+.dsh-exrow{display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--border)}
+.dsh-exrow:first-of-type{border-top:none}
+.dsh-exrow-nm{font-size:var(--text-base);font-weight:600;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dsh-exrow-vb{height:5px;border-radius:3px;background:var(--accent-tint-4);flex-shrink:0}
+.dsh-exrow-vv{font-size:var(--text-sm);color:var(--text2);width:48px;text-align:right;font-family:'DM Mono',monospace;flex-shrink:0}
+
+/* 부위별 빈도 */
+.dsh-mrow{display:flex;align-items:center;gap:10px;padding:6px 0}
+.dsh-mrow-nm{width:40px;font-size:var(--text-sm);font-weight:600;color:var(--text2)}
+.dsh-mrow-track{flex:1;height:8px;background:var(--surface3);border-radius:4px;overflow:hidden}
+.dsh-mrow-fill{height:100%;border-radius:4px;background:var(--accent-grad)}
+.dsh-mrow.dim .dsh-mrow-fill{background:var(--surface3);border:1px solid var(--border2)}
+.dsh-mrow-vv{width:34px;text-align:right;font-size:var(--text-sm);color:var(--text2);font-family:'DM Mono',monospace}
+
+/* 러닝 히어로 */
+.dsh-hero-num{font-size:44px;font-weight:800;line-height:1;letter-spacing:-.02em;font-family:'DM Mono',monospace}
+.dsh-hero-num small{font-size:var(--text-lg);font-weight:600;color:var(--text2);margin-left:4px}
+.dsh-hero-row{display:flex;gap:8px;margin-top:12px}
+.dsh-hero-cell{flex:1;background:var(--surface3);border-radius:var(--radius-md);padding:8px 10px}
+.dsh-hero-v{font-size:var(--text-lg);font-weight:700;font-family:'DM Mono',monospace}
+.dsh-hero-u{font-size:var(--text-xs);color:var(--text3)}
+.dsh-hero-k{font-size:var(--text-2xs);color:var(--text3);margin-top:2px}
+
+/* 페이스 타일 */
+.dsh-grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.dsh-tile{background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius-lg);padding:14px}
+.dsh-tile-v{font-size:var(--text-2xl);font-weight:800;letter-spacing:-.01em;font-family:'DM Mono',monospace}
+.dsh-tile-v small{font-size:var(--text-sm);color:var(--text2);font-weight:600}
+.dsh-tile-k{font-size:var(--text-2xs);color:var(--text3);margin-top:4px}
+
+/* Zone2 */
+.dsh-z2{display:flex;align-items:center;gap:14px}
+.dsh-z2-ring{width:58px;height:58px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.dsh-z2-ring>div{width:44px;height:44px;border-radius:50%;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:var(--text-md);font-family:'DM Mono',monospace}
+.dsh-z2-body{flex:1;min-width:0}
+.dsh-z2-nums{display:flex;gap:16px}
+.dsh-z2-v{font-size:var(--text-xl);font-weight:800;font-family:'DM Mono',monospace}
+.dsh-z2-u{font-size:var(--text-sm);color:var(--text2);font-weight:600;font-family:'DM Sans','Noto Sans KR',sans-serif}
+.dsh-z2-k{font-size:var(--text-2xs);color:var(--text3)}
+
+/* 기록 테이블 */
+.dsh-table{width:100%;border-collapse:collapse}
+.dsh-table th{font-size:var(--text-2xs);color:var(--text3);font-weight:600;text-align:right;padding:4px 0 8px;letter-spacing:.04em}
+.dsh-table th:first-child{text-align:left}
+.dsh-table td{padding:9px 0;border-top:1px solid var(--border);font-size:var(--text-base);text-align:right;font-family:'DM Mono',monospace}
+.dsh-table td:first-child{text-align:left;font-weight:700;font-family:'DM Sans','Noto Sans KR',sans-serif}
+.dsh-dist-sub{display:block;font-size:var(--text-2xs);color:var(--text3);font-weight:400;font-family:'DM Mono',monospace}
+.dsh-pb{font-weight:700}
+.dsh-pb-date{display:block;font-size:var(--text-2xs);color:var(--text3);font-weight:400}
+.dsh-est{color:var(--text2)}
+.dsh-none{color:var(--text3);font-size:var(--text-sm);font-family:'DM Sans','Noto Sans KR',sans-serif}
