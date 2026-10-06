@@ -408,6 +408,15 @@ export async function saveWeightGoal(gv) {
 //   'weight' — today's weight only (default from 수정 button)
 //   'goal'   — target weight only (from 목표 설정 button)
 //   'both'   — both fields (first-time / empty state)
+// 가장 최근 체중 기록 (logCache 스캔, 날짜 내림차순)
+function _lastKnownWeight() {
+  try {
+    const cache = window.logCache || {};
+    const keys = Object.keys(cache).filter(k => cache[k] && cache[k].weight != null).sort().reverse();
+    return keys.length ? parseFloat(cache[keys[0]].weight) : null;
+  } catch (_) { return null; }
+}
+
 export function openWeightModal(mode) {
   // First-time users: no weight AND no goal → show both fields so the
   // modal doubles as onboarding.
@@ -452,6 +461,18 @@ export function openWeightModal(mode) {
   if (inp) inp.value = window.log?.weight != null ? parseFloat(window.log.weight).toFixed(1) : '';
   const currentGoal = getWeightGoal();
   if (gi) gi.value = currentGoal ? currentGoal.toFixed(1) : '';
+  // UX (2026-10-06): 오늘 기록이 없으면 휠 기본값을 하드코딩 70 이 아니라
+  // 가장 최근 체중으로 — 매일 자기 체중까지 스크롤하는 마찰 제거.
+  try {
+    const lastW = _lastKnownWeight();
+    const anchor = lastW || currentGoal || null;
+    if (anchor) {
+      const wChip = document.querySelector('.pk-chip[data-pk-for="wt-inp"]');
+      if (wChip) wChip.dataset.pkDefault = String(anchor);
+      const gChip = document.querySelector('.pk-chip[data-pk-for="wt-goal-inp"]');
+      if (gChip && !currentGoal && lastW) gChip.dataset.pkDefault = String(lastW);
+    }
+  } catch (e) { /* 프리필 실패해도 모달은 정상 동작 */ }
   try { _pkBindAll(document.getElementById('weight-modal')); _pkSync('wt-inp'); _pkSync('wt-goal-inp'); } catch (e) {}
   const hint = document.getElementById('wt-yesterday-hint');
   if (hint) {
