@@ -1007,7 +1007,8 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
 .btn-mini{padding:3px var(--space-2);background:var(--surface3);border:1px solid var(--border2);border-radius:var(--radius-md);font-size:var(--text-2xs);color:var(--text2);cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;flex-shrink:0;white-space:nowrap;}
 
 /* Delete icon button (22×22) */
-.btn-del-mini{width:22px;height:22px;background:var(--red-bg);border:1px solid var(--red-bd);border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;touch-action:manipulation;color:var(--red);}
+.btn-del-mini{width:22px;height:22px;background:var(--red-bg);border:1px solid var(--red-bd);border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;touch-action:manipulation;color:var(--red);position:relative;}
+.btn-del-mini::before{content:'';position:absolute;inset:-11px;border-radius:var(--radius-md);}
 
 /* 3-column stats grid (vol/sets/exercises or distance/time/pace) */
 .wo-stats{display:grid;grid-template-columns:1fr 1fr 1fr;border-top:1px solid var(--border);}
@@ -3133,7 +3134,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
         <div class="mtitle" id="ms-title" style="margin-bottom:0;">아침 기록</div>
         <div id="ms-ctx-pill" style="font-size:var(--text-xs);padding:2px 9px;background:var(--accent-bg);color:var(--accent);border-radius:var(--radius-lg);border:1px solid var(--accent-bd);font-weight:600;"></div>
       </div>
-      <button id="ms-delete-btn" onclick="deleteMealFromModal('slot')" style="display:none;font-size:var(--text-xs);padding:4px 10px;border-radius:var(--radius-md);border:1px solid var(--red-bd);background:var(--red-bg);color:var(--red);cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">삭제</button>
+      <button id="ms-delete-btn" onclick="deleteMealFromModal('slot')" style="display:none;font-size:var(--text-xs);padding:10px 14px;margin:-6px -4px;border-radius:var(--radius-md);border:1px solid var(--red-bd);background:var(--red-bg);color:var(--red);cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">삭제</button>
     </div>
 
     <!-- 음식 이름 -->
@@ -3188,7 +3189,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
     <!-- 헤더 -->
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
       <div class="mtitle" style="margin-bottom:0;">간식 / 음료 / 술·안주</div>
-      <button id="msn-delete-btn" onclick="deleteMealFromModal('snack')" style="display:none;font-size:var(--text-xs);padding:4px 10px;border-radius:var(--radius-md);border:1px solid var(--red-bd);background:var(--red-bg);color:var(--red);cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">삭제</button>
+      <button id="msn-delete-btn" onclick="deleteMealFromModal('snack')" style="display:none;font-size:var(--text-xs);padding:10px 14px;margin:-6px -4px;border-radius:var(--radius-md);border:1px solid var(--red-bd);background:var(--red-bg);color:var(--red);cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">삭제</button>
     </div>
 
     <!-- 카테고리 선택 -->
@@ -5250,9 +5251,9 @@ function removeSetConfirm(ei,si){
     });
   }
 }
-function removeExercise(ei){
+async function removeExercise(ei){
   const name=currentSession[ei]?.name||'이 운동';
-  if(!confirm('"'+name+'"을 삭제할까요?'))return;
+  if(!(await qkConfirm('"'+name+'"을 삭제할까요?',{okText:'삭제',danger:true})))return;
   currentSession.splice(ei,1);
   renderSession();
 }
@@ -5389,7 +5390,7 @@ async function saveRoutine(){
   if(!editingRoutineId){
     const exists=userRoutines.find(r=>r.name.trim()===name);
     if(exists){
-      const overwrite=confirm('"'+name+'" 루틴이 이미 있어요. 덮어쓸까요?');
+      const overwrite=await qkConfirm('"'+name+'" 루틴이 이미 있어요. 덮어쓸까요?',{okText:'덮어쓰기'});
       if(!overwrite){_savingRoutine=false;return;}
       // Overwrite the existing one
       await sb.from('user_routines').update({exercises:routineExercises}).eq('id',exists.id);
@@ -5423,7 +5424,7 @@ async function saveRoutine(){
   }
 }
 async function deleteRoutine(id){
-  if(!confirm('이 루틴을 삭제할까요?'))return;
+  if(!(await qkConfirm('이 루틴을 삭제할까요?',{okText:'삭제',danger:true})))return;
   // 낙관적 삭제 — UI 먼저 반영
   userRoutines=userRoutines.filter(r=>r.id!==id);
   renderRoutineList();renderWoRoutineTiles();
@@ -8684,12 +8685,12 @@ function renderExemptRow(){
     btn.disabled=rem===0&&!isToday;
   }catch(e){console.warn('[exempt] render',e);}
 }
-function openExemptModal(){
+async function openExemptModal(){
   const ex=window.sh&&window.sh.exempt;if(!ex)return;
   const list=(CP&&CP.exempt_log)||[];
   // 이미 면제중이면 취소 confirm
   if(ex.isTodayExempted(list)){
-    if(!confirm('오늘 면제를 취소할까요? 큐브 판정이 복구됩니다.'))return;
+    if(!(await qkConfirm('오늘 면제를 취소할까요? 큐브 판정이 복구됩니다.',{okText:'면제 취소'})))return;
     const res=ex.cancelTodayExempt(list);
     if(res.ok){
       if(CP)CP.exempt_log=res.log;
@@ -11727,7 +11728,7 @@ function startTrainerRealtimeSync(userId){
 async function revertAssignment(i){
   const w = (log.workouts||[])[i];
   if(!w || !w._trainerAssignmentId){ showToast('assignment 정보 없음.'); return; }
-  if(!confirm('완료 표시를 취소하고 미완료로 되돌릴까?\n트레이너 화면에도 미완료로 표시돼.')) return;
+  if(!(await qkConfirm('완료 표시를 취소하고 미완료로 되돌릴까?\n트레이너 화면에도 미완료로 표시돼.',{okText:'되돌리기'}))) return;
   const assignmentId = w._trainerAssignmentId;
   const isPenalty = !!w._isPenalty || w.sessionName === '유산소 추가';
 
@@ -11948,7 +11949,7 @@ async function cpmRespond(outcome){
       return;
     }
     if(actualMin < 1){
-      if(!confirm('실제 한 시간이 0분이야. 그래도 수행 완료 처리할까?')) return;
+      if(!(await qkConfirm('실제 한 시간이 0분이야.\n그래도 수행 완료 처리할까?',{okText:'완료 처리'}))) return;
     }
   } else {
     if(!confirm('탈주 처리할까? 트레이너에게 "탈주" 로 표시돼.')) return;
@@ -11999,7 +12000,7 @@ async function cancelHomeworkAssignment(i){
   const msg = isDone
     ? '완료한 트레이너 배정 운동을 삭제할까?\n트레이너 화면에 "회원이 취소함" 으로 표시돼.'
     : '트레이너가 배정한 운동을 취소할까?\n트레이너 화면에 "회원이 취소함" 으로 표시돼.';
-  if(!confirm(msg)) return;
+  if(!(await qkConfirm(msg,{okText:'취소하기',danger:true}))) return;
   const assignmentId = w._trainerAssignmentId;
   // log entry 즉시 제거 + 저장
   log.workouts.splice(i, 1);
@@ -12013,14 +12014,14 @@ async function cancelHomeworkAssignment(i){
   }catch(e){ console.warn('[cancelHw]', e); showToast('취소 실패: '+(e.message||e)); }
 }
 
-function delWO(i){
+async function delWO(i){
   // iOS confirm click-through 및 중복 호출 방지
   const now=Date.now();
   if(now-_delWOTs<600)return;
   const w=log.workouts[i];
   if(!w)return;
   const name=w.type==='gym'?(w.sessionName||'헬스 세션'):w.name||'운동';
-  if(!confirm('"'+name+'"을 삭제할까요?'))return;
+  if(!(await qkConfirm('"'+name+'"을 삭제할까요?',{okText:'삭제',danger:true})))return;
   _delWOTs=Date.now();
   const delWo=log.workouts[i];
   if(!delWo)return;
