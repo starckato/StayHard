@@ -6634,11 +6634,11 @@ function switchAuthTab(t){
 }
 async function showForgotPassword(){
   const email=document.getElementById('li-email').value.trim();
-  const input=email||prompt('가입한 이메일 주소를 입력하세요');
-  if(!input)return;
-  const{error}=await sb.auth.resetPasswordForEmail(input,{redirectTo:'https://qrok.app'});
-  if(error){alert('오류: '+error.message);return;}
-  alert('비밀번호 재설정 이메일을 보냈어요. 메일함을 확인해주세요.');
+  const input=email||await qkPrompt('가입한 이메일 주소를 입력하세요',{placeholder:'name@email.com'});
+  if(!input||!input.trim())return;
+  const{error}=await sb.auth.resetPasswordForEmail(input.trim(),{redirectTo:'https://qrok.app'});
+  if(error){showToast('오류: '+error.message);return;}
+  showToast('재설정 이메일을 보냈어요. 메일함을 확인해주세요.');
 }
 async function doLogin(){
   const email=document.getElementById('li-email').value.trim(),pw=document.getElementById('li-pw').value;
@@ -12315,7 +12315,8 @@ async function finishSession(){
     exercises:currentSession.map(ex=>({
       name:ex.name,icon:ex.icon,muscle:ex.muscle,equip:ex.equip,
       sets:ex.sets,
-      isStrength:ex.isStrength
+      isStrength:ex.isStrength,
+      ...(ex.note?{note:ex.note}:{})
     })),
     totalVolume,
     status: isHomeworkSession ? (everyExDone ? 'done' : 'in_progress') : (_sessionStatus==='planned'?'planned':'done'),
