@@ -12790,8 +12790,10 @@ async function propagateMandatoryDefsAdditive(defs){
     const d=new Date(today);d.setDate(today.getDate()+i);
     dates.push(dkey(d));
   }
-  for(const k of dates){
-    if(k===selectedKey)continue;
+  // (2026-10-06 perf) 날짜별 독립 작업 — 순차 28회 라운드트립을 병렬로.
+  // 루틴 추가/수정 1회당 체감 지연의 주범이었다. merge 는 날짜별 row 단위라 경합 없음.
+  let failed=0;
+  await Promise.all(dates.filter(k=>k!==selectedKey).map(async k=>{
     try{
       const{data:existing}=await sb.from('daily_logs')
         .select('mandatory')
@@ -12803,12 +12805,15 @@ async function propagateMandatoryDefsAdditive(defs){
         : _legacyMergeFallback(existing?.mandatory||[],customDefs);
       // 메모리 캐시 업데이트
       if(logCache[k])logCache[k].mandatory=mergedMandatory;
-      await sb.from('daily_logs').upsert(
+      const{error}=await sb.from('daily_logs').upsert(
         {user_id:CU.id,log_date:k,mandatory:mergedMandatory},
         {onConflict:'user_id,log_date'}
       );
-    }catch(e){console.warn('[propagateAdditive]',k,e?.message||e);}
-  }
+      if(error)throw error;
+    }catch(e){failed++;console.warn('[propagateAdditive]',k,e?.message||e);}
+  }));
+  // 실패를 더 이상 완전 무음으로 두지 않는다 (감사 HIGH — fire-and-forget 무음 실패)
+  if(failed>0){try{showToast('루틴 전파 '+failed+'일 실패 — 네트워크 확인 후 다시 저장');}catch(_){}}
 }
 // Safety net: 모듈 로드 실패 시 inline fallback (test 와 동일 로직 유지).
 function _legacyMergeFallback(existing,customDefs){
