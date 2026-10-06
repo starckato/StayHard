@@ -6875,24 +6875,23 @@ async function saveNickname(){
 // 계정 삭제 — 되돌릴 수 없음. 2단계 확인 + RPC 호출.
 // ═══════════════════════════════════════════════
 async function confirmDeleteAccount(){
-  const ok1=confirm('계정과 네 모든 기록을 영구 삭제합니다.\n\n• 체중·식단·운동·루틴·할일 기록 모두 삭제\n• 식단 사진, 운동 영상 모두 삭제\n• 네가 만든 챌린지도 같이 삭제\n• 이메일로 재가입 가능하지만 데이터는 복구 불가\n\n진짜 계속할래?');
+  const ok1=await qkConfirm('계정과 모든 기록을 영구 삭제합니다.\n\n• 체중·식단·운동·루틴·할일 기록 전부\n• 식단 사진, 운동 영상 전부\n• 재가입해도 데이터 복구 불가',{okText:'계속',danger:true});
   if(!ok1)return;
-  const typed=prompt('마지막 확인.\n\n"삭제" 라고 정확히 입력해야 진행됩니다.');
+  const typed=await qkPrompt('마지막 확인 — "삭제" 라고 입력해야 진행됩니다.',{placeholder:'삭제',okText:'영구 삭제',maxLength:10});
   if(typed!=='삭제'){showToast('취소됐어요');return;}
   try{
     showToast('계정 삭제 중...');
     const {data,error}=await sb.rpc('delete_my_account');
-    if(error){console.warn('[delete]',error);alert('삭제 실패: '+error.message);return;}
-    if(!data||!data.ok){alert('삭제 실패: '+JSON.stringify(data));return;}
+    if(error){console.warn('[delete]',error);showToast('삭제 실패: '+error.message);return;}
+    if(!data||!data.ok){showToast('삭제 실패 — 잠시 후 다시 시도해주세요');return;}
     try{track('account_deleted',{});}catch(e){}
     // 즉시 로그아웃 + 세션 정리
     try{localStorage.clear();sessionStorage.clear();}catch(e){}
     try{await sb.auth.signOut();}catch(e){}
-    alert('삭제 완료. 큐록에 다시 만나길.');
     location.href='/';
   }catch(e){
     console.warn('[delete]',e);
-    alert('삭제 실패 — 네트워크 문제일 수 있어. 다시 시도해줘.');
+    showToast('삭제 실패 — 네트워크 문제일 수 있어요. 다시 시도해주세요.');
   }
 }
 
@@ -8353,9 +8352,8 @@ async function shareInvite(){
         return;
       }
     }catch(e){}
-    // Step 3: 최후 — prompt 로라도 URL 보여줌
-    showToast('공유 링크: '+shareUrl);
-    try{prompt('이 링크를 친구에게 보내세요:', shareUrl);}catch(e){}
+    // Step 3: 최후 — 커스텀 입력에 URL 프리필 (길게 눌러 복사)
+    try{qkPrompt('이 링크를 길게 눌러 복사하세요',{value:shareUrl,okText:'닫기',cancelText:null});}catch(e){showToast('공유 링크: '+shareUrl);}
     return;
   }
   const displayUrl='qrok.app';
@@ -11952,7 +11950,7 @@ async function cpmRespond(outcome){
       if(!(await qkConfirm('실제 한 시간이 0분이야.\n그래도 수행 완료 처리할까?',{okText:'완료 처리'}))) return;
     }
   } else {
-    if(!confirm('탈주 처리할까? 트레이너에게 "탈주" 로 표시돼.')) return;
+    if(!(await qkConfirm('탈주 처리할까?\n트레이너에게 "탈주" 로 표시돼.',{okText:'탈주 처리',danger:true}))) return;
   }
   // log entry 즉시 갱신
   w.status = outcome === 'completed' ? 'done' : 'skipped';
