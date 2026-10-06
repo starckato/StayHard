@@ -1221,7 +1221,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
 .num-slider{padding:6px 2px;display:flex;justify-content:center;}
 .num-slider--compact{padding:4px 2px;}
 .wp-group{display:inline-flex;align-items:center;justify-content:center;gap:2px;position:relative;padding:0 10px;}
-.wp{height:180px;overflow-y:scroll;scroll-snap-type:y mandatory;scrollbar-width:none;-ms-overflow-style:none;width:72px;flex:0 0 72px;touch-action:pan-y;overscroll-behavior:contain;position:relative;z-index:1;-webkit-mask-image:linear-gradient(to bottom,transparent 0%,rgba(0,0,0,.35) 18%,#000 42%,#000 58%,rgba(0,0,0,.35) 82%,transparent 100%);mask-image:linear-gradient(to bottom,transparent 0%,rgba(0,0,0,.35) 18%,#000 42%,#000 58%,rgba(0,0,0,.35) 82%,transparent 100%);}
+.wp{height:180px;overflow-y:hidden;scrollbar-width:none;-ms-overflow-style:none;width:72px;flex:0 0 72px;touch-action:none;overscroll-behavior:contain;position:relative;z-index:1;-webkit-mask-image:linear-gradient(to bottom,transparent 0%,rgba(0,0,0,.35) 18%,#000 42%,#000 58%,rgba(0,0,0,.35) 82%,transparent 100%);mask-image:linear-gradient(to bottom,transparent 0%,rgba(0,0,0,.35) 18%,#000 42%,#000 58%,rgba(0,0,0,.35) 82%,transparent 100%);}
 .wp::-webkit-scrollbar{display:none;width:0;height:0;}
 .wp-list{padding:72px 0;}
 .wp-item{height:36px;scroll-snap-align:center;scroll-snap-stop:normal;display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:var(--text-xl);font-weight:700;color:var(--text3);cursor:pointer;touch-action:manipulation;user-select:none;-webkit-user-select:none;line-height:1;transition:color .12s,font-size .12s;}
@@ -7655,10 +7655,13 @@ function setupNumSliders(root){
 // the closest wheel by X and manually set its scrollTop. Native scroll on
 // .wp (when directly touched) still works as fallback.
 function _wpAttachProxyDrag(numSliderEl){
+  // 단일 물리 (2026-10-06 재작성): 네이티브 스크롤·CSS snap 을 전부 끄고(.wp overflow:hidden,
+  // touch-action:none) 모든 터치 — 휠 기둥 위 포함 — 를 여기서 1:1 드래그 + 관성으로 처리한다.
+  // 이전 구조(네이티브 mandatory snap + 커스텀 관성 + 디바운스 스냅 3중 물리)가 프록시
+  // scrollTop 쓰기와 스냅 보정의 경합을 만들어 방향·시작지점에 따라 값이 튀던 근본 원인.
+  const ITEM_H=36;
   let activeWp=null,startY=0,startScroll=0,velPts=[];
   const onStart=e=>{
-    // If touch started on .wp itself, let native scroll handle — skip proxy
-    if(e.target&&e.target.closest('.wp'))return;
     const x=e.touches?e.touches[0].clientX:e.clientX;
     const y=e.touches?e.touches[0].clientY:e.clientY;
     const wheels=[...numSliderEl.querySelectorAll('.wp')];
@@ -7670,7 +7673,7 @@ function _wpAttachProxyDrag(numSliderEl){
       const d=Math.abs(cx-x);
       if(d<bestDist){bestDist=d;best=w;}
     });
-    // 직전 플릭의 관성 애니메이션이 아직 돌고 있으면 취소 — 두 물리계가 scrollTop 을 놓고 경합해 값이 튀는 원인
+    // 진행 중 관성 즉시 인계 — 현재 위치에서 드래그 시작
     if(best._wpRaf){cancelAnimationFrame(best._wpRaf);best._wpRaf=null;}
     activeWp=best;startY=y;startScroll=best.scrollTop;
     velPts=[{y,t:performance.now()}];
@@ -7687,18 +7690,25 @@ function _wpAttachProxyDrag(numSliderEl){
   };
   const onEnd=()=>{
     if(!activeWp)return;
+    const wp=activeWp;activeWp=null;
     const now=performance.now();
-    const recent=velPts.filter(p=>now-p.t<120);
+    const recent=velPts.filter(p=>now-p.t<100);
+    let vel=0;
     if(recent.length>=2){
       const first=recent[0],last=recent[recent.length-1];
-      const dt=last.t-first.t;const dy=last.y-first.y;
-      const vel=dt>0?dy/dt:0;
-      if(Math.abs(vel)>0.3){
-        const target=activeWp.scrollTop+(-vel*180);
-        _wpAnimateScroll(activeWp,target,Math.min(700,Math.abs(vel)*300));
-      }
+      const dt=last.t-first.t;
+      vel=dt>0?(last.y-first.y)/dt:0;   // px/ms (finger)
     }
-    activeWp=null;
+    // 관성 거리 — 속도 비례, 상한 캡. 목표는 반드시 ITEM_H 배수로 양자화
+    // (스냅을 물리가 끝나는 지점 자체에 내장 → 사후 보정 점프 제거).
+    const fling=Math.abs(vel)>0.25 ? -vel*240 : 0;
+    const raw=wp.scrollTop+fling;
+    const maxTop=wp.scrollHeight-wp.clientHeight;
+    const target=Math.max(0,Math.min(maxTop,Math.round(raw/ITEM_H)*ITEM_H));
+    const dist=Math.abs(target-wp.scrollTop);
+    if(dist>0.5){
+      _wpAnimateScroll(wp,target,Math.max(160,Math.min(650,200+dist*0.55)));
+    }
   };
   numSliderEl.addEventListener('touchstart',onStart,{passive:true});
   numSliderEl.addEventListener('touchmove',onMove,{passive:false});
@@ -7747,31 +7757,9 @@ function _wpAttachScroll(wp,ITEM_H,onSnap){
       onSnap&&onSnap();
     },140);
   },{passive:true});
-  // ── iOS scroll containment ──
-  // Without this, dragging inside the wheel at its scroll-edge bubbles the
-  // scroll up to `.modal` (which has overflow-y:auto), pushing the whole
-  // modal down. overscroll-behavior:contain helps on iOS 16+ but not always.
-  // Combine with explicit touch handling for maximum reliability.
-  let touchStartY=0;
-  wp.addEventListener('touchstart',e=>{
-    touchStartY=e.touches[0].clientY;
-    if(wp._wpRaf){cancelAnimationFrame(wp._wpRaf);wp._wpRaf=null;}
-    e.stopPropagation();
-    // If scroll is near exact 0 or max, nudge 1px inward so the browser
-    // decides we're "inside" the scrollable region and won't chain to parent.
-    if(wp.scrollTop<=0)wp.scrollTop=1;
-    else if(wp.scrollTop+wp.clientHeight>=wp.scrollHeight)wp.scrollTop=wp.scrollHeight-wp.clientHeight-1;
-  },{passive:true});
-  wp.addEventListener('touchmove',e=>{
-    e.stopPropagation();
-    const y=e.touches[0].clientY;
-    const dy=y-touchStartY;
-    touchStartY=y;
-    // dy>0 → finger moves down → browser tries to scroll wheel up
-    const atTop=wp.scrollTop<=0;
-    const atBottom=wp.scrollTop+wp.clientHeight>=wp.scrollHeight-0.5;
-    if((atTop&&dy>0)||(atBottom&&dy<0))e.preventDefault();
-  },{passive:false});
+  // (2026-10-06) iOS 컨테인먼트 터치 핸들러 제거 — 입력이 전부 수동 물리로 넘어가
+  // touch-action:none + preventDefault 로 체이닝 자체가 불가능해짐. 기존의 가장자리
+  // 1px 너지(scrollTop=1)가 미세 점프의 한 원인이기도 했다.
 }
 // Tap any item to scroll it to center
 function _wpAttachTap(wp,ITEM_H){
