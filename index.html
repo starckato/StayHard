@@ -1549,7 +1549,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
     <button class="abtn" id="li-btn" onclick="doLogin()">로그인</button>
     <div class="aerr" id="li-err"></div>
     <div style="text-align:center;margin-top:8px;">
-      <span onclick="showForgotPassword()" style="font-size:var(--text-sm);color:var(--text3);cursor:pointer;text-decoration:underline;touch-action:manipulation;">비밀번호를 잊으셨나요?</span>
+      <span onclick="showForgotPassword()" style="font-size:var(--text-sm);color:var(--text3);cursor:pointer;text-decoration:underline;touch-action:manipulation;display:inline-block;padding:14px 16px;margin:-14px -16px;">비밀번호를 잊으셨나요?</span>
     </div>
   </div>
   <div class="aform" id="auth-signup" style="display:none;">
@@ -3140,7 +3140,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
     <!-- 음식 이름 -->
     <div class="mfield">
       <label class="mlabel">음식 이름 <span style="color:var(--text3);font-weight:400;text-transform:none;letter-spacing:0;">(선택)</span></label>
-      <input class="minput" id="ms-name" placeholder="예: 닭가슴살 샐러드, 된장찌개…"/>
+      <input class="minput" id="ms-name" placeholder="예: 닭가슴살 샐러드, 된장찌개…" enterkeyhint="done" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();saveSlotMeal();}"/>
     </div>
 
     <!-- 품질 평가 -->
@@ -3235,7 +3235,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
     <!-- 음식 이름 -->
     <div class="mfield">
       <label class="mlabel">이름 <span style="color:var(--text3);font-weight:400;text-transform:none;letter-spacing:0;">(선택)</span></label>
-      <input class="minput" id="msn-name" placeholder="예: 아메리카노, 단백질바…"/>
+      <input class="minput" id="msn-name" placeholder="예: 아메리카노, 단백질바…" enterkeyhint="done" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();saveSnackMeal();}"/>
     </div>
 
     <!-- 품질 (alcohol 제외) -->
@@ -3883,7 +3883,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
     <div id="routine-create" style="display:none;">
       <div style="margin-bottom:12px;">
         <label class="mlabel">루틴 이름</label>
-        <input class="minput" id="routine-name-inp" placeholder="예: 하체 데이, 상체 루틴…"/>
+        <input class="minput" id="routine-name-inp" placeholder="예: 하체 데이, 상체 루틴…" enterkeyhint="done" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}"/>
       </div>
       <div style="margin-bottom:8px;font-size:var(--text-sm);font-weight:500;color:var(--text2);">운동 목록</div>
       <div id="routine-ex-list" style="margin-bottom:10px;"></div>
