@@ -13,6 +13,7 @@
 /* Critical tokens inline (2026-05-25 perf): tokens.shared+tokens.dark render-blocking 요청 제거.
    src/styles/tokens.{shared,dark}.css 미러 — 수정 시 동기화. */
 :root{
+--cube-gold-hi:#fff1a8;--cube-gold-mid:#ffd54a;--cube-gold-lo:#c48c1a;--cube-silver-hi:#f2f4f7;--cube-silver-mid:#b5c0cc;--cube-silver-lo:#6d7682;
 --space-1:4px;--space-1h:6px;--space-2:8px;--space-2h:10px;--space-3:12px;--space-3h:14px;--space-4:16px;--space-5:24px;--space-6:32px;
 --radius-sm:4px;--radius-md:8px;--radius-lg:12px;--radius-xl:16px;--radius-pill:999px;--radius:12px;
 --text-2xs:10px;--text-xs:11px;--text-sm:12px;--text-md:13px;--text-base:14px;--text-lg:16px;--text-xl:20px;--text-2xl:24px;--text-3xl:36px;--text-4xl:64px;--text-5xl:92px;
@@ -63,23 +64,23 @@
      외부 link 2개 제거 → render-blocking CSS 요청 -2. trainer.html 등은 여전히 link. -->
 <!-- Perf (2026-05-25): 남은 sync CSS 도 모두 async — splash 가 1.6s 가리는 동안 모두 로드 완료.
      FOUC 위험 거의 없음 + render-blocking 0 → splash 즉시 paint. -->
-<link href="/src/styles/states.css?v=e70a3d16" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/styles/components.css?v=e70a3d16" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/styles/icons.css?v=e70a3d16" rel="stylesheet" media="print" onload="this.media='all'">
-<noscript><link href="/src/styles/states.css?v=e70a3d16" rel="stylesheet"><link href="/src/styles/components.css?v=e70a3d16" rel="stylesheet"><link href="/src/styles/icons.css?v=e70a3d16" rel="stylesheet"></noscript>
+<link href="/src/styles/states.css?v=378bf8d3" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/styles/components.css?v=378bf8d3" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/styles/icons.css?v=378bf8d3" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link href="/src/styles/states.css?v=378bf8d3" rel="stylesheet"><link href="/src/styles/components.css?v=378bf8d3" rel="stylesheet"><link href="/src/styles/icons.css?v=378bf8d3" rel="stylesheet"></noscript>
 <!-- Feature folder CSS — 한 폴더 = 한 기능 컨벤션 (ARCHITECTURE.md).
      Perf (2026-05-25): media="print" + onload swap 으로 async 로딩 → 초기 paint 차단 X.
      splash 가 1.6s+ 표시되므로 그 사이 모두 로드되어 FOUC 위험 거의 없음. -->
-<link href="/src/features/targets/targets.css?v=e70a3d16" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/dashboards/dash.css?v=e70a3d16" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/cubes/cubes-ui.css?v=e70a3d16" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/date-heatmap/date-heatmap.css?v=e70a3d16" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/dev-inspector/dev-inspector.css?v=e70a3d16" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/water/water.css?v=e70a3d16" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/sticky-header/sticky-header.css?v=e70a3d16" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/status-band/status-band.css?v=e70a3d16" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/mountain/mountain.css?v=e70a3d16" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/workout-session/workout-session.css?v=e70a3d16" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/targets/targets.css?v=378bf8d3" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/dashboards/dash.css?v=378bf8d3" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/cubes/cubes-ui.css?v=378bf8d3" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/date-heatmap/date-heatmap.css?v=378bf8d3" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/dev-inspector/dev-inspector.css?v=378bf8d3" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/water/water.css?v=378bf8d3" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/sticky-header/sticky-header.css?v=378bf8d3" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/status-band/status-band.css?v=378bf8d3" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/mountain/mountain.css?v=378bf8d3" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/workout-session/workout-session.css?v=378bf8d3" rel="stylesheet" media="print" onload="this.media='all'">
 <style>
 /* :root 토큰은 src/styles/tokens.{shared,dark}.css 로 이전됨 (Phase 0).
    index.html 은 다크 팔레트 사용. 추가 sub-palette (--radius-sm 등 legacy) 가
@@ -527,16 +528,16 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 .cc-row{display:flex;align-items:center;gap:10px;}
 .cc-tower{display:flex;flex-direction:column-reverse;gap:1px;width:20px;flex-shrink:0;}
 .cc-token{width:20px;height:8px;border-radius:2px;box-sizing:border-box;}
-.cc-token.gold{background:linear-gradient(135deg,#fff1a8 0%,#ffd54a 45%,#c48c1a 100%);border:1px solid rgba(255,233,128,0.65);box-shadow:0 0 3px rgba(255,213,74,0.45),inset 0 1px 0 rgba(255,255,255,0.45);}
-.cc-token.silver{background:linear-gradient(135deg,#f2f4f7 0%,#b5c0cc 45%,#6d7682 100%);border:1px solid rgba(210,218,228,0.55);box-shadow:0 0 3px rgba(181,192,204,0.40),inset 0 1px 0 rgba(255,255,255,0.40);}
+.cc-token.gold{background:linear-gradient(135deg,var(--cube-gold-hi) 0%,var(--cube-gold-mid) 45%,var(--cube-gold-lo) 100%);border:1px solid rgba(255,233,128,0.65);box-shadow:0 0 3px rgba(255,213,74,0.45),inset 0 1px 0 rgba(255,255,255,0.45);}
+.cc-token.silver{background:linear-gradient(135deg,var(--cube-silver-hi) 0%,var(--cube-silver-mid) 45%,var(--cube-silver-lo) 100%);border:1px solid rgba(210,218,228,0.55);box-shadow:0 0 3px rgba(181,192,204,0.40),inset 0 1px 0 rgba(255,255,255,0.40);}
 .cc-num{font-family:'Archivo Black','DM Mono',monospace;font-size:var(--text-2xl);line-height:1;color:var(--text);letter-spacing:-1.5px;}
 .cc-num.bumped{animation:ccBump .55s cubic-bezier(.22,1.5,.32,1);}
 @keyframes ccBump{0%{transform:scale(1);}40%{transform:scale(1.18);color:#ffd54a;}100%{transform:scale(1);color:var(--text);}}
 .cc-label{font-size:var(--text-xs);color:var(--text3);letter-spacing:.04em;font-weight:600;font-family:'DM Sans',sans-serif;text-transform:uppercase;}
 .cc-today{display:flex;gap:4px;align-items:center;}
 .cc-today-dot{width:8px;height:8px;border-radius:2px;}
-.cc-today-dot.gold{background:linear-gradient(135deg,#fff1a8 0%,#ffd54a 45%,#c48c1a 100%);}
-.cc-today-dot.silver{background:linear-gradient(135deg,#f2f4f7 0%,#b5c0cc 45%,#6d7682 100%);}
+.cc-today-dot.gold{background:linear-gradient(135deg,var(--cube-gold-hi) 0%,var(--cube-gold-mid) 45%,var(--cube-gold-lo) 100%);}
+.cc-today-dot.silver{background:linear-gradient(135deg,var(--cube-silver-hi) 0%,var(--cube-silver-mid) 45%,var(--cube-silver-lo) 100%);}
 .cc-today-dot.red{background:linear-gradient(135deg,#ff8080 0%,var(--accent) 45%,#8b1515 100%);}
 @media (prefers-reduced-motion:reduce){.cc-num.bumped{animation:none !important;}}
 .sb-quote{font-size:var(--text-sm);font-weight:600;font-style:italic;line-height:1.55;color:var(--text2);margin-bottom:14px;min-height:18px;word-break:keep-all;}
@@ -735,8 +736,8 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
 /* Will Cube card-header chip — 오늘의 큐브 색상을 accordion 타이틀 우측에 소형 square 로 표시.
    heatmap indicator 와 동일한 gold/silver/crimson 팔레트. display:none 인 상태는 빈 날. */
 .s-card .cc-cube{display:inline-block;width:12px;height:12px;margin-left:var(--space-2);border-radius:2px;box-sizing:border-box;vertical-align:-1px;cursor:pointer;touch-action:manipulation;flex-shrink:0;}
-.s-card .cc-cube[data-color="gold"]{background:linear-gradient(135deg,#fff1a8 0%,#ffd54a 45%,#c48c1a 100%);border:1px solid rgba(255,233,128,0.70);box-shadow:0 0 3px rgba(255,213,74,0.50),inset 0 1px 0 rgba(255,255,255,0.45),inset 0 -1px 0 rgba(0,0,0,0.25);}
-.s-card .cc-cube[data-color="silver"]{background:linear-gradient(135deg,#f2f4f7 0%,#b5c0cc 45%,#6d7682 100%);border:1px solid rgba(210,218,228,0.55);box-shadow:0 0 3px rgba(181,192,204,0.40),inset 0 1px 0 rgba(255,255,255,0.32),inset 0 -1px 0 rgba(0,0,0,0.22);}
+.s-card .cc-cube[data-color="gold"]{background:linear-gradient(135deg,var(--cube-gold-hi) 0%,var(--cube-gold-mid) 45%,var(--cube-gold-lo) 100%);border:1px solid rgba(255,233,128,0.70);box-shadow:0 0 3px rgba(255,213,74,0.50),inset 0 1px 0 rgba(255,255,255,0.45),inset 0 -1px 0 rgba(0,0,0,0.25);}
+.s-card .cc-cube[data-color="silver"]{background:linear-gradient(135deg,var(--cube-silver-hi) 0%,var(--cube-silver-mid) 45%,var(--cube-silver-lo) 100%);border:1px solid rgba(210,218,228,0.55);box-shadow:0 0 3px rgba(181,192,204,0.40),inset 0 1px 0 rgba(255,255,255,0.32),inset 0 -1px 0 rgba(0,0,0,0.22);}
 .s-card .cc-cube[data-color="crimson"]{background:var(--accent-tint-4);border:1px solid var(--accent-tint-4);}
 .s-card .cc-cube[data-color="gray"]{background:transparent;border:1px solid rgba(255,255,255,0.14);}
 /* 운동 exercise_bonus 가 gold 일 때 card-cube 에 gold halo — filter drop-shadow 로
@@ -1496,7 +1497,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
      app.js bundle → supabase ESM 포함 (2026-05-25 perf), inline body scripts 가 의존하므로 sync. -->
 <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-<script src="/dist/app.js?v=e70a3d16"></script>
+<script src="/dist/app.js?v=378bf8d3"></script>
 
 <script>
   // QROK Splash — 앱 ready 까지 대기 후 fade out. 좌측 상단/중앙 loading 스피너 가림.
@@ -2993,11 +2994,11 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
             <div style="font-size:var(--text-2xs);color:var(--text3);margin-bottom:10px;letter-spacing:0.08em;font-weight:700;text-transform:uppercase;">큐브</div>
             <div style="display:flex;flex-direction:column;gap:8px;">
               <div style="display:flex;align-items:center;gap:10px;">
-                <div style="width:16px;height:16px;border-radius:var(--radius-sm);background:linear-gradient(135deg,#fff1a8 0%,#ffd54a 45%,#c48c1a 100%);border:1px solid rgba(255,233,128,0.70);flex-shrink:0;"></div>
+                <div style="width:16px;height:16px;border-radius:var(--radius-sm);background:linear-gradient(135deg,var(--cube-gold-hi) 0%,var(--cube-gold-mid) 45%,var(--cube-gold-lo) 100%);border:1px solid rgba(255,233,128,0.70);flex-shrink:0;"></div>
                 <div style="flex:1;font-size:var(--text-sm);color:var(--text);font-weight:600;">Gold · 모두 완수</div>
               </div>
               <div style="display:flex;align-items:center;gap:10px;">
-                <div style="width:16px;height:16px;border-radius:var(--radius-sm);background:linear-gradient(135deg,#f2f4f7 0%,#b5c0cc 45%,#6d7682 100%);border:1px solid rgba(210,218,228,0.55);flex-shrink:0;"></div>
+                <div style="width:16px;height:16px;border-radius:var(--radius-sm);background:linear-gradient(135deg,var(--cube-silver-hi) 0%,var(--cube-silver-mid) 45%,var(--cube-silver-lo) 100%);border:1px solid rgba(210,218,228,0.55);flex-shrink:0;"></div>
                 <div style="flex:1;font-size:var(--text-sm);color:var(--text);font-weight:600;">Silver · 부분 완수</div>
               </div>
               <div style="display:flex;align-items:center;gap:10px;">
@@ -3014,7 +3015,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
           <!-- 보너스 큐브 -->
           <div style="background:linear-gradient(135deg,rgba(255,213,74,0.06),rgba(255,107,53,0.04));border:1px solid rgba(255,213,74,0.20);border-radius:var(--radius-lg);padding:10px 12px;margin-bottom:16px;">
             <div style="display:flex;align-items:center;gap:8px;">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="#ffd54a" style="flex-shrink:0;filter:drop-shadow(0 0 2px rgba(255,213,74,0.6));"><polygon points="12,2 15,9 22,9 17,14 19,22 12,18 5,22 7,14 2,9 9,9"/></svg>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="var(--cube-gold-mid)" style="flex-shrink:0;filter:drop-shadow(0 0 2px rgba(255,213,74,0.6));"><polygon points="12,2 15,9 22,9 17,14 19,22 12,18 5,22 7,14 2,9 9,9"/></svg>
               <div style="font-size:var(--text-xs);color:var(--text2);line-height:1.5;flex:1;">
                 <span style="color:#ffd54a;font-weight:800;">보너스 큐브</span> — PR 갱신 · 연속 기록 · 대회 완주
               </div>
@@ -8551,10 +8552,10 @@ function renderCubeStack(){
   });
   // 날짜 슬라이더 indicatorStyle (date-heatmap/index.js) 와 정확히 일치
   const colorMap={
-    gold:   {label:'금',  txt:'#ffd54a',
-      style:'background:linear-gradient(135deg,#fff1a8 0%,#ffd54a 45%,#c48c1a 100%);border:1px solid rgba(255,233,128,0.70);box-shadow:0 0 4px rgba(255,213,74,0.55),inset 0 1px 0 rgba(255,255,255,0.45),inset 0 -1px 0 rgba(0,0,0,0.25);'},
+    gold:   {label:'금',  txt:'var(--cube-gold-mid)',
+      style:'background:linear-gradient(135deg,var(--cube-gold-hi) 0%,var(--cube-gold-mid) 45%,var(--cube-gold-lo) 100%);border:1px solid rgba(255,233,128,0.70);box-shadow:0 0 4px rgba(255,213,74,0.55),inset 0 1px 0 rgba(255,255,255,0.45),inset 0 -1px 0 rgba(0,0,0,0.25);'},
     silver: {label:'은',  txt:'#d8dfe7',
-      style:'background:linear-gradient(135deg,#f2f4f7 0%,#b5c0cc 45%,#6d7682 100%);border:1px solid rgba(210,218,228,0.55);box-shadow:0 0 3px rgba(181,192,204,0.40),inset 0 1px 0 rgba(255,255,255,0.32),inset 0 -1px 0 rgba(0,0,0,0.22);'},
+      style:'background:linear-gradient(135deg,var(--cube-silver-hi) 0%,var(--cube-silver-mid) 45%,var(--cube-silver-lo) 100%);border:1px solid rgba(210,218,228,0.55);box-shadow:0 0 3px rgba(181,192,204,0.40),inset 0 1px 0 rgba(255,255,255,0.32),inset 0 -1px 0 rgba(0,0,0,0.22);'},
     gray:   {label:'회색',txt:'#a8a8b4',
       style:'background:transparent;border:1px solid rgba(255,255,255,0.10);'},
     crimson:{label:'붉은',txt:'#ff6b6b',
@@ -8995,7 +8996,7 @@ function updateHeaderStatus(){
     } else {
       const remaining=Math.max(0,Math.ceil(T[nextIdx]-cubeScore));
       todayEl.textContent='+'+remaining;
-      todayEl.style.color='#ffd54a';
+      todayEl.style.color='var(--cube-gold-mid)';
     }
   }
   // ✅ Progress bar: gold portion + silver portion stacked (B 공식 시각화).
@@ -9241,8 +9242,8 @@ const _TOUR_SLIDES=[
         <span style="color:#ffd54a;font-weight:800;">황금 큐브 4개</span>
       </div>
       <div style="background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius-lg);padding:10px 14px;margin-bottom:12px;">
-        <div style="display:flex;align-items:center;padding:4px 0;"><span style="display:flex;align-items:center;gap:8px;font-size:var(--text-sm);color:var(--text);font-weight:600;"><span style="width:14px;height:14px;border-radius:var(--radius-sm);background:linear-gradient(135deg,#fff1a8 0%,#ffd54a 45%,#c48c1a 100%);border:1px solid rgba(255,233,128,0.70);flex-shrink:0;"></span>Gold · 완수</span></div>
-        <div style="display:flex;align-items:center;padding:4px 0;"><span style="display:flex;align-items:center;gap:8px;font-size:var(--text-sm);color:var(--text);font-weight:600;"><span style="width:14px;height:14px;border-radius:var(--radius-sm);background:linear-gradient(135deg,#f2f4f7 0%,#b5c0cc 45%,#6d7682 100%);border:1px solid rgba(210,218,228,0.55);flex-shrink:0;"></span>Silver · 부분</span></div>
+        <div style="display:flex;align-items:center;padding:4px 0;"><span style="display:flex;align-items:center;gap:8px;font-size:var(--text-sm);color:var(--text);font-weight:600;"><span style="width:14px;height:14px;border-radius:var(--radius-sm);background:linear-gradient(135deg,var(--cube-gold-hi) 0%,var(--cube-gold-mid) 45%,var(--cube-gold-lo) 100%);border:1px solid rgba(255,233,128,0.70);flex-shrink:0;"></span>Gold · 완수</span></div>
+        <div style="display:flex;align-items:center;padding:4px 0;"><span style="display:flex;align-items:center;gap:8px;font-size:var(--text-sm);color:var(--text);font-weight:600;"><span style="width:14px;height:14px;border-radius:var(--radius-sm);background:linear-gradient(135deg,var(--cube-silver-hi) 0%,var(--cube-silver-mid) 45%,var(--cube-silver-lo) 100%);border:1px solid rgba(210,218,228,0.55);flex-shrink:0;"></span>Silver · 부분</span></div>
         <div style="display:flex;align-items:center;padding:4px 0;"><span style="display:flex;align-items:center;gap:8px;font-size:var(--text-sm);color:var(--text);font-weight:600;"><span style="width:14px;height:14px;border-radius:var(--radius-sm);background:var(--accent-tint-4);border:1px solid var(--accent-tint-4);flex-shrink:0;"></span>Red · 금지식·실패</span></div>
       </div>
       <div style="font-size:var(--text-sm);color:var(--text2);text-align:center;line-height:1.55;font-weight:500;">등록만으론 0점. 큐브가 나와야 점수예요.</div>
@@ -9282,7 +9283,7 @@ const _TOUR_SLIDES=[
     subtitle:'꾸준함·도전에 추가 점수',
     body:`
       <div style="display:flex;justify-content:center;margin:4px 0 16px;">
-        <svg width="32" height="32" viewBox="0 0 24 24" fill="#ffd54a" style="filter:drop-shadow(0 0 6px rgba(255,213,74,0.6));"><polygon points="12,2 15,9 22,9 17,14 19,22 12,18 5,22 7,14 2,9 9,9"/></svg>
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="var(--cube-gold-mid)" style="filter:drop-shadow(0 0 6px rgba(255,213,74,0.6));"><polygon points="12,2 15,9 22,9 17,14 19,22 12,18 5,22 7,14 2,9 9,9"/></svg>
       </div>
       <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px;">
         <div style="padding:12px 14px;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius-lg);">

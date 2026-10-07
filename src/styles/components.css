@@ -275,11 +275,11 @@
 .cube-deco.is-md { width: 22px; height: 22px; }
 .cube-deco.is-lg { width: 28px; height: 28px; border-radius: 3px; }
 .cube-deco.is-gold {
-  background: linear-gradient(135deg, #fff1a8 0%, #ffd54a 45%, #c48c1a 100%);
+  background: linear-gradient(135deg, var(--cube-gold-hi) 0%, var(--cube-gold-mid) 45%, var(--cube-gold-lo) 100%);
   border-color: rgba(255, 233, 128, 0.7);
 }
 .cube-deco.is-silver {
-  background: linear-gradient(135deg, #f2f4f7 0%, #b5c0cc 45%, #6d7682 100%);
+  background: linear-gradient(135deg, var(--cube-silver-hi) 0%, var(--cube-silver-mid) 45%, var(--cube-silver-lo) 100%);
   border-color: rgba(210, 218, 228, 0.55);
 }
 .cube-deco.is-red {
@@ -492,9 +492,9 @@ body.qrok-dev-on .app-fullscreen-overlay {
   color: var(--text3);
   flex-shrink: 0;
 }
-.gs-rank-row.is-1 .gs-rank-num { color: #ffd54a; }
-.gs-rank-row.is-2 .gs-rank-num { color: #b5c0cc; }
-.gs-rank-row.is-3 .gs-rank-num { color: #c48c1a; }
+.gs-rank-row.is-1 .gs-rank-num { color: var(--cube-gold-mid); }
+.gs-rank-row.is-2 .gs-rank-num { color: var(--cube-silver-mid); }
+.gs-rank-row.is-3 .gs-rank-num { color: var(--cube-gold-lo); }
 .gs-rank-name {
   flex: 1;
   font-size: var(--text-sm);

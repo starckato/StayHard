@@ -9,6 +9,14 @@
  */
 
 :root {
+  /* 큐브 골드/실버 그라디언트 스톱 (2026-10-07 승격 — 창업자 라벨 Gold/Silver) */
+  --cube-gold-hi:#fff1a8;
+  --cube-gold-mid:#ffd54a;
+  --cube-gold-lo:#c48c1a;
+  --cube-silver-hi:#f2f4f7;
+  --cube-silver-mid:#b5c0cc;
+  --cube-silver-lo:#6d7682;
+
   /* ── Spacing (9단계 — 2026-05-25 half-step 확장) ──────────
      base 6 + half-step 3 = 9. half-step 은 row gap / 카드 padding 에서 필요. */
   --space-1:   4px;   /* base — micro gap */
