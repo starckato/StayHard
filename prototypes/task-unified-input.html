@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IN-5 · 할 일 통합 입력 — 투두+루틴 단일 시트</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&family=Noto+Sans+KR:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+--radius-sm:4px;--radius-md:8px;--radius-lg:12px;--radius-pill:999px;
+--text-2xs:10px;--text-xs:11px;--text-sm:12px;--text-md:13px;--text-base:14px;--text-lg:16px;--text-xl:20px;
+--bg:#0a0a0c;--surface:#141418;--surface2:#1c1c22;--surface3:#24242c;
+--border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.10);
+--text:#eaeaea;--text2:#a8a8b4;--text3:#7a7a86;
+--accent:#ff4d4d;--accent-tint-2:rgba(255,77,77,0.12);--accent-tint-4:rgba(255,77,77,0.35);
+--accent-grad:linear-gradient(135deg,#ff4d4d 0%,#ff6b35 100%);
+--green:#34d399;--green-bg:rgba(52,211,153,0.12);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:#101014;color:#e8e6e1;font-family:'DM Sans','Noto Sans KR',sans-serif;min-height:100vh;}
+.head{padding:26px 32px 16px;border-bottom:1px solid #1e1e24;}
+.head h1{font-size:17px;font-weight:700;}
+.head p{font-size:12px;color:#6f6d68;margin-top:4px;line-height:1.7;max-width:900px;}
+.head b{color:#b9b6af;}
+.row{display:flex;gap:28px;padding:26px 32px 60px;justify-content:center;flex-wrap:wrap;align-items:flex-start;}
+.col{width:390px;flex-shrink:0;}
+.lbl{display:flex;align-items:baseline;gap:10px;margin-bottom:12px;}
+.lbl .tag{font-family:'DM Mono',monospace;font-size:11px;font-weight:700;letter-spacing:.14em;color:#6f6d68;}
+.lbl .name{font-size:13px;font-weight:600;}
+.lbl .desc{font-size:11px;color:#6f6d68;margin-left:auto;text-align:right;}
+.ph{width:390px;border-radius:24px;background:var(--bg);box-shadow:0 24px 60px rgba(0,0,0,.55),0 0 0 1px #26262e;padding:18px 16px 22px;}
+.mtitle{font-size:var(--text-lg);font-weight:700;margin-bottom:14px;}
+.mlabel{display:block;font-size:var(--text-2xs);font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:7px;}
+.inp{width:100%;background:var(--surface2);border:1.5px solid var(--border2);border-radius:var(--radius-md);color:var(--text);font-size:var(--text-lg);padding:13px 14px;font-family:inherit;margin-bottom:14px;}
+.seg{display:flex;gap:6px;margin-bottom:8px;}
+.seg .s{flex:1;text-align:center;padding:11px 0;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius-md);font-size:var(--text-sm);font-weight:600;color:var(--text2);}
+.seg .s.on{background:var(--accent-tint-2);border-color:var(--accent-tint-4);color:var(--accent);}
+.seg-note{font-size:var(--text-2xs);color:var(--text3);margin-bottom:14px;line-height:1.5;}
+.days{display:flex;gap:5px;margin-bottom:14px;}
+.dp{flex:1;text-align:center;padding:9px 0;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius-md);font-size:var(--text-sm);color:var(--text2);}
+.dp.on{background:var(--green-bg);border-color:var(--green);color:var(--green);font-weight:700;}
+.dim{opacity:.35;pointer-events:none;}
+.btn{width:100%;padding:14px;background:var(--accent-grad);border:none;border-radius:var(--radius-md);color:#fff;font-size:var(--text-base);font-weight:700;font-family:inherit;}
+.note{font-size:var(--text-2xs);color:var(--text3);margin-top:10px;text-align:center;line-height:1.6;}
+.note b{color:var(--text2);}
+.flow{background:var(--surface);border:1px dashed var(--border2);border-radius:var(--radius-md);padding:12px 14px;font-size:var(--text-xs);color:var(--text3);line-height:1.8;margin-top:14px;}
+.flow b{color:var(--text2);}
+</style>
+</head>
+<body>
+<div class="head">
+  <h1>IN-5 · 할 일 통합 입력 — 투두 + 루틴, 하나의 시트</h1>
+  <p><b>현행</b>: 투두는 할일 카드 안 인라인 입력(가볍고 좋음), 루틴은 별도 모달(이름·요일·종료일), 그리고 투두→루틴 "변환" 모달이 따로 또 존재 — 같은 개념이 입구 3개.<br>
+  <b>제안</b>: 입구 1개 — "무엇을 할 건가" + <b>반복 선택 하나</b>. '오늘만'이면 투두, 반복이면 루틴. 변환 모달은 제거(수정에서 반복만 바꾸면 됨).
+  저장 모델은 불변(오늘만→할일, 반복→루틴 defs) — UI 만 통합. <b>기존 인라인 빠른 추가도 유지</b> — 인라인은 '오늘만'의 지름길이 됨.</p>
+</div>
+<div class="row">
+
+  <div class="col">
+    <div class="lbl"><span class="tag">제안 · 기본</span><span class="name">'오늘만' — 투두 (2탭 유지)</span><span class="desc">기본값이 오늘만이라<br>투두는 지금처럼 가벼움</span></div>
+    <div class="ph">
+      <div class="mtitle">할 일 추가</div>
+      <label class="mlabel">무엇을 할 건가</label>
+      <input class="inp" value="원서 접수하기" readonly>
+      <label class="mlabel">반복</label>
+      <div class="seg">
+        <div class="s on">오늘만</div><div class="s">매일</div><div class="s">요일 선택</div>
+      </div>
+      <div class="seg-note">오늘 할일 목록에 추가됩니다 · 내일로 넘어가지 않습니다</div>
+      <div class="days dim">
+        <div class="dp">월</div><div class="dp">화</div><div class="dp">수</div><div class="dp">목</div><div class="dp">금</div><div class="dp">토</div><div class="dp">일</div>
+      </div>
+      <button class="btn">추가</button>
+      <div class="note">저장처: 오늘 <b>할일</b> (현행과 동일)</div>
+    </div>
+  </div>
+
+  <div class="col">
+    <div class="lbl"><span class="tag">제안 · 반복</span><span class="name">'요일 선택' — 루틴이 됨</span><span class="desc">같은 시트에서 반복만 바꾸면<br>루틴 (요일·종료일 노출)</span></div>
+    <div class="ph">
+      <div class="mtitle">할 일 추가</div>
+      <label class="mlabel">무엇을 할 건가</label>
+      <input class="inp" value="비타민 챙기기" readonly>
+      <label class="mlabel">반복</label>
+      <div class="seg">
+        <div class="s">오늘만</div><div class="s">매일</div><div class="s on">요일 선택</div>
+      </div>
+      <div class="seg-note">선택한 요일마다 <b style="color:var(--green)">루틴</b>으로 반복됩니다</div>
+      <div class="days">
+        <div class="dp on">월</div><div class="dp">화</div><div class="dp on">수</div><div class="dp">목</div><div class="dp on">금</div><div class="dp">토</div><div class="dp">일</div>
+      </div>
+      <label class="mlabel">종료일 — 선택</label>
+      <div class="seg" style="margin-bottom:14px;">
+        <div class="s">1주</div><div class="s">1달</div><div class="s on">무기한</div>
+      </div>
+      <button class="btn">루틴으로 추가</button>
+      <div class="note">저장처: <b>루틴</b> defs — 버튼 라벨이 결과를 미리 말해줌</div>
+      <div class="flow">
+        <b>정리되는 것</b><br>
+        · 입구 3개 → 1개 (루틴 모달 · 투두 인라인 · 변환 모달)<br>
+        · "투두를 루틴으로 변환" 개념 소멸 — 수정에서 반복만 변경<br>
+        · 추천 루틴은 반복 모드에서만 노출 (현행 유지)<br>
+        <b>유지되는 것</b><br>
+        · 할일 카드 인라인 빠른 추가 (= '오늘만' 지름길)<br>
+        · 저장 모델 · 전파 로직 · 큐브 판정 전부 불변
+      </div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
