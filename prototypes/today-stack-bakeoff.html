@@ -36,6 +36,9 @@ body.no-char .b-title{margin-bottom:2px;}
 body.no-char .b-name{margin-bottom:26px;}
 body.no-char .b-cube{transform:scale(1.5);margin:0 7px;}
 body.no-char .b-quest b{color:#f0c860;}
+.q-nochar{display:none;}
+body.no-char .q-char{display:none;}
+body.no-char .q-nochar{display:inline;}
 .char-toggle{position:fixed;top:14px;right:16px;z-index:50;display:flex;align-items:center;gap:8px;
   background:#15151c;border:1px solid #2a2a35;border-radius:999px;padding:7px 14px;cursor:pointer;
   font-family:'IBM Plex Mono',monospace;font-size:11px;color:#9aa;letter-spacing:.08em;user-select:none;}
@@ -264,7 +267,7 @@ body.no-char .char-toggle .dot{background:#555;}
       </div>
       <div class="b-quest">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f0c860" stroke-width="2.4"><path d="M12 2v20M2 12h20"/></svg>
-        오늘 <b>Gold 1</b> 더 얻으면 캐릭터가 자란다
+        <span class="q-char">오늘 <b>Gold 1</b> 더 얻으면 캐릭터가 자란다</span><span class="q-nochar">오늘 <b>Gold 1</b> 더 얻으면 다음 티어로</span>
       </div>
       <div class="b-foot">약한 날도 기록은 남긴다</div>
     </div>
