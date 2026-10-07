@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>큐록 · 오늘탭 상단 스택 — 3방향 베이크오프</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=Noto+Serif+KR:wght@500;600;700;900&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/gh/quiple/galmuri/dist/galmuri.css" rel="stylesheet">
+<style>
+/* ═══════════ 공용 셸 (베이크오프 프레임 — 제품 아님) ═══════════ */
+:root{
+  --shell-bg:#101014; --shell-text:#e8e6e1; --shell-dim:#6f6d68;
+  --g:#d4a437; --s:#9aa3ad; --r:#c0392b;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--shell-bg);color:var(--shell-text);font-family:'IBM Plex Sans KR',sans-serif;min-height:100vh;}
+.shell-head{padding:28px 32px 18px;border-bottom:1px solid #1e1e24;display:flex;align-items:baseline;gap:16px;flex-wrap:wrap;}
+.shell-head h1{font-size:17px;font-weight:700;letter-spacing:-.01em;}
+.shell-head p{font-size:12px;color:var(--shell-dim);}
+.row{display:flex;gap:28px;padding:28px 32px 60px;justify-content:center;flex-wrap:wrap;align-items:flex-start;}
+.col{width:390px;flex-shrink:0;}
+.col-label{display:flex;align-items:baseline;gap:10px;margin-bottom:12px;padding:0 2px;}
+.col-label .tag{font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:700;letter-spacing:.14em;color:var(--shell-dim);}
+.col-label .name{font-size:13px;font-weight:600;}
+.col-label .desc{font-size:11px;color:var(--shell-dim);margin-left:auto;text-align:right;}
+.ph{width:390px;height:704px;border-radius:28px;overflow:hidden;position:relative;box-shadow:0 24px 60px rgba(0,0,0,.55),0 0 0 1px #26262e;}
+svg{display:block;}
+
+/* ═══════════ A. LEDGER — 장부. 엑셀 초록 칸의 쾌감 ═══════════ */
+.dir-a{background:#0c0e0c;color:#dfe6da;font-family:'IBM Plex Sans KR',sans-serif;}
+.dir-a .mono{font-family:'IBM Plex Mono',monospace;}
+.a-grid-bg{position:absolute;inset:0;pointer-events:none;opacity:.5;
+  background-image:linear-gradient(#141a14 1px,transparent 1px),linear-gradient(90deg,#141a14 1px,transparent 1px);
+  background-size:26px 26px;}
+.a-sticky{position:relative;display:flex;align-items:center;gap:14px;padding:16px 20px 12px;border-bottom:1px solid #1a221a;background:rgba(12,14,12,.9);}
+.a-logo{font-family:'IBM Plex Mono',monospace;font-size:14px;font-weight:700;letter-spacing:.22em;color:#8fbf7f;}
+.a-counts{display:flex;gap:12px;margin-left:auto;}
+.a-ct{display:flex;align-items:center;gap:5px;font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;}
+.a-ct i{width:9px;height:9px;border-radius:2px;display:block;}
+.a-streak{font-family:'IBM Plex Mono',monospace;font-size:11px;color:#8fbf7f;border:1px solid #223122;padding:3px 8px;border-radius:4px;}
+.a-band{position:relative;padding:20px 20px 6px;}
+.a-band-head{display:flex;align-items:baseline;gap:10px;margin-bottom:12px;}
+.a-band-head .d{font-family:'IBM Plex Mono',monospace;font-size:12px;color:#5c6b57;}
+.a-band-head .q{font-size:11px;color:#48543f;margin-left:auto;letter-spacing:.02em;}
+.a-cells{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
+.a-cell{border:1px solid #1c261c;border-radius:6px;padding:11px 12px 10px;background:#0e120e;position:relative;overflow:hidden;}
+.a-cell .lb{font-size:11px;color:#7d8a76;margin-bottom:8px;display:flex;align-items:center;gap:5px;}
+.a-cell .val{font-family:'IBM Plex Mono',monospace;font-size:15px;font-weight:700;}
+.a-cell .fill{position:absolute;left:0;bottom:0;height:3px;background:#3f7f38;transition:width .3s;}
+.a-cell.is-done{border-color:#2c4a28;background:linear-gradient(180deg,#0e120e 30%,#12220f);}
+.a-cell.is-done .val{color:#8fdf78;}
+.a-cell.is-zero .val{color:#4a544a;}
+.a-week{position:relative;padding:18px 20px 0;}
+.a-week-head{font-size:11px;color:#5c6b57;font-family:'IBM Plex Mono',monospace;margin-bottom:8px;letter-spacing:.1em;}
+.a-week-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;}
+.a-day{aspect-ratio:1;border-radius:5px;border:1px solid #1a221a;display:flex;align-items:center;justify-content:center;
+  font-family:'IBM Plex Mono',monospace;font-size:10px;color:#5c6b57;position:relative;}
+.a-day.f1{background:#15290f;border-color:#264a1c;color:#79a468;}
+.a-day.f2{background:#1d3a12;border-color:#356b24;color:#a4d190;}
+.a-day.f3{background:#2a5316;border-color:#4a8f2f;color:#d0f0be;box-shadow:0 0 14px rgba(80,160,50,.25);}
+.a-day.fr{background:#2b100c;border-color:#5a221a;color:#c98b7f;}
+.a-day.today{outline:2px solid #8fbf7f;outline-offset:2px;}
+.a-char{position:relative;margin:20px 20px 0;border:1px solid #1c261c;border-radius:8px;background:#0e120e;
+  display:flex;align-items:center;gap:16px;padding:14px 16px;}
+.a-sprite{width:64px;height:64px;background:url('../assets/tier4/Tier4_cha_idle_breath_sheet.png') 0 0/600% 100% no-repeat;
+  image-rendering:pixelated;animation:idle 1.2s steps(6) infinite;flex-shrink:0;}
+@keyframes idle{to{background-position:-384px 0;}}
+.a-char .t{font-family:'IBM Plex Mono',monospace;font-size:11px;color:#7d8a76;letter-spacing:.12em;margin-bottom:4px;}
+.a-char .n{font-size:15px;font-weight:700;}
+.a-char .pr{margin-top:8px;height:4px;width:180px;background:#16201a;border-radius:2px;overflow:hidden;}
+.a-char .pr i{display:block;height:100%;width:62%;background:linear-gradient(90deg,#3f7f38,#8fdf78);}
+.a-char .nx{font-family:'IBM Plex Mono',monospace;font-size:10px;color:#5c6b57;margin-top:5px;}
+.a-foot{position:absolute;bottom:0;left:0;right:0;padding:12px 20px 18px;font-size:11px;color:#48543f;
+  border-top:1px solid #141c14;font-family:'IBM Plex Mono',monospace;letter-spacing:.06em;background:rgba(12,14,12,.9);}
+
+/* ═══════════ B. STAGE — 무대. 캐릭터가 주인공 ═══════════ */
+.dir-b{background:#0b0b12;color:#e6e4f0;font-family:'Galmuri11','IBM Plex Sans KR',sans-serif;}
+.b-sky{position:absolute;inset:0 0 40% 0;background:
+  radial-gradient(ellipse 70% 50% at 50% 88%, rgba(90,70,180,.28), transparent 70%),
+  linear-gradient(180deg,#07070d 0%,#0e0c1c 55%,#181430 100%);}
+.b-stars{position:absolute;inset:0 0 45% 0;pointer-events:none;
+  background-image:radial-gradient(1px 1px at 20% 30%,#8f8ab8 50%,transparent 51%),
+   radial-gradient(1px 1px at 70% 18%,#6f6a98 50%,transparent 51%),
+   radial-gradient(1.5px 1.5px at 45% 50%,#a49ecf 50%,transparent 51%),
+   radial-gradient(1px 1px at 85% 42%,#5f5a88 50%,transparent 51%),
+   radial-gradient(1px 1px at 10% 60%,#7f7aa8 50%,transparent 51%);}
+.b-sticky{position:relative;z-index:3;display:flex;align-items:center;padding:14px 18px;gap:10px;}
+.b-logo{font-size:13px;letter-spacing:.18em;color:#b8b2e0;}
+.b-hud{margin-left:auto;display:flex;gap:8px;}
+.b-chip{display:flex;align-items:center;gap:6px;font-size:12px;padding:5px 10px;border-radius:4px;
+  background:rgba(20,18,40,.72);border:1px solid #2a2650;}
+.b-chip i{width:10px;height:10px;display:block;image-rendering:pixelated;
+  box-shadow:2px 0 0 rgba(0,0,0,.35) inset;}
+.b-stage{position:relative;z-index:2;height:330px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;}
+.b-title{font-size:12px;color:#7d78a8;letter-spacing:.3em;margin-bottom:6px;}
+.b-name{font-size:20px;color:#efeaff;text-shadow:0 0 18px rgba(120,100,255,.35);margin-bottom:14px;}
+.b-sprite{width:174px;height:174px;background:url('../assets/tier4/Tier4_cha_idle_breath_sheet.png') 0 0/600% 100% no-repeat;
+  image-rendering:pixelated;animation:idle 1.2s steps(6) infinite;
+  filter:drop-shadow(0 18px 22px rgba(0,0,0,.6));}
+.b-floor{position:relative;z-index:2;height:64px;margin-top:-8px;
+  background:linear-gradient(180deg,#1c1836,#141126);border-top:2px solid #322a5e;
+  display:flex;align-items:center;justify-content:center;gap:4px;}
+.b-cube{width:16px;height:16px;image-rendering:pixelated;border:2px solid rgba(0,0,0,.4);
+  box-shadow:inset 2px 2px 0 rgba(255,255,255,.28);}
+.b-cube.up{transform:translateY(-9px);}
+.b-band{position:relative;z-index:2;padding:16px 18px 0;display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+.b-slot{background:#13102a;border:1px solid #2a2650;border-radius:6px;padding:9px 8px 8px;text-align:center;}
+.b-slot .lb{font-size:10px;color:#8b85b8;margin-bottom:6px;letter-spacing:.06em;}
+.b-pips{display:flex;gap:3px;justify-content:center;}
+.b-pip{width:9px;height:9px;border-radius:2px;background:#221e44;border:1px solid #322a5e;}
+.b-pip.on{background:#d4a437;border-color:#f0c860;box-shadow:0 0 7px rgba(212,164,55,.5);}
+.b-pip.sv{background:#9aa3ad;border-color:#c4ccd4;}
+.b-pip.rd{background:#c0392b;border-color:#e06050;}
+.b-quest{position:relative;z-index:2;margin:16px 18px 0;background:#13102a;border:1px solid #2a2650;border-radius:6px;
+  padding:12px 14px;display:flex;align-items:center;gap:10px;font-size:12px;color:#c4bfe6;}
+.b-quest b{color:#f0c860;}
+.b-foot{position:absolute;bottom:0;left:0;right:0;z-index:3;padding:12px 18px 16px;font-size:11px;color:#5f5a88;
+  text-align:center;letter-spacing:.12em;background:linear-gradient(180deg,transparent,#0b0b12 45%);}
+
+/* ═══════════ C. DRILL LOG — 수련일지. 타이포 에디토리얼 ═══════════ */
+.dir-c{background:#f4f1ea;color:#191713;font-family:'Noto Serif KR',serif;}
+.c-paper{position:absolute;inset:0;pointer-events:none;opacity:.6;
+  background-image:radial-gradient(rgba(25,23,19,.05) 1px,transparent 1px);background-size:5px 5px;}
+.c-sticky{position:relative;display:flex;align-items:baseline;padding:18px 22px 12px;gap:12px;border-bottom:2px solid #191713;}
+.c-logo{font-weight:900;font-size:15px;letter-spacing:.06em;}
+.c-issue{font-family:'IBM Plex Mono',monospace;font-size:10px;color:#8a8578;letter-spacing:.14em;}
+.c-counts{margin-left:auto;display:flex;gap:10px;font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;}
+.c-counts em{font-style:normal;}
+.c-hero{position:relative;padding:26px 22px 18px;border-bottom:1px solid #d8d2c4;}
+.c-date{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.22em;color:#8a8578;margin-bottom:10px;}
+.c-state{font-size:26px;font-weight:900;line-height:1.32;letter-spacing:-.015em;}
+.c-state .u{box-shadow:inset 0 -12px 0 #e9dc9c;}
+.c-sub{margin-top:12px;font-size:13px;color:#5f594c;font-weight:500;}
+.c-band{position:relative;border-bottom:1px solid #d8d2c4;}
+.c-ledger{width:100%;border-collapse:collapse;}
+.c-ledger td{padding:12px 22px;border-top:1px solid #e4ded0;font-size:14px;font-weight:600;vertical-align:middle;}
+.c-ledger td:last-child{text-align:right;font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:500;color:#5f594c;}
+.c-check{display:inline-flex;width:20px;height:20px;border:2px solid #191713;border-radius:3px;margin-right:12px;
+  vertical-align:-4px;align-items:center;justify-content:center;}
+.c-check.done{background:#191713;}
+.c-check.done svg{stroke:#f4f1ea;}
+.c-check.fail{border-color:#a5321f;background:#a5321f;}
+.c-row-dim td{color:#a29b8a;}
+.c-char{position:relative;display:flex;align-items:center;gap:18px;padding:18px 22px;}
+.c-frame{width:84px;height:84px;border:2px solid #191713;border-radius:4px;background:#e9e4d7;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:4px 4px 0 #d8d2c4;}
+.c-sprite{width:64px;height:64px;background:url('../assets/tier4/Tier4_cha_idle_breath_sheet.png') 0 0/600% 100% no-repeat;
+  image-rendering:pixelated;animation:idle 1.2s steps(6) infinite;}
+.c-char .t{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.2em;color:#8a8578;margin-bottom:5px;}
+.c-char .n{font-size:17px;font-weight:900;}
+.c-char .d{font-size:12px;color:#5f594c;margin-top:6px;line-height:1.5;}
+.c-foot{position:absolute;bottom:0;left:0;right:0;padding:13px 22px 17px;border-top:2px solid #191713;
+  display:flex;justify-content:space-between;align-items:center;background:#f4f1ea;}
+.c-foot .m{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.16em;color:#8a8578;}
+.c-foot .q{font-size:12px;font-weight:700;}
+</style>
+</head>
+<body>
+
+<div class="shell-head">
+  <h1>오늘탭 상단 스택 — 3방향 베이크오프</h1>
+  <p>sticky header · status band · 캐릭터 카드 / 동일 데이터 (Gold 2 · Silver 3 · Red 1 · 13일 연속 · Tier 4)</p>
+</div>
+
+<div class="row">
+
+  <!-- ═══════ A. LEDGER ═══════ -->
+  <div class="col">
+    <div class="col-label"><span class="tag">A</span><span class="name">LEDGER · 장부</span><span class="desc">엑셀 초록 칸의 쾌감<br>정밀 · 절제 · 채움</span></div>
+    <div class="ph dir-a">
+      <div class="a-grid-bg"></div>
+      <div class="a-sticky">
+        <span class="a-logo">QROK</span>
+        <span class="a-streak">DAY 13</span>
+        <div class="a-counts">
+          <span class="a-ct"><i style="background:var(--g)"></i>2</span>
+          <span class="a-ct"><i style="background:var(--s)"></i>3</span>
+          <span class="a-ct"><i style="background:var(--r)"></i>1</span>
+        </div>
+      </div>
+      <div class="a-band">
+        <div class="a-band-head"><span class="d mono">2026-08-05 화</span><span class="q">편한 쪽은 함정이다.</span></div>
+        <div class="a-cells">
+          <div class="a-cell"><div class="lb">식단</div><div class="val mono">2<span style="color:#4a544a">/3</span></div><i class="fill" style="width:66%"></i></div>
+          <div class="a-cell is-done"><div class="lb">운동</div><div class="val mono">DONE</div><i class="fill" style="width:100%"></i></div>
+          <div class="a-cell"><div class="lb">루틴</div><div class="val mono">1<span style="color:#4a544a">/2</span></div><i class="fill" style="width:50%"></i></div>
+          <div class="a-cell is-zero"><div class="lb">할일</div><div class="val mono">0<span style="color:#4a544a">/2</span></div><i class="fill" style="width:0%"></i></div>
+        </div>
+      </div>
+      <div class="a-week">
+        <div class="a-week-head">THIS WEEK</div>
+        <div class="a-week-grid">
+          <div class="a-day f2">월</div><div class="a-day f3">화</div><div class="a-day f1">수</div>
+          <div class="a-day fr">목</div><div class="a-day f2">금</div><div class="a-day today f1">토</div><div class="a-day">일</div>
+        </div>
+      </div>
+      <div class="a-char">
+        <div class="a-sprite"></div>
+        <div>
+          <div class="t">TIER 4</div>
+          <div class="n">각성자</div>
+          <div class="pr"><i></i></div>
+          <div class="nx">다음 티어까지 Gold 14</div>
+        </div>
+      </div>
+      <div class="a-foot">기록이 곧 증거다. — 오늘 6칸 채움</div>
+    </div>
+  </div>
+
+  <!-- ═══════ B. STAGE ═══════ -->
+  <div class="col">
+    <div class="col-label"><span class="tag">B</span><span class="name">STAGE · 무대</span><span class="desc">캐릭터가 주인공<br>깊이 · 게임 · 성장 실감</span></div>
+    <div class="ph dir-b">
+      <div class="b-sky"></div><div class="b-stars"></div>
+      <div class="b-sticky">
+        <span class="b-logo">QROK</span>
+        <div class="b-hud">
+          <span class="b-chip"><i style="background:var(--g)"></i>2</span>
+          <span class="b-chip"><i style="background:var(--s)"></i>3</span>
+          <span class="b-chip"><i style="background:var(--r)"></i>1</span>
+          <span class="b-chip">13일</span>
+        </div>
+      </div>
+      <div class="b-stage">
+        <div class="b-title">TIER 4</div>
+        <div class="b-name">각성자</div>
+        <div class="b-sprite"></div>
+      </div>
+      <div class="b-floor">
+        <span class="b-cube" style="background:var(--g)"></span>
+        <span class="b-cube up" style="background:var(--g)"></span>
+        <span class="b-cube" style="background:var(--s)"></span>
+        <span class="b-cube up" style="background:var(--s)"></span>
+        <span class="b-cube" style="background:var(--s)"></span>
+        <span class="b-cube up" style="background:var(--r)"></span>
+      </div>
+      <div class="b-band">
+        <div class="b-slot"><div class="lb">식단</div><div class="b-pips"><span class="b-pip on"></span><span class="b-pip sv"></span><span class="b-pip"></span></div></div>
+        <div class="b-slot"><div class="lb">운동</div><div class="b-pips"><span class="b-pip on"></span></div></div>
+        <div class="b-slot"><div class="lb">루틴</div><div class="b-pips"><span class="b-pip sv"></span><span class="b-pip"></span></div></div>
+        <div class="b-slot"><div class="lb">할일</div><div class="b-pips"><span class="b-pip"></span><span class="b-pip"></span></div></div>
+      </div>
+      <div class="b-quest">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f0c860" stroke-width="2.4"><path d="M12 2v20M2 12h20"/></svg>
+        오늘 <b>Gold 1</b> 더 얻으면 캐릭터가 자란다
+      </div>
+      <div class="b-foot">약한 날도 기록은 남긴다</div>
+    </div>
+  </div>
+
+  <!-- ═══════ C. DRILL LOG ═══════ -->
+  <div class="col">
+    <div class="col-label"><span class="tag">C</span><span class="name">DRILL LOG · 수련일지</span><span class="desc">직면·단련의 문장<br>지면 · 서명 · 기록물</span></div>
+    <div class="ph dir-c">
+      <div class="c-paper"></div>
+      <div class="c-sticky">
+        <span class="c-logo">큐록</span>
+        <span class="c-issue">VOL.13 — 13일째</span>
+        <div class="c-counts">
+          <em style="color:#8a6d1f">G2</em><em style="color:#6d7278">S3</em><em style="color:#a5321f">R1</em>
+        </div>
+      </div>
+      <div class="c-hero">
+        <div class="c-date">2026 · 08 · 05 TUE</div>
+        <div class="c-state">오늘, 아직<br><span class="u">증명하지 않은 것</span>이<br>세 칸 남았다.</div>
+        <div class="c-sub">운동은 끝냈다. 식단 하나, 루틴 하나, 할일 둘.</div>
+      </div>
+      <div class="c-band">
+        <table class="c-ledger">
+          <tr><td><span class="c-check done"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke-width="3.4"><path d="M4 13l5 5L20 6"/></svg></span>운동</td><td>GOLD +3</td></tr>
+          <tr><td><span class="c-check done"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke-width="3.4"><path d="M4 13l5 5L20 6"/></svg></span>식단 — 2 / 3</td><td>SILVER +1</td></tr>
+          <tr class="c-row-dim"><td><span class="c-check"></span>루틴 — 1 / 2</td><td>대기</td></tr>
+          <tr class="c-row-dim"><td><span class="c-check"></span>할일 — 0 / 2</td><td>대기</td></tr>
+        </table>
+      </div>
+      <div class="c-char">
+        <div class="c-frame"><div class="c-sprite"></div></div>
+        <div>
+          <div class="t">TIER 4 — 각성자</div>
+          <div class="n">이 몸이 증거다.</div>
+          <div class="d">13일 연속 기록.<br>다음 단계까지 Gold 14.</div>
+        </div>
+      </div>
+      <div class="c-foot"><span class="m">QROK DRILL LOG</span><span class="q">편한 쪽은 함정이다.</span></div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
