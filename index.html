@@ -64,23 +64,23 @@
      외부 link 2개 제거 → render-blocking CSS 요청 -2. trainer.html 등은 여전히 link. -->
 <!-- Perf (2026-05-25): 남은 sync CSS 도 모두 async — splash 가 1.6s 가리는 동안 모두 로드 완료.
      FOUC 위험 거의 없음 + render-blocking 0 → splash 즉시 paint. -->
-<link href="/src/styles/states.css?v=378bf8d3" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/styles/components.css?v=378bf8d3" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/styles/icons.css?v=378bf8d3" rel="stylesheet" media="print" onload="this.media='all'">
-<noscript><link href="/src/styles/states.css?v=378bf8d3" rel="stylesheet"><link href="/src/styles/components.css?v=378bf8d3" rel="stylesheet"><link href="/src/styles/icons.css?v=378bf8d3" rel="stylesheet"></noscript>
+<link href="/src/styles/states.css?v=65ce3ae8" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/styles/components.css?v=65ce3ae8" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/styles/icons.css?v=65ce3ae8" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link href="/src/styles/states.css?v=65ce3ae8" rel="stylesheet"><link href="/src/styles/components.css?v=65ce3ae8" rel="stylesheet"><link href="/src/styles/icons.css?v=65ce3ae8" rel="stylesheet"></noscript>
 <!-- Feature folder CSS — 한 폴더 = 한 기능 컨벤션 (ARCHITECTURE.md).
      Perf (2026-05-25): media="print" + onload swap 으로 async 로딩 → 초기 paint 차단 X.
      splash 가 1.6s+ 표시되므로 그 사이 모두 로드되어 FOUC 위험 거의 없음. -->
-<link href="/src/features/targets/targets.css?v=378bf8d3" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/dashboards/dash.css?v=378bf8d3" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/cubes/cubes-ui.css?v=378bf8d3" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/date-heatmap/date-heatmap.css?v=378bf8d3" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/dev-inspector/dev-inspector.css?v=378bf8d3" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/water/water.css?v=378bf8d3" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/sticky-header/sticky-header.css?v=378bf8d3" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/status-band/status-band.css?v=378bf8d3" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/mountain/mountain.css?v=378bf8d3" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/workout-session/workout-session.css?v=378bf8d3" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/targets/targets.css?v=65ce3ae8" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/dashboards/dash.css?v=65ce3ae8" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/cubes/cubes-ui.css?v=65ce3ae8" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/date-heatmap/date-heatmap.css?v=65ce3ae8" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/dev-inspector/dev-inspector.css?v=65ce3ae8" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/water/water.css?v=65ce3ae8" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/sticky-header/sticky-header.css?v=65ce3ae8" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/status-band/status-band.css?v=65ce3ae8" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/mountain/mountain.css?v=65ce3ae8" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/workout-session/workout-session.css?v=65ce3ae8" rel="stylesheet" media="print" onload="this.media='all'">
 <style>
 /* :root 토큰은 src/styles/tokens.{shared,dark}.css 로 이전됨 (Phase 0).
    index.html 은 다크 팔레트 사용. 추가 sub-palette (--radius-sm 등 legacy) 가
@@ -1497,7 +1497,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
      app.js bundle → supabase ESM 포함 (2026-05-25 perf), inline body scripts 가 의존하므로 sync. -->
 <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-<script src="/dist/app.js?v=378bf8d3"></script>
+<script src="/dist/app.js?v=65ce3ae8"></script>
 
 <script>
   // QROK Splash — 앱 ready 까지 대기 후 fade out. 좌측 상단/중앙 loading 스피너 가림.
@@ -3136,6 +3136,18 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
         <div id="ms-ctx-pill" style="font-size:var(--text-xs);padding:2px 9px;background:var(--accent-bg);color:var(--accent);border-radius:var(--radius-lg);border:1px solid var(--accent-bd);font-weight:600;"></div>
       </div>
       <button id="ms-delete-btn" onclick="deleteMealFromModal('slot')" style="display:none;font-size:var(--text-xs);padding:10px 14px;margin:-6px -4px;border-radius:var(--radius-md);border:1px solid var(--red-bd);background:var(--red-bg);color:var(--red);cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">삭제</button>
+    </div>
+
+    <!-- 어제와 같음 — 원탭 제안 (신규 기록 + 어제 같은 끼니 있을 때만 노출) -->
+    <div id="ms-yesterday" style="display:none;margin-bottom:12px;padding:10px 12px;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius-md);cursor:pointer;touch-action:manipulation;" onclick="msUseYesterday()">
+      <div style="display:flex;align-items:center;gap:9px;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="2" stroke-linecap="round" style="flex-shrink:0;"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:var(--text-2xs);color:var(--text3);font-weight:600;letter-spacing:.05em;">어제와 같음</div>
+          <div id="ms-yesterday-txt" style="font-size:var(--text-sm);color:var(--text2);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></div>
+        </div>
+        <span style="font-size:var(--text-xs);color:var(--accent);font-weight:600;flex-shrink:0;">채우기</span>
+      </div>
     </div>
 
     <!-- 음식 이름 -->
@@ -9933,8 +9945,39 @@ function openSlotModal(slot, editIdx=null){
 
   const c=document.getElementById('ms-photo-camera');const g=document.getElementById('ms-photo-gallery');
   if(c)c.value='';if(g)g.value='';
+
+  // 어제와 같음 제안 (2026-10-08 UX 루프) — 신규 기록 && 어제 같은 슬롯 기록 존재 시
+  try{
+    const yEl=document.getElementById('ms-yesterday');
+    _msYesterdayMeal=null;
+    if(yEl){
+      yEl.style.display='none';
+      if(editIdx===null){
+        const yd=new Date(now);yd.setDate(yd.getDate()-1);
+        const yl=logCache[dkey(yd)];
+        const ym=(yl&&yl.meals||[]).find(m=>m&&m.time===slot&&m.type&&m.type!=='skip');
+        if(ym){
+          _msYesterdayMeal=ym;
+          const typeLabel={green:'클린',normal:'일반',cheat:'치팅',red:'금지'}[ym.type]||ym.type;
+          document.getElementById('ms-yesterday-txt').textContent=(ym.name?ym.name+' · ':'')+typeLabel;
+          yEl.style.display='block';
+        }
+      }
+    }
+  }catch(e){console.warn('[ms-yesterday]',e);}
   openModal('meal-modal-slot');
 }
+let _msYesterdayMeal=null;
+function msUseYesterday(){
+  const ym=_msYesterdayMeal;
+  if(!ym)return;
+  document.getElementById('ms-name').value=ym.name||'';
+  const btn=[...document.querySelectorAll('#ms-quality-btns .ftbtn')].find(b=>(b.getAttribute('onclick')||'').includes("'"+ym.type+"'"));
+  if(btn)msPickQuality(ym.type,btn);
+  document.getElementById('ms-yesterday').style.display='none';
+  showToast('어제 기록으로 채웠어요 — 저장을 누르면 기록됩니다');
+}
+window.msUseYesterday=msUseYesterday;
 
 function msPickQuality(type, el){
   // 치팅 쿼터 체크
