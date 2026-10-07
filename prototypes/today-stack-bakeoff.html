@@ -253,34 +253,40 @@ body.no-char .char-toggle .dot{background:#555;}
 .f-foot{position:absolute;bottom:0;left:0;right:0;padding:13px 20px;border-top:1px solid #241f1c;display:flex;justify-content:space-between;font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.2em;color:#57504a;}
 
 
-/* ═══════════ G. SHEET — 시트. 창업자 원점: 엑셀 초록 칸이 과거로 쌓인다 ═══════════ */
-.dir-g{background:#e9e9e7;color:#1f2328;font-family:'IBM Plex Sans KR',sans-serif;}
-.g-sticky{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:#1f6f43;color:#f2f7f0;}
-.g-logo{font-size:13px;font-weight:800;letter-spacing:.22em;}
-.g-meta{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.1em;color:#cde4d2;}
-.g-sheet{background:#fdfdfc;}
-.g-grid{width:100%;border-collapse:collapse;table-layout:fixed;}
-.g-grid th{background:#f1f2f0;border:1px solid #d7d9d5;font-size:10.5px;font-weight:600;color:#5b6168;padding:7px 2px;letter-spacing:.02em;}
-.g-grid th.rowhead{width:64px;}
-.g-grid td{border:1px solid #e2e4e0;height:34px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:11px;color:#8a9097;background:#fff;}
-.g-grid td.date{font-size:10px;color:#6b7178;background:#f7f8f6;letter-spacing:.02em;}
-.g-grid td.dow{font-family:'IBM Plex Sans KR',sans-serif;}
-/* 클래식 엑셀 조건부서식 */
-.g-grid td.ok{background:#c6efce;color:#276221;font-weight:600;}
-.g-grid td.part{background:#e8f4d9;color:#5a7a33;}
-.g-grid td.bad{background:#ffc7ce;color:#9c0006;font-weight:600;}
-.g-grid td.off{background:#f3f3f1;color:#c4c8c3;}
-.g-grid tr.today td{border-top:2px solid #1f6f43;border-bottom:2px solid #1f6f43;background:#fffbe8;}
-.g-grid tr.today td.ok{background:#b7e8c1;}
-.g-grid tr.today td.date{background:#fff3c2;color:#1f2328;font-weight:700;}
-.g-grid tr.gap td{background:#faf3f3;}
-.g-grid tr.gap td.date{color:#b05a5a;}
-.g-weekband td{background:#eceeea!important;border-left:none;border-right:none;height:22px;font-size:9px;color:#9aa09a;letter-spacing:.18em;font-family:'IBM Plex Mono',monospace;text-align:left;padding-left:10px;}
-.g-sum{display:flex;justify-content:space-between;align-items:center;padding:10px 16px;background:#f1f2f0;border-top:1px solid #d7d9d5;font-family:'IBM Plex Mono',monospace;font-size:10px;color:#5b6168;letter-spacing:.08em;}
-.g-sum b{color:#1f6f43;}
-.g-foot{position:absolute;bottom:0;left:0;right:0;padding:11px 16px;background:#fdfdfc;border-top:1px solid #d7d9d5;display:flex;justify-content:space-between;font-size:10.5px;color:#8a9097;}
-.g-foot b{color:#276221;}
-
+/* ═══════════ G. CUBE GRID — 적층. 시트의 구조, 큐록의 피부 ═══════════ */
+.dir-g{background:#0b0b0e;color:#e8e6e1;font-family:'IBM Plex Sans KR',sans-serif;}
+.g-sticky{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;background:#0e0e12;border-bottom:1px solid #1d1d24;}
+.g-logo{font-size:13px;font-weight:800;letter-spacing:.24em;}
+.g-meta{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.12em;color:#6f6d78;}
+.g-meta b{color:#d4a437;font-weight:600;}
+.g-cols{display:grid;grid-template-columns:58px repeat(5,1fr);gap:6px;padding:12px 14px 6px;}
+.g-cols span{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.14em;color:#55525e;text-align:center;}
+.g-cols span:first-child{text-align:left;}
+.g-body{padding:0 14px;}
+.g-r{display:grid;grid-template-columns:58px repeat(5,1fr);gap:6px;margin-bottom:6px;align-items:center;}
+.g-d{font-family:'IBM Plex Mono',monospace;font-size:9.5px;color:#6f6d78;letter-spacing:.04em;line-height:1.3;}
+.g-d em{font-style:normal;display:block;color:#44424d;font-size:8.5px;}
+.g-c{height:30px;border-radius:6px;display:flex;align-items:center;justify-content:center;
+  font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:600;
+  background:#15151b;border:1px solid #20202a;color:#4e4c58;}
+/* 큐브 — 제품 보상 언어 그대로 */
+.g-c.gold{background:linear-gradient(135deg,#fff1a8 0%,#ffd54a 45%,#c48c1a 100%);border-color:#c48c1a;color:#4a3608;box-shadow:inset 0 1px 0 rgba(255,255,255,.5),0 1px 6px rgba(212,164,55,.22);}
+.g-c.silver{background:linear-gradient(135deg,#f2f4f7 0%,#b5c0cc 45%,#6d7682 100%);border-color:#6d7682;color:#2c333c;box-shadow:inset 0 1px 0 rgba(255,255,255,.5);}
+.g-c.red{background:linear-gradient(135deg,#e07a6e 0%,#c0392b 55%,#7e2016 100%);border-color:#7e2016;color:#ffe3df;box-shadow:inset 0 1px 0 rgba(255,255,255,.22);}
+.g-c.off{background:#101016;border-style:dashed;border-color:#232330;color:#3c3a46;}
+.g-r.today .g-c{height:38px;font-size:11px;}
+.g-r.today{padding:7px 0;margin:0 -8px 8px;padding-left:8px;padding-right:8px;border:1px solid #2c2c38;border-radius:10px;background:#101017;}
+.g-r.today .g-d{color:#e8e6e1;font-weight:600;}
+.g-r.today .g-d em{color:#8a879a;}
+.g-wk{display:flex;justify-content:space-between;align-items:center;margin:10px 2px 8px;padding-top:9px;border-top:1px solid #1a1a22;
+  font-family:'IBM Plex Mono',monospace;font-size:8.5px;letter-spacing:.2em;color:#55525e;}
+.g-wk .cubes{display:flex;gap:4px;align-items:center;}
+.g-wk .cubes i{width:9px;height:9px;border-radius:2px;display:inline-block;}
+.g-wk .cubes em{font-style:normal;margin-right:5px;color:#8a879a;}
+.g-r.gap .g-c{background:#16090b;border-color:#3d1218;color:#7e3a42;}
+.g-r.gap .g-d{color:#b05a5a;}
+.g-foot{position:absolute;bottom:0;left:0;right:0;padding:12px 18px;background:#0e0e12;border-top:1px solid #1d1d24;display:flex;justify-content:space-between;font-size:10.5px;color:#6f6d78;}
+.g-foot b{color:#d4a437;}
 </style>
 </head>
 <body>
@@ -429,40 +435,62 @@ body.no-char .char-toggle .dot{background:#555;}
   </div>
 
 
-  <!-- ═══════ G. SHEET ═══════ -->
+  <!-- ═══════ G. CUBE GRID ═══════ -->
   <div class="col">
-    <div class="col-label"><span class="tag">G</span><span class="name">SHEET · 시트</span><span class="desc">원점 — 엑셀 초록 칸<br>과거가 쌓이는 매트릭스</span></div>
+    <div class="col-label"><span class="tag">G</span><span class="name">CUBE GRID · 적층</span><span class="desc">시트의 구조 · 큐록의 피부<br>큐브가 칸이다 — 과거가 쌓인다</span></div>
     <div class="ph dir-g">
       <div class="g-sticky">
         <span class="g-logo">QROK</span>
-        <span class="g-meta">13일 연속 · G2 S3 R1</span>
+        <span class="g-meta"><b>13일</b> 연속 · G2 S3 R1</span>
       </div>
-      <div class="g-sheet">
-        <table class="g-grid">
-          <tr><th class="rowhead">날짜</th><th>체중</th><th>식단</th><th>운동</th><th>루틴</th><th>할일</th></tr>
-          <tr class="today">
-            <td class="date">08.05 화</td><td class="ok">78.4</td><td class="part">2/3</td><td class="ok">DONE</td><td class="part">1/2</td><td>0/2</td>
-          </tr>
-          <tr><td class="date">08.04 월</td><td class="ok">78.6</td><td class="ok">3/3</td><td class="ok">등</td><td class="ok">2/2</td><td class="ok">2/2</td></tr>
-          <tr><td class="date">08.03 일</td><td class="ok">78.9</td><td class="part">2/3</td><td class="ok">유산소</td><td class="ok">2/2</td><td class="part">1/2</td></tr>
-          <tr><td class="date">08.02 토</td><td class="ok">79.0</td><td class="bad">치팅2</td><td class="ok">하체</td><td class="part">1/2</td><td class="ok">2/2</td></tr>
-          <tr class="g-weekband"><td colspan="6">WEEK 31 — GOLD 9 · SILVER 6 · RED 2</td></tr>
-          <tr><td class="date">08.01 금</td><td class="ok">79.2</td><td class="ok">3/3</td><td class="ok">가슴</td><td class="ok">2/2</td><td class="ok">2/2</td></tr>
-          <tr><td class="date">07.31 목</td><td class="ok">79.1</td><td class="ok">3/3</td><td class="off">휴식</td><td class="ok">2/2</td><td class="part">1/2</td></tr>
-          <tr><td class="date">07.30 수</td><td class="ok">79.4</td><td class="part">2/3</td><td class="ok">등</td><td class="ok">2/2</td><td class="ok">2/2</td></tr>
-          <tr><td class="date">07.29 화</td><td class="ok">79.3</td><td class="ok">3/3</td><td class="ok">어깨</td><td class="ok">2/2</td><td class="ok">2/2</td></tr>
-          <tr><td class="date">07.28 월</td><td class="ok">79.6</td><td class="ok">3/3</td><td class="ok">하체</td><td class="part">1/2</td><td class="ok">2/2</td></tr>
-          <tr class="g-weekband"><td colspan="6">WEEK 30 — GOLD 11 · SILVER 4 · RED 3</td></tr>
-          <tr class="gap"><td class="date">07.27 일</td><td></td><td class="bad">—</td><td class="bad">—</td><td class="bad">—</td><td class="bad">—</td></tr>
-          <tr><td class="date">07.26 토</td><td class="ok">79.8</td><td class="part">2/3</td><td class="ok">러닝</td><td class="ok">2/2</td><td class="part">1/2</td></tr>
-          <tr><td class="date">07.25 금</td><td class="ok">79.9</td><td class="ok">3/3</td><td class="ok">가슴</td><td class="ok">2/2</td><td class="ok">2/2</td></tr>
-        </table>
+      <div class="g-cols"><span>날짜</span><span>체중</span><span>식단</span><span>운동</span><span>루틴</span><span>할일</span></div>
+      <div class="g-body">
+        <div class="g-r today">
+          <div class="g-d">08.05<em>오늘 · 화</em></div>
+          <div class="g-c gold">78.4</div><div class="g-c">2/3</div><div class="g-c gold">등</div><div class="g-c">1/2</div><div class="g-c">0/2</div>
+        </div>
+        <div class="g-r">
+          <div class="g-d">08.04<em>월</em></div>
+          <div class="g-c gold">78.6</div><div class="g-c gold">3/3</div><div class="g-c gold">등</div><div class="g-c silver">2/2</div><div class="g-c silver">2/2</div>
+        </div>
+        <div class="g-r">
+          <div class="g-d">08.03<em>일</em></div>
+          <div class="g-c gold">78.9</div><div class="g-c silver">2/3</div><div class="g-c gold">런</div><div class="g-c silver">2/2</div><div class="g-c">1/2</div>
+        </div>
+        <div class="g-r">
+          <div class="g-d">08.02<em>토</em></div>
+          <div class="g-c gold">79.0</div><div class="g-c red">치팅</div><div class="g-c gold">하체</div><div class="g-c">1/2</div><div class="g-c silver">2/2</div>
+        </div>
+        <div class="g-wk"><span>WEEK 31</span><span class="cubes"><i style="background:#d4a437"></i><em>9</em><i style="background:#9aa3ad"></i><em>6</em><i style="background:#c0392b"></i><em>2</em></span></div>
+        <div class="g-r">
+          <div class="g-d">08.01<em>금</em></div>
+          <div class="g-c gold">79.2</div><div class="g-c gold">3/3</div><div class="g-c gold">가슴</div><div class="g-c silver">2/2</div><div class="g-c silver">2/2</div>
+        </div>
+        <div class="g-r">
+          <div class="g-d">07.31<em>목</em></div>
+          <div class="g-c gold">79.1</div><div class="g-c gold">3/3</div><div class="g-c off">휴식</div><div class="g-c silver">2/2</div><div class="g-c">1/2</div>
+        </div>
+        <div class="g-r">
+          <div class="g-d">07.30<em>수</em></div>
+          <div class="g-c gold">79.4</div><div class="g-c silver">2/3</div><div class="g-c gold">등</div><div class="g-c silver">2/2</div><div class="g-c silver">2/2</div>
+        </div>
+        <div class="g-r">
+          <div class="g-d">07.29<em>화</em></div>
+          <div class="g-c gold">79.3</div><div class="g-c gold">3/3</div><div class="g-c gold">어깨</div><div class="g-c silver">2/2</div><div class="g-c silver">2/2</div>
+        </div>
+        <div class="g-wk"><span>WEEK 30</span><span class="cubes"><i style="background:#d4a437"></i><em>11</em><i style="background:#9aa3ad"></i><em>4</em><i style="background:#c0392b"></i><em>3</em></span></div>
+        <div class="g-r gap">
+          <div class="g-d">07.27<em>일 — 공백</em></div>
+          <div class="g-c">—</div><div class="g-c">—</div><div class="g-c">—</div><div class="g-c">—</div><div class="g-c">—</div>
+        </div>
+        <div class="g-r">
+          <div class="g-d">07.26<em>토</em></div>
+          <div class="g-c gold">79.8</div><div class="g-c silver">2/3</div><div class="g-c gold">런</div><div class="g-c silver">2/2</div><div class="g-c">1/2</div>
+        </div>
       </div>
-      <div class="g-sum"><span>이번 주 채움률 <b>82%</b></span><span>빈 칸 4 · 빨간 칸 1</span></div>
-      <div class="g-foot"><span>아래로 — 258일의 기록</span><span><b>13일</b> 연속 채우는 중</span></div>
+      <div class="g-foot"><span>아래로 — 258일의 적층</span><span><b>13일</b> 연속 쌓는 중</span></div>
     </div>
   </div>
-
 </div>
 </body>
 </html>
