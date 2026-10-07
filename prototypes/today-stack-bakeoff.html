@@ -28,6 +28,21 @@ body{background:var(--shell-bg);color:var(--shell-text);font-family:'IBM Plex Sa
 .ph{width:390px;height:704px;border-radius:28px;overflow:hidden;position:relative;box-shadow:0 24px 60px rgba(0,0,0,.55),0 0 0 1px #26262e;}
 svg{display:block;}
 
+/* ═══════════ 캐릭터 OFF 모드 (2026-10-07 — 창업자 요청: 캐릭터 없는 버전 비교) ═══════════ */
+body.no-char .a-char,body.no-char .c-char{display:none;}
+body.no-char .b-sprite{display:none;}
+body.no-char .b-stage{height:150px;}
+body.no-char .b-title{margin-bottom:2px;}
+body.no-char .b-name{margin-bottom:26px;}
+body.no-char .b-cube{transform:scale(1.5);margin:0 7px;}
+body.no-char .b-quest b{color:#f0c860;}
+.char-toggle{position:fixed;top:14px;right:16px;z-index:50;display:flex;align-items:center;gap:8px;
+  background:#15151c;border:1px solid #2a2a35;border-radius:999px;padding:7px 14px;cursor:pointer;
+  font-family:'IBM Plex Mono',monospace;font-size:11px;color:#9aa;letter-spacing:.08em;user-select:none;}
+.char-toggle .dot{width:8px;height:8px;border-radius:50%;background:#58c07a;}
+body.no-char .char-toggle .dot{background:#555;}
+.char-toggle:hover{border-color:#3a3a48;}
+
 /* ═══════════ A. LEDGER — 장부. 엑셀 초록 칸의 쾌감 ═══════════ */
 .dir-a{background:#0c0e0c;color:#dfe6da;font-family:'IBM Plex Sans KR',sans-serif;}
 .dir-a .mono{font-family:'IBM Plex Mono',monospace;}
@@ -161,8 +176,13 @@ svg{display:block;}
 
 <div class="shell-head">
   <h1>오늘탭 상단 스택 — 3방향 베이크오프</h1>
-  <p>sticky header · status band · 캐릭터 카드 / 동일 데이터 (Gold 2 · Silver 3 · Red 1 · 13일 연속 · Tier 4)</p>
+  <p>sticky header · status band · 캐릭터 카드 / 동일 데이터 (Gold 2 · Silver 3 · Red 1 · 13일 연속 · Tier 4)<br>
+  우측 상단 토글로 <b>캐릭터 없는 버전</b>을 같은 자리에서 비교할 수 있다 — B(무대)는 캐릭터가 컨셉이라 빠지면 큐브 더미가 주인공이 된다.</p>
 </div>
+<div class="char-toggle" onclick="document.body.classList.toggle('no-char');this.querySelector('span').textContent=document.body.classList.contains('no-char')?'캐릭터 OFF':'캐릭터 ON';try{localStorage.setItem('rb1_nochar',document.body.classList.contains('no-char')?'1':'0');}catch(e){}">
+  <i class="dot"></i><span>캐릭터 ON</span>
+</div>
+<script>try{if(localStorage.getItem('rb1_nochar')==='1'){document.body.classList.add('no-char');document.addEventListener('DOMContentLoaded',()=>{const t=document.querySelector('.char-toggle span');if(t)t.textContent='캐릭터 OFF';});}}catch(e){}</script>
 
 <div class="row">
 
