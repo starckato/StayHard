@@ -705,11 +705,18 @@ function loadProto(ev,el){
   if(window.innerWidth<=880)document.getElementById('gnb').classList.remove('is-open');
 }
 
+// 경로 보정 (2026-10-07): qrok.app/prototypes (슬래시·확장자 없는 클린URL) 로 열리면
+// 상대경로가 루트로 풀려 iframe 이 본 앱을 로드함 → 디렉토리 세그먼트를 명시 prefix.
+function _resolveProtoHref(href){
+  const p=location.pathname;
+  if(location.protocol==='file:'||p.endsWith('/')||/\.html$/.test(p))return href;
+  return p.split('/').pop()+'/'+href;
+}
 function loadDirect(href,name){
   document.getElementById('welcome').style.display='none';
   const f=document.getElementById('viewerFrame');
   f.style.display='block';
-  f.src=href;
+  f.src=_resolveProtoHref(href);
   document.getElementById('crumb').innerHTML='<b>'+escapeHtml(name)+'</b>';
   document.getElementById('viewerUrl').innerHTML='<b>'+escapeHtml(href)+'</b>';
   currentProto={href,name};
