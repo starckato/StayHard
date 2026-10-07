@@ -173,14 +173,93 @@ body.no-char .char-toggle .dot{background:#555;}
   display:flex;justify-content:space-between;align-items:center;background:#f4f1ea;}
 .c-foot .m{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.16em;color:#8a8578;}
 .c-foot .q{font-size:12px;font-weight:700;}
+
+/* ═══════════ D. RANGE LOG — 사격 기록지. 스테이지·히트·스틸 ═══════════ */
+.dir-d{background:#0c0e10;color:#dde3e8;font-family:'IBM Plex Mono',monospace;}
+.d-sticky{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;background:#08090b;border-bottom:2px solid #1b2025;}
+.d-logo{font-size:13px;font-weight:700;letter-spacing:.3em;color:#e8eef3;}
+.d-meta{font-size:10px;color:#5d6973;letter-spacing:.12em;}
+.d-score{display:flex;gap:14px;padding:16px 18px 12px;border-bottom:1px solid #161a1e;}
+.d-score .cell{flex:1;text-align:center;padding:10px 0 8px;background:#0f1215;border:1px solid #1d2329;border-radius:4px;}
+.d-score .v{font-size:22px;font-weight:700;line-height:1;}
+.d-score .k{font-size:9px;letter-spacing:.2em;color:#5d6973;margin-top:5px;}
+.d-score .gold .v{color:#d4a437;} .d-score .silver .v{color:#9aa3ad;} .d-score .red .v{color:#c0392b;}
+.d-stage{padding:6px 18px;}
+.d-row{display:flex;align-items:center;gap:12px;padding:13px 2px;border-bottom:1px solid #14181c;}
+.d-row .no{font-size:10px;color:#49535c;width:34px;letter-spacing:.1em;}
+.d-row .nm{font-size:13px;font-weight:600;flex:1;font-family:'IBM Plex Sans KR',sans-serif;}
+.d-row .hits{display:flex;gap:5px;}
+.d-hit{width:14px;height:14px;border:1.5px solid #2a323a;transform:rotate(45deg);border-radius:2px;}
+.d-hit.a{background:#d4a437;border-color:#d4a437;}
+.d-hit.c2{background:#9aa3ad;border-color:#9aa3ad;}
+.d-hit.m{background:#c0392b33;border-color:#c0392b;}
+.d-row .res{font-size:10px;width:72px;text-align:right;letter-spacing:.08em;color:#5d6973;}
+.d-row.done .res{color:#d4a437;}
+.d-row.miss .res{color:#c0392b;}
+.d-timer{margin:16px 18px 0;padding:14px 16px;background:#0f1215;border:1px solid #1d2329;border-radius:4px;display:flex;align-items:baseline;justify-content:space-between;}
+.d-timer .t{font-size:10px;letter-spacing:.2em;color:#5d6973;}
+.d-timer .v{font-size:26px;font-weight:700;color:#e8eef3;}
+.d-timer .v em{font-style:normal;font-size:11px;color:#5d6973;margin-left:4px;}
+.d-foot{position:absolute;bottom:0;left:0;right:0;padding:13px 18px;font-size:10px;letter-spacing:.14em;color:#49535c;border-top:1px solid #14181c;display:flex;justify-content:space-between;}
+.d-foot b{color:#8a949d;font-weight:600;}
+
+/* ═══════════ E. BLACKBOX — 증거 로그. 타임스탬프 피드 ═══════════ */
+.dir-e{background:#080c09;color:#cfe3d2;font-family:'IBM Plex Mono',monospace;}
+.dir-e::after{content:'';position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,transparent 0 2px,rgba(0,0,0,.14) 2px 4px);}
+.e-sticky{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;background:#060907;border-bottom:1px solid #15241a;}
+.e-logo{font-size:12px;font-weight:700;letter-spacing:.26em;color:#7fd99a;}
+.e-day{font-size:10px;color:#4e6a57;letter-spacing:.1em;}
+.e-head{padding:18px 18px 4px;}
+.e-prompt{font-size:11px;color:#4e6a57;margin-bottom:6px;}
+.e-remain{font-size:17px;line-height:1.5;font-family:'IBM Plex Sans KR',sans-serif;font-weight:600;color:#e4f3e7;}
+.e-remain b{color:#7fd99a;}
+.e-log{margin:14px 0 0;padding:4px 18px 0;}
+.e-line{display:flex;gap:10px;padding:9px 0;border-top:1px dashed #12271a;font-size:11.5px;align-items:baseline;}
+.e-line .ts{color:#3f5a49;width:46px;flex-shrink:0;}
+.e-line .ev{flex:1;color:#b9d6bf;font-family:'IBM Plex Sans KR',sans-serif;}
+.e-line .pt{letter-spacing:.06em;}
+.e-line.g .pt{color:#d4a437;} .e-line.s .pt{color:#9aa3ad;} .e-line.r .pt{color:#c0392b;}
+.e-line.pending{opacity:.42;}
+.e-line.pending .ts{color:#2c3f33;}
+.e-cursor{display:inline-block;width:7px;height:13px;background:#7fd99a;vertical-align:-2px;animation:eblink 1.1s steps(1) infinite;}
+@keyframes eblink{50%{opacity:0;}}
+.e-foot{position:absolute;bottom:0;left:0;right:0;padding:12px 18px;font-size:10px;color:#3f5a49;letter-spacing:.14em;border-top:1px solid #0f1f15;display:flex;justify-content:space-between;background:#060907;}
+.e-foot b{color:#7fd99a;font-weight:600;}
+
+/* ═══════════ F. SLAB — 석판. 하나의 숫자, 각인 ═══════════ */
+.dir-f{background:#131110;color:#eae4da;font-family:'Noto Serif KR',serif;}
+.dir-f::before{content:'';position:absolute;inset:0;background:
+  radial-gradient(120% 90% at 50% 0%,rgba(255,250,240,.045),transparent 55%),
+  repeating-linear-gradient(115deg,transparent 0 3px,rgba(0,0,0,.12) 3px 4px);}
+.f-sticky{position:relative;display:flex;justify-content:space-between;align-items:baseline;padding:16px 20px;border-bottom:1px solid #241f1c;}
+.f-logo{font-size:13px;font-weight:900;letter-spacing:.34em;}
+.f-counts{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.14em;color:#6e675f;}
+.f-counts b{font-weight:600;} .f-counts .g{color:#c9a34e;} .f-counts .s{color:#9aa3ad;} .f-counts .r{color:#b5473a;}
+.f-hero{position:relative;text-align:center;padding:42px 20px 8px;}
+.f-word{font-size:13px;letter-spacing:.5em;color:#6e675f;margin-bottom:2px;}
+.f-num{font-size:172px;font-weight:900;line-height:1;color:#f2ece1;
+  text-shadow:0 2px 0 #2a2520,0 -1px 0 rgba(255,255,255,.08),0 10px 34px rgba(0,0,0,.6);}
+.f-claim{font-size:14px;color:#8f877c;margin-top:4px;letter-spacing:.06em;}
+.f-claim b{color:#e7dfd2;font-weight:700;}
+.f-slots{position:relative;display:flex;gap:8px;padding:30px 20px 0;}
+.f-slot{flex:1;text-align:center;padding:12px 0 10px;border:1px solid #262220;border-radius:3px;background:rgba(255,255,255,.015);}
+.f-slot .k{font-size:11px;color:#8f877c;font-family:'IBM Plex Sans KR',sans-serif;}
+.f-slot .v{font-family:'IBM Plex Mono',monospace;font-size:13px;margin-top:5px;color:#cfc6b8;}
+.f-slot.done{border-color:#3d3426;background:rgba(201,163,78,.06);}
+.f-slot.done .v{color:#c9a34e;font-weight:600;}
+.f-slot.zero .v{color:#6e675f;}
+.f-oath{position:absolute;bottom:46px;left:0;right:0;text-align:center;font-size:12.5px;color:#6e675f;letter-spacing:.1em;}
+.f-oath b{color:#b5473a;font-weight:700;}
+.f-foot{position:absolute;bottom:0;left:0;right:0;padding:13px 20px;border-top:1px solid #241f1c;display:flex;justify-content:space-between;font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.2em;color:#57504a;}
+
 </style>
 </head>
 <body>
 
 <div class="shell-head">
-  <h1>오늘탭 상단 스택 — 3방향 베이크오프</h1>
-  <p>sticky header · status band · 캐릭터 카드 / 동일 데이터 (Gold 2 · Silver 3 · Red 1 · 13일 연속 · Tier 4)<br>
-  우측 상단 토글로 <b>캐릭터 없는 버전</b>을 같은 자리에서 비교할 수 있다 — B(무대)는 캐릭터가 컨셉이라 빠지면 큐브 더미가 주인공이 된다.</p>
+  <h1>오늘탭 상단 스택 — 베이크오프 2라운드</h1>
+  <p>동일 데이터 (Gold 2 · Silver 3 · Red 1 · 13일 연속 · Tier 4) · <b>A 장부·B 무대 탈락 (10/08)</b> → C 생존 + 신규 D·E·F.<br>
+  우측 상단 토글 = 캐릭터 ON/OFF (C 서명 블록에 적용).</p>
 </div>
 <div class="char-toggle" onclick="document.body.classList.toggle('no-char');this.querySelector('span').textContent=document.body.classList.contains('no-char')?'캐릭터 OFF':'캐릭터 ON';try{localStorage.setItem('rb1_nochar',document.body.classList.contains('no-char')?'1':'0');}catch(e){}">
   <i class="dot"></i><span>캐릭터 ON</span>
@@ -188,90 +267,6 @@ body.no-char .char-toggle .dot{background:#555;}
 <script>try{if(localStorage.getItem('rb1_nochar')==='1'){document.body.classList.add('no-char');document.addEventListener('DOMContentLoaded',()=>{const t=document.querySelector('.char-toggle span');if(t)t.textContent='캐릭터 OFF';});}}catch(e){}</script>
 
 <div class="row">
-
-  <!-- ═══════ A. LEDGER ═══════ -->
-  <div class="col">
-    <div class="col-label"><span class="tag">A</span><span class="name">LEDGER · 장부</span><span class="desc">엑셀 초록 칸의 쾌감<br>정밀 · 절제 · 채움</span></div>
-    <div class="ph dir-a">
-      <div class="a-grid-bg"></div>
-      <div class="a-sticky">
-        <span class="a-logo">QROK</span>
-        <span class="a-streak">DAY 13</span>
-        <div class="a-counts">
-          <span class="a-ct"><i style="background:var(--g)"></i>2</span>
-          <span class="a-ct"><i style="background:var(--s)"></i>3</span>
-          <span class="a-ct"><i style="background:var(--r)"></i>1</span>
-        </div>
-      </div>
-      <div class="a-band">
-        <div class="a-band-head"><span class="d mono">2026-08-05 화</span><span class="q">편한 쪽은 함정이다.</span></div>
-        <div class="a-cells">
-          <div class="a-cell"><div class="lb">식단</div><div class="val mono">2<span style="color:#4a544a">/3</span></div><i class="fill" style="width:66%"></i></div>
-          <div class="a-cell is-done"><div class="lb">운동</div><div class="val mono">DONE</div><i class="fill" style="width:100%"></i></div>
-          <div class="a-cell"><div class="lb">루틴</div><div class="val mono">1<span style="color:#4a544a">/2</span></div><i class="fill" style="width:50%"></i></div>
-          <div class="a-cell is-zero"><div class="lb">할일</div><div class="val mono">0<span style="color:#4a544a">/2</span></div><i class="fill" style="width:0%"></i></div>
-        </div>
-      </div>
-      <div class="a-week">
-        <div class="a-week-head">THIS WEEK</div>
-        <div class="a-week-grid">
-          <div class="a-day f2">월</div><div class="a-day f3">화</div><div class="a-day f1">수</div>
-          <div class="a-day fr">목</div><div class="a-day f2">금</div><div class="a-day today f1">토</div><div class="a-day">일</div>
-        </div>
-      </div>
-      <div class="a-char">
-        <div class="a-sprite"></div>
-        <div>
-          <div class="t">TIER 4</div>
-          <div class="n">각성자</div>
-          <div class="pr"><i></i></div>
-          <div class="nx">다음 티어까지 Gold 14</div>
-        </div>
-      </div>
-      <div class="a-foot">기록이 곧 증거다. — 오늘 6칸 채움</div>
-    </div>
-  </div>
-
-  <!-- ═══════ B. STAGE ═══════ -->
-  <div class="col">
-    <div class="col-label"><span class="tag">B</span><span class="name">STAGE · 무대</span><span class="desc">캐릭터가 주인공<br>깊이 · 게임 · 성장 실감</span></div>
-    <div class="ph dir-b">
-      <div class="b-sky"></div><div class="b-stars"></div>
-      <div class="b-sticky">
-        <span class="b-logo">QROK</span>
-        <div class="b-hud">
-          <span class="b-chip"><i style="background:var(--g)"></i>2</span>
-          <span class="b-chip"><i style="background:var(--s)"></i>3</span>
-          <span class="b-chip"><i style="background:var(--r)"></i>1</span>
-          <span class="b-chip">13일</span>
-        </div>
-      </div>
-      <div class="b-stage">
-        <div class="b-title">TIER 4</div>
-        <div class="b-name">각성자</div>
-        <div class="b-sprite"></div>
-      </div>
-      <div class="b-floor">
-        <span class="b-cube" style="background:var(--g)"></span>
-        <span class="b-cube up" style="background:var(--g)"></span>
-        <span class="b-cube" style="background:var(--s)"></span>
-        <span class="b-cube up" style="background:var(--s)"></span>
-        <span class="b-cube" style="background:var(--s)"></span>
-        <span class="b-cube up" style="background:var(--r)"></span>
-      </div>
-      <div class="b-band">
-        <div class="b-slot"><div class="lb">식단</div><div class="b-pips"><span class="b-pip on"></span><span class="b-pip sv"></span><span class="b-pip"></span></div></div>
-        <div class="b-slot"><div class="lb">운동</div><div class="b-pips"><span class="b-pip on"></span></div></div>
-        <div class="b-slot"><div class="lb">루틴</div><div class="b-pips"><span class="b-pip sv"></span><span class="b-pip"></span></div></div>
-        <div class="b-slot"><div class="lb">할일</div><div class="b-pips"><span class="b-pip"></span><span class="b-pip"></span></div></div>
-      </div>
-      <div class="b-quest">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f0c860" stroke-width="2.4"><path d="M12 2v20M2 12h20"/></svg>
-        <span class="q-char">오늘 <b>Gold 1</b> 더 얻으면 캐릭터가 자란다</span><span class="q-nochar">오늘 <b>Gold 1</b> 더 얻으면 다음 티어로</span>
-      </div>
-      <div class="b-foot">약한 날도 기록은 남긴다</div>
-    </div>
-  </div>
 
   <!-- ═══════ C. DRILL LOG ═══════ -->
   <div class="col">
@@ -307,6 +302,100 @@ body.no-char .char-toggle .dot{background:#555;}
         </div>
       </div>
       <div class="c-foot"><span class="m">QROK DRILL LOG</span><span class="q">편한 쪽은 함정이다.</span></div>
+    </div>
+  </div>
+
+
+  <!-- ═══════ D. RANGE LOG ═══════ -->
+  <div class="col">
+    <div class="col-label"><span class="tag">D</span><span class="name">RANGE LOG · 사격 기록지</span><span class="desc">스테이지 · 히트 · 스코어<br>IPSC 의 긴장감</span></div>
+    <div class="ph dir-d">
+      <div class="d-sticky">
+        <span class="d-logo">QROK</span>
+        <span class="d-meta">2026-08-05 · DAY 13</span>
+      </div>
+      <div class="d-score">
+        <div class="cell gold"><div class="v">2</div><div class="k">GOLD</div></div>
+        <div class="cell silver"><div class="v">3</div><div class="k">SILVER</div></div>
+        <div class="cell red"><div class="v">1</div><div class="k">RED</div></div>
+      </div>
+      <div class="d-stage">
+        <div class="d-row done">
+          <span class="no">ST-1</span><span class="nm">운동</span>
+          <span class="hits"><i class="d-hit a"></i><i class="d-hit a"></i><i class="d-hit a"></i></span>
+          <span class="res">CLEAR</span>
+        </div>
+        <div class="d-row">
+          <span class="no">ST-2</span><span class="nm">식단</span>
+          <span class="hits"><i class="d-hit a"></i><i class="d-hit c2"></i><i class="d-hit"></i></span>
+          <span class="res">2 / 3</span>
+        </div>
+        <div class="d-row">
+          <span class="no">ST-3</span><span class="nm">루틴</span>
+          <span class="hits"><i class="d-hit c2"></i><i class="d-hit"></i></span>
+          <span class="res">1 / 2</span>
+        </div>
+        <div class="d-row miss">
+          <span class="no">ST-4</span><span class="nm">할일</span>
+          <span class="hits"><i class="d-hit m"></i><i class="d-hit m"></i></span>
+          <span class="res">NO HIT</span>
+        </div>
+      </div>
+      <div class="d-timer">
+        <span class="t">STREAK</span>
+        <span class="v">13<em>DAYS</em></span>
+      </div>
+      <div class="d-foot"><span>TIER 4 — <b>각성자</b></span><span>미스는 기록된다</span></div>
+    </div>
+  </div>
+
+  <!-- ═══════ E. BLACKBOX ═══════ -->
+  <div class="col">
+    <div class="col-label"><span class="tag">E</span><span class="name">BLACKBOX · 증거 로그</span><span class="desc">타임스탬프 피드<br>기록이 곧 증거, 문자 그대로</span></div>
+    <div class="ph dir-e">
+      <div class="e-sticky">
+        <span class="e-logo">QROK//LOG</span>
+        <span class="e-day">2026-08-05 · 13일째 기록 중</span>
+      </div>
+      <div class="e-head">
+        <div class="e-prompt">&gt; 오늘의 미기록 항목 스캔 완료</div>
+        <div class="e-remain">증거가 없는 칸이 <b>넷</b> 남았다.<span class="e-cursor"></span></div>
+      </div>
+      <div class="e-log">
+        <div class="e-line g"><span class="ts">07:12</span><span class="ev">공복 체중 78.4 kg</span><span class="pt">+REC</span></div>
+        <div class="e-line s"><span class="ts">08:03</span><span class="ev">아침 — 일반식</span><span class="pt">SILVER</span></div>
+        <div class="e-line g"><span class="ts">12:41</span><span class="ev">점심 — 클린</span><span class="pt">GOLD</span></div>
+        <div class="e-line g"><span class="ts">19:26</span><span class="ev">헬스 세션 — 등 · 6.8 t</span><span class="pt">GOLD</span></div>
+        <div class="e-line s"><span class="ts">20:10</span><span class="ev">루틴 — 독서 30분</span><span class="pt">SILVER</span></div>
+        <div class="e-line pending"><span class="ts">--:--</span><span class="ev">저녁</span><span class="pt">대기</span></div>
+        <div class="e-line pending"><span class="ts">--:--</span><span class="ev">루틴 — 책상 정리</span><span class="pt">대기</span></div>
+        <div class="e-line pending"><span class="ts">--:--</span><span class="ev">할일 2건</span><span class="pt">대기</span></div>
+      </div>
+      <div class="e-foot"><span>STREAK <b>13</b> · TIER <b>4</b></span><span>로그는 거짓말하지 않는다</span></div>
+    </div>
+  </div>
+
+  <!-- ═══════ F. SLAB ═══════ -->
+  <div class="col">
+    <div class="col-label"><span class="tag">F</span><span class="name">SLAB · 석판</span><span class="desc">하나의 숫자<br>저밀도 · 최대 압박</span></div>
+    <div class="ph dir-f">
+      <div class="f-sticky">
+        <span class="f-logo">큐록</span>
+        <span class="f-counts"><b class="g">G2</b> · <b class="s">S3</b> · <b class="r">R1</b> · 13일</span>
+      </div>
+      <div class="f-hero">
+        <div class="f-word">오늘 남은 증명</div>
+        <div class="f-num">4</div>
+        <div class="f-claim">끝내기 전에는 <b>끝난 게 아니다</b></div>
+      </div>
+      <div class="f-slots">
+        <div class="f-slot done"><div class="k">운동</div><div class="v">DONE</div></div>
+        <div class="f-slot"><div class="k">식단</div><div class="v">2/3</div></div>
+        <div class="f-slot"><div class="k">루틴</div><div class="v">1/2</div></div>
+        <div class="f-slot zero"><div class="k">할일</div><div class="v">0/2</div></div>
+      </div>
+      <div class="f-oath">할일 두 칸이 비면 오늘은 <b>Red</b> 로 남는다</div>
+      <div class="f-foot"><span>TIER 4 — 각성자</span><span>QROK</span></div>
     </div>
   </div>
 
