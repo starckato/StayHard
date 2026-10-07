@@ -425,6 +425,36 @@ export function openWeightModal(mode) {
     const hasGoal = !!getWeightGoal();
     mode = hasWeight || hasGoal ? 'weight' : 'both';
   }
+  // ── 일상 경로 바로가기 (2026-10-08 UX 루프) ──
+  // 매일 1회 하는 체중 기록이 '수정→모달→칩→휠→확인→저장' 5탭이었다.
+  // mode==='weight' 면 중간 모달을 생략하고 바로 휠 → 확인 즉시 저장 (2탭).
+  // 'both'(최초 온보딩)·'goal' 은 기존 모달 유지.
+  if (mode === 'weight' && typeof window.openWheelPicker === 'function') {
+    const cur = window.log?.weight != null ? parseFloat(window.log.weight) : null;
+    const dflt = cur ?? _lastKnownWeight() ?? getWeightGoal() ?? 70;
+    const inp = document.getElementById('wt-inp');
+    const gi = document.getElementById('wt-goal-inp');
+    if (inp) inp.value = cur != null ? cur.toFixed(1) : '';
+    // saveWeight() 는 goal 입력이 빈 문자열이면 목표를 해제한다 — 모달을 거치지 않는
+    // 이 경로에서는 현재 목표를 미리 채워 목표가 지워지지 않게 보호.
+    const curGoal = getWeightGoal();
+    if (gi) gi.value = curGoal ? curGoal.toFixed(1) : '';
+    // 체중 필드가 숨김 상태면 saveWeight 가 goal-only 로 오인 — 표시 상태 보장
+    const weightField = document.querySelector('[data-wt-field="weight"]');
+    if (weightField) weightField.style.display = '';
+    // 저장 후 카드가 펼쳐져 결과가 보이게 (기존 모달 경로와 동일한 동작)
+    const wtCard = document.getElementById('wt-card');
+    if (wtCard && !wtCard.classList.contains('expanded')) {
+      document.querySelectorAll('.s-card.accordion').forEach(c => { if (c !== wtCard) c.classList.remove('expanded'); });
+      wtCard.classList.add('expanded');
+    }
+    window.openWheelPicker({
+      targetId: 'wt-inp', title: '공복 체중', min: 30, max: 150, step: 0.1, unit: 'kg',
+      defaultVal: dflt,
+      onSave: () => { try { saveWeight(); } catch (e) { console.warn('[weight quick-save]', e); } },
+    });
+    return;
+  }
   // Auto-expand the card so user sees the result after save
   const wtCard = document.getElementById('wt-card');
   if (wtCard && !wtCard.classList.contains('expanded')) {
