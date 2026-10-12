@@ -1102,7 +1102,7 @@ export function stRenderVolChart(rows){
       maxBarThickness:44
     }]},
     options:{...stDashCfg({
-      yCallback:v=>v>=1?v+'t':Math.round(v*1000)+'kg',
+      yCallback:v=>v>=1?v+'t':(v===0?'0':Math.round(v*1000)+'kg'),
       tooltip:{label:ctx=>{const v=ctx.parsed.y;return v>=1?v.toFixed(1)+'t':Math.round(v*1000).toLocaleString()+'kg';}}
     }),plugins:{...stDashCfg().plugins,stTargetLine:nonZero.length>1?{value:avg>=1000?avg/1000:avg,color:'rgba(245,158,11,0.5)',label:'평균'}:null}}
   });
@@ -1343,7 +1343,9 @@ export function stRenderRoutineChart(rows){
         data:pts.map(p=>p.y),borderColor:'#34d399',borderWidth:2.5,
         backgroundColor:ctx=>stGradient(ctx.chart.ctx,'52,211,153',[[0,0.3],[1,0.0]]),
         pointRadius:0,pointHoverRadius:6,pointHoverBorderColor:'#fff',pointHoverBackgroundColor:'#34d399',
-        fill:true,tension:0.4
+        // (2026-10-12) 이산 일별 완료율에 tension 0.4 는 0%↔100% 사이에 실제로 없는
+        // 곡선 골/피크를 그려 왜곡 — monotone 보간으로 데이터 범위를 벗어나지 않게.
+        fill:true,tension:0.4,cubicInterpolationMode:'monotone'
       }]
     },
     options:{...stDashCfg({
