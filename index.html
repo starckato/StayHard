@@ -3340,13 +3340,14 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
       <button onclick="closeModal('activity-modal')" style="background:none;border:none;color:var(--text2);font-size:var(--text-xl);cursor:pointer;padding:4px 8px;touch-action:manipulation;">←</button>
       <div class="mtitle" style="margin:0;" id="act-title">유산소 / 스포츠</div>
     </div>
-    <div class="mfield"><label class="mlabel">종류</label>
+    <div class="mfield"><label class="mlabel" id="act-types-label">종류</label>
       <div class="wt-type-grid" id="act-types"></div>
     </div>
     <div id="act-fields" style="display:none;">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
         <span id="act-sel-icon" style="font-size:var(--text-xl);"></span>
         <span id="act-sel-name" style="font-size:var(--text-base);font-weight:600;"></span>
+        <span onclick="actShowTypeGrid()" style="margin-left:auto;font-size:var(--text-xs);color:var(--text2);padding:6px 11px;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius-pill);cursor:pointer;touch-action:manipulation;">종목 변경</span>
       </div>
       <div class="mfield"><label class="mlabel" id="act-lbl1"></label>
         <input type="hidden" id="act-v1">
@@ -12192,8 +12193,31 @@ function openActivityModal(mode=null, fromEdit=false){
       <div class="wtb-name">${t.n}</div>
       <div class="wtb-unit">${t.u1}${t.u2?'+'+t.u2:''}</div>
     </div>`).join('');
+  document.getElementById('act-types').style.display='';
+  // UX (2026-10-12): 마지막 사용 종목 자동 선택 — 매일 같은 종목(러닝 등) 기록 시
+  // 14종 그리드를 매번 지나지 않게. 신규 기록일 때만 (수정은 자체 프리셀렉트).
+  if(!fromEdit){
+    try{
+      const lastN=localStorage.getItem('act_last_type');
+      const li=lastN?ACTIVITY_TYPES.findIndex(t=>t.n===lastN):-1;
+      if(li>=0){
+        setTimeout(()=>{
+          const btn=document.querySelectorAll('#act-types .wt-type-btn')[li];
+          if(btn)pickActivity(li,btn);
+        },30);
+      }
+    }catch(_){}
+  }
   openModal('activity-modal');
 }
+// 종목 그리드 다시 펼치기 (선택 후 접힘 상태에서 '종목 변경' 탭)
+function actShowTypeGrid(){
+  const g=document.getElementById('act-types');
+  if(g)g.style.display='';
+  const lbl=document.getElementById('act-types-label');
+  if(lbl)lbl.style.display='';
+}
+window.actShowTypeGrid=actShowTypeGrid;
 
 // 활동 유닛별 슬라이더 범위
 function _actSliderCfg(unit){
@@ -12244,6 +12268,12 @@ function pickActivity(i,el){
   }
   document.getElementById('act-fields').style.display='block';
   document.getElementById('act-save-btn').style.display='block';
+  // 선택 즉시 그리드 접힘 — 입력 필드가 바로 보이게 (스크롤 1250px 제거)
+  const grid=document.getElementById('act-types');
+  if(grid)grid.style.display='none';
+  const lbl=document.getElementById('act-types-label');
+  if(lbl)lbl.style.display='none';
+  try{localStorage.setItem('act_last_type',t.n);}catch(_){}
 }
 
 function saveActivity(){
