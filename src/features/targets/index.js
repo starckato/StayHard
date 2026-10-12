@@ -71,7 +71,7 @@ function rowHtml(t, i) {
     <div class="tgt-text ${isDone ? 'done' : isFail ? 'fail' : ''}" onclick="togTgt(${i})">${escFn(t.text || '')}${carriedBadge}
     </div>
     ${failBtn}
-    <button class="btn-icon is-accent" onclick="openPromoteTodoModal(${i})" title="매일 반복하는 필수 루틴으로 변환" aria-label="루틴으로 변환">↻</button>
+    <button class="btn-icon is-accent" onclick="(window.openPromoteToRoutine||openPromoteTodoModal)(${i})" title="반복 루틴으로 변환" aria-label="루틴으로 변환">↻</button>
     <button class="btn-icon" onclick="delTgt(${i})" aria-label="삭제"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><use href="#i-x"/></svg></button>
   </div>`;
 }

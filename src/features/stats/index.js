@@ -212,10 +212,13 @@ export function stRenderAll(rows){
       try{stRenderExerciseList(filtered);}catch(e){console.warn('stRenderExerciseList error:',e);}
     });
   });
-  try{stRenderMuscleDist(filtered);}catch(e){console.warn('stRenderMuscleDist error:',e);}
-  try{stRenderPRDashboard(filtered);}catch(e){console.warn('stRenderPRDashboard error:',e);}
+  // (2026-10-13 승인 B) 근육분포·PR 대시보드 — 신 대시보드(부위별 빈도·3대 1RM)와
+  // 중복으로 제거. 함수는 dormant 보존.
+  try{const c1=document.getElementById('st-muscle-dist-card');if(c1)c1.style.display='none';}catch(_){}
+  try{const c2=document.getElementById('st-pr-card');if(c2)c2.style.display='none';}catch(_){}
   try{stRenderRoutineChart(filtered);}catch(e){console.warn('stRenderRoutineChart error:',e);}
-  try{stRenderBodyComp(filtered);}catch(e){console.warn('stRenderBodyComp error:',e);}
+  // (2026-10-13 승인 B) 바디컴프 — 골격근/체지방 입력 UI 부재로 영구 빈 카드, 제거.
+  try{const c3=document.getElementById('st-bodycomp-card');if(c3)c3.style.display='none';}catch(_){}
   try{stRenderRoutineBreakdown(filtered);}catch(e){console.warn('stRenderRoutineBreakdown error:',e);}
   try{stRenderMealHeatmap(filtered);}catch(e){console.warn('stRenderMealHeatmap error:',e);}
   try{stRenderScoreChart(filtered);}catch(e){console.warn('stRenderScoreChart error:',e);}

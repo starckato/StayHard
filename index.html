@@ -64,23 +64,23 @@
      외부 link 2개 제거 → render-blocking CSS 요청 -2. trainer.html 등은 여전히 link. -->
 <!-- Perf (2026-05-25): 남은 sync CSS 도 모두 async — splash 가 1.6s 가리는 동안 모두 로드 완료.
      FOUC 위험 거의 없음 + render-blocking 0 → splash 즉시 paint. -->
-<link href="/src/styles/states.css?v=65ce3ae8" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/styles/components.css?v=65ce3ae8" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/styles/icons.css?v=65ce3ae8" rel="stylesheet" media="print" onload="this.media='all'">
-<noscript><link href="/src/styles/states.css?v=65ce3ae8" rel="stylesheet"><link href="/src/styles/components.css?v=65ce3ae8" rel="stylesheet"><link href="/src/styles/icons.css?v=65ce3ae8" rel="stylesheet"></noscript>
+<link href="/src/styles/states.css?v=3543d71a" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/styles/components.css?v=3543d71a" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/styles/icons.css?v=3543d71a" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link href="/src/styles/states.css?v=3543d71a" rel="stylesheet"><link href="/src/styles/components.css?v=3543d71a" rel="stylesheet"><link href="/src/styles/icons.css?v=3543d71a" rel="stylesheet"></noscript>
 <!-- Feature folder CSS — 한 폴더 = 한 기능 컨벤션 (ARCHITECTURE.md).
      Perf (2026-05-25): media="print" + onload swap 으로 async 로딩 → 초기 paint 차단 X.
      splash 가 1.6s+ 표시되므로 그 사이 모두 로드되어 FOUC 위험 거의 없음. -->
-<link href="/src/features/targets/targets.css?v=65ce3ae8" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/dashboards/dash.css?v=65ce3ae8" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/cubes/cubes-ui.css?v=65ce3ae8" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/date-heatmap/date-heatmap.css?v=65ce3ae8" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/dev-inspector/dev-inspector.css?v=65ce3ae8" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/water/water.css?v=65ce3ae8" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/sticky-header/sticky-header.css?v=65ce3ae8" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/status-band/status-band.css?v=65ce3ae8" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/mountain/mountain.css?v=65ce3ae8" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/workout-session/workout-session.css?v=65ce3ae8" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/targets/targets.css?v=3543d71a" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/dashboards/dash.css?v=3543d71a" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/cubes/cubes-ui.css?v=3543d71a" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/date-heatmap/date-heatmap.css?v=3543d71a" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/dev-inspector/dev-inspector.css?v=3543d71a" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/water/water.css?v=3543d71a" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/sticky-header/sticky-header.css?v=3543d71a" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/status-band/status-band.css?v=3543d71a" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/mountain/mountain.css?v=3543d71a" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/workout-session/workout-session.css?v=3543d71a" rel="stylesheet" media="print" onload="this.media='all'">
 <style>
 /* :root 토큰은 src/styles/tokens.{shared,dark}.css 로 이전됨 (Phase 0).
    index.html 은 다크 팔레트 사용. 추가 sub-palette (--radius-sm 등 legacy) 가
@@ -1497,7 +1497,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
      app.js bundle → supabase ESM 포함 (2026-05-25 perf), inline body scripts 가 의존하므로 sync. -->
 <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-<script src="/dist/app.js?v=65ce3ae8"></script>
+<script src="/dist/app.js?v=3543d71a"></script>
 
 <script>
   // QROK Splash — 앱 ready 까지 대기 후 fade out. 좌측 상단/중앙 loading 스피너 가림.
@@ -3955,6 +3955,17 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
     <div class="mhandle"></div>
     <div class="mtitle" id="mand-modal-title">필수 루틴 추가</div>
 
+    <!-- 반복 선택 (IN-5 통합 입력) — 오늘만=할일 · 매일/요일=루틴 -->
+    <div class="mfield" id="mand-repeat-field">
+      <label class="mlabel">반복</label>
+      <div style="display:flex;gap:6px;" id="mand-repeat-seg">
+        <button type="button" data-rep="once" onclick="setMandRepeat('once')" style="flex:1;padding:11px 0;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius-md);color:var(--text2);font-size:var(--text-sm);font-weight:600;cursor:pointer;font-family:inherit;touch-action:manipulation;">오늘만</button>
+        <button type="button" data-rep="daily" onclick="setMandRepeat('daily')" style="flex:1;padding:11px 0;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius-md);color:var(--text2);font-size:var(--text-sm);font-weight:600;cursor:pointer;font-family:inherit;touch-action:manipulation;">매일</button>
+        <button type="button" data-rep="days" onclick="setMandRepeat('days')" style="flex:1;padding:11px 0;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius-md);color:var(--text2);font-size:var(--text-sm);font-weight:600;cursor:pointer;font-family:inherit;touch-action:manipulation;">요일 선택</button>
+      </div>
+      <div id="mand-repeat-note" style="font-size:var(--text-2xs);color:var(--text3);margin-top:7px;line-height:1.5;"></div>
+    </div>
+
     <!-- 추천 루틴 -->
     <div id="mand-recommend-section">
       <div style="font-size:var(--text-xs);font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;">추천 루틴</div>
@@ -3995,13 +4006,13 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
       </div>
     </div>
 
-    <div class="mfield"><label class="mlabel">루틴 이름</label><input class="minput" id="mand-inp" placeholder="예: 비타민 챙기기"/></div>
-    <div class="mfield"><label class="mlabel">반복 요일</label>
+    <div class="mfield"><label class="mlabel" id="mand-inp-label">무엇을 할 건가</label><input class="minput" id="mand-inp" placeholder="예: 비타민 챙기기" enterkeyhint="done" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}"/></div>
+    <div class="mfield" id="mand-days-field"><label class="mlabel">반복 요일</label>
       <div class="days-row" id="days-row">
         <div class="dpill on" onclick="toggleDay(this,0)">월</div><div class="dpill on" onclick="toggleDay(this,1)">화</div><div class="dpill on" onclick="toggleDay(this,2)">수</div><div class="dpill on" onclick="toggleDay(this,3)">목</div><div class="dpill on" onclick="toggleDay(this,4)">금</div><div class="dpill on" onclick="toggleDay(this,5)">토</div><div class="dpill on" onclick="toggleDay(this,6)">일</div>
       </div>
     </div>
-    <div class="mfield">
+    <div class="mfield" id="mand-end-field">
       <label class="mlabel">종료일 <span style="font-weight:400;color:var(--text3);font-size:var(--text-xs);text-transform:none;letter-spacing:0;">선택사항 — 없으면 무기한</span></label>
       <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;" id="end-date-presets">
         <button onclick="pickEndDatePreset(1,this)" style="padding:7px 12px;border-radius:var(--radius-xl);font-size:var(--text-sm);border:1px solid var(--border2);background:var(--surface2);color:var(--text2);cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;">1주</button>
@@ -12877,16 +12888,65 @@ function resetEndDateUI(){
   if(clearBtn){clearBtn.style.background='var(--accent)';clearBtn.style.color='#fff';clearBtn.style.borderColor='var(--accent)';}
 }
 
-function openAddMandatoryModal(){
-  mandEditIdx2=null;newMandDays=[0,1,2,3,4,5,6];
-  document.getElementById('mand-inp').value='';
-  document.getElementById('mand-modal-title').textContent='필수 루틴 추가';
-  document.getElementById('mand-save-btn').textContent='루틴 추가';
+// IN-5 (2026-10-13 승인): mand-modal = 통합 '할 일 추가' 시트.
+// 반복 '오늘만' → 오늘 할일(targets) / '매일'·'요일 선택' → 루틴(mandatory defs).
+// 저장 모델·전파·큐브 판정 불변 — 입구만 통합. 인라인 할일 입력은 지름길로 유지.
+let _mandRepeat='daily';
+let _mandPromoteIdx=null;   // 할일→루틴 변환 컨텍스트 (promote 모달 대체)
+function setMandRepeat(mode){
+  _mandRepeat=mode;
+  const isEdit=mandEditIdx2!==null;
+  document.querySelectorAll('#mand-repeat-seg button').forEach(b=>{
+    const on=b.dataset.rep===mode;
+    b.style.background=on?'var(--accent-tint-2)':'var(--surface2)';
+    b.style.borderColor=on?'var(--accent-tint-4)':'var(--border2)';
+    b.style.color=on?'var(--accent)':'var(--text2)';
+  });
+  const note=document.getElementById('mand-repeat-note');
+  if(note)note.textContent=mode==='once'?'오늘 할일 목록에 추가됩니다 — 내일로 넘어가지 않습니다'
+    :mode==='daily'?'매일 반복되는 루틴이 됩니다'
+    :'선택한 요일마다 루틴으로 반복됩니다';
+  const repeatMode=mode!=='once';
+  const daysF=document.getElementById('mand-days-field');
+  if(daysF)daysF.style.display=mode==='days'?'block':'none';
+  const endF=document.getElementById('mand-end-field');
+  if(endF)endF.style.display=repeatMode?'block':'none';
   const recSec=document.getElementById('mand-recommend-section');
-  if(recSec)recSec.style.display='block';
+  if(recSec)recSec.style.display=(repeatMode&&!isEdit&&_mandPromoteIdx===null)?'block':'none';
+  if(mode==='daily')newMandDays=[0,1,2,3,4,5,6];
+  const btn=document.getElementById('mand-save-btn');
+  if(btn&&!isEdit)btn.textContent=mode==='once'?'할일 추가':'루틴으로 추가';
+}
+function openAddMandatoryModal(defaultRepeat){
+  mandEditIdx2=null;_mandPromoteIdx=null;newMandDays=[0,1,2,3,4,5,6];
+  document.getElementById('mand-inp').value='';
+  document.getElementById('mand-modal-title').textContent='할 일 추가';
+  const repF=document.getElementById('mand-repeat-field');
+  if(repF)repF.style.display='block';
   resetEndDateUI();
+  setMandRepeat(defaultRepeat||'daily');
   refreshDayPills();openModal('mand-modal');
 }
+// 할일 → 루틴 변환 (구 promote-modal 대체 — 같은 통합 시트로)
+function openPromoteToRoutine(i){
+  const t=(log.targets||[])[i];
+  if(!t)return;
+  openAddMandatoryModal('days');
+  _mandPromoteIdx=i;
+  document.getElementById('mand-inp').value=t.text||'';
+  document.getElementById('mand-modal-title').textContent='루틴으로 변환';
+  // 변환 컨텍스트: '오늘만' 은 의미 없음 — 세그 숨기고 요일 모드 고정
+  const repF=document.getElementById('mand-repeat-field');
+  if(repF)repF.style.display='none';
+  const daysF=document.getElementById('mand-days-field');
+  if(daysF)daysF.style.display='block';
+  const recSec=document.getElementById('mand-recommend-section');
+  if(recSec)recSec.style.display='none';
+  const btn=document.getElementById('mand-save-btn');
+  if(btn)btn.textContent='루틴으로 변환';
+}
+window.openPromoteToRoutine=openPromoteToRoutine;
+window.setMandRepeat=setMandRepeat;
 
 let _pendingScoreType=null;
 function pickRecommendedRoutine(name, scoreType){
@@ -12899,7 +12959,14 @@ function pickRecommendedRoutine(name, scoreType){
 function editMandatory(i){
   const t=log.mandatory[i];
   if(!t||t.type!=='custom')return; // derived routines aren't editable
-  mandEditIdx2=i;newMandDays=[...(t.days||[0,1,2,3,4,5,6])];
+  mandEditIdx2=i;_mandPromoteIdx=null;newMandDays=[...(t.days||[0,1,2,3,4,5,6])];
+  _mandRepeat='days';
+  const _repF=document.getElementById('mand-repeat-field');
+  if(_repF)_repF.style.display='none';
+  const _daysF=document.getElementById('mand-days-field');
+  if(_daysF)_daysF.style.display='block';
+  const _endF=document.getElementById('mand-end-field');
+  if(_endF)_endF.style.display='block';
   document.getElementById('mand-inp').value=t.name;
   document.getElementById('mand-modal-title').textContent='루틴 수정';
   document.getElementById('mand-save-btn').textContent='변경 저장';
@@ -12922,6 +12989,16 @@ function editMandatory(i){
 function refreshDayPills(){document.querySelectorAll('#days-row .dpill').forEach((el,idx)=>el.classList.toggle('on',newMandDays.includes(idx)));}
 function saveMandatory(){
   const name=document.getElementById('mand-inp').value.trim();if(!name)return;
+  // IN-5: '오늘만' = 오늘 할일로 저장 (신규 전용 — 수정/변환은 반복 모드 고정)
+  if(_mandRepeat==='once'&&mandEditIdx2===null&&_mandPromoteIdx===null){
+    if(!log.targets)log.targets=[];
+    log.targets.push({text:name,st:''});
+    closeModal('mand-modal');
+    try{window.sh&&window.sh.targets&&window.sh.targets.renderTargets?window.sh.targets.renderTargets():renderTargets();}catch(e){try{renderTargets();}catch(_){}}
+    saveNow();
+    showToast('오늘 할일에 추가됐어요');
+    return;
+  }
   const endDate=_mandEndDate||null;
   if(mandEditIdx2!==null){
     log.mandatory[mandEditIdx2].name=name;
@@ -12937,6 +13014,15 @@ function saveMandatory(){
     log.mandatory.push(entry);
   }
   closeModal('mand-modal');renderMandatory();
+  // promote: 변환 완료 시 원본 할일 제거 (구 promote 모달과 동일한 의미)
+  if(_mandPromoteIdx!==null){
+    try{
+      if(log.targets&&log.targets[_mandPromoteIdx]){log.targets.splice(_mandPromoteIdx,1);}
+      try{window.sh&&window.sh.targets&&window.sh.targets.renderTargets?window.sh.targets.renderTargets():renderTargets();}catch(_){}
+      showToast('루틴으로 변환됐어요');
+    }catch(e){console.warn('[promote]',e);}
+    _mandPromoteIdx=null;
+  }
   queueSave();
   // 2026-05-26 BUG FIX: 기존 전체 교체 → ADDITIVE merge (사용자 starckato 의 5/9 데이터 손실 원인).
   // saveMandatory 는 add/edit 의도이므로 미래의 기존 customs 보존하면서 새 def 만 union.
