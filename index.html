@@ -3364,6 +3364,21 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
         </div>
       </div>
     </div>
+      <!-- 페이스 — 거리·시간 입력 시 실시간 자동 계산 (IN-3) -->
+      <div id="act-pace-row" style="display:none;align-items:center;justify-content:space-between;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:10px 14px;margin:-4px 0 12px;">
+        <span style="font-size:var(--text-2xs);color:var(--text3);letter-spacing:.08em;font-weight:700;">페이스 — 자동 계산</span>
+        <span id="act-pace-val" style="font-family:'DM Mono',monospace;font-size:var(--text-lg);font-weight:700;color:var(--green);">—</span>
+      </div>
+    <!-- 평균 심박 (선택) — Zone2 집계 연동 (IN-3) -->
+    <div class="mfield" id="act-hr-field" style="display:none;">
+      <label class="mlabel">평균 심박 <span style="font-weight:400;color:var(--text3);font-size:var(--text-xs);text-transform:none;letter-spacing:0;">선택 — 워치에 뜬 평균 BPM</span></label>
+      <input type="hidden" id="act-hr">
+      <div class="pk-chip pk-chip--empty" id="act-hr-chip" data-pk-for="act-hr" data-pk-title="평균 심박" data-pk-min="60" data-pk-max="220" data-pk-step="1" data-pk-unit="bpm" data-pk-default="130" onclick="_pkOpenFromChip(this)">
+        <div class="pk-chip-left"><span class="pk-chip-val">—</span><span class="pk-chip-unit">bpm</span></div>
+        <span class="pk-chip-arrow">›</span>
+      </div>
+      <div id="act-hr-zone" style="display:none;margin-top:7px;font-size:var(--text-xs);color:var(--text3);"></div>
+    </div>
     <button class="mbtn" id="act-save-btn" onclick="saveActivity()" style="display:none;">저장</button>
     <button class="mbtn-ghost" onclick="closeModal('activity-modal')">취소</button>
   </div>
@@ -10784,6 +10799,28 @@ function closeWorkoutStartScreen(){
 function renderWssRoutineTiles(){
   const el=document.getElementById('wss-routine-tiles');
   if(!el)return;
+  // '지난 세션 그대로' 타일 (2026-10-12 페르소나 감사 A) — 루틴을 안 만든 유저도
+  // 직전 gym 세션 종목 구성으로 바로 시작. logCache 최신 날짜부터 탐색.
+  let lastTile='';
+  try{
+    const keys=Object.keys(logCache).sort().reverse();
+    let found=null;
+    for(const k of keys){
+      const sess=((logCache[k]&&logCache[k].workouts)||[]).filter(w=>w.type==='gym'&&(w.exercises||[]).length);
+      if(sess.length){found=sess[sess.length-1];found._k=k;break;}
+    }
+    if(found){
+      const names=(found.exercises||[]).map(e=>e.name);
+      const prev=esc(names.slice(0,3).join(' · ')+(names.length>3?' 외':''));
+      const d=new Date(found._k+'T12:00:00');
+      window._wssLastSession=found;
+      lastTile=`<div onclick="startFromLastSession()" style="flex:0 0 112px;min-width:112px;background:var(--surface2);border:1px solid var(--accent-tint-4);border-radius:var(--radius-lg);padding:8px 10px;cursor:pointer;touch-action:manipulation;">
+        <div style="font-size:var(--text-2xs);font-weight:700;letter-spacing:.04em;color:var(--accent);text-transform:uppercase;margin-bottom:2px;">지난 세션 · ${d.getMonth()+1}/${d.getDate()}</div>
+        <div style="font-size:var(--text-sm);font-weight:600;color:var(--text);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(found.sessionName||'헬스 세션')}</div>
+        <div style="font-size:var(--text-2xs);color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${prev}</div>
+      </div>`;
+    }
+  }catch(e){console.warn('[wss-last]',e);}
   const freeTile=`<div onclick="startGymSession()" style="flex:0 0 58px;min-width:58px;background:var(--accent-tint-2);border:1px dashed var(--accent-tint-4);border-radius:var(--radius-md);padding:7px 6px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;touch-action:manipulation;">
     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#ff4d4d" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
     <span style="font-size:var(--text-2xs);color:var(--accent);text-align:center;font-weight:600;line-height:1.2;">자유<br>운동</span>
@@ -10800,8 +10837,21 @@ function renderWssRoutineTiles(){
     <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
     <span style="font-size:var(--text-2xs);color:var(--text3);text-align:center;line-height:1.2;">루틴<br>추가</span>
   </div>`;
-  el.innerHTML=freeTile+routineTiles+addTile;
+  el.innerHTML=lastTile+freeTile+routineTiles+addTile;
 }
+// 지난 세션 종목 구성으로 새 세션 시작 (무게·횟수는 prefill 로직이 지난 기록 제안)
+function startFromLastSession(){
+  const w=window._wssLastSession;
+  if(!w){startGymSession();return;}
+  closeWorkoutStartScreen();
+  const exs=(w.exercises||[]).map(ex=>({
+    name:ex.name,icon:ex.icon,muscle:ex.muscle,equip:ex.equip||ex.equipment,
+    isStrength:ex.isStrength!==false,
+    sets:(ex.sets||[]).map(s=>({kg:s.kg,reps:s.reps,done:false,_prefill:true}))
+  }));
+  openWorkoutSession(exs);
+}
+window.startFromLastSession=startFromLastSession;
 
 function renderWssCardioTiles(){
   const el=document.getElementById('wss-cardio-tiles');
@@ -12268,6 +12318,17 @@ function pickActivity(i,el){
   }
   document.getElementById('act-fields').style.display='block';
   document.getElementById('act-save-btn').style.display='block';
+  // IN-3: 페이스 행(km 종목) + 평균 심박(유산소) 노출 제어
+  const paceRow=document.getElementById('act-pace-row');
+  if(paceRow)paceRow.style.display=(t.cat==='cardio'&&t.u1==='km')?'flex':'none';
+  const hrField=document.getElementById('act-hr-field');
+  if(hrField){
+    hrField.style.display=t.cat==='cardio'?'block':'none';
+    const hv=document.getElementById('act-hr');if(hv)hv.value='';
+    try{_pkSync('act-hr');}catch(_){}
+    const z=document.getElementById('act-hr-zone');if(z)z.style.display='none';
+  }
+  _actUpdatePace();
   // 선택 즉시 그리드 접힘 — 입력 필드가 바로 보이게 (스크롤 1250px 제거)
   const grid=document.getElementById('act-types');
   if(grid)grid.style.display='none';
@@ -12275,6 +12336,43 @@ function pickActivity(i,el){
   if(lbl)lbl.style.display='none';
   try{localStorage.setItem('act_last_type',t.n);}catch(_){}
 }
+
+// IN-3: 거리/시간 변경 시 페이스 실시간 갱신 + 심박 입력 시 존 안내
+function _actUpdatePace(){
+  try{
+    const el=document.getElementById('act-pace-val');
+    if(!el)return;
+    const t=actTypeIdx!=null?ACTIVITY_TYPES[actTypeIdx]:null;
+    const v1=parseFloat(document.getElementById('act-v1').value)||0;
+    const v2=parseFloat(document.getElementById('act-v2').value)||0;
+    if(t&&t.u1==='km'&&v1>0&&v2>0){
+      const p=v2/v1,pm=Math.floor(p),ps=Math.round((p-pm)*60);
+      el.textContent=pm+"'"+(ps<10?'0':'')+ps+'"/km';
+    }else{el.textContent='—';}
+  }catch(_){}
+}
+function _actUpdateHrZone(){
+  try{
+    const z=document.getElementById('act-hr-zone');
+    if(!z)return;
+    const hr=parseInt(document.getElementById('act-hr').value)||0;
+    const maxHr=CP&&CP.max_hr;
+    if(!hr){z.style.display='none';return;}
+    z.style.display='block';
+    if(maxHr){
+      const lo=Math.round(maxHr*0.6),hi=Math.round(maxHr*0.7);
+      z.innerHTML=(hr>=lo&&hr<=hi)
+        ?'<span style="color:var(--green);font-weight:600;">Zone 2</span> ('+lo+'–'+hi+') — 러닝 대시보드 Z2 집계에 포함됩니다'
+        :'최대심박 '+maxHr+' 기준 '+Math.round(hr/maxHr*100)+'% 강도';
+    }else{
+      z.textContent='분석 탭 러닝 대시보드에서 최대심박을 설정하면 Zone 2 판정이 표시됩니다';
+    }
+  }catch(_){}
+}
+document.addEventListener('DOMContentLoaded',()=>{
+  ['act-v1','act-v2'].forEach(id=>{const e=document.getElementById(id);if(e)e.addEventListener('input',_actUpdatePace);});
+  const h=document.getElementById('act-hr');if(h)h.addEventListener('input',_actUpdateHrZone);
+});
 
 function saveActivity(){
   if(actTypeIdx===null)return;
@@ -12319,6 +12417,20 @@ function saveActivity(){
   }
   recomputeCubesHook();
   saveNow(status==='planned'?'운동 일정 등록됨':'운동 저장됨');
+  // IN-3: 수동 유산소를 activities 에도 기록 — 러닝 대시보드(마일리지·PB·Zone2) 합류.
+  // 신규+완료+km 종목만. daily_logs 표시는 위에서 이미 처리 — collectRuns 가 중복 제거.
+  try{
+    const hrv=parseInt(document.getElementById('act-hr').value)||null;
+    if(!isEdit&&status==='done'&&t.cat==='cardio'&&t.u1==='km'&&v1>0&&v2>0&&window.CU&&window.sb){
+      const sportMap={'달리기':'run','사이클':'ride','수영':'swim','걷기':'walk'};
+      sb.from('activities').insert({
+        user_id:CU.id,source:'manual',sport:sportMap[t.n]||'other',name:t.n,
+        started_at:new Date().toISOString(),local_date:selectedKey,
+        distance_m:Math.round(v1*1000),duration_s:Math.round(v2*60),moving_s:Math.round(v2*60),
+        avg_hr:hrv,raw:{entered:'app-manual'}
+      }).then(r=>{if(r.error)console.warn('[act->activities]',r.error.message);},e=>console.warn('[act->activities]',e));
+    }
+  }catch(e){console.warn('[act->activities]',e);}
 }
 
 function editActivity(i){
