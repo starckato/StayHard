@@ -87,6 +87,14 @@ function cleanText(v: string, max: number): string {
   return v.replace(/[\u0000-\u001f\u007f]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, max);
 }
 
+// (2026-10-13 강화) 운동명은 카탈로그 정식 명칭만 허용 — AI 가 이름을 지어내거나
+// 세트/지시를 이름에 욱여넣는 것 차단. 지시는 note 로.
+const CATALOG_NAMES = new Set(EXERCISE_CATALOG.map((x) => x.n));
+function nameSuggestions(name: string): string[] {
+  const n = name.toLowerCase();
+  const hits = EXERCISE_CATALOG.filter((x) => n.includes(x.n.toLowerCase()) || x.n.toLowerCase().includes(n));
+  return hits.slice(0, 5).map((x) => x.n);
+}
 // 반환: 오류 메시지 | null. 통과 시 workouts 를 제자리에서 정규화(이름/메모 클린)한다.
 function validateWorkouts(workouts: unknown): string | null {
   if (!Array.isArray(workouts) || !workouts.length) {
@@ -98,6 +106,12 @@ function validateWorkouts(workouts: unknown): string | null {
     if (typeof w.name !== 'string' || !w.name.trim()) return 'Each workout needs a "name".';
     w.name = cleanText(w.name, MAX_NAME_LEN);
     if (!w.name) return 'Workout "name" is empty after sanitization.';
+    if (!CATALOG_NAMES.has(w.name)) {
+      const sug = nameSuggestions(w.name);
+      return `Unknown exercise "${w.name}". Use an exact catalog name from GET /exercises?q=` +
+        (sug.length ? ` (did you mean: ${sug.join(', ')}?)` : '') +
+        ' Put set counts and coaching instructions in "note", not in the name.';
+    }
     if (w.note != null) {
       if (typeof w.note !== 'string') return '"note" must be a string.';
       w.note = cleanText(w.note, MAX_NOTE_LEN);
@@ -119,10 +133,6 @@ function searchCatalog(qstr: string) {
   return EXERCISE_CATALOG.filter((x) => x.n.toLowerCase().includes(needle)).slice(0, 20);
 }
 
-function unmatchedNames(workouts: { name: string }[]): string[] {
-  const known = new Set(EXERCISE_CATALOG.map((x) => x.n));
-  return [...new Set(workouts.map((w) => w.name).filter((n) => !known.has(n)))];
-}
 
 // ── PAT 인증 ───────────────────────────────────────────────────
 
@@ -339,8 +349,8 @@ async function route(req: Request, path: string, auth: AgentAuth): Promise<Respo
       query: qstr,
       exercises: hits.map((x) => ({ name: x.n, muscle: x.m, equipment: x.e, has_thumbnail: x.g })),
       hint: hits.length
-        ? 'Use "name" verbatim as the exercise title so the app shows its thumbnail. Extra instructions go in "note".'
-        : 'No catalog match. You may assign a new title, but it will render without a thumbnail. Keep titles short; put details in "note".',
+        ? 'Use "name" verbatim — assignments with non-catalog names are rejected. Instructions go in "note".'
+        : 'No catalog match — assignments require an exact catalog name. Pick the closest one and put specifics in "note", or ask the user to add the exercise to the catalog.',
     });
   }
 
@@ -415,14 +425,7 @@ async function route(req: Request, path: string, auth: AgentAuth): Promise<Respo
       payload: { workouts: body.workouts },
     });
     if (r.error) return fail(400, 'assign_failed', r.error);
-    const unknown = unmatchedNames(body.workouts);
-    return json({
-      ...(r.data as Record<string, unknown>),
-      ...(unknown.length ? {
-        unmatched_names: unknown,
-        hint: 'These titles are not in the exercise catalog, so no thumbnail will show. Search GET /exercises?q= first and reuse the catalog name when one exists.',
-      } : {}),
-    }, 201);
+    return json(r.data, 201);
   }
 
   // PATCH /assignments/:id
@@ -476,6 +479,10 @@ async function route(req: Request, path: string, auth: AgentAuth): Promise<Respo
           return fail(400, 'bad_request', 'Each routine exercise needs a "name".');
         }
         ex.name = cleanText(ex.name, MAX_NAME_LEN);
+        if (!CATALOG_NAMES.has(ex.name)) {
+          const sug = nameSuggestions(ex.name);
+          return fail(400, 'bad_request', `Unknown exercise "${ex.name}" in routine. Use an exact catalog name from GET /exercises?q=` + (sug.length ? ` (did you mean: ${sug.join(', ')}?)` : ''));
+        }
         if (ex.note != null) {
           if (typeof ex.note !== 'string') return fail(400, 'bad_request', '"note" must be a string.');
           ex.note = cleanText(ex.note, MAX_NOTE_LEN);
