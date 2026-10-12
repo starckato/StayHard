@@ -977,14 +977,6 @@ export function stRenderWeightChart(rows){
   ]);
   // Inline subtitle — tells the user what the red bars mean since they
   // sit on a separate right axis.
-  const metaElHint=document.getElementById('st-weight-meta');
-  if(metaElHint){
-    const subtitle=document.createElement('div');
-    subtitle.style.cssText='font-size:10px;color:var(--text3);margin-top:8px;letter-spacing:-.005em;line-height:1.4;';
-    subtitle.textContent='파란 라인은 체중(kg). 빨간 bar 는 같은 날 운동 볼륨.';
-    metaElHint.appendChild(subtitle);
-  }
-
   // ── 체중 + 운동 볼륨 overlay ─────────────────────────────────────
   // 루틴·클린식 라인은 체중 맥락에서 와닿지 않아 제거. 우축은 운동 볼륨
   // (kg/t) 실제 단위로 표시. 운동은 bar, 체중은 filled line.
@@ -998,6 +990,16 @@ export function stRenderWeightChart(rows){
     return vol>0?vol:null;
   });
   const maxVol=Math.max(0,...volKg.filter(v=>v!=null));
+  // (2026-10-12 페르소나 감사) 기간 내 gym 볼륨이 0이면 — 러너 등 웨이트 비사용자 —
+  // 빨간 보조축(0~1kg)·바 데이터셋·범례가 영구 노이즈였다. 볼륨 요소를 통째로 숨긴다.
+  const hasVol=maxVol>0;
+  const metaElHint=document.getElementById('st-weight-meta');
+  if(metaElHint){
+    const subtitle=document.createElement('div');
+    subtitle.style.cssText='font-size:10px;color:var(--text3);margin-top:8px;letter-spacing:-.005em;line-height:1.4;';
+    subtitle.textContent=hasVol?'파란 라인은 체중(kg). 빨간 bar 는 같은 날 운동 볼륨.':'파란 라인은 체중(kg).';
+    metaElHint.appendChild(subtitle);
+  }
   const volUseTon=maxVol>=1000;
   const volTickFmt=v=>{
     if(volUseTon)return (v/1000).toFixed(v>=1000?1:1)+'t';
@@ -1020,19 +1022,19 @@ export function stRenderWeightChart(rows){
           fill:true,tension:0.4,order:1,
         },
         // Workout volume — bars on days with a gym session, right axis (kg/t)
-        {
+        ...(hasVol?[{
           label:'운동 볼륨',yAxisID:'yVol',type:'bar',data:volKg,
           backgroundColor:'rgba(255,77,77,0.32)',
           borderColor:'rgba(255,77,77,0.55)',borderWidth:1,
           barThickness:6,order:2,
-        },
+        }]:[]),
       ]
     },
     options:{
       responsive:true,maintainAspectRatio:false,
       interaction:{mode:'index',intersect:false},
       plugins:{
-        legend:{display:true,position:'bottom',labels:{color:'var(--text3)',font:{size:10},boxWidth:10,boxHeight:6,padding:8}},
+        legend:{display:hasVol,position:'bottom',labels:{color:'var(--text3)',font:{size:10},boxWidth:10,boxHeight:6,padding:8}},
         tooltip:{enabled:true,backgroundColor:'rgba(20,20,24,0.95)',borderColor:'rgba(255,255,255,0.08)',borderWidth:1,titleColor:'#eaeaea',bodyColor:'#eaeaea',padding:8,callbacks:{
           label:ctx=>{
             const v=ctx.parsed.y;
@@ -1047,7 +1049,7 @@ export function stRenderWeightChart(rows){
         x:{grid:{display:false},ticks:{color:'rgba(255,255,255,0.35)',font:{size:10},maxRotation:0}},
         y:{position:'left',grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'rgba(255,255,255,0.55)',font:{size:10},callback:v=>v+'kg'},
           min:Math.floor(Math.min(...vals,goal||Infinity)-1),max:Math.ceil(Math.max(...vals,goal||-Infinity)+1)},
-        yVol:{position:'right',display:true,min:0,beginAtZero:true,grid:{display:false},
+        yVol:{position:'right',display:hasVol,min:0,beginAtZero:true,grid:{display:false},
           ticks:{color:'rgba(255,77,77,0.55)',font:{size:9},callback:v=>volTickFmt(v)}},
       },
     }
