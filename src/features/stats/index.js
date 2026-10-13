@@ -48,6 +48,7 @@ export function getChartColors(){
 
 // ── stats 탭 기간 선택 ──
 export function stSetPeriod(days, btn){
+  window._stUserPicked=true;
   stPeriod=days;
   document.querySelectorAll('#st-period-btns .stats-period-btn').forEach(b=>b.classList.remove('active'));
   if(btn)btn.classList.add('active');
@@ -161,6 +162,23 @@ export async function loadStatsTab(){
     const emptyEl=document.getElementById('st-empty');
     if(emptyEl)emptyEl.style.display='block';
     return;
+  }
+
+  // (2026-10-13) 스마트 기본 기간 — 기본 1주에 최근 7일 기록이 없으면 죽은 0 대시보드가
+  // 된다. 유저가 직접 기간을 고르기 전까지는 전체 기간으로 자동 폴백.
+  if(!window._stUserPicked && stPeriod===7){
+    const d7=new Date(now);d7.setDate(d7.getDate()-6);
+    const k7=dkey(d7);
+    const recent=_stData.filter(r=>r._key>=k7);
+    const hasData=recent.some(r=>
+      (r.weight!=null)||((r.workouts||[]).length>0)||((r.meals||[]).some(m=>m&&m.type))||
+      ((r.mandatory||[]).some(m=>m&&m.done)));
+    if(!hasData){
+      stPeriod=0;
+      document.querySelectorAll('#st-period-btns .stats-period-btn').forEach(b=>{
+        b.classList.toggle('active',b.textContent.trim()==='전체');
+      });
+    }
   }
 
   stRenderAll(_stData);

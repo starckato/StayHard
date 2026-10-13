@@ -273,11 +273,15 @@ function computeHealth(data) {
     const sess = gymSessions(l).filter((s) => (s.exercises || []).some((ex) => (ex.sets || []).some((st) => st.done)));
     if (sess.length) {
       const s = sess[sess.length - 1];
-      const exs = s.exercises.map((ex) => ({
-        name: ex.name,
-        vol: (ex.sets || []).filter((st) => st.done)
-          .reduce((a, st) => a + (parseFloat(st.kg) || 0) * (parseInt(st.reps) || 0), 0),
-      })).filter((e) => e.vol > 0).sort((a, b) => b.vol - a.vol);
+      // 같은 종목이 세션에 여러 블록(강도/볼륨 등)으로 있으면 합산 — 이름 중복 행 방지
+      const byName = {};
+      for (const ex of s.exercises) {
+        const vol = (ex.sets || []).filter((st) => st.done)
+          .reduce((a, st) => a + (parseFloat(st.kg) || 0) * (parseInt(st.reps) || 0), 0);
+        if (vol > 0) byName[ex.name] = (byName[ex.name] || 0) + vol;
+      }
+      const exs = Object.entries(byName).map(([name, vol]) => ({ name, vol }))
+        .sort((a, b) => b.vol - a.vol);
       if (exs.length) { recent = { date: l.d, name: s.sessionName || '헬스 세션', exs }; break; }
     }
   }
@@ -296,7 +300,12 @@ function computeHealth(data) {
     }
   }
 
-  return { weekStart: start, weekEnd: end, days, totalVol, bestDay, big3, curW, goalW, recent, freq };
+  // 마지막 gym 운동일 — 지난주가 비었을 때 죽은 카드 대신 맥락 제공
+  let lastGym = null;
+  for (const l of data.logs) {
+    if (gymSessions(l).some((s) => (s.exercises || []).some((ex) => (ex.sets || []).some((st) => st.done)))) { lastGym = l.d; break; }
+  }
+  return { weekStart: start, weekEnd: end, days, totalVol, bestDay, big3, curW, goalW, recent, freq, lastGym };
 }
 
 // ── 렌더 — 헬스 ────────────────────────────────────────────────
@@ -391,7 +400,7 @@ function renderHealth(h) {
       <div class="dsh-lbl">${IC.bar}지난주 <span class="dsh-sub-inline">${rangeLabel} (월–일)</span></div>
       <div class="dsh-wk-total"><div class="dsh-wk-v">${h.totalVol >= 1000 ? (h.totalVol / 1000).toFixed(1) : Math.round(h.totalVol)}<span class="dsh-wk-u"> ${h.totalVol >= 1000 ? 't' : 'kg'}</span></div><div class="dsh-wk-k">Total 볼륨</div></div>
       <div class="dsh-bars">${barsHtml}</div>
-      ${h.bestDay && h.bestDay.vol > 0 ? `<div class="dsh-wk-best">일별 최고 <b>${h.bestDay.dow}요일 ${fmtVol(h.bestDay.vol)}</b></div>` : '<div class="dsh-wk-best dsh-sub">지난주 운동 기록 없음</div>'}
+      ${h.bestDay && h.bestDay.vol > 0 ? `<div class="dsh-wk-best">일별 최고 <b>${h.bestDay.dow}요일 ${fmtVol(h.bestDay.vol)}</b></div>` : `<div class="dsh-wk-best dsh-sub">지난주 운동 기록 없음${h.lastGym ? ` — 마지막 운동 ${parseInt(h.lastGym.slice(5,7))}/${parseInt(h.lastGym.slice(8,10))}` : ''}</div>`}
     </div>
     <div class="dsh-card">
       <div class="dsh-lbl">${IC.lift}3대 최고 기록 <span class="dsh-sub-inline">추정 1RM</span></div>
