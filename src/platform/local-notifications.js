@@ -136,6 +136,11 @@ export async function applyPrefs(prefs) {
 }
 
 /** Cancel all managed notifications. */
+export async function applyPreferences() {
+  // 재기획 전 봉인: 어떤 설정이 와도 기기 예약을 전부 비운다.
+  await cancelAll();
+  return { scheduled: [], skipped: ['all — notifications disabled (re-plan pending)'] };
+}
 export async function cancelAll() {
   if (!isNative()) return;
   try {

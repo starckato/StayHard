@@ -64,23 +64,23 @@
      외부 link 2개 제거 → render-blocking CSS 요청 -2. trainer.html 등은 여전히 link. -->
 <!-- Perf (2026-05-25): 남은 sync CSS 도 모두 async — splash 가 1.6s 가리는 동안 모두 로드 완료.
      FOUC 위험 거의 없음 + render-blocking 0 → splash 즉시 paint. -->
-<link href="/src/styles/states.css?v=013e0338" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/styles/components.css?v=013e0338" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/styles/icons.css?v=013e0338" rel="stylesheet" media="print" onload="this.media='all'">
-<noscript><link href="/src/styles/states.css?v=013e0338" rel="stylesheet"><link href="/src/styles/components.css?v=013e0338" rel="stylesheet"><link href="/src/styles/icons.css?v=013e0338" rel="stylesheet"></noscript>
+<link href="/src/styles/states.css?v=3c543582" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/styles/components.css?v=3c543582" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/styles/icons.css?v=3c543582" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link href="/src/styles/states.css?v=3c543582" rel="stylesheet"><link href="/src/styles/components.css?v=3c543582" rel="stylesheet"><link href="/src/styles/icons.css?v=3c543582" rel="stylesheet"></noscript>
 <!-- Feature folder CSS — 한 폴더 = 한 기능 컨벤션 (ARCHITECTURE.md).
      Perf (2026-05-25): media="print" + onload swap 으로 async 로딩 → 초기 paint 차단 X.
      splash 가 1.6s+ 표시되므로 그 사이 모두 로드되어 FOUC 위험 거의 없음. -->
-<link href="/src/features/targets/targets.css?v=013e0338" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/dashboards/dash.css?v=013e0338" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/cubes/cubes-ui.css?v=013e0338" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/date-heatmap/date-heatmap.css?v=013e0338" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/dev-inspector/dev-inspector.css?v=013e0338" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/water/water.css?v=013e0338" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/sticky-header/sticky-header.css?v=013e0338" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/status-band/status-band.css?v=013e0338" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/mountain/mountain.css?v=013e0338" rel="stylesheet" media="print" onload="this.media='all'">
-<link href="/src/features/workout-session/workout-session.css?v=013e0338" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/targets/targets.css?v=3c543582" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/dashboards/dash.css?v=3c543582" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/cubes/cubes-ui.css?v=3c543582" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/date-heatmap/date-heatmap.css?v=3c543582" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/dev-inspector/dev-inspector.css?v=3c543582" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/water/water.css?v=3c543582" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/sticky-header/sticky-header.css?v=3c543582" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/status-band/status-band.css?v=3c543582" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/mountain/mountain.css?v=3c543582" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="/src/features/workout-session/workout-session.css?v=3c543582" rel="stylesheet" media="print" onload="this.media='all'">
 <style>
 /* :root 토큰은 src/styles/tokens.{shared,dark}.css 로 이전됨 (Phase 0).
    index.html 은 다크 팔레트 사용. 추가 sub-palette (--radius-sm 등 legacy) 가
@@ -1500,7 +1500,7 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
      app.js bundle → supabase ESM 포함 (2026-05-25 perf), inline body scripts 가 의존하므로 sync. -->
 <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-<script src="/dist/app.js?v=013e0338"></script>
+<script src="/dist/app.js?v=3c543582"></script>
 
 <script>
   // QROK Splash — 앱 ready 까지 대기 후 fade out. 좌측 상단/중앙 loading 스피너 가림.
@@ -6490,6 +6490,9 @@ async function onLogin(user){
         window._prefetchStats();
       }
       // [기능 제거 2026-09-14] challenges prefetch 제거
+      // 알림 전면 폐기 (2026-10-14): 과거에 기기에 예약된 매일 반복 로컬 알림
+      // ('루틴 체크했나' 류)이 계속 울림 — 부팅마다 기기 예약 전체 취소.
+      try{window.sh&&window.sh.localNotifications&&window.sh.localNotifications.cancelAll();}catch(e){}
       // Strava 자동 동기화 (30분 스로틀) + 연동 카드 상태
       try{if(window.stravaSyncOnBoot)window.stravaSyncOnBoot();}catch(e){console.warn('[strava-boot]',e);}
       try{if(window.renderStravaCard)window.renderStravaCard();}catch(_){}
@@ -9167,7 +9170,7 @@ function scrollToSection(s){
   const el=document.getElementById(map[s]);
   if(el)el.scrollIntoView({behavior:'smooth',block:'center'});
 }
-function renderRoutine(){try{recomputeCubesHook(null,{silent:true});}catch(e){}renderCharCard();renderWeight();renderMeals();renderCheatBadge();renderWater();renderWorkouts();renderMandatory();renderTargets();updateHeaderStatus();revealStatusBand();try{renderFirstWeekCard();}catch(e){console.warn('[fw-card]',e);}try{renderInviteCard();}catch(e){console.warn('[invite-card]',e);}try{renderWeeklyFeatureRibbon();}catch(e){console.warn('[wf-ribbon]',e);}try{if(typeof window.buildHeatmapGrid==='function')window.buildHeatmapGrid();}catch(e){}try{renderCardCubes();}catch(e){console.warn('[card-cubes]',e);}try{arrangePromos();}catch(e){console.warn('[promo-arrange]',e);}try{checkOptInRequest();}catch(e){console.warn('[opt-in]',e);}try{renderTrainerRequestInbox();}catch(e){console.warn('[trainer-req-inbox]',e);}}
+function renderRoutine(){try{recomputeCubesHook(null,{silent:true});}catch(e){}renderCharCard();renderWeight();renderMeals();renderCheatBadge();renderWater();renderWorkouts();renderMandatory();renderTargets();updateHeaderStatus();revealStatusBand();try{renderFirstWeekCard();}catch(e){console.warn('[fw-card]',e);}try{renderInviteCard();}catch(e){console.warn('[invite-card]',e);}try{renderWeeklyFeatureRibbon();}catch(e){console.warn('[wf-ribbon]',e);}try{if(typeof window.buildHeatmapGrid==='function')window.buildHeatmapGrid();}catch(e){}try{renderCardCubes();}catch(e){console.warn('[card-cubes]',e);}try{arrangePromos();}catch(e){console.warn('[promo-arrange]',e);}/* [알림 폐기 2026-10-14] checkOptInRequest 제거 — 재기획 전 opt-in 요청 금지 */try{renderTrainerRequestInbox();}catch(e){console.warn('[trainer-req-inbox]',e);}}
 
 // ── Priority gate for promo/notification cards ─────────────────────
 // Each existing render function (renderFirstWeekCard, renderInviteCard,
