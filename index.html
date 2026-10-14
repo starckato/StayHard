@@ -11100,28 +11100,28 @@ async function closeHomeworkPromote(register){
   }
   const name = (document.getElementById('hwp-name').value || '').trim();
   if(!name){ showToast('이름이 비었어요.'); return; }
-  // user_routines 또는 mandatory 에 추가? 현재 메인 앱은 mandatory(필수루틴) 와는 별개로
-  // 운동 라이브러리에 사용자 정의 루틴 저장 기능 — wssRoutines 비슷한 것이 있지만 schema 미정.
-  // 일단 profiles 의 별도 column 으로 저장 또는 localStorage 저장.
-  // MVP: localStorage 에 사용자 운동 루틴 저장 + workout start screen tile 에서 노출.
+  // (H1 수정 2026-10-14) 과거엔 write-only 죽은 localStorage 키('qrok_user_routines_')에
+  // 저장해 "등록" 토스트만 뜨고 실제 루틴 목록(Supabase user_routines)엔 안 들어갔다.
+  // 일반 루틴과 동일한 테이블·스키마로 저장 — 시작 화면·루틴 목록에서 바로 보인다.
+  if(!CU){ showToast('로그인이 필요해요.'); return; }
   try{
-    const key = 'qrok_user_routines_' + (CU?.id || 'anon');
-    const list = JSON.parse(localStorage.getItem(key) || '[]');
-    list.push({
-      name,
-      exercises: _hwsExerciseList.map(ex => ({
-        name: ex.name,
-        muscle: ex.muscle,
-        equipment: ex.equipment,
-        icon: ex.icon,
-        sets: ex.sets.map(s => ({reps:s.reps, weight:s.weight}))
-      })),
-      created_at: new Date().toISOString(),
-      source: 'trainer-homework',
+    const exercises = _hwsExerciseList.map(ex => {
+      const doneSets = (ex.sets||[]).filter(s=>s.done);
+      const last = doneSets.slice(-1)[0] || (ex.sets||[]).slice(-1)[0] || {};
+      return {
+        name: ex.name, icon: ex.icon, muscle: ex.muscle,
+        equip: ex.equip || ex.equipment,
+        targetSets: (ex.sets||[]).length || 3,
+        lastKg: last.kg || last.weight || '',
+        lastReps: last.reps || ''
+      };
     });
-    localStorage.setItem(key, JSON.stringify(list));
-    showToast(`정식 루틴 등록: ${name}`);
-  }catch(e){console.warn('[hwp-save]',e); showToast('등록 실패. 다시 시도.');}
+    const { error } = await sb.from('user_routines').insert({ user_id: CU.id, name, exercises });
+    if(error) throw error;
+    await loadRoutines(true);
+    try{ renderWssRoutineTiles(); }catch(_){}
+    showToast(`루틴 등록: ${name}`);
+  }catch(e){ console.warn('[hwp-save]',e); showToast('등록 실패 — 다시 시도해주세요.'); return; }
   _hwsAssignmentId = null; _hwsExerciseList = [];
 }
 
