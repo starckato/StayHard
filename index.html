@@ -242,6 +242,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max
 .ux-tip-title{font-size:var(--text-md);font-weight:700;color:var(--accent);margin-bottom:6px;}
 .ux-tip-body{font-size:var(--text-sm);color:var(--text2);line-height:1.6;}
 .ux-tip-close{position:absolute;top:10px;right:12px;background:none;border:none;color:var(--text3);font-size:var(--text-lg);cursor:pointer;padding:4px;}
+.ux-tip-close::before{content:'';position:absolute;inset:-14px;}
 @keyframes tipIn{from{opacity:0;transform:translateX(-50%) translateY(10px);}to{opacity:1;transform:translateX(-50%) translateY(0);}}
 
 /* STATS GRAPHS */
@@ -1242,7 +1243,8 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
 .st-btn.s-plan{background:var(--accent-bg);border-color:var(--accent);color:var(--accent);}
 .st-btn.s-skip{background:var(--red-bg);border-color:var(--red);color:var(--red);}
 .days-row{display:flex;gap:5px;flex-wrap:wrap;}
-.dpill{padding:4px 9px;border-radius:var(--radius-lg);font-size:var(--text-2xs);font-weight:500;cursor:pointer;border:1px solid var(--border);color:var(--text3);background:var(--surface2);transition:all .13s;}
+.dpill{padding:4px 9px;border-radius:var(--radius-lg);font-size:var(--text-2xs);font-weight:500;cursor:pointer;border:1px solid var(--border);color:var(--text3);background:var(--surface2);transition:all .13s;position:relative;}
+.dpill::before{content:'';position:absolute;inset:-9px -2px;}
 .dpill.on{background:var(--accent-bg);border-color:var(--accent);color:var(--accent);}
 .profile-row{display:flex;align-items:center;gap:13px;padding:13px;background:var(--surface2);border-radius:var(--radius-sm);margin-bottom:14px;}
 .pav{width:40px;height:40px;border-radius:50%;background:var(--accent-bg);display:flex;align-items:center;justify-content:center;font-size:var(--text-xl);flex-shrink:0;}
@@ -1254,7 +1256,8 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
 #workout-session-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:var(--bg);z-index:500;display:none;flex-direction:column;max-width:430px;left:50%;transform:translateX(-50%);}
 #workout-session-overlay.open{display:flex;}
 .ws-done-btn{flex:1;padding:14px;background:var(--accent);border:none;border-radius:var(--radius-sm);font-size:var(--text-lg);font-weight:700;color:#fff;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;min-height:52px;transition:background .4s ease,box-shadow .4s ease;}
-.ws-ex-chip{flex:0 0 auto;padding:4px 10px;border-radius:var(--radius-lg);font-size:var(--text-2xs);font-weight:600;white-space:nowrap;cursor:pointer;border:1px solid var(--border);background:var(--surface2);color:var(--text3);display:flex;align-items:center;gap:5px;}
+.ws-ex-chip{flex:0 0 auto;padding:4px 10px;border-radius:var(--radius-lg);font-size:var(--text-2xs);font-weight:600;white-space:nowrap;cursor:pointer;border:1px solid var(--border);background:var(--surface2);color:var(--text3);display:flex;align-items:center;gap:5px;position:relative;}
+.ws-ex-chip::before{content:'';position:absolute;inset:-10px -3px;}
 .ws-ex-chip.add{background:var(--accent-tint-2);color:var(--accent);border-color:var(--accent-tint-4);}
 .ws-ex-chip.done{background:var(--green-bg);color:var(--green);border-color:var(--green-bd);padding-left:7px;}
 .ws-ex-chip.done::before{content:'';font-weight:800;}
@@ -3757,8 +3760,8 @@ svg.bni-icon{color:inherit;transition:color .15s,transform .2s cubic-bezier(.2,.
       <div class="ws-title" id="ws-title" style="font-size:var(--text-base);font-weight:700;flex:1;"></div>
       <div style="display:flex;align-items:center;gap:8px;">
         <div id="ws-unit-toggle" style="display:flex;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius-md);overflow:hidden;">
-          <div onclick="wsSetUnit('kg')" id="ws-unit-kg" style="padding:3px 7px;font-size:var(--text-2xs);font-weight:700;cursor:pointer;background:var(--accent);color:#fff;">kg</div>
-          <div onclick="wsSetUnit('lb')" id="ws-unit-lb" style="padding:3px 7px;font-size:var(--text-2xs);font-weight:700;cursor:pointer;color:var(--text3);">lb</div>
+          <div onclick="wsSetUnit('kg')" id="ws-unit-kg" style="padding:8px 11px;font-size:var(--text-2xs);font-weight:700;cursor:pointer;background:var(--accent);color:#fff;">kg</div>
+          <div onclick="wsSetUnit('lb')" id="ws-unit-lb" style="padding:8px 11px;font-size:var(--text-2xs);font-weight:700;cursor:pointer;color:var(--text3);">lb</div>
         </div>
         <div id="ws-timer" style="font-size:var(--text-base);font-weight:700;color:var(--accent);font-family:'DM Mono',monospace;min-width:42px;text-align:right;">0:00</div>
         <button class="ws-close" onclick="closeSession()" style="width:26px;height:26px;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;font-size:var(--text-base);color:var(--text2);">✕</button>
