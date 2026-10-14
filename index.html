@@ -4631,7 +4631,7 @@ function wsShowSaveRoutineSheet(exForRoutine){
   inner.style.cssText='background:var(--surface);border-radius:var(--radius-xl) var(--radius-xl) 0 0;width:100%;max-width:430px;padding:20px 20px 36px;border-top:1px solid var(--border2);';
   inner.innerHTML=`
     <div style="text-align:center;margin-bottom:14px;">
-      <div style="font-size:var(--text-2xl);margin-bottom:8px;">📋</div>
+      <div style="display:flex;justify-content:center;margin-bottom:8px;color:var(--accent);"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M9 7h6M9 11h6M9 15h4"/></svg></div>
       <div style="font-size:var(--text-base);font-weight:700;margin-bottom:4px;">루틴으로 저장할까요?</div>
       <div style="font-size:var(--text-sm);color:var(--text2);line-height:1.5;">다음에 같은 운동을 빠르게 시작할 수 있어요</div>
     </div>
@@ -12190,9 +12190,20 @@ function editGymSession(i){
   currentSession=(w.exercises||[]).map(ex=>({
     name:ex.name,icon:ex.icon,muscle:ex.muscle||'근력',equip:ex.equip||'바벨',
     isStrength:ex.isStrength!==false,
-    sets:ex.sets||[{kg:'',reps:'',done:false}],
+    note:ex.note||'',
+    // (G3 수정) 세트 깊은 복사 — 저장 전 수정이 원본 log.workouts 를 즉시 변형하던 참조 공유 차단
+    sets:(ex.sets&&ex.sets.length?ex.sets.map(st=>({...st})):[{kg:'',reps:'',done:false}]),
     status:'done'
   }));
+  // (G1 수정) 루틴/숙제 상태 전체 리셋 — 이전 세션 플래그 잔존 시 finishSession 이
+  // 엉뚱한 루틴 업데이트·숙제 오인. 수정은 독립 경로여야 한다.
+  sessionStartedFromRoutine=false;
+  sessionSourceRoutineId=null;
+  sessionOriginalExCount=0;
+  _editingHomeworkAssignmentId=null;
+  _editingHomeworkSessionName=null;
+  _sessionStatus='done';
+  currentGymIdx=-1;
   editingSessionIdx=i;
   _wsActiveExIdx=0;
   _wsUnit='kg';
