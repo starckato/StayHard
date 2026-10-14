@@ -4741,6 +4741,9 @@ function openWorkoutSession(prefillExercises){
   setTimeout(showWorkoutGuide,500);
   currentSession=prefillExercises||[];
   currentGymIdx=-1;
+  editingSessionIdx=null;              // (J2 수정) 숙제/수정 세션 직후 잔존 시
+  _editingHomeworkAssignmentId=null;   // 새 일반 세션이 그 자리(인덱스)를 덮어쓰던 누수 차단
+  _editingHomeworkSessionName=null;
   _wsActiveExIdx=0;
   sessionStartedFromRoutine=false;
   sessionSourceRoutineId=null;
@@ -5309,13 +5312,21 @@ function saveSessionToLog(){
     if(!ex.isStrength)return total;
     return total+ex.sets.filter(s=>s.done).reduce((a,s)=>a+(parseFloat(s.kg)||0)*(parseInt(s.reps)||0),0);
   },0);
+  // (J1 수정 2026-10-14) 덮어쓸 대상이 트레이너 숙제 엔트리면 마커·이름을 보존.
+  // 과거엔 숙제 세션 중 세트 체크 → saveSessionToLog 가 '헬스 세션'으로 덮어써
+  // _trainerAssignmentId·sessionName 이 즉시 소실되고 트레이너 연동·carryover 가 깨졌다.
+  const _tgtIdx = editingSessionIdx>=0 ? editingSessionIdx
+    : (currentGymIdx>=0&&currentGymIdx<log.workouts.length ? currentGymIdx : -1);
+  const _prev = _tgtIdx>=0 ? log.workouts[_tgtIdx] : null;
+  const _isHw = _prev && _prev._trainerAssignmentId;
   const sessionEntry={
     type:'gym',
-    sessionName:'헬스 세션',
+    sessionName: _isHw ? (_prev.sessionName||'오늘의 운동 숙제') : '헬스 세션',
     exercises:currentSession.map(ex=>({name:ex.name,icon:ex.icon,muscle:ex.muscle,equip:ex.equip,sets:ex.sets,isStrength:ex.isStrength,...(ex.note?{note:ex.note}:{})})),
     totalVolume,
     status:_sessionStatus||'done',
-    _expanded:false
+    _expanded:false,
+    ...(_isHw ? {_trainerAssignmentId:_prev._trainerAssignmentId, ...(_prev._assignedBy?{_assignedBy:_prev._assignedBy}:{})} : {})
   };
   // Use stored index — never search by reference
   if(editingSessionIdx>=0){
