@@ -5437,12 +5437,13 @@ async function saveRoutine(){
     if(exists){
       const overwrite=await qkConfirm('"'+name+'" 루틴이 이미 있어요. 덮어쓸까요?',{okText:'덮어쓰기'});
       if(!overwrite){_savingRoutine=false;return;}
-      // Overwrite the existing one
-      await sb.from('user_routines').update({exercises:routineExercises}).eq('id',exists.id);
+      // Overwrite the existing one (I1 수정: name 도 저장 — 이름까지 반영)
+      await sb.from('user_routines').update({name,exercises:routineExercises}).eq('id',exists.id);
       editingRoutineId=null;
       await loadRoutines();
+      renderWoRoutineTiles();
       showRoutineList();
-      showToast('루틴 업데이트됨 ✓');
+      showToast('루틴 업데이트됨');
       _savingRoutine=false;return;
     }
   }
@@ -5458,7 +5459,7 @@ async function saveRoutine(){
     await loadRoutines();
     renderWoRoutineTiles();
     closeRoutineModal();
-    showToast('루틴 저장됨 ✓');
+    showToast('루틴 저장됨');
     // Return to 기록 tab so user sees the workout recorded
     switchTab('routine',0);
   }catch(e){
