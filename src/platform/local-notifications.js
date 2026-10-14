@@ -97,7 +97,7 @@ export async function checkPermission() {
  * @param {{enabled: boolean} & Record<NotifCategory, NotifPref>} prefs
  * @returns {Promise<{scheduled: string[], skipped: string[]}>}
  */
-export async function applyPrefs(prefs) {
+async function applyPrefs_DISABLED(prefs) {
   const result = { scheduled: [], skipped: [] };
   if (!isNative()) return result;
   try {
@@ -136,8 +136,10 @@ export async function applyPrefs(prefs) {
 }
 
 /** Cancel all managed notifications. */
-export async function applyPreferences() {
-  // 재기획 전 봉인: 어떤 설정이 와도 기기 예약을 전부 비운다.
+// ═══ 알림 전면 폐기 (2026-10-14 창업자 지시) ═══
+// 리마인더류 알림이 과거 기기 예약으로 계속 발화 — 재기획 전까지 어떤 경로로도
+// 예약 금지. applyPrefs 는 전부 취소만 수행. (원본은 applyPrefs_DISABLED 로 보존)
+export async function applyPrefs() {
   await cancelAll();
   return { scheduled: [], skipped: ['all — notifications disabled (re-plan pending)'] };
 }
