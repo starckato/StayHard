@@ -12476,13 +12476,22 @@ function editActivity(i){
     setTimeout(()=>{
       const btn=document.querySelectorAll('#act-types .wt-type-btn')[idx];
       if(btn)pickActivity(idx,btn);
-      // Pre-fill values
-      const parts=(w.meta||'').split(' · ');
-      const v1=parts[0]?parseFloat(parts[0]):'';
-      const v2=parts[1]?parseFloat(parts[1]):'';
+      // Pre-fill values — (L1 수정) structured 필드 우선. meta 재파싱은 페이스가
+      // 중간에 낀 문자열(5.2 km · 30 분 · 5'46"/km)에서 인덱스가 밀릴 수 있다.
+      const t=ACTIVITY_TYPES[idx];
+      let v1='',v2='';
+      if(w.distance!=null||w.time!=null){
+        // saveActivity 는 u1==='km' 이면 distance, u2==='분' 이면 time 에 저장
+        v1 = t.u1==='km' ? (w.distance??'') : (t.u1==='분' ? (w.time??'') : '');
+        v2 = t.u2==='분' ? (w.time??'') : '';
+      } else {
+        const parts=(w.meta||'').split(' · ');
+        v1=parts[0]?parseFloat(parts[0]):'';
+        v2=parts[1]?parseFloat(parts[1]):'';
+      }
       document.getElementById('act-v1').value=v1||'';
       document.getElementById('act-v2').value=v2||'';
-      try{_pkSync('act-v1');_pkSync('act-v2');}catch(e){}
+      try{_pkSync('act-v1');_pkSync('act-v2');_actUpdatePace&&_actUpdatePace();}catch(e){}
     },50);
   }
 }
