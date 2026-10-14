@@ -12235,19 +12235,9 @@ function editGymSession(i){
 
 
 function openWorkoutModal(){
-  // If there are already workouts today, offer to continue session
-  const existing=log.workouts||[];
-  const hasSession=existing.some(w=>w.type==='session'&&w.exercises?.length>0);
-  if(hasSession){
-    const lastSession=existing.filter(w=>w.type==='session').slice(-1)[0];
-    const exNames=(lastSession.exercises||[]).map(e=>e.name).join(', ');
-    if(confirm('오늘 이미 세션이 있어요.\n\n'+exNames+'\n\n이 세션에 운동을 추가할까요?\n(취소 → 새 세션 시작)')){
-      // Reopen existing session
-      const idx=existing.lastIndexOf(lastSession);
-      openWorkoutSession(null,idx);
-      return;
-    }
-  }
+  // (K1 수정 2026-10-14) 죽은 분기 제거: type==='session' 은 앱 어디서도 생성되지
+  // 않고(실제는 'gym'), openWorkoutSession 은 2번째 idx 인자를 받지도 않았다.
+  // 영영 안 타던 native confirm + 무의미한 재개 경로를 걷어내고 시작 화면으로 직결.
   openWorkoutStartScreen();
 }
 
