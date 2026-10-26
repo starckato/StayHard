@@ -1071,7 +1071,7 @@ export function stRenderWeightChart(rows){
         y:{position:'left',grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'rgba(255,255,255,0.55)',font:{size:10},callback:v=>v+'kg'},
           min:Math.floor(Math.min(...vals,goal||Infinity)-1),max:Math.ceil(Math.max(...vals,goal||-Infinity)+1)},
         yVol:{position:'right',display:hasVol,min:0,beginAtZero:true,grid:{display:false},
-          ticks:{color:'rgba(255,77,77,0.55)',font:{size:9},callback:v=>volTickFmt(v)}},
+          ticks:{color:'rgba(255,77,77,0.9)',font:{size:9},callback:v=>volTickFmt(v)}},
       },
     }
   });
