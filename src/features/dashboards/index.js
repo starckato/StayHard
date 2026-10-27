@@ -300,12 +300,7 @@ function computeHealth(data) {
     }
   }
 
-  // 마지막 gym 운동일 — 지난주가 비었을 때 죽은 카드 대신 맥락 제공
-  let lastGym = null;
-  for (const l of data.logs) {
-    if (gymSessions(l).some((s) => (s.exercises || []).some((ex) => (ex.sets || []).some((st) => st.done)))) { lastGym = l.d; break; }
-  }
-  return { weekStart: start, weekEnd: end, days, totalVol, bestDay, big3, curW, goalW, recent, freq, lastGym };
+  return { weekStart: start, weekEnd: end, days, totalVol, bestDay, big3, curW, goalW, recent, freq };
 }
 
 // ── 렌더 — 헬스 ────────────────────────────────────────────────
@@ -337,7 +332,7 @@ function renderHealth(h) {
       <div class="dsh-wt-badge">${badge}</div>
     </div>`;
   } else {
-    wtHtml = `<div class="dsh-sub">${h.curW ? '목표 체중을 설정하면 남은 감량이 표시됩니다' : '체중을 기록하면 표시됩니다'}</div>`;
+    wtHtml = `<div class="dsh-wt"><div class="dsh-wt-cur">${h.curW ? `${h.curW.toFixed(1)}<small> kg</small>` : '—'}</div></div>`;
   }
 
   // ② 지난주 바
@@ -367,7 +362,7 @@ function renderHealth(h) {
     ? `<div class="dsh-big3-sum">합계 <b>${Math.round(BIG3.reduce((a, n) => a + h.big3[n].val, 0))} kg</b></div>` : '';
 
   // ④ 최근 세션
-  let recentHtml = '<div class="dsh-sub">아직 운동 기록이 없어요</div>';
+  let recentHtml = '<div class="dsh-none">—</div>';
   if (h.recent) {
     const maxEx = h.recent.exs[0].vol;
     const d = new Date(h.recent.date + 'T12:00:00');
@@ -400,7 +395,7 @@ function renderHealth(h) {
       <div class="dsh-lbl">${IC.bar}지난주 <span class="dsh-sub-inline">${rangeLabel} (월–일)</span></div>
       <div class="dsh-wk-total"><div class="dsh-wk-v">${h.totalVol >= 1000 ? (h.totalVol / 1000).toFixed(1) : Math.round(h.totalVol)}<span class="dsh-wk-u"> ${h.totalVol >= 1000 ? 't' : 'kg'}</span></div><div class="dsh-wk-k">Total 볼륨</div></div>
       <div class="dsh-bars">${barsHtml}</div>
-      ${h.bestDay && h.bestDay.vol > 0 ? `<div class="dsh-wk-best">일별 최고 <b>${h.bestDay.dow}요일 ${fmtVol(h.bestDay.vol)}</b></div>` : `<div class="dsh-wk-best dsh-sub">지난주 운동 기록 없음${h.lastGym ? ` — 마지막 운동 ${parseInt(h.lastGym.slice(5,7))}/${parseInt(h.lastGym.slice(8,10))}` : ''}</div>`}
+      ${h.bestDay && h.bestDay.vol > 0 ? `<div class="dsh-wk-best">일별 최고 <b>${h.bestDay.dow}요일 ${fmtVol(h.bestDay.vol)}</b></div>` : ''}
     </div>
     <div class="dsh-card">
       <div class="dsh-lbl">${IC.lift}3대 최고 기록 <span class="dsh-sub-inline">추정 1RM</span></div>
