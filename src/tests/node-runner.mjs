@@ -42,7 +42,7 @@ async function runSuite(name, importer) {
                  || mod.runTierTests || mod.runDateTests
                  || mod.runFirstCubeTests || mod.runOptInTests
                  || mod.runVolumeDeltaTests || mod.runMetricsTests
-                 || mod.runMandatoryTests;
+                 || mod.runMandatoryTests || mod.runVolumeTests;
     if (typeof runner !== 'function') {
       console.warn('  ⚠ runner function not found');
       return;
@@ -74,6 +74,7 @@ await runSuite('Notif Opt-in',   () => import('../features/notif/opt-in-schedule
 await runSuite('Volume Delta',   () => import('../features/volume-delta/tests.js'));
 await runSuite('Metrics EVT',    () => import('../features/metrics/tests.js'));
 await runSuite('Mandatory Merge',() => import('../features/mandatory/tests.js'));
+await runSuite('Volume (단일정의)', () => import('../lib/volume.tests.js'));
 // cheat.tests.js 는 supabase 사이드이펙트 회피 위해 별도 처리
 try {
   console.log('\n─── Cheat Quota ───');

@@ -10,6 +10,7 @@ import { sb } from '../../lib/supabase.js';
 import { dkey } from '../../lib/date.js';
 import { SCORE_EVENTS } from '../../data/score-events.js';
 import { TIERS, getTier } from '../../lib/tier.js';
+import { dayVolume } from '../../lib/volume.js';
 
 // ══════════════════════════════════════════════
 // STATS / GRAPHS
@@ -754,7 +755,7 @@ export function _stPeriodDeltaInsights(rows){
     return ms.length?Math.round(ms.filter(m=>m.type==='green').length/ms.length*100):null;
   };
   const calcRoutine=arr=>{let d=0,t=0;arr.forEach(r=>{const m=r.mandatory||[];t+=m.length;d+=m.filter(x=>x.done).length;});return t>0?Math.round(d/t*100):null;};
-  const calcVol=arr=>arr.reduce((a,r)=>a+(r.workouts||[]).filter(w=>w.type==='gym'&&w.status==='done').reduce((b,w)=>b+(w.totalVolume||0),0),0);
+  const calcVol=arr=>arr.reduce((a,r)=>a+dayVolume(r),0);  // F2 2026-10-30: 단일 정의(lib/volume) — 세션 status 무시, done 세트 live 합산
   const calcWoCnt=arr=>arr.reduce((a,r)=>a+(r.workouts||[]).filter(w=>w.type==='gym'&&w.status==='done').length,0);
 
   // 클린식 변화
@@ -816,10 +817,10 @@ export function stRenderInsights(rows){
   if(rows.length>=14){
     const half=Math.floor(rows.length/2);
     const v1=rows.slice(0,half).reduce((a,r)=>{
-      return a+(r.workouts||[]).filter(w=>w.type==='gym'&&w.status==='done').reduce((b,w)=>b+(w.totalVolume||0),0);
+      return a+dayVolume(r);
     },0);
     const v2=rows.slice(half).reduce((a,r)=>{
-      return a+(r.workouts||[]).filter(w=>w.type==='gym'&&w.status==='done').reduce((b,w)=>b+(w.totalVolume||0),0);
+      return a+dayVolume(r);
     },0);
     if(v1>0&&v2>0){
       const pct=Math.round((v2-v1)/v1*100);
@@ -1007,7 +1008,7 @@ export function stRenderWeightChart(rows){
   const volKg=keyByLabel.map(k=>{
     const r=rowByKey[k];
     if(!r)return null;
-    const vol=(r.workouts||[]).filter(w=>w.type==='gym'&&w.status==='done').reduce((a,w)=>a+(w.totalVolume||0),0);
+    const vol=dayVolume(r);
     return vol>0?vol:null;
   });
   const maxVol=Math.max(0,...volKg.filter(v=>v!=null));
@@ -1084,7 +1085,7 @@ export function stRenderVolChart(rows){
       const d=new Date(r._key+'T00:00:00');
       const mon=new Date(d);mon.setDate(d.getDate()-((d.getDay()+6)%7));
       const wk=(mon.getMonth()+1)+'/'+mon.getDate();
-      const vol=(r.workouts||[]).filter(w=>w.type==='gym'&&w.status==='done').reduce((a,w)=>a+(w.totalVolume||0),0);
+      const vol=dayVolume(r);
       if(!map[wk])map[wk]=0;
       map[wk]+=vol;
     });
@@ -1136,7 +1137,8 @@ export function buildExerciseIndex(rows){
   rows.forEach(r=>{
     const date=r._key;
     (r.workouts||[]).forEach(w=>{
-      if(w.status&&w.status!=='done')return;
+      // F2 2026-10-30: gym 은 세션 status 를 보지 않는다 — done 세트만 집계하므로 하다 만 숙제의 체크한 세트도 포함.
+      if(w.type!=='gym'&&w.status&&w.status!=='done')return;
       if(w.type==='gym'){
         (w.exercises||[]).forEach(ex=>{
           const name=ex.name;if(!name)return;

@@ -9,6 +9,7 @@ import { sb } from './lib/supabase.js';
 import * as analytics from './lib/analytics.js';
 import * as mealPhoto from './lib/meal-photo.js';
 import * as cheat from './lib/cheat.js';
+import * as volume from './lib/volume.js';  // 볼륨 단일 정의 — inline 코드가 window.dayVolume/sessionVolume 사용
 
 import * as toast from './ui/toast.js';
 
@@ -85,7 +86,7 @@ import './features/dev-inspector/index.js';
 
 Object.assign(
   window,
-  date, tier, icons, env, analytics, mealPhoto, cheat, toast,
+  date, tier, icons, env, analytics, mealPhoto, cheat, volume, toast,
   scoreEvents, mottos, exercises, muscle, rewardMessages, pushupCV,
   stats, onboarding, weight, rewards, dateHeatmap,
   targets, cubesUiEvents, water, stickyHeader, statusBand

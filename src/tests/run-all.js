@@ -19,6 +19,7 @@ export function runAllTests() {
     { name: 'Mandatory Merge',fn: typeof window !== 'undefined' && window.runMandatoryTests },
     { name: 'Status Band',    fn: typeof window !== 'undefined' && window.runStatusBandTests },
     { name: 'Targets',        fn: typeof window !== 'undefined' && window.runTargetsTests },
+    { name: 'Volume (단일정의)', fn: typeof window !== 'undefined' && window.runVolumeTests },
   ];
 
   console.log('═══════════════════════════════════════════════');
